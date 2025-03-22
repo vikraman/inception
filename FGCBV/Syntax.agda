@@ -1,0 +1,278 @@
+module FGCBV.Syntax where
+
+-- open import Meta.Prelude
+open import Data.Nat
+
+infixr 40 _`×_
+infixr 25 _`⇒_
+
+data Ty : Set where
+  `Unit `Nat : Ty
+  _`×_ _`⇒_ : Ty -> Ty -> Ty
+
+module Ctx (Ty : Set) where
+
+  infixl 15 _∙_
+  infix 10 _∈_
+
+  data Ctx : Set where
+    ε : Ctx
+    _∙_ : Ctx -> Ty -> Ctx
+
+  variable
+    A B C D : Ty
+    Γ Δ Ψ : Ctx
+
+  data _∈_ : Ty -> Ctx -> Set where
+    h :
+      ---------
+      A ∈ Γ ∙ A
+
+    t : A ∈ Γ
+      -------------
+      -> A ∈ Γ ∙ B
+
+open Ctx Ty
+
+syntax Val Γ A = Γ ⊢ᵛ A
+
+data Val : Ctx -> Ty -> Set
+
+syntax Comp Γ A = Γ ⊢ᶜ A
+
+data Comp : Ctx -> Ty -> Set
+
+data Val where
+
+  var : (i : A ∈ Γ)
+      ---------
+      -> Γ ⊢ᵛ A
+
+  letv : Γ ⊢ᵛ A -> (Γ ∙ A) ⊢ᵛ B
+       ---------------------------
+      -> Γ ⊢ᵛ B
+
+  lam : (Γ ∙ A) ⊢ᶜ B
+      -----------------
+      -> Γ ⊢ᵛ A `⇒ B
+
+  pair : Γ ⊢ᵛ A -> Γ ⊢ᵛ B
+      -------------------
+       -> Γ ⊢ᵛ A `× B
+
+  -- fst : Γ ⊢ᵛ A `× B
+  --     ---------------
+  --       -> Γ ⊢ᵛ A
+
+  -- snd : Γ ⊢ᵛ A `× B
+  --     ---------------
+  --       -> Γ ⊢ᵛ B
+
+  pm : Γ ⊢ᵛ A `× B -> (Γ ∙ A ∙ B) ⊢ᵛ C
+     -----------------------------------
+     -> Γ ⊢ᵛ C
+
+  unit :
+       -----------
+        Γ ⊢ᵛ `Unit
+
+data Comp where
+
+  produce : Γ ⊢ᵛ A
+         -----------
+         -> Γ ⊢ᶜ A
+
+  letv : Γ ⊢ᵛ A -> (Γ ∙ A) ⊢ᶜ B
+       ---------------------------
+       -> Γ ⊢ᶜ B
+
+  pm : Γ ⊢ᵛ A `× B -> (Γ ∙ A ∙ B) ⊢ᶜ C
+     -----------------------------------
+     -> Γ ⊢ᶜ C
+
+  push : Γ ⊢ᶜ A -> (Γ ∙ A) ⊢ᶜ B
+       ---------------------------
+       -> Γ ⊢ᶜ B
+
+  app : Γ ⊢ᵛ A `⇒ B -> Γ ⊢ᵛ A
+      -------------------------
+              -> Γ ⊢ᶜ B
+
+syntax Wk Γ Δ = Γ ⊇ Δ
+
+data Wk : (Γ Δ : Ctx) -> Set where
+  wk-ε : ε ⊇ ε
+  wk-cong : (π : Wk Γ Δ) -> Wk (Γ ∙ A) (Δ ∙ A)
+  wk-wk : (π : Wk Γ Δ) -> Wk (Γ ∙ A) Δ
+
+wk-id : Wk Γ Γ
+wk-id {Γ = ε} = wk-ε
+wk-id {Γ = Γ ∙ A} = wk-cong wk-id
+
+wk-mem : Wk Γ Δ -> A ∈ Δ -> A ∈ Γ
+wk-mem (wk-cong π) h = h
+wk-mem (wk-wk π) h = t (wk-mem π h)
+wk-mem (wk-cong π) (t i) = t (wk-mem π i)
+wk-mem (wk-wk π) (t i) = t (wk-mem π (t i))
+
+mutual
+  wk-val : Wk Γ Δ -> Δ ⊢ᵛ A -> Γ ⊢ᵛ A
+  wk-val π (var x)         = var (wk-mem π x)
+  wk-val π (letv V W)      = letv (wk-val π V) (wk-val (wk-cong π) W)
+  wk-val π (lam M)         = lam (wk-comp (wk-cong π) M)
+  
+  wk-val π (pair V1 V2)    = pair (wk-val π V1) (wk-val π V2)
+  wk-val π (pm V W)        = pm (wk-val π V) (wk-val (wk-cong (wk-cong π)) W)
+  wk-val π unit            = unit
+
+  wk-comp : Wk Γ Δ -> Δ ⊢ᶜ A -> Γ ⊢ᶜ A
+  wk-comp π (produce V)     = produce (wk-val π V)
+  wk-comp π (letv V M)     = letv (wk-val π V) (wk-comp (wk-cong π) M)
+  wk-comp π (pm V M)       = pm (wk-val π V) (wk-comp (wk-cong (wk-cong π)) M)
+  wk-comp π (push M N)     = push (wk-comp π M) (wk-comp (wk-cong π) N)
+  wk-comp π (app V W)      = app (wk-val π V) (wk-val π W)
+
+wk : Val Γ A -> Val (Γ ∙ B) A
+wk = wk-val (wk-wk wk-id)
+
+data Sub (Γ : Ctx) : (Δ : Ctx) -> Set where
+  sub-ε : Sub Γ ε
+  sub-ex : (θ : Sub Γ Δ) -> (V : Val Γ A) -> Sub Γ (Δ ∙ A)
+
+sub-mem : Sub Γ Δ -> A ∈ Δ -> Val Γ A
+sub-mem (sub-ex θ V) h = V
+sub-mem (sub-ex θ V) (t i) = sub-mem θ i
+
+sub-wk : Wk Γ Δ -> Sub Δ Ψ -> Sub Γ Ψ
+sub-wk π sub-ε = sub-ε
+sub-wk π (sub-ex θ V) = sub-ex (sub-wk π θ) (wk-val π V)
+
+sub-id : Sub Γ Γ
+sub-id {Γ = ε} = sub-ε
+sub-id {Γ = Γ ∙ A} = sub-ex (sub-wk (wk-wk wk-id) sub-id) (var h)
+
+mutual
+  sub-val : Sub Γ Δ -> Δ ⊢ᵛ A -> Γ ⊢ᵛ A
+  sub-val θ (var x) = sub-mem θ x
+  sub-val θ (letv V M) = letv (sub-val θ V) (sub-val (sub-ex (sub-wk (wk-wk wk-id) θ) (var h)) M)
+  sub-val θ (lam M) = lam (sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ) (var h)) M)
+  sub-val θ (pair V W) = pair (sub-val θ V) (sub-val θ W)
+  sub-val θ (pm V W) = pm (sub-val θ V) (sub-val (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) θ) (var (t h))) (var h)) W)
+  sub-val θ unit = unit
+
+  sub-comp : Sub Γ Δ -> Δ ⊢ᶜ A -> Γ ⊢ᶜ A
+  sub-comp θ (produce V) = produce (sub-val θ V)
+  sub-comp θ (letv V M) = letv (sub-val θ V) (sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ) (var h)) M)
+  sub-comp θ (pm V M) = pm (sub-val θ V) (sub-comp (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) θ) (var (t h))) (var h)) M)
+  sub-comp θ (push M N) = push (sub-comp θ M) (sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ) (var h)) N)
+  sub-comp θ (app V W) = app (sub-val θ V) (sub-val θ W)
+
+variable
+  n : ℕ
+  x : A ∈ Γ
+  V V1 V2 V3 W W1 W2 W3 : Γ ⊢ᵛ A
+  M M1 M2 M3 N N1 N2 N3 P P1 P2 P3 : Γ ⊢ᵛ A
+
+-- syntax Ev Γ C A = Γ ⊢ᵛ C ⇛ A
+
+-- data Ev (Γ : Ctx) (C : Ty) : Ty -> Set where
+
+--   ø :
+--       ----------------
+--         Γ ⊢ᵛ C ⇛ C
+
+--   app-r : (e : Γ ⊢ᵛ A `⇒ B) -> (E : Γ ⊢ᵛ C ⇛ A)
+--         ------------------------------------------------------------
+--         -> Γ ⊢ᵛ C ⇛ B
+
+--   app-l : (E : Γ ⊢ᵛ C ⇛ (A `⇒ B)) -> (v : Γ ⊢ᵛ A) {{ϕ : isVal v}}
+--         ------------------------------------------------------------
+--         -> Γ ⊢ᵛ C ⇛ B
+
+-- -- other evaluation contexts are skipped
+
+-- infix 5 _[[_]]
+-- _[[_]] : (E : Γ ⊢ᵛ A ⇛ B) -> (e : Γ ⊢ᵛ A) -> Γ ⊢ᵛ B
+-- ø [[ e ]]          = e
+-- app-r e1 E [[ e ]] = app e1 (E [[ e ]])
+-- app-l E v [[ e ]]  = app (E [[ e ]]) v
+
+-- wk-ev : Wk Γ Δ -> Δ ⊢ᵛ A ⇛ B -> Γ ⊢ᵛ A ⇛ B
+-- wk-ev π ø           = ø
+-- wk-ev π (app-r e E) = app-r (wk-tm π e) (wk-ev π E)
+-- wk-ev π (app-l E v) = app-l (wk-ev π E) (wk-tm π v) {{wk-tm-val π v}}
+
+syntax EqVal Γ A e1 e2 = Γ ⊢ᵛ e1 ≈ e2 ∶ A
+
+data EqVal (Γ : Ctx) : (A : Ty) -> Γ ⊢ᵛ A -> Γ ⊢ᵛ A -> Set where
+
+  -- equivalence rules
+  ≈-refl  :
+          -------------
+          Γ ⊢ᵛ V ≈ V ∶ A
+
+  ≈-sym   : Γ ⊢ᵛ V1 ≈ V2 ∶ A
+          ------------------
+          -> Γ ⊢ᵛ V2 ≈ V1 ∶ A
+
+  ≈-trans : Γ ⊢ᵛ V1 ≈ V2 ∶ A -> Γ ⊢ᵛ V2 ≈ V3 ∶ A
+          -------------------------------------
+          -> Γ ⊢ᵛ V1 ≈ V3 ∶ A
+
+  -- congruence rules
+  pair-cong : Γ ⊢ᵛ V1 ≈ V2 ∶ A -> Γ ⊢ᵛ W1 ≈ W2 ∶ B
+            ----------------------------------------
+            -> Γ ⊢ᵛ pair V1 W1 ≈ pair V2 W2 ∶ A `× B
+
+  -- and many more congruence rules but they're skipped
+
+  letv-beta : (V : Γ ⊢ᵛ A) -> (W : (Γ ∙ A) ⊢ᵛ B)
+            ----------------------------------------------------
+            -> Γ ⊢ᵛ letv V W ≈ sub-val (sub-ex sub-id V) W ∶ B
+
+  pm-beta : (V1 : Γ ⊢ᵛ A) -> (V2 : Γ ⊢ᵛ B) -> (W : (Γ ∙ A ∙ B) ⊢ᵛ C)
+          ------------------------------------------------------------------------
+          -> Γ ⊢ᵛ pm (pair V1 V2) W ≈ sub-val (sub-ex (sub-ex sub-id V1) V2) W ∶ C
+
+  pm-eta : (V : Γ ⊢ᵛ A `× B) -> (W : (Γ ∙ (A `× B)) ⊢ᵛ C)
+         -------------------------------------------------------------------------------------------
+         -> Γ ⊢ᵛ sub-val (sub-ex sub-id V) W ≈ pm V (sub-val (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) sub-id) (pair (var (t h)) (var h))) W) ∶ C
+
+
+  lam-eta : (V : Γ ⊢ᵛ A `⇒ B)
+          ---------------------------
+          -> Γ ⊢ᵛ V ≈ lam (app (wk V) (var h)) ∶ A `⇒ B
+
+
+syntax EqComp Γ A e1 e2 = Γ ⊢ᶜ e1 ≈ e2 ∶ A
+
+data EqComp (Γ : Ctx) : (A : Ty) -> Γ ⊢ᶜ A -> Γ ⊢ᶜ A -> Set where
+
+  letv-beta : (V : Γ ⊢ᵛ A) -> (M : (Γ ∙ A) ⊢ᶜ B)
+             ----------------------------------------------------
+             -> Γ ⊢ᶜ letv V M ≈ sub-comp (sub-ex sub-id V) M ∶ B
+
+  pm-beta : (V1 : Γ ⊢ᵛ A) -> (V2 : Γ ⊢ᵛ B) -> (M : (Γ ∙ A ∙ B) ⊢ᶜ C)
+          ------------------------------------------------------------------------
+          -> Γ ⊢ᶜ pm (pair V1 V2) M ≈ sub-comp (sub-ex (sub-ex sub-id V1) V2) M ∶ C
+
+  pm-eta : (V : Γ ⊢ᵛ A `× B) -> (M : (Γ ∙ (A `× B)) ⊢ᶜ C)
+         -------------------------------------------------------------------------------------------
+         -> Γ ⊢ᶜ sub-comp (sub-ex sub-id V) M ≈ pm V (sub-comp (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) sub-id) (pair (var (t h)) (var h))) M) ∶ C 
+  
+  produce-beta : (V : Γ ⊢ᵛ A) -> (M : (Γ ∙ A) ⊢ᶜ B)
+               ---------------------------------------------------------------
+               -> Γ ⊢ᶜ push (produce V) M ≈ sub-comp (sub-ex sub-id V) M ∶ B
+
+  produce-eta : (M : Γ ⊢ᶜ A)
+              -----------------------
+              -> Γ ⊢ᶜ M ≈ push M (produce (var h)) ∶ A
+
+  push-eta : (M : Γ ⊢ᶜ A) -> (N : (Γ ∙ A) ⊢ᶜ B) -> (P : (Γ ∙ B) ⊢ᶜ C)
+           ----------------------------------------------------------------
+           -> Γ ⊢ᶜ push (push M N) P ≈ push M (push N (wk-comp (wk-cong (wk-wk wk-id)) P)) ∶ C
+  
+  lam-beta : (M : (Γ ∙ A) ⊢ᶜ B) -> (V : Γ ⊢ᵛ A)
+           ------------------------------------------------
+           -> Γ ⊢ᶜ app (lam M) V ≈ sub-comp (sub-ex sub-id V) M ∶ B
+
