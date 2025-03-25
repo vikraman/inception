@@ -1,6 +1,6 @@
-module FGCBV.CPS (R : Set) where
+module Sub.CPS (R : Set) where
 
-open import FGCBV.Syntax
+open import Sub.Syntax
 
 open import Data.Unit
 open import Data.Product as P

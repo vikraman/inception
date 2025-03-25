@@ -1,4 +1,4 @@
-module FGCBV.Syntax where
+module Sub.Syntax where
 
 open import Data.Nat
 
