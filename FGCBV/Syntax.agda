@@ -1,16 +1,15 @@
 module FGCBV.Syntax where
 
--- open import Meta.Prelude
 open import Data.Nat
 
 infixr 40 _`×_
 infixr 25 _`⇒_
 
 data Ty : Set where
-  `Unit `Nat : Ty
+  `Unit : Ty
   _`×_ _`⇒_ : Ty -> Ty -> Ty
 
-module Ctx (Ty : Set) where
+module Cx (Ty : Set) where
 
   infixl 15 _∙_
   infix 10 _∈_
@@ -32,7 +31,7 @@ module Ctx (Ty : Set) where
       -------------
       -> A ∈ Γ ∙ B
 
-open Ctx Ty
+open Cx Ty public
 
 syntax Val Γ A = Γ ⊢ᵛ A
 
@@ -59,14 +58,6 @@ data Val where
   pair : Γ ⊢ᵛ A -> Γ ⊢ᵛ B
       -------------------
        -> Γ ⊢ᵛ A `× B
-
-  -- fst : Γ ⊢ᵛ A `× B
-  --     ---------------
-  --       -> Γ ⊢ᵛ A
-
-  -- snd : Γ ⊢ᵛ A `× B
-  --     ---------------
-  --       -> Γ ⊢ᵛ B
 
   pm : Γ ⊢ᵛ A `× B -> (Γ ∙ A ∙ B) ⊢ᵛ C
      -----------------------------------
@@ -173,35 +164,6 @@ variable
   V V1 V2 V3 W W1 W2 W3 : Γ ⊢ᵛ A
   M M1 M2 M3 N N1 N2 N3 P P1 P2 P3 : Γ ⊢ᵛ A
 
--- syntax Ev Γ C A = Γ ⊢ᵛ C ⇛ A
-
--- data Ev (Γ : Ctx) (C : Ty) : Ty -> Set where
-
---   ø :
---       ----------------
---         Γ ⊢ᵛ C ⇛ C
-
---   app-r : (e : Γ ⊢ᵛ A `⇒ B) -> (E : Γ ⊢ᵛ C ⇛ A)
---         ------------------------------------------------------------
---         -> Γ ⊢ᵛ C ⇛ B
-
---   app-l : (E : Γ ⊢ᵛ C ⇛ (A `⇒ B)) -> (v : Γ ⊢ᵛ A) {{ϕ : isVal v}}
---         ------------------------------------------------------------
---         -> Γ ⊢ᵛ C ⇛ B
-
--- -- other evaluation contexts are skipped
-
--- infix 5 _[[_]]
--- _[[_]] : (E : Γ ⊢ᵛ A ⇛ B) -> (e : Γ ⊢ᵛ A) -> Γ ⊢ᵛ B
--- ø [[ e ]]          = e
--- app-r e1 E [[ e ]] = app e1 (E [[ e ]])
--- app-l E v [[ e ]]  = app (E [[ e ]]) v
-
--- wk-ev : Wk Γ Δ -> Δ ⊢ᵛ A ⇛ B -> Γ ⊢ᵛ A ⇛ B
--- wk-ev π ø           = ø
--- wk-ev π (app-r e E) = app-r (wk-tm π e) (wk-ev π E)
--- wk-ev π (app-l E v) = app-l (wk-ev π E) (wk-tm π v) {{wk-tm-val π v}}
-
 syntax EqVal Γ A e1 e2 = Γ ⊢ᵛ e1 ≈ e2 ∶ A
 
 data EqVal (Γ : Ctx) : (A : Ty) -> Γ ⊢ᵛ A -> Γ ⊢ᵛ A -> Set where
@@ -230,6 +192,10 @@ data EqVal (Γ : Ctx) : (A : Ty) -> Γ ⊢ᵛ A -> Γ ⊢ᵛ A -> Set where
             ----------------------------------------------------
             -> Γ ⊢ᵛ letv V W ≈ sub-val (sub-ex sub-id V) W ∶ B
 
+  unit-eta : (V : Γ ⊢ᵛ `Unit)
+           ------------------------
+           -> Γ ⊢ᵛ V ≈ unit ∶ `Unit
+
   pm-beta : (V1 : Γ ⊢ᵛ A) -> (V2 : Γ ⊢ᵛ B) -> (W : (Γ ∙ A ∙ B) ⊢ᵛ C)
           ------------------------------------------------------------------------
           -> Γ ⊢ᵛ pm (pair V1 V2) W ≈ sub-val (sub-ex (sub-ex sub-id V1) V2) W ∶ C
@@ -237,7 +203,6 @@ data EqVal (Γ : Ctx) : (A : Ty) -> Γ ⊢ᵛ A -> Γ ⊢ᵛ A -> Set where
   pm-eta : (V : Γ ⊢ᵛ A `× B) -> (W : (Γ ∙ (A `× B)) ⊢ᵛ C)
          -------------------------------------------------------------------------------------------
          -> Γ ⊢ᵛ sub-val (sub-ex sub-id V) W ≈ pm V (sub-val (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) sub-id) (pair (var (t h)) (var h))) W) ∶ C
-
 
   lam-eta : (V : Γ ⊢ᵛ A `⇒ B)
           ---------------------------
