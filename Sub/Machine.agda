@@ -17,5 +17,12 @@ data State : Set where
   ⟪_,_,_⟫ : {Γ : Ctx} {A : Ty} -> Γ ⊢ᶜ A -> Env -> Stack -> State
 
 data _~>_ : State -> State -> Set where
-  ~>-app : {Γ : Ctx} {A B : Ty} {v : Γ ⊢ᵛ A `⇒ B} {w : Γ ⊢ᵛ A} {γ : Env} {k : Stack} -> ⟪ app v w , γ , k ⟫ ~> ⟪ produce v , γ , [ k , (produce w) ]∷ k ⟫
-  -- ...
+  ~>-app :  {V : Γ ⊢ᵛ A `⇒ B} {W : Γ ⊢ᵛ A} {γ : Env} {k : Stack}
+         ------------------------------------------------------------------------
+         -> ⟪ app V W , γ , k ⟫ ~> ⟪ produce V , γ , [ k , (produce W) ]∷ k ⟫
+  ~>-letv : {V : Γ ⊢ᵛ A} {M : (Γ ∙ A) ⊢ᶜ B} {γ : Env} {k : Stack}
+         ------------------------------------------------------------------------
+         -> ⟪ letv V M , γ , k ⟫ ~> ⟪ (sub-comp (sub-ex sub-id V) M) , γ , k ⟫
+  ~>-produce : {V : Γ ⊢ᵛ A} {N : (Γ ∙ A) ⊢ᶜ B} {γ : Env} {k k' : Stack}
+         ------------------------------------------------------------------------
+         -> ⟪ produce V , γ , [ k' , N ]∷ k ⟫ ~> ⟪ (sub-comp (sub-ex sub-id V) N) , γ , k' ⟫

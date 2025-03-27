@@ -111,7 +111,7 @@ mutual
   wk-val π (var x)         = var (wk-mem π x)
   wk-val π (letv V W)      = letv (wk-val π V) (wk-val (wk-cong π) W)
   wk-val π (lam M)         = lam (wk-comp (wk-cong π) M)
-  
+
   wk-val π (pair V1 V2)    = pair (wk-val π V1) (wk-val π V2)
   wk-val π (pm V W)        = pm (wk-val π V) (wk-val (wk-cong (wk-cong π)) W)
   wk-val π unit            = unit
@@ -223,8 +223,8 @@ data EqComp (Γ : Ctx) : (A : Ty) -> Γ ⊢ᶜ A -> Γ ⊢ᶜ A -> Set where
 
   pm-eta : (V : Γ ⊢ᵛ A `× B) -> (M : (Γ ∙ (A `× B)) ⊢ᶜ C)
          -------------------------------------------------------------------------------------------
-         -> Γ ⊢ᶜ sub-comp (sub-ex sub-id V) M ≈ pm V (sub-comp (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) sub-id) (pair (var (t h)) (var h))) M) ∶ C 
-  
+         -> Γ ⊢ᶜ sub-comp (sub-ex sub-id V) M ≈ pm V (sub-comp (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) sub-id) (pair (var (t h)) (var h))) M) ∶ C
+
   produce-beta : (V : Γ ⊢ᵛ A) -> (M : (Γ ∙ A) ⊢ᶜ B)
                ---------------------------------------------------------------
                -> Γ ⊢ᶜ push (produce V) M ≈ sub-comp (sub-ex sub-id V) M ∶ B
@@ -236,7 +236,7 @@ data EqComp (Γ : Ctx) : (A : Ty) -> Γ ⊢ᶜ A -> Γ ⊢ᶜ A -> Set where
   push-eta : (M : Γ ⊢ᶜ A) -> (N : (Γ ∙ A) ⊢ᶜ B) -> (P : (Γ ∙ B) ⊢ᶜ C)
            ----------------------------------------------------------------
            -> Γ ⊢ᶜ push (push M N) P ≈ push M (push N (wk-comp (wk-cong (wk-wk wk-id)) P)) ∶ C
-  
+
   lam-beta : (M : (Γ ∙ A) ⊢ᶜ B) -> (V : Γ ⊢ᵛ A)
            ------------------------------------------------
            -> Γ ⊢ᶜ app (lam M) V ≈ sub-comp (sub-ex sub-id V) M ∶ B
