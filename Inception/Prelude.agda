@@ -1,5 +1,6 @@
 module Inception.Prelude where
 
+open import Level
 open import Function
 open import Relation.Binary.PropositionalEquality
 
@@ -35,3 +36,9 @@ happly-funext {f = f} {g = g} H x = let open ≡-Reasoning in
   cong (_$ x) (cong (flip \a -> I-rec (f a) (g a) (H a)) seg) ≡⟨ sym (cong-∘ seg) ⟩
   cong ((_$ x) ∘ (flip \a -> I-rec (f a) (g a) (H a))) seg    ≡⟨ I-rec-seg ⟩
   H x ∎
+
+-- functions
+infixr 20 _^_
+
+_^_ : ∀ {b a} (B : Set b) (A : Set a) -> Set (b ⊔ a)
+B ^ A = A -> B

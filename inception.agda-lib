@@ -1,5 +1,6 @@
 name: inception
-depend: standard-library
+depend:
+    standard-library
 include: .
 flags:
     --rewriting
