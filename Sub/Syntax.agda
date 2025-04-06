@@ -8,6 +8,7 @@ infixr 25 _`⇒_
 data Ty : Set where
   `Unit : Ty
   _`×_ _`⇒_ : Ty -> Ty -> Ty
+  `V : Ty
 
 module Cx (Ty : Set) where
 
@@ -89,6 +90,14 @@ data Comp where
       -------------------------
               -> Γ ⊢ᶜ B
 
+  var : Γ ⊢ᵛ `V
+      -----------
+      -> Γ ⊢ᶜ A
+
+  sub : (Γ ∙ `V) ⊢ᶜ A -> Γ ⊢ᶜ A
+      ---------------------------
+      -> Γ ⊢ᶜ A
+
 syntax Wk Γ Δ = Γ ⊇ Δ
 
 data Wk : (Γ Δ : Ctx) -> Set where
@@ -122,6 +131,8 @@ mutual
   wk-comp π (pm V M)       = pm (wk-val π V) (wk-comp (wk-cong (wk-cong π)) M)
   wk-comp π (push M N)     = push (wk-comp π M) (wk-comp (wk-cong π) N)
   wk-comp π (app V W)      = app (wk-val π V) (wk-val π W)
+  wk-comp π (var V)        = var (wk-val π V)
+  wk-comp π (sub M N)      = sub (wk-comp (wk-cong π) M) (wk-comp π N)
 
 wk : Val Γ A -> Val (Γ ∙ B) A
 wk = wk-val (wk-wk wk-id)
@@ -157,6 +168,8 @@ mutual
   sub-comp θ (pm V M) = pm (sub-val θ V) (sub-comp (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) θ) (var (t h))) (var h)) M)
   sub-comp θ (push M N) = push (sub-comp θ M) (sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ) (var h)) N)
   sub-comp θ (app V W) = app (sub-val θ V) (sub-val θ W)
+  sub-comp θ (var V) = var (sub-val θ V)
+  sub-comp θ (sub M N) = sub (sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ) (var h)) M) (sub-comp θ N)
 
 variable
   n : ℕ
@@ -241,3 +254,5 @@ data EqComp (Γ : Ctx) : (A : Ty) -> Γ ⊢ᶜ A -> Γ ⊢ᶜ A -> Set where
            ------------------------------------------------
            -> Γ ⊢ᶜ app (lam M) V ≈ sub-comp (sub-ex sub-id V) M ∶ B
 
+
+  -- TODO: var and sub
