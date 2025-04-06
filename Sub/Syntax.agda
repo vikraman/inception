@@ -70,7 +70,7 @@ data Val where
 
 data Comp where
 
-  produce : Γ ⊢ᵛ A
+  return : Γ ⊢ᵛ A
          -----------
          -> Γ ⊢ᶜ A
 
@@ -126,7 +126,7 @@ mutual
   wk-val π unit            = unit
 
   wk-comp : Wk Γ Δ -> Δ ⊢ᶜ A -> Γ ⊢ᶜ A
-  wk-comp π (produce V)     = produce (wk-val π V)
+  wk-comp π (return V)     = return (wk-val π V)
   wk-comp π (letv V M)     = letv (wk-val π V) (wk-comp (wk-cong π) M)
   wk-comp π (pm V M)       = pm (wk-val π V) (wk-comp (wk-cong (wk-cong π)) M)
   wk-comp π (push M N)     = push (wk-comp π M) (wk-comp (wk-cong π) N)
@@ -163,7 +163,7 @@ mutual
   sub-val θ unit = unit
 
   sub-comp : Sub Γ Δ -> Δ ⊢ᶜ A -> Γ ⊢ᶜ A
-  sub-comp θ (produce V) = produce (sub-val θ V)
+  sub-comp θ (return V) = return (sub-val θ V)
   sub-comp θ (letv V M) = letv (sub-val θ V) (sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ) (var h)) M)
   sub-comp θ (pm V M) = pm (sub-val θ V) (sub-comp (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) θ) (var (t h))) (var h)) M)
   sub-comp θ (push M N) = push (sub-comp θ M) (sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ) (var h)) N)
@@ -238,13 +238,13 @@ data EqComp (Γ : Ctx) : (A : Ty) -> Γ ⊢ᶜ A -> Γ ⊢ᶜ A -> Set where
          -------------------------------------------------------------------------------------------
          -> Γ ⊢ᶜ sub-comp (sub-ex sub-id V) M ≈ pm V (sub-comp (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) sub-id) (pair (var (t h)) (var h))) M) ∶ C
 
-  produce-beta : (V : Γ ⊢ᵛ A) -> (M : (Γ ∙ A) ⊢ᶜ B)
+  return-beta : (V : Γ ⊢ᵛ A) -> (M : (Γ ∙ A) ⊢ᶜ B)
                ---------------------------------------------------------------
-               -> Γ ⊢ᶜ push (produce V) M ≈ sub-comp (sub-ex sub-id V) M ∶ B
+               -> Γ ⊢ᶜ push (return V) M ≈ sub-comp (sub-ex sub-id V) M ∶ B
 
-  produce-eta : (M : Γ ⊢ᶜ A)
+  return-eta : (M : Γ ⊢ᶜ A)
               -----------------------
-              -> Γ ⊢ᶜ M ≈ push M (produce (var h)) ∶ A
+              -> Γ ⊢ᶜ M ≈ push M (return (var h)) ∶ A
 
   push-eta : (M : Γ ⊢ᶜ A) -> (N : (Γ ∙ A) ⊢ᶜ B) -> (P : (Γ ∙ B) ⊢ᶜ C)
            ----------------------------------------------------------------

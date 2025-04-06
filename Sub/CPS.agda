@@ -73,7 +73,7 @@ mutual
   ⟦ unit ⟧ᵛ = const tt
 
   ⟦_⟧ᶜ : Γ ⊢ᶜ A -> ⟦ Γ ⟧ˣ -> K ⟦ A ⟧
-  ⟦ produce V ⟧ᶜ = ⟦ V ⟧ᵛ ； η 
+  ⟦ return V ⟧ᶜ = ⟦ V ⟧ᵛ ； η
   ⟦ letv V M ⟧ᶜ = < idf , ⟦ V ⟧ᵛ > ； ⟦ M ⟧ᶜ 
   ⟦ pm V M ⟧ᶜ = < idf , ⟦ V ⟧ᵛ > ； assocl ； ⟦ M ⟧ᶜ
   ⟦ push M N ⟧ᶜ = < idf , ⟦ M ⟧ᶜ > ； τ ； ⟦ N ⟧ᶜ ♯
@@ -98,7 +98,7 @@ mutual
   evalVal unit γ = tt
 
   evalComp :  Γ ⊢ᶜ A -> ⟦ Γ ⟧ˣ × (⟦ A ⟧ -> R) -> R
-  evalComp (produce V) (γ , k) =
+  evalComp (return V) (γ , k) =
     let v = evalVal V γ in
       k v
   evalComp (letv V M) (γ , k) =

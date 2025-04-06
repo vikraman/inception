@@ -23,10 +23,10 @@ data State : Set where
 data _~>_ : State -> State -> Set where
   ~>-app :  {V : Γ ⊢ᵛ A `⇒ B} {W : Γ ⊢ᵛ A} {k : Stack}
          ------------------------------------------------------------------------
-         -> ⟪ app V W , k ⟫ ~> ⟪ produce V , [ k , (produce W) ]∷ k ⟫
+         -> ⟪ app V W , k ⟫ ~> ⟪ return V , [ k , (return W) ]∷ k ⟫
   ~>-letv : {V : Γ ⊢ᵛ A} {M : (Γ ∙ A) ⊢ᶜ B} {k : Stack}
          ------------------------------------------------------------------------
          -> ⟪ letv V M , k ⟫ ~> ⟪ (sub-comp (sub-ex sub-id V) M) , k ⟫
-  ~>-produce : {V : Γ ⊢ᵛ A} {N : (Γ ∙ A) ⊢ᶜ B} {k k' : Stack}
+  ~>-return : {V : Γ ⊢ᵛ A} {N : (Γ ∙ A) ⊢ᶜ B} {k k' : Stack}
          ------------------------------------------------------------------------
-         -> ⟪ produce V , [ k' , N ]∷ k ⟫ ~> ⟪ (sub-comp (sub-ex sub-id V) N) , k' ⟫
+         -> ⟪ return V , [ k' , N ]∷ k ⟫ ~> ⟪ (sub-comp (sub-ex sub-id V) N) , k' ⟫
