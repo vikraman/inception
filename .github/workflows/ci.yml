@@ -24,7 +24,7 @@ jobs:
           echo "$HOME/.local/bin" >> $GITHUB_PATH
 
       - name: Cache stack workspace
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         id: cache-stack
         with:
           path: ~/.stack
