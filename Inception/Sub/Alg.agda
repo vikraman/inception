@@ -27,8 +27,7 @@ V-Alg V .subs = refl
 V-Alg V .ext = refl
 V-Alg V .assoc = refl
 
-K[_] : ∀ {v x} -> Set v -> Set x -> Set (v ⊔ x)
-K[ V ] X = (X -> V) -> V
+open import Inception.Cont.Base
 
 K[_]-Alg : ∀ {v x} -> (V : Set v) (X : Set x) -> Alg[ V ] (K[ V ] X)
 K[ V ]-Alg X .var v k = v

@@ -39,8 +39,7 @@ Sub[ V ]-Alg X α .subs = α .subs
 Sub[ V ]-Alg X α .ext = α .ext
 Sub[ V ]-Alg X α .assoc = α .assoc
 
-K[_] : ∀ {v x} -> Set v -> Set x -> Set (v ⊔ x)
-K[ V ] X = (X -> V) -> V
+open import Inception.Cont.Base
 
 K[_]-Alg : ∀ {v p x} -> (V : Set v) (P : Set p) (X : Set x) -> Alg[ (P -> V) , P ] (K[ V ] X)
 K[ V ]-Alg P X .rec (v , p) k = v p

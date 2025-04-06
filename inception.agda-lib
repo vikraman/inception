@@ -2,5 +2,5 @@ name: inception
 depend: standard-library
 include: .
 flags:
-    --safe
+    --rewriting
     --exact-split
