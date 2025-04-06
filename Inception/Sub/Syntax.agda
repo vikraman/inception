@@ -1,4 +1,4 @@
-module Sub.Syntax where
+module Inception.Sub.Syntax where
 
 open import Data.Nat
 
@@ -13,7 +13,7 @@ data Ty : Set where
 module Cx (Ty : Set) where
 
   infixl 15 _∙_
-  infix 10 _∈_
+  infix 10 _∋_
 
   data Ctx : Set where
     ε : Ctx
@@ -23,14 +23,14 @@ module Cx (Ty : Set) where
     A B C D : Ty
     Γ Δ Ψ : Ctx
 
-  data _∈_ : Ty -> Ctx -> Set where
+  data _∋_ : Ctx -> Ty -> Set where
     h :
       ---------
-      A ∈ Γ ∙ A
+      Γ ∙ A ∋ A
 
-    t : A ∈ Γ
+    t : Γ ∋ A
       -------------
-      -> A ∈ Γ ∙ B
+      -> Γ ∙ B ∋ A
 
 open Cx Ty public
 
@@ -44,7 +44,7 @@ data Comp : Ctx -> Ty -> Set
 
 data Val where
 
-  var : (i : A ∈ Γ)
+  var : (i : Γ ∋ A)
       ---------
       -> Γ ⊢ᵛ A
 
@@ -109,7 +109,7 @@ wk-id : Wk Γ Γ
 wk-id {Γ = ε} = wk-ε
 wk-id {Γ = Γ ∙ A} = wk-cong wk-id
 
-wk-mem : Wk Γ Δ -> A ∈ Δ -> A ∈ Γ
+wk-mem : Wk Γ Δ -> Δ ∋ A -> Γ ∋ A
 wk-mem (wk-cong π) h = h
 wk-mem (wk-wk π) h = t (wk-mem π h)
 wk-mem (wk-cong π) (t i) = t (wk-mem π i)
@@ -141,7 +141,7 @@ data Sub (Γ : Ctx) : (Δ : Ctx) -> Set where
   sub-ε : Sub Γ ε
   sub-ex : (θ : Sub Γ Δ) -> (V : Val Γ A) -> Sub Γ (Δ ∙ A)
 
-sub-mem : Sub Γ Δ -> A ∈ Δ -> Val Γ A
+sub-mem : Sub Γ Δ -> Δ ∋ A -> Val Γ A
 sub-mem (sub-ex θ V) h = V
 sub-mem (sub-ex θ V) (t i) = sub-mem θ i
 
@@ -173,7 +173,7 @@ mutual
 
 variable
   n : ℕ
-  x : A ∈ Γ
+  x : Γ ∋ A
   V V1 V2 V3 W W1 W2 W3 : Γ ⊢ᵛ A
   M M1 M2 M3 N N1 N2 N3 P P1 P2 P3 : Γ ⊢ᵛ A
 

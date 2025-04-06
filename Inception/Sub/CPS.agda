@@ -1,10 +1,10 @@
-module Sub.CPS (R : Set) where
+module Inception.Sub.CPS (R : Set) where
 
-open import Sub.Syntax
+open import Inception.Sub.Syntax
 
 open import Data.Unit
 open import Data.Product as P
-open import Function as F
+open import Function as F hiding (_∋_)
 open import Data.Sum as S
 
 infixr 4 _；_
@@ -48,7 +48,7 @@ subK (f , n) k = f (n k) k
 ⟦ `Unit ⟧ = ⊤
 ⟦ A `× B ⟧ = ⟦ A ⟧ × ⟦ B ⟧
 ⟦ A `⇒ B ⟧ = ⟦ A ⟧ -> K ⟦ B ⟧
-⟦ `Var ⟧ = R
+⟦ `V ⟧ = R
 
 ⟦_⟧ˣ : Ctx -> Set
 ⟦ ε ⟧ˣ = ⊤
@@ -59,12 +59,12 @@ subK (f , n) k = f (n k) k
 ⟦ wk-cong π ⟧ʷ = < proj₁ ； ⟦ π ⟧ʷ , proj₂ >
 ⟦ wk-wk π ⟧ʷ = proj₁ ； ⟦ π ⟧ʷ
 
-⟦_⟧ᵐ : A ∈ Γ -> ⟦ Γ ⟧ˣ -> ⟦ A ⟧
+⟦_⟧ᵐ : Γ ∋ A -> ⟦ Γ ⟧ˣ -> ⟦ A ⟧
 ⟦ h ⟧ᵐ = proj₂
 ⟦ t x ⟧ᵐ = proj₁ ； ⟦ x ⟧ᵐ
 
 mutual
-  ⟦_⟧ᵛ : Γ ⊢ᵛ A -> ⟦ Γ ⟧ˣ -> ⟦ A ⟧  
+  ⟦_⟧ᵛ : Γ ⊢ᵛ A -> ⟦ Γ ⟧ˣ -> ⟦ A ⟧
   ⟦ var i ⟧ᵛ = ⟦ i ⟧ᵐ
   ⟦ letv V W ⟧ᵛ = < idf , ⟦ V ⟧ᵛ > ； ⟦ W ⟧ᵛ
   ⟦ lam M ⟧ᵛ = curry ⟦ M ⟧ᶜ
@@ -74,7 +74,7 @@ mutual
 
   ⟦_⟧ᶜ : Γ ⊢ᶜ A -> ⟦ Γ ⟧ˣ -> K ⟦ A ⟧
   ⟦ return V ⟧ᶜ = ⟦ V ⟧ᵛ ； η
-  ⟦ letv V M ⟧ᶜ = < idf , ⟦ V ⟧ᵛ > ； ⟦ M ⟧ᶜ 
+  ⟦ letv V M ⟧ᶜ = < idf , ⟦ V ⟧ᵛ > ； ⟦ M ⟧ᶜ
   ⟦ pm V M ⟧ᶜ = < idf , ⟦ V ⟧ᵛ > ； assocl ； ⟦ M ⟧ᶜ
   ⟦ push M N ⟧ᶜ = < idf , ⟦ M ⟧ᶜ > ； τ ； ⟦ N ⟧ᶜ ♯
   ⟦ app V W ⟧ᶜ = < ⟦ V ⟧ᵛ , ⟦ W ⟧ᵛ > ； uncurry idf

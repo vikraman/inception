@@ -1,4 +1,4 @@
-module Inc.Alg where
+module Inception.Inc.Alg where
 
 open import Level
 open import Data.Unit
@@ -28,7 +28,7 @@ V-Alg V P .subs = refl
 V-Alg V P .ext = refl
 V-Alg V P .assoc = refl
 
-import Sub.Alg as S
+import Inception.Sub.Alg as S
 open S.Alg[_]
 
 Sub[_]-Alg : ∀ {v x} -> (V : Set v) (X : Set x) (α : S.Alg[ V ] X) -> Alg[ V , ⊤ ] X

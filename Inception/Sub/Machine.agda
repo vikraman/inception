@@ -1,9 +1,9 @@
-module Sub.Machine where
+module Inception.Sub.Machine where
 
 open import Data.List
 open import Data.Product
 
-open import Sub.Syntax
+open import Inception.Sub.Syntax
 
 data Stack : Set where
   nil : Stack

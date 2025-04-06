@@ -1,4 +1,4 @@
-module Sub.Alg where
+module Inception.Sub.Alg where
 
 open import Level
 open import Data.Unit
