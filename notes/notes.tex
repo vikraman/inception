@@ -70,6 +70,18 @@
                       \arrow["\sub", from=2-3, to=4-3]
                       \arrow["\sub"', from=4-1, to=4-3]
                   \end{tikzcd}\]
+%
+              \[
+\begin{tikzcd}[column sep=50pt]
+  {(X_1^{V_2} \times X_2)}^{V_3} \times X_3                          \arrow{d}[swap]{1 \times \Delta} \arrow{rr}{\sub^V \times 1} & & X_1^{V_3} \times X_3 \arrow{dddddd}{\sub} \\
+  {(X_1^{V_2} \times X_2)}^{V_3} \times X_3 \times X_3               \arrow{d}[swap]{1 \times \delta \times 1} & & \\
+  {(X_1^{V_2} \times X_2)}^{V_3} \times X_3^{V_2} \times X_3         \arrow{d}[swap]{\simeq} & & \\
+  {(X_1^{V_2})}^{V_3} \times X_2^{V_3} \times X_3^{V_2} \times X_3   \arrow{d}[swap]{\simeq} & & \\
+  X_1^{V_2 \times V_3} \times X_2^{V_3} \times X_3^{V_2} \times X_3  \arrow{d}[swap]{\simeq} & & \\
+  X_1^{V_3 \times V_2} \times X_3^{V_2} \times X_2^{V_3} \times X_3  \arrow{d}[swap]{\simeq} & & \\
+  {(X_1^{V_3} \times X_3)}^{V_2} \times X_2^{V_3} \times X_3         \arrow{r}{\sub^V \times \sub} & X_1^{V_2} \times X_2 \arrow{r}{\sub} & X_1
+\end{tikzcd}
+              \]
     \end{itemize}
 \end{definition}
 
