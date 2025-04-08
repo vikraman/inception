@@ -86,6 +86,80 @@
     \end{itemize}
 \end{definition}
 
+\section{Monads}
+\label{sec:monads}
+
+\begin{definition}[Monad]
+    \label{def:monad}
+    A monad $T$ on a category $\cat{C}$ is an extension system $(T, \eta, (\blank)^*)$.
+\end{definition}
+
+\begin{definition}[Monad Morphism]
+    \label{def:monad-morphism}
+    A monad morphism $S \To T$ is a map $m_X \colon SX \to TX$ for every $X$ in $\cat{C}$, such that:
+    % https://q.uiver.app/#q=WzAsMyxbMCwwLCJYIl0sWzAsMSwiVFgiXSxbMSwxLCJTWCJdLFswLDEsIlxcZXRhXlRfWCIsMl0sWzEsMl0sWzAsMiwiXFxldGFeU19YIl1d
+    \[\begin{tikzcd}
+            X \\
+            TX & SX
+            \arrow["{\eta^T_X}"', from=1-1, to=2-1]
+            \arrow["{\eta^S_X}", from=1-1, to=2-2]
+            \arrow[from=2-1, to=2-2]
+        \end{tikzcd}
+        \qquad
+        % https://q.uiver.app/#q=WzAsNCxbMCwwLCJTWCJdLFsyLDAsIlNZIl0sWzIsMSwiVFkiXSxbMCwxLCJUWCJdLFswLDEsImZeKiJdLFsxLDIsIm1fWSJdLFswLDMsIm1fWCIsMl0sWzMsMiwiKG1fWVxcY29tcCBmKV4qIiwyXV0=
+        \begin{tikzcd}
+            SX && SY \\
+            TX && TY
+            \arrow["{f^*}", from=1-1, to=1-3]
+            \arrow["{m_X}"', from=1-1, to=2-1]
+            \arrow["{m_Y}", from=1-3, to=2-3]
+            \arrow["{(m_Y\comp f)^*}"', from=2-1, to=2-3]
+        \end{tikzcd}
+        \quad
+        \forall f \colon X \to SY\]
+\end{definition}
+
+\begin{definition}[Algebra for a monad]
+    \label{def:algebra}
+    A $T$-\emph{algebra} in $\cat{C}$ is:
+    \begin{itemize}
+        \item an object $X$ in $\cat{C}$,
+        \item an operation $(\blank)^\#\colon (Y \to X) \to (TY \to X)$, satisfying
+              \[\forall f \colon Y \to X,
+                  \quad
+                  % https://q.uiver.app/#q=WzAsMyxbMCwwLCJZIl0sWzAsMSwiVFkiXSxbMSwxLCJYIl0sWzAsMSwiXFxldGFfWSIsMl0sWzEsMiwiZl5cXCMiLDJdLFswLDIsImYiXV0=
+                  \begin{tikzcd}
+                      Y \\
+                      TY & X
+                      \arrow["{\eta_Y}"', from=1-1, to=2-1]
+                      \arrow["f", from=1-1, to=2-2]
+                      \arrow["{f^\#}"', from=2-1, to=2-2]
+                  \end{tikzcd}
+                  \qquad
+                  \forall g \colon Z \to TY,
+                  \quad
+                  % https://q.uiver.app/#q=WzAsMyxbMCwwLCJUWiJdLFswLDEsIlRZIl0sWzEsMSwiWCJdLFswLDEsImdeKiIsMl0sWzEsMiwiZl5cXCMiLDJdLFswLDIsIihmXlxcI1xcY29tcCBnKV5cXCMiXV0=
+                  \begin{tikzcd}
+                      TZ \\
+                      TY & X
+                      \arrow["{g^*}"', from=1-1, to=2-1]
+                      \arrow["{(f^\#\comp g)^\#}", from=1-1, to=2-2]
+                      \arrow["{f^\#}"', from=2-1, to=2-2]
+                  \end{tikzcd}\]
+    \end{itemize}
+\end{definition}
+
+\begin{theorem}[Kock]
+    \label{thm:kock}
+    If $S$ is a strong monad on $\cat{C}$, then $S$-algebra structures on $V$ are in bijection with monad morphisms $S \To K_V$.
+\end{theorem}
+
+\begin{proof}
+    \leavevmode
+    Define $m_X$ by currying $SX \times V^X \xto{1 \times (\blank)^\#} SX \times V^{SX} \xto{\ev} V$.
+    Given $f\colon X \to V$, define $f^\# \defeq m_X(f)$.
+\end{proof}
+
 \section{CPS-translation}
 I summarise here what I think is happening in the CPS translation.\newline
 

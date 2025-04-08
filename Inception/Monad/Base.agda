@@ -53,7 +53,7 @@ record MonadAlg {x y} {T : Set x -> Set y} (MT : Monad T) (X : Set x) : Set (suc
   field
     _# : ∀ {Y} (f : Y -> X) -> T Y -> X
     η-# : ∀ {Y} (f : Y -> X) -> f # ∘ T.η ≡ f
-    *-# : ∀ {Y Z} (f : Z -> T Y) (g : Y -> X) -> (g # ∘ f) # ≡ g # ∘ f T.*
+    *-# : ∀ {Y Z} (g : Z -> T Y) (f : Y -> X) -> (f # ∘ g) # ≡ f # ∘ g T.*
 
   α : T X -> X
   α = id #

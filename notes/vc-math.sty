@@ -2,18 +2,121 @@
 
 \let\Bbbk\relax
 \RequirePackage{amsmath,amssymb,amsfonts,amsthm,mathtools}
+\RequirePackage{stmaryrd}
+\RequirePackage{relsize}
+\RequirePackage{braket}
 \RequirePackage{quiver}
+\RequirePackage{eucal}
+
+% sets
+\newcommand{\Bool}{\mathbb{B}}
+\newcommand{\Nat}{\mathbb{N}}
+\newcommand{\Int}{\mathbb{Z}}
 
 % categories
 \newcommand{\cat}[1]{\mathcal{#1}}
+% \newcommand{\Cat}[1]{\mathbb{#1}}
+% \newcommand{\Cat}[1]{\mathcal{#1}}
+% \NewDocumentCommand{\Cat}{m}{\mathcal{#1}}
 
-% maps
-\newcommand{\comp}{\circ}
+\newcommand{\Obj}{\mathsf{Obj}}
+\newcommand{\Hom}{\mathsf{Hom}}
+\newcommand{\op}{^\mathsf{op}}
+\newcommand{\Kl}{\mathsf{Kl}}
+\newcommand{\imf}{\overline{\mathsf{im}}}
+\newcommand{\im}{\mathsf{im}}
+\newcommand{\fim}{\overline{\mathsf{\im}}}
+\newcommand{\bo}{_\mathsf{bo}}
+\newcommand{\ff}{_\mathsf{ff}}
+
+\newcommand{\SetCat}{\mathcal{S}\mathrm{et}}
+
+% composition
 \newcommand{\id}{\mathsf{id}}
 \newcommand{\const}{\mathsf{c}}
+\newcommand{\comp}{\mathrel{\circ}}
+\newcommand{\hcomp}{\mathrel{\bullet}}
+\newcommand{\scomp}{\mathrel{;}}
+\newcommand{\xto}{\xrightarrow}
+\newcommand{\xlto}{\xlongrightarrow}
+\newcommand{\isoto}{\stackrel{\sim}{\smash{\rightarrow}\rule{0pt}{0.4ex}}}
+\newcommand{\To}{\Rightarrow}
+\newcommand{\lTo}{\Leftarrow}
+
+% adjunctions
+\newcommand{\ladj}{\mathrel{\dashv}}
+\newcommand{\radj}{\mathrel{\vdash}}
+
+% musical notation for adjuncts
+\newcommand{\radjunct}[1]{#1^{\sharp}}
+\newcommand{\ladjunct}[1]{#1^{\flat}}
+
+% functions
+\def\lam#1{{\lambda}\@lamarg#1:\@endlamarg\@ifnextchar\bgroup{.\,\lam}{.\,}}
+\def\@lamarg#1:#2\@endlamarg{\if\relax\detokenize{#2}\relax #1\else\@lamvar{\@lameatcolon#2},#1\@endlamvar\fi}
+\def\@lamvar#1,#2\@endlamvar{\textstyle\mathnormal{(#2\,{:}\,#1)}}
+\def\@lameatcolon#1:{#1}
+\let\lamt\lam
+\def\lamu#1{{\lambda}\@lamuarg#1:\@endlamuarg\@ifnextchar\bgroup{.\,\lamu}{.\,}}
+\def\@lamuarg#1:#2\@endlamuarg{#1}
+
+\newcommand{\blank}{\mathrel{-}}
+\newcommand{\dblblank}{\mathrel{=}}
+
+% equalities
+\newcommand{\redto}{\ensuremath{\rightsquigarrow}}
+\newcommand{\defeq}{\triangleq}
+\newcommand{\jdgeq}{\equiv}
+\newcommand{\eqv}{\simeq}
+\newcommand{\bij}{\cong}
+\newcommand{\iso}{\cong}
+\newcommand{\natiso}{\cong}
+
+% powerset
+\newcommand{\PSet}{\mathfrak{P}}
+
+% operations
+\let\oldsharp\sharp
+\renewcommand{\sharp}{^\oldsharp}
+\newcommand{\extend}[1]{{#1}^{\dagger}}
+
+% duals
+\providecommand{\star}{}
+\renewcommand{\star}{{^{\ast}}}
+
+% exponentials and co-exponentials
+\providecommand{\exp}{}
+\renewcommand{\exp}[2]{{#1}^{#2}}
+%\newcommand{\curry}[1]{\lambda_{#1}}
+%\newcommand{\uncurry}[1]{\lambda^{\mathsmaller{-1}}_{#1}}
+\newcommand{\ev}{\mathsf{ev}}
+
+\newcommand{\coexp}[2]{{}^{#2}{#1}}
+%\newcommand{\cocurry}[1]{{}^{\mathsmaller{\mathsf{co}}}\curry{#1}}
+%\newcommand{\councurry}[1]{{}^{\mathsmaller{\mathsf{co}}}\uncurry{#1}}
+\newcommand{\coev}{\mathsf{coev}}
+
+\newcommand{\curry}[1]{\curryadj{#1}}
+\newcommand{\uncurry}[1]{\uncurryadj{#1}}
+\newcommand{\cocurry}[1]{\cocurryadj{#1}}
+\newcommand{\councurry}[1]{\councurryadj{#1}}
+
+% alternative notation for currying/co-currying using adjuncts
+\newcommand{\curryadj}[1]{\radjunct{#1}}
+\newcommand{\uncurryadj}[1]{\ladjunct{#1}}
+\newcommand{\cocurryadj}[1]{\ladjunct{#1}}
+\newcommand{\councurryadj}[1]{\radjunct{#1}}
+
+% initial/final morphisms
+\newcommand{\ini}{\mbox{\langle\rangle}}
+\newcommand{\fin}{\mbox{[]}}
+
+% case notation
+\newenvironment{mycases}
+{\left\lbrace\begin{aligned}}
+        {\end{aligned}\right.}
 
 % cccs
-\newcommand{\ev}{\mathsf{ev}}
 \newcommand{\eval}{\mathsf{eval}}
 \newcommand{\str}{\mathsf{str}}
 
