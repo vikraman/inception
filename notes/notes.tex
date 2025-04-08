@@ -13,6 +13,7 @@
 \maketitle
 
 \section{Substitution Algebras}
+\label{sec:substitution-algebras}
 
 \begin{definition}[Substitution Algebra]
     \label{def:substitution-algebra}
@@ -70,17 +71,17 @@
                       \arrow["\sub", from=2-3, to=4-3]
                       \arrow["\sub"', from=4-1, to=4-3]
                   \end{tikzcd}\]
-%
+              %
               \[
-\begin{tikzcd}[column sep=50pt]
-  {(X_1^{V_2} \times X_2)}^{V_3} \times X_3                          \arrow{d}[swap]{1 \times \Delta} \arrow{rr}{\sub^V \times 1} & & X_1^{V_3} \times X_3 \arrow{dddddd}{\sub} \\
-  {(X_1^{V_2} \times X_2)}^{V_3} \times X_3 \times X_3               \arrow{d}[swap]{1 \times \delta \times 1} & & \\
-  {(X_1^{V_2} \times X_2)}^{V_3} \times X_3^{V_2} \times X_3         \arrow{d}[swap]{\simeq} & & \\
-  {(X_1^{V_2})}^{V_3} \times X_2^{V_3} \times X_3^{V_2} \times X_3   \arrow{d}[swap]{\simeq} & & \\
-  X_1^{V_2 \times V_3} \times X_2^{V_3} \times X_3^{V_2} \times X_3  \arrow{d}[swap]{\simeq} & & \\
-  X_1^{V_3 \times V_2} \times X_3^{V_2} \times X_2^{V_3} \times X_3  \arrow{d}[swap]{\simeq} & & \\
-  {(X_1^{V_3} \times X_3)}^{V_2} \times X_2^{V_3} \times X_3         \arrow{r}{\sub^V \times \sub} & X_1^{V_2} \times X_2 \arrow{r}{\sub} & X_1
-\end{tikzcd}
+                  \begin{tikzcd}[column sep=50pt]
+                      {(X_1^{V_2} \times X_2)}^{V_3} \times X_3                          \arrow{d}[swap]{1 \times \Delta} \arrow{rr}{\sub^V \times 1} & & X_1^{V_3} \times X_3 \arrow{dddddd}{\sub} \\
+                      {(X_1^{V_2} \times X_2)}^{V_3} \times X_3 \times X_3               \arrow{d}[swap]{1 \times \delta \times 1} & & \\
+                      {(X_1^{V_2} \times X_2)}^{V_3} \times X_3^{V_2} \times X_3         \arrow{d}[swap]{\simeq} & & \\
+                      {(X_1^{V_2})}^{V_3} \times X_2^{V_3} \times X_3^{V_2} \times X_3   \arrow{d}[swap]{\simeq} & & \\
+                      X_1^{V_2 \times V_3} \times X_2^{V_3} \times X_3^{V_2} \times X_3  \arrow{d}[swap]{\simeq} & & \\
+                      X_1^{V_3 \times V_2} \times X_3^{V_2} \times X_2^{V_3} \times X_3  \arrow{d}[swap]{\simeq} & & \\
+                      {(X_1^{V_3} \times X_3)}^{V_2} \times X_2^{V_3} \times X_3         \arrow{r}{\sub^V \times \sub} & X_1^{V_2} \times X_2 \arrow{r}{\sub} & X_1
+                  \end{tikzcd}
               \]
     \end{itemize}
 \end{definition}
@@ -91,31 +92,31 @@ I summarise here what I think is happening in the CPS translation.\newline
 Let $\mathcal{F} = \textsf{Set}^\mathbb{F}$, where $\mathbb{F}$ is the category of finite cardinals and functions, let $S : \mathcal{F} \to \mathcal{F}$ be the free substitution monad and $K_V : \mathcal{F} \to \mathcal{F}$ the continuation monad with response type $V$.
 Because $S$ is strong, and $S(V) \xrightarrow{\gamma} V$ is the initial substitution algebra, there exists by \cite{kockDoubleDualizationMonads1970} a monad morphism $S \xrightarrow{m} K_V = V^{V^X}$ , which is defined as the transpose of the morphism $S \times V^X \xrightarrow{m^\flat} V$, defined by the following diagram:
 
-              \[
-\begin{tikzcd}[column sep=50pt]
-  S(X) \times V^X \arrow{r}{m^\flat_X} \arrow{d}{\str} & V \\
-  S(X \times V^X) \arrow{r}{S(\ev)} & S(V) \arrow{u}{\gamma}
-\end{tikzcd}
-              \]
+\[
+    \begin{tikzcd}[column sep=50pt]
+        S(X) \times V^X \arrow{r}{m^\flat_X} \arrow{d}{\str} & V \\
+        S(X \times V^X) \arrow{r}{S(\ev)} & S(V) \arrow{u}{\gamma}
+    \end{tikzcd}
+\]
 
 We want to show that $K_V(X)$ has a substitution algebra structure.
 We need to show that there exist two morphisms
 
 \[
-  V \xrightarrow{\vark_X} K_V(X) \xleftarrow{\subk_X} {K_V(X)}^V \times K_V(X)
+    V \xrightarrow{\vark_X} K_V(X) \xleftarrow{\subk_X} {K_V(X)}^V \times K_V(X)
 \]
 which satisfy the substitution algebra axioms.
 \pagebreak
 
 We define these morphisms by means of the substitution structure on $S$ and the monad morphism $m$, so that the following diagram commutes:
 
-              \[
-\begin{tikzcd}[column sep=30pt]
-   & V \arrow{dl}[swap]{\var_X} \arrow{dr}{\vark_X} & \\
-  S(X) \arrow{rr}{m_X} & & K_V(X) \\
-  {S(X)}^V \times S(X) \arrow{u}{\sub_X} \arrow{rr}{m^V_X \times m_X} & & {K_V(X)}^V \times K_V(X) \arrow{u}[swap]{\subk_X}
-\end{tikzcd}
-              \]
+\[
+    \begin{tikzcd}[column sep=30pt]
+        & V \arrow{dl}[swap]{\var_X} \arrow{dr}{\vark_X} & \\
+        S(X) \arrow{rr}{m_X} & & K_V(X) \\
+        {S(X)}^V \times S(X) \arrow{u}{\sub_X} \arrow{rr}{m^V_X \times m_X} & & {K_V(X)}^V \times K_V(X) \arrow{u}[swap]{\subk_X}
+    \end{tikzcd}
+\]
 
 \vspace{20pt}
 \noindent \emph{I am not sure, whether the rest is correct, but this is what I think is happening:}\newline
@@ -123,13 +124,13 @@ We define these morphisms by means of the substitution structure on $S$ and the 
 \noindent We define $\vark = m_X \circ \var$.
 We define $\subk = \ev^{(V^X)} \circ \varphi_V$, in the following diagram:
 
-              \[
-\begin{tikzcd}[column sep=60pt]
-  S(X) \arrow{r}{m_X} & V^{V^X} \\
-   &  {(V^V \times V)}^{(V^X)} \arrow{u}[swap]{\ev^{(V^X)}}\\
-  {S(X)}^V \times S(X) \arrow{uu}{\sub_X} \arrow{r}{m^V_X \times m_X} & {(V^{(V^X)})}^V \times V^{(V^X)} \arrow{u}[swap]{\varphi_V}
-\end{tikzcd}
-              \]
+\[
+    \begin{tikzcd}[column sep=60pt]
+        S(X) \arrow{r}{m_X} & V^{V^X} \\
+        &  {(V^V \times V)}^{(V^X)} \arrow{u}[swap]{\ev^{(V^X)}}\\
+        {S(X)}^V \times S(X) \arrow{uu}{\sub_X} \arrow{r}{m^V_X \times m_X} & {(V^{(V^X)})}^V \times V^{(V^X)} \arrow{u}[swap]{\varphi_V}
+    \end{tikzcd}
+\]
 where
 \[\varphi : {(-^{(V^X)})}^V \times -^{(V^X)} \to {(-^V \times -)}^{V^X}\]
 is the mate \cite[p.150]{leinsterHigherOperadsHigher2003} of
@@ -137,43 +138,54 @@ is the mate \cite[p.150]{leinsterHigherOperadsHigher2003} of
 %
 This means that the diagram above commutes if and only if the following diagram commutes:\newline
 
-              \todo{Check whether this diagram commutes.}
-              \[
-\begin{tikzcd}[column sep=60pt]
-  {(S(X) \times V^X)}^V \times (S(X) \times V^X) \arrow{r}{{m^\flat_X}^V \times m^\flat_X} & V^V \times V \arrow{dd}{\ev} \\
-  ({S(X)}^V \times S(X)) \times V^X \arrow{u}{\str_{S(X)}} \arrow{d}{\sub_X \times 1_{V^X}} & \\
-  S(X) \times V^X \arrow{r}{m^\flat_X} & V
-\end{tikzcd}
-              \]
+\todo{Check whether this diagram commutes.}
+\[
+    \begin{tikzcd}[column sep=60pt]
+        {(S(X) \times V^X)}^V \times (S(X) \times V^X) \arrow{r}{{m^\flat_X}^V \times m^\flat_X} & V^V \times V \arrow{dd}{\ev} \\
+        ({S(X)}^V \times S(X)) \times V^X \arrow{u}{\str_{S(X)}} \arrow{d}{\sub_X \times 1_{V^X}} & \\
+        S(X) \times V^X \arrow{r}{m^\flat_X} & V
+    \end{tikzcd}
+\]
 
 \pagebreak
 Assuming that the diagram above commutes, $\varphi$ is, according to \cite{leinsterHigherOperadsHigher2003}, then given by the following composite:
 
-              \[
-\begin{tikzcd}[column sep=60pt]
-{(-^{(V^X)})}^V \times -^{(V^X)} \arrow{d}[swap]{\eta} \arrow{r}{\varphi} & {(-^V \times -)}^{V^X} \\
-  {(({(-^{(V^X)})}^V \times -^{(V^X)}) \times V^X)}^{(V^X)} \arrow{r}{\str^{(V^X)}} & {({(-^{V^X} \times V^X)}^V \times (-^{V^X} \times V^X))}^{(V^X)} \arrow{u}[swap]{{(\ev^V \times \ev)}^{(V^X)}}
-\end{tikzcd}
-              \]
+\[
+    \begin{tikzcd}[column sep=60pt]
+        {(-^{(V^X)})}^V \times -^{(V^X)} \arrow{d}[swap]{\eta} \arrow{r}{\varphi} & {(-^V \times -)}^{V^X} \\
+        {(({(-^{(V^X)})}^V \times -^{(V^X)}) \times V^X)}^{(V^X)} \arrow{r}{\str^{(V^X)}} & {({(-^{V^X} \times V^X)}^V \times (-^{V^X} \times V^X))}^{(V^X)} \arrow{u}[swap]{{(\ev^V \times \ev)}^{(V^X)}}
+    \end{tikzcd}
+\]
 where $\eta$ is the unit of the adjunction $- \times V^X \dashv -^{(V^X)}$.
 \newline
 
 \noindent The morphism $\subk_X$ can now be written as the following composite
 
 \begin{align*}
-  &{K_V(X)}^V \times K_V(X) \xrightarrow{\eta} {({K_V(X)}^V \times K_V(X) \times V^X)}^{(V^X)} \xrightarrow{\str^{(V^X)}}\\
-  &\quad{({(K_V(X) \times V^X)}^V \times K_V(X) \times V^X)}^{(V^X)} \xrightarrow{{(\ev^V \times \ev)}^{(V^X)}} {(V^V \times V)}^{(V^X)} \xrightarrow{\ev^{(V^X)}} K_V(X),
+     & {K_V(X)}^V \times K_V(X) \xrightarrow{\eta} {({K_V(X)}^V \times K_V(X) \times V^X)}^{(V^X)} \xrightarrow{\str^{(V^X)}}                                                  \\
+     & \quad{({(K_V(X) \times V^X)}^V \times K_V(X) \times V^X)}^{(V^X)} \xrightarrow{{(\ev^V \times \ev)}^{(V^X)}} {(V^V \times V)}^{(V^X)} \xrightarrow{\ev^{(V^X)}} K_V(X),
 \end{align*}
 which neatly corresponds to the CPS translation given in the slides:
 
 \[
-  \subk_X \mapsto \lambda \langle M : {(K_VX)}^V, N : K_VX \rangle . \lambda k : V^X . M (N k) k
+    \subk_X \mapsto \lambda \langle M : {(K_VX)}^V, N : K_VX \rangle . \lambda k : V^X . M (N k) k
 \]
 
 %\[
 %{(-^{(V^X)})}^V \times -^{(V^X)} \xrightarrow{\eta} {(({(-^{(V^X)})}^V \times -^{(V^X)}) \times V^X)}^{(V^X)} \xrightarrow{\str^{(V^X)}} {({(-^{V^X} \times V^X)}^V \times (-^{V^X} \times V^X))}^{(V^X)} \xrightarrow{{(\ev^V \times \ev)}^{(V^X)}} {(-^V \times -)}^{V^X}
 %\]
 
+\section{Inception Algebras}
+\label{sec:inception-algebras}
+
+\begin{definition}[Inception Algebra]
+    A $(V,P)$-\emph{inception algebra} in a category $\cat{C}$ for $V, P \in \cat{C}$ is an object $X$ with maps:
+    \begin{align*}
+        \rec\colon & V \times P \to X     \\
+        \inc\colon & X^V \times X^P \to X \\
+    \end{align*}
+    satisfying:
+\end{definition}
 
 \bibliographystyle{alpha}
 \bibliography{references.bib}
