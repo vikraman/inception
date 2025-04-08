@@ -160,6 +160,20 @@
     Given $f\colon X \to V$, define $f^\# \defeq m_X(f)$.
 \end{proof}
 
+\begin{proposition}
+    \label{prop:algebra-along-morphism}
+    A monad morphism $m\colon S \To T$ induces a functor $T$-Alg $\to$ $S$-Alg.
+    In particular, this means $TX$ is an $S$-algebra for any $X$.
+\end{proposition}
+
+\begin{proof}
+    Given $f\colon Y \to X$, define $f^\# \defeq STX \xto{m_{TX}} TTX \xto{\mu_X} TX $.
+\end{proof}
+
+In our model, $S$-algebra structure on $V$ induces a monad morphism $S \To K_V$, which induces an $S$-algebra structure
+on $K_V(X)$ for any $X$. Now, we use this to get the maps $\var$ and $\sub$ for $K_V(X)$, which satisfy the substitution
+algebra axioms.
+
 \section{CPS-translation}
 I summarise here what I think is happening in the CPS translation.\newline
 
