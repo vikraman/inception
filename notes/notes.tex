@@ -72,6 +72,8 @@
                       \arrow["\sub"', from=4-1, to=4-3]
                   \end{tikzcd}\]
               %
+              \todo{Can this axiom be written without $\delta$?}
+              %
               \[
                   \begin{tikzcd}[column sep=50pt]
                       {(X_1^{V_2} \times X_2)}^{V_3} \times X_3                          \arrow{d}[swap]{1 \times \Delta} \arrow{rr}{\sub^V \times 1} & & X_1^{V_3} \times X_3 \arrow{dddddd}{\sub} \\
@@ -85,6 +87,14 @@
               \]
     \end{itemize}
 \end{definition}
+
+\begin{proposition}
+    There is a $V$-substitution algebra structure on $V$, the initial one.
+\end{proposition}
+
+\begin{proof}
+    Because $V \bij S0$.
+\end{proof}
 
 \section{Monads}
 \label{sec:monads}
@@ -149,9 +159,11 @@
     \end{itemize}
 \end{definition}
 
+\todo{special case for strong monads on a ccc}
+
 \begin{theorem}[Kock]
     \label{thm:kock}
-    If $S$ is a strong monad on $\cat{C}$, then $S$-algebra structures on $V$ are in bijection with monad morphisms $S \To K_V$.
+    If $S$ is a strong monad on a ccc $\cat{C}$, then $S$-algebra structures on $V$ are in bijection with monad morphisms $S \To K_V$.
 \end{theorem}
 
 \begin{proof}
@@ -273,7 +285,62 @@ which neatly corresponds to the CPS translation given in the slides:
         \inc\colon & X^V \times X^P \to X \\
     \end{align*}
     satisfying:
+    \begin{itemize}
+        \item \emph{Weakening}:
+              % https://q.uiver.app/#q=WzAsNCxbMCwwLCJYXjEgXFx0aW1lcyBYXlAiXSxbMiwwLCJYIFxcdGltZXMgWF5QIl0sWzAsMiwiWF5WIFxcdGltZXMgWF5QIl0sWzIsMiwiWCJdLFswLDEsIlxcY29uZyIsMV0sWzAsMiwiWF57IV9WfSBcXHRpbWVzIDEiLDJdLFsyLDMsIlxcaW5jIiwyXSxbMSwzLCJcXHBpXzEiXV0=
+              \[\begin{tikzcd}
+                      {X^1 \times X^P} && {X \times X^P} \\
+                      \\
+                      {X^V \times X^P} && X
+                      \arrow["\cong"{description}, from=1-1, to=1-3]
+                      \arrow["{X^{!_V} \times 1}"', from=1-1, to=3-1]
+                      \arrow["{\pi_1}", from=1-3, to=3-3]
+                      \arrow["\inc"', from=3-1, to=3-3]
+                  \end{tikzcd}\]
+
+        \item \emph{Substitution}:
+              % https://q.uiver.app/#q=WzAsMyxbMCwwLCJQIFxcdGltZXMgWF5QIl0sWzAsMiwiWF5WIFxcdGltZXMgWF5QIl0sWzIsMiwiWCJdLFswLDEsIlxcd2lkZWhhdHtcXHJlY30gXFx0aW1lcyAxIiwyXSxbMSwyLCJcXGluYyIsMl0sWzAsMiwiXFxldiJdXQ==
+              \[\begin{tikzcd}
+                      {P \times X^P} \\
+                      \\
+                      {X^V \times X^P} && X
+                      \arrow["{\widehat{\rec} \times 1}"', from=1-1, to=3-1]
+                      \arrow["\ev", from=1-1, to=3-3]
+                      \arrow["\inc"', from=3-1, to=3-3]
+                  \end{tikzcd}\]
+
+        \item \emph{Extensionality}:
+              % https://q.uiver.app/#q=WzAsMyxbMCwwLCJYXlYgXFx0aW1lcyBWIl0sWzAsMiwiWF5WIFxcdGltZXMgWF5QIl0sWzIsMiwiWCJdLFswLDEsIjEgXFx0aW1lcyBcXHdpZGVoYXR7XFx2YXJ9IiwyXSxbMSwyLCJcXGluYyIsMl0sWzAsMiwiXFxldiJdXQ==
+              \[\begin{tikzcd}
+                      {X^V \times V} \\
+                      \\
+                      {X^V \times X^P} && X
+                      \arrow["{1 \times \widehat{\var}}"', from=1-1, to=3-1]
+                      \arrow["\ev", from=1-1, to=3-3]
+                      \arrow["\inc"', from=3-1, to=3-3]
+                  \end{tikzcd}\]
+
+        \item \emph{Associativity}:
+              \todo{Check}
+              % https://q.uiver.app/#q=WzAsNSxbMCwyLCIoWF57Vl8xfSBcXHRpbWVzIFhee1BfMX0pXntWXzJ9IFxcdGltZXMgWF57UF8yfSJdLFsxLDAsIihYXntWXzJ9IFxcdGltZXMgWF57UF8yfSlee1ZfMX0gXFx0aW1lcyAoWF57Vl8yfSBcXHRpbWVzIFhee1BfMn0pXntQXzF9Il0sWzIsMiwiWF57Vl8xfSBcXHRpbWVzIFhee1BfMX0iXSxbMCw0LCJYXntWXzJ9IFxcdGltZXMgWF57UF8yfSJdLFsyLDQsIlgiXSxbMCwxLCI/PyJdLFsxLDIsIlxcaW5jXntWXzF9IFxcdGltZXMgXFxpbmNee1BfMX0iXSxbMyw0LCJcXGluYyIsMl0sWzAsMywiXFxpbmNee1ZfMn0gXFx0aW1lcyAxIiwyXSxbMiw0LCJcXGluYyJdXQ==
+              \[\begin{tikzcd}
+                      & {(X^{V_2} \times X^{P_2})^{V_1} \times (X^{V_2} \times X^{P_2})^{P_1}} \\
+                      \\
+                      {(X^{V_1} \times X^{P_1})^{V_2} \times X^{P_2}} && {X^{V_1} \times X^{P_1}} \\
+                      \\
+                      {X^{V_2} \times X^{P_2}} && X
+                      \arrow["{\inc^{V_1} \times \inc^{P_1}}", from=1-2, to=3-3]
+                      \arrow["{??}", from=3-1, to=1-2]
+                      \arrow["{\inc^{V_2} \times 1}"', from=3-1, to=5-1]
+                      \arrow["\inc", from=3-3, to=5-3]
+                      \arrow["\inc"', from=5-1, to=5-3]
+                  \end{tikzcd}\]
+    \end{itemize}
 \end{definition}
+
+\begin{proposition}
+    There is a $(V^P,P)$-inception algebra structure on $V$.
+\end{proposition}
 
 \bibliographystyle{alpha}
 \bibliography{references.bib}
