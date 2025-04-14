@@ -6,6 +6,8 @@ open import Data.Unit
 open import Data.Product as P
 open import Function as F hiding (_∋_)
 open import Data.Sum as S
+open import Relation.Binary.PropositionalEquality
+open import Inception.Prelude
 
 infixr 4 _；_
 
@@ -116,3 +118,94 @@ mutual
 ⟦_⟧ˢ : Sub Γ Δ -> ⟦ Γ ⟧ˣ -> ⟦ Δ ⟧ˣ
 ⟦ sub-ε ⟧ˢ = const tt
 ⟦ sub-ex θ V ⟧ˢ = < ⟦ θ ⟧ˢ , ⟦ V ⟧ᵛ >
+
+-- coherences
+wk-id-coh : ⟦ wk-id {Γ} ⟧ʷ ≡ id
+wk-id-coh {ε} = refl
+wk-id-coh {Γ ∙ A} rewrite wk-id-coh {Γ} = refl
+{-# REWRITE wk-id-coh #-}
+
+wk-mem-coh : (π : Γ ⊇ Δ) (i : Δ ∋ A) -> ⟦ wk-mem π i ⟧ᵐ ≡ (⟦ π ⟧ʷ ； ⟦ i ⟧ᵐ)
+wk-mem-coh (wk-cong π) h = refl
+wk-mem-coh (wk-cong π) (t i) rewrite wk-mem-coh π i = refl
+wk-mem-coh (wk-wk π) h rewrite wk-mem-coh π h = refl
+wk-mem-coh (wk-wk π) (t i) rewrite wk-mem-coh π (t i) = refl
+
+mutual
+  wk-val-coh : (π : Γ ⊇ Δ) (V : Δ ⊢ᵛ A) -> ⟦ wk-val π V ⟧ᵛ ≡ (⟦ π ⟧ʷ ； ⟦ V ⟧ᵛ)
+  wk-val-coh π (var i) rewrite wk-mem-coh π i = refl
+  wk-val-coh π (lam M) rewrite wk-comp-coh (wk-cong π) M = refl
+  wk-val-coh π (pair V W) rewrite wk-val-coh π V | wk-val-coh π W = refl
+  wk-val-coh π (pm V W) rewrite wk-val-coh π V | wk-val-coh (wk-cong (wk-cong π)) W = refl
+  wk-val-coh π unit = refl
+
+  wk-comp-coh : (π : Γ ⊇ Δ) (M : Δ ⊢ᶜ A) -> ⟦ wk-comp π M ⟧ᶜ ≡ (⟦ π ⟧ʷ ； ⟦ M ⟧ᶜ)
+  wk-comp-coh π (return V) rewrite wk-val-coh π V = refl
+  wk-comp-coh π (pm V M) rewrite wk-val-coh π V | wk-comp-coh (wk-cong (wk-cong π)) M = refl
+  wk-comp-coh π (push M N) rewrite wk-comp-coh π M | wk-comp-coh (wk-cong π) N = refl
+  wk-comp-coh π (app V W) rewrite wk-val-coh π V | wk-val-coh π W = refl
+  wk-comp-coh π (var V) rewrite wk-val-coh π V = refl
+  wk-comp-coh π (sub M N) rewrite wk-comp-coh (wk-cong π) M | wk-comp-coh π N = refl
+
+{-# REWRITE wk-val-coh #-}
+{-# REWRITE wk-comp-coh #-}
+
+sub-mem-coh : (θ : Sub Γ Δ) (i : Δ ∋ A) -> ⟦ sub-mem θ i ⟧ᵛ ≡ (⟦ θ ⟧ˢ ； ⟦ i ⟧ᵐ)
+sub-mem-coh (sub-ex θ V) h = refl
+sub-mem-coh (sub-ex θ V) (t i) rewrite sub-mem-coh θ i = refl
+{-# REWRITE sub-mem-coh #-}
+
+sub-wk-coh : (π : Γ ⊇ Δ) (θ : Sub Δ Ψ) -> ⟦ sub-wk π θ ⟧ˢ ≡ (⟦ π ⟧ʷ ； ⟦ θ ⟧ˢ)
+sub-wk-coh π sub-ε = refl
+sub-wk-coh π (sub-ex θ V) rewrite sub-wk-coh π θ | wk-val-coh π V = refl
+{-# REWRITE sub-wk-coh #-}
+
+sub-id-coh : ⟦ sub-id {Γ} ⟧ˢ ≡ id
+sub-id-coh {ε} = refl
+sub-id-coh {Γ ∙ A} = funext \(γ , a) -> cong₂ _,_ (happly sub-id-coh γ) refl
+{-# REWRITE sub-id-coh #-}
+
+mutual
+  sub-val-coh : (θ : Sub Γ Δ) (V : Δ ⊢ᵛ A) -> ⟦ sub-val θ V ⟧ᵛ ≡ (⟦ θ ⟧ˢ ； ⟦ V ⟧ᵛ)
+  sub-val-coh θ (var i) = refl
+  sub-val-coh θ (lam M) rewrite sub-comp-coh (sub-ex (sub-wk (wk-wk wk-id) θ) (var h)) M = refl
+  sub-val-coh θ (pair V W) rewrite sub-val-coh θ V | sub-val-coh θ W = refl
+  sub-val-coh θ (pm V M) rewrite sub-val-coh θ V | sub-val-coh (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) θ) (var (t h))) (var h)) M = refl
+  sub-val-coh θ unit = refl
+
+  sub-comp-coh : (θ : Sub Γ Δ) (M : Δ ⊢ᶜ A) -> ⟦ sub-comp θ M ⟧ᶜ ≡ (⟦ θ ⟧ˢ ； ⟦ M ⟧ᶜ)
+  sub-comp-coh θ (return V) rewrite sub-val-coh θ V = refl
+  sub-comp-coh θ (pm V M) rewrite sub-val-coh θ V | sub-comp-coh (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) θ) (var (t h))) (var h)) M = refl
+  sub-comp-coh θ (push M N) rewrite sub-comp-coh θ M | sub-comp-coh (sub-ex (sub-wk (wk-wk wk-id) θ) (var h)) N = refl
+  sub-comp-coh θ (app V W) rewrite sub-val-coh θ V | sub-val-coh θ W = refl
+  sub-comp-coh θ (var V) rewrite sub-val-coh θ V = refl
+  sub-comp-coh θ (sub M N) rewrite sub-comp-coh (sub-ex (sub-wk (wk-wk wk-id) θ) (var h)) M | sub-comp-coh θ N = refl
+
+{-# REWRITE sub-val-coh #-}
+{-# REWRITE sub-comp-coh #-}
+
+mutual
+  eqVal : Γ ⊢ᵛ V ≈ W ∶ A -> ⟦ V ⟧ᵛ ≡ ⟦ W ⟧ᵛ
+  eqVal ≈-refl = refl
+  eqVal (≈-sym p) = sym (eqVal p)
+  eqVal (≈-trans p q) = trans (eqVal p) (eqVal q)
+  eqVal (lam-cong p) = cong curry (eqComp p)
+  eqVal (pair-cong p q) = cong₂ <_,_> (eqVal p) (eqVal q)
+  eqVal (unit-eta _) = refl
+  eqVal (pm-beta V1 V2 W) = refl
+  eqVal (pm-eta V W) = refl
+  eqVal (lam-eta _) = refl
+
+  eqComp : Γ ⊢ᶜ M ≈ N ∶ A -> ⟦ M ⟧ᶜ ≡ ⟦ N ⟧ᶜ
+  eqComp (pm-beta V1 V2 M) = refl
+  eqComp (pm-eta V M) = refl
+  eqComp (return-beta V M) = refl
+  eqComp (return-eta _) = refl
+  eqComp (push-eta M N P) = refl
+  eqComp (lam-beta M V) = refl
+  eqComp (sub-weak _ N) = refl
+  eqComp (sub-subst _) = refl
+  eqComp (sub-ext M V) = refl
+  eqComp (sub-assoc L M N) = refl
+  eqComp (var-push V M) = refl
+  eqComp (sub-push M N L) = refl

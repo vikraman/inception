@@ -117,7 +117,7 @@ mutual
   wk-val π unit            = unit
 
   wk-comp : Wk Γ Δ -> Δ ⊢ᶜ A -> Γ ⊢ᶜ A
-  wk-comp π (return V)     = return (wk-val π V)  
+  wk-comp π (return V)     = return (wk-val π V)
   wk-comp π (pm V M)       = pm (wk-val π V) (wk-comp (wk-cong (wk-cong π)) M)
   wk-comp π (push M N)     = push (wk-comp π M) (wk-comp (wk-cong π) N)
   wk-comp π (app V W)      = app (wk-val π V) (wk-val π W)
@@ -171,15 +171,24 @@ letc : Γ ⊢ᵛ A -> (Γ ∙ A) ⊢ᶜ B
      -> Γ ⊢ᶜ B
 letc V M = sub-comp (sub-ex sub-id V) M
 
+exchg : Sub (Γ ∙ A ∙ B)(Γ ∙ B ∙ A)
+exchg = sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) sub-id) (var h)) (var (t h))
+
 variable
   n : ℕ
   x : Γ ∋ A
   V V1 V2 V3 W W1 W2 W3 : Γ ⊢ᵛ A
-  M M1 M2 M3 N N1 N2 N3 P P1 P2 P3 : Γ ⊢ᵛ A
+  M M1 M2 M3 N N1 N2 N3 P P1 P2 P3 : Γ ⊢ᶜ A
 
 syntax EqVal Γ A e1 e2 = Γ ⊢ᵛ e1 ≈ e2 ∶ A
 
-data EqVal (Γ : Ctx) : (A : Ty) -> Γ ⊢ᵛ A -> Γ ⊢ᵛ A -> Set where
+syntax EqComp Γ A e1 e2 = Γ ⊢ᶜ e1 ≈ e2 ∶ A
+
+data EqVal (Γ : Ctx) : (A : Ty) -> Γ ⊢ᵛ A -> Γ ⊢ᵛ A -> Set
+
+data EqComp (Γ : Ctx) : (A : Ty) -> Γ ⊢ᶜ A -> Γ ⊢ᶜ A -> Set
+
+data EqVal Γ where
 
   -- equivalence rules
   ≈-refl  :
@@ -195,6 +204,10 @@ data EqVal (Γ : Ctx) : (A : Ty) -> Γ ⊢ᵛ A -> Γ ⊢ᵛ A -> Set where
           -> Γ ⊢ᵛ V1 ≈ V3 ∶ A
 
   -- congruence rules
+  lam-cong : (Γ ∙ A) ⊢ᶜ M1 ≈ M2 ∶ B
+           ---------------------------------
+           -> Γ ⊢ᵛ lam M1 ≈ lam M2 ∶ A `⇒ B
+
   pair-cong : Γ ⊢ᵛ V1 ≈ V2 ∶ A -> Γ ⊢ᵛ W1 ≈ W2 ∶ B
             ----------------------------------------
             -> Γ ⊢ᵛ pair V1 W1 ≈ pair V2 W2 ∶ A `× B
@@ -217,10 +230,7 @@ data EqVal (Γ : Ctx) : (A : Ty) -> Γ ⊢ᵛ A -> Γ ⊢ᵛ A -> Set where
           ---------------------------
           -> Γ ⊢ᵛ V ≈ lam (app (wk V) (var h)) ∶ A `⇒ B
 
-
-syntax EqComp Γ A e1 e2 = Γ ⊢ᶜ e1 ≈ e2 ∶ A
-
-data EqComp (Γ : Ctx) : (A : Ty) -> Γ ⊢ᶜ A -> Γ ⊢ᶜ A -> Set where
+data EqComp Γ where
 
   pm-beta : (V1 : Γ ⊢ᵛ A) -> (V2 : Γ ⊢ᵛ B) -> (M : (Γ ∙ A ∙ B) ⊢ᶜ C)
           ------------------------------------------------------------------------
@@ -246,5 +256,28 @@ data EqComp (Γ : Ctx) : (A : Ty) -> Γ ⊢ᶜ A -> Γ ⊢ᶜ A -> Set where
            ------------------------------------------------
            -> Γ ⊢ᶜ app (lam M) V ≈ sub-comp (sub-ex sub-id V) M ∶ B
 
+  -- var/sub
 
-  -- TODO: var and sub
+  sub-weak : (M : Γ ⊢ᶜ A) -> (N : Γ ⊢ᶜ A)
+           ------------------------------------------------
+           -> Γ ⊢ᶜ sub (wk-comp (wk-wk wk-id) M) N ≈ M ∶ A
+
+  sub-subst : (M : Γ ⊢ᶜ A)
+            -------------------------------------------
+            -> Γ ⊢ᶜ sub (var (var h)) M ≈ M ∶ A
+
+  sub-ext : (M : (Γ ∙ `V) ⊢ᶜ A) -> (V : Γ ⊢ᵛ `V)
+          ---------------------------------------------------------------------------
+          -> Γ ⊢ᶜ sub (sub-comp sub-id M) (var V) ≈ sub-comp (sub-ex sub-id V) M ∶ A
+
+  sub-assoc : (L : (Γ ∙ `V ∙ `V) ⊢ᶜ A) -> (M : (Γ ∙ `V) ⊢ᶜ A) -> (N : Γ ⊢ᶜ A)
+            -----------------------------------------------------------------------------------------------
+            -> Γ ⊢ᶜ sub (sub L M) N ≈ sub (sub (sub-comp exchg L) (wk-comp (wk-wk wk-id) N)) (sub M N) ∶ A
+
+  var-push : (V : Γ ⊢ᵛ `V) -> (M : (Γ ∙ `V) ⊢ᶜ A)
+           ----------------------------------------
+           -> Γ ⊢ᶜ push (var V) M ≈ var V ∶ A
+
+  sub-push : (M : (Γ ∙ `V) ⊢ᶜ A) -> (N : Γ ⊢ᶜ A) -> (L : (Γ ∙ A) ⊢ᶜ B)
+           -------------------------------------------------------------------------------------------
+           -> Γ ⊢ᶜ push (sub M N) L ≈ sub (push M (wk-comp (wk-cong (wk-wk wk-id)) L)) (push N L) ∶ B
