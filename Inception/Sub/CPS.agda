@@ -66,7 +66,6 @@ subK (f , n) k = f (n k) k
 mutual
   ⟦_⟧ᵛ : Γ ⊢ᵛ A -> ⟦ Γ ⟧ˣ -> ⟦ A ⟧
   ⟦ var i ⟧ᵛ = ⟦ i ⟧ᵐ
-  ⟦ letv V W ⟧ᵛ = < idf , ⟦ V ⟧ᵛ > ； ⟦ W ⟧ᵛ
   ⟦ lam M ⟧ᵛ = curry ⟦ M ⟧ᶜ
   ⟦ pair V W ⟧ᵛ = < ⟦ V ⟧ᵛ , ⟦ W ⟧ᵛ >
   ⟦ pm V W ⟧ᵛ = < idf , ⟦ V ⟧ᵛ > ； assocl ； ⟦ W ⟧ᵛ
@@ -74,7 +73,6 @@ mutual
 
   ⟦_⟧ᶜ : Γ ⊢ᶜ A -> ⟦ Γ ⟧ˣ -> K ⟦ A ⟧
   ⟦ return V ⟧ᶜ = ⟦ V ⟧ᵛ ； η
-  ⟦ letv V M ⟧ᶜ = < idf , ⟦ V ⟧ᵛ > ； ⟦ M ⟧ᶜ
   ⟦ pm V M ⟧ᶜ = < idf , ⟦ V ⟧ᵛ > ； assocl ； ⟦ M ⟧ᶜ
   ⟦ push M N ⟧ᶜ = < idf , ⟦ M ⟧ᶜ > ； τ ； ⟦ N ⟧ᶜ ♯
   ⟦ app V W ⟧ᶜ = < ⟦ V ⟧ᵛ , ⟦ W ⟧ᵛ > ； uncurry idf
@@ -85,9 +83,6 @@ mutual
   evalVal : Γ ⊢ᵛ A -> ⟦ Γ ⟧ˣ -> ⟦ A ⟧
   evalVal (var i) γ =
     ⟦ i ⟧ᵐ γ
-  evalVal (letv V W) γ =
-    let v = evalVal V γ in
-      evalVal W (γ , v)
   evalVal (lam M) γ a =
     curry (evalComp M) (γ , a)
   evalVal (pair V W) γ =
@@ -101,9 +96,6 @@ mutual
   evalComp (return V) (γ , k) =
     let v = evalVal V γ in
       k v
-  evalComp (letv V M) (γ , k) =
-    let v = evalVal V γ in
-      evalComp M ((γ , v) , k)
   evalComp (pm V M) (γ , k) =
     let v = evalVal V γ in
       evalComp M (((γ , v .proj₁) , v .proj₂) , k)
