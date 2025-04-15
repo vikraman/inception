@@ -9,3 +9,5 @@ import Inception.Sub.CPS
 import Inception.Sub.Machine
 
 -- inception calculus
+import Inception.Inc.Syntax
+import Inception.Inc.CPS
