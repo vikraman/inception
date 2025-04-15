@@ -189,6 +189,7 @@ algebra axioms.
 \section{CPS-translation}
 I summarise here what I think is happening in the CPS translation.\newline
 
+\subsection{Old}
 Let $\mathcal{F} = \textsf{Set}^\mathbb{F}$, where $\mathbb{F}$ is the category of finite cardinals and functions, let $S : \mathcal{F} \to \mathcal{F}$ be the free substitution monad and $K_V : \mathcal{F} \to \mathcal{F}$ the continuation monad with response type $V$.
 Because $S$ is strong, and $S(V) \xrightarrow{\gamma} V$ is the initial substitution algebra, there exists by \cite{kockDoubleDualizationMonads1970} a monad morphism $S \xrightarrow{m} K_V = V^{V^X}$ , which is defined as the transpose of the morphism $S \times V^X \xrightarrow{m^\flat} V$, defined by the following diagram:
 
@@ -233,7 +234,7 @@ We define $\subk = \ev^{(V^X)} \circ \varphi_V$, in the following diagram:
 \]
 where
 \[\varphi : {(-^{(V^X)})}^V \times -^{(V^X)} \to {(-^V \times -)}^{V^X}\]
-is the mate \cite[p.150]{leinsterHigherOperadsHigher2003} of
+is the mate \cite[p.150]{leinsterHigherOperadsHigher2004} of
 \[ \str : (-^V \times -) \times V^X \to {(- \times V^X)}^V \times (- \times V^X).\]
 %
 This means that the diagram above commutes if and only if the following diagram commutes:\newline
@@ -248,7 +249,7 @@ This means that the diagram above commutes if and only if the following diagram 
 \]
 
 \pagebreak
-Assuming that the diagram above commutes, $\varphi$ is, according to \cite{leinsterHigherOperadsHigher2003}, then given by the following composite:
+Assuming that the diagram above commutes, $\varphi$ is, according to \cite{leinsterHigherOperadsHigher2004}, then given by the following composite:
 
 \[
     \begin{tikzcd}[column sep=60pt]
@@ -274,6 +275,150 @@ which neatly corresponds to the CPS translation given in the slides:
 %\[
 %{(-^{(V^X)})}^V \times -^{(V^X)} \xrightarrow{\eta} {(({(-^{(V^X)})}^V \times -^{(V^X)}) \times V^X)}^{(V^X)} \xrightarrow{\str^{(V^X)}} {({(-^{V^X} \times V^X)}^V \times (-^{V^X} \times V^X))}^{(V^X)} \xrightarrow{{(\ev^V \times \ev)}^{(V^X)}} {(-^V \times -)}^{V^X}
 %\]
+
+\subsection{New}
+\begin{align*}
+  \vark_X & \quad \mapsto \quad \lambda a : V . \lambda k : V^X . a\\
+  \subk_X & \quad \mapsto \quad \lambda \langle M : {(K_V X)}^V , N : K_VX \rangle . \lambda k : V^X . M (N k) k
+\end{align*}
+
+Categorically, $\subk_X$ is interpreted by the morphism in the following diagram:
+
+%\[
+%    \begin{tikzcd}[column sep=30pt]
+%        & V \arrow{dl}[swap]{\var_X} \arrow{dr}{\vark_X} & \\
+%        S(X) \arrow{rr}{m_X} & & K_V(X) \\
+%        {S(X)}^V \times S(X) \arrow{u}{\sub_X} \arrow{rr}{m^V_X \times m_X} & & {K_V(X)}^V \times K_V(X) \arrow{u}[swap]{\subk_X}
+%    \end{tikzcd}
+%\]
+
+\begin{equation}\label{eq:cps1}
+    \begin{tikzcd}[column sep=30pt]
+      {S(X)}^V \times S(X) \arrow{r}{\sub_X} \arrow{d}[swap]{m_X^V \times m_X} & S(X) \arrow{d}{m_X}\\
+      {{K_V(X)}^V \times K_V(X)} \arrow{r}{\subk_X} & K_V(X)
+    \end{tikzcd}
+\end{equation}
+
+To not clutter the notation, let us define the following endofunctors on $\textsf{Set}^\mathbb{F}$.
+
+\begin{align*}
+  F &= (-) \times V^X\\
+  G &= (-)^{(V^X)}\\
+  H &= (-)^V \times (-)
+\end{align*}
+
+We observe an adjunction $F \dashv G$.
+Furthermore, we observe that $H$ has a strength.
+
+\pagebreak
+Let $\eta$ be the unit of the adjunction $F \dashv G$.
+We can then define $\subk_X$ to be the following morphism (corresponding to the lambda term above):
+
+\begin{align*}
+  &{K(X)}^V \times K(X) \xrightarrow{\eta} {({K(X)}^V \times K(X) \times V^X)}^{(V^X)} \xrightarrow{\textsf{str}^{(V^X)}}\\
+  &\quad {({(K(X) \times V^X)}^V \times K(X) \times V^X)}^{(V^X)} \xrightarrow{{(1 \times \ev)}^{(V^X)}} {({(K(X) \times V^X)}^V \times V)}^{(V^X)} \xrightarrow{\ev^{(V^X)}} \\
+  &\quad\quad {(K(X) \times V^X)}^{(V^X)} \xrightarrow{\ev^{(V^X)}} K(X)
+\end{align*}
+
+Starting with a pair $\langle M , N \rangle \in {K(X)}^V \times K(X)$, this morphism corresponds to the lambda term above as follows:
+\begin{itemize}
+   \item $\eta$ abstracts with respect to $k$.
+   \item $\textsf{str}^{(V^K)}$ duplicates $k$.
+   \item ${(1 \times \ev)}^{(V^X)}$ applies $N$ to $k$.
+   \item $\ev^{(V^X)}$ applies $M$ to $(N k)$.
+   \item $\ev^{(V^X)}$ applies $(M (N k))$ to $k$.
+\end{itemize}
+
+By naturality of $\ev$ the last two morphisms are equal to the following:
+\begin{align*}
+  &{({(K(X) \times V^X)}^V \times V)}^{(V^X)} \xrightarrow{{(\ev^V \times 1)}^{(V^X)}} {(V^V \times V)}^{(V^X)} \xrightarrow{\ev^{(V^X)}} K(X)
+\end{align*}
+
+We can now write the morphism for $\subk_X$ as follows:
+\begin{align*}
+  &{K(X)}^V \times K(X) \xrightarrow{\eta} {({K(X)}^V \times K(X) \times V^X)}^{(V^X)} \xrightarrow{\textsf{str}^{(V^X)}}\\
+  &\quad {({(K(X) \times V^X)}^V \times K(X) \times V^X)}^{(V^X)} \xrightarrow{{(\ev^V \times \ev)}^{(V^X)}} {(V^V \times V)}^{(V^X)} \xrightarrow{\ev^{(V^X)}} K(X)
+\end{align*}
+
+In terms of the functors defined above that is:
+
+\begin{align*}
+  &HG(V) \xrightarrow{\eta} GFHG(V) \xrightarrow{\textsf{str}^{(V^X)}} GHFG(V) \xrightarrow{{(\ev^V \times \ev)}^{(V^X)}} GH(V) \xrightarrow{\ev^{(V^X)}} G(V)
+\end{align*}
+
+To keep things readable I omitted the subscripts, but using whiskering, we can include these omitted details:
+
+\begin{align*}
+  &HG(V) \xrightarrow{\eta HG} GFHG(V) \xrightarrow{G\textsf{str}G} GHFG(V) \xrightarrow{GH\ev} GH(V) \xrightarrow{G \ev} G(V)
+\end{align*}
+
+The first three morphisms constitute precisely the \emph{mate} $\psi$ of \textsf{str} (see page 150 in \cite{leinsterHigherOperadsHigher2004}):
+
+\begin{align*}
+  &HG(V) \xrightarrow{\psi} GH(V) \xrightarrow{G \ev} G(V)
+\end{align*}
+
+We can also write \textsf{str} in terms of $\psi$:
+
+\begin{align}
+  &\textsf{str} = FH \xrightarrow{FH \eta} FHGF \xrightarrow{F \psi F} FGHF \xrightarrow{\ev HF} HF\label{eq:cps1a}
+\end{align}
+
+\pagebreak
+We can now rewrite Diagram~\ref{eq:cps1} as follows:
+
+\begin{equation}\label{eq:cps2}
+    \begin{tikzcd}[column sep=30pt]
+      HS(X) \arrow{r}{\sub_X} \arrow{d}[swap]{H(m_X)} & S(X) \arrow{dd}{m_X}\\
+      HG(V) \arrow{d}[swap]{\psi_V} & \\
+      GH(V) \arrow{r}{G(\ev)} & G(V)
+    \end{tikzcd}
+\end{equation}
+
+Let $\overline{m_X}$ be the transpose of $m_X$ with respect to the adjunction $F \dashv G$ so that
+\begin{equation}\label{eq:cps3}
+\overline{m_X} = G(m_X) \circ \eta_{S(X)}.
+\end{equation}
+
+We now note that by naturality (of each of the quadrilaterals) the following diagram commutes:
+\begin{equation}\label{eq:cps4}
+    \begin{tikzcd}[column sep=50pt, row sep=30pt]
+      H(S(X)) \arrow{r}{\eta H (S(X))} \arrow{d}[swap]{H \eta (S(X))}& GFH (S(X))\arrow{d}{GFH \eta (S(X))}\\
+      HGF (S(X))\arrow{r}{\eta HGF (S(X))} \arrow{dd}[swap]{HG(\overline{m_X})} \arrow{dr}{\psi F (S(X))} & GFHGF (S(X)) \arrow{dr}{GF \psi F (S(X))}& \\
+          & GHF (S(X)) \arrow{r}{\eta GHF (S(X))} \arrow{dd}{GH(\overline{m_X})} \arrow[equal]{rd}{} & GFGHF (S(X)) \arrow{d}{G \ev HF(S(X))} \\
+      HG (S(X)) \arrow{rd}{\psi S(X)} & & GHF (S(X)) \arrow{ld}{GH(\overline{m_X})}\\
+          & GH (S(X))&
+    \end{tikzcd}
+\end{equation}
+
+Using Equations~\ref{eq:cps1a} and~\ref{eq:cps3} the outline of Diagram~\ref{eq:cps4} can be written as the following equality:
+
+\begin{equation}\label{eq:cps5}
+  \psi_V \circ H(m_X) = GH(\overline{m_X}) \circ G(\str_{S(X)}) \circ \eta_{HS(X)}
+\end{equation}
+
+Therefore, we can rewrite Diagram~\ref{eq:cps2} (using Equations~\ref{eq:cps3} and~\ref{eq:cps5}) as follows:
+\begin{equation}\label{eq:cps6}
+    \begin{tikzcd}[column sep=50pt, row sep=25pt]
+      HS(X) \arrow{r}{\sub_X} \arrow{d}[swap]{\eta HS(X)} & S(X) \arrow{d}{\eta S(X)}\\
+      GFH(S(X)) \arrow{d}[swap]{G (\textsf{str}_{S(X)})} \arrow{r}{GF(\sub_X)} & GF(S(X)) \arrow{dd}{G(\overline{m_X})}\\
+      GHF(S(X)) \arrow{d}[swap]{GH(\overline{m_X})} & \\
+      GH(V) \arrow{r}{G(\ev)} & G(V)
+    \end{tikzcd}
+\end{equation}
+
+But Diagram~\ref{eq:cps6} only commutes if the following diagram commutes:
+\begin{equation}\label{eq:cps7}
+    \begin{tikzcd}[column sep=50pt, row sep=25pt]
+      FH(S(X)) \arrow{d}[swap]{\textsf{str}_{S(X)}} \arrow{r}{F(\sub_X)} & F(S(X)) \arrow{dd}{\overline{m_X}}\\
+      HF(S(X)) \arrow{d}[swap]{H(\overline{m_X})} & \\
+      H(V) \arrow{r}{\ev} & V
+    \end{tikzcd}
+\end{equation}
+
+I think this diagram \emph{should} commute, because counterclockwise we duplicate the arguments and evaluate them separately, while clockwise we substitute and then evaluate everything at once.\newline
+
+\todo{Check whether Diagram~\ref{eq:cps7} commutes.}
 
 \section{Inception Algebras}
 \label{sec:inception-algebras}
