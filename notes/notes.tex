@@ -278,8 +278,8 @@ which neatly corresponds to the CPS translation given in the slides:
 
 \subsection{New}
 \begin{align*}
-  \vark_X & \quad \mapsto \quad \lambda a : V . \lambda k : V^X . a\\
-  \subk_X & \quad \mapsto \quad \lambda \langle M : {(K_V X)}^V , N : K_VX \rangle . \lambda k : V^X . M (N k) k
+    \vark_X & \quad \mapsto \quad \lambda a : V . \lambda k : V^X . a                                              \\
+    \subk_X & \quad \mapsto \quad \lambda \langle M : {(K_V X)}^V , N : K_VX \rangle . \lambda k : V^X . M (N k) k
 \end{align*}
 
 Categorically, $\subk_X$ is interpreted by the morphism in the following diagram:
@@ -294,17 +294,17 @@ Categorically, $\subk_X$ is interpreted by the morphism in the following diagram
 
 \begin{equation}\label{eq:cps1}
     \begin{tikzcd}[column sep=30pt]
-      {S(X)}^V \times S(X) \arrow{r}{\sub_X} \arrow{d}[swap]{m_X^V \times m_X} & S(X) \arrow{d}{m_X}\\
-      {{K_V(X)}^V \times K_V(X)} \arrow{r}{\subk_X} & K_V(X)
+        {S(X)}^V \times S(X) \arrow{r}{\sub_X} \arrow{d}[swap]{m_X^V \times m_X} & S(X) \arrow{d}{m_X}\\
+        {{K_V(X)}^V \times K_V(X)} \arrow{r}{\subk_X} & K_V(X)
     \end{tikzcd}
 \end{equation}
 
 To not clutter the notation, let us define the following endofunctors on $\textsf{Set}^\mathbb{F}$.
 
 \begin{align*}
-  F &= (-) \times V^X\\
-  G &= (-)^{(V^X)}\\
-  H &= (-)^V \times (-)
+    F & = (-) \times V^X   \\
+    G & = (-)^{(V^X)}      \\
+    H & = (-)^V \times (-)
 \end{align*}
 
 We observe an adjunction $F \dashv G$.
@@ -315,53 +315,53 @@ Let $\eta$ be the unit of the adjunction $F \dashv G$.
 We can then define $\subk_X$ to be the following morphism (corresponding to the lambda term above):
 
 \begin{align*}
-  &{K(X)}^V \times K(X) \xrightarrow{\eta} {({K(X)}^V \times K(X) \times V^X)}^{(V^X)} \xrightarrow{\textsf{str}^{(V^X)}}\\
-  &\quad {({(K(X) \times V^X)}^V \times K(X) \times V^X)}^{(V^X)} \xrightarrow{{(1 \times \ev)}^{(V^X)}} {({(K(X) \times V^X)}^V \times V)}^{(V^X)} \xrightarrow{\ev^{(V^X)}} \\
-  &\quad\quad {(K(X) \times V^X)}^{(V^X)} \xrightarrow{\ev^{(V^X)}} K(X)
+     & {K(X)}^V \times K(X) \xrightarrow{\eta} {({K(X)}^V \times K(X) \times V^X)}^{(V^X)} \xrightarrow{\textsf{str}^{(V^X)}}                                                     \\
+     & \quad {({(K(X) \times V^X)}^V \times K(X) \times V^X)}^{(V^X)} \xrightarrow{{(1 \times \ev)}^{(V^X)}} {({(K(X) \times V^X)}^V \times V)}^{(V^X)} \xrightarrow{\ev^{(V^X)}} \\
+     & \quad\quad {(K(X) \times V^X)}^{(V^X)} \xrightarrow{\ev^{(V^X)}} K(X)
 \end{align*}
 
 Starting with a pair $\langle M , N \rangle \in {K(X)}^V \times K(X)$, this morphism corresponds to the lambda term above as follows:
 \begin{itemize}
-   \item $\eta$ abstracts with respect to $k$.
-   \item $\textsf{str}^{(V^K)}$ duplicates $k$.
-   \item ${(1 \times \ev)}^{(V^X)}$ applies $N$ to $k$.
-   \item $\ev^{(V^X)}$ applies $M$ to $(N k)$.
-   \item $\ev^{(V^X)}$ applies $(M (N k))$ to $k$.
+    \item $\eta$ abstracts with respect to $k$.
+    \item $\textsf{str}^{(V^K)}$ duplicates $k$.
+    \item ${(1 \times \ev)}^{(V^X)}$ applies $N$ to $k$.
+    \item $\ev^{(V^X)}$ applies $M$ to $(N k)$.
+    \item $\ev^{(V^X)}$ applies $(M (N k))$ to $k$.
 \end{itemize}
 
 By naturality of $\ev$ the last two morphisms are equal to the following:
 \begin{align*}
-  &{({(K(X) \times V^X)}^V \times V)}^{(V^X)} \xrightarrow{{(\ev^V \times 1)}^{(V^X)}} {(V^V \times V)}^{(V^X)} \xrightarrow{\ev^{(V^X)}} K(X)
+     & {({(K(X) \times V^X)}^V \times V)}^{(V^X)} \xrightarrow{{(\ev^V \times 1)}^{(V^X)}} {(V^V \times V)}^{(V^X)} \xrightarrow{\ev^{(V^X)}} K(X)
 \end{align*}
 
 We can now write the morphism for $\subk_X$ as follows:
 \begin{align*}
-  &{K(X)}^V \times K(X) \xrightarrow{\eta} {({K(X)}^V \times K(X) \times V^X)}^{(V^X)} \xrightarrow{\textsf{str}^{(V^X)}}\\
-  &\quad {({(K(X) \times V^X)}^V \times K(X) \times V^X)}^{(V^X)} \xrightarrow{{(\ev^V \times \ev)}^{(V^X)}} {(V^V \times V)}^{(V^X)} \xrightarrow{\ev^{(V^X)}} K(X)
+     & {K(X)}^V \times K(X) \xrightarrow{\eta} {({K(X)}^V \times K(X) \times V^X)}^{(V^X)} \xrightarrow{\textsf{str}^{(V^X)}}                                            \\
+     & \quad {({(K(X) \times V^X)}^V \times K(X) \times V^X)}^{(V^X)} \xrightarrow{{(\ev^V \times \ev)}^{(V^X)}} {(V^V \times V)}^{(V^X)} \xrightarrow{\ev^{(V^X)}} K(X)
 \end{align*}
 
 In terms of the functors defined above that is:
 
 \begin{align*}
-  &HG(V) \xrightarrow{\eta} GFHG(V) \xrightarrow{\textsf{str}^{(V^X)}} GHFG(V) \xrightarrow{{(\ev^V \times \ev)}^{(V^X)}} GH(V) \xrightarrow{\ev^{(V^X)}} G(V)
+     & HG(V) \xrightarrow{\eta} GFHG(V) \xrightarrow{\textsf{str}^{(V^X)}} GHFG(V) \xrightarrow{{(\ev^V \times \ev)}^{(V^X)}} GH(V) \xrightarrow{\ev^{(V^X)}} G(V)
 \end{align*}
 
 To keep things readable I omitted the subscripts, but using whiskering, we can include these omitted details:
 
 \begin{align*}
-  &HG(V) \xrightarrow{\eta HG} GFHG(V) \xrightarrow{G\textsf{str}G} GHFG(V) \xrightarrow{GH\ev} GH(V) \xrightarrow{G \ev} G(V)
+     & HG(V) \xrightarrow{\eta HG} GFHG(V) \xrightarrow{G\textsf{str}G} GHFG(V) \xrightarrow{GH\ev} GH(V) \xrightarrow{G \ev} G(V)
 \end{align*}
 
 The first three morphisms constitute precisely the \emph{mate} $\psi$ of \textsf{str} (see page 150 in \cite{leinsterHigherOperadsHigher2004}):
 
 \begin{align*}
-  &HG(V) \xrightarrow{\psi} GH(V) \xrightarrow{G \ev} G(V)
+     & HG(V) \xrightarrow{\psi} GH(V) \xrightarrow{G \ev} G(V)
 \end{align*}
 
 We can also write \textsf{str} in terms of $\psi$:
 
 \begin{align}
-  &\textsf{str} = FH \xrightarrow{FH \eta} FHGF \xrightarrow{F \psi F} FGHF \xrightarrow{\ev HF} HF\label{eq:cps1a}
+     & \textsf{str} = FH \xrightarrow{FH \eta} FHGF \xrightarrow{F \psi F} FGHF \xrightarrow{\ev HF} HF\label{eq:cps1a}
 \end{align}
 
 \pagebreak
@@ -369,50 +369,50 @@ We can now rewrite Diagram~\ref{eq:cps1} as follows:
 
 \begin{equation}\label{eq:cps2}
     \begin{tikzcd}[column sep=30pt]
-      HS(X) \arrow{r}{\sub_X} \arrow{d}[swap]{H(m_X)} & S(X) \arrow{dd}{m_X}\\
-      HG(V) \arrow{d}[swap]{\psi_V} & \\
-      GH(V) \arrow{r}{G(\ev)} & G(V)
+        HS(X) \arrow{r}{\sub_X} \arrow{d}[swap]{H(m_X)} & S(X) \arrow{dd}{m_X}\\
+        HG(V) \arrow{d}[swap]{\psi_V} & \\
+        GH(V) \arrow{r}{G(\ev)} & G(V)
     \end{tikzcd}
 \end{equation}
 
 Let $\overline{m_X}$ be the transpose of $m_X$ with respect to the adjunction $F \dashv G$ so that
 \begin{equation}\label{eq:cps3}
-\overline{m_X} = G(m_X) \circ \eta_{S(X)}.
+    \overline{m_X} = G(m_X) \circ \eta_{S(X)}.
 \end{equation}
 
 We now note that by naturality (of each of the quadrilaterals) the following diagram commutes:
 \begin{equation}\label{eq:cps4}
     \begin{tikzcd}[column sep=50pt, row sep=30pt]
-      H(S(X)) \arrow{r}{\eta H (S(X))} \arrow{d}[swap]{H \eta (S(X))}& GFH (S(X))\arrow{d}{GFH \eta (S(X))}\\
-      HGF (S(X))\arrow{r}{\eta HGF (S(X))} \arrow{dd}[swap]{HG(\overline{m_X})} \arrow{dr}{\psi F (S(X))} & GFHGF (S(X)) \arrow{dr}{GF \psi F (S(X))}& \\
-          & GHF (S(X)) \arrow{r}{\eta GHF (S(X))} \arrow{dd}{GH(\overline{m_X})} \arrow[equal]{rd}{} & GFGHF (S(X)) \arrow{d}{G \ev HF(S(X))} \\
-      HG (S(X)) \arrow{rd}{\psi S(X)} & & GHF (S(X)) \arrow{ld}{GH(\overline{m_X})}\\
-          & GH (S(X))&
+        H(S(X)) \arrow{r}{\eta H (S(X))} \arrow{d}[swap]{H \eta (S(X))}& GFH (S(X))\arrow{d}{GFH \eta (S(X))}\\
+        HGF (S(X))\arrow{r}{\eta HGF (S(X))} \arrow{dd}[swap]{HG(\overline{m_X})} \arrow{dr}{\psi F (S(X))} & GFHGF (S(X)) \arrow{dr}{GF \psi F (S(X))}& \\
+        & GHF (S(X)) \arrow{r}{\eta GHF (S(X))} \arrow{dd}{GH(\overline{m_X})} \arrow[equal]{rd}{} & GFGHF (S(X)) \arrow{d}{G \ev HF(S(X))} \\
+        HG (S(X)) \arrow{rd}{\psi S(X)} & & GHF (S(X)) \arrow{ld}{GH(\overline{m_X})}\\
+        & GH (S(X))&
     \end{tikzcd}
 \end{equation}
 
 Using Equations~\ref{eq:cps1a} and~\ref{eq:cps3} the outline of Diagram~\ref{eq:cps4} can be written as the following equality:
 
 \begin{equation}\label{eq:cps5}
-  \psi_V \circ H(m_X) = GH(\overline{m_X}) \circ G(\str_{S(X)}) \circ \eta_{HS(X)}
+    \psi_V \circ H(m_X) = GH(\overline{m_X}) \circ G(\str_{S(X)}) \circ \eta_{HS(X)}
 \end{equation}
 
 Therefore, we can rewrite Diagram~\ref{eq:cps2} (using Equations~\ref{eq:cps3} and~\ref{eq:cps5}) as follows:
 \begin{equation}\label{eq:cps6}
     \begin{tikzcd}[column sep=50pt, row sep=25pt]
-      HS(X) \arrow{r}{\sub_X} \arrow{d}[swap]{\eta HS(X)} & S(X) \arrow{d}{\eta S(X)}\\
-      GFH(S(X)) \arrow{d}[swap]{G (\textsf{str}_{S(X)})} \arrow{r}{GF(\sub_X)} & GF(S(X)) \arrow{dd}{G(\overline{m_X})}\\
-      GHF(S(X)) \arrow{d}[swap]{GH(\overline{m_X})} & \\
-      GH(V) \arrow{r}{G(\ev)} & G(V)
+        HS(X) \arrow{r}{\sub_X} \arrow{d}[swap]{\eta HS(X)} & S(X) \arrow{d}{\eta S(X)}\\
+        GFH(S(X)) \arrow{d}[swap]{G (\textsf{str}_{S(X)})} \arrow{r}{GF(\sub_X)} & GF(S(X)) \arrow{dd}{G(\overline{m_X})}\\
+        GHF(S(X)) \arrow{d}[swap]{GH(\overline{m_X})} & \\
+        GH(V) \arrow{r}{G(\ev)} & G(V)
     \end{tikzcd}
 \end{equation}
 
 But Diagram~\ref{eq:cps6} only commutes if the following diagram commutes:
 \begin{equation}\label{eq:cps7}
     \begin{tikzcd}[column sep=50pt, row sep=25pt]
-      FH(S(X)) \arrow{d}[swap]{\textsf{str}_{S(X)}} \arrow{r}{F(\sub_X)} & F(S(X)) \arrow{dd}{\overline{m_X}}\\
-      HF(S(X)) \arrow{d}[swap]{H(\overline{m_X})} & \\
-      H(V) \arrow{r}{\ev} & V
+        FH(S(X)) \arrow{d}[swap]{\textsf{str}_{S(X)}} \arrow{r}{F(\sub_X)} & F(S(X)) \arrow{dd}{\overline{m_X}}\\
+        HF(S(X)) \arrow{d}[swap]{H(\overline{m_X})} & \\
+        H(V) \arrow{r}{\ev} & V
     \end{tikzcd}
 \end{equation}
 
@@ -466,19 +466,19 @@ I think this diagram \emph{should} commute, because counterclockwise we duplicat
                   \end{tikzcd}\]
 
         \item \emph{Associativity}:
-              \todo{Check}
-              % https://q.uiver.app/#q=WzAsNSxbMCwyLCIoWF57Vl8xfSBcXHRpbWVzIFhee1BfMX0pXntWXzJ9IFxcdGltZXMgWF57UF8yfSJdLFsxLDAsIihYXntWXzJ9IFxcdGltZXMgWF57UF8yfSlee1ZfMX0gXFx0aW1lcyAoWF57Vl8yfSBcXHRpbWVzIFhee1BfMn0pXntQXzF9Il0sWzIsMiwiWF57Vl8xfSBcXHRpbWVzIFhee1BfMX0iXSxbMCw0LCJYXntWXzJ9IFxcdGltZXMgWF57UF8yfSJdLFsyLDQsIlgiXSxbMCwxLCI/PyJdLFsxLDIsIlxcaW5jXntWXzF9IFxcdGltZXMgXFxpbmNee1BfMX0iXSxbMyw0LCJcXGluYyIsMl0sWzAsMywiXFxpbmNee1ZfMn0gXFx0aW1lcyAxIiwyXSxbMiw0LCJcXGluYyJdXQ==
+              % https://q.uiver.app/#q=WzAsNyxbMCwyLCIoWF57Vl8xfSBcXHRpbWVzIFhee1BfMX0pXntWXzJ9IFxcdGltZXMgWF57UF8yfSJdLFsyLDAsIihYXntWXzJ9IFxcdGltZXMgWF57UF8yfSlee1ZfMX0gXFx0aW1lcyAoWF57Vl8yfSBcXHRpbWVzIFhee1BfMn0pXntQXzF9Il0sWzIsMiwiWF57Vl8xfSBcXHRpbWVzIFhee1BfMX0iXSxbMCwzLCJYXntWXzJ9IFxcdGltZXMgWF57UF8yfSJdLFsyLDMsIlgiXSxbMCwxLCJYXntWXzEgXFx0aW1lcyBWXzJ9IFxcdGltZXMgWF57Vl8yIFxcdGltZXMgUF8xfSBcXHRpbWVzIFhee1BfMn0iXSxbMCwwLCJYXntWXzEgXFx0aW1lcyBWXzJ9IFxcdGltZXMgWF57Vl8yIFxcdGltZXMgUF8xfSBcXHRpbWVzIChYXntWXzF9IFxcdGltZXMgWF57UF8xfSlee1BfMn0iXSxbMSwyLCJcXGluY157Vl8xfSBcXHRpbWVzIFxcaW5jXntQXzF9Il0sWzMsNCwiXFxpbmMiLDJdLFswLDMsIlxcaW5jXntWXzJ9IFxcdGltZXMgMSIsMl0sWzIsNCwiXFxpbmMiXSxbNSwwLCJcXGNvbmciLDJdLFs2LDUsIjEgXFx0aW1lcyBcXGluY157UF8yfSIsMl0sWzYsMSwiXFxjb25nIl1d
               \[\begin{tikzcd}
-                      & {(X^{V_2} \times X^{P_2})^{V_1} \times (X^{V_2} \times X^{P_2})^{P_1}} \\
-                      \\
+                      {X^{V_1 \times V_2} \times X^{V_2 \times P_1} \times (X^{V_1} \times X^{P_1})^{P_2}} && {(X^{V_2} \times X^{P_2})^{V_1} \times (X^{V_2} \times X^{P_2})^{P_1}} \\
+                      {X^{V_1 \times V_2} \times X^{V_2 \times P_1} \times X^{P_2}} \\
                       {(X^{V_1} \times X^{P_1})^{V_2} \times X^{P_2}} && {X^{V_1} \times X^{P_1}} \\
-                      \\
                       {X^{V_2} \times X^{P_2}} && X
-                      \arrow["{\inc^{V_1} \times \inc^{P_1}}", from=1-2, to=3-3]
-                      \arrow["{??}", from=3-1, to=1-2]
-                      \arrow["{\inc^{V_2} \times 1}"', from=3-1, to=5-1]
-                      \arrow["\inc", from=3-3, to=5-3]
-                      \arrow["\inc"', from=5-1, to=5-3]
+                      \arrow["\cong", from=1-1, to=1-3]
+                      \arrow["{1 \times \inc^{P_2}}"', from=1-1, to=2-1]
+                      \arrow["{\inc^{V_1} \times \inc^{P_1}}", from=1-3, to=3-3]
+                      \arrow["\cong"', from=2-1, to=3-1]
+                      \arrow["{\inc^{V_2} \times 1}"', from=3-1, to=4-1]
+                      \arrow["\inc", from=3-3, to=4-3]
+                      \arrow["\inc"', from=4-1, to=4-3]
                   \end{tikzcd}\]
     \end{itemize}
 \end{definition}
