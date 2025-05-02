@@ -274,7 +274,7 @@ data EqComp Γ where
             -----------------------------------------------------------------------------------------------
             -> Γ ⊢ᶜ sub (sub L M) N ≈ sub (sub (sub-comp exchg L) (wk-comp (wk-wk wk-id) N)) (sub M N) ∶ A
 
-  var-push : (V : Γ ⊢ᵛ `V) -> (M : (Γ ∙ `V) ⊢ᶜ A)
+  var-push : (V : Γ ⊢ᵛ `V) -> (M : (Γ ∙ A) ⊢ᶜ A)
            ----------------------------------------
            -> Γ ⊢ᶜ push (var V) M ≈ var V ∶ A
 
