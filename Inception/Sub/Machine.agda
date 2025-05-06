@@ -2,13 +2,12 @@
 
 module Inception.Sub.Machine where
 
-open import Data.List
-open import Data.Product
-open import Data.Sum using (_⊎_; inj₁; inj₂)
+-- open import Data.List
+-- open import Data.Product
+-- open import Data.Sum using (_⊎_; inj₁; inj₂)
 
 import Relation.Binary.PropositionalEquality as Eq
 open Eq using (_≡_; refl; trans; sym; cong; cong-app; subst)
-open Eq.≡-Reasoning using (begin_; _≡⟨⟩_; step-≡; _∎)
 
 open import Inception.Sub.Syntax
 
