@@ -190,7 +190,6 @@ c-assoc'' {Γ} {Ψ} {Δ} {A} rewrite ⊕-assoc {Γ} {Ψ} {Δ} = refl
 lt : {M : Γ ⊢ᶜ A} {k : Stack Γ}
      ->   ( ∃[ Δ ] ∃[ B ] ∃[ i ] (⟪ ε ∥ M ∥ k ⟫ ~>* ⟪ Δ ∥ var {A = B} (var (wk-mem (ext-⊇-L {Δ = Δ}) i)) ∥ k ⟫) )
         ⊎ ( ∃[ Δ ] ∃[ V ] (⟪ ε ∥ M ∥ k ⟫ ~>* ⟪ Δ ∥ return {A = A} (wk-val (ext-⊇-L {Δ = Δ}) V) ∥ k ⟫) )
-        -- need to include third possibility: M = sub (return (var h)) P
 
 lt {Γ = Γ} {A = A} {M = return x} {k = k} = {!!}
 lt {Γ = Γ} {A = A} {M = pm x M} {k = k} = {!!}
@@ -203,7 +202,7 @@ lt {Γ = Γ} {A = A} {M = sub N P} {k = k} with lt {M = N} {k = h ↦ P ∷ k}
 --inj₁ ( {!!} , {!!} , {!!} ,  ~>*-trans ( ⟪ ε ∥ sub N P ∥ k ⟫ ~>⟨ ~>-sub ⟩ Q) (⟪ Δ ∥ var (var (wk-mem ext-⊇-L i)) ∥ h ↦ P ∷ k ⟫ ~>⟨ {! ~>-var-pop-k!} ⟩ {!!}) )
 
 -- What if we return the variable bound by sub?
-... | inj₂ (Δ , V , Q) = inj₂ ( Δ , {!!} ,  ~>*-trans (⟪ ε ∥ sub N P ∥ k ⟫ ~>⟨ ~>-sub ⟩ Q) (⟪ Δ ∥ return (wk-val ext-⊇-L V) ∥ h ↦ P ∷ k ⟫ ~>⟨ {!~>-return-pop!} ⟩ ( {!!} ■)) )
+... | inj₂ (Δ , V , Q) = inj₂ ( (ε ∙ `V) ⊕ Δ , {!!} ,  ~>*-trans (⟪ ε ∥ sub N P ∥ k ⟫ ~>⟨ ~>-sub ⟩ Q) (⟪ Δ ∥ return (wk-val ext-⊇-L V) ∥ h ↦ P ∷ k ⟫ ~>⟨ {!~>-return-pop!} ⟩ ( {!!} ■)) )
 
 lt {Γ = Γ} {A = A} {M = push N (return x)} {k = k} = {!!}
 lt {Γ = Γ} {A = A} {M = push N (pm x P)} {k = k} = {!!}
