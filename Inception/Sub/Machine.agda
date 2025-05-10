@@ -53,6 +53,7 @@ data Stack : (Γ : Ctx) → Set where
 
 data State : Set where
   ⟪_∥_∥_⟫ : {Γ : Ctx} -> (Δ : Ctx) -> (Γ ⊕ Δ) ⊢ᶜ A -> Stack Γ -> State
+  stuck : State
 
 data _~>_ : State -> State -> Set where
 
@@ -91,15 +92,20 @@ data _~>_ : State -> State -> Set where
     ->    ⟪ Δ            ∥ var {A = A} (var (wk-mem ext-⊇-L h))                              ∥ h ↦ N ∷ k ⟫
        ~> ⟪ ε            ∥ N                                                                 ∥ k         ⟫
 
-  ~>-return-pop : {V : ((Γ ∙ `V) ⊕ Δ) ⊢ᵛ A} {N : Γ ⊢ᶜ B} {k : Stack Γ}
+  ~>-return-pop : {V : Γ ⊢ᵛ A} {N : Γ ⊢ᶜ B} {k : Stack Γ}
     ------------------------------------------------------------------------------------------------------
-    ->    ⟪ Δ ∥ return V                                                                     ∥ h ↦ N ∷ k ⟫
-       ~> ⟪ (ε ∙ `V) ⊕ Δ ∥ return (v-assoc {Γ} {ε ∙ `V} {Δ} V)                               ∥ k         ⟫
+    ->    ⟪ Δ ∥ return (wk-val {(Γ ∙ `V) ⊕ Δ} {Γ ∙ `V} {A} (ext-⊇-L {Γ ∙ `V} {Δ}) ((wk-val {Γ ∙ `V} {Γ} {A} (ext-⊇-L) V)))         ∥ h ↦ N ∷ k ⟫
+       ~> ⟪ (ε ∙ `V) ⊕ Δ ∥ return (wk-val {Γ ⊕ ((ε ∙ `V) ⊕ Δ)} {Γ} {A} (ext-⊇-L {Γ} {(ε ∙ `V) ⊕ Δ}) V)       ∥ k         ⟫
 
   ~>-return-step : {V : Γ ⊢ᵛ A} {N : (Γ ∙ A) ⊢ᶜ B} {k : Stack Γ}
     ------------------------------------------------------------------------------------------------------
     ->    ⟪ Δ            ∥ return (wk-val (ext-⊇-L {Γ} {Δ}) V)                               ∥ N ∷ k     ⟫
        ~> ⟪ ε            ∥  (sub-comp (sub-ex sub-id V) N)                                   ∥ k         ⟫
+
+  ~>-return-stuck : {k : Stack Γ}
+    ------------------------------------------------------------------------------------------------------
+    ->    ⟪ Δ ∥ return (wk-val {(Γ ∙ `V) ⊕ Δ} {Γ ∙ `V} {`V} (ext-⊇-L {Γ ∙ `V} {Δ}) (var h))  ∥ h ↦ N ∷ k ⟫
+       ~> stuck
 
 data _~>*_ : State -> State → Set where
   _■ : ∀ (M : State) → M ~>* M
@@ -190,6 +196,8 @@ c-assoc'' {Γ} {Ψ} {Δ} {A} rewrite ⊕-assoc {Γ} {Ψ} {Δ} = refl
 lt : {M : Γ ⊢ᶜ A} {k : Stack Γ}
      ->   ( ∃[ Δ ] ∃[ B ] ∃[ i ] (⟪ ε ∥ M ∥ k ⟫ ~>* ⟪ Δ ∥ var {A = B} (var (wk-mem (ext-⊇-L {Δ = Δ}) i)) ∥ k ⟫) )
         ⊎ ( ∃[ Δ ] ∃[ V ] (⟪ ε ∥ M ∥ k ⟫ ~>* ⟪ Δ ∥ return {A = A} (wk-val (ext-⊇-L {Δ = Δ}) V) ∥ k ⟫) )
+        -- Need to add this:
+        -- ⊎ ( ⟪ ε ∥ M ∥ k ⟫ ~>* stuck )
 
 lt {Γ = Γ} {A = A} {M = return x} {k = k} = {!!}
 lt {Γ = Γ} {A = A} {M = pm x M} {k = k} = {!!}
@@ -202,7 +210,8 @@ lt {Γ = Γ} {A = A} {M = sub N P} {k = k} with lt {M = N} {k = h ↦ P ∷ k}
 --inj₁ ( {!!} , {!!} , {!!} ,  ~>*-trans ( ⟪ ε ∥ sub N P ∥ k ⟫ ~>⟨ ~>-sub ⟩ Q) (⟪ Δ ∥ var (var (wk-mem ext-⊇-L i)) ∥ h ↦ P ∷ k ⟫ ~>⟨ {! ~>-var-pop-k!} ⟩ {!!}) )
 
 -- What if we return the variable bound by sub?
-... | inj₂ (Δ , V , Q) = inj₂ ( (ε ∙ `V) ⊕ Δ , {!!} ,  ~>*-trans (⟪ ε ∥ sub N P ∥ k ⟫ ~>⟨ ~>-sub ⟩ Q) (⟪ Δ ∥ return (wk-val ext-⊇-L V) ∥ h ↦ P ∷ k ⟫ ~>⟨ {!~>-return-pop!} ⟩ ( {!!} ■)) )
+-- Need to split on V.
+... | inj₂ (Δ , V , Q) = inj₂ ( (ε ∙ `V) ⊕ Δ , {!!} ,  ~>*-trans (⟪ ε ∥ sub N P ∥ k ⟫ ~>⟨ ~>-sub ⟩ Q) (⟪ Δ ∥ return (wk-val ext-⊇-L V) ∥ h ↦ P ∷ k ⟫ ~>⟨ {!~>-return-pop'!} ⟩ ( {!!} ■)) )
 
 lt {Γ = Γ} {A = A} {M = push N (return x)} {k = k} = {!!}
 lt {Γ = Γ} {A = A} {M = push N (pm x P)} {k = k} = {!!}
