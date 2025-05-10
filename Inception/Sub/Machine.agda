@@ -19,14 +19,6 @@ _⊕_ : Ctx → Ctx → Ctx
 Γ ⊕ ε = Γ
 Γ ⊕ (Δ ∙ x) = (Γ ⊕ Δ) ∙ x
 
-data Stack : (Γ : Ctx) → Set where
-  nil : Stack ε
-  _↦_∷_ : {Γ : Ctx} {A : Ty} -> (i : (Γ ⊕ Ψ) ∙ `V ∋ `V) -> (N : (Γ ⊕ Ψ) ⊢ᶜ A) -> Stack Γ -> Stack ((Γ ⊕ Ψ) ∙ `V)
-  _∷_ : {Γ : Ctx} {A B : Ty} -> (N : ((Γ ⊕ Ψ) ∙ A) ⊢ᶜ B) -> Stack Γ -> Stack (Γ ⊕ Ψ)
-
-data State : Set where
-  ⟪_∥_∥_⟫ : {Γ : Ctx} -> (Δ : Ctx) -> (Γ ⊕ Δ) ⊢ᶜ A -> Stack Γ -> State
-
 ⊕-assoc : (Γ ⊕ Ψ) ⊕ Δ ≡ Γ ⊕ (Ψ ⊕ Δ)
 ⊕-assoc {Γ} {Ψ} {ε} = refl
 ⊕-assoc {Γ} {Ψ} {Δ ∙ x} rewrite ⊕-assoc {Γ} {Ψ} {Δ} = refl
@@ -52,7 +44,64 @@ i-assoc {Γ} {Ψ} {Δ} i rewrite ⊕-assoc {Γ} {Ψ} {Δ} = i
 v-assoc : Val ((Γ ⊕ Ψ) ⊕ Δ) A → Val (Γ ⊕ (Ψ ⊕ Δ)) A
 v-assoc {Γ} {Ψ} {Δ} v rewrite ⊕-assoc {Γ} {Ψ} {Δ} = v
 
+data Stack : (Γ : Ctx) → Set where
+  nil : Stack ε
+  -- _↦_∷_ : {Γ : Ctx} {A : Ty} -> (i : (Γ ⊕ Ψ) ∙ `V ∋ `V) -> (N : (Γ ⊕ Ψ) ⊢ᶜ A) -> Stack Γ -> Stack ((Γ ⊕ Ψ) ∙ `V)
+  -- _∷_ : {Γ : Ctx} {A B : Ty} -> (N : ((Γ ⊕ Ψ) ∙ A) ⊢ᶜ B) -> Stack Γ -> Stack (Γ ⊕ Ψ)
+  _↦_∷_ : {Γ : Ctx} {A : Ty} -> (i : Γ ∙ `V ∋ `V) -> (N : Γ ⊢ᶜ A) -> Stack Γ -> Stack (Γ ∙ `V)
+  _∷_ : {Γ : Ctx} {A B : Ty} -> (N : (Γ ∙ A) ⊢ᶜ B) -> Stack Γ -> Stack Γ
+
+data State : Set where
+  ⟪_∥_∥_⟫ : {Γ : Ctx} -> (Δ : Ctx) -> (Γ ⊕ Δ) ⊢ᶜ A -> Stack Γ -> State
+
 data _~>_ : State -> State -> Set where
+
+  ~>-app : {M : (Γ ∙ A) ⊢ᶜ B} {V : Γ ⊢ᵛ A} {k : Stack Γ}
+    ------------------------------------------------------------------------------------------------------
+    ->    ⟪ ε            ∥ app (lam M) V                                                     ∥ k         ⟫
+       ~> ⟪ ε            ∥ sub-comp (sub-ex sub-id V) M                                      ∥ k         ⟫
+
+  ~>-pm : {V1 : Γ ⊢ᵛ A} {V2 : Γ ⊢ᵛ B} {W : (Γ ∙ A ∙ B) ⊢ᶜ C} {k : Stack Γ}
+    ------------------------------------------------------------------------------------------------------
+    ->    ⟪ ε            ∥ pm (pair V1 V2) W                                                 ∥ k         ⟫
+       ~> ⟪ ε            ∥ sub-comp (sub-ex (sub-ex sub-id V1) V2) W                         ∥ k         ⟫
+
+  ~>-push : {M : Γ  ⊢ᶜ A} {N : (Γ ∙ A) ⊢ᶜ B} {k : Stack Γ}
+    ------------------------------------------------------------------------------------------------------
+    ->    ⟪ ε            ∥ push M N                                                          ∥ k         ⟫
+       ~> ⟪ ε            ∥ M                                                                 ∥ N ∷ k     ⟫
+
+  ~>-sub : {M : (Γ ∙ `V) ⊢ᶜ A} {N : Γ ⊢ᶜ A} {k : Stack Γ}
+    ------------------------------------------------------------------------------------------------------
+    ->    ⟪ ε            ∥ sub M N                                                           ∥ k         ⟫
+       ~> ⟪ ε            ∥ M                                                                 ∥ h ↦ N ∷ k ⟫
+
+  ~>-var-pop-c : {i : Γ ∋ `V} {N : (Γ ∙ C) ⊢ᶜ B}  {k : Stack Γ}
+    ------------------------------------------------------------------------------------------------------
+    ->    ⟪ Δ            ∥ var {A = A} (var (wk-mem (ext-⊇-L {Γ = Γ} {Δ = Δ}) i))            ∥ N ∷ k     ⟫
+       ~> ⟪ Δ            ∥ var {A = A} (var (wk-mem ext-⊇-L i))                              ∥ k         ⟫
+
+  ~>-var-pop-k : {i : Γ ∋ `V} {N : Γ ⊢ᶜ B}  {k : Stack Γ}
+    ----------------------------------------------------------------------------------------------------------------
+    ->    ⟪ Δ            ∥ var {A = A} (var (wk-mem ext-⊇-L (t i)))                                ∥ h ↦ N ∷ k ⟫
+       ~> ⟪ (ε ∙ `V) ⊕ Δ ∥ var {A = A} (var (i-assoc {Γ} {ε ∙ `V} {Δ} (wk-mem ext-⊇-L (t i))))     ∥ k         ⟫
+
+  ~>-var-step : {N : Γ ⊢ᶜ B}  {k : Stack Γ}
+    ------------------------------------------------------------------------------------------------------
+    ->    ⟪ Δ            ∥ var {A = A} (var (wk-mem ext-⊇-L h))                              ∥ h ↦ N ∷ k ⟫
+       ~> ⟪ ε            ∥ N                                                                 ∥ k         ⟫
+
+  ~>-return-pop : {V : ((Γ ∙ `V) ⊕ Δ) ⊢ᵛ A} {N : Γ ⊢ᶜ B} {k : Stack Γ}
+    ------------------------------------------------------------------------------------------------------
+    ->    ⟪ Δ ∥ return V                                                                     ∥ h ↦ N ∷ k ⟫
+       ~> ⟪ (ε ∙ `V) ⊕ Δ ∥ return (v-assoc {Γ} {ε ∙ `V} {Δ} V)                               ∥ k         ⟫
+
+  ~>-return-step : {V : Γ ⊢ᵛ A} {N : (Γ ∙ A) ⊢ᶜ B} {k : Stack Γ}
+    ------------------------------------------------------------------------------------------------------
+    ->    ⟪ Δ            ∥ return (wk-val (ext-⊇-L {Γ} {Δ}) V)                               ∥ N ∷ k     ⟫
+       ~> ⟪ ε            ∥  (sub-comp (sub-ex sub-id V) N)                                   ∥ k         ⟫
+
+{- data _~>_ : State -> State -> Set where
 
   ~>-app : {M : ((Γ ⊕ Δ) ∙ A) ⊢ᶜ B} {V : (Γ ⊕ Δ) ⊢ᵛ A} {k : Stack Γ}
     ------------------------------------------------------------------------------------------------------
@@ -94,10 +143,12 @@ data _~>_ : State -> State -> Set where
     ->    ⟪ Δ ∥ return V                                                                     ∥ h ↦ N ∷ k ⟫
        ~> ⟪ (Ψ ∙ `V) ⊕ Δ ∥ return (v-assoc {Γ} {Ψ ∙ `V} {Δ} V)                               ∥ k         ⟫
 
+  -- Δ should always be ε
   ~>-return-step : {V : (Γ ⊕ Ψ) ⊢ᵛ A} {N : ((Γ ⊕ Ψ) ∙ A) ⊢ᶜ B} {k : Stack Γ}
     ------------------------------------------------------------------------------------------------------
     ->    ⟪ Δ            ∥ return (wk-val (ext-⊇-L {Γ ⊕ Ψ} {Δ}) V)                           ∥ N ∷ k     ⟫
        ~> ⟪ Ψ            ∥  (sub-comp (sub-ex sub-id V) N)                                   ∥ k         ⟫
+-}
 
 data _~>*_ : State -> State → Set where
   _■ : ∀ (M : State) → M ~>* M
@@ -137,6 +188,22 @@ wk-val-id {Γ = ε} {x = unit} = refl
 wk-val-id {Γ = Γ ∙ x} {x = unit} = refl
 
 -------------------------------------------------------------
+-- wk-ε-id : {V : Γ ⊢ᵛ A} → wk-val (ext-⊇-L {Γ} {ε}) V ≡ V
+-- wk-ε-id = wk-val-id
+
+l1 : {V : Γ ⊢ᵛ A} {N : (Γ ∙ A) ⊢ᶜ B} {k : Stack Γ}
+     → ⟪ ε ∥ return (wk-val (ext-⊇-L {Γ} {ε}) V) ∥ N ∷ k ⟫ ~> ⟪ ε ∥ (sub-comp (sub-ex sub-id V) N) ∥ k ⟫
+l1 = ~>-return-step
+
+l2 : {V : Γ ⊢ᵛ A} {N : (Γ ∙ A) ⊢ᶜ B} {k : Stack Γ}
+     → ⟪ ε ∥ return V ∥ N ∷ k ⟫ ~> ⟪ ε ∥ (sub-comp (sub-ex sub-id V) N) ∥ k ⟫ ≡ ⟪ ε ∥ return (wk-val (ext-⊇-L {Γ} {ε}) V) ∥ N ∷ k ⟫ ~> ⟪ ε ∥ (sub-comp (sub-ex sub-id V) N) ∥ k ⟫
+l2 {V = V} rewrite (wk-val-id {x = V}) = refl
+
+l3 : {V : Γ ⊢ᵛ A} {N : (Γ ∙ A) ⊢ᶜ B} {k : Stack Γ}
+     → ⟪ ε ∥ return V ∥ N ∷ k ⟫ ~> ⟪ ε ∥ (sub-comp (sub-ex sub-id V) N) ∥ k ⟫
+l3 {V = V} {N = N} {k = k} with l1 {V = V} {N = N} {k = k}
+... | L1 rewrite l2 {V = V} {N = N} {k = k} = L1
+
 
 i-wk : (i : Γ ∋ `V) → (Γ ⊕ Δ) ∋ `V
 i-wk {Γ} {Δ} i = wk-mem {Γ ⊕ Δ} {Γ} ext-⊇-L i
@@ -169,9 +236,9 @@ c-assoc'' {Γ} {Ψ} {Δ} {A} rewrite ⊕-assoc {Γ} {Ψ} {Δ} = refl
 
 -------------------------------------------------------------
 
-lt : {M : ((Γ ⊕ Ψ') ⊕ Ψ) ⊢ᶜ A} {k : Stack (Γ ⊕ Ψ')}
-     ->   ( ∃[ Δ ] ∃[ i ] (⟪ Ψ ∥ M ∥ k ⟫ ~>* ⟪ Δ ∥ var {A = A} (var (wk-mem (ext-⊇-L {Δ = Δ}) (wk-mem (ext-⊇-L {Δ = Ψ'}) i))) ∥ k ⟫) )
-        ⊎ ( ∃[ V ] (⟪ Ψ ∥ M ∥ k ⟫ ~>* ⟪ Ψ ∥ return {A = A} V ∥ k ⟫) )
+lt : {M : Γ ⊢ᶜ A} {k : Stack Γ}
+     ->   ( ∃[ Δ ] ∃[ B ] ∃[ i ] (⟪ ε ∥ M ∥ k ⟫ ~>* ⟪ Δ ∥ var {A = B} (var (wk-mem (ext-⊇-L {Δ = Δ}) i)) ∥ k ⟫) )
+        ⊎ ( ∃[ V ] (⟪ ε ∥ M ∥ k ⟫ ~>* ⟪ ε ∥ return {A = A} V ∥ k ⟫) )
 
 lt {Γ = Γ} {A = A} {M = return x} {k = k} = {!!}
 lt {Γ = Γ} {A = A} {M = pm x M} {k = k} = {!!}
@@ -185,20 +252,22 @@ lt {Γ = Γ} {A = A} {M = push N (push P P₁)} {k = k} = {!!}
 lt {Γ = Γ} {A = A} {M = push N (var x)} {k = k} = {!!}
 lt {Γ = Γ} {A = A} {M = push N (sub P P₁)} {k = k} = {!!}
 
+lt {Γ = Γ} {A = A} {M = push {A = A₂} {B = A} N (app {A = A₁} {B = A} P V)} {k = k} with lt {M = N} {k = (app P V) ∷ k}
+... | inj₁ (Δ₁ , B₁ , i₁ , Q₁) =  inj₁ (Δ₁ , B₁ , i₁ ,  ~>*-trans (⟪ ε ∥ push N (app P V) ∥ k ⟫ ~>⟨ ~>-push ⟩ Q₁) (⟪ Δ₁ ∥ var (var (wk-mem ext-⊇-L i₁)) ∥ app P V ∷ k ⟫ ~>⟨ ~>-var-pop-c ⟩ ( ⟪ Δ₁ ∥ var (var (wk-mem ext-⊇-L i₁)) ∥ k ⟫ ■)) )
+... | inj₂ (V₁ , Q₁) with lt {Γ = Γ} {M = app (sub-val (sub-ex sub-id V₁) P) (sub-val (sub-ex sub-id V₁) V)} {k = k}
+...   | inj₁ (Δ₂ , B₂ , i₂ , Q₂) = inj₁ (Δ₂ , B₂ , i₂ , (~>*-trans ( ⟪ ε ∥ push N (app P V) ∥ k ⟫ ~>⟨ ~>-push ⟩ Q₁) ( ⟪ ε ∥ return V₁ ∥ (app P V) ∷ k ⟫ ~>⟨ l3 ⟩ Q₂)) )
+...   | inj₂ (V₂ , Q₂) = inj₂ (V₂ , (~>*-trans (⟪ ε ∥ push N (app P V) ∥ k ⟫ ~>⟨ ~>-push ⟩ Q₁) (⟪ ε ∥ return V₁ ∥ (app P V) ∷ k ⟫ ~>⟨ l3 ⟩ Q₂)))
 
-lt {Γ = Γ} {Ψ' = Ψ'} {Ψ = Ψ} {A = A} {M = push {A = A₂} N (app {A = A₁} P V)} {k = k} with lt {Γ = Γ} {Ψ' = Ψ' ⊕ Ψ} {Ψ = ε} {M = {!!}} {k = {!!}}
-... | inj₁ (Δ₁ , i₁ , Q₁) = {!!}
-... | inj₂ (V₁ , Q₁)  = {!!}
 
--- SCRATCH:
+--------------------------------------------
+-- EXPERIMENTS
 
--- -- This one is a special case of the above with Δ = ε, it might be the only one we need.
--- ~>-return-step' : {V : (Γ ⊕ Ψ) ⊢ᵛ A} {N : ((Γ ⊕ Ψ) ∙ A) ⊢ᶜ B} {k : Stack Γ}
---   ------------------------------------------------------------------------------------------------------
---   ->    ⟪ ε            ∥ return V                                                          ∥ N ∷ k     ⟫
---      ~> ⟪ Ψ            ∥  (sub-comp (sub-ex sub-id V) N)                                   ∥ k         ⟫
+data Type-A : Set where
+  A-cnstr : (M : ((Γ ⊕ Ψ') ⊕ Ψ) ⊢ᶜ A) → Type-A
 
--- ... | inj₁ (Δ₁ , i₁ , Q₁) = inj₁ ( (Ψ ⊕ Δ₁) , {!i₁!} ,  ~>*-trans (⟪ Ψ ∥ push N (app P V) ∥ k ⟫ ~>⟨ ~>-push ⟩ Q₁) ( ⟪ Δ₁ ∥ var (var (wk-mem (ext-⊇-L {Δ = Δ₁}) (wk-mem (ext-⊇-L {Δ = Ψ}) i₁))) ∥ (_∷_ {Ψ = Ψ} (app P V) k) ⟫ ~>⟨ {!~>-var-pop-c!} ⟩ ( ⟪ {!!} ∥ var {A = A} (var {!!}) ∥ k ⟫ ■)) )
--- ... | inj₂ (V₁ , Q₁) with lt {Γ = Γ} {Ψ = Ψ} {M = app (sub-val (sub-ex sub-id V₁) P) (sub-val (sub-ex sub-id V₁) V)} {k = k}
--- ...   | inj₁ (Δ₂ , i₂ , Q₂) = inj₁ (Δ₂ , i₂ , (~>*-trans (⟪ Ψ ∥ push N (app P V) ∥ k ⟫ ~>⟨ ~>-push ⟩ Q₁) ( ⟪ ε ∥ return V₁ ∥ (_∷_ {Ψ = Ψ} (app P V) k) ⟫ ~>⟨ ~>-return-step' ⟩ Q₂)) )
--- ...   | inj₂ (V₂ , Q₂) = inj₂ (V₂ , (~>*-trans (⟪ Ψ ∥ push N (app P V) ∥ k ⟫ ~>⟨ ~>-push ⟩ Q₁) (⟪ ε ∥ return V₁ ∥ (_∷_ {Ψ = Ψ} (app P V) k) ⟫ ~>⟨ ~>-return-step' ⟩ Q₂)))
+data ⟪_⟫ : Type-A -> Set where
+  B-cnstr : {X : Type-A} -> ⟪ X ⟫
+
+-- example : {M : ((Γ ⊕ Ψ') ⊕ Ψ) ⊢ᶜ A} → ⟪ A-cnstr {Γ} {Ψ'} {Ψ} M ⟫
+-- example {Γ = Γ} {Ψ'} {Ψ} {A = A} {M = M} rewrite (⊕-assoc {Γ} {Ψ'} {Ψ}) = {!!}
+
