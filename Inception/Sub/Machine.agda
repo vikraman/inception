@@ -14,6 +14,7 @@ open import Inception.Sub.Syntax
 
 variable
   Γ' Δ' Ψ' : Ctx
+  A' B' C' D' : Ty
 
 _⊕_ : Ctx → Ctx → Ctx
 Γ ⊕ ε = Γ
@@ -44,10 +45,19 @@ i-assoc {Γ} {Ψ} {Δ} i rewrite ⊕-assoc {Γ} {Ψ} {Δ} = i
 v-assoc : Val ((Γ ⊕ Ψ) ⊕ Δ) A → Val (Γ ⊕ (Ψ ⊕ Δ)) A
 v-assoc {Γ} {Ψ} {Δ} v rewrite ⊕-assoc {Γ} {Ψ} {Δ} = v
 
+
+val-eval : Γ ⊢ᵛ A -> Γ ⊢ᵛ A
+val-eval (var i) = var i
+val-eval (lam x) = lam x
+val-eval (pair V₁ V₂) = pair (val-eval V₁) (val-eval V₂)
+val-eval (pm M W) with (val-eval M)
+... | var i =  pm (var i) (val-eval W)
+... | pair V₁ V₂ = sub-val (sub-ex (sub-ex sub-id V₁) V₂) (val-eval W)
+... | pm M M₁ = pm (pm M M₁) (val-eval W)
+val-eval unit = unit
+
 data Stack : (Γ : Ctx) → Set where
   nil : Stack ε
-  -- _↦_∷_ : {Γ : Ctx} {A : Ty} -> (i : (Γ ⊕ Ψ) ∙ `V ∋ `V) -> (N : (Γ ⊕ Ψ) ⊢ᶜ A) -> Stack Γ -> Stack ((Γ ⊕ Ψ) ∙ `V)
-  -- _∷_ : {Γ : Ctx} {A B : Ty} -> (N : ((Γ ⊕ Ψ) ∙ A) ⊢ᶜ B) -> Stack Γ -> Stack (Γ ⊕ Ψ)
   _↦_∷_ : {Γ : Ctx} {A : Ty} -> (i : Γ ∙ `V ∋ `V) -> (N : Γ ⊢ᶜ A) -> Stack Γ -> Stack (Γ ∙ `V)
   _∷_ : {Γ : Ctx} {A B : Ty} -> (N : (Γ ∙ A) ⊢ᶜ B) -> Stack Γ -> Stack Γ
 
@@ -57,25 +67,35 @@ data State : Set where
 
 data _~>_ : State -> State -> Set where
 
-  ~>-app : {M : (Γ ∙ A) ⊢ᶜ B} {V : Γ ⊢ᵛ A} {k : Stack Γ}
+  ~>-app-lam : {M : (Γ ∙ A) ⊢ᶜ B} {V : Γ ⊢ᵛ A} {k : Stack Γ}
     ------------------------------------------------------------------------------------------------------
     ->    ⟪ ε            ∥ app (lam M) V                                                     ∥ k         ⟫
        ~> ⟪ ε            ∥ sub-comp (sub-ex sub-id V) M                                      ∥ k         ⟫
 
-  ~>-app-pm : (V1 : Γ ⊢ᵛ A) -> (V2 : Γ ⊢ᵛ B) -> (W : (Γ ∙ A ∙ B) ⊢ᵛ C `⇒ D) {V : Γ ⊢ᵛ C}  {k : Stack Γ}
+  ~>-app-pm : (P : Γ ⊢ᵛ A `× B) -> (W : (Γ ∙ A ∙ B) ⊢ᵛ C `⇒ D) {V : Γ ⊢ᵛ C}  {k : Stack Γ}
     ------------------------------------------------------------------------------------------------------
-    ->    ⟪ ε            ∥ app (pm (pair V1 V2) W) V                                         ∥ k         ⟫
-       ~> ⟪ ε            ∥ app (sub-val (sub-ex (sub-ex sub-id V1) V2) W) V                  ∥ k         ⟫
+    ->    ⟪ ε            ∥ app (pm P W) V                                                    ∥ k         ⟫
+       ~> ⟪ ε            ∥ app (val-eval (pm P W)) V                                         ∥ k         ⟫
 
   ~>-app-var : {i : Γ ∋ C `⇒ D} {V : Γ ⊢ᵛ C}  {k : Stack Γ}
     ------------------------------------------------------------------------------------------------------
     ->    ⟪ ε            ∥ app (var i) V                                                     ∥ k         ⟫
        ~> stuck
 
-  ~>-pm : {V1 : Γ ⊢ᵛ A} {V2 : Γ ⊢ᵛ B} {W : (Γ ∙ A ∙ B) ⊢ᶜ C} {k : Stack Γ}
+  ~>-pm-pair : {V1 : Γ ⊢ᵛ A} {V2 : Γ ⊢ᵛ B} {W : (Γ ∙ A ∙ B) ⊢ᶜ C} {k : Stack Γ}
     ------------------------------------------------------------------------------------------------------
     ->    ⟪ ε            ∥ pm (pair V1 V2) W                                                 ∥ k         ⟫
        ~> ⟪ ε            ∥ sub-comp (sub-ex (sub-ex sub-id V1) V2) W                         ∥ k         ⟫
+
+  ~>-pm-pm : {P : Γ ⊢ᵛ A' `× B'} {M : (Γ ∙ A' ∙ B') ⊢ᵛ A `× B} {W : (Γ ∙ A ∙ B) ⊢ᶜ C} {k : Stack Γ}
+    ------------------------------------------------------------------------------------------------------
+    ->    ⟪ ε            ∥ pm (pm P M) W                                                     ∥ k         ⟫
+       ~> ⟪ ε            ∥ pm (val-eval (pm P M)) W                                          ∥ k         ⟫
+
+  ~>-pm-var : {i : Γ ∋ A `× B} {W : (Γ ∙ A ∙ B) ⊢ᶜ C} {k : Stack Γ}
+    ------------------------------------------------------------------------------------------------------
+    ->    ⟪ ε            ∥ pm (var i) W                                                      ∥ k         ⟫
+       ~> stuck
 
   ~>-push : {M : Γ  ⊢ᶜ A} {N : (Γ ∙ A) ⊢ᶜ B} {k : Stack Γ}
     ------------------------------------------------------------------------------------------------------
@@ -219,7 +239,7 @@ lt {Γ = Γ} {A = A} {M = return x} {k = k} with ~>*-refl {M = ⟪ ε ∥ return
 lt {Γ = Γ} {A = A} {M = var V} {k = k}  with ~>*-refl {M = ⟪ ε ∥ var V ∥ k ⟫}
 ... | M rewrite (sym (wk-val-id {x = V})) =  inj₁ ( ε , A , V ,  M )
 
-lt {Γ = Γ} {A = A} {M = app (var i) V} {k = k} = {!!}
+lt {Γ = Γ} {A = A} {M = app (var i) V} {k = k} =  inj₂ (inj₂ ( ⟪ ε ∥ app (var i) V ∥ k ⟫ ~>⟨ ~>-app-var ⟩ (stuck ■)))
 lt {Γ = Γ} {A = A} {M = app (lam x) V} {k = k} = {!!}
 lt {Γ = Γ} {A = A} {M = app (pm M M₁) V} {k = k} = {!!}
 
