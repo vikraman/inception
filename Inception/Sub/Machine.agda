@@ -87,6 +87,11 @@ data _~>_ : State -> State -> Set where
     ->    ⟪ Δ            ∥ var {A = A} (var (wk-mem ext-⊇-L (t i)))                                ∥ h ↦ N ∷ k ⟫
        ~> ⟪ (ε ∙ `V) ⊕ Δ ∥ var {A = A} (var (i-assoc {Γ} {ε ∙ `V} {Δ} (wk-mem ext-⊇-L (t i))))     ∥ k         ⟫
 
+  ~>-var-pm : (V1 : Γ ⊢ᵛ A) -> (V2 : Γ ⊢ᵛ B) -> (W : (Γ ∙ A ∙ B) ⊢ᵛ `V)  {k : Stack Γ}
+    ----------------------------------------------------------------------------------------------------------------
+    ->    ⟪ ε            ∥ var {A = C} (pm (pair V1 V2) W)                                   ∥ k         ⟫
+       ~> ⟪ ε            ∥ var {A = C} (sub-val (sub-ex (sub-ex sub-id V1) V2) W)            ∥ k         ⟫
+
   ~>-var-step : {N : Γ ⊢ᶜ B}  {k : Stack Γ}
     ------------------------------------------------------------------------------------------------------
     ->    ⟪ Δ            ∥ var {A = A} (var (wk-mem ext-⊇-L h))                              ∥ h ↦ N ∷ k ⟫
@@ -194,11 +199,27 @@ c-assoc'' {Γ} {Ψ} {Δ} {A} rewrite ⊕-assoc {Γ} {Ψ} {Δ} = refl
 -------------------------------------------------------------
 
 lt : {M : Γ ⊢ᶜ A} {k : Stack Γ}
-     ->   ( ∃[ Δ ] ∃[ B ] ∃[ i ] (⟪ ε ∥ M ∥ k ⟫ ~>* ⟪ Δ ∥ var {A = B} (var (wk-mem (ext-⊇-L {Δ = Δ}) i)) ∥ k ⟫) )
-        ⊎ ( ∃[ Δ ] ∃[ V ] (⟪ ε ∥ M ∥ k ⟫ ~>* ⟪ Δ ∥ return {A = A} (wk-val (ext-⊇-L {Δ = Δ}) V) ∥ k ⟫) )
-        -- Need to add this:
-        -- ⊎ ( ⟪ ε ∥ M ∥ k ⟫ ~>* stuck )
+     ->   ( ∃[ Δ ] ∃[ B ] ∃[ V ] (⟪ ε ∥ M ∥ k ⟫ ~>* ⟪ Δ ∥ var {A = B} (wk-val (ext-⊇-L {Δ = Δ}) V) ∥ k ⟫) )
+        ⊎ ( ∃[ Δ ] ∃[ V ] (⟪ ε ∥ M ∥ k ⟫ ~>* ⟪ Δ ∥ return {A = A} (wk-val (ext-⊇-L {Δ = Δ}) V) ∥ k ⟫)
+            ⊎ ( ⟪ ε ∥ M ∥ k ⟫ ~>* stuck ) )
 
+lt {Γ = Γ} {A = A} {M = return x} {k = k} with ~>*-refl {M = ⟪ ε ∥ return x ∥ k ⟫}
+... | M rewrite (sym (wk-val-id {x = x})) =  inj₂ (inj₁ ( ε , x ,  M ))
+
+lt {Γ = Γ} {A = A} {M = var V} {k = k}  with ~>*-refl {M = ⟪ ε ∥ var V ∥ k ⟫}
+... | M rewrite (sym (wk-val-id {x = V})) =  inj₁ ( ε , A , V ,  M )
+
+lt {Γ = Γ} {A = A} {M = app (var i) V} {k = k} = {!!}
+lt {Γ = Γ} {A = A} {M = app (lam x) V} {k = k} = {!!}
+lt {Γ = Γ} {A = A} {M = app (pm M M₁) V} {k = k} = {!!}
+
+lt {Γ = Γ} {A = A} {M = pm x M} {k = k} = {!!}
+
+lt {Γ = Γ} {A = A} {M = push M M₁} {k = k} = {!!}
+
+lt {Γ = Γ} {A = A} {M = sub M M₁} {k = k} = {!!}
+
+{- 
 lt {Γ = Γ} {A = A} {M = return x} {k = k} = {!!}
 lt {Γ = Γ} {A = A} {M = pm x M} {k = k} = {!!}
 lt {Γ = Γ} {A = A} {M = app x x₁} {k = k} = {!!}
@@ -224,6 +245,17 @@ lt {Γ = Γ} {A = A} {M = push {A = A₂} {B = A} N (app {A = A₁} {B = A} P V)
 ... | inj₂ (Δ₁ , V₁ , Q₁) with lt {Γ = Γ} {M = app (sub-val (sub-ex sub-id V₁) P) (sub-val (sub-ex sub-id V₁) V)} {k = k}
 ...   | inj₁ (Δ₂ , B₂ , i₂ , Q₂) = inj₁ (Δ₂ , B₂ , i₂ , (~>*-trans ( ⟪ ε ∥ push N (app P V) ∥ k ⟫ ~>⟨ ~>-push ⟩ Q₁) ( ⟪ Δ₁ ∥ return (wk-val ext-⊇-L V₁) ∥ (app P V) ∷ k ⟫ ~>⟨ ~>-return-step ⟩ Q₂)) )
 ...   | inj₂ (Δ₂ , V₂ , Q₂) = inj₂ (Δ₂ , V₂ , (~>*-trans (⟪ ε ∥ push N (app P V) ∥ k ⟫ ~>⟨ ~>-push ⟩ Q₁) (⟪ Δ₁ ∥ return (wk-val ext-⊇-L V₁) ∥ (app P V) ∷ k ⟫ ~>⟨ ~>-return-step ⟩ Q₂)))
+
+-}
+
+
+--  var : (i : Γ ∋ `V)
+--      --------------
+--      -> Γ ⊢ᵛ `V
+--
+--  unit : (i : Γ ∋ `V)
+--       --------------
+--       -> Γ ⊢ᵛ `Unit
 
 ------------------------------------------------------
 
