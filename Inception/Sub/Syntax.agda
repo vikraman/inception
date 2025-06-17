@@ -177,8 +177,8 @@ exchg = sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) sub-id) (var h)) (var (t h)
 variable
   n : ℕ
   x : Γ ∋ A
-  V V1 V2 V3 W W1 W2 W3 : Γ ⊢ᵛ A
-  M M1 M2 M3 N N1 N2 N3 P P1 P2 P3 : Γ ⊢ᶜ A
+  V V1 V2 V3 V4 W W1 W2 W3 : Γ ⊢ᵛ A
+  M M1 M2 M3 M4 N N1 N2 N3 P P1 P2 P3 : Γ ⊢ᶜ A
 
 syntax EqVal Γ A e1 e2 = Γ ⊢ᵛ e1 ≈ e2 ∶ A
 
@@ -212,7 +212,11 @@ data EqVal Γ where
             ----------------------------------------
             -> Γ ⊢ᵛ pair V1 W1 ≈ pair V2 W2 ∶ A `× B
 
-  -- and many more congruence rules but they're skipped
+  pm-cong : Γ ⊢ᵛ V1 ≈ V2 ∶ A `× B -> (Γ ∙ A ∙ B) ⊢ᵛ V3 ≈ V4 ∶ C
+          -------------------------------------------------------------------
+          -> Γ ⊢ᵛ pm V1 V3 ≈ pm V2 V4 ∶ C
+
+  -- beta/eta rules
 
   unit-eta : (V : Γ ⊢ᵛ `Unit)
            ------------------------
@@ -231,6 +235,46 @@ data EqVal Γ where
           -> Γ ⊢ᵛ V ≈ lam (app (wk V) (var h)) ∶ A `⇒ B
 
 data EqComp Γ where
+
+  -- equivalence rules
+  ≈-refl  :
+          -------------
+          Γ ⊢ᶜ M ≈ M ∶ A
+
+  ≈-sym   : Γ ⊢ᶜ M1 ≈ M2 ∶ A
+          -------------------
+          -> Γ ⊢ᶜ M2 ≈ M1 ∶ A
+
+  ≈-trans : Γ ⊢ᶜ M1 ≈ M2 ∶ A -> Γ ⊢ᶜ M2 ≈ M3 ∶ A
+          -------------------------------------
+          -> Γ ⊢ᶜ M1 ≈ M3 ∶ A
+
+  -- congruence rules
+  return-cong : Γ ⊢ᵛ V1 ≈ V2 ∶ A
+             -----------------------------
+             -> Γ ⊢ᶜ return V1 ≈ return V2 ∶ A
+
+  pm-cong : Γ ⊢ᵛ V1 ≈ V2 ∶ A `× B -> (Γ ∙ A ∙ B) ⊢ᶜ M1 ≈ M2 ∶ C
+            -------------------------------------------------------------------
+            -> Γ ⊢ᶜ pm V1 M1 ≈ pm V2 M2 ∶ C
+
+  push-cong : Γ ⊢ᶜ M1 ≈ M2 ∶ A -> (Γ ∙ A) ⊢ᶜ N1 ≈ N2 ∶ B
+            ---------------------------------------------------
+            -> Γ ⊢ᶜ push M1 N1 ≈ push M2 N2 ∶ B
+
+  app-cong : Γ ⊢ᵛ V1 ≈ V2 ∶ A `⇒ B -> Γ ⊢ᵛ W1 ≈ W2 ∶ A
+            ------------------------------------------------
+            -> Γ ⊢ᶜ app V1 W1 ≈ app V2 W2 ∶ B
+
+  var-cong : Γ ⊢ᵛ V1 ≈ V2 ∶ `V
+            ----------------------------
+            -> Γ ⊢ᶜ var V1 ≈ var V2 ∶ A
+
+  sub-cong : (Γ ∙ `V) ⊢ᶜ M1 ≈ M2 ∶ A -> Γ ⊢ᶜ N1 ≈ N2 ∶ A
+            -------------------------------------------------------------------------------------------
+            -> Γ ⊢ᶜ sub M1 N1 ≈ sub M2 N2 ∶ A
+
+  -- beta/eta rules
 
   pm-beta : (V1 : Γ ⊢ᵛ A) -> (V2 : Γ ⊢ᵛ B) -> (M : (Γ ∙ A ∙ B) ⊢ᶜ C)
           ------------------------------------------------------------------------
@@ -256,7 +300,7 @@ data EqComp Γ where
            ------------------------------------------------
            -> Γ ⊢ᶜ app (lam M) V ≈ sub-comp (sub-ex sub-id V) M ∶ B
 
-  -- var/sub
+  -- var/sub rules
 
   sub-weak : (M : Γ ⊢ᶜ A) -> (N : Γ ⊢ᶜ A)
            ------------------------------------------------
@@ -273,6 +317,8 @@ data EqComp Γ where
   sub-assoc : (L : (Γ ∙ `V ∙ `V) ⊢ᶜ A) -> (M : (Γ ∙ `V) ⊢ᶜ A) -> (N : Γ ⊢ᶜ A)
             -----------------------------------------------------------------------------------------------
             -> Γ ⊢ᶜ sub (sub L M) N ≈ sub (sub (sub-comp exchg L) (wk-comp (wk-wk wk-id) N)) (sub M N) ∶ A
+
+  -- algebraicity rules
 
   var-push : (V : Γ ⊢ᵛ `V) -> (M : (Γ ∙ A) ⊢ᶜ A)
            ----------------------------------------
