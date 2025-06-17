@@ -180,28 +180,6 @@ wk-val-id {Γ = ε} {x = unit} = refl
 wk-val-id {Γ = Γ ∙ x} {x = unit} = refl
 
 -------------------------------------------------------------
--- wk-ε-id : {V : Γ ⊢ᵛ A} → wk-val (ext-⊇-L {Γ} {ε}) V ≡ V
--- wk-ε-id = wk-val-id
-
--- l1 : {V : Γ ⊢ᵛ A} {N : (Γ ∙ A) ⊢ᶜ B} {k : Stack Γ}
---      → ⟪ ε ∥ return (wk-val (ext-⊇-L {Γ} {ε}) V) ∥ N ∷ k ⟫ ~> ⟪ ε ∥ (sub-comp (sub-ex sub-id V) N) ∥ k ⟫
--- l1 = ~>-return-step
--- 
--- l2 : {V : Γ ⊢ᵛ A} {N : (Γ ∙ A) ⊢ᶜ B} {k : Stack Γ}
---      → ⟪ ε ∥ return V ∥ N ∷ k ⟫ ~> ⟪ ε ∥ (sub-comp (sub-ex sub-id V) N) ∥ k ⟫ ≡ ⟪ ε ∥ return (wk-val (ext-⊇-L {Γ} {ε}) V) ∥ N ∷ k ⟫ ~> ⟪ ε ∥ (sub-comp (sub-ex sub-id V) N) ∥ k ⟫
--- l2 {V = V} rewrite (wk-val-id {x = V}) = refl
--- 
--- l3 : {V : Γ ⊢ᵛ A} {N : (Γ ∙ A) ⊢ᶜ B} {k : Stack Γ}
---      → ⟪ ε ∥ return V ∥ N ∷ k ⟫ ~> ⟪ ε ∥ (sub-comp (sub-ex sub-id V) N) ∥ k ⟫
--- l3 {V = V} {N = N} {k = k} with l1 {V = V} {N = N} {k = k}
--- ... | L1 rewrite l2 {V = V} {N = N} {k = k} = L1
--- 
--- 
--- i-wk : (i : Γ ∋ `V) → (Γ ⊕ Δ) ∋ `V
--- i-wk {Γ} {Δ} i = wk-mem {Γ ⊕ Δ} {Γ} ext-⊇-L i
--- 
--- eq-wk : {i i' : Γ ∋ `V} → i ≡ i' → (i-wk {Δ = ε ∙ A} i) ≡ (i-wk {Δ = ε ∙ A} i')
--- eq-wk {i = i} {i' = i'} i≡i' = cong i-wk i≡i'
 
 i-assoc' : (i : (Γ ⊕ (Ψ ⊕ Δ)) ∋ A) → ((Γ ⊕ Ψ) ⊕ Δ) ∋ A
 i-assoc' {Δ = ε} i = i
@@ -226,7 +204,7 @@ k-assoc' {Γ} {Ψ} {Δ} k rewrite ⊕-assoc {Γ} {Ψ} {Δ} = k
 c-assoc'' : Comp ((Γ ⊕ Ψ) ⊕ Δ) A ≡ Comp (Γ ⊕ (Ψ ⊕ Δ)) A
 c-assoc'' {Γ} {Ψ} {Δ} {A} rewrite ⊕-assoc {Γ} {Ψ} {Δ} = refl
 
--------------------------------------------------------------
+{- -------------------------------------------------------------
 
 lt : {M : Γ ⊢ᶜ A} {k : Stack Γ}
      ->   ( ∃[ Δ ] ∃[ B ] ∃[ V ] (⟪ ε ∥ M ∥ k ⟫ ~>* ⟪ Δ ∥ var {A = B} (wk-val (ext-⊇-L {Δ = Δ}) V) ∥ k ⟫) )
@@ -240,7 +218,34 @@ lt {Γ = Γ} {A = A} {M = var V} {k = k}  with ~>*-refl {M = ⟪ ε ∥ var V �
 ... | M rewrite (sym (wk-val-id {x = V})) =  inj₁ ( ε , A , V ,  M )
 
 lt {Γ = Γ} {A = A} {M = app (var i) V} {k = k} =  inj₂ (inj₂ ( ⟪ ε ∥ app (var i) V ∥ k ⟫ ~>⟨ ~>-app-var ⟩ (stuck ■)))
-lt {Γ = Γ} {A = A} {M = app (lam x) V} {k = k} = {!!}
+
+lt {Γ = Γ} {A = A} {M = app {A = B} (lam (return x)) V} {k = k} with ~>-app-lam {M = return x} {V = V} {k = k}
+... | Y rewrite (sym (wk-val-id {x = (sub-val (sub-ex sub-id V) x)})) =  inj₂ (inj₁ ( ε , ((sub-val (sub-ex sub-id V) x) , ( ⟪ ε ∥ app (lam (return x)) V ∥ k ⟫ ~>⟨ Y ⟩ (⟪ ε ∥ return (wk-val wk-id (sub-val (sub-ex sub-id V) x)) ∥ k ⟫ ■)))))
+
+lt {Γ = Γ} {A = A} {M = app (lam (pm V M)) W} {k = k} with lt {M = pm (sub-val (sub-ex sub-id W) V) (sub-comp (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) (sub-ex sub-id W)) (var (t h))) (var h)) M)} {k = k}
+... | inj₁ (Δ , B , V' , R) = inj₁ (Δ , B , V' , ( ⟪ ε ∥ app (lam (pm V M)) W ∥ k ⟫ ~>⟨ ~>-app-lam ⟩ R))
+... | inj₂ (inj₁ (Δ , V' , R)) = inj₂ (inj₁ (Δ , V' , ( ⟪ ε ∥ app (lam (pm V M)) W ∥ k ⟫ ~>⟨ ~>-app-lam ⟩ R)))
+... | inj₂ (inj₂ R) = inj₂ (inj₂ ( ⟪ ε ∥ app (lam (pm V M)) W ∥ k ⟫ ~>⟨ ~>-app-lam ⟩ R))
+
+lt {Γ = Γ} {A = A} {M = app (lam (push M N)) V} {k = k} with lt {M = push (sub-comp (sub-ex sub-id V) M) (sub-comp (sub-ex (sub-wk (wk-wk wk-id) (sub-ex sub-id V)) (var h)) N)} {k = k}
+... | inj₁ (Δ , B , V' , R) =  inj₁ (Δ , B , V' , ( ⟪ ε ∥ app (lam (push M N)) V ∥ k ⟫ ~>⟨ ~>-app-lam ⟩ R))
+... | inj₂ (inj₁ (Δ , V' , R)) =  inj₂ (inj₁ (Δ , V' , ( ⟪ ε ∥ app (lam (push M N)) V ∥ k ⟫ ~>⟨ ~>-app-lam ⟩ R)))
+... | inj₂ (inj₂ R) =  inj₂ (inj₂ ( ⟪ ε ∥ app (lam (push M N)) V ∥ k ⟫ ~>⟨ ~>-app-lam ⟩ R))
+
+lt {Γ = Γ} {A = A} {M = app (lam (app V W)) Q} {k = k} with lt {M = app (sub-val (sub-ex sub-id Q) V) (sub-val (sub-ex sub-id Q) W)} {k = k}
+... | inj₁ (Δ , B , V' , R) = {!!}
+... | inj₂ (inj₁ (Δ , V' , R)) = {!!}
+... | inj₂ (inj₂ R) = {!!}
+
+-- ... | inj₁ (Δ , B , V' , R) = {!!}
+-- ... | inj₂ (inj₁ (Δ , V' , R)) = {!!}
+-- ... | inj₂ (inj₂ R) = {!!}
+
+-- sub-comp (sub-ex sub-id V) M
+
+lt {Γ = Γ} {A = A} {M = app (lam (var x)) V} {k = k} = {!!}
+lt {Γ = Γ} {A = A} {M = app (lam (sub M M₁)) V} {k = k} = {!!}
+
 lt {Γ = Γ} {A = A} {M = app (pm M M₁) V} {k = k} = {!!}
 
 lt {Γ = Γ} {A = A} {M = pm x M} {k = k} = {!!}
@@ -249,45 +254,9 @@ lt {Γ = Γ} {A = A} {M = push M M₁} {k = k} = {!!}
 
 lt {Γ = Γ} {A = A} {M = sub M M₁} {k = k} = {!!}
 
-{- 
-lt {Γ = Γ} {A = A} {M = return x} {k = k} = {!!}
-lt {Γ = Γ} {A = A} {M = pm x M} {k = k} = {!!}
-lt {Γ = Γ} {A = A} {M = app x x₁} {k = k} = {!!}
-lt {Γ = Γ} {A = A} {M = var x} {k = k} = {!!}
-
-lt {Γ = Γ} {A = A} {M = sub N P} {k = k} with lt {M = N} {k = h ↦ P ∷ k}
-... | inj₁ (Δ , B , h , Q) = {!!}
-... | inj₁ (Δ , B , t i , Q) = {!!}
---inj₁ ( {!!} , {!!} , {!!} ,  ~>*-trans ( ⟪ ε ∥ sub N P ∥ k ⟫ ~>⟨ ~>-sub ⟩ Q) (⟪ Δ ∥ var (var (wk-mem ext-⊇-L i)) ∥ h ↦ P ∷ k ⟫ ~>⟨ {! ~>-var-pop-k!} ⟩ {!!}) )
-
--- What if we return the variable bound by sub?
--- Need to split on V.
-... | inj₂ (Δ , V , Q) = inj₂ ( (ε ∙ `V) ⊕ Δ , {!!} ,  ~>*-trans (⟪ ε ∥ sub N P ∥ k ⟫ ~>⟨ ~>-sub ⟩ Q) (⟪ Δ ∥ return (wk-val ext-⊇-L V) ∥ h ↦ P ∷ k ⟫ ~>⟨ {!~>-return-pop'!} ⟩ ( {!!} ■)) )
-
-lt {Γ = Γ} {A = A} {M = push N (return x)} {k = k} = {!!}
-lt {Γ = Γ} {A = A} {M = push N (pm x P)} {k = k} = {!!}
-lt {Γ = Γ} {A = A} {M = push N (push P P₁)} {k = k} = {!!}
-lt {Γ = Γ} {A = A} {M = push N (var x)} {k = k} = {!!}
-lt {Γ = Γ} {A = A} {M = push N (sub P P₁)} {k = k} = {!!}
-
-lt {Γ = Γ} {A = A} {M = push {A = A₂} {B = A} N (app {A = A₁} {B = A} P V)} {k = k} with lt {M = N} {k = (app P V) ∷ k}
-... | inj₁ (Δ₁ , B₁ , i₁ , Q₁) =  inj₁ (Δ₁ , B₁ , i₁ , ~>*-trans (⟪ ε ∥ push N (app P V) ∥ k ⟫ ~>⟨ ~>-push ⟩ Q₁) (⟪ Δ₁ ∥ var (var (wk-mem ext-⊇-L i₁)) ∥ app P V ∷ k ⟫ ~>⟨ ~>-var-pop-c ⟩ ( ⟪ Δ₁ ∥ var (var (wk-mem ext-⊇-L i₁)) ∥ k ⟫ ■)) )
-... | inj₂ (Δ₁ , V₁ , Q₁) with lt {Γ = Γ} {M = app (sub-val (sub-ex sub-id V₁) P) (sub-val (sub-ex sub-id V₁) V)} {k = k}
-...   | inj₁ (Δ₂ , B₂ , i₂ , Q₂) = inj₁ (Δ₂ , B₂ , i₂ , (~>*-trans ( ⟪ ε ∥ push N (app P V) ∥ k ⟫ ~>⟨ ~>-push ⟩ Q₁) ( ⟪ Δ₁ ∥ return (wk-val ext-⊇-L V₁) ∥ (app P V) ∷ k ⟫ ~>⟨ ~>-return-step ⟩ Q₂)) )
-...   | inj₂ (Δ₂ , V₂ , Q₂) = inj₂ (Δ₂ , V₂ , (~>*-trans (⟪ ε ∥ push N (app P V) ∥ k ⟫ ~>⟨ ~>-push ⟩ Q₁) (⟪ Δ₁ ∥ return (wk-val ext-⊇-L V₁) ∥ (app P V) ∷ k ⟫ ~>⟨ ~>-return-step ⟩ Q₂)))
-
--}
-
-
---  var : (i : Γ ∋ `V)
---      --------------
---      -> Γ ⊢ᵛ `V
---
---  unit : (i : Γ ∋ `Unit)
---       --------------
---       -> Γ ⊢ᵛ `Unit
-
 ------------------------------------------------------
 
 test : (M : Γ ⊢ᶜ `V) → Γ ⊢ᶜ `V
 test M = sub (return (var h)) M
+
+-}
