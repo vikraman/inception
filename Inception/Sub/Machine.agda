@@ -204,8 +204,10 @@ k-assoc' {Γ} {Ψ} {Δ} k rewrite ⊕-assoc {Γ} {Ψ} {Δ} = k
 c-assoc'' : Comp ((Γ ⊕ Ψ) ⊕ Δ) A ≡ Comp (Γ ⊕ (Ψ ⊕ Δ)) A
 c-assoc'' {Γ} {Ψ} {Δ} {A} rewrite ⊕-assoc {Γ} {Ψ} {Δ} = refl
 
-{- -------------------------------------------------------------
+-------------------------------------------------------------
 
+{-
+-- {-# TERMINATING #-}
 lt : {M : Γ ⊢ᶜ A} {k : Stack Γ}
      ->   ( ∃[ Δ ] ∃[ B ] ∃[ V ] (⟪ ε ∥ M ∥ k ⟫ ~>* ⟪ Δ ∥ var {A = B} (wk-val (ext-⊇-L {Δ = Δ}) V) ∥ k ⟫) )
         ⊎ ( ∃[ Δ ] ∃[ V ] (⟪ ε ∥ M ∥ k ⟫ ~>* ⟪ Δ ∥ return {A = A} (wk-val (ext-⊇-L {Δ = Δ}) V) ∥ k ⟫)
@@ -233,15 +235,9 @@ lt {Γ = Γ} {A = A} {M = app (lam (push M N)) V} {k = k} with lt {M = push (sub
 ... | inj₂ (inj₂ R) =  inj₂ (inj₂ ( ⟪ ε ∥ app (lam (push M N)) V ∥ k ⟫ ~>⟨ ~>-app-lam ⟩ R))
 
 lt {Γ = Γ} {A = A} {M = app (lam (app V W)) Q} {k = k} with lt {M = app (sub-val (sub-ex sub-id Q) V) (sub-val (sub-ex sub-id Q) W)} {k = k}
-... | inj₁ (Δ , B , V' , R) = {!!}
-... | inj₂ (inj₁ (Δ , V' , R)) = {!!}
-... | inj₂ (inj₂ R) = {!!}
-
--- ... | inj₁ (Δ , B , V' , R) = {!!}
--- ... | inj₂ (inj₁ (Δ , V' , R)) = {!!}
--- ... | inj₂ (inj₂ R) = {!!}
-
--- sub-comp (sub-ex sub-id V) M
+... | inj₁ (Δ , B , V' , R) =  inj₁ (Δ , B , V' , ( ⟪ ε ∥ app (lam (app V W)) Q ∥ k ⟫ ~>⟨ ~>-app-lam ⟩ R))
+... | inj₂ (inj₁ (Δ , V' , R)) =  inj₂ (inj₁ (Δ , V' , ( ⟪ ε ∥ app (lam (app V W)) Q ∥ k ⟫ ~>⟨ ~>-app-lam ⟩ R)))
+... | inj₂ (inj₂ R) =  inj₂ (inj₂ ( ⟪ ε ∥ app (lam (app V W)) Q ∥ k ⟫ ~>⟨ ~>-app-lam ⟩ R))
 
 lt {Γ = Γ} {A = A} {M = app (lam (var x)) V} {k = k} = {!!}
 lt {Γ = Γ} {A = A} {M = app (lam (sub M M₁)) V} {k = k} = {!!}
@@ -258,5 +254,4 @@ lt {Γ = Γ} {A = A} {M = sub M M₁} {k = k} = {!!}
 
 test : (M : Γ ⊢ᶜ `V) → Γ ⊢ᶜ `V
 test M = sub (return (var h)) M
-
 -}
