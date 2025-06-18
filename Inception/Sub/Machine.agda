@@ -45,7 +45,7 @@ i-assoc {Γ} {Ψ} {Δ} i rewrite ⊕-assoc {Γ} {Ψ} {Δ} = i
 v-assoc : Val ((Γ ⊕ Ψ) ⊕ Δ) A → Val (Γ ⊕ (Ψ ⊕ Δ)) A
 v-assoc {Γ} {Ψ} {Δ} v rewrite ⊕-assoc {Γ} {Ψ} {Δ} = v
 
-
+{-
 val-eval : Γ ⊢ᵛ A -> Γ ⊢ᵛ A
 val-eval (var i) = var i
 val-eval (lam x) = lam x
@@ -55,16 +55,19 @@ val-eval (pm M W) with (val-eval M)
 ... | pair V₁ V₂ = sub-val (sub-ex (sub-ex sub-id V₁) V₂) (val-eval W)
 ... | pm M M₁ = pm (pm M M₁) (val-eval W)
 val-eval unit = unit
+-}
 
 data Stack : (Γ : Ctx) → Set where
   nil : Stack ε
-  _↦_∷_ : {Γ : Ctx} {A : Ty} -> (i : Γ ∙ `V ∋ `V) -> (N : Γ ⊢ᶜ A) -> Stack Γ -> Stack (Γ ∙ `V)
-  _∷_ : {Γ : Ctx} {A B : Ty} -> (N : (Γ ∙ A) ⊢ᶜ B) -> Stack Γ -> Stack Γ
+  _∷ᵛ_ : {Γ : Ctx} {A : Ty} -> (N : Γ ⊢ᵛ A) -> Stack Γ -> Stack Γ
+  _∷ˢ_ : {Γ : Ctx} {A : Ty} -> (N : Γ ⊢ᶜ A) -> Stack Γ -> Stack (Γ ∙ `V)
+  _∷ᵖ_ : {Γ : Ctx} {A B : Ty} -> (N : (Γ ∙ A) ⊢ᶜ B) -> Stack Γ -> Stack Γ
 
 data State : Set where
-  ⟪_∥_∥_⟫ : {Γ : Ctx} -> (Δ : Ctx) -> (Γ ⊕ Δ) ⊢ᶜ A -> Stack Γ -> State
+  ⟪_∥_∥_∥_⟫ : {Γ : Ctx} -> {Δᵛ : Ctx} -> (Δ : Ctx) -> (Γ ⊕ Δ) ⊢ᶜ A -> ((Γ ⊕ Δᵛ) ⊕ Δ) ⊢ᶜ A -> Stack Γ -> State
   stuck : State
 
+{-
 data _~>_ : State -> State -> Set where
 
   ~>-app-lam : {M : (Γ ∙ A) ⊢ᶜ B} {V : Γ ⊢ᵛ A} {k : Stack Γ}
@@ -203,6 +206,7 @@ k-assoc' {Γ} {Ψ} {Δ} k rewrite ⊕-assoc {Γ} {Ψ} {Δ} = k
 
 c-assoc'' : Comp ((Γ ⊕ Ψ) ⊕ Δ) A ≡ Comp (Γ ⊕ (Ψ ⊕ Δ)) A
 c-assoc'' {Γ} {Ψ} {Δ} {A} rewrite ⊕-assoc {Γ} {Ψ} {Δ} = refl
+-}
 
 -------------------------------------------------------------
 
