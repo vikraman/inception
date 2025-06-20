@@ -81,12 +81,76 @@ data Env' : (Γ : Ctx) -> Set where
   _∷¹_ : (N : Γ ⊢ᵛ A) -> Env' Γ -> Env' (Γ ∙ A)
   _∷²_∷_ : (M : Γ ⊢ᵛ B) → (N : Γ ⊢ᵛ A) -> Env' Γ -> Env' (Γ ∙ A ∙ B)
 
-env'-lookup : (Γ ∙ A ∙ B) ∋ C → Env' (Γ ∙ A ∙ B) → ((Γ ∙ A) ⊢ᵛ C) ⊎ (Γ ⊢ᵛ C)
-env'-lookup {Γ = Γ} Cx.h (N ∷¹ e) = inj₁ N
-env'-lookup {Γ = Γ} Cx.h (M ∷² N ∷ e) = inj₂ M
-env'-lookup {Γ = Γ} (Cx.t i) (N ∷¹ e) = {!!}
-env'-lookup {Γ = Γ} (Cx.t i) (M ∷² N ∷ e) = {!!}
+wk+ : ((Γ ∙ A) ⊢ᵛ C) ⊎ (Γ ⊢ᵛ C) → (((Γ ∙ A) ∙ B) ⊢ᵛ C) ⊎ ((Γ ∙ A) ⊢ᵛ C)
+wk+ (inj₁ x) = inj₁ (wk-val (wk-wk wk-id) x)
+wk+ (inj₂ y) = inj₂ (wk-val (wk-wk wk-id) y)
 
+env'-lookup : (Γ ∙ A ∙ B) ∋ C → Env' (Γ ∙ A ∙ B) → ((Γ ∙ A) ⊢ᵛ C) ⊎ (Γ ⊢ᵛ C)
+
+env'-lookup {Γ = Γ} Cx.h (N ∷¹ e) = inj₁ N
+env'-lookup {Γ = Cx.ε} (Cx.t Cx.h) (N ∷¹ (N₁ ∷¹ ■)) = inj₁ (wk-val (wk-wk wk-id) N₁)
+env'-lookup {Γ = Γ Cx.∙ A} (Cx.t i) (N ∷¹ e) with env'-lookup i e
+... | inj₁ x = inj₁ (wk-val (wk-wk wk-id) x)
+... | inj₂ y = inj₁ (wk-val (wk-wk wk-id) (wk-val (wk-wk wk-id) y))
+
+env'-lookup {Γ = Γ} Cx.h (M ∷² N ∷ e) = inj₂ M
+env'-lookup {Γ = Cx.ε} (Cx.t Cx.h) (M ∷² N ∷ ■) = inj₂ N
+env'-lookup {Γ = Γ Cx.∙ A} (Cx.t Cx.h) (M ∷² N ∷ e) = inj₂ N
+env'-lookup {Γ = Cx.ε Cx.∙ A} (Cx.t (Cx.t Cx.h)) (M ∷² N ∷ (N₁ ∷¹ ■)) = inj₂ (wk-val (wk-wk wk-id) N₁) -- wk+ (inj₂ N₁)
+env'-lookup {Γ = Γ Cx.∙ A Cx.∙ B} (Cx.t (Cx.t i)) (M ∷² N ∷ e) with env'-lookup i e
+... | inj₁ x = inj₂ (wk-val (wk-wk wk-id) x)
+... | inj₂ y = inj₂ (wk-val (wk-wk wk-id) (wk-val (wk-wk wk-id) y))
+
+env₁-lookup : (Γ ∙ A) ∋ C → Γ ⊢ᵛ A → Env' Γ → Γ ⊢ᵛ C
+env₁-lookup Cx.h M e = M
+env₁-lookup {Γ = Cx.ε Cx.∙ A} (Cx.t Cx.h) M (N ∷¹ e) = wk-val (wk-wk wk-id) N
+env₁-lookup {Γ = Γ Cx.∙ A Cx.∙ B} (Cx.t i) M e with env'-lookup i e
+... | inj₁ x = wk-val (wk-wk wk-id) x
+... | inj₂ y = wk-val (wk-wk wk-id) (wk-val (wk-wk wk-id) y)
+
+data State : Set where
+  ⟪_∥_∥_∥_∥_⟫ᶜ : (Δ : Ctx) -> (Γ ⊕ Δ) ⊢ᶜ A -> Env' (Γ ⊕ Δ) -> VStack -> CStack Γ -> State
+  ⟪_∥_∥_∥_∥_⟫ᵛ : (Δ : Ctx) -> (Γ ⊕ Δ) ⊢ᵛ A -> Env' (Γ ⊕ Δ) -> VStack -> CStack Γ -> State
+  stuck : State
+
+lookup⟪_∙_∥_∥_∥_∥_⟫ : (Δ : Ctx) → (A : Ty) → (i : ((Γ ⊕ Δ) ∙ A ∙ B) ∋ A) → (e : Env' ((Γ ⊕ Δ) ∙ A ∙ B)) → (s : VStack) → (k : CStack Γ) → State
+-- lookup⟪ Δ ∙ A ∥ i ∥ N ∷¹ e ∥ s ∥ k ⟫ with env'-lookup i (N ∷¹ e)
+-- ... | inj₁ M =  ⟪ Δ ∙ A ∥ M ∥ e ∥ s ∥ k ⟫ᵛ
+-- ... | inj₂ M =  ⟪ Δ ∙ A ∥  wk-val (wk-wk wk-id) M ∥ e ∥ s ∥ k ⟫ᵛ
+-- lookup⟪ Δ ∙ A ∥ Cx.h ∥ M ∷² N ∷ e ∥ s ∥ k ⟫ = ⟪ Δ ∥ M ∥ e ∥ s ∥ k ⟫ᵛ
+-- lookup⟪ Δ ∙ A ∥ Cx.t Cx.h ∥ M ∷² N ∷ e ∥ s ∥ k ⟫ = ⟪ Δ ∥ N ∥ e ∥ s ∥ k ⟫ᵛ
+-- lookup⟪ Δ ∙ A ∥ Cx.t (Cx.t i) ∥ M ∷² N ∷ e ∥ s ∥ k ⟫ with env'-lookup (t (t i)) (M ∷² N ∷ e)
+-- ... | M = {!!}
+
+lookup⟪ Δ ∙ A ∥ Cx.h ∥ N ∷¹ e ∥ s ∥ k ⟫ =  ⟪ Δ ∙ A ∥ N ∥ e ∥ s ∥ k ⟫ᵛ
+lookup⟪ Δ ∙ A ∥ Cx.t i ∥ N ∷¹ e ∥ s ∥ k ⟫ =  ⟪ Δ ∙ A ∥ env₁-lookup (t i) N e ∥ e ∥ s ∥ k ⟫ᵛ
+lookup⟪ Δ ∙ A ∥ Cx.h ∥ M ∷² N ∷ e ∥ s ∥ k ⟫ = ⟪ Δ ∥ M ∥ e ∥ s ∥ k ⟫ᵛ
+lookup⟪ Δ ∙ A ∥ Cx.t Cx.h ∥ M ∷² N ∷ e ∥ s ∥ k ⟫ = ⟪ Δ ∥ N ∥ e ∥ s ∥ k ⟫ᵛ
+lookup⟪ Δ ∙ A ∥ Cx.t (Cx.t i) ∥ M ∷² N ∷ e ∥ s ∥ k ⟫ = {!!}
+
+--lookup⟪ {!!} ∙ {!!} ∥ {!!} ∥ {!!} ∥ s ∥ k ⟫
+-- with env'-lookup i (M ∷² N ∷ e)
+-- ... | inj₂ M =  ⟪ {!!} ∥ {!!} ∥ {!!} ∥ {!!} ∥ {!!} ⟫ᵛ
+
+data _~>_ : State -> State -> Set where
+
+  ~>-app : {Δ : Ctx} {M : (Γ ⊕ Δ) ⊢ᵛ A `⇒ B} {N : (Γ ⊕ Δ) ⊢ᵛ A} {e : Env' (Γ ⊕ Δ)} {s : VStack} {k : CStack Γ}
+  ----------------------------------------------------------------------------------------------------------
+    ->   ⟪ Δ ∥ app M N ∥ e ∥ s ∥ k ⟫ᶜ ~> ⟪ Δ ∥ M ∥ e ∥ N ∷ᵛ s ∥ k ⟫ᵛ
+
+  ~>-lam : {Δ : Ctx} {M : ((Γ ⊕ Δ) ∙ A) ⊢ᶜ B} {e : Env' (Γ ⊕ Δ)} {Q : (Γ ⊕ Δ) ⊢ᵛ A} {s : VStack} {k : CStack Γ}
+  ------------------------------------------------------------------------------------------------------------
+    ->   ⟪ Δ ∥ lam M ∥ e ∥ Q ∷ᵛ s ∥ k ⟫ᵛ ~> ⟪ Δ ∙ A ∥ M ∥ Q ∷¹ e ∥ s ∥ k ⟫ᶜ
+
+  ~>-var-v : {Δ : Ctx} {i : ((Γ ⊕ Δ) ∙ A ∙ B) ∋ A} {e : Env' ((Γ ⊕ Δ) ∙ A ∙ B)} {s : VStack} {k : CStack Γ}
+  ------------------------------------------------------------------------------------------------------------
+    ->   ⟪ Δ ∙ A ∙ B ∥ var i ∥ e ∥ s ∥ k ⟫ᵛ ~>  ⟪ Δ ∥ {!!} ∥ {!!} ∥ s ∥ k ⟫ᵛ
+
+--  ~>-pm-v : {Δ : Ctx} {L : (Γ ⊕ Δ) ⊢ᵛ A} {R : (Γ ⊕ Δ) ⊢ᵛ B} {M : ((Γ ⊕ Δ) ∙ A ∙ B) ⊢ᵛ C} {e : Env (Γ ⊕ Δ)} {s : VStack} {k : CStack Γ}
+--  ------------------------------------------------------------------------------------------------------------
+--    ->   ⟪ Δ ∥ pm (pair L R) M ∥ e ∥ s ∥ k ⟫ᵛ ~>  ⟪ Δ ∙ A ∙ B ∥ M ∥ {!!} ∷ L ∷ e ∥ s ∥ k ⟫ᵛ
+
+{-
 data State : Set where
   ⟪_∥_∥_∥_∥_⟫ᶜ : (Δ : Ctx) -> (Γ ⊕ Δ) ⊢ᶜ A -> Env (Γ ⊕ Δ) -> VStack -> CStack Γ -> State
   ⟪_∥_∥_∥_∥_⟫ᵛ : (Δ : Ctx) -> (Γ ⊕ Δ) ⊢ᵛ A -> Env (Γ ⊕ Δ) -> VStack -> CStack Γ -> State
@@ -109,6 +173,7 @@ data _~>_ : State -> State -> Set where
   ~>-pm-v : {Δ : Ctx} {L : (Γ ⊕ Δ) ⊢ᵛ A} {R : (Γ ⊕ Δ) ⊢ᵛ B} {M : ((Γ ⊕ Δ) ∙ A ∙ B) ⊢ᵛ C} {e : Env (Γ ⊕ Δ)} {s : VStack} {k : CStack Γ}
   ------------------------------------------------------------------------------------------------------------
     ->   ⟪ Δ ∥ pm (pair L R) M ∥ e ∥ s ∥ k ⟫ᵛ ~>  ⟪ Δ ∙ A ∙ B ∥ M ∥ {!!} ∷ L ∷ e ∥ s ∥ k ⟫ᵛ
+-}
 
 --------------------------------------------------------------------------
 
