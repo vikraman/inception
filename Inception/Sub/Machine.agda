@@ -45,6 +45,73 @@ i-assoc {Γ} {Ψ} {Δ} i rewrite ⊕-assoc {Γ} {Ψ} {Δ} = i
 v-assoc : Val ((Γ ⊕ Ψ) ⊕ Δ) A → Val (Γ ⊕ (Ψ ⊕ Δ)) A
 v-assoc {Γ} {Ψ} {Δ} v rewrite ⊕-assoc {Γ} {Ψ} {Δ} = v
 
+--------------------------------------------------------------------------
+
+data CStack : (Γ : Ctx) → Set where
+  nil : CStack ε
+  _∷ˢ_ : {Γ : Ctx} {A : Ty} -> (N : Γ ⊢ᶜ A) -> CStack Γ -> CStack (Γ ∙ `V)
+  _∷ᵖ_ : {Γ : Ctx} {A B : Ty} -> (N : (Γ ∙ A) ⊢ᶜ B) -> CStack Γ -> CStack Γ
+
+data VStack : Set where
+  nil : VStack
+  _∷ᵛ_ : (N : Γ ⊢ᵛ A) -> VStack -> VStack
+
+data Env : (Γ : Ctx) -> Set where
+  ■ : Env ε
+  _∷_ : (N : Γ ⊢ᵛ A) -> Env Γ -> Env (Γ ∙ A)
+
+env-lookup : (Γ ∙ A) ∋ B → Env (Γ ∙ A) → Γ ⊢ᵛ B
+env-lookup {Γ = Γ} Cx.h (N ∷ e) = N
+env-lookup {Γ = Γ Cx.∙ A} (Cx.t i) (N ∷ e) =  wk-val (wk-wk wk-id) (env-lookup i e)
+
+-- data Env' : (Γ : Ctx) -> Set where
+--   ■ : Env' ε
+--   _∷¹_ : (N : Γ ⊢ᵛ A) -> Env' Γ -> Env' (Γ ∙ A)
+--   _∷²_ : (N : Γ ⊢ᵛ A `× B) -> Env' Γ -> Env' (Γ ∙ A ∙ B)
+-- 
+-- env'-lookup : (Γ ∙ A) ∋ B → Env' (Γ ∙ A) → Γ ⊢ᵛ B
+-- env'-lookup {Γ = Cx.ε} Cx.h (N ∷¹ e) = N
+-- env'-lookup {Γ = Γ Cx.∙ B} Cx.h (N ∷¹ e) = N
+-- env'-lookup {Γ = Γ Cx.∙ B} (Cx.t i) (N ∷¹ e) = wk-val (wk-wk wk-id) (env'-lookup i e)
+-- env'-lookup {Γ = Γ Cx.∙ B} Cx.h (N ∷² e) = pm {!!} {!!}
+-- env'-lookup {Γ = Γ Cx.∙ B} (Cx.t i) (N ∷² e) = {!!}
+
+data Env' : (Γ : Ctx) -> Set where
+  ■ : Env' ε
+  _∷¹_ : (N : Γ ⊢ᵛ A) -> Env' Γ -> Env' (Γ ∙ A)
+  _∷²_∷_ : (M : Γ ⊢ᵛ B) → (N : Γ ⊢ᵛ A) -> Env' Γ -> Env' (Γ ∙ A ∙ B)
+
+env'-lookup : (Γ ∙ A ∙ B) ∋ C → Env' (Γ ∙ A ∙ B) → ((Γ ∙ A) ⊢ᵛ C) ⊎ (Γ ⊢ᵛ C)
+env'-lookup {Γ = Γ} Cx.h (N ∷¹ e) = inj₁ N
+env'-lookup {Γ = Γ} Cx.h (M ∷² N ∷ e) = inj₂ M
+env'-lookup {Γ = Γ} (Cx.t i) (N ∷¹ e) = {!!}
+env'-lookup {Γ = Γ} (Cx.t i) (M ∷² N ∷ e) = {!!}
+
+data State : Set where
+  ⟪_∥_∥_∥_∥_⟫ᶜ : (Δ : Ctx) -> (Γ ⊕ Δ) ⊢ᶜ A -> Env (Γ ⊕ Δ) -> VStack -> CStack Γ -> State
+  ⟪_∥_∥_∥_∥_⟫ᵛ : (Δ : Ctx) -> (Γ ⊕ Δ) ⊢ᵛ A -> Env (Γ ⊕ Δ) -> VStack -> CStack Γ -> State
+  stuck : State
+
+data _~>_ : State -> State -> Set where
+
+  ~>-app : {Δ : Ctx} {M : (Γ ⊕ Δ) ⊢ᵛ A `⇒ B} {N : (Γ ⊕ Δ) ⊢ᵛ A} {e : Env (Γ ⊕ Δ)} {s : VStack} {k : CStack Γ}
+  ----------------------------------------------------------------------------------------------------------
+    ->   ⟪ Δ ∥ app M N ∥ e ∥ s ∥ k ⟫ᶜ ~> ⟪ Δ ∥ M ∥ e ∥ N ∷ᵛ s ∥ k ⟫ᵛ
+
+  ~>-lam : {Δ : Ctx} {M : ((Γ ⊕ Δ) ∙ A) ⊢ᶜ B} {e : Env (Γ ⊕ Δ)} {Q : (Γ ⊕ Δ) ⊢ᵛ A} {s : VStack} {k : CStack Γ}
+  ------------------------------------------------------------------------------------------------------------
+    ->   ⟪ Δ ∥ lam M ∥ e ∥ Q ∷ᵛ s ∥ k ⟫ᵛ ~> ⟪ Δ ∙ A ∥ M ∥ Q ∷ e ∥ s ∥ k ⟫ᶜ
+
+  ~>-var-v : {Δ : Ctx} {i : ((Γ ⊕ Δ) ∙ B) ∋ A} {N : (Γ ⊕ Δ) ⊢ᵛ B} {e : Env (Γ ⊕ Δ)} {s : VStack} {k : CStack Γ}
+  ------------------------------------------------------------------------------------------------------------
+    ->   ⟪ Δ ∙ B ∥ var i ∥ N ∷ e ∥ s ∥ k ⟫ᵛ ~>  ⟪ Δ ∥ env-lookup i (N ∷ e) ∥ e ∥ s ∥ k ⟫ᵛ
+
+  ~>-pm-v : {Δ : Ctx} {L : (Γ ⊕ Δ) ⊢ᵛ A} {R : (Γ ⊕ Δ) ⊢ᵛ B} {M : ((Γ ⊕ Δ) ∙ A ∙ B) ⊢ᵛ C} {e : Env (Γ ⊕ Δ)} {s : VStack} {k : CStack Γ}
+  ------------------------------------------------------------------------------------------------------------
+    ->   ⟪ Δ ∥ pm (pair L R) M ∥ e ∥ s ∥ k ⟫ᵛ ~>  ⟪ Δ ∙ A ∙ B ∥ M ∥ {!!} ∷ L ∷ e ∥ s ∥ k ⟫ᵛ
+
+--------------------------------------------------------------------------
+
 {-
 val-eval : Γ ⊢ᵛ A -> Γ ⊢ᵛ A
 val-eval (var i) = var i
@@ -57,15 +124,6 @@ val-eval (pm M W) with (val-eval M)
 val-eval unit = unit
 -}
 
-data Stack : (Γ : Ctx) → Set where
-  nil : Stack ε
-  _∷ᵛ_ : {Γ : Ctx} {A : Ty} -> (N : Γ ⊢ᵛ A) -> Stack Γ -> Stack Γ
-  _∷ˢ_ : {Γ : Ctx} {A : Ty} -> (N : Γ ⊢ᶜ A) -> Stack Γ -> Stack (Γ ∙ `V)
-  _∷ᵖ_ : {Γ : Ctx} {A B : Ty} -> (N : (Γ ∙ A) ⊢ᶜ B) -> Stack Γ -> Stack Γ
-
-data State : Set where
-  ⟪_∥_∥_∥_⟫ : {Γ : Ctx} -> {Δᵛ : Ctx} -> (Δ : Ctx) -> (Γ ⊕ Δ) ⊢ᶜ A -> ((Γ ⊕ Δᵛ) ⊕ Δ) ⊢ᶜ A -> Stack Γ -> State
-  stuck : State
 
 {-
 data _~>_ : State -> State -> Set where
