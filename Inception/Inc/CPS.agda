@@ -193,12 +193,22 @@ mutual
   eqVal (≈-trans p q) = trans (eqVal p) (eqVal q)
   eqVal (lam-cong p) = cong curry (eqComp p)
   eqVal (pair-cong p q) = cong₂ <_,_> (eqVal p) (eqVal q)
+  eqVal (pm-cong p q) rewrite eqVal p | eqVal q = refl
   eqVal (unit-eta _) = refl
   eqVal (pm-beta V1 V2 W) = refl
   eqVal (pm-eta V W) = refl
   eqVal (lam-eta _) = refl
 
   eqComp : Γ ⊢ᶜ M ≈ N ∶ A -> ⟦ M ⟧ᶜ ≡ ⟦ N ⟧ᶜ
+  eqComp ≈-refl = refl
+  eqComp (≈-sym p) = sym (eqComp p)
+  eqComp (≈-trans p q) = trans (eqComp p) (eqComp q)
+  eqComp (return-cong p) rewrite eqVal p = refl
+  eqComp (pm-cong p q) rewrite eqVal p | eqComp q = refl
+  eqComp (push-cong p q) rewrite eqComp p | eqComp q = refl
+  eqComp (app-cong p q) rewrite eqVal p | eqVal q = refl
+  eqComp (rec-cong p q) rewrite eqVal p | eqVal q = refl
+  eqComp (inc-cong p q) rewrite eqComp p | eqComp q = refl
   eqComp (pm-beta V1 V2 M) = refl
   eqComp (pm-eta V M) = refl
   eqComp (return-beta V M) = refl
