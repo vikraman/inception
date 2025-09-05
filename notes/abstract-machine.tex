@@ -49,7 +49,8 @@ $\SUB (a.M, N)$
 Further partial value terms are:
 $(\_ , R)$,
 $(L , \_)$,
-$\flag{(L , R)}$
+$\flag{(L , R)}$,
+$\PM((a , b) = \_, N)$
 \newline
 Further partial computation terms are:
 $\APP(\_ , N)$,
@@ -82,11 +83,11 @@ An \emph{environment} is a map from label variables to computation states and fr
 	\\
   (( (L , R) , \gamma ) , \tail ; k ) &\leadsto (( L , \gamma ) , ( (\_ , R) , \gamma) , \tail ; k)\\
   (( \flag{(L, R)}, \gamma), (\PM ( (a , b) = \_ , N) , \gamma') , \tail ; k) &\leadsto (( N , \gamma' [ a \mapsto (L , \gamma) , b \mapsto (R , \gamma) ]) , \tail ; k )\\
-  (( \PM (L , R), \gamma) , \tail ; k) &\leadsto (( M , \gamma) , (\PM ((a , b) = \_ , N) , \gamma) , \tail ; k )\\
+  (( \PM ((a , b) = M , N), \gamma) , \tail ; k) &\leadsto (( M , \gamma) , (\PM ((a , b) = \_ , N) , \gamma) , \tail ; k )\\
 	\\
 	%
-  (( T , \gamma) , ( (\_ , R) , \gamma') , \tail ; k ) &\leadsto (( R , \gamma' ) , (T , \_) , \tail ; k )\\
-  (( T , \gamma) , ( (L , \_) , \gamma') , \tail ; k ) &\leadsto (\flag{(L , T)} , \tail ; k )\\
+  (( T , \gamma) , ( (\_ , R) , \gamma') , \tail ; k ) &\leadsto (( R , \gamma' ) , ((T , \_) , \gamma') , \tail ; k )\\
+  (( T , \gamma) , ( (L , \_) , \gamma') , \tail ; k ) &\leadsto ((\flag{(L , T)} , \gamma') , \tail ; k )\\
   %(( T , \gamma ) , (\RET (\_) , \gamma') , \tail ; k ) &\leadsto (( \flag{\RET (T)} , \gamma') , \tail ; k)\\
 	\intertext{\hspace*{\fill}where $T = \lambda x . M$ or $T = \flag{(L , R)}$ or $T = \ast$}
   %
@@ -113,6 +114,35 @@ An \emph{environment} is a map from label variables to computation states and fr
 
 \clearpage
 \subsection{Examples}
+
+Example:
+
+Let $X = \lambda x . x$ and $Y = \lambda y . y$.
+Then:
+%
+\begin{align*}
+           &  \big( \big( \PM ((a,b) = \PM ((c , d) = (x , y) , (d, c)) , \PM ((e , f) = (b , a) , e) ) ,  {\color{blue}\gamma_0 = (x \mapsto (X , \emptyset) , y \mapsto (Y , \emptyset))} \big) ; {\color{blue} k_0} \big)\\
+  \leadsto &  \big( \big( \PM ((c , d) = (x , y) , (d , c))) , \gamma_0 \big) , \big( \PM ((a,b) = \_ , \PM ((e , f) = (b , a) , e) ), \gamma_0 \big) ; {\color{blue} k_0} \big)\\
+  \leadsto &  \big( \big( (x , y) , \gamma_0 \big) , \big( \PM ((c , d) = \_ , (d , c))) , \gamma_0 \big) , \big( \PM ((a,b) = \_ , \PM ((e , f) = (b , a) , e) ), \gamma_0 \big) ; {\color{blue} k_0} \big)\\
+  \leadsto &  \big( \big( x , \gamma_0 \big), \big( (\_ , y) , \gamma_0 \big) , \big( \PM ((c , d) = \_ , (d , c))) , \gamma_0 \big) , \big( \PM ((a,b) = \_ , \PM ((e , f) = (b , a) , e) ), \gamma_0 \big) ; {\color{blue} k_0} \big)\\
+  \leadsto &  \big( \big( X , \emptyset \big), \big( (\_ , y) , \gamma_0 \big) , \big( \PM ((c , d) = \_ , (d , c))) , \gamma_0 \big) , \big( \PM ((a,b) = \_ , \PM ((e , f) = (b , a) , e) ), \gamma_0 \big) ; {\color{blue} k_0} \big)\\
+  \leadsto &  \big( \big( y , \gamma_0 \big) , \big( (X , \_) , \gamma_0 \big) , \big( \PM ((c , d) = \_ , (d , c))) , \gamma_0 \big) , \big( \PM ((a,b) = \_ , \PM ((e , f) = (b , a) , e) ), \gamma_0 \big) ; {\color{blue} k_0} \big)\\
+  \leadsto &  \big( \big( Y , \emptyset \big) , \big( (X , \_) , \gamma_0 \big) , \big( \PM ((c , d) = \_ , (d , c))) , \gamma_0 \big) , \big( \PM ((a,b) = \_ , \PM ((e , f) = (b , a) , e) ), \gamma_0 \big) ; {\color{blue} k_0} \big)\\
+  \leadsto &  \big( \big( \flag{(X , Y)} , \gamma_0 \big) , \big( \PM ((c , d) = \_ , (d , c))) , \gamma_0 \big) , \big( \PM ((a,b) = \_ , \PM ((e , f) = (b , a) , e) ), \gamma_0 \big) ; {\color{blue} k_0} \big)\\
+  \leadsto &  \big( \big( (d , c) , \gamma_1 = \gamma_0 [c \mapsto X , d \mapsto Y] \big) , \big( \PM ((a,b) = \_ , \PM ((e , f) = (b , a) , e) ), \gamma_0 \big) ; {\color{blue} k_0} \big)\\
+  \leadsto &  \big( \big( d , \gamma_1 \big) , \big( (\_ , c) , \gamma_1 \big) , \big( \PM ((a,b) = \_ , \PM ((e , f) = (b , a) , e) ), \gamma_0 \big) ; {\color{blue} k_0} \big)\\
+  \leadsto &  \big( \big( Y , \gamma_1 \big) , \big( (\_ , c) , \gamma_1 \big) , \big( \PM ((a,b) = \_ , \PM ((e , f) = (b , a) , e) ), \gamma_0 \big) ; {\color{blue} k_0} \big)\\
+  \leadsto &  \big( \big( c , \gamma_1 \big) , \big( (Y , \_) , \gamma_1 \big) , \big( \PM ((a,b) = \_ , \PM ((e , f) = (b , a) , e) ), \gamma_0 \big) ; {\color{blue} k_0} \big)\\
+  \leadsto &  \big( \big( X , \gamma_1 \big) , \big( (Y , \_) , \gamma_1 \big) , \big( \PM ((a,b) = \_ , \PM ((e , f) = (b , a) , e) ), \gamma_0 \big) ; {\color{blue} k_0} \big)\\
+  \leadsto &  \big( \big( \flag{(Y , X)} , \gamma_1 \big) , \big( \PM ((a,b) = \_ , \PM ((e , f) = (b , a) , e) ), \gamma_0 \big) ; {\color{blue} k_0} \big)\\
+  \leadsto &  \big( \big( \PM ((e , f) = (b , a) , e) , \gamma_2 = \gamma_0[a \mapsto Y , b \mapsto X] \big) ; {\color{blue} k_0} \big)\\
+  \leadsto &  \big( \big( (b , a) , \gamma_2 \big) , \big( \PM ((e , f) = \_ , e) , \gamma_2 \big) ; {\color{blue} k_0} \big)\\
+	\leadsto & \dots
+\end{align*}
+
+\newline\newline
+
+Example:
 
 Let $M = \RET (\lambda x . x)$.
 Then:
