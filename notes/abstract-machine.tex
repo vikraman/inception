@@ -12,11 +12,19 @@
 \newcommand{\PUSH}{\textsf{push}}
 \newcommand{\VAR}{\textsf{var}}
 \newcommand{\SUB}{\textsf{sub}}
+\newcommand{\VTS}{\ensuremath{\vdash^{\textsf{v}}}}
+\newcommand{\CTS}{\ensuremath{\vdash^{\textsf{c}}}}
+\newcommand{\ID}{\textsf{id}}
+\newcommand{\STR}{\textsf{str}}
+\newcommand{\EVAL}{\textsf{ev}}
+\newcommand{\LABEL}{\textbf{V}}
+\newcommand{\unit}{\textbf{1}}
 
 \newcommand{\tail}{\textsf{tail}}
 \newcommand{\flag}[1]{{}^{\bullet}{#1}}
 
 \usepackage{parskip}
+\usepackage{enumitem}
 
 %\usepackage{showframe}
 
@@ -26,6 +34,7 @@
 
 %\maketitle
 \section{Abstract Machine}
+\thispagestyle{empty}
 
 \subsection{Terms}
 We have value terms and computation terms (subject to term formation rules, which are provided elsewhere).
@@ -57,14 +66,61 @@ $\APP(\_ , N)$,
 %$\RET (\_)$,
 %$\flag{\RET (M)}$
 
+\subsubsection{Typing rules for values}
+
+\begin{align*}
+   \frac{x : A \in \Gamma}{\Gamma \VTS x : A}
+&& \frac{\Gamma , x : A \CTS M : B}{\Gamma \VTS \lambda x . M : A \Rightarrow B}
+&& \frac{\Gamma \VTS M : A \quad \Gamma \VTS N : B}{\Gamma \VTS (M , N) : A \times B}
+\end{align*}
+\begin{align*}
+\frac{\Gamma \VTS M : A \times B \quad \Gamma, a : A , b : B \VTS N : C}{\Gamma \VTS \PM((a , b) = M, N) : C}
+&& \frac{}{\Gamma \VTS \ast : \unit}
+\end{align*}
+
+\subsubsection{Typing rules for computations}
+
+\begin{align*}
+   \frac{\Gamma \VTS M : A}{\Gamma \CTS \RET (M) : A}
+&& \frac{\Gamma \CTS M : A \quad \Gamma, x : A \CTS N : B}{\Gamma \CTS \PUSH (M , x.N) : B}
+&& \frac{\Gamma \VTS M : A \Rightarrow B \quad \Gamma \VTS N : A}{\Gamma \CTS \APP(M, N) : B}
+\end{align*}
+\begin{align*}
+   \frac{\Gamma \VTS L : \LABEL}{\Gamma \CTS \VAR (L) : A}
+&& \frac{\Gamma , a : \LABEL \CTS M : A \quad \Gamma \CTS N : A}{\Gamma \CTS \SUB (a.M , N) : A}
+\end{align*}
+
+\subsection{Interpretation}
+Types $A$ are interpreted as sets $\llbracket A \rrbracket$ and contexts $\Gamma = x_1 : A_1 , \dots, x_n : A_n$ as products of sets $\llbracket \Gamma \rrbracket = \llbracket A_1 \rrbracket \times \dots \times \llbracket A_n \rrbracket$ as usual.
+
+Value terms $\Gamma \VTS M : A$ are interpreted as morphisms $\llbracket \Gamma \rrbracket \xrightarrow{\llbracket M \rrbracket} \llbracket A\rrbracket$.
+\begin{enumerate}
+\item $\llbracket x_1 : A_1 , \dots, x_n : A_n \VTS x_i : A_i \rrbracket = \pi_i$
+\item $\llbracket \Gamma \VTS \lambda x.M : A \Rightarrow B \rrbracket = \lambda \llbracket M \rrbracket$
+\item $\llbracket \Gamma \VTS (M, N) : A \times B \rrbracket = \langle \llbracket M \rrbracket, \llbracket N \rrbracket \rangle$
+\item $\llbracket \Gamma \VTS \PM((a , b) = M , N) : C \rrbracket = \llbracket N \rrbracket \circ \alpha \circ \langle \ID , \llbracket M \rrbracket \rangle$
+\item $\llbracket \Gamma \VTS \ast : \unit \rrbracket = \langle \rangle$
+\end{enumerate}
+
+Computation terms $\Gamma \CTS M : A$ are interpreted as morphisms $\llbracket \Gamma \rrbracket \xrightarrow{\llbracket M \rrbracket} K_{\LABEL}\llbracket A\rrbracket$.
+\begin{enumerate}
+%\item $\llbracket \Gamma \CTS \RET (M) : A \rrbracket = \eta \circ \llbracket M \rrbracket$
+\item $\llbracket \Gamma \CTS \RET (M) : A \rrbracket \;\gamma\; k = k \;(\llbracket M \rrbracket\; \gamma)$
+\item $\llbracket \Gamma \CTS \PUSH (M, x.N) : B\rrbracket \;\gamma \; k = ({\llbracket N \rrbracket}^{\sharp} \circ \STR \circ \langle \gamma , \llbracket M \rrbracket \;\gamma \rangle) \; k$ \newline \hspace*{\fill} where ${\_}^{\sharp} : (X \to K_\LABEL Y) \to (K_\LABEL X \to K_\LABEL Y)$
+\item $\llbracket \Gamma \CTS \APP(M , N) : B \rrbracket \; \gamma \; k = (\EVAL \circ \langle \llbracket M \rrbracket , \llbracket N \rrbracket \rangle) \; \gamma \; k$
+\item $\llbracket \Gamma \CTS \VAR(L) : \LABEL \rrbracket \; \gamma \; k = \llbracket L \rrbracket \; \gamma$
+\item $\llbracket \Gamma \CTS \SUB(a.M , N) : A \rrbracket = \llbracket M \rrbracket \; (\gamma , \llbracket N \rrbracket \, \gamma \, k) \; k$
+\end{enumerate}
+
+
 \subsection{States}
 
 States are pairs $(t ; k)$, where $t$ is a stack of partial terms in an environment (a pair of a partial term and an environment) and $k$ is a stack of continuations.
 If the partial term at the top of the stack $t$ is a partial value term, then $(t ; k)$ is a \emph{value state}, otherwise $(t ; k)$ is a \emph{computation state}.
 
 An \emph{environment} is a map from label variables to computation states and from non-label variables to full terms in an environment.
+\vspace{10pt}
 
-\clearpage
 \subsection{Transitions}
 \begin{align*}
 	%
@@ -75,7 +131,6 @@ An \emph{environment} is a map from label variables to computation states and fr
 	%	((\pi_1 \gamma (x) , \pi_2 \gamma (x)) , \tail ; k) & \text{otherwise}
 	%\end{array}
 	%\right.\\
-	\\
   %
 	\intertext{From value states to value states:}
 	((x, \gamma), \tail ; k) &\leadsto ((\pi_1 \gamma (x) , \pi_2 \gamma (x)) , \tail ; k)\\
