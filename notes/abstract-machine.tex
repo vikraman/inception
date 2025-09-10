@@ -21,7 +21,12 @@
 \newcommand{\STR}{\textsf{str}}
 \newcommand{\EVAL}{\textsf{ev}}
 \newcommand{\LABEL}{\textbf{V}}
+\newcommand{\CAT}{\ensuremath{+}}
+
+\newcommand{\STATE}[2]{\ensuremath{\langle\,#1\;|\;#2\,\rangle}}
+
 \newcommand{\unit}{\textbf{1}}
+
 
 \newcommand{\tail}{\textsf{tail}}
 \newcommand{\flag}[1]{{}^{\bullet}{#1}}
@@ -144,16 +149,16 @@ An \emph{environment} is a map from label variables to computation states and fr
 	%\right.\\
   %
 	\intertext{From value states to value states:}
-	((x, \gamma), \tail ; k) &\leadsto ((\pi_1 \gamma (x) , \pi_2 \gamma (x)) , \tail ; k)\\
+	\STATE{(x, \gamma) \CAT \tail}{k} &\leadsto \STATE{\gamma(x) \CAT \tail}{k}\\
 	\intertext{\hspace*{\fill}where $x$ is a non-label variable}
 	\\
-  (( (L , R) , \gamma ) , \tail ; k ) &\leadsto (( L , \gamma ) , ( (\_ , R) , \gamma) , \tail ; k)\\
-  (( \flag{(L, R)}, \gamma), (\PMV ( \_ , (x , y).N) , \gamma') , \tail ; k) &\leadsto (( N , \gamma' [ x \mapsto (L , \gamma) , y \mapsto (R , \gamma) ]) , \tail ; k )\\
-  (( \PMV (M , (x,y).N), \gamma) , \tail ; k) &\leadsto (( M , \gamma) , (\PMV (\_ , (x,y).N) , \gamma) , \tail ; k )\\
+  \STATE{( (L , R) , \gamma ) \CAT \tail}{k} &\leadsto \STATE{( L , \gamma ) \CAT ( (\_ , R) , \gamma) \CAT \tail}{k}\\
+  \STATE{( \flag{(L, R)}, \gamma) \CAT (\PMV ( \_ , (x , y).N) , \gamma') \CAT \tail}{k} &\leadsto \STATE{( N , \gamma' [ x \mapsto (L , \gamma) , y \mapsto (R , \gamma) ]) \CAT \tail}{k}\\
+  \STATE{( \PMV (M , (x,y).N), \gamma) \CAT \tail}{k} &\leadsto \STATE{( M , \gamma) \CAT (\PMV (\_ , (x,y).N) , \gamma) \CAT \tail}{k}\\
 	\\
 	%
-  (( T , \gamma) , ( (\_ , R) , \gamma') , \tail ; k ) &\leadsto (( R , \gamma' ) , ((T , \_) , \gamma') , \tail ; k )\\
-  (( T , \gamma) , ( (L , \_) , \gamma') , \tail ; k ) &\leadsto ((\flag{(L , T)} , \gamma') , \tail ; k )\\
+  \STATE{( T , \gamma) \CAT ( (\_ , R) , \gamma') \CAT \tail}{k} &\leadsto \STATE{( R , \gamma' ) \CAT ((T , \_) , \gamma') \CAT \tail}{k}\\
+  \STATE{( T , \gamma) \CAT ( (L , \_) , \gamma') \CAT \tail}{k} &\leadsto \STATE{(\flag{(L , T)} , \gamma') \CAT \tail}{k}\\
   %(( T , \gamma ) , (\RET (\_) , \gamma') , \tail ; k ) &\leadsto (( \flag{\RET (T)} , \gamma') , \tail ; k)\\
 	\intertext{\hspace*{\fill}where $T = \lambda x . M$ or $T = \flag{(L , R)}$ or $T = \ast$}
   %
