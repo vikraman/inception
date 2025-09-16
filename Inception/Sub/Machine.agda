@@ -71,11 +71,11 @@ eq-pair∷pm γ γ' γ'' x y M N ≡M =         ⟦ N ⟧ᵛ ((γ' , ⟦ x ⟧�
 
 data _~>ᵛᵛ_ : VState → VState → Set where
 
-     -- (∘ var ■) transitions
-     ~∘var■~>   : (γ : ⟦ Γ ⟧ˣ) → (i : Γ ∋ A)
-                  → ∘ var i , γ ■ ~>ᵛᵛ ∙ var i , γ ■
+     -- (∘ T ∷ tail) transitions with T = var i or T = unit or T = lam M
+     ~∘var~>   : (γ : ⟦ Γ ⟧ˣ) → (i : Γ ∋ A)
+                 → (tail : valStack (var i) γ)
+                  → ∘ tail ~>ᵛᵛ ∙ tail
 
-     -- (∘ T ∷ tail) transitions with T = unit or T = lam 
      ~∘unit~> : (γ : ⟦ Γ ⟧ˣ)
                  → (tail : valStack unit γ)
                  → ∘ tail ~>ᵛᵛ ∙ tail
@@ -152,5 +152,95 @@ data _~>ᵛᵛ_ : VState → VState → Set where
                  → (≡LHS : ⟦ lam M ⟧ᵛ γ ≡ ⟦ LHS ⟧ᵛ γ') → (≡RHS' : ⟦ pair LHS RHS ⟧ᵛ γ' ≡ ⟦ RHS' ⟧ᵛ γ'')
                  → (tail : valStack (pair LHS' RHS') γ'')
                  →   ∙ lam M , γ ∷l⟨ ≡LHS ⟩ pair LHS RHS , γ' ∷r⟨ ≡RHS' ⟩ tail
+                      ~>ᵛᵛ
+                     ∘ RHS , γ' ∷r⟨ refl ⟩ pair LHS RHS , γ' ∷r⟨ ≡RHS' ⟩ tail
+
+     -- (∙ T ∷ (_ , RHS) ∷ pm ∷ tail) transitions with T = pair x y
+     ~∙pair∷l∷pm~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → (γ'' : ⟦ Γ'' ⟧ˣ)
+                 → (x : Γ ⊢ᵛ X) -> (y : Γ ⊢ᵛ Y)
+                 → (LHS : Γ' ⊢ᵛ X `× Y) → (RHS : Γ' ⊢ᵛ Z)
+                 → (M' : Γ'' ⊢ᵛ (X `× Y) `× Z) → (N' : (Γ'' ∙ (X `× Y) ∙ Z) ⊢ᵛ Z')
+                 → (≡LHS : ⟦ pair x y ⟧ᵛ γ ≡ ⟦ LHS ⟧ᵛ γ') → (≡M' : ⟦ pair LHS RHS ⟧ᵛ γ' ≡ ⟦ M' ⟧ᵛ γ'')
+                 → (tail : valStack (pm M' N') γ'')
+                 →   ∙ pair x y , γ ∷l⟨ ≡LHS ⟩ pair LHS RHS , γ' ∷pm⟨ ≡M' ⟩ tail
+                      ~>ᵛᵛ
+                     ∘ RHS , γ' ∷r⟨ refl ⟩ pair LHS RHS , γ' ∷pm⟨ ≡M' ⟩ tail
+
+     ~∙pair∷l∷l~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → (γ'' : ⟦ Γ'' ⟧ˣ)
+                 → (x : Γ ⊢ᵛ X) -> (y : Γ ⊢ᵛ Y)
+                 → (LHS : Γ' ⊢ᵛ X `× Y) → (RHS : Γ' ⊢ᵛ Z)
+                 → (LHS' : Γ'' ⊢ᵛ (X `× Y) `× Z) → (RHS' : Γ'' ⊢ᵛ Z')
+                 → (≡LHS : ⟦ pair x y ⟧ᵛ γ ≡ ⟦ LHS ⟧ᵛ γ') → (≡LHS' : ⟦ pair LHS RHS ⟧ᵛ γ' ≡ ⟦ LHS' ⟧ᵛ γ'')
+                 → (tail : valStack (pair LHS' RHS') γ'')
+                 →   ∙ pair x y , γ ∷l⟨ ≡LHS ⟩ pair LHS RHS , γ' ∷l⟨ ≡LHS' ⟩ tail
+                      ~>ᵛᵛ
+                     ∘ RHS , γ' ∷r⟨ refl ⟩ pair LHS RHS , γ' ∷l⟨ ≡LHS' ⟩ tail
+
+     ~∙pair∷l∷r~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → (γ'' : ⟦ Γ'' ⟧ˣ)
+                 → (x : Γ ⊢ᵛ X) -> (y : Γ ⊢ᵛ Y)
+                 → (LHS : Γ' ⊢ᵛ X `× Y) → (RHS : Γ' ⊢ᵛ Z)
+                 → (LHS' : Γ'' ⊢ᵛ Z') → (RHS' : Γ'' ⊢ᵛ (X `× Y) `× Z)
+                 → (≡LHS : ⟦ pair x y ⟧ᵛ γ ≡ ⟦ LHS ⟧ᵛ γ') → (≡RHS' : ⟦ pair LHS RHS ⟧ᵛ γ' ≡ ⟦ RHS' ⟧ᵛ γ'')
+                 → (tail : valStack (pair LHS' RHS') γ'')
+                 →   ∙ pair x y , γ ∷l⟨ ≡LHS ⟩ pair LHS RHS , γ' ∷r⟨ ≡RHS' ⟩ tail
+                      ~>ᵛᵛ
+                     ∘ RHS , γ' ∷r⟨ refl ⟩ pair LHS RHS , γ' ∷r⟨ ≡RHS' ⟩ tail
+
+     -- (∙ T ∷ (_ , RHS) ∷ pm ∷ tail) transitions with T = var i
+     ~∙var∷l∷pm~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → (γ'' : ⟦ Γ'' ⟧ˣ)
+                 → (i : Γ ∋ X)
+                 → (LHS : Γ' ⊢ᵛ X) → (RHS : Γ' ⊢ᵛ Y)
+                 → (M' : Γ'' ⊢ᵛ X `× Y) → (N' : (Γ'' ∙ X ∙ Y) ⊢ᵛ Z)
+                 → (≡LHS : ⟦ var i ⟧ᵛ γ ≡ ⟦ LHS ⟧ᵛ γ') → (≡M' : ⟦ pair LHS RHS ⟧ᵛ γ' ≡ ⟦ M' ⟧ᵛ γ'')
+                 → (tail : valStack (pm M' N') γ'')
+                 →   ∙ var i , γ ∷l⟨ ≡LHS ⟩ pair LHS RHS , γ' ∷pm⟨ ≡M' ⟩ tail
+                      ~>ᵛᵛ
+                     ∘ RHS , γ' ∷r⟨ refl ⟩ pair LHS RHS , γ' ∷pm⟨ ≡M' ⟩ tail
+
+     ~∙var∷l∷l~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → (γ'' : ⟦ Γ'' ⟧ˣ)
+                 → (i : Γ ∋ X)
+                 → (LHS : Γ' ⊢ᵛ X) → (RHS : Γ' ⊢ᵛ Y)
+                 → (LHS' : Γ'' ⊢ᵛ X `× Y) → (RHS' : Γ'' ⊢ᵛ Z)
+                 → (≡LHS : ⟦ var i ⟧ᵛ γ ≡ ⟦ LHS ⟧ᵛ γ') → (≡LHS' : ⟦ pair LHS RHS ⟧ᵛ γ' ≡ ⟦ LHS' ⟧ᵛ γ'')
+                 → (tail : valStack (pair LHS' RHS') γ'')
+                 →   ∙ var i , γ ∷l⟨ ≡LHS ⟩ pair LHS RHS , γ' ∷l⟨ ≡LHS' ⟩ tail
+                      ~>ᵛᵛ
+                     ∘ RHS , γ' ∷r⟨ refl ⟩ pair LHS RHS , γ' ∷l⟨ ≡LHS' ⟩ tail
+
+     ~∙var∷l∷r~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → (γ'' : ⟦ Γ'' ⟧ˣ)
+                 → (i : Γ ∋ X)
+                 → (LHS : Γ' ⊢ᵛ X) → (RHS : Γ' ⊢ᵛ Y)
+                 → (LHS' : Γ'' ⊢ᵛ Z) → (RHS' : Γ'' ⊢ᵛ X `× Y)
+                 → (≡LHS : ⟦ var i ⟧ᵛ γ ≡ ⟦ LHS ⟧ᵛ γ') → (≡RHS' : ⟦ pair LHS RHS ⟧ᵛ γ' ≡ ⟦ RHS' ⟧ᵛ γ'')
+                 → (tail : valStack (pair LHS' RHS') γ'')
+                 →   ∙ var i , γ ∷l⟨ ≡LHS ⟩ pair LHS RHS , γ' ∷r⟨ ≡RHS' ⟩ tail
+                      ~>ᵛᵛ
+                     ∘ RHS , γ' ∷r⟨ refl ⟩ pair LHS RHS , γ' ∷r⟨ ≡RHS' ⟩ tail
+
+     -- (∙ T ∷ (_ , RHS) ∷ pm ∷ tail) transitions with T = unit
+     ~∙unit∷l∷pm~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → (γ'' : ⟦ Γ'' ⟧ˣ)
+                 → (LHS : Γ' ⊢ᵛ `Unit) → (RHS : Γ' ⊢ᵛ Y)
+                 → (M' : Γ'' ⊢ᵛ `Unit `× Y) → (N' : (Γ'' ∙ `Unit ∙ Y) ⊢ᵛ Z)
+                 → (≡LHS : ⟦ unit ⟧ᵛ γ ≡ ⟦ LHS ⟧ᵛ γ') → (≡M' : ⟦ pair LHS RHS ⟧ᵛ γ' ≡ ⟦ M' ⟧ᵛ γ'')
+                 → (tail : valStack (pm M' N') γ'')
+                 →   ∙ unit , γ ∷l⟨ ≡LHS ⟩ pair LHS RHS , γ' ∷pm⟨ ≡M' ⟩ tail
+                      ~>ᵛᵛ
+                     ∘ RHS , γ' ∷r⟨ refl ⟩ pair LHS RHS , γ' ∷pm⟨ ≡M' ⟩ tail
+
+     ~∙unit∷l∷l~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → (γ'' : ⟦ Γ'' ⟧ˣ)
+                 → (LHS : Γ' ⊢ᵛ `Unit) → (RHS : Γ' ⊢ᵛ Y)
+                 → (LHS' : Γ'' ⊢ᵛ `Unit `× Y) → (RHS' : Γ'' ⊢ᵛ Z)
+                 → (≡LHS : ⟦ unit ⟧ᵛ γ ≡ ⟦ LHS ⟧ᵛ γ') → (≡LHS' : ⟦ pair LHS RHS ⟧ᵛ γ' ≡ ⟦ LHS' ⟧ᵛ γ'')
+                 → (tail : valStack (pair LHS' RHS') γ'')
+                 →   ∙ unit , γ ∷l⟨ ≡LHS ⟩ pair LHS RHS , γ' ∷l⟨ ≡LHS' ⟩ tail
+                      ~>ᵛᵛ
+                     ∘ RHS , γ' ∷r⟨ refl ⟩ pair LHS RHS , γ' ∷l⟨ ≡LHS' ⟩ tail
+
+     ~∙unit∷l∷r~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → (γ'' : ⟦ Γ'' ⟧ˣ)
+                 → (LHS : Γ' ⊢ᵛ `Unit) → (RHS : Γ' ⊢ᵛ Y)
+                 → (LHS' : Γ'' ⊢ᵛ Z) → (RHS' : Γ'' ⊢ᵛ `Unit `× Y)
+                 → (≡LHS : ⟦ unit ⟧ᵛ γ ≡ ⟦ LHS ⟧ᵛ γ') → (≡RHS' : ⟦ pair LHS RHS ⟧ᵛ γ' ≡ ⟦ RHS' ⟧ᵛ γ'')
+                 → (tail : valStack (pair LHS' RHS') γ'')
+                 →   ∙ unit , γ ∷l⟨ ≡LHS ⟩ pair LHS RHS , γ' ∷r⟨ ≡RHS' ⟩ tail
                       ~>ᵛᵛ
                      ∘ RHS , γ' ∷r⟨ refl ⟩ pair LHS RHS , γ' ∷r⟨ ≡RHS' ⟩ tail
