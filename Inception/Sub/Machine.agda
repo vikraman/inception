@@ -46,6 +46,15 @@ data valStack where
         ---------
         → valStack RHS γ
 
+-- in progress:
+tf' :   (Γ : Ctx) → (Γ' : Ctx) → (Δ : Ctx) → (X : Ty) → (Y : Ty) → (Z : Ty)
+      → (M : Γ ⊢ᵛ X) → (γ : ⟦ Γ ⟧ˣ)
+      → (tfn : (M' : Γ' ⊢ᵛ X) → (N : Δ ⊢ᵛ Y) → Γ' ⊢ᵛ Z)
+      → (sfn : {M' : Γ' ⊢ᵛ X} -> {γ' : ⟦ Γ' ⟧ˣ} -> {N : Δ ⊢ᵛ Y} → (M≡M' : ⟦ M ⟧ᵛ γ ≡ ⟦ M' ⟧ᵛ γ') -> valStack (tfn M' N) γ' → valStack M γ)
+      → valStack M γ
+tf' Γ Γ' Δ X Y Z M γ tfn sfn = {!!}
+
+
 infix 20 ∘_
 infix 20 ∙_
 
