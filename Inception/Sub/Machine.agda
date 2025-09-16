@@ -91,6 +91,14 @@ data _~>_ : State → State → Set where
                       ~>
                        ∘ N , ((γ' ,  ⟦ x ⟧ᵛ γ) ,  ⟦ y ⟧ᵛ γ) ∷l⟨ trans (eq-pm γ γ' γ'' x y M N ≡M) ≡LHS ⟩ tail
 
+     ~∙pair∷pm∷r~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → (γ'' : ⟦ Γ'' ⟧ˣ)
+                 → (x : Γ ⊢ᵛ X) -> (y : Γ ⊢ᵛ Y) → (M : Γ' ⊢ᵛ X `× Y) → (N : (Γ' ∙ X ∙ Y) ⊢ᵛ Z') → (LHS : Γ'' ⊢ᵛ Z) → (RHS : Γ'' ⊢ᵛ Z')
+                 → (≡M : ⟦ pair x y ⟧ᵛ γ ≡ ⟦ M ⟧ᵛ γ') → (≡RHS : ⟦ (pm M N) ⟧ᵛ γ' ≡ ⟦ RHS ⟧ᵛ γ'')
+                 → (tail : valStack (pair LHS RHS) γ'')
+                 ->    ∙ pair x y , γ ∷pm⟨ ≡M ⟩ pm M N , γ' ∷r⟨ ≡RHS ⟩ tail
+                      ~>
+                       ∘ N , ((γ' ,  ⟦ x ⟧ᵛ γ) ,  ⟦ y ⟧ᵛ γ) ∷r⟨ trans (eq-pm γ γ' γ'' x y M N ≡M) ≡RHS ⟩ tail
+
 
      -- should get stuck on these
      {-
