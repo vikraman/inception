@@ -157,8 +157,8 @@ An \emph{environment} is a map from label variables (i.e.\ those bound by \SUB) 
 	\\
   \STATE{( (L , R) , \gamma ) \CAT \tail}{k} &\leadsto \STATE{( L , \gamma ) \CAT ( (\_ , R) , \gamma) \CAT \tail}{k}\\
 	%
-  \STATE{( T , \gamma) \CAT ( (\_ , R) , \gamma') \CAT \tail}{k} &\leadsto \STATE{( R , \gamma' ) \CAT ((T , \_) , \gamma') \CAT \tail}{k}\\
-  \STATE{( T , \gamma) \CAT ( (L , \_) , \gamma') \CAT \tail}{k} &\leadsto \STATE{(\flag{(L , T)} , \gamma') \CAT \tail}{k}\\
+  \STATE{( T , \gamma) \CAT ( (\_ , R) , \gamma') \CAT \tail}{k} &\leadsto \STATE{( R , \gamma' ) \CAT ((x , \_) , \gamma' [x \mapsto (T , \gamma)]) \CAT \tail}{k}\\
+  \STATE{( T , \gamma) \CAT ( (L , \_) , \gamma') \CAT \tail}{k} &\leadsto \STATE{(\flag{(L , y)} , \gamma' [y \mapsto [x \mapsto (T , \gamma)]]) \CAT \tail}{k}\\
   %(( T , \gamma ) , (\RET (\_) , \gamma') , \tail ; k ) &\leadsto (( \flag{\RET (T)} , \gamma') , \tail ; k)\\
 	\intertext{\hspace*{\fill}where $T = \lambda x . M$ or $T = \flag{(L , R)}$ or $T = \ast$}
   %

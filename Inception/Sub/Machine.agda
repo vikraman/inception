@@ -2,6 +2,9 @@
 
 module Inception.Sub.Machine (R : Set) where
 
+open import Function.Base using (id)
+open Function.Base using (id)
+
 open import Data.List
 open import Data.Unit
 open import Data.Product
@@ -68,6 +71,40 @@ eq-pair∷pm γ γ' γ'' x y M N ≡M =         ⟦ N ⟧ᵛ ((γ' , ⟦ x ⟧�
                                 ≡⟨ refl ⟩
                                     ⟦ (pm M N) ⟧ᵛ γ' ∎
 
+eq-lam∷l∷pm :   (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → (γ'' : ⟦ Γ'' ⟧ˣ)
+     → (M : (Γ ∙ X) ⊢ᶜ Y)
+     → (LHS : Γ' ⊢ᵛ X `⇒ Y) → (RHS : Γ' ⊢ᵛ Z)
+     → (M' : Γ'' ⊢ᵛ (X `⇒ Y) `× Z)
+     → (≡LHS : ⟦ lam M ⟧ᵛ γ ≡ ⟦ LHS ⟧ᵛ γ') → (≡M' : ⟦ pair LHS RHS ⟧ᵛ γ' ≡ ⟦ M' ⟧ᵛ γ'')
+     → ⟦ pair (var h) (wk-val (wk-wk wk-id) RHS) ⟧ᵛ (γ' , ⟦ lam M ⟧ᵛ γ) ≡ ⟦ M' ⟧ᵛ γ''
+eq-lam∷l∷pm γ γ' γ'' M LHS RHS M' ≡LHS ≡M' =  ⟦ pair (var h) (wk-val (wk-wk wk-id) RHS) ⟧ᵛ (γ' , ⟦ lam M ⟧ᵛ γ)
+                                         ≡⟨ refl ⟩
+                                           < ⟦ var h ⟧ᵛ , ⟦ wk-val (wk-wk wk-id) RHS ⟧ᵛ > (γ' , ⟦ lam M ⟧ᵛ γ)
+                                         ≡⟨ refl ⟩
+                                            (⟦ var h ⟧ᵛ (γ' , ⟦ lam M ⟧ᵛ γ) ,  ⟦ wk-val (wk-wk wk-id) RHS ⟧ᵛ (γ' , ⟦ lam M ⟧ᵛ γ))
+                                         ≡⟨ refl ⟩
+                                            (⟦ lam M ⟧ᵛ γ , ⟦ RHS ⟧ᵛ γ')
+                                         ≡⟨ cong (λ t → (t , ⟦ RHS ⟧ᵛ γ') ) ≡LHS ⟩
+                                            (⟦ LHS ⟧ᵛ γ' , ⟦ RHS ⟧ᵛ γ')
+                                         ≡⟨ refl ⟩
+                                            ⟦ pair LHS RHS ⟧ᵛ γ'
+                                         ≡⟨ ≡M' ⟩
+                                          ⟦ M' ⟧ᵛ γ'' ∎
+
+eq-lam∷r∷pm : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → (γ'' : ⟦ Γ'' ⟧ˣ)
+           → (M : (Γ ∙ X) ⊢ᶜ Y)
+           → (LHS : Γ' ⊢ᵛ Z) → (RHS : Γ' ⊢ᵛ X `⇒ Y)
+           → (M' : Γ'' ⊢ᵛ Z `× (X `⇒ Y))
+           → (≡RHS : ⟦ lam M ⟧ᵛ γ ≡ ⟦ RHS ⟧ᵛ γ') → (≡M' : ⟦ pair LHS RHS ⟧ᵛ γ' ≡ ⟦ M' ⟧ᵛ γ'')
+           → ⟦ pair (wk-val (wk-wk wk-id) LHS) (var h) ⟧ᵛ (γ' , ⟦ lam M ⟧ᵛ γ) ≡ ⟦ M' ⟧ᵛ γ''
+eq-lam∷r∷pm γ γ' γ'' M LHS RHS M' ≡RHS ≡M' =   ⟦ pair (wk-val (wk-wk wk-id) LHS) (var h) ⟧ᵛ (γ' , ⟦ lam M ⟧ᵛ γ)
+                                              ≡⟨ refl ⟩
+                                                (⟦ LHS ⟧ᵛ γ' , ⟦ lam M ⟧ᵛ γ)
+                                              ≡⟨  cong (λ t → (⟦ LHS ⟧ᵛ γ' , t)) ≡RHS ⟩
+                                                 (⟦ LHS ⟧ᵛ γ' , ⟦ RHS ⟧ᵛ γ')
+                                              ≡⟨ ≡M' ⟩
+                                               ⟦ M' ⟧ᵛ γ'' ∎
+
 
 data _~>ᵛᵛ_ : VState → VState → Set where
 
@@ -124,7 +161,7 @@ data _~>ᵛᵛ_ : VState → VState → Set where
                       ~>ᵛᵛ
                        ∘ M , γ ∷pm⟨ refl ⟩ tail
 
-     -- (∙ T ∷ (_ , RHS) ∷ pm ∷ tail) transitions with T = lam M
+     -- (∙ T ∷ (_ , RHS) ∷ tail) transitions with T = lam M
      ~∙lam∷l∷pm~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → (γ'' : ⟦ Γ'' ⟧ˣ)
                  → (M : (Γ ∙ X) ⊢ᶜ Y)
                  → (LHS : Γ' ⊢ᵛ X `⇒ Y) → (RHS : Γ' ⊢ᵛ Z)
@@ -133,8 +170,9 @@ data _~>ᵛᵛ_ : VState → VState → Set where
                  → (tail : valStack (pm M' N') γ'')
                  →   ∙ lam M , γ ∷l⟨ ≡LHS ⟩ pair LHS RHS , γ' ∷pm⟨ ≡M' ⟩ tail
                       ~>ᵛᵛ
-                     ∘ RHS , γ' ∷r⟨ refl ⟩ pair LHS RHS , γ' ∷pm⟨ ≡M' ⟩ tail
+                     ∘ RHS , γ' ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) , (γ' ,  ⟦ lam M ⟧ᵛ γ) ∷pm⟨ eq-lam∷l∷pm γ γ' γ'' M LHS RHS M' ≡LHS ≡M' ⟩ tail
 
+{-
      ~∙lam∷l∷l~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → (γ'' : ⟦ Γ'' ⟧ˣ)
                  → (M : (Γ ∙ X) ⊢ᶜ Y)
                  → (LHS : Γ' ⊢ᵛ X `⇒ Y) → (RHS : Γ' ⊢ᵛ Z)
@@ -155,7 +193,7 @@ data _~>ᵛᵛ_ : VState → VState → Set where
                       ~>ᵛᵛ
                      ∘ RHS , γ' ∷r⟨ refl ⟩ pair LHS RHS , γ' ∷r⟨ ≡RHS' ⟩ tail
 
-     -- (∙ T ∷ (_ , RHS) ∷ pm ∷ tail) transitions with T = pair x y
+     -- (∙ T ∷ (_ , RHS) ∷ tail) transitions with T = pair x y
      ~∙pair∷l∷pm~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → (γ'' : ⟦ Γ'' ⟧ˣ)
                  → (x : Γ ⊢ᵛ X) -> (y : Γ ⊢ᵛ Y)
                  → (LHS : Γ' ⊢ᵛ X `× Y) → (RHS : Γ' ⊢ᵛ Z)
@@ -186,7 +224,7 @@ data _~>ᵛᵛ_ : VState → VState → Set where
                       ~>ᵛᵛ
                      ∘ RHS , γ' ∷r⟨ refl ⟩ pair LHS RHS , γ' ∷r⟨ ≡RHS' ⟩ tail
 
-     -- (∙ T ∷ (_ , RHS) ∷ pm ∷ tail) transitions with T = var i
+     -- (∙ T ∷ (_ , RHS) ∷ tail) transitions with T = var i
      ~∙var∷l∷pm~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → (γ'' : ⟦ Γ'' ⟧ˣ)
                  → (i : Γ ∋ X)
                  → (LHS : Γ' ⊢ᵛ X) → (RHS : Γ' ⊢ᵛ Y)
@@ -217,7 +255,7 @@ data _~>ᵛᵛ_ : VState → VState → Set where
                       ~>ᵛᵛ
                      ∘ RHS , γ' ∷r⟨ refl ⟩ pair LHS RHS , γ' ∷r⟨ ≡RHS' ⟩ tail
 
-     -- (∙ T ∷ (_ , RHS) ∷ pm ∷ tail) transitions with T = unit
+     -- (∙ T ∷ (_ , RHS) ∷ tail) transitions with T = unit
      ~∙unit∷l∷pm~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → (γ'' : ⟦ Γ'' ⟧ˣ)
                  → (LHS : Γ' ⊢ᵛ `Unit) → (RHS : Γ' ⊢ᵛ Y)
                  → (M' : Γ'' ⊢ᵛ `Unit `× Y) → (N' : (Γ'' ∙ `Unit ∙ Y) ⊢ᵛ Z)
@@ -244,3 +282,16 @@ data _~>ᵛᵛ_ : VState → VState → Set where
                  →   ∙ unit , γ ∷l⟨ ≡LHS ⟩ pair LHS RHS , γ' ∷r⟨ ≡RHS' ⟩ tail
                       ~>ᵛᵛ
                      ∘ RHS , γ' ∷r⟨ refl ⟩ pair LHS RHS , γ' ∷r⟨ ≡RHS' ⟩ tail
+-}
+
+     --------------------------------------------------------------------------------------
+     -- (∙ T ∷ (LHS , _) ∷ tail) transitions with T = lam M
+     ~∙lam∷r∷pm~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → (γ'' : ⟦ Γ'' ⟧ˣ)
+                 → (M : (Γ ∙ X) ⊢ᶜ Y)
+                 → (LHS : Γ' ⊢ᵛ Z) → (RHS : Γ' ⊢ᵛ X `⇒ Y)
+                 → (M' : Γ'' ⊢ᵛ Z `× (X `⇒ Y)) → (N' : (Γ'' ∙ Z ∙ (X `⇒ Y)) ⊢ᵛ Z')
+                 → (≡RHS : ⟦ lam M ⟧ᵛ γ ≡ ⟦ RHS ⟧ᵛ γ') → (≡M' : ⟦ pair LHS RHS ⟧ᵛ γ' ≡ ⟦ M' ⟧ᵛ γ'')
+                 → (tail : valStack (pm M' N') γ'')
+                 →   ∙ lam M , γ ∷r⟨ ≡RHS ⟩ pair LHS RHS , γ' ∷pm⟨ ≡M' ⟩ tail
+                      ~>ᵛᵛ
+                     ∙ pair (wk-val (wk-wk wk-id) LHS) (var h) , (γ' , ⟦ lam M ⟧ᵛ γ) ∷pm⟨ eq-lam∷r∷pm γ γ' γ'' M LHS RHS M' ≡RHS ≡M' ⟩ tail
