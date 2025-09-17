@@ -223,30 +223,30 @@ data _~>ᵛᵛ_ : VState → VState → Set where
                       ~>ᵛᵛ
                      ∘ RHS , γ' ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) , (γ' ,  ⟦ lam M ⟧ᵛ γ) ■
 
-     ~∙lam∷l∷pm~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → (γ'' : ⟦ Γ'' ⟧ˣ)
+     ~∙lam∷l∷pm~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → {γ'' : ⟦ Γ'' ⟧ˣ}
                  → (M : (Γ ∙ X) ⊢ᶜ Y)
                  → (LHS : Γ' ⊢ᵛ X `⇒ Y) → (RHS : Γ' ⊢ᵛ Z)
-                 → (M' : Γ'' ⊢ᵛ (X `⇒ Y) `× Z) → (N' : (Γ'' ∙ (X `⇒ Y) ∙ Z) ⊢ᵛ Z')
+                 → {M' : Γ'' ⊢ᵛ (X `⇒ Y) `× Z} → {N' : (Γ'' ∙ (X `⇒ Y) ∙ Z) ⊢ᵛ Z'}
                  → (≡LHS : ⟦ lam M ⟧ᵛ γ ≡ ⟦ LHS ⟧ᵛ γ') → (≡M' : ⟦ pair LHS RHS ⟧ᵛ γ' ≡ ⟦ M' ⟧ᵛ γ'')
                  → (tail : valStack (pm M' N') γ'')
                  →   ∙[lam] lam M , γ ∷l⟨ ≡LHS ⟩ pair LHS RHS , γ' ∷pm⟨ ≡M' ⟩ tail
                       ~>ᵛᵛ
                      ∘ RHS , γ' ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) , (γ' ,  ⟦ lam M ⟧ᵛ γ) ∷pm⟨ trans (cong (λ t → (t , ⟦ RHS ⟧ᵛ γ') ) ≡LHS) ≡M' ⟩ tail
 
-     ~∙lam∷l∷l~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → (γ'' : ⟦ Γ'' ⟧ˣ)
+     ~∙lam∷l∷l~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → {γ'' : ⟦ Γ'' ⟧ˣ}
                  → (M : (Γ ∙ X) ⊢ᶜ Y)
                  → (LHS : Γ' ⊢ᵛ X `⇒ Y) → (RHS : Γ' ⊢ᵛ Z)
-                 → (LHS' : Γ'' ⊢ᵛ (X `⇒ Y) `× Z) → (RHS' : Γ'' ⊢ᵛ Z')
+                 → {LHS' : Γ'' ⊢ᵛ (X `⇒ Y) `× Z} → {RHS' : Γ'' ⊢ᵛ Z'}
                  → (≡LHS : ⟦ lam M ⟧ᵛ γ ≡ ⟦ LHS ⟧ᵛ γ') → (≡LHS' : ⟦ pair LHS RHS ⟧ᵛ γ' ≡ ⟦ LHS' ⟧ᵛ γ'')
                  → (tail : valStack (pair LHS' RHS') γ'')
                  →   ∙[lam] lam M , γ ∷l⟨ ≡LHS ⟩ pair LHS RHS , γ' ∷l⟨ ≡LHS' ⟩ tail
                       ~>ᵛᵛ
                      ∘ RHS , γ' ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) , (γ' ,  ⟦ lam M ⟧ᵛ γ) ∷l⟨ trans (cong (λ t → (t , ⟦ RHS ⟧ᵛ γ') ) ≡LHS) ≡LHS' ⟩ tail
 
-     ~∙lam∷l∷r~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → (γ'' : ⟦ Γ'' ⟧ˣ)
+     ~∙lam∷l∷r~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → {γ'' : ⟦ Γ'' ⟧ˣ}
                  → (M : (Γ ∙ X) ⊢ᶜ Y)
                  → (LHS : Γ' ⊢ᵛ X `⇒ Y) → (RHS : Γ' ⊢ᵛ Z)
-                 → (LHS' : Γ'' ⊢ᵛ Z') → (RHS' : Γ'' ⊢ᵛ (X `⇒ Y) `× Z)
+                 → {LHS' : Γ'' ⊢ᵛ Z'} → {RHS' : Γ'' ⊢ᵛ (X `⇒ Y) `× Z}
                  → (≡LHS : ⟦ lam M ⟧ᵛ γ ≡ ⟦ LHS ⟧ᵛ γ') → (≡RHS' : ⟦ pair LHS RHS ⟧ᵛ γ' ≡ ⟦ RHS' ⟧ᵛ γ'')
                  → (tail : valStack (pair LHS' RHS') γ'')
                  →   ∙[lam] lam M , γ ∷l⟨ ≡LHS ⟩ pair LHS RHS , γ' ∷r⟨ ≡RHS' ⟩ tail
@@ -261,27 +261,27 @@ data _~>ᵛᵛ_ : VState → VState → Set where
                       ~>ᵛᵛ
                      ∘ RHS , γ' ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) , (γ' ,  ⟦ unit ⟧ᵛ γ) ■
 
-     ~∙unit∷l∷pm~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → (γ'' : ⟦ Γ'' ⟧ˣ)
+     ~∙unit∷l∷pm~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → {γ'' : ⟦ Γ'' ⟧ˣ}
                  → (LHS : Γ' ⊢ᵛ `Unit) → (RHS : Γ' ⊢ᵛ Y)
-                 → (M' : Γ'' ⊢ᵛ `Unit `× Y) → (N' : (Γ'' ∙ `Unit ∙ Y) ⊢ᵛ Z)
+                 → {M' : Γ'' ⊢ᵛ `Unit `× Y} → {N' : (Γ'' ∙ `Unit ∙ Y) ⊢ᵛ Z}
                  → (≡LHS : ⟦ unit ⟧ᵛ γ ≡ ⟦ LHS ⟧ᵛ γ') → (≡M' : ⟦ pair LHS RHS ⟧ᵛ γ' ≡ ⟦ M' ⟧ᵛ γ'')
                  → (tail : valStack (pm M' N') γ'')
                  →   ∙[unit] unit , γ ∷l⟨ ≡LHS ⟩ pair LHS RHS , γ' ∷pm⟨ ≡M' ⟩ tail
                       ~>ᵛᵛ
                      ∘ RHS , γ' ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) , (γ' ,  ⟦ unit ⟧ᵛ γ) ∷pm⟨ trans (cong (λ t → (t , ⟦ RHS ⟧ᵛ γ') ) ≡LHS) ≡M' ⟩ tail
 
-     ~∙unit∷l∷l~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → (γ'' : ⟦ Γ'' ⟧ˣ)
+     ~∙unit∷l∷l~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → {γ'' : ⟦ Γ'' ⟧ˣ}
                  → (LHS : Γ' ⊢ᵛ `Unit) → (RHS : Γ' ⊢ᵛ Y)
-                 → (LHS' : Γ'' ⊢ᵛ `Unit `× Y) → (RHS' : Γ'' ⊢ᵛ Z)
+                 → {LHS' : Γ'' ⊢ᵛ `Unit `× Y} → {RHS' : Γ'' ⊢ᵛ Z}
                  → (≡LHS : ⟦ unit ⟧ᵛ γ ≡ ⟦ LHS ⟧ᵛ γ') → (≡LHS' : ⟦ pair LHS RHS ⟧ᵛ γ' ≡ ⟦ LHS' ⟧ᵛ γ'')
                  → (tail : valStack (pair LHS' RHS') γ'')
                  →   ∙[unit] unit , γ ∷l⟨ ≡LHS ⟩ pair LHS RHS , γ' ∷l⟨ ≡LHS' ⟩ tail
                       ~>ᵛᵛ
                      ∘ RHS , γ' ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) , (γ' ,  ⟦ unit ⟧ᵛ γ) ∷l⟨ trans (cong (λ t → (t , ⟦ RHS ⟧ᵛ γ') ) ≡LHS) ≡LHS' ⟩ tail
 
-     ~∙unit∷l∷r~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → (γ'' : ⟦ Γ'' ⟧ˣ)
+     ~∙unit∷l∷r~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → {γ'' : ⟦ Γ'' ⟧ˣ}
                  → (LHS : Γ' ⊢ᵛ `Unit) → (RHS : Γ' ⊢ᵛ Y)
-                 → (LHS' : Γ'' ⊢ᵛ Z) → (RHS' : Γ'' ⊢ᵛ `Unit `× Y)
+                 → {LHS' : Γ'' ⊢ᵛ Z} → {RHS' : Γ'' ⊢ᵛ `Unit `× Y}
                  → (≡LHS : ⟦ unit ⟧ᵛ γ ≡ ⟦ LHS ⟧ᵛ γ') → (≡RHS' : ⟦ pair LHS RHS ⟧ᵛ γ' ≡ ⟦ RHS' ⟧ᵛ γ'')
                  → (tail : valStack (pair LHS' RHS') γ'')
                  →   ∙[unit] unit , γ ∷l⟨ ≡LHS ⟩ pair LHS RHS , γ' ∷r⟨ ≡RHS' ⟩ tail
@@ -297,30 +297,30 @@ data _~>ᵛᵛ_ : VState → VState → Set where
                       ~>ᵛᵛ
                      ∘ RHS , γ' ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) , (γ' ,  ⟦ pair x y ⟧ᵛ γ) ■
 
-     ~∙pair∷l∷pm~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → (γ'' : ⟦ Γ'' ⟧ˣ)
+     ~∙pair∷l∷pm~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → {γ'' : ⟦ Γ'' ⟧ˣ}
                  → (x : Γ ⊢ᵛ X) -> (y : Γ ⊢ᵛ Y)
                  → (LHS : Γ' ⊢ᵛ X `× Y) → (RHS : Γ' ⊢ᵛ Z)
-                 → (M' : Γ'' ⊢ᵛ (X `× Y) `× Z) → (N' : (Γ'' ∙ (X `× Y) ∙ Z) ⊢ᵛ Z')
+                 → {M' : Γ'' ⊢ᵛ (X `× Y) `× Z} → {N' : (Γ'' ∙ (X `× Y) ∙ Z) ⊢ᵛ Z'}
                  → (≡LHS : ⟦ pair x y ⟧ᵛ γ ≡ ⟦ LHS ⟧ᵛ γ') → (≡M' : ⟦ pair LHS RHS ⟧ᵛ γ' ≡ ⟦ M' ⟧ᵛ γ'')
                  → (tail : valStack (pm M' N') γ'')
                  →   ∙[pair] pair x y , γ ∷l⟨ ≡LHS ⟩ pair LHS RHS , γ' ∷pm⟨ ≡M' ⟩ tail
                       ~>ᵛᵛ
                      ∘ RHS , γ' ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) , (γ' ,  ⟦ pair x y ⟧ᵛ γ) ∷pm⟨ trans (cong (λ t → (t , ⟦ RHS ⟧ᵛ γ') ) ≡LHS) ≡M' ⟩ tail
 
-     ~∙pair∷l∷l~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → (γ'' : ⟦ Γ'' ⟧ˣ)
+     ~∙pair∷l∷l~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → {γ'' : ⟦ Γ'' ⟧ˣ}
                  → (x : Γ ⊢ᵛ X) -> (y : Γ ⊢ᵛ Y)
                  → (LHS : Γ' ⊢ᵛ X `× Y) → (RHS : Γ' ⊢ᵛ Z)
-                 → (LHS' : Γ'' ⊢ᵛ (X `× Y) `× Z) → (RHS' : Γ'' ⊢ᵛ Z')
+                 → {LHS' : Γ'' ⊢ᵛ (X `× Y) `× Z} → {RHS' : Γ'' ⊢ᵛ Z'}
                  → (≡LHS : ⟦ pair x y ⟧ᵛ γ ≡ ⟦ LHS ⟧ᵛ γ') → (≡LHS' : ⟦ pair LHS RHS ⟧ᵛ γ' ≡ ⟦ LHS' ⟧ᵛ γ'')
                  → (tail : valStack (pair LHS' RHS') γ'')
                  →   ∙[pair] pair x y , γ ∷l⟨ ≡LHS ⟩ pair LHS RHS , γ' ∷l⟨ ≡LHS' ⟩ tail
                       ~>ᵛᵛ
                      ∘ RHS , γ' ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) , (γ' ,  ⟦ pair x y ⟧ᵛ γ) ∷l⟨ trans (cong (λ t → (t , ⟦ RHS ⟧ᵛ γ') ) ≡LHS) ≡LHS' ⟩ tail
 
-     ~∙pair∷l∷r~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → (γ'' : ⟦ Γ'' ⟧ˣ)
+     ~∙pair∷l∷r~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → {γ'' : ⟦ Γ'' ⟧ˣ}
                  → (x : Γ ⊢ᵛ X) -> (y : Γ ⊢ᵛ Y)
                  → (LHS : Γ' ⊢ᵛ X `× Y) → (RHS : Γ' ⊢ᵛ Z)
-                 → (LHS' : Γ'' ⊢ᵛ Z') → (RHS' : Γ'' ⊢ᵛ (X `× Y) `× Z)
+                 → {LHS' : Γ'' ⊢ᵛ Z'} → {RHS' : Γ'' ⊢ᵛ (X `× Y) `× Z}
                  → (≡LHS : ⟦ pair x y ⟧ᵛ γ ≡ ⟦ LHS ⟧ᵛ γ') → (≡RHS' : ⟦ pair LHS RHS ⟧ᵛ γ' ≡ ⟦ RHS' ⟧ᵛ γ'')
                  → (tail : valStack (pair LHS' RHS') γ'')
                  →   ∙[pair] pair x y , γ ∷l⟨ ≡LHS ⟩ pair LHS RHS , γ' ∷r⟨ ≡RHS' ⟩ tail
@@ -549,20 +549,20 @@ progress (∙[var] (var i , γ ∷l⟨ ≡LHS ⟩ pair LHS RHS , γ' ∷pm⟨ �
 progress (∙[var] (var i , γ ∷l⟨ ≡LHS ⟩ pair LHS RHS , γ' ∷l⟨ ≡LHS' ⟩ tail)) = step (~∙var∷l∷l~> γ γ' i LHS RHS ≡LHS ≡LHS' tail)
 progress (∙[var] (var i , γ ∷l⟨ ≡LHS ⟩ pair LHS RHS , γ' ∷r⟨ ≡RHS' ⟩ tail)) = step (~∙var∷l∷r~> γ γ' i LHS RHS ≡LHS ≡RHS' tail)
 
-progress (∙[lam] (.(lam _) , _ ∷l⟨ L≡L' ⟩ .(pair _ _) , _ ■)) = {!!}
-progress (∙[lam] (.(lam _) , _ ∷l⟨ L≡L' ⟩ .(pair _ _) , _ ∷pm⟨ M≡M' ⟩ VS)) = {!!}
-progress (∙[lam] (.(lam _) , _ ∷l⟨ L≡L' ⟩ .(pair _ _) , _ ∷l⟨ L≡L'' ⟩ VS)) = {!!}
-progress (∙[lam] (.(lam _) , _ ∷l⟨ L≡L' ⟩ .(pair _ _) , _ ∷r⟨ R≡R' ⟩ VS)) = {!!}
+progress (∙[lam] (lam M , γ ∷l⟨ ≡LHS ⟩ pair LHS RHS , γ' ■)) = {!!}
+progress (∙[lam] (lam M , γ ∷l⟨ ≡LHS ⟩ pair LHS RHS , γ' ∷pm⟨ ≡M' ⟩ tail)) = {!!}
+progress (∙[lam] (lam M , γ ∷l⟨ ≡LHS ⟩ pair LHS RHS , γ' ∷l⟨ ≡LHS' ⟩ tail)) = {!!}
+progress (∙[lam] (lam M , γ ∷l⟨ ≡LHS ⟩ pair LHS RHS , γ' ∷r⟨ ≡RHS' ⟩ tail)) = {!!}
 
-progress (∙[unit] (.unit , _ ∷l⟨ L≡L' ⟩ .(pair _ _) , _ ■)) = {!!}
-progress (∙[unit] (.unit , _ ∷l⟨ L≡L' ⟩ .(pair _ _) , _ ∷pm⟨ M≡M' ⟩ VS)) = {!!}
-progress (∙[unit] (.unit , _ ∷l⟨ L≡L' ⟩ .(pair _ _) , _ ∷l⟨ L≡L'' ⟩ VS)) = {!!}
-progress (∙[unit] (.unit , _ ∷l⟨ L≡L' ⟩ .(pair _ _) , _ ∷r⟨ R≡R' ⟩ VS)) = {!!}
+progress (∙[unit] (unit , γ ∷l⟨ ≡LHS ⟩ pair LHS RHS , γ' ■)) = {!!}
+progress (∙[unit] (unit , γ ∷l⟨ ≡LHS ⟩ pair LHS RHS , γ' ∷pm⟨ ≡M' ⟩ tail)) = {!!}
+progress (∙[unit] (unit , γ ∷l⟨ ≡LHS ⟩ pair LHS RHS , γ' ∷l⟨ ≡LHS' ⟩ tail)) = {!!}
+progress (∙[unit] (unit , γ ∷l⟨ ≡LHS ⟩ pair LHS RHS , γ' ∷r⟨ ≡RHS' ⟩ tail)) = {!!}
 
-progress (∙[pair] (.(pair _ _) , _ ∷l⟨ L≡L' ⟩ .(pair _ _) , _ ■)) = {!!}
-progress (∙[pair] (.(pair _ _) , _ ∷l⟨ L≡L' ⟩ .(pair _ _) , _ ∷pm⟨ M≡M' ⟩ VS)) = {!!}
-progress (∙[pair] (.(pair _ _) , _ ∷l⟨ L≡L' ⟩ .(pair _ _) , _ ∷l⟨ L≡L'' ⟩ VS)) = {!!}
-progress (∙[pair] (.(pair _ _) , _ ∷l⟨ L≡L' ⟩ .(pair _ _) , _ ∷r⟨ R≡R' ⟩ VS)) = {!!}
+progress (∙[pair] (pair x y , γ ∷l⟨ ≡LHS ⟩ pair LHS RHS , γ' ■)) = {!!}
+progress (∙[pair] (pair x y , γ ∷l⟨ ≡LHS ⟩ pair LHS RHS , γ' ∷pm⟨ ≡M' ⟩ tail)) = {!!}
+progress (∙[pair] (pair x y , γ ∷l⟨ ≡LHS ⟩ pair LHS RHS , γ' ∷l⟨ ≡LHS' ⟩ tail)) = {!!}
+progress (∙[pair] (pair x y , γ ∷l⟨ ≡LHS ⟩ pair LHS RHS , γ' ∷r⟨ ≡RHS' ⟩ tail)) = {!!}
 
 ---
 
