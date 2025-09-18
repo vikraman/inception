@@ -278,8 +278,8 @@ which neatly corresponds to the CPS translation given in the slides:
 
 \subsection{New}
 \begin{align*}
-    \vark_X & \quad \mapsto \quad \lambda a : V . \lambda k : V^X . a                                              \\
-    \subk_X & \quad \mapsto \quad \lambda \langle M : {(K_V X)}^V , N : K_VX \rangle . \lambda k : V^X . M (N k) k
+    \vark_X & \quad = \quad \lambda a : V . \lambda k : V^X . a                                              \\
+    \subk_X & \quad = \quad \lambda \langle M : {(K_V X)}^V , N : K_VX \rangle . \lambda k : V^X . M (N k) k
 \end{align*}
 
 Categorically, $\subk_X$ is interpreted by the morphism in the following diagram:
@@ -377,7 +377,7 @@ We can now rewrite Diagram~\ref{eq:cps1} as follows:
 
 Let $\overline{m_X}$ be the transpose of $m_X$ with respect to the adjunction $F \dashv G$ so that
 \begin{equation}\label{eq:cps3}
-    \overline{m_X} = G(m_X) \circ \eta_{S(X)}.
+    m_X = G(\overline{m_X}) \circ \eta_{S(X)}.
 \end{equation}
 
 We now note that by naturality (of each of the quadrilaterals) the following diagram commutes:
