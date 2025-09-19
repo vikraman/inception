@@ -1,6 +1,4 @@
--- {-# OPTIONS --show-implicit #-}
-
-module Inception.Sub.Machine (R : Set) where
+module Inception.Sub.ValueMachine (R : Set) where
 
 open import Function.Base using (id)
 open Function.Base using (id)
@@ -21,7 +19,6 @@ open import Inception.Sub.CPS R
 variable
   A' B' C' D' X Y Z X' Y' Z' : Ty
   Γ' Γ'' Δ' : Ctx
-
 
 infix 30 _﹐_■
 infixr 25 _﹐_∷pm⟨_⟩_
@@ -458,6 +455,16 @@ data _~>ᵛᵛ_ : VState → VState → Set where
                      ∙[pair] pair (wk-val (wk-wk wk-id) LHS) (var h) ﹐ (γ' , ⟦ pair x y ⟧ᵛ γ) ∷r⟨ trans (cong (λ t → (⟦ LHS ⟧ᵛ γ' , t) ) ≡RHS) ≡RHS' ⟩ tail
 
 
+infix 40 _▣
+infixr 35 _~>ᵛᵛ⟨_⟩_
+
+data _~>ᵛᵛ*_ : VState → VState → Set where
+
+  _▣ : (VS : VState) → VS ~>ᵛᵛ* VS
+
+  _~>ᵛᵛ⟨_⟩_ : (VS : VState) {VS' VS'' : VState} → VS ~>ᵛᵛ VS' → VS' ~>ᵛᵛ* VS'' → VS ~>ᵛᵛ* VS''
+
+
 data haltingVState : VState → Set where
 
      ∙var■ : {γ : ⟦ Γ ⟧ˣ} → {i : Γ ∋ X} → haltingVState (∙[var] (var i) ﹐ γ ■)
@@ -546,83 +553,3 @@ progress (∙[pair] (pair x y ﹐ γ ∷r⟨ ≡RHS ⟩ pair LHS RHS ﹐ γ' ■
 progress (∙[pair] (pair x y ﹐ γ ∷r⟨ ≡RHS ⟩ pair LHS RHS ﹐ γ' ∷pm⟨ ≡M' ⟩ tail)) = step (~∙pair∷r∷pm~> γ γ' x y LHS RHS ≡RHS ≡M' tail)
 progress (∙[pair] (pair x y ﹐ γ ∷r⟨ ≡RHS ⟩ pair LHS RHS ﹐ γ' ∷l⟨ ≡LHS' ⟩ tail)) = step (~∙pair∷r∷l~> γ γ' x y LHS RHS ≡RHS ≡LHS' tail)
 progress (∙[pair] (pair x y ﹐ γ ∷r⟨ ≡RHS ⟩ pair LHS RHS ﹐ γ' ∷r⟨ ≡RHS' ⟩ tail)) = step (~∙pair∷r∷r~> γ γ' x y LHS RHS ≡RHS ≡RHS' tail)
-
-
-data _~>ᵛᵛ*_ : VState → VState → Set where
-
-  _▣ : (VS : VState) → VS ~>ᵛᵛ* VS
-
-  _~>ᵛᵛ⟨_⟩_ : (VS : VState) {VS' VS'' : VState} → VS ~>ᵛᵛ VS' → VS' ~>ᵛᵛ* VS'' → VS ~>ᵛᵛ* VS''
-
--- cf PLFA
-record Gas : Set where
-  constructor gas
-  field
-    amount : ℕ
-
--- cf PLFA
-data Finished (S : VState) : Set where
-
-   done : haltingVState S → Finished S
-
-   out-of-gas : Finished S
-
--- cf PLFA
-data Steps : VState → Set where
-
-  steps : {S S' : VState} → S ~>ᵛᵛ* S' → Finished S' → Steps S
-
--- cf PLFA
-eval : Gas → (S : VState) → Steps S
-eval (gas zero) S = steps (S ▣) out-of-gas
-eval (gas (suc amount)) S with progress S
-... | done HS = steps (S ▣) (done HS)
-... | step {S' = S'} (S~>S') with eval (gas amount) S'
-... |   steps S'~>*S'' fin = steps (S ~>ᵛᵛ⟨ S~>S' ⟩ S'~>*S'') fin
-
-ex1 : ε ⊢ᵛ `Unit
-ex1 = pm (pair unit unit) (var (t h))
-
-_ : eval (gas 100) (∘ ex1 ﹐ tt ■) ≡ steps
-      ((∘ pm (pair unit unit) (var (t h)) ﹐ tt ■) ~>ᵛᵛ⟨ ~∘pm~> ⟩
-      ((∘
-        pair unit unit ﹐ tt ∷pm⟨ refl ⟩
-        pm (pair unit unit) (var (t h)) ﹐ tt ■)
-        ~>ᵛᵛ⟨ ~∘pair~> ⟩
-        ((∘
-          unit ﹐ tt ∷l⟨ refl ⟩
-          pair unit unit ﹐ tt ∷pm⟨ refl ⟩
-          pm (pair unit unit) (var (t h)) ﹐ tt ■)
-        ~>ᵛᵛ⟨ ~∘unit~> ⟩
-        ((∙[unit]
-          (unit ﹐ tt ∷l⟨ refl ⟩
-            pair unit unit ﹐ tt ∷pm⟨ refl ⟩
-            pm (pair unit unit) (var (t h)) ﹐ tt ■))
-          ~>ᵛᵛ⟨
-          ~∙unit∷l∷pm~> tt tt unit unit refl refl
-          (pm (pair unit unit) (var (t h)) ﹐ tt ■)
-          ⟩
-          ((∘
-            unit ﹐ tt ∷r⟨ refl ⟩
-            pair (var h) unit ﹐ tt , tt ∷pm⟨ refl ⟩
-            pm (pair unit unit) (var (t h)) ﹐ tt ■)
-          ~>ᵛᵛ⟨ ~∘unit~> ⟩
-          ((∙[unit]
-            (unit ﹐ tt ∷r⟨ refl ⟩
-              pair (var h) unit ﹐ tt , tt ∷pm⟨ refl ⟩
-              pm (pair unit unit) (var (t h)) ﹐ tt ■))
-            ~>ᵛᵛ⟨
-            ~∙unit∷r∷pm~> tt (tt , tt) (var h) unit refl refl
-            (pm (pair unit unit) (var (t h)) ﹐ tt ■)
-            ⟩
-            ((∙[pair]
-              (pair (var (t h)) (var h) ﹐ (tt , tt) , tt ∷pm⟨ refl ⟩
-              pm (pair unit unit) (var (t h)) ﹐ tt ■))
-            ~>ᵛᵛ⟨
-            ~∙pair∷pm■~> ((tt , tt) , tt) tt (var (t h)) (var h)
-            (pair unit unit) (var (t h)) refl
-            ⟩
-            ((∘ var (t h) ﹐ (tt , tt) , tt ■) ~>ᵛᵛ⟨ ~∘var~> ⟩
-              ((∙[var] (var (t h) ﹐ (tt , tt) , tt ■)) ▣)))))))))
-      (done ∙var■)
-_ = refl
