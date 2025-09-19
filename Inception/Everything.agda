@@ -1,6 +1,7 @@
 module Inception.Everything where
 
 -- continuation monad
+import Inception.Cont.Base
 import Inception.Cont.Repr
 
 -- substitution calculus
