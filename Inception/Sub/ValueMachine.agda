@@ -1,16 +1,10 @@
 module Inception.Sub.ValueMachine (R : Set) where
 
 open import Function.Base using (id)
-open Function.Base using (id)
-
-open import Data.List
-open import Data.Unit
-open import Data.Product
-open import Data.Sum using (_⊎_; inj₁; inj₂)
-open import Data.Nat using (ℕ; zero; suc; _<_; _≤?_; z≤n; s≤s)
+open import Data.Product using (proj₁; proj₂; _,_)
 
 import Relation.Binary.PropositionalEquality as Eq
-open Eq using (_≡_; refl; trans; sym; cong; cong-app; subst)
+open Eq using (_≡_; refl; trans; cong)
 open Eq.≡-Reasoning
 
 open import Inception.Sub.Syntax
@@ -20,10 +14,16 @@ variable
   A' B' C' D' X Y Z X' Y' Z' : Ty
   Γ' Γ'' Δ' : Ctx
 
+
+infix 40 _▣
+infixr 35 _~>ᵛᵛ⟨_⟩_
 infix 30 _﹐_■
 infixr 25 _﹐_∷pm⟨_⟩_
 infixr 25 _﹐_∷l⟨_⟩_
 infixr 25 _﹐_∷r⟨_⟩_
+infix 20 ∘_
+infix 15 _~>ᵛᵛ_
+
 
 data valStack : (Γ ⊢ᵛ A) → ⟦ Γ ⟧ˣ → Set where
 
@@ -39,8 +39,6 @@ data valStack : (Γ ⊢ᵛ A) → ⟦ Γ ⟧ˣ → Set where
         → valStack RHS γ
 
 
-infix 20 ∘_
-
 data VState : Set where
 
      ∘_ : {M : Γ ⊢ᵛ A} → {γ : ⟦ Γ ⟧ˣ} → valStack M γ → VState
@@ -53,8 +51,6 @@ data VState : Set where
 
      ∙[pair]_ : {x : Γ ⊢ᵛ X} → {y : Γ ⊢ᵛ Y} → {γ : ⟦ Γ ⟧ˣ} → valStack (pair x y) γ → VState
 
-
-infix 15 _~>ᵛᵛ_
 
 data _~>ᵛᵛ_ : VState → VState → Set where
 
@@ -454,9 +450,6 @@ data _~>ᵛᵛ_ : VState → VState → Set where
                       ~>ᵛᵛ
                      ∙[pair] pair (wk-val (wk-wk wk-id) LHS) (var h) ﹐ (γ' , ⟦ pair x y ⟧ᵛ γ) ∷r⟨ trans (cong (λ t → (⟦ LHS ⟧ᵛ γ' , t) ) ≡RHS) ≡RHS' ⟩ tail
 
-
-infix 40 _▣
-infixr 35 _~>ᵛᵛ⟨_⟩_
 
 data _~>ᵛᵛ*_ : VState → VState → Set where
 
