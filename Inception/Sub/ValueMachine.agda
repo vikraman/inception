@@ -479,4 +479,3 @@ data haltingVState : VState → Set where
 ∷l-cong-var γ γ' .(pm _ _) i L≡L' RHS tail ((∘ pm _ _ ﹐ γ ■) ~>ᵛᵛ⟨ ~∘pm~> ⟩ S~>S') = {!!}
 ∷l-cong-var γ γ' .unit i L≡L' RHS tail ((∘ unit ﹐ γ ■) ~>ᵛᵛ⟨ ~∘unit~> ⟩ S~>S') = {!!}
 -}
-
