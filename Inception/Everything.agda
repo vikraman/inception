@@ -7,7 +7,8 @@ import Inception.Cont.Repr
 -- substitution calculus
 import Inception.Sub.Syntax
 import Inception.Sub.CPS
-import Inception.Sub.Machine
+import Inception.Sub.ValueMachine
+import Inception.Sub.VMeval
 
 -- inception calculus
 import Inception.Inc.Syntax
