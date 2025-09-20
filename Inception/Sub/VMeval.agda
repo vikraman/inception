@@ -7,7 +7,7 @@ open import Data.List
 open import Data.Unit
 open import Data.Product
 open import Data.Sum using (_⊎_; inj₁; inj₂)
-open import Data.Nat using (ℕ; zero; suc; _<_; _≤?_; z≤n; s≤s)
+open import Data.Nat using (ℕ; zero; suc; _<_; _≤?_; z≤n; s≤s; _+_)
 
 import Relation.Binary.PropositionalEquality as Eq
 open Eq using (_≡_; refl; trans; sym; cong; cong-app; subst)
@@ -41,18 +41,27 @@ data Steps : VState → Set where
 
 
 -- cf PLFA
-eval-gas : Gas → (S : VState) → Steps S
-eval-gas (gas zero) S = steps (S ▣) out-of-gas
-eval-gas (gas (suc amount)) S with progress S
+bounded-eval : Gas → (S : VState) → Steps S
+bounded-eval (gas zero) S = steps (S ▣) out-of-gas
+bounded-eval (gas (suc amount)) S with progress S
 ... | done HS = steps (S ▣) (done HS)
-... | step {S' = S'} (S~>S') with eval-gas (gas amount) S'
+... | step {S' = S'} (S~>S') with bounded-eval (gas amount) S'
 ... |   steps S'~>*S'' fin = steps (S ~>ᵛᵛ⟨ S~>S' ⟩ S'~>*S'') fin
 
+calc-steps : (Γ ⊢ᵛ X) → ℕ
+calc-steps (var i) = 2
+calc-steps (lam x) = 2
+calc-steps (pair M M') = 2 + (calc-steps M) + (calc-steps M')
+calc-steps (pm M N) = 1 + (calc-steps M) + (calc-steps N)
+calc-steps unit = 2
+
+eval-term : (M : Γ ⊢ᵛ X) → (γ : ⟦ Γ ⟧ˣ) → Steps (∘ M ﹐ γ ■)
+eval-term M γ = bounded-eval (gas (calc-steps M)) (∘ M ﹐ γ ■)
 
 ex1 : ε ⊢ᵛ `Unit
 ex1 = pm (pair unit unit) (var (t h))
 
-_ : eval-gas (gas 100) (∘ ex1 ﹐ tt ■) ≡ steps
+_ : eval-term ex1 tt ≡ steps
       ((∘ pm (pair unit unit) (var (t h)) ﹐ tt ■) ~>ᵛᵛ⟨ ~∘pm~> ⟩
       ((∘
         pair unit unit ﹐ tt ∷pm⟨ refl ⟩
@@ -96,16 +105,17 @@ _ : eval-gas (gas 100) (∘ ex1 ﹐ tt ■) ≡ steps
       (done ∙var■)
 _ = refl
 
+
+{-
 data finiteSteps : VState → Set where
 
   steps : {S S' : VState} → S ~>ᵛᵛ* S' → haltingVState S' → finiteSteps S
 
-{-
 eval : (M : Γ ⊢ᵛ X) → (γ : ⟦ Γ ⟧ˣ) → finiteSteps (∘ M ﹐ γ ■)
 eval (var i) γ = steps ((∘ var i ﹐ γ ■) ~>ᵛᵛ⟨ ~∘var~> ⟩ (∙[var] var i ﹐ γ ■) ▣) ∙var■
 eval (lam M) γ = steps ((∘ lam M ﹐ γ ■) ~>ᵛᵛ⟨ ~∘lam~> ⟩ (∙[lam] lam M ﹐ γ ■) ▣) ∙lam■
 eval (pair LHS RHS) γ with eval LHS γ | eval RHS γ
-... | steps s' (∙var■ {γ = γ'} {i = i'}) | steps s'' ∙var■ = steps ((∘ pair LHS RHS ﹐ γ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩ {!!} ~>ᵛᵛ⟨ {!!} ⟩ {!!} ▣) ∙pair■
+... | steps s' (∙var■ {γ = γ'} {i = i'}) | steps s'' ∙var■ = steps ((∘ pair LHS RHS ﹐ γ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩ (∘ LHS ﹐ γ ∷l⟨ refl ⟩ pair LHS RHS ﹐ γ ■) ~>ᵛᵛ⟨ {!!} ⟩ {!!} ▣) ∙pair■
 ... | steps s' (∙var■ {γ = γ'} {i = i'}) | steps s'' ∙unit■ = {!!}
 ... | steps s' (∙var■ {γ = γ'} {i = i'}) | steps s'' ∙pair■ = {!!}
 ... | steps s' (∙var■ {γ = γ'} {i = i'}) | steps s'' ∙lam■ = {!!}

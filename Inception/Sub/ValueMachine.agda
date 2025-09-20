@@ -12,7 +12,7 @@ open import Inception.Sub.CPS R
 
 variable
   A' B' C' D' X Y Z X' Y' Z' : Ty
-  Γ' Γ'' Δ' : Ctx
+  Γ' Γ'' Γ''' Δ' : Ctx
 
 
 infix 40 _▣
@@ -23,6 +23,7 @@ infixr 25 _﹐_∷l⟨_⟩_
 infixr 25 _﹐_∷r⟨_⟩_
 infix 20 ∘_
 infix 15 _~>ᵛᵛ_
+infix 15 _~>ᵛᵛ*_
 
 
 data valStack : (Γ ⊢ᵛ A) → ⟦ Γ ⟧ˣ → Set where
@@ -468,14 +469,7 @@ data haltingVState : VState → Set where
 
      ∙lam■ : {γ : ⟦ Γ ⟧ˣ} → {M : (Γ ∙ X) ⊢ᶜ Y} → haltingVState (∙[lam] lam M ﹐ γ ■)
 
-{-
-∷l-cong-var :   (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → (LHS : Γ ⊢ᵛ X) → (i : Γ' ∋ X) → (L≡L' : ⟦ LHS ⟧ᵛ γ ≡ ⟦ var i ⟧ᵛ γ')
-          → (RHS : Γ ⊢ᵛ Y) → (tail : valStack (pair LHS RHS) γ)
-          → (S~>S' : (∘ LHS ﹐ γ ■) ~>ᵛᵛ* (∙[var] var i ﹐ γ' ■))
-          → (∘ (LHS ﹐ γ ∷l⟨ refl ⟩ tail)) ~>ᵛᵛ* (∙[var] ((var i) ﹐ γ' ∷l⟨ sym L≡L' ⟩ tail))
-∷l-cong-var γ γ' (var i) i refl RHS tail ((∘ var i ﹐ γ ■) ~>ᵛᵛ⟨ ~∘var~> ⟩ ((∙[var] (var i ﹐ γ ■)) ▣)) = ((∘ (var i ﹐ γ ∷l⟨ refl ⟩ tail))) ~>ᵛᵛ⟨ ~∘var~> ⟩ ( (∙[var] ((var i) ﹐ γ' ∷l⟨ sym refl ⟩ tail))) ▣
-∷l-cong-var γ γ' .(lam _) i L≡L' RHS tail ((∘ lam _ ﹐ γ ■) ~>ᵛᵛ⟨ ~∘lam~> ⟩ S~>S') = {!!}
-∷l-cong-var γ γ' .(pair _ _) i L≡L' RHS tail ((∘ pair _ _ ﹐ γ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩ S~>S') = {!!}
-∷l-cong-var γ γ' .(pm _ _) i L≡L' RHS tail ((∘ pm _ _ ﹐ γ ■) ~>ᵛᵛ⟨ ~∘pm~> ⟩ S~>S') = {!!}
-∷l-cong-var γ γ' .unit i L≡L' RHS tail ((∘ unit ﹐ γ ■) ~>ᵛᵛ⟨ ~∘unit~> ⟩ S~>S') = {!!}
--}
+
+~>ᵛᵛ*-trans : {S S' S'' : VState} → S ~>ᵛᵛ* S' → S' ~>ᵛᵛ* S'' → S ~>ᵛᵛ* S''
+~>ᵛᵛ*-trans (S~>S ▣) S~>S'' = S~>S''
+~>ᵛᵛ*-trans (S ~>ᵛᵛ⟨ x ⟩ T~>S') S'~>S'' =  S ~>ᵛᵛ⟨ x ⟩ (~>ᵛᵛ*-trans T~>S' S'~>S'')
