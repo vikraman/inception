@@ -26,7 +26,7 @@ infixr 25 _﹐_∷_
 infix 20 ∘_
 infix 20 ∙_
 infix 15 _⇝ᵛᵛ_
---infix 15 _⇝ᵛᵛ*_
+infix 15 _⇝ᵛᵛ*_
 
 
 data valStack' : (Γ ⊢ᵛ A) → ⟦ Γ ⟧ˣ → Set where
@@ -415,3 +415,41 @@ data _⇝ᵛᵛ*_ : VState' → VState' → Set where
 ⇝ᵛᵛ*-trans : {S S' S'' : VState'} → S ⇝ᵛᵛ* S' → S' ⇝ᵛᵛ* S'' → S ⇝ᵛᵛ* S''
 ⇝ᵛᵛ*-trans (S⇝S ◽) S⇝S'' = S⇝S''
 ⇝ᵛᵛ*-trans (S ⇝ᵛᵛ⟨ x ⟩ T⇝S') S'⇝S'' =  S ⇝ᵛᵛ⟨ x ⟩ (⇝ᵛᵛ*-trans T⇝S' S'⇝S'')
+
+
+--     ∘var⇝   : {γ : ⟦ Γ ⟧ˣ} → {i : Γ ∋ X} → {tail : valStack' (var i) γ} → ∘ tail ⇝ᵛᵛ ∙ tail
+--
+--     ∘lam⇝ : {γ : ⟦ Γ ⟧ˣ} → {M : (Γ ∙ X) ⊢ᶜ Y} → {tail : valStack' (lam M) γ} → ∘ tail ⇝ᵛᵛ ∙ tail
+--
+--     ∘pair⇝ : {γ : ⟦ Γ ⟧ˣ} → {LHS : Γ ⊢ᵛ X} → {RHS : Γ ⊢ᵛ Y} → {tail : valStack' (pair LHS RHS) γ} → ∘ tail ⇝ᵛᵛ ∘ LHS ﹐ γ ∷ tail
+--
+--     ∘pm⇝ : {γ : ⟦ Γ ⟧ˣ} → {M : Γ ⊢ᵛ X `× Y} → {N : (Γ ∙ X ∙ Y) ⊢ᵛ Z} → {tail : valStack' (pm M N) γ} → ∘ tail ⇝ᵛᵛ ∘ M ﹐ γ ∷ tail
+--
+--     ∘unit⇝ : {γ : ⟦ Γ ⟧ˣ} → {tail : valStack' unit γ} → ∘ tail ⇝ᵛᵛ ∙ tail
+--
+--     -- (∙ var ∷ pm ∷ tail) transitions
+--     ∙var∷pm◾⇝ : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ)
+--                 → (i : Γ ∋ X `× Y)
+--                 → (M : Γ' ⊢ᵛ X `× Y) → (N : (Γ' ∙ X ∙ Y) ⊢ᵛ Z')
+--                 → (≡M : ⟦ var i ⟧ᵛ γ ≡ ⟦ M ⟧ᵛ γ')
+--                 →    ∙ var i ﹐ γ ∷ pm M N ﹐ γ' ◾ ⇝ᵛᵛ ∘ N ﹐ ((γ' , proj₁ (⟦ var i ⟧ᵛ γ)) , proj₂ (⟦ var i ⟧ᵛ γ)) ◾
+
+{-
+∙var∷pm◾-cong : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ)
+            → (i : Γ ∋ X `× Y)
+            → (M : Γ' ⊢ᵛ X `× Y) → (N : (Γ' ∙ X ∙ Y) ⊢ᵛ Z')
+            → (≡M : ⟦ var i ⟧ᵛ γ ≡ ⟦ M ⟧ᵛ γ')
+            → {result : Δ ⊢ᵛ A} → {δ : ⟦ Δ ⟧ˣ}
+            → {P : Δ' ⊢ᵛ A} → {δ' : ⟦ Δ' ⟧ˣ} → (bottom : valStack' P δ')
+            →    ∙ var i ﹐ γ ∷ pm M N ﹐ γ' ◾ ⇝ᵛᵛ* ∙ result ﹐ δ ◾
+            →    ∙ var i ﹐ γ ∷ pm M N ﹐ γ' ∷ bottom ⇝ᵛᵛ* ∙ result ﹐ δ ∷ bottom
+
+∙var∷pm◾-cong γ γ' i M N ≡M {result = result} {δ = δ} {P = var i₁} {δ' = δ'} bottom (.(∙ var i ﹐ γ ∷ pm M N ﹐ γ' ◾) ⇝ᵛᵛ⟨ ∙var∷pm◾⇝ .γ .γ' .i .M .N ≡M₁ ⟩ S>T) = (∙ var i ﹐ γ ∷ pm M N ﹐ γ' ∷ bottom) ⇝ᵛᵛ⟨ {!!} ⟩ {!!}
+∙var∷pm◾-cong γ γ' i M N ≡M {result = result} {δ = δ} {P = lam x} {δ' = δ'} bottom (.(∙ var i ﹐ γ ∷ pm M N ﹐ γ' ◾) ⇝ᵛᵛ⟨ ∙var∷pm◾⇝ .γ .γ' .i .M .N ≡M₁ ⟩ S>T) = {!!}
+∙var∷pm◾-cong γ γ' i M N ≡M {result = result} {δ = δ} {P = pair P P₁} {δ' = δ'} bottom (.(∙ var i ﹐ γ ∷ pm M N ﹐ γ' ◾) ⇝ᵛᵛ⟨ ∙var∷pm◾⇝ .γ .γ' .i .M .N ≡M₁ ⟩ S>T) = {!!}
+∙var∷pm◾-cong γ γ' i M N ≡M {result = result} {δ = δ} {P = pm P P₁} {δ' = δ'} bottom (.(∙ var i ﹐ γ ∷ pm M N ﹐ γ' ◾) ⇝ᵛᵛ⟨ ∙var∷pm◾⇝ .γ .γ' .i .M .N ≡M₁ ⟩ S>T) = {!!}
+∙var∷pm◾-cong γ γ' i M N ≡M {result = result} {δ = δ} {P = unit} {δ' = δ'} bottom (.(∙ var i ﹐ γ ∷ pm M N ﹐ γ' ◾) ⇝ᵛᵛ⟨ ∙var∷pm◾⇝ .γ .γ' .i .M .N ≡M₁ ⟩ S>T) = {!!}
+-}
+
+
+--(∙ var i ﹐ γ ∷ pm M N ﹐ γ' ∷ bottom) ⇝ᵛᵛ⟨ {!!} ⟩ {!!}

@@ -11,8 +11,8 @@ open import Inception.Sub.Syntax
 open import Inception.Sub.CPS R
 
 variable
-  A' B' C' D' X Y Z X' Y' Z' : Ty
-  Γ' Γ'' Γ''' Δ' : Ctx
+  A' B' C' D' X Y Z X' Y' Z' X₁ Y₁ Z₁ X₂ Y₂ Z₂ X◾ Y◾ Z◾ X↓ Y↓ Z↓ : Ty
+  Γ' Γ'' Γ''' Δ' Γ₁ Γ₂ Γ◾ Γ↓ : Ctx
 
 
 infix 40 _▣
@@ -473,3 +473,19 @@ data haltingVState : VState → Set where
 ~>ᵛᵛ*-trans : {S S' S'' : VState} → S ~>ᵛᵛ* S' → S' ~>ᵛᵛ* S'' → S ~>ᵛᵛ* S''
 ~>ᵛᵛ*-trans (S~>S ▣) S~>S'' = S~>S''
 ~>ᵛᵛ*-trans (S ~>ᵛᵛ⟨ x ⟩ T~>S') S'~>S'' =  S ~>ᵛᵛ⟨ x ⟩ (~>ᵛᵛ*-trans T~>S' S'~>S'')
+
+------------------------------------------------------------------
+
+∙var∷pm■-cong : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ)
+                 → (i : Γ ∋ X `× Y)
+                 → (M : Γ' ⊢ᵛ X `× Y) → (N : (Γ' ∙ X ∙ Y) ⊢ᵛ X↓ `× Y↓)
+                 → (≡M : ⟦ var i ⟧ᵛ γ ≡ ⟦ M ⟧ᵛ γ')
+                 ---
+                 → {M↓ : Γ↓ ⊢ᵛ X↓ `× Y↓} → {γ↓ : ⟦ Γ↓ ⟧ˣ} → {N↓ : (Γ↓ ∙ X↓ ∙ Y↓) ⊢ᵛ Z↓} → (◻≡M↓ : ⟦ pm M N ⟧ᵛ γ' ≡ ⟦ M↓ ⟧ᵛ γ↓) → (bottom : valStack (pm M↓ N↓) γ↓)
+                 → {i◾ : Γ◾ ∋ X↓ `× Y↓} → {γ◾ : ⟦ Γ◾ ⟧ˣ} → (◾≡M↓ : ⟦ var i◾ ⟧ᵛ γ◾ ≡ ⟦ M↓ ⟧ᵛ γ↓)
+                 ---
+                 →    ∙[var] var i ﹐ γ ∷pm⟨ ≡M ⟩ pm M N ﹐ γ' ■ ~>ᵛᵛ ∙[var] (var i◾) ﹐ γ◾ ■
+                 ------
+                 →    ∙[var] var i ﹐ γ ∷pm⟨ ≡M ⟩ pm M N ﹐ γ' ∷pm⟨ ◻≡M↓ ⟩ bottom ~>ᵛᵛ ∙[var] (var i◾) ﹐ γ◾  ∷pm⟨ ◾≡M↓ ⟩ bottom
+
+∙var∷pm■-cong = {!!}

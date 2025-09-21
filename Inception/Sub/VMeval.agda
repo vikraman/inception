@@ -7,7 +7,7 @@ open import Data.List
 open import Data.Unit
 open import Data.Product
 open import Data.Sum using (_⊎_; inj₁; inj₂)
-open import Data.Nat using (ℕ; zero; suc; _<_; _≤?_; z≤n; s≤s; _+_)
+open import Data.Nat using (ℕ; zero; suc; _<_; _≤_; _≤?_; z≤n; s≤s; _+_)
 
 import Relation.Binary.PropositionalEquality as Eq
 open Eq using (_≡_; refl; trans; sym; cong; cong-app; subst)
@@ -106,7 +106,6 @@ _ : eval-term ex1 tt ≡ steps
 _ = refl
 
 
-{-
 data finiteSteps : VState → Set where
 
   steps : {S S' : VState} → S ~>ᵛᵛ* S' → haltingVState S' → finiteSteps S
@@ -124,4 +123,3 @@ eval (pair LHS RHS) γ with eval LHS γ | eval RHS γ
 ... | steps S~>*S' ∙lam■ | s = {!!}
 eval (pm M N) γ = {!!}
 eval unit γ = {!!}
--}
