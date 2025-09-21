@@ -111,6 +111,11 @@ data finiteSteps : VState T◾ → Set where
   steps : {S S' : VState T◾} → S ~>ᵛᵛ* S' → haltingVState S' → finiteSteps S
 
 {-
+⟦_⟧' : VState T◾ → ⟦ T◾ ⟧
+⟦_⟧' = {!!}
+-}
+
+{-
 eval : (M : Γ ⊢ᵛ X) → (γ : ⟦ Γ ⟧ˣ) → finiteSteps (∘ M ﹐ γ ■)
 eval (var i) γ = steps ((∘ var i ﹐ γ ■) ~>ᵛᵛ⟨ ~∘var~> ⟩ (∙[var] var i ﹐ γ ■) ▣) ∙var■
 eval (lam M) γ = steps ((∘ lam M ﹐ γ ■) ~>ᵛᵛ⟨ ~∘lam~> ⟩ (∙[lam] lam M ﹐ γ ■) ▣) ∙lam■
