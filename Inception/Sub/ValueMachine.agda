@@ -476,6 +476,7 @@ data haltingVState : VState → Set where
 
 ------------------------------------------------------------------
 
+{-
 ∙var∷pm■-cong : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ)
                  → (i : Γ ∋ X `× Y)
                  → (M : Γ' ⊢ᵛ X `× Y) → (N : (Γ' ∙ X ∙ Y) ⊢ᵛ X↓ `× Y↓)
@@ -489,3 +490,4 @@ data haltingVState : VState → Set where
                  →    ∙[var] var i ﹐ γ ∷pm⟨ ≡M ⟩ pm M N ﹐ γ' ∷pm⟨ ◻≡M↓ ⟩ bottom ~>ᵛᵛ ∙[var] (var i◾) ﹐ γ◾  ∷pm⟨ ◾≡M↓ ⟩ bottom
 
 ∙var∷pm■-cong = {!!}
+-}
