@@ -105,11 +105,12 @@ _ : eval-term ex1 tt ≡ steps
       (done ∙var■)
 _ = refl
 
-{-
+
 data finiteSteps : VState → Set where
 
   steps : {S S' : VState} → S ~>ᵛᵛ* S' → haltingVState S' → finiteSteps S
 
+{-
 eval : (M : Γ ⊢ᵛ X) → (γ : ⟦ Γ ⟧ˣ) → finiteSteps (∘ M ﹐ γ ■)
 eval (var i) γ = steps ((∘ var i ﹐ γ ■) ~>ᵛᵛ⟨ ~∘var~> ⟩ (∙[var] var i ﹐ γ ■) ▣) ∙var■
 eval (lam M) γ = steps ((∘ lam M ﹐ γ ■) ~>ᵛᵛ⟨ ~∘lam~> ⟩ (∙[lam] lam M ﹐ γ ■) ▣) ∙lam■
@@ -124,3 +125,4 @@ eval (pair LHS RHS) γ with eval LHS γ | eval RHS γ
 eval (pm M N) γ = {!!}
 eval unit γ = {!!}
 -}
+

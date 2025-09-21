@@ -485,9 +485,9 @@ data haltingVState : VState → Set where
                  → {M↓ : Γ↓ ⊢ᵛ X↓ `× Y↓} → {γ↓ : ⟦ Γ↓ ⟧ˣ} → {N↓ : (Γ↓ ∙ X↓ ∙ Y↓) ⊢ᵛ Z↓} → (◻≡M↓ : ⟦ pm M N ⟧ᵛ γ' ≡ ⟦ M↓ ⟧ᵛ γ↓) → (bottom : valStack (pm M↓ N↓) γ↓)
                  → {i◾ : Γ◾ ∋ X↓ `× Y↓} → {γ◾ : ⟦ Γ◾ ⟧ˣ} → (◾≡M↓ : ⟦ var i◾ ⟧ᵛ γ◾ ≡ ⟦ M↓ ⟧ᵛ γ↓)
                  ---
-                 →    ∙[var] var i ﹐ γ ∷pm⟨ ≡M ⟩ pm M N ﹐ γ' ■ ~>ᵛᵛ ∙[var] (var i◾) ﹐ γ◾ ■
+                 →    ∙[var] var i ﹐ γ ∷pm⟨ ≡M ⟩ pm M N ﹐ γ' ■ ~>ᵛᵛ* ∙[var] (var i◾) ﹐ γ◾ ■
                  ------
-                 →    ∙[var] var i ﹐ γ ∷pm⟨ ≡M ⟩ pm M N ﹐ γ' ∷pm⟨ ◻≡M↓ ⟩ bottom ~>ᵛᵛ ∙[var] (var i◾) ﹐ γ◾  ∷pm⟨ ◾≡M↓ ⟩ bottom
+                 →    ∙[var] var i ﹐ γ ∷pm⟨ ≡M ⟩ pm M N ﹐ γ' ∷pm⟨ ◻≡M↓ ⟩ bottom ~>ᵛᵛ* ∙[var] (var i◾) ﹐ γ◾  ∷pm⟨ ◾≡M↓ ⟩ bottom
 
 ∙var∷pm■-cong = {!!}
 -}
