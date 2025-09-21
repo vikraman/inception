@@ -4,14 +4,14 @@ open import Inception.Sub.Syntax
 open import Inception.Sub.ValueMachine R
 
 
-data Progress (S : VState) : Set where
+data Progress (S : VState T◾) : Set where
 
-     step : {S' : VState} → S ~>ᵛᵛ S' → Progress S
+     step : {S' : VState T◾} → S ~>ᵛᵛ S' → Progress S
 
      done : haltingVState S → Progress S
 
 
-progress : (S : VState) → Progress S
+progress : (S : VState T◾) → Progress S
 
 progress (∘_ {M = var _} _) = step ~∘var~>
 progress (∘_ {M = lam _} _) = step ~∘lam~>

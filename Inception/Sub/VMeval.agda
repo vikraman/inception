@@ -27,7 +27,7 @@ record Gas : Set where
 
 
 -- cf PLFA
-data Finished (S : VState) : Set where
+data Finished (S : VState T◾) : Set where
 
    done : haltingVState S → Finished S
 
@@ -35,13 +35,13 @@ data Finished (S : VState) : Set where
 
 
 -- cf PLFA
-data Steps : VState → Set where
+data Steps : VState T◾ → Set where
 
-  steps : {S S' : VState} → S ~>ᵛᵛ* S' → Finished S' → Steps S
+  steps : {S S' : VState T◾} → S ~>ᵛᵛ* S' → Finished S' → Steps S
 
 
 -- cf PLFA
-bounded-eval : Gas → (S : VState) → Steps S
+bounded-eval : Gas → (S : VState T◾) → Steps S
 bounded-eval (gas zero) S = steps (S ▣) out-of-gas
 bounded-eval (gas (suc amount)) S with progress S
 ... | done HS = steps (S ▣) (done HS)
@@ -106,9 +106,9 @@ _ : eval-term ex1 tt ≡ steps
 _ = refl
 
 
-data finiteSteps : VState → Set where
+data finiteSteps : VState T◾ → Set where
 
-  steps : {S S' : VState} → S ~>ᵛᵛ* S' → haltingVState S' → finiteSteps S
+  steps : {S S' : VState T◾} → S ~>ᵛᵛ* S' → haltingVState S' → finiteSteps S
 
 {-
 eval : (M : Γ ⊢ᵛ X) → (γ : ⟦ Γ ⟧ˣ) → finiteSteps (∘ M ﹐ γ ■)
@@ -125,4 +125,3 @@ eval (pair LHS RHS) γ with eval LHS γ | eval RHS γ
 eval (pm M N) γ = {!!}
 eval unit γ = {!!}
 -}
-
