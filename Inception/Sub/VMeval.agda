@@ -62,71 +62,73 @@ ex1 : ε ⊢ᵛ `Unit
 ex1 = pm (pair unit unit) (var (t h))
 
 _ : eval-term ex1 tt ≡ steps
-      ((∘ pm (pair unit unit) (var (t h)) ﹐ tt ■) ~>ᵛᵛ⟨ ~∘pm~> ⟩
-      ((∘
-        pair unit unit ﹐ tt ∷pm⟨ refl ⟩
-        pm (pair unit unit) (var (t h)) ﹐ tt ■)
-        ~>ᵛᵛ⟨ ~∘pair~> ⟩
-        ((∘
-          unit ﹐ tt ∷l⟨ refl ⟩
-          pair unit unit ﹐ tt ∷pm⟨ refl ⟩
-          pm (pair unit unit) (var (t h)) ﹐ tt ■)
-        ~>ᵛᵛ⟨ ~∘unit~> ⟩
-        ((∙[unit]
-          (unit ﹐ tt ∷l⟨ refl ⟩
-            pair unit unit ﹐ tt ∷pm⟨ refl ⟩
-            pm (pair unit unit) (var (t h)) ﹐ tt ■))
-          ~>ᵛᵛ⟨
-          ~∙unit∷l∷pm~> tt tt unit unit refl refl
-          (pm (pair unit unit) (var (t h)) ﹐ tt ■)
-          ⟩
-          ((∘
-            unit ﹐ tt ∷r⟨ refl ⟩
-            pair (var h) unit ﹐ tt , tt ∷pm⟨ refl ⟩
-            pm (pair unit unit) (var (t h)) ﹐ tt ■)
-          ~>ᵛᵛ⟨ ~∘unit~> ⟩
-          ((∙[unit]
-            (unit ﹐ tt ∷r⟨ refl ⟩
-              pair (var h) unit ﹐ tt , tt ∷pm⟨ refl ⟩
-              pm (pair unit unit) (var (t h)) ﹐ tt ■))
-            ~>ᵛᵛ⟨
-            ~∙unit∷r∷pm~> tt (tt , tt) (var h) unit refl refl
-            (pm (pair unit unit) (var (t h)) ﹐ tt ■)
-            ⟩
-            ((∙[pair]
-              (pair (var (t h)) (var h) ﹐ (tt , tt) , tt ∷pm⟨ refl ⟩
-              pm (pair unit unit) (var (t h)) ﹐ tt ■))
-            ~>ᵛᵛ⟨
-            ~∙pair∷pm■~> ((tt , tt) , tt) tt (var (t h)) (var h)
-            (pair unit unit) (var (t h)) refl
-            ⟩
-            ((∘ var (t h) ﹐ (tt , tt) , tt ■) ~>ᵛᵛ⟨ ~∘var~> ⟩
-              ((∙[var] (var (t h) ﹐ (tt , tt) , tt ■)) ▣)))))))))
-      (done ∙var■)
+  ((∘ pm (pair unit unit) (var (t h)) ﹐ tt ■) ~>ᵛᵛ⟨ ~∘pm~> ⟩
+  (∘
+    pair unit unit ﹐ tt ∷pm⟨ refl ⟩
+    pm (pair unit unit) (var (t h)) ﹐ tt ■)
+  ~>ᵛᵛ⟨ ~∘pair~> ⟩
+  (∘
+    unit ﹐ tt ∷l⟨ refl ⟩
+    pair unit unit ﹐ tt ∷pm⟨ refl ⟩
+    pm (pair unit unit) (var (t h)) ﹐ tt ■)
+  ~>ᵛᵛ⟨ ~∘unit~> ⟩
+  (∙[unit]
+    (unit ﹐ tt ∷l⟨ refl ⟩
+    pair unit unit ﹐ tt ∷pm⟨ refl ⟩
+    pm (pair unit unit) (var (t h)) ﹐ tt ■))
+  ~>ᵛᵛ⟨
+  ~∙unit∷l∷pm~> tt tt unit unit refl refl
+  (pm (pair unit unit) (var (t h)) ﹐ tt ■)
+  ⟩
+  (∘
+    unit ﹐ tt , tt ∷r⟨ refl ⟩
+    pair (var h) unit ﹐ tt , tt ∷pm⟨ refl ⟩
+    pm (pair unit unit) (var (t h)) ﹐ tt ■)
+  ~>ᵛᵛ⟨ ~∘unit~> ⟩
+  (∙[unit]
+    (unit ﹐ tt , tt ∷r⟨ refl ⟩
+    pair (var h) unit ﹐ tt , tt ∷pm⟨ refl ⟩
+    pm (pair unit unit) (var (t h)) ﹐ tt ■))
+  ~>ᵛᵛ⟨
+  ~∙unit∷r∷pm~> (tt , tt) (tt , tt) (var h) unit refl refl
+  (pm (pair unit unit) (var (t h)) ﹐ tt ■)
+  ⟩
+  (∙[pair]
+    (pair (var (t h)) (var h) ﹐ (tt , tt) , tt ∷pm⟨ refl ⟩
+    pm (pair unit unit) (var (t h)) ﹐ tt ■))
+  ~>ᵛᵛ⟨
+  ~∙pair∷pm■~> ((tt , tt) , tt) tt (var (t h)) (var h)
+  (pair unit unit) (var (t h)) refl
+  ⟩
+  (∘ var (t h) ﹐ (tt , tt) , tt ■) ~>ᵛᵛ⟨ ~∘var~> ⟩
+  (∙[var] (var (t h) ﹐ (tt , tt) , tt ■)) ▣)
+  (done ∙var■)
 _ = refl
 
 
+⟦_⟧↥ : {M : Γ ⊢ᵛ A} → {γ : ⟦ Γ ⟧ˣ} → valStack T◾ M γ → ⟦ T◾ ⟧
+⟦ (M ﹐ γ ■) ⟧↥ = ⟦ M ⟧ᵛ γ
+⟦ (_ ﹐ _ ∷pm⟨ _ ⟩ tail) ⟧↥ = ⟦ tail ⟧↥
+⟦ (_ ﹐ _ ∷l⟨ _ ⟩ tail) ⟧↥ = ⟦ tail ⟧↥
+⟦ (_ ﹐ _ ∷r⟨ _ ⟩ tail) ⟧↥ = ⟦ tail ⟧↥
+
+⟦_⟧◑ : VState T◾ → ⟦ T◾ ⟧
+⟦ ∘ tail ⟧◑ = ⟦ tail ⟧↥
+⟦ ∙[var] tail ⟧◑ = ⟦ tail ⟧↥
+⟦ ∙[lam] tail ⟧◑ = ⟦ tail ⟧↥
+⟦ ∙[unit] tail ⟧◑ = ⟦ tail ⟧↥
+⟦ ∙[pair] tail ⟧◑ = ⟦ tail ⟧↥
+
 data finiteSteps : VState T◾ → Set where
 
-  steps : {S S' : VState T◾} → S ~>ᵛᵛ* S' → haltingVState S' → finiteSteps S
-
-{-
-⟦_⟧' : VState T◾ → ⟦ T◾ ⟧
-⟦_⟧' = {!!}
--}
+  steps : {S T : VState T◾} → S ~>ᵛᵛ* T → ⟦ S ⟧◑ ≡ ⟦ T ⟧◑ → haltingVState T → finiteSteps S
 
 {-
 eval : (M : Γ ⊢ᵛ X) → (γ : ⟦ Γ ⟧ˣ) → finiteSteps (∘ M ﹐ γ ■)
-eval (var i) γ = steps ((∘ var i ﹐ γ ■) ~>ᵛᵛ⟨ ~∘var~> ⟩ (∙[var] var i ﹐ γ ■) ▣) ∙var■
-eval (lam M) γ = steps ((∘ lam M ﹐ γ ■) ~>ᵛᵛ⟨ ~∘lam~> ⟩ (∙[lam] lam M ﹐ γ ■) ▣) ∙lam■
-eval (pair LHS RHS) γ with eval LHS γ | eval RHS γ
-... | steps s' (∙var■ {γ = γ'} {i = i'}) | steps s'' ∙var■ = steps ((∘ pair LHS RHS ﹐ γ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩ (∘ LHS ﹐ γ ∷l⟨ refl ⟩ pair LHS RHS ﹐ γ ■) ~>ᵛᵛ⟨ {!!} ⟩ {!!} ▣) ∙pair■
-... | steps s' (∙var■ {γ = γ'} {i = i'}) | steps s'' ∙unit■ = {!!}
-... | steps s' (∙var■ {γ = γ'} {i = i'}) | steps s'' ∙pair■ = {!!}
-... | steps s' (∙var■ {γ = γ'} {i = i'}) | steps s'' ∙lam■ = {!!}
-... | steps S~>*S' ∙unit■ | s = {!!}
-... | steps S~>*S' ∙pair■ | s = {!!}
-... | steps S~>*S' ∙lam■ | s = {!!}
+eval (var i) γ =  steps ((∘ var i ﹐ γ ■) ~>ᵛᵛ⟨ ~∘var~> ⟩ (∙[var] var i ﹐ γ ■) ▣) refl ∙var■
+eval (lam M) γ = steps ((∘ lam M ﹐ γ ■) ~>ᵛᵛ⟨ ~∘lam~> ⟩ (∙[lam] lam M ﹐ γ ■) ▣) refl ∙lam■
+eval (pair LHS RHS) γ  with eval LHS γ | eval RHS γ
+... | steps {T = T'} s' ≡t' t' | steps {T = T''} s'' ≡t'' t'' = steps ((∘ pair LHS RHS ﹐ γ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩ (∘ LHS ﹐ γ ∷l⟨ refl ⟩ pair LHS RHS ﹐ γ ■) ~>ᵛᵛ⟨ {!!} ⟩ {!!} ▣) {!!} ∙pair■
 eval (pm M N) γ = {!!}
 eval unit γ = {!!}
 -}

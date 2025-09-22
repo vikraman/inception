@@ -152,7 +152,7 @@ data _~>ᵛᵛ_ : VState T◾ → VState T◾ → Set where
                  → (≡LHS : ⟦ var i ⟧ᵛ γ ≡ ⟦ LHS ⟧ᵛ γ')
                  →   ∙[var] var i ﹐ γ ∷l⟨ ≡LHS ⟩ pair LHS RHS ﹐ γ' ■
                       ~>ᵛᵛ
-                     ∘ RHS ﹐ γ' ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ var i ⟧ᵛ γ) ■
+                     ∘ (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ var i ⟧ᵛ γ) ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ var i ⟧ᵛ γ) ■
 
      ~∙var∷l∷pm~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → {γ'' : ⟦ Γ'' ⟧ˣ}
                  → (i : Γ ∋ X)
@@ -162,7 +162,7 @@ data _~>ᵛᵛ_ : VState T◾ → VState T◾ → Set where
                  → (tail : valStack T◾ (pm M' N') γ'')
                  →   ∙[var] var i ﹐ γ ∷l⟨ ≡LHS ⟩ pair LHS RHS ﹐ γ' ∷pm⟨ ≡M' ⟩ tail
                       ~>ᵛᵛ
-                     ∘ RHS ﹐ γ' ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ var i ⟧ᵛ γ) ∷pm⟨ trans (cong (λ t → (t , ⟦ RHS ⟧ᵛ γ') ) ≡LHS) ≡M' ⟩ tail
+                     ∘ (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ var i ⟧ᵛ γ) ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ var i ⟧ᵛ γ) ∷pm⟨ trans (cong (λ t → (t , ⟦ RHS ⟧ᵛ γ') ) ≡LHS) ≡M' ⟩ tail
 
      ~∙var∷l∷l~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → {γ'' : ⟦ Γ'' ⟧ˣ}
                  → (i : Γ ∋ X)
@@ -172,7 +172,7 @@ data _~>ᵛᵛ_ : VState T◾ → VState T◾ → Set where
                  → (tail : valStack T◾ (pair LHS' RHS') γ'')
                  →   ∙[var] var i ﹐ γ ∷l⟨ ≡LHS ⟩ pair LHS RHS ﹐ γ' ∷l⟨ ≡LHS' ⟩ tail
                       ~>ᵛᵛ
-                     ∘ RHS ﹐ γ' ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ var i ⟧ᵛ γ) ∷l⟨ trans (cong (λ t → (t , ⟦ RHS ⟧ᵛ γ') ) ≡LHS) ≡LHS' ⟩ tail
+                     ∘ (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ var i ⟧ᵛ γ) ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ var i ⟧ᵛ γ) ∷l⟨ trans (cong (λ t → (t , ⟦ RHS ⟧ᵛ γ') ) ≡LHS) ≡LHS' ⟩ tail
 
      ~∙var∷l∷r~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → {γ'' : ⟦ Γ'' ⟧ˣ}
                  → (i : Γ ∋ X)
@@ -182,7 +182,7 @@ data _~>ᵛᵛ_ : VState T◾ → VState T◾ → Set where
                  → (tail : valStack T◾ (pair LHS' RHS') γ'')
                  →   ∙[var] var i ﹐ γ ∷l⟨ ≡LHS ⟩ pair LHS RHS ﹐ γ' ∷r⟨ ≡RHS' ⟩ tail
                       ~>ᵛᵛ
-                     ∘ RHS ﹐ γ' ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ var i ⟧ᵛ γ) ∷r⟨ trans (cong (λ t → (t , ⟦ RHS ⟧ᵛ γ') ) ≡LHS) ≡RHS' ⟩ tail
+                     ∘ (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ var i ⟧ᵛ γ) ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ var i ⟧ᵛ γ) ∷r⟨ trans (cong (λ t → (t , ⟦ RHS ⟧ᵛ γ') ) ≡LHS) ≡RHS' ⟩ tail
 
      -- (∙ T ∷ (_ ﹐ RHS) ∷ tail) transitions with T = lam M
      ~∙lam∷l■~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ)
@@ -191,7 +191,7 @@ data _~>ᵛᵛ_ : VState T◾ → VState T◾ → Set where
                  → (≡LHS : ⟦ lam M ⟧ᵛ γ ≡ ⟦ LHS ⟧ᵛ γ')
                  →   ∙[lam] lam M ﹐ γ ∷l⟨ ≡LHS ⟩ pair LHS RHS ﹐ γ' ■
                       ~>ᵛᵛ
-                     ∘ RHS ﹐ γ' ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ lam M ⟧ᵛ γ) ■
+                     ∘ (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ lam M ⟧ᵛ γ) ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ lam M ⟧ᵛ γ) ■
 
      ~∙lam∷l∷pm~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → {γ'' : ⟦ Γ'' ⟧ˣ}
                  → (M : (Γ ∙ X) ⊢ᶜ Y)
@@ -201,7 +201,7 @@ data _~>ᵛᵛ_ : VState T◾ → VState T◾ → Set where
                  → (tail : valStack T◾ (pm M' N') γ'')
                  →   ∙[lam] lam M ﹐ γ ∷l⟨ ≡LHS ⟩ pair LHS RHS ﹐ γ' ∷pm⟨ ≡M' ⟩ tail
                       ~>ᵛᵛ
-                     ∘ RHS ﹐ γ' ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ lam M ⟧ᵛ γ) ∷pm⟨ trans (cong (λ t → (t , ⟦ RHS ⟧ᵛ γ') ) ≡LHS) ≡M' ⟩ tail
+                     ∘ (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ lam M ⟧ᵛ γ) ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ lam M ⟧ᵛ γ) ∷pm⟨ trans (cong (λ t → (t , ⟦ RHS ⟧ᵛ γ') ) ≡LHS) ≡M' ⟩ tail
 
      ~∙lam∷l∷l~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → {γ'' : ⟦ Γ'' ⟧ˣ}
                  → (M : (Γ ∙ X) ⊢ᶜ Y)
@@ -211,7 +211,7 @@ data _~>ᵛᵛ_ : VState T◾ → VState T◾ → Set where
                  → (tail : valStack T◾ (pair LHS' RHS') γ'')
                  →   ∙[lam] lam M ﹐ γ ∷l⟨ ≡LHS ⟩ pair LHS RHS ﹐ γ' ∷l⟨ ≡LHS' ⟩ tail
                       ~>ᵛᵛ
-                     ∘ RHS ﹐ γ' ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ lam M ⟧ᵛ γ) ∷l⟨ trans (cong (λ t → (t , ⟦ RHS ⟧ᵛ γ') ) ≡LHS) ≡LHS' ⟩ tail
+                     ∘ (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ lam M ⟧ᵛ γ) ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ lam M ⟧ᵛ γ) ∷l⟨ trans (cong (λ t → (t , ⟦ RHS ⟧ᵛ γ') ) ≡LHS) ≡LHS' ⟩ tail
 
      ~∙lam∷l∷r~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → {γ'' : ⟦ Γ'' ⟧ˣ}
                  → (M : (Γ ∙ X) ⊢ᶜ Y)
@@ -221,7 +221,7 @@ data _~>ᵛᵛ_ : VState T◾ → VState T◾ → Set where
                  → (tail : valStack T◾ (pair LHS' RHS') γ'')
                  →   ∙[lam] lam M ﹐ γ ∷l⟨ ≡LHS ⟩ pair LHS RHS ﹐ γ' ∷r⟨ ≡RHS' ⟩ tail
                       ~>ᵛᵛ
-                     ∘ RHS ﹐ γ' ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ lam M ⟧ᵛ γ) ∷r⟨ trans (cong (λ t → (t , ⟦ RHS ⟧ᵛ γ') ) ≡LHS) ≡RHS' ⟩ tail
+                     ∘ (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ lam M ⟧ᵛ γ) ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ lam M ⟧ᵛ γ) ∷r⟨ trans (cong (λ t → (t , ⟦ RHS ⟧ᵛ γ') ) ≡LHS) ≡RHS' ⟩ tail
 
      -- (∙ T ∷ (_ ﹐ RHS) ∷ tail) transitions with T = unit
      ~∙unit∷l■~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ)
@@ -229,7 +229,7 @@ data _~>ᵛᵛ_ : VState T◾ → VState T◾ → Set where
                  → (≡LHS : ⟦ unit ⟧ᵛ γ ≡ ⟦ LHS ⟧ᵛ γ')
                  →   ∙[unit] unit ﹐ γ ∷l⟨ ≡LHS ⟩ pair LHS RHS ﹐ γ' ■
                       ~>ᵛᵛ
-                     ∘ RHS ﹐ γ' ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ unit ⟧ᵛ γ) ■
+                     ∘ (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ unit ⟧ᵛ γ) ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ unit ⟧ᵛ γ) ■
 
      ~∙unit∷l∷pm~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → {γ'' : ⟦ Γ'' ⟧ˣ}
                  → (LHS : Γ' ⊢ᵛ `Unit) → (RHS : Γ' ⊢ᵛ Y)
@@ -238,7 +238,7 @@ data _~>ᵛᵛ_ : VState T◾ → VState T◾ → Set where
                  → (tail : valStack T◾ (pm M' N') γ'')
                  →   ∙[unit] unit ﹐ γ ∷l⟨ ≡LHS ⟩ pair LHS RHS ﹐ γ' ∷pm⟨ ≡M' ⟩ tail
                       ~>ᵛᵛ
-                     ∘ RHS ﹐ γ' ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ unit ⟧ᵛ γ) ∷pm⟨ trans (cong (λ t → (t , ⟦ RHS ⟧ᵛ γ') ) ≡LHS) ≡M' ⟩ tail
+                     ∘ (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ unit ⟧ᵛ γ) ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ unit ⟧ᵛ γ) ∷pm⟨ trans (cong (λ t → (t , ⟦ RHS ⟧ᵛ γ') ) ≡LHS) ≡M' ⟩ tail
 
      ~∙unit∷l∷l~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → {γ'' : ⟦ Γ'' ⟧ˣ}
                  → (LHS : Γ' ⊢ᵛ `Unit) → (RHS : Γ' ⊢ᵛ Y)
@@ -247,7 +247,7 @@ data _~>ᵛᵛ_ : VState T◾ → VState T◾ → Set where
                  → (tail : valStack T◾ (pair LHS' RHS') γ'')
                  →   ∙[unit] unit ﹐ γ ∷l⟨ ≡LHS ⟩ pair LHS RHS ﹐ γ' ∷l⟨ ≡LHS' ⟩ tail
                       ~>ᵛᵛ
-                     ∘ RHS ﹐ γ' ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ unit ⟧ᵛ γ) ∷l⟨ trans (cong (λ t → (t , ⟦ RHS ⟧ᵛ γ') ) ≡LHS) ≡LHS' ⟩ tail
+                     ∘ (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ unit ⟧ᵛ γ) ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ unit ⟧ᵛ γ) ∷l⟨ trans (cong (λ t → (t , ⟦ RHS ⟧ᵛ γ') ) ≡LHS) ≡LHS' ⟩ tail
 
      ~∙unit∷l∷r~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → {γ'' : ⟦ Γ'' ⟧ˣ}
                  → (LHS : Γ' ⊢ᵛ `Unit) → (RHS : Γ' ⊢ᵛ Y)
@@ -256,7 +256,7 @@ data _~>ᵛᵛ_ : VState T◾ → VState T◾ → Set where
                  → (tail : valStack T◾ (pair LHS' RHS') γ'')
                  →   ∙[unit] unit ﹐ γ ∷l⟨ ≡LHS ⟩ pair LHS RHS ﹐ γ' ∷r⟨ ≡RHS' ⟩ tail
                       ~>ᵛᵛ
-                     ∘ RHS ﹐ γ' ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ unit ⟧ᵛ γ) ∷r⟨ trans (cong (λ t → (t , ⟦ RHS ⟧ᵛ γ') ) ≡LHS) ≡RHS' ⟩ tail
+                     ∘ (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ unit ⟧ᵛ γ) ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ unit ⟧ᵛ γ) ∷r⟨ trans (cong (λ t → (t , ⟦ RHS ⟧ᵛ γ') ) ≡LHS) ≡RHS' ⟩ tail
 
      -- (∙ T ∷ (_ ﹐ RHS) ∷ tail) transitions with T = pair x y
      ~∙pair∷l■~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ)
@@ -265,7 +265,7 @@ data _~>ᵛᵛ_ : VState T◾ → VState T◾ → Set where
                  → (≡LHS : ⟦ pair x y ⟧ᵛ γ ≡ ⟦ LHS ⟧ᵛ γ')
                  →   ∙[pair] pair x y ﹐ γ ∷l⟨ ≡LHS ⟩ pair LHS RHS ﹐ γ' ■
                       ~>ᵛᵛ
-                     ∘ RHS ﹐ γ' ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ pair x y ⟧ᵛ γ) ■
+                     ∘ (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ pair x y ⟧ᵛ γ) ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ pair x y ⟧ᵛ γ) ■
 
      ~∙pair∷l∷pm~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → {γ'' : ⟦ Γ'' ⟧ˣ}
                  → (x : Γ ⊢ᵛ X) → (y : Γ ⊢ᵛ Y)
@@ -275,7 +275,7 @@ data _~>ᵛᵛ_ : VState T◾ → VState T◾ → Set where
                  → (tail : valStack T◾ (pm M' N') γ'')
                  →   ∙[pair] pair x y ﹐ γ ∷l⟨ ≡LHS ⟩ pair LHS RHS ﹐ γ' ∷pm⟨ ≡M' ⟩ tail
                       ~>ᵛᵛ
-                     ∘ RHS ﹐ γ' ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ pair x y ⟧ᵛ γ) ∷pm⟨ trans (cong (λ t → (t , ⟦ RHS ⟧ᵛ γ') ) ≡LHS) ≡M' ⟩ tail
+                     ∘ (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ pair x y ⟧ᵛ γ) ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ pair x y ⟧ᵛ γ) ∷pm⟨ trans (cong (λ t → (t , ⟦ RHS ⟧ᵛ γ') ) ≡LHS) ≡M' ⟩ tail
 
      ~∙pair∷l∷l~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → {γ'' : ⟦ Γ'' ⟧ˣ}
                  → (x : Γ ⊢ᵛ X) → (y : Γ ⊢ᵛ Y)
@@ -285,7 +285,7 @@ data _~>ᵛᵛ_ : VState T◾ → VState T◾ → Set where
                  → (tail : valStack T◾ (pair LHS' RHS') γ'')
                  →   ∙[pair] pair x y ﹐ γ ∷l⟨ ≡LHS ⟩ pair LHS RHS ﹐ γ' ∷l⟨ ≡LHS' ⟩ tail
                       ~>ᵛᵛ
-                     ∘ RHS ﹐ γ' ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ pair x y ⟧ᵛ γ) ∷l⟨ trans (cong (λ t → (t , ⟦ RHS ⟧ᵛ γ') ) ≡LHS) ≡LHS' ⟩ tail
+                     ∘ (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ pair x y ⟧ᵛ γ) ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ pair x y ⟧ᵛ γ) ∷l⟨ trans (cong (λ t → (t , ⟦ RHS ⟧ᵛ γ') ) ≡LHS) ≡LHS' ⟩ tail
 
      ~∙pair∷l∷r~> : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ) → {γ'' : ⟦ Γ'' ⟧ˣ}
                  → (x : Γ ⊢ᵛ X) → (y : Γ ⊢ᵛ Y)
@@ -295,7 +295,7 @@ data _~>ᵛᵛ_ : VState T◾ → VState T◾ → Set where
                  → (tail : valStack T◾ (pair LHS' RHS') γ'')
                  →   ∙[pair] pair x y ﹐ γ ∷l⟨ ≡LHS ⟩ pair LHS RHS ﹐ γ' ∷r⟨ ≡RHS' ⟩ tail
                       ~>ᵛᵛ
-                     ∘ RHS ﹐ γ' ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ pair x y ⟧ᵛ γ) ∷r⟨ trans (cong (λ t → (t , ⟦ RHS ⟧ᵛ γ') ) ≡LHS) ≡RHS' ⟩ tail
+                     ∘ (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ pair x y ⟧ᵛ γ) ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ' ,  ⟦ pair x y ⟧ᵛ γ) ∷r⟨ trans (cong (λ t → (t , ⟦ RHS ⟧ᵛ γ') ) ≡LHS) ≡RHS' ⟩ tail
 
      --------------------------------------------------------------------------------------
      -- (∙ T ∷ (LHS ﹐ _) ∷ tail) transitions with T = var i
@@ -473,23 +473,80 @@ data haltingVState : VState T◾ → Set where
 ~>ᵛᵛ*-trans (S~>S ▣) S~>S'' = S~>S''
 ~>ᵛᵛ*-trans (S ~>ᵛᵛ⟨ x ⟩ T~>S') S'~>S'' =  S ~>ᵛᵛ⟨ x ⟩ (~>ᵛᵛ*-trans T~>S' S'~>S'')
 
-{-
+
 ------------------------------------------------------------------
 
 {-
-∙var∷pm■-cong : (γ : ⟦ Γ ⟧ˣ) → (γ' : ⟦ Γ' ⟧ˣ)
-                 → (i : Γ ∋ X `× Y)
-                 → (M : Γ' ⊢ᵛ X `× Y) → (N : (Γ' ∙ X ∙ Y) ⊢ᵛ X↓ `× Y↓)
-                 → (≡M : ⟦ var i ⟧ᵛ γ ≡ ⟦ M ⟧ᵛ γ')
-                 ---
-                 → {M↓ : Γ↓ ⊢ᵛ X↓ `× Y↓} → {γ↓ : ⟦ Γ↓ ⟧ˣ} → {N↓ : (Γ↓ ∙ X↓ ∙ Y↓) ⊢ᵛ Z↓} → (◻≡M↓ : ⟦ pm M N ⟧ᵛ γ' ≡ ⟦ M↓ ⟧ᵛ γ↓) → (bottom : valStack (pm M↓ N↓) γ↓)
-                 → {i◾ : Γ◾ ∋ X↓ `× Y↓} → {γ◾ : ⟦ Γ◾ ⟧ˣ} → (◾≡M↓ : ⟦ var i◾ ⟧ᵛ γ◾ ≡ ⟦ M↓ ⟧ᵛ γ↓)
-                 ---
-                 →    ∙[var] var i ﹐ γ ∷pm⟨ ≡M ⟩ pm M N ﹐ γ' ■ ~>ᵛᵛ* ∙[var] (var i◾) ﹐ γ◾ ■
-                 ------
-                 →    ∙[var] var i ﹐ γ ∷pm⟨ ≡M ⟩ pm M N ﹐ γ' ∷pm⟨ ◻≡M↓ ⟩ bottom ~>ᵛᵛ* ∙[var] (var i◾) ﹐ γ◾  ∷pm⟨ ◾≡M↓ ⟩ bottom
+∙[var]∷l-cong :   {γ : ⟦ Γ ⟧ˣ} → {γ' : ⟦ Γ' ⟧ˣ} → {τ : ⟦ Γ'' ⟧ˣ}
+     → {LHS' : Γ' ⊢ᵛ X} → {RHS : Γ' ⊢ᵛ Y}
+     ---
+     → {M : Γ ⊢ᵛ X}
+     → {t : Γ'' ∋ X}
+     → {≡T : ⟦ LHS' ⟧ᵛ γ' ≡ ⟦ var t ⟧ᵛ τ}
+     ---
+     → {≡LHS' : ⟦ M ⟧ᵛ γ ≡ ⟦ LHS' ⟧ᵛ γ'}
+     ---
+     → {tail : valStack X (pair LHS' RHS) γ'}
+     → ∘ M ﹐ γ ■ ~>ᵛᵛ* ∙[var] var t ﹐ τ ■
+     → ∘ M ﹐ γ ∷l⟨ ≡LHS' ⟩ tail ~>ᵛᵛ* ∙[var] var t ﹐ τ ∷l⟨ sym ≡T ⟩ tail
+∙[var]∷l-cong M>T = {!!}
 
-∙var∷pm■-cong = {!!}
--}
+∙[lam]∷l-cong :   {γ : ⟦ Γ ⟧ˣ} → {γ' : ⟦ Γ' ⟧ˣ} → {τ : ⟦ Γ'' ⟧ˣ}
+     → {LHS' : Γ' ⊢ᵛ (X `⇒ X')} → {RHS : Γ' ⊢ᵛ Y}
+     ---
+     → {M : Γ ⊢ᵛ X `⇒ X'}
+     → {T : (Γ'' ∙ X) ⊢ᶜ X'}
+     → {≡T : ⟦ LHS' ⟧ᵛ γ' ≡ ⟦ lam T ⟧ᵛ τ}
+     ---
+     → {≡LHS' : ⟦ M ⟧ᵛ γ ≡ ⟦ LHS' ⟧ᵛ γ'}
+     ---
+     → {tail : valStack (X `⇒ X') (pair LHS' RHS) γ'}
+     → ∘ M ﹐ γ ■ ~>ᵛᵛ* ∙[lam] lam T ﹐ τ ■
+     → ∘ M ﹐ γ ∷l⟨ ≡LHS' ⟩ tail ~>ᵛᵛ* ∙[lam] lam T ﹐ τ ∷l⟨ sym ≡T ⟩ tail
+∙[lam]∷l-cong M>T = {!!}
+
+∙[unit]∷l-cong :   {γ : ⟦ Γ ⟧ˣ} → {γ' : ⟦ Γ' ⟧ˣ} → {τ : ⟦ Γ'' ⟧ˣ}
+     → {LHS' : Γ' ⊢ᵛ `Unit} → {RHS : Γ' ⊢ᵛ Y}
+     ---
+     → {M : Γ ⊢ᵛ `Unit}
+     → {≡T : ⟦ LHS' ⟧ᵛ γ' ≡ ⟦ unit ⟧ᵛ τ}
+     ---
+     → {≡LHS' : ⟦ M ⟧ᵛ γ ≡ ⟦ LHS' ⟧ᵛ γ'}
+     ---
+     → {tail : valStack `Unit (pair LHS' RHS) γ'}
+     → ∘ M ﹐ γ ■ ~>ᵛᵛ* ∙[unit] unit ﹐ τ ■
+     → ∘ M ﹐ γ ∷l⟨ ≡LHS' ⟩ tail ~>ᵛᵛ* ∙[unit] unit ﹐ τ ∷l⟨ sym ≡T ⟩ tail
+∙[unit]∷l-cong M>T = {!!}
+
+∙[pair]∷l-cong :   {γ : ⟦ Γ ⟧ˣ} → {γ' : ⟦ Γ' ⟧ˣ} → {τ : ⟦ Γ'' ⟧ˣ}
+     → {LHS : Γ ⊢ᵛ X₁ `× X₂} → {LHS' : Γ' ⊢ᵛ X₁ `× X₂} → {RHS : Γ' ⊢ᵛ Y}
+     → {T₁ : Γ'' ⊢ᵛ X₁} → {T₂ : Γ'' ⊢ᵛ X₂}
+     → (≡LHS' : ⟦ LHS ⟧ᵛ γ ≡ ⟦ LHS' ⟧ᵛ γ')
+     → (≡T : ⟦ LHS' ⟧ᵛ γ' ≡ ⟦ pair T₁ T₂ ⟧ᵛ τ)
+     → (tail : valStack ((X₁ `× X₂) `× Y) (pair LHS' RHS) γ')
+     → ∘ LHS ﹐ γ ■ ~>ᵛᵛ* ∙[pair] pair T₁ T₂ ﹐ τ ■
+     → ∘ LHS ﹐ γ ∷l⟨ ≡LHS' ⟩ tail ~>ᵛᵛ* ∙[pair] pair T₁ T₂ ﹐ τ ∷l⟨ sym ≡T ⟩ tail
+∙[pair]∷l-cong ≡LHS' ≡T tail (.(∘ var _ ﹐ _ ■) ~>ᵛᵛ⟨ ~∘var~> ⟩ .(∙[var] (var _ ﹐ _ ■)) ~>ᵛᵛ⟨ () ⟩ L>T)
+∙[pair]∷l-cong {LHS = pair (var i₁) (var i₂)} ≡LHS' ≡T tail ((∘ pair (var i₁) (var i₂) ﹐ γ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩ .(∘ var i₁ ﹐ _ ∷l⟨ refl ⟩ pair (var i₁) (var i₂) ﹐ _ ■) ~>ᵛᵛ⟨ ~∘var~> ⟩ L>T) =
+                   -------------------------------------------------------------->
+                                                                                  (∘ pair (var i₁) (var i₂) ﹐ γ ∷l⟨ ≡LHS' ⟩ tail)
+                    ~>ᵛᵛ⟨ ~∘pair~> ⟩                                               (∘ (var i₁) ﹐ γ ∷l⟨ refl ⟩ pair (var i₁) (var i₂) ﹐ γ ∷l⟨ ≡LHS' ⟩ tail)
+                    ~>ᵛᵛ⟨ ~∘var~> ⟩                                                (∙[var] (var i₁) ﹐ γ ∷l⟨ refl ⟩ pair (var i₁) (var i₂) ﹐ γ ∷l⟨ ≡LHS' ⟩ tail)
+                    ~>ᵛᵛ⟨ ~∙var∷l∷l~> γ γ i₁ (var i₁) (var i₂) refl ≡LHS' tail ⟩ ( ∘ (var i₂) ﹐ γ ∷r⟨ {!!} ⟩ {!!} )
+                    ~>ᵛᵛ⟨ {!!} ⟩  ( {!!} )
+
+-- (∘ (var i₂) ﹐ γ ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) (var i₂)) ﹐ (γ ,  ⟦ var i₁ ⟧ᵛ γ) ∷l⟨ trans (cong (λ t → (t , ⟦ var i₂ ⟧ᵛ γ) ) refl) ≡LHS' ⟩ tail)
+
+∙[pair]∷l-cong {LHS = pair (var i) (lam x)} ≡LHS' ≡T tail (.(∘ pair (var i) (lam x) ﹐ _ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩ .(∘ var i ﹐ _ ∷l⟨ refl ⟩ pair (var i) (lam x) ﹐ _ ■) ~>ᵛᵛ⟨ ~∘var~> ⟩ L>T) = {!!}
+∙[pair]∷l-cong {LHS = pair (var i) (pair M M₁)} ≡LHS' ≡T tail (.(∘ pair (var i) (pair M M₁) ﹐ _ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩ .(∘ var i ﹐ _ ∷l⟨ refl ⟩ pair (var i) (pair M M₁) ﹐ _ ■) ~>ᵛᵛ⟨ ~∘var~> ⟩ L>T) = {!!}
+∙[pair]∷l-cong {LHS = pair (var i) (pm M M₁)} ≡LHS' ≡T tail (.(∘ pair (var i) (pm M M₁) ﹐ _ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩ .(∘ var i ﹐ _ ∷l⟨ refl ⟩ pair (var i) (pm M M₁) ﹐ _ ■) ~>ᵛᵛ⟨ ~∘var~> ⟩ L>T) = {!!}
+∙[pair]∷l-cong {LHS = pair (var i) unit} ≡LHS' ≡T tail (.(∘ pair (var i) unit ﹐ _ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩ .(∘ var i ﹐ _ ∷l⟨ refl ⟩ pair (var i) unit ﹐ _ ■) ~>ᵛᵛ⟨ ~∘var~> ⟩ L>T) = {!!}
+
+--(∘ pair (var i₁) (var i₂) ﹐ γ ∷l⟨ ≡LHS' ⟩ tail) ~>ᵛᵛ⟨ ~∘pair~> ⟩ {!!} ~>ᵛᵛ⟨ {!!} ⟩ {!!}
+∙[pair]∷l-cong ≡LHS' ≡T tail (.(∘ pair (lam _) _ ﹐ _ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩ .(∘ lam _ ﹐ _ ∷l⟨ refl ⟩ pair (lam _) _ ﹐ _ ■) ~>ᵛᵛ⟨ ~∘lam~> ⟩ L>T) = {!!}
+∙[pair]∷l-cong ≡LHS' ≡T tail (.(∘ pair (pair _ _) _ ﹐ _ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩ .(∘ pair _ _ ﹐ _ ∷l⟨ refl ⟩ pair (pair _ _) _ ﹐ _ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩ L>T) = {!!}
+∙[pair]∷l-cong ≡LHS' ≡T tail (.(∘ pair (pm _ _) _ ﹐ _ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩ .(∘ pm _ _ ﹐ _ ∷l⟨ refl ⟩ pair (pm _ _) _ ﹐ _ ■) ~>ᵛᵛ⟨ ~∘pm~> ⟩ L>T) = {!!}
+∙[pair]∷l-cong ≡LHS' ≡T tail (.(∘ pair unit _ ﹐ _ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩ .(∘ unit ﹐ _ ∷l⟨ refl ⟩ pair unit _ ﹐ _ ■) ~>ᵛᵛ⟨ ~∘unit~> ⟩ L>T) = {!!}
+∙[pair]∷l-cong ≡LHS' ≡T tail (.(∘ pm _ _ ﹐ _ ■) ~>ᵛᵛ⟨ ~∘pm~> ⟩ L>T) = {!!}
 
 -}
