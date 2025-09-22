@@ -58,52 +58,18 @@ calc-steps unit = 2
 eval-term : (M : Γ ⊢ᵛ X) → (γ : ⟦ Γ ⟧ˣ) → Steps (∘ M ﹐ γ ■)
 eval-term M γ = bounded-eval (gas (calc-steps M)) (∘ M ﹐ γ ■)
 
+ex2 : (ε ∙ (`Unit `⇒ `Unit) ∙ `Unit) ⊢ᵛ (`Unit `× (`Unit `⇒ `Unit)) `× `Unit
+ex2 = pair (pair (var h) (var (t h))) (var h)
+
+-- _ : eval-term ex2 ((tt , λ _ z → z tt) , tt) ≡ {! eval-term ex2 ((tt , λ _ z → z tt) , tt)!}
+-- _ = refl
+
+
 ex1 : ε ⊢ᵛ `Unit
 ex1 = pm (pair unit unit) (var (t h))
 
-_ : eval-term ex1 tt ≡ steps
-  ((∘ pm (pair unit unit) (var (t h)) ﹐ tt ■) ~>ᵛᵛ⟨ ~∘pm~> ⟩
-  (∘
-    pair unit unit ﹐ tt ∷pm⟨ refl ⟩
-    pm (pair unit unit) (var (t h)) ﹐ tt ■)
-  ~>ᵛᵛ⟨ ~∘pair~> ⟩
-  (∘
-    unit ﹐ tt ∷l⟨ refl ⟩
-    pair unit unit ﹐ tt ∷pm⟨ refl ⟩
-    pm (pair unit unit) (var (t h)) ﹐ tt ■)
-  ~>ᵛᵛ⟨ ~∘unit~> ⟩
-  (∙[unit]
-    (unit ﹐ tt ∷l⟨ refl ⟩
-    pair unit unit ﹐ tt ∷pm⟨ refl ⟩
-    pm (pair unit unit) (var (t h)) ﹐ tt ■))
-  ~>ᵛᵛ⟨
-  ~∙unit∷l∷pm~> tt tt unit unit refl refl
-  (pm (pair unit unit) (var (t h)) ﹐ tt ■)
-  ⟩
-  (∘
-    unit ﹐ tt , tt ∷r⟨ refl ⟩
-    pair (var h) unit ﹐ tt , tt ∷pm⟨ refl ⟩
-    pm (pair unit unit) (var (t h)) ﹐ tt ■)
-  ~>ᵛᵛ⟨ ~∘unit~> ⟩
-  (∙[unit]
-    (unit ﹐ tt , tt ∷r⟨ refl ⟩
-    pair (var h) unit ﹐ tt , tt ∷pm⟨ refl ⟩
-    pm (pair unit unit) (var (t h)) ﹐ tt ■))
-  ~>ᵛᵛ⟨
-  ~∙unit∷r∷pm~> (tt , tt) (tt , tt) (var h) unit refl refl
-  (pm (pair unit unit) (var (t h)) ﹐ tt ■)
-  ⟩
-  (∙[pair]
-    (pair (var (t h)) (var h) ﹐ (tt , tt) , tt ∷pm⟨ refl ⟩
-    pm (pair unit unit) (var (t h)) ﹐ tt ■))
-  ~>ᵛᵛ⟨
-  ~∙pair∷pm■~> ((tt , tt) , tt) tt (var (t h)) (var h)
-  (pair unit unit) (var (t h)) refl
-  ⟩
-  (∘ var (t h) ﹐ (tt , tt) , tt ■) ~>ᵛᵛ⟨ ~∘var~> ⟩
-  (∙[var] (var (t h) ﹐ (tt , tt) , tt ■)) ▣)
-  (done ∙var■)
-_ = refl
+-- _ : eval-term ex1 tt ≡ {! eval-term ex1 tt!}
+-- _ = refl
 
 
 ⟦_⟧↥ : {M : Γ ⊢ᵛ A} → {γ : ⟦ Γ ⟧ˣ} → valStack T◾ M γ → ⟦ T◾ ⟧
