@@ -30,13 +30,13 @@ data valStack : (T◾ : Ty) → (Γ ⊢ᵛ A) → ⟦ Γ ⟧ˣ → Set where
 
     _﹐_■ : (M : Γ ⊢ᵛ T◾) → (γ : ⟦ Γ ⟧ˣ) → valStack T◾ M γ
 
-    _﹐_∷pm⟨_⟩_ : (M : Γ ⊢ᵛ A `× B) → (γ : ⟦ Γ ⟧ˣ) → {M' : Γ' ⊢ᵛ A `× B} → {γ' : ⟦ Γ' ⟧ˣ} → {N : (Γ' ∙ A ∙ B) ⊢ᵛ C} → (M≡M' : ⟦ M ⟧ᵛ γ ≡ ⟦ M' ⟧ᵛ γ') → valStack T◾ (pm M' N) γ'
+    _﹐_∷pm⟨_⟩_ : (M : Γ ⊢ᵛ A `× B) → (γ : ⟦ Γ ⟧ˣ) → {M' : Γ' ⊢ᵛ A `× B} → {γ' : ⟦ Γ' ⟧ˣ} → {N : (Γ' ∙ A ∙ B) ⊢ᵛ C} → .(M≡M' : ⟦ M ⟧ᵛ γ ≡ ⟦ M' ⟧ᵛ γ') → valStack T◾ (pm M' N) γ'
         → valStack T◾ M γ
 
-    _﹐_∷l⟨_⟩_ : (LHS : Γ ⊢ᵛ A) → (γ : ⟦ Γ ⟧ˣ) → {LHS' : Γ' ⊢ᵛ A} → {γ' : ⟦ Γ' ⟧ˣ} → (L≡L' : ⟦ LHS ⟧ᵛ γ ≡ ⟦ LHS' ⟧ᵛ γ') → {RHS : Γ' ⊢ᵛ B} → valStack T◾ (pair LHS' RHS) γ'
+    _﹐_∷l⟨_⟩_ : (LHS : Γ ⊢ᵛ A) → (γ : ⟦ Γ ⟧ˣ) → {LHS' : Γ' ⊢ᵛ A} → {γ' : ⟦ Γ' ⟧ˣ} → .(L≡L' : ⟦ LHS ⟧ᵛ γ ≡ ⟦ LHS' ⟧ᵛ γ') → {RHS : Γ' ⊢ᵛ B} → valStack T◾ (pair LHS' RHS) γ'
         → valStack T◾ LHS γ
 
-    _﹐_∷r⟨_⟩_ : (RHS : Γ ⊢ᵛ A) → (γ : ⟦ Γ ⟧ˣ) → {RHS' : Γ' ⊢ᵛ A} → {γ' : ⟦ Γ' ⟧ˣ} → (R≡R' : ⟦ RHS ⟧ᵛ γ ≡ ⟦ RHS' ⟧ᵛ γ') → {LHS : Γ' ⊢ᵛ B} → valStack T◾ (pair LHS RHS') γ'
+    _﹐_∷r⟨_⟩_ : (RHS : Γ ⊢ᵛ A) → (γ : ⟦ Γ ⟧ˣ) → {RHS' : Γ' ⊢ᵛ A} → {γ' : ⟦ Γ' ⟧ˣ} → .(R≡R' : ⟦ RHS ⟧ᵛ γ ≡ ⟦ RHS' ⟧ᵛ γ') → {LHS : Γ' ⊢ᵛ B} → valStack T◾ (pair LHS RHS') γ'
         → valStack T◾ RHS γ
 
 
@@ -521,14 +521,14 @@ data haltingVState : VState T◾ → Set where
 -}
 
 
-lemma1 : (i : Γ ∋ X) → i ≡ wk-mem wk-id i
-lemma1 Cx.h = refl
-lemma1 (Cx.t i) = cong (λ x → t x) (lemma1 i)
+≡wkid : (i : Γ ∋ X) → i ≡ wk-mem wk-id i
+≡wkid h = refl
+≡wkid (Cx.t i) = cong (λ x → t x) (≡wkid i)
 
---problem1 : {i : Γ ∋ X} → (lemma1 i) ≡ refl
---problem1 = refl
+-- We need proof irrelevance for the stack constructors:
+-- problem1 : {i : Γ ∋ X} → (≡wkid i) ≡ refl
+-- problem1 = refl
 
-{-
 ∙[pair]∷l-cong :   {γ : ⟦ Γ ⟧ˣ} → {γ' : ⟦ Γ' ⟧ˣ}
      → {LHS : Γ ⊢ᵛ X₁ `× X₂} → {LHS' : Γ' ⊢ᵛ X₁ `× X₂} → {RHS : Γ' ⊢ᵛ Y}
      → (≡LHS' : ⟦ LHS ⟧ᵛ γ ≡ ⟦ LHS' ⟧ᵛ γ')
@@ -537,42 +537,34 @@ lemma1 (Cx.t i) = cong (λ x → t x) (lemma1 i)
      → Σ[ Γ'' ∈ Ctx ] Σ[ τ ∈ ⟦ Γ'' ⟧ˣ ] Σ[ T₁ ∈ Γ'' ⊢ᵛ X₁ ] Σ[ T₂ ∈ Γ'' ⊢ᵛ X₂ ] Σ[ T≡ ∈ ⟦ pair T₁ T₂ ⟧ᵛ τ ≡ ⟦ LHS' ⟧ᵛ γ' ] ( ∘ LHS ﹐ γ ∷l⟨ ≡LHS' ⟩ tail ~>ᵛᵛ* ∙[pair] pair T₁ T₂ ﹐ τ ∷l⟨ T≡ ⟩ tail )
 ∙[pair]∷l-cong ≡LHS' tail (Γ'' , τ , T₁ , T₂ , .(∘ var _ ﹐ _ ■) ~>ᵛᵛ⟨ ~∘var~> ⟩ .(∙[var] (var _ ﹐ _ ■)) ~>ᵛᵛ⟨ () ⟩ S>T)
 
-{- can prove the following case for any value of i₂, but not in general, because Agda complains about lemma1 not being equal to refl:
-lemma1 : (i : Γ ∋ X) → i ≡ wk-mem wk-id i
-lemma1 Cx.h = refl
-lemma1 (Cx.t i) = cong (λ x → t x) (lemma1 i)
--}
-∙[pair]∷l-cong {Γ = Γ} {X₁ = X₁} {X₂ = X₂} {LHS = pair (var i₁) (var i₂)} {LHS' = LHS'} ≡LHS' tail (Γ'' , τ , T₁ , T₂ , (∘ pair (var i₁) (var i₂) ﹐ γ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩ S>T) = {!!}
-{-
-∙[pair]∷l-cong {Γ = (Δ ∙ X₂)} {X₁ = X₁} {X₂ = X₂} {LHS = pair (var i₁) (var Cx.h)} {LHS' = LHS'} ≡LHS' tail (Γ'' , τ , T₁ , T₂ , (∘ pair (var i₁) (var h) ﹐ γ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩ S>T) =  Δ ∙ X₂ ∙ X₁ ∙ X₂ , ( ((γ ,  ⟦ var i₁ ⟧ᵛ γ) , ⟦ var h ⟧ᵛ γ) , (  (wk-val (wk-wk wk-id) (var h)) , ( var h , ( ≡LHS' , (
-                                                                                   (∘ pair (var i₁) (var h) ﹐ γ ∷l⟨ ≡LHS' ⟩ tail)
-                     ~>ᵛᵛ⟨ ~∘pair~> ⟩                                               (∘ (var i₁) ﹐ γ ∷l⟨ refl ⟩ pair (var i₁) (var h) ﹐ γ ∷l⟨ ≡LHS' ⟩ tail)
-                     ~>ᵛᵛ⟨ ~∘var~> ⟩                                                (∙[var] (var i₁) ﹐ γ ∷l⟨ refl ⟩ pair (var i₁) (var h) ﹐ γ ∷l⟨ ≡LHS' ⟩ tail)
-                     ~>ᵛᵛ⟨ ~∙var∷l∷l~> γ γ i₁ (var i₁) (var h) refl ≡LHS' tail ⟩  (∘ var h ﹐ γ ∷r⟨  refl ⟩  pair (var h) (wk-val (wk-wk wk-id) (var h)) ﹐ (γ ,  ⟦ var i₁ ⟧ᵛ γ) ∷l⟨ ≡LHS' ⟩ tail )
-                     ~>ᵛᵛ⟨ ~∘var~> ⟩ (∙[var] (var h) ﹐  γ ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) (var h)) ﹐  γ ,  ⟦ var i₁ ⟧ᵛ γ ∷l⟨ ≡LHS' ⟩ tail)
-                     ~>ᵛᵛ⟨ ~∙var∷r∷l~> γ (γ ,  ⟦ var i₁ ⟧ᵛ γ) h (var h) (wk-val (wk-wk wk-id) (var h)) refl ≡LHS' tail ⟩  (∙[pair] pair (wk-val (wk-wk wk-id) (var h)) (var h) ﹐ ((γ ,  ⟦ var i₁ ⟧ᵛ γ) , ⟦ var h ⟧ᵛ γ) ∷l⟨ ≡LHS' ⟩ tail) ▣
-                         )))))
+∙[pair]∷l-cong {Γ = Γ} {X₁ = X₁} {X₂ = X₂} {γ' = γ'} {LHS = pair (var i₁) (var i₂)} {LHS' = LHS'} ≡LHS' tail (Γ'' , τ , T₁ , T₂ , (∘ pair (var i₁) (var i₂) ﹐ γ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩ S>T) =
 
-∙[pair]∷l-cong {Γ = (Δ ∙ A)} {X₁ = X₁} {X₂ = X₂} {LHS = pair (var i₁) (var (t h))} {LHS' = LHS'} ≡LHS' tail (Γ'' , τ , T₁ , T₂ , (∘ pair (var i₁) (var (t h)) ﹐ γ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩ S>T) = Δ ∙ A ∙ X₁ ∙ X₂ , ( ((γ ,  ⟦ var i₁ ⟧ᵛ γ) , ⟦ var (t h) ⟧ᵛ γ) , (  (wk-val (wk-wk wk-id) (var h)) , ( var h , ( ≡LHS' , (
-                                                                                   (∘ pair (var i₁) (var (t h)) ﹐ γ ∷l⟨ ≡LHS' ⟩ tail)
-                     ~>ᵛᵛ⟨ ~∘pair~> ⟩                                               (∘ (var i₁) ﹐ γ ∷l⟨ refl ⟩ pair (var i₁) (var (t h)) ﹐ γ ∷l⟨ ≡LHS' ⟩ tail)
-                     ~>ᵛᵛ⟨ ~∘var~> ⟩                                                (∙[var] (var i₁) ﹐ γ ∷l⟨ refl ⟩ pair (var i₁) (var (t h)) ﹐ γ ∷l⟨ ≡LHS' ⟩ tail)
-                     ~>ᵛᵛ⟨ ~∙var∷l∷l~> γ γ i₁ (var i₁) (var (t h)) refl ≡LHS' tail ⟩  (∘ var (t h) ﹐ γ ∷r⟨ refl ⟩  pair (var h) (wk-val (wk-wk wk-id) (var (t h))) ﹐ (γ ,  ⟦ var i₁ ⟧ᵛ γ) ∷l⟨  ≡LHS'  ⟩ tail )
-                     ~>ᵛᵛ⟨ ~∘var~> ⟩ (∙[var] (var (t h)) ﹐  γ ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) (var (t h))) ﹐  γ ,  ⟦ var i₁ ⟧ᵛ γ ∷l⟨ ≡LHS' ⟩ tail)
-                     ~>ᵛᵛ⟨  ~∙var∷r∷l~> γ (γ ,  ⟦ var i₁ ⟧ᵛ γ) (t h) (var h) (wk-val (wk-wk wk-id) (var (t h))) refl ≡LHS' tail ⟩  ( (∙[pair] pair (wk-val (wk-wk wk-id) (var h)) (var h) ﹐ ((γ ,  ⟦ var i₁ ⟧ᵛ γ) , ⟦ var (t h) ⟧ᵛ γ) ∷l⟨ ≡LHS' ⟩ tail)) ▣
-                            )))))
+          Γ ∙ X₁ ∙ X₂ , ((γ ,  ⟦ var i₁ ⟧ᵛ γ) , ⟦ var i₂ ⟧ᵛ γ) , wk-val (wk-wk wk-id) (var h) , var h , ≡LHS' ,
 
-∙[pair]∷l-cong {Γ = .(_ ∙ _)} {X₁ = X₁} {X₂ = X₂} {LHS = pair (var i₁) (var (t (t i₂)))} {LHS' = LHS'} ≡LHS' tail (Γ'' , τ , T₁ , T₂ , (∘ pair (var i₁) (var (t (t i₂))) ﹐ γ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩ S>T) =   {!!} , ( {!!} , (  {!!} , ( {!!} , ( {!!} , (
-                                                                                    (∘ pair (var i₁) (var (t (t i₂))) ﹐ γ ∷l⟨ ≡LHS' ⟩ tail)
-                      ~>ᵛᵛ⟨ ~∘pair~> ⟩                                               (∘ (var i₁) ﹐ γ ∷l⟨ refl ⟩ pair (var i₁) (var (t (t i₂))) ﹐ γ ∷l⟨ ≡LHS' ⟩ tail)
-                      ~>ᵛᵛ⟨ ~∘var~> ⟩                                                (∙[var] (var i₁) ﹐ γ ∷l⟨ refl ⟩ pair (var i₁) (var (t (t i₂))) ﹐ γ ∷l⟨ ≡LHS' ⟩ tail)
-                      ~>ᵛᵛ⟨ ~∙var∷l∷l~> γ γ i₁ (var i₁) (var (t (t i₂))) refl ≡LHS' tail ⟩  (∘ var (t (t i₂)) ﹐ γ ∷r⟨
-                                               {!!} 
-                                             ⟩  pair (var h) (wk-val (wk-wk wk-id) (var (t (t i₂)))) ﹐ (γ ,  ⟦ var i₁ ⟧ᵛ γ) ∷l⟨ {!!} ⟩ tail )
-                      ~>ᵛᵛ⟨ {!!} ⟩ {!!}
-                          )))))
--}
+                                  (∘ pair (var i₁) (var i₂) ﹐ γ ∷l⟨ ≡LHS' ⟩ tail)
+            ~>ᵛᵛ⟨ ~∘pair~> ⟩       (∘ (var i₁) ﹐ γ ∷l⟨ refl ⟩ pair (var i₁) (var i₂) ﹐ γ ∷l⟨ ≡LHS' ⟩ tail)
+            ~>ᵛᵛ⟨ ~∘var~> ⟩        (∙[var] (var i₁) ﹐ γ ∷l⟨ refl ⟩ pair (var i₁) (var i₂) ﹐ γ ∷l⟨ ≡LHS' ⟩ tail)
+            ~>ᵛᵛ⟨ ~∙var∷l∷l~>₁ ⟩  (∘ var i₂ ﹐ γ ∷r⟨ eq1 i₂ ⟩  pair (var h) (wk-val (wk-wk wk-id) (var i₂)) ﹐ (γ ,  ⟦ var i₁ ⟧ᵛ γ) ∷l⟨ eq2 ⟩ tail )
+            ~>ᵛᵛ⟨ ~∘var~> ⟩        (∙[var] (var i₂) ﹐  γ ∷r⟨ eq1 i₂ ⟩ pair (var h) (wk-val (wk-wk wk-id) (var i₂)) ﹐  γ ,  ⟦ var i₁ ⟧ᵛ γ ∷l⟨ eq2 ⟩ tail)
+            ~>ᵛᵛ⟨ ~∙var∷r∷l~>₁ ⟩   (∙[pair] pair (wk-val (wk-wk wk-id) (var h)) (var h) ﹐ ((γ ,  ⟦ var i₁ ⟧ᵛ γ) , ⟦ var i₂ ⟧ᵛ γ) ∷l⟨  ≡LHS' ⟩ tail) ▣
 
+          where
+
+          eq1 : (i : Γ ∋ X₂) → ⟦ var i ⟧ᵛ γ ≡ ⟦ var (wk-mem (wk-wk wk-id) i) ⟧ᵛ (γ , ⟦ i₁ ⟧ᵐ γ)
+          eq1 h = refl
+          eq1 (t i) = cong (λ x → ⟦ var (t x) ⟧ᵛ γ) (≡wkid i)
+
+          eq2 =  ⟦ pair (var h) (var (wk-mem (wk-wk wk-id) i₂)) ⟧ᵛ (γ , ⟦ i₁ ⟧ᵐ γ)
+                  ≡⟨ refl ⟩
+                  ( ⟦ var i₁ ⟧ᵛ γ , ⟦ (var (wk-mem (wk-wk wk-id) i₂)) ⟧ᵛ  (γ , ⟦ i₁ ⟧ᵐ γ)  )
+                  ≡⟨  cong (λ x → ( ⟦ var i₁ ⟧ᵛ γ , x )) (sym (eq1 i₂))  ⟩
+                  ( ⟦ var i₁ ⟧ᵛ γ , ⟦ var i₂ ⟧ᵛ γ  )
+                  ≡⟨ ≡LHS' ⟩
+                  ⟦ LHS' ⟧ᵛ γ' ∎
+
+          ~∙var∷l∷l~>₁ = ~∙var∷l∷l~> γ γ i₁ (var i₁) (var i₂) refl ≡LHS' tail
+
+          ~∙var∷r∷l~>₁ = ~∙var∷r∷l~> γ (γ ,  ⟦ var i₁ ⟧ᵛ γ) i₂ (var h) (wk-val (wk-wk wk-id) (var i₂)) (eq1 i₂) eq2 tail
 
 ∙[pair]∷l-cong {LHS = pair (var i) (lam x)} ≡LHS' tail (Γ'' , τ , T₁ , T₂ , .(∘ pair (var i) (lam x) ﹐ _ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩ S>T) = {!!}
 ∙[pair]∷l-cong {LHS = pair (var i) (pair RHS₀ RHS₁)} ≡LHS' tail (Γ'' , τ , T₁ , T₂ , .(∘ pair (var i) (pair RHS₀ RHS₁) ﹐ _ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩ S>T) = {!!}
@@ -585,4 +577,3 @@ lemma1 (Cx.t i) = cong (λ x → t x) (lemma1 i)
 ∙[pair]∷l-cong {LHS = pair unit RHS₀} ≡LHS' tail (Γ'' , τ , T₁ , T₂ , .(∘ pair unit RHS₀ ﹐ _ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩ S>T) = {!!}
 
 ∙[pair]∷l-cong ≡LHS' tail (Γ'' , τ , T₁ , T₂ , .(∘ pm _ _ ﹐ _ ■) ~>ᵛᵛ⟨ ~∘pm~> ⟩ S>T) = {!!}
--}
