@@ -566,7 +566,23 @@ data haltingVState : VState T◾ → Set where
 
           ~∙var∷r∷l~>₁ = ~∙var∷r∷l~> γ (γ ,  ⟦ var i₁ ⟧ᵛ γ) i₂ (var h) (wk-val (wk-wk wk-id) (var i₂)) (eq1 i₂) eq2 tail
 
-∙[pair]∷l-cong {LHS = pair (var i) (lam x)} ≡LHS' tail (Γ'' , τ , T₁ , T₂ , .(∘ pair (var i) (lam x) ﹐ _ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩ S>T) = {!!}
+∙[pair]∷l-cong {Γ = Γ} {X₁ = X₁} {X₂ = X₂} {γ' = γ'} {LHS = pair (var i) (lam M)} {LHS' = LHS'} ≡LHS' tail (Γ'' , τ , T₁ , T₂ , (∘ pair (var i) (lam M) ﹐ γ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩ S>T) =
+
+          Γ ∙ X₁ ∙ X₂ , ((γ ,  ⟦ var i ⟧ᵛ γ) , ⟦ lam M ⟧ᵛ γ) , wk-val (wk-wk wk-id) (var h) , var h , ≡LHS' ,
+
+                                  (∘ pair (var i) (lam M) ﹐ γ ∷l⟨ ≡LHS' ⟩ tail)
+            ~>ᵛᵛ⟨ ~∘pair~> ⟩       (∘ (var i) ﹐ γ ∷l⟨ refl ⟩ pair (var i) (lam M) ﹐ γ ∷l⟨ ≡LHS' ⟩ tail)
+            ~>ᵛᵛ⟨ ~∘var~> ⟩        ( ∙[var] (var i) ﹐ γ ∷l⟨ refl ⟩ pair (var i) (lam M) ﹐ γ ∷l⟨ ≡LHS' ⟩ tail)
+            ~>ᵛᵛ⟨ ~∙var∷l∷l~>₁ ⟩   (∘ lam M ﹐ γ ∷r⟨ refl ⟩  pair (var h) (wk-val (wk-wk wk-id) (lam M)) ﹐ (γ ,  ⟦ var i ⟧ᵛ γ) ∷l⟨ ≡LHS' ⟩ tail )
+            ~>ᵛᵛ⟨  ~∘lam~> ⟩       (∙[lam] lam M ﹐ γ ∷r⟨ refl ⟩  pair (var h) (wk-val (wk-wk wk-id) (lam M)) ﹐ (γ ,  ⟦ var i ⟧ᵛ γ) ∷l⟨ ≡LHS' ⟩ tail)
+            ~>ᵛᵛ⟨ ~∙lam∷r∷l~>₁ ⟩   (∙[pair] pair (wk-val (wk-wk wk-id) (var h)) (var h) ﹐ ((γ ,  ⟦ var i ⟧ᵛ γ) , ⟦ lam M ⟧ᵛ γ) ∷l⟨  ≡LHS' ⟩ tail) ▣
+
+          where
+
+          ~∙var∷l∷l~>₁ = ~∙var∷l∷l~> γ γ i (var i) (lam M) refl ≡LHS' tail
+
+          ~∙lam∷r∷l~>₁ = ~∙lam∷r∷l~> γ (γ ,  ⟦ var i ⟧ᵛ γ) M (var h) (wk-val (wk-wk wk-id) (lam M)) refl ≡LHS' tail
+
 ∙[pair]∷l-cong {LHS = pair (var i) (pair RHS₀ RHS₁)} ≡LHS' tail (Γ'' , τ , T₁ , T₂ , .(∘ pair (var i) (pair RHS₀ RHS₁) ﹐ _ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩ S>T) = {!!}
 ∙[pair]∷l-cong {LHS = pair (var i) (pm RHS₀ RHS₁)} ≡LHS' tail (Γ'' , τ , T₁ , T₂ , .(∘ pair (var i) (pm RHS₀ RHS₁) ﹐ _ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩ S>T) = {!!}
 ∙[pair]∷l-cong {LHS = pair (var i) unit} ≡LHS' tail (Γ'' , τ , T₁ , T₂ , .(∘ pair (var i) unit ﹐ _ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩ S>T) = {!!}
