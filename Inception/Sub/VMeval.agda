@@ -73,7 +73,7 @@ ex1 = pm (pair unit unit) (var (t h))
 
 data finiteSteps : VState T◾ → Set where
 
-  steps : {S T : VState T◾} → S ~>ᵛᵛ* T → ⟦ S ⟧◑ ≡ ⟦ T ⟧◑ → haltingVState T → finiteSteps S
+  steps : {S T : VState T◾} → S ~>ᵛᵛ* T → .(⟦ S ⟧◑ ≡ ⟦ T ⟧◑) → haltingVState T → finiteSteps S
 
 {-
 eval : (M : Γ ⊢ᵛ X) → (γ : ⟦ Γ ⟧ˣ) → finiteSteps (∘ M ﹐ γ ■)
