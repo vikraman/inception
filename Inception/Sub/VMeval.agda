@@ -71,20 +71,6 @@ ex1 = pm (pair unit unit) (var (t h))
 -- _ : eval-term ex1 tt ≡ {! eval-term ex1 tt!}
 -- _ = refl
 
-
-⟦_⟧↥ : {M : Γ ⊢ᵛ A} → {γ : ⟦ Γ ⟧ˣ} → valStack T◾ M γ → ⟦ T◾ ⟧
-⟦ (M ﹐ γ ■) ⟧↥ = ⟦ M ⟧ᵛ γ
-⟦ (_ ﹐ _ ∷pm⟨ _ ⟩ tail) ⟧↥ = ⟦ tail ⟧↥
-⟦ (_ ﹐ _ ∷l⟨ _ ⟩ tail) ⟧↥ = ⟦ tail ⟧↥
-⟦ (_ ﹐ _ ∷r⟨ _ ⟩ tail) ⟧↥ = ⟦ tail ⟧↥
-
-⟦_⟧◑ : VState T◾ → ⟦ T◾ ⟧
-⟦ ∘ tail ⟧◑ = ⟦ tail ⟧↥
-⟦ ∙[var] tail ⟧◑ = ⟦ tail ⟧↥
-⟦ ∙[lam] tail ⟧◑ = ⟦ tail ⟧↥
-⟦ ∙[unit] tail ⟧◑ = ⟦ tail ⟧↥
-⟦ ∙[pair] tail ⟧◑ = ⟦ tail ⟧↥
-
 data finiteSteps : VState T◾ → Set where
 
   steps : {S T : VState T◾} → S ~>ᵛᵛ* T → ⟦ S ⟧◑ ≡ ⟦ T ⟧◑ → haltingVState T → finiteSteps S

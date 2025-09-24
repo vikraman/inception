@@ -13,7 +13,7 @@ open import Inception.Sub.CPS R
 open import Data.Product as P
 
 variable
-  A' B' C' D' X Y Z X' Y' Z' X₁ Y₁ Z₁ X₂ Y₂ Z₂ X◾ Y◾ Z◾ X↓ Y↓ Z↓ T◾ : Ty
+  A' B' C' D' X Y Z X' Y' Z' X₁ Y₁ Z₁ X₂ Y₂ Z₂ X◾ Y◾ Z◾ X↓ Y↓ Z↓ T◾ T◾' T◾₁ T◾₂ : Ty
   Γ' Γ'' Γ''' Δ' Γ₁ Γ₂ Γ◾ Γ↓ : Ctx
 
 infix 40 _▣
@@ -473,123 +473,55 @@ data haltingVState : VState T◾ → Set where
 ~>ᵛᵛ*-trans (S~>S ▣) S~>S'' = S~>S''
 ~>ᵛᵛ*-trans (S ~>ᵛᵛ⟨ x ⟩ T~>S') S'~>S'' =  S ~>ᵛᵛ⟨ x ⟩ (~>ᵛᵛ*-trans T~>S' S'~>S'')
 
-------------------------------------------------------------------
 
+⟦_⟧↥ : {M : Γ ⊢ᵛ A} → {γ : ⟦ Γ ⟧ˣ} → valStack T◾ M γ → ⟦ T◾ ⟧
+⟦ (M ﹐ γ ■) ⟧↥ = ⟦ M ⟧ᵛ γ
+⟦ (_ ﹐ _ ∷pm⟨ _ ⟩ tail) ⟧↥ = ⟦ tail ⟧↥
+⟦ (_ ﹐ _ ∷l⟨ _ ⟩ tail) ⟧↥ = ⟦ tail ⟧↥
+⟦ (_ ﹐ _ ∷r⟨ _ ⟩ tail) ⟧↥ = ⟦ tail ⟧↥
 
+⟦_⟧◑ : VState T◾ → ⟦ T◾ ⟧
+⟦ ∘ tail ⟧◑ = ⟦ tail ⟧↥
+⟦ ∙[var] tail ⟧◑ = ⟦ tail ⟧↥
+⟦ ∙[lam] tail ⟧◑ = ⟦ tail ⟧↥
+⟦ ∙[unit] tail ⟧◑ = ⟦ tail ⟧↥
+⟦ ∙[pair] tail ⟧◑ = ⟦ tail ⟧↥
 
-{-
-∙[var]∷l-cong :   {γ : ⟦ Γ ⟧ˣ} → {γ' : ⟦ Γ' ⟧ˣ} → {τ : ⟦ Γ'' ⟧ˣ}
-     → {LHS' : Γ' ⊢ᵛ X} → {RHS : Γ' ⊢ᵛ Y}
-     ---
-     → {M : Γ ⊢ᵛ X}
-     → {t : Γ'' ∋ X}
-     → {≡T : ⟦ LHS' ⟧ᵛ γ' ≡ ⟦ var t ⟧ᵛ τ}
-     ---
-     → {≡LHS' : ⟦ M ⟧ᵛ γ ≡ ⟦ LHS' ⟧ᵛ γ'}
-     ---
-     → {tail : valStack X (pair LHS' RHS) γ'}
-     → ∘ M ﹐ γ ■ ~>ᵛᵛ* ∙[var] var t ﹐ τ ■
-     → ∘ M ﹐ γ ∷l⟨ ≡LHS' ⟩ tail ~>ᵛᵛ* ∙[var] var t ﹐ τ ∷l⟨ sym ≡T ⟩ tail
-∙[var]∷l-cong M>T = {!!}
+_⦂⦂pm⟨_⟩_ : {H : Γ ⊢ᵛ A} → {γ : ⟦ Γ ⟧ˣ} → (head : valStack (T◾₁ `× T◾₂) H γ) → {M' : Γ' ⊢ᵛ T◾₁ `× T◾₂} → {γ' : ⟦ Γ' ⟧ˣ} → {N : (Γ' ∙ T◾₁ ∙ T◾₂) ⊢ᵛ C} → .(h≡M' : ⟦ head ⟧↥ ≡ ⟦ M' ⟧ᵛ γ') → valStack T◾' (pm M' N) γ' → valStack T◾' H γ
+_⦂⦂pm⟨_⟩_ {H = H} {γ = γ} (.H ﹐ .γ ■) h≡M' tail = H ﹐ γ ∷pm⟨ h≡M' ⟩ tail
+_⦂⦂pm⟨_⟩_ {H = H} {γ = γ} (.H ﹐ .γ ∷pm⟨ H≡M' ⟩ htail) h≡M' tail = H ﹐ γ ∷pm⟨ H≡M' ⟩ (htail ⦂⦂pm⟨ h≡M' ⟩ tail)
+_⦂⦂pm⟨_⟩_ {H = H} {γ = γ} (.H ﹐ .γ ∷l⟨ H≡L' ⟩ htail) h≡M' tail = H ﹐ γ ∷l⟨ H≡L' ⟩ (htail ⦂⦂pm⟨ h≡M' ⟩ tail)
+_⦂⦂pm⟨_⟩_ {H = H} {γ = γ} (.H ﹐ .γ ∷r⟨ H≡R' ⟩ htail) h≡M' tail = H ﹐ γ ∷r⟨ H≡R' ⟩ (htail ⦂⦂pm⟨ h≡M' ⟩ tail)
 
-∙[lam]∷l-cong :   {γ : ⟦ Γ ⟧ˣ} → {γ' : ⟦ Γ' ⟧ˣ} → {τ : ⟦ Γ'' ⟧ˣ}
-     → {LHS' : Γ' ⊢ᵛ (X `⇒ X')} → {RHS : Γ' ⊢ᵛ Y}
-     ---
-     → {M : Γ ⊢ᵛ X `⇒ X'}
-     → {T : (Γ'' ∙ X) ⊢ᶜ X'}
-     → {≡T : ⟦ LHS' ⟧ᵛ γ' ≡ ⟦ lam T ⟧ᵛ τ}
-     ---
-     → {≡LHS' : ⟦ M ⟧ᵛ γ ≡ ⟦ LHS' ⟧ᵛ γ'}
-     ---
-     → {tail : valStack (X `⇒ X') (pair LHS' RHS) γ'}
-     → ∘ M ﹐ γ ■ ~>ᵛᵛ* ∙[lam] lam T ﹐ τ ■
-     → ∘ M ﹐ γ ∷l⟨ ≡LHS' ⟩ tail ~>ᵛᵛ* ∙[lam] lam T ﹐ τ ∷l⟨ sym ≡T ⟩ tail
-∙[lam]∷l-cong M>T = {!!}
+_⦂⦂r⟨_⟩_ : {H : Γ ⊢ᵛ A} → {γ : ⟦ Γ ⟧ˣ} → (head : valStack T◾ H γ) → {RHS' : Γ' ⊢ᵛ T◾} → {γ' : ⟦ Γ' ⟧ˣ} → .(h≡R' : ⟦ head ⟧↥ ≡ ⟦ RHS' ⟧ᵛ γ') → {LHS : Γ' ⊢ᵛ B} → valStack T◾' (pair LHS RHS') γ' → valStack T◾' H γ
+_⦂⦂r⟨_⟩_ {H = H} {γ = γ} (.H ﹐ .γ ■) h≡R' tail = H ﹐ γ ∷r⟨ h≡R' ⟩ tail
+_⦂⦂r⟨_⟩_ {H = H} {γ = γ} (.H ﹐ .γ ∷pm⟨ H≡M' ⟩ htail) h≡R' tail = H ﹐ γ ∷pm⟨ H≡M' ⟩ (htail ⦂⦂r⟨ h≡R' ⟩ tail)
+_⦂⦂r⟨_⟩_ {H = H} {γ = γ} (.H ﹐ .γ ∷l⟨ H≡L' ⟩ htail) h≡R' tail = H ﹐ γ ∷l⟨ H≡L' ⟩ (htail ⦂⦂r⟨ h≡R' ⟩ tail)
+_⦂⦂r⟨_⟩_ {H = H} {γ = γ} (.H ﹐ .γ ∷r⟨ H≡R' ⟩ htail) h≡R' tail = H ﹐ γ ∷r⟨ H≡R' ⟩ (htail ⦂⦂r⟨ h≡R' ⟩ tail)
 
-∙[unit]∷l-cong :   {γ : ⟦ Γ ⟧ˣ} → {γ' : ⟦ Γ' ⟧ˣ} → {τ : ⟦ Γ'' ⟧ˣ}
-     → {LHS' : Γ' ⊢ᵛ `Unit} → {RHS : Γ' ⊢ᵛ Y}
-     ---
-     → {M : Γ ⊢ᵛ `Unit}
-     → {≡T : ⟦ LHS' ⟧ᵛ γ' ≡ ⟦ unit ⟧ᵛ τ}
-     ---
-     → {≡LHS' : ⟦ M ⟧ᵛ γ ≡ ⟦ LHS' ⟧ᵛ γ'}
-     ---
-     → {tail : valStack `Unit (pair LHS' RHS) γ'}
-     → ∘ M ﹐ γ ■ ~>ᵛᵛ* ∙[unit] unit ﹐ τ ■
-     → ∘ M ﹐ γ ∷l⟨ ≡LHS' ⟩ tail ~>ᵛᵛ* ∙[unit] unit ﹐ τ ∷l⟨ sym ≡T ⟩ tail
-∙[unit]∷l-cong M>T = {!!}
--}
+_⦂⦂l⟨_⟩_ : {H : Γ ⊢ᵛ A} → {γ : ⟦ Γ ⟧ˣ} → (head : valStack T◾ H γ) → {LHS' : Γ' ⊢ᵛ T◾} → {γ' : ⟦ Γ' ⟧ˣ} → .(h≡L' : ⟦ head ⟧↥ ≡ ⟦ LHS' ⟧ᵛ γ') → {RHS : Γ' ⊢ᵛ B} → (tail : valStack T◾' (pair LHS' RHS) γ') → valStack T◾' H γ
+_⦂⦂l⟨_⟩_ {H = H} {γ = γ} (.H ﹐ .γ ■) h≡L' tail = H ﹐ γ ∷l⟨ h≡L' ⟩ tail
+_⦂⦂l⟨_⟩_ {H = H} {γ = γ} (.H ﹐ .γ ∷pm⟨ H≡M' ⟩ htail) h≡L' tail = H ﹐ γ ∷pm⟨ H≡M' ⟩ (htail ⦂⦂l⟨ h≡L' ⟩ tail)
+_⦂⦂l⟨_⟩_ {H = H} {γ = γ} (.H ﹐ .γ ∷l⟨ H≡L' ⟩ htail) h≡L' tail = H ﹐ γ ∷l⟨ H≡L' ⟩ (htail ⦂⦂l⟨ h≡L' ⟩ tail)
+_⦂⦂l⟨_⟩_ {H = H} {γ = γ} (.H ﹐ .γ ∷r⟨ H≡R' ⟩ htail) h≡L' tail = H ﹐ γ ∷r⟨ H≡R' ⟩ (htail ⦂⦂l⟨ h≡L' ⟩ tail)
 
+_::pm⟨_⟩_ : (head : VState (T◾₁ `× T◾₂)) → {M' : Γ' ⊢ᵛ T◾₁ `× T◾₂} → {γ' : ⟦ Γ' ⟧ˣ} → {N : (Γ' ∙ T◾₁ ∙ T◾₂) ⊢ᵛ C} → .(h≡M' : ⟦ head ⟧◑ ≡ ⟦ M' ⟧ᵛ γ') → valStack T◾' (pm M' N) γ' → VState T◾'
+(∘ M) ::pm⟨ h≡M' ⟩ tail = ∘ (M ⦂⦂pm⟨ h≡M' ⟩ tail)
+(∙[var] M) ::pm⟨ h≡M' ⟩ tail = ∙[var] (M ⦂⦂pm⟨ h≡M' ⟩ tail)
+(∙[lam] M) ::pm⟨ h≡M' ⟩ tail = ∙[lam] (M ⦂⦂pm⟨ h≡M' ⟩ tail)
+(∙[unit] M) ::pm⟨ h≡M' ⟩ tail = ∙[unit] (M ⦂⦂pm⟨ h≡M' ⟩ tail)
+(∙[pair] M) ::pm⟨ h≡M' ⟩ tail = ∙[pair] (M ⦂⦂pm⟨ h≡M' ⟩ tail)
 
-≡wkid : (i : Γ ∋ X) → i ≡ wk-mem wk-id i
-≡wkid h = refl
-≡wkid (Cx.t i) = cong (λ x → t x) (≡wkid i)
+_::r⟨_⟩_ : (head : VState T◾) → {RHS' : Γ' ⊢ᵛ T◾} → {γ' : ⟦ Γ' ⟧ˣ} → .(h≡R' : ⟦ head ⟧◑ ≡ ⟦ RHS' ⟧ᵛ γ') → {LHS : Γ' ⊢ᵛ B} → valStack T◾' (pair LHS RHS') γ' → VState T◾'
+(∘ M) ::r⟨ h≡R' ⟩ tail = ∘ (M ⦂⦂r⟨ h≡R' ⟩ tail)
+(∙[var] M) ::r⟨ h≡R' ⟩ tail = ∙[var] (M ⦂⦂r⟨ h≡R' ⟩ tail)
+(∙[lam] M) ::r⟨ h≡R' ⟩ tail = ∙[lam] (M ⦂⦂r⟨ h≡R' ⟩ tail)
+(∙[unit] M) ::r⟨ h≡R' ⟩ tail = ∙[unit] (M ⦂⦂r⟨ h≡R' ⟩ tail)
+(∙[pair] M) ::r⟨ h≡R' ⟩ tail = ∙[pair] (M ⦂⦂r⟨ h≡R' ⟩ tail)
 
--- We need proof irrelevance for the stack constructors:
--- problem1 : {i : Γ ∋ X} → (≡wkid i) ≡ refl
--- problem1 = refl
-
-∙[pair]∷l-cong :   {γ : ⟦ Γ ⟧ˣ} → {γ' : ⟦ Γ' ⟧ˣ}
-     → {LHS : Γ ⊢ᵛ X₁ `× X₂} → {LHS' : Γ' ⊢ᵛ X₁ `× X₂} → {RHS : Γ' ⊢ᵛ Y}
-     → (≡LHS' : ⟦ LHS ⟧ᵛ γ ≡ ⟦ LHS' ⟧ᵛ γ')
-     → (tail : valStack ((X₁ `× X₂) `× Y) (pair LHS' RHS) γ')
-     → Σ[ Γ'' ∈ Ctx ] Σ[ τ ∈ ⟦ Γ'' ⟧ˣ ] Σ[ T₁ ∈ Γ'' ⊢ᵛ X₁ ] Σ[ T₂ ∈ Γ'' ⊢ᵛ X₂ ] ( ∘ LHS ﹐ γ ■ ~>ᵛᵛ* ∙[pair] pair T₁ T₂ ﹐ τ ■ )
-     → Σ[ Γ'' ∈ Ctx ] Σ[ τ ∈ ⟦ Γ'' ⟧ˣ ] Σ[ T₁ ∈ Γ'' ⊢ᵛ X₁ ] Σ[ T₂ ∈ Γ'' ⊢ᵛ X₂ ] Σ[ T≡ ∈ ⟦ pair T₁ T₂ ⟧ᵛ τ ≡ ⟦ LHS' ⟧ᵛ γ' ] ( ∘ LHS ﹐ γ ∷l⟨ ≡LHS' ⟩ tail ~>ᵛᵛ* ∙[pair] pair T₁ T₂ ﹐ τ ∷l⟨ T≡ ⟩ tail )
-∙[pair]∷l-cong ≡LHS' tail (Γ'' , τ , T₁ , T₂ , .(∘ var _ ﹐ _ ■) ~>ᵛᵛ⟨ ~∘var~> ⟩ .(∙[var] (var _ ﹐ _ ■)) ~>ᵛᵛ⟨ () ⟩ S>T)
-
-∙[pair]∷l-cong {Γ = Γ} {X₁ = X₁} {X₂ = X₂} {γ' = γ'} {LHS = pair (var i₁) (var i₂)} {LHS' = LHS'} ≡LHS' tail (Γ'' , τ , T₁ , T₂ , (∘ pair (var i₁) (var i₂) ﹐ γ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩ S>T) =
-
-          Γ ∙ X₁ ∙ X₂ , ((γ ,  ⟦ var i₁ ⟧ᵛ γ) , ⟦ var i₂ ⟧ᵛ γ) , wk-val (wk-wk wk-id) (var h) , var h , ≡LHS' ,
-
-                                  (∘ pair (var i₁) (var i₂) ﹐ γ ∷l⟨ ≡LHS' ⟩ tail)
-            ~>ᵛᵛ⟨ ~∘pair~> ⟩       (∘ (var i₁) ﹐ γ ∷l⟨ refl ⟩ pair (var i₁) (var i₂) ﹐ γ ∷l⟨ ≡LHS' ⟩ tail)
-            ~>ᵛᵛ⟨ ~∘var~> ⟩        (∙[var] (var i₁) ﹐ γ ∷l⟨ refl ⟩ pair (var i₁) (var i₂) ﹐ γ ∷l⟨ ≡LHS' ⟩ tail)
-            ~>ᵛᵛ⟨ ~∙var∷l∷l~>₁ ⟩  (∘ var i₂ ﹐ γ ∷r⟨ eq1 i₂ ⟩  pair (var h) (wk-val (wk-wk wk-id) (var i₂)) ﹐ (γ ,  ⟦ var i₁ ⟧ᵛ γ) ∷l⟨ eq2 ⟩ tail )
-            ~>ᵛᵛ⟨ ~∘var~> ⟩        (∙[var] (var i₂) ﹐  γ ∷r⟨ eq1 i₂ ⟩ pair (var h) (wk-val (wk-wk wk-id) (var i₂)) ﹐  γ ,  ⟦ var i₁ ⟧ᵛ γ ∷l⟨ eq2 ⟩ tail)
-            ~>ᵛᵛ⟨ ~∙var∷r∷l~>₁ ⟩   (∙[pair] pair (wk-val (wk-wk wk-id) (var h)) (var h) ﹐ ((γ ,  ⟦ var i₁ ⟧ᵛ γ) , ⟦ var i₂ ⟧ᵛ γ) ∷l⟨  ≡LHS' ⟩ tail) ▣
-
-          where
-
-          eq1 : (i : Γ ∋ X₂) → ⟦ var i ⟧ᵛ γ ≡ ⟦ var (wk-mem (wk-wk wk-id) i) ⟧ᵛ (γ , ⟦ i₁ ⟧ᵐ γ)
-          eq1 h = refl
-          eq1 (t i) = cong (λ x → ⟦ var (t x) ⟧ᵛ γ) (≡wkid i)
-
-          eq2 =  ⟦ pair (var h) (var (wk-mem (wk-wk wk-id) i₂)) ⟧ᵛ (γ , ⟦ i₁ ⟧ᵐ γ)
-                  ≡⟨ refl ⟩
-                  ( ⟦ var i₁ ⟧ᵛ γ , ⟦ (var (wk-mem (wk-wk wk-id) i₂)) ⟧ᵛ  (γ , ⟦ i₁ ⟧ᵐ γ)  )
-                  ≡⟨  cong (λ x → ( ⟦ var i₁ ⟧ᵛ γ , x )) (sym (eq1 i₂))  ⟩
-                  ( ⟦ var i₁ ⟧ᵛ γ , ⟦ var i₂ ⟧ᵛ γ  )
-                  ≡⟨ ≡LHS' ⟩
-                  ⟦ LHS' ⟧ᵛ γ' ∎
-
-          ~∙var∷l∷l~>₁ = ~∙var∷l∷l~> γ γ i₁ (var i₁) (var i₂) refl ≡LHS' tail
-
-          ~∙var∷r∷l~>₁ = ~∙var∷r∷l~> γ (γ ,  ⟦ var i₁ ⟧ᵛ γ) i₂ (var h) (wk-val (wk-wk wk-id) (var i₂)) (eq1 i₂) eq2 tail
-
-∙[pair]∷l-cong {Γ = Γ} {X₁ = X₁} {X₂ = X₂} {γ' = γ'} {LHS = pair (var i) (lam M)} {LHS' = LHS'} ≡LHS' tail (Γ'' , τ , T₁ , T₂ , (∘ pair (var i) (lam M) ﹐ γ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩ S>T) =
-
-          Γ ∙ X₁ ∙ X₂ , ((γ ,  ⟦ var i ⟧ᵛ γ) , ⟦ lam M ⟧ᵛ γ) , wk-val (wk-wk wk-id) (var h) , var h , ≡LHS' ,
-
-                                  (∘ pair (var i) (lam M) ﹐ γ ∷l⟨ ≡LHS' ⟩ tail)
-            ~>ᵛᵛ⟨ ~∘pair~> ⟩       (∘ (var i) ﹐ γ ∷l⟨ refl ⟩ pair (var i) (lam M) ﹐ γ ∷l⟨ ≡LHS' ⟩ tail)
-            ~>ᵛᵛ⟨ ~∘var~> ⟩        ( ∙[var] (var i) ﹐ γ ∷l⟨ refl ⟩ pair (var i) (lam M) ﹐ γ ∷l⟨ ≡LHS' ⟩ tail)
-            ~>ᵛᵛ⟨ ~∙var∷l∷l~>₁ ⟩   (∘ lam M ﹐ γ ∷r⟨ refl ⟩  pair (var h) (wk-val (wk-wk wk-id) (lam M)) ﹐ (γ ,  ⟦ var i ⟧ᵛ γ) ∷l⟨ ≡LHS' ⟩ tail )
-            ~>ᵛᵛ⟨  ~∘lam~> ⟩       (∙[lam] lam M ﹐ γ ∷r⟨ refl ⟩  pair (var h) (wk-val (wk-wk wk-id) (lam M)) ﹐ (γ ,  ⟦ var i ⟧ᵛ γ) ∷l⟨ ≡LHS' ⟩ tail)
-            ~>ᵛᵛ⟨ ~∙lam∷r∷l~>₁ ⟩   (∙[pair] pair (wk-val (wk-wk wk-id) (var h)) (var h) ﹐ ((γ ,  ⟦ var i ⟧ᵛ γ) , ⟦ lam M ⟧ᵛ γ) ∷l⟨  ≡LHS' ⟩ tail) ▣
-
-          where
-
-          ~∙var∷l∷l~>₁ = ~∙var∷l∷l~> γ γ i (var i) (lam M) refl ≡LHS' tail
-
-          ~∙lam∷r∷l~>₁ = ~∙lam∷r∷l~> γ (γ ,  ⟦ var i ⟧ᵛ γ) M (var h) (wk-val (wk-wk wk-id) (lam M)) refl ≡LHS' tail
-
-∙[pair]∷l-cong {LHS = pair (var i) (pair RHS₀ RHS₁)} ≡LHS' tail (Γ'' , τ , T₁ , T₂ , .(∘ pair (var i) (pair RHS₀ RHS₁) ﹐ _ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩ S>T) = {!!}
-∙[pair]∷l-cong {LHS = pair (var i) (pm RHS₀ RHS₁)} ≡LHS' tail (Γ'' , τ , T₁ , T₂ , .(∘ pair (var i) (pm RHS₀ RHS₁) ﹐ _ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩ S>T) = {!!}
-∙[pair]∷l-cong {LHS = pair (var i) unit} ≡LHS' tail (Γ'' , τ , T₁ , T₂ , .(∘ pair (var i) unit ﹐ _ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩ S>T) = {!!}
-
-∙[pair]∷l-cong {LHS = pair (lam x) RHS₀} ≡LHS' tail (Γ'' , τ , T₁ , T₂ , .(∘ pair (lam x) RHS₀ ﹐ _ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩ S>T) = {!!}
-∙[pair]∷l-cong {LHS = pair (pair LHS₀ LHS₁) RHS₀} ≡LHS' tail (Γ'' , τ , T₁ , T₂ , .(∘ pair (pair LHS₀ LHS₁) RHS₀ ﹐ _ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩ S>T) = {!!}
-∙[pair]∷l-cong {LHS = pair (pm LHS₀ LHS₁) RHS₀} ≡LHS' tail (Γ'' , τ , T₁ , T₂ , .(∘ pair (pm LHS₀ LHS₁) RHS₀ ﹐ _ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩ S>T) = {!!}
-∙[pair]∷l-cong {LHS = pair unit RHS₀} ≡LHS' tail (Γ'' , τ , T₁ , T₂ , .(∘ pair unit RHS₀ ﹐ _ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩ S>T) = {!!}
-
-∙[pair]∷l-cong ≡LHS' tail (Γ'' , τ , T₁ , T₂ , .(∘ pm _ _ ﹐ _ ■) ~>ᵛᵛ⟨ ~∘pm~> ⟩ S>T) = {!!}
+_::l⟨_⟩_ : (head : VState T◾) → {LHS' : Γ' ⊢ᵛ T◾} → {γ' : ⟦ Γ' ⟧ˣ} → .(h≡L' : ⟦ head ⟧◑ ≡ ⟦ LHS' ⟧ᵛ γ') → {RHS : Γ' ⊢ᵛ B} → (tail : valStack T◾' (pair LHS' RHS) γ') → VState T◾'
+(∘ M) ::l⟨ h≡L' ⟩ tail =  ∘ (M ⦂⦂l⟨ h≡L' ⟩ tail)
+(∙[var] M) ::l⟨ h≡L' ⟩ tail = ∙[var] (M ⦂⦂l⟨ h≡L' ⟩ tail)
+(∙[lam] M) ::l⟨ h≡L' ⟩ tail = ∙[lam] (M ⦂⦂l⟨ h≡L' ⟩ tail)
+(∙[unit] M) ::l⟨ h≡L' ⟩ tail = ∙[unit] (M ⦂⦂l⟨ h≡L' ⟩ tail)
+(∙[pair] M) ::l⟨ h≡L' ⟩ tail = ∙[pair] (M ⦂⦂l⟨ h≡L' ⟩ tail)
