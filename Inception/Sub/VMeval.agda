@@ -18,6 +18,7 @@ open import Inception.Sub.CPS R
 
 open import Inception.Sub.ValueMachine R
 open import Inception.Sub.VMprogress R
+open import Inception.Sub.VMcong R
 
 -- cf PLFA
 record Gas : Set where
@@ -47,28 +48,6 @@ bounded-eval (gas (suc amount)) S with progress S
 ... |   no-steps HS = steps (S ~>ᵛᵛ⟨ S~>S' ⟩) (result HS)
 ... |   steps S'~>>S'' fin = steps (S ~>ᵛᵛ⟨ S~>S' ⟩ S'~>>S'') fin
 
-
-{-
--- -- cf PLFA
--- data Finished (S : VState T◾) : Set where
--- 
---    done : haltingVState S → Finished S
--- 
---    out-of-gas : Finished S
-
--- cf PLFA
-data Steps : VState T◾ → Set where
-
-  --steps : {S S' : VState T◾} → S ~>ᵛᵛ* S' → Finished S' → Steps S
-
--- cf PLFA
-bounded-eval : Gas → (S : VState T◾) → Steps S
-bounded-eval (gas zero) S = steps (S ▣) out-of-gas
-bounded-eval (gas (suc amount)) S with progress S
-... | done HS = steps (S ▣) (done HS)
-... | step {S' = S'} (S~>S') with bounded-eval (gas amount) S'
-... |   steps S'~>*S'' fin = steps (S ~>ᵛᵛ⟨ S~>S' ⟩ S'~>*S'') fin
--}
 
 calc-steps : (Γ ⊢ᵛ X) → ℕ
 calc-steps (var i) = 1
@@ -100,14 +79,22 @@ _ = refl
 {-
 data finiteSteps : VState T◾ → Set where
 
-  steps : {S T : VState T◾} → S ~>ᵛᵛ* T →  haltingVState T → finiteSteps S
+  steps : {S T : VState T◾} → S ~>>ᵛᵛ T →  haltingVState T → finiteSteps S
 
 eval : (M : Γ ⊢ᵛ X) → (γ : ⟦ Γ ⟧ˣ) → finiteSteps (∘ M ﹐ γ ■)
-eval (var i) γ =  steps ((∘ var i ﹐ γ ■) ~>ᵛᵛ⟨ ~∘var~> ⟩ (∙[var] var i ﹐ γ ■) ▣) refl ∙var■
-eval (lam M) γ = steps ((∘ lam M ﹐ γ ■) ~>ᵛᵛ⟨ ~∘lam~> ⟩ (∙[lam] lam M ﹐ γ ■) ▣) refl ∙lam■
-eval (pair LHS RHS) γ  with eval LHS γ | eval RHS γ
-... | steps {T = T'} s' ≡t' t' | steps {T = T''} s'' ≡t'' t'' = steps ((∘ pair LHS RHS ﹐ γ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩ (∘ LHS ﹐ γ ∷l⟨ refl ⟩ pair LHS RHS ﹐ γ ■) ~>ᵛᵛ⟨ {!!} ⟩ {!!} ▣) {!!} ∙pair■
-eval (pm M N) γ = {!!}
-eval unit γ = {!!}
--}
+eval (var i) γ = steps ((∘ var i ﹐ γ ■) ~>ᵛᵛ⟨ ~∘var~> ⟩) (∙var i ⹁ γ ■)
+eval (lam M) γ = steps ((∘ lam M ﹐ γ ■) ~>ᵛᵛ⟨ ~∘lam~> ⟩) (∙lam M ⹁ γ ■)
 
+eval (pair LHS RHS) γ with eval LHS γ | eval RHS γ
+... | steps {T = T'} LHS>>T' _ | steps {T = T''} RHS>>T'' _  =
+        steps (~>>ᵛᵛ-trans (~>>ᵛᵛ-trans (~>>ᵛᵛ-trans
+                                ((∘ (pair LHS RHS) ﹐ γ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩)
+                                (⟪ LHS>>T' ⟫::l⟨ refl ⟩ (pair LHS RHS ﹐ γ ■)) )
+                                {!!}                                             )
+                                {!!}                                          ) {!!}
+            -- (T' ::l⟨ T≡*LHS LHS>>T' refl (pair LHS RHS ﹐ γ ■) ⟩ (pair LHS RHS ﹐ γ ■))
+
+eval (pm M N) γ = steps {!!} {!!}
+eval unit γ = steps ((∘ unit ﹐ γ ■) ~>ᵛᵛ⟨ ~∘unit~> ⟩) ∙unit⹁ γ ■
+
+-}

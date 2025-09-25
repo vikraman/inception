@@ -454,12 +454,16 @@ data _~>>ᵛᵛ_ : VState T◾ → VState T◾ → Set where
 
   _~>ᵛᵛ⟨_⟩_ : (VS : VState T◾) {VS' VS'' : VState T◾} → VS ~>ᵛᵛ VS' → VS' ~>>ᵛᵛ VS'' → VS ~>>ᵛᵛ VS''
 
+~>>ᵛᵛ-trans : {F S T : VState T◾} → (F ~>>ᵛᵛ S) → (S ~>>ᵛᵛ T) → (F ~>>ᵛᵛ T)
+~>>ᵛᵛ-trans (F ~>ᵛᵛ⟨ F>S ⟩) S>>T = F ~>ᵛᵛ⟨ F>S ⟩ S>>T
+~>>ᵛᵛ-trans (F ~>ᵛᵛ⟨ F>S₁ ⟩ S₁>>S₂) S₂>>T = F ~>ᵛᵛ⟨ F>S₁ ⟩ (~>>ᵛᵛ-trans S₁>>S₂ S₂>>T) 
+
 
 data haltingVState : VState T◾ → Set where
 
      ∙var_⹁_■ : (i : Γ ∋ X) → (γ : ⟦ Γ ⟧ˣ) → haltingVState (∙[var] (var i) ﹐ γ ■)
 
-     ∙unit■ : {γ : ⟦ Γ ⟧ˣ} → haltingVState (∙[unit] unit ﹐ γ ■)
+     ∙unit⹁_■ : (γ : ⟦ Γ ⟧ˣ) → haltingVState (∙[unit] unit ﹐ γ ■)
 
      ∙pair[_⹁_]⹁_■ : (LHS : Γ ⊢ᵛ X) → (RHS : Γ ⊢ᵛ Y) → (γ : ⟦ Γ ⟧ˣ) → haltingVState (∙[pair] pair LHS RHS ﹐ γ ■)
 
