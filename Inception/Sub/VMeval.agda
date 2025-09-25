@@ -100,7 +100,7 @@ _ = refl
 {-
 data finiteSteps : VState T◾ → Set where
 
-  steps : {S T : VState T◾} → S ~>ᵛᵛ* T → .(⟦ S ⟧◑ ≡ ⟦ T ⟧◑) → haltingVState T → finiteSteps S
+  steps : {S T : VState T◾} → S ~>ᵛᵛ* T →  haltingVState T → finiteSteps S
 
 eval : (M : Γ ⊢ᵛ X) → (γ : ⟦ Γ ⟧ˣ) → finiteSteps (∘ M ﹐ γ ■)
 eval (var i) γ =  steps ((∘ var i ﹐ γ ■) ~>ᵛᵛ⟨ ~∘var~> ⟩ (∙[var] var i ﹐ γ ■) ▣) refl ∙var■
