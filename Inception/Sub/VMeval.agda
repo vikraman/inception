@@ -92,11 +92,10 @@ ex3 = lam (return unit)
 ex4 : (ε ∙ `Unit) ⊢ᵛ `Unit `× `Unit
 ex4 = pair (var h) (var h)
 
+{-
 _ : quick-eval ex2 ((tt , λ _ z → z tt) , tt) ≡ {! quick-eval ex1 tt!}
 _ = refl
-
--- _ : eval-term ex1 tt ≡ {! eval-term ex1 tt!}
--- _ = refl
+-}
 
 {-
 data finiteSteps : VState T◾ → Set where
