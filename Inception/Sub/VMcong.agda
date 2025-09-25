@@ -13,78 +13,64 @@ open import Inception.Sub.CPS R
 open import Data.Product as P
 
 open import Inception.Sub.ValueMachine R
-
-⟪_⟫::l⟨_⨾_⟩_ : {from : VState T◾} → {to : VState T◾} → (F>>T : from ~>>ᵛᵛ to) → {LHS' : Γ' ⊢ᵛ T◾} → {γ' : ⟦ Γ' ⟧ˣ} → {RHS : Γ' ⊢ᵛ B} → (f≡L' : ⟦ from ⟧◑ ≡ ⟦ LHS' ⟧ᵛ γ') → (f≡t : ⟦ from ⟧◑ ≡ ⟦ to ⟧◑) → (tail : valStack T◾' (pair LHS' RHS) γ') → (from ::l⟨ f≡L' ⟩ tail) ~>>ᵛᵛ (to ::l⟨ trans (sym f≡t) f≡L' ⟩ tail)
-
-⟪ F>>T ⟫::l⟨ f≡L' ⨾ f≡t ⟩ tail = {!!}
-
---⟪ .(∙[var] (var i ﹐ γ ∷pm⟨ _ ⟩ pm M N ﹐ γ' ■)) ~>ᵛᵛ⟨ ~∙var∷pm■~> γ γ' i M N ≡M ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = (_ ::l⟨ f≡L' ⟩ tail) ~>ᵛᵛ⟨ (⟨ ~∙var∷pm■~> γ γ' i M N ≡M ⟩::l⟨ {!!} ⨾ {! trans (sym (var∷pm≡N γ γ' i M N ≡M)) f≡L'!} ⟩ tail) ⟩ (⟪ S>>T ⟫::l⟨ {!!} ⨾ t≡L' ⟩ tail)
+open import Inception.Sub.VMequalities R
 
 {-
-⟪ .(_) ~>ᵛᵛ⟨ F>T ⟩ ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail =  (_ ::l⟨ _ ⟩ tail) ~>ᵛᵛ⟨ (⟨ F>T ⟩::l⟨ f≡L' ⨾ t≡L' ⟩ tail) ⟩
-⟪ .(∘ _)  ~>ᵛᵛ⟨ ~∘var~> ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = (_ ::l⟨ f≡L' ⟩ tail) ~>ᵛᵛ⟨ (⟨ ~∘var~> ⟩::l⟨ f≡L' ⨾ f≡L' ⟩ tail) ⟩ (⟪ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail)
-⟪ .(∘ _) ~>ᵛᵛ⟨ ~∘lam~> ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = (_ ::l⟨ f≡L' ⟩ tail) ~>ᵛᵛ⟨ (⟨ ~∘lam~> ⟩::l⟨ f≡L' ⨾ f≡L' ⟩ tail) ⟩ (⟪ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail)
-⟪ .(∘ _) ~>ᵛᵛ⟨ ~∘pair~> ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = (_ ::l⟨ f≡L' ⟩ tail) ~>ᵛᵛ⟨ (⟨ ~∘pair~> ⟩::l⟨ f≡L' ⨾ f≡L' ⟩ tail) ⟩ (⟪ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail)
-⟪ .(∘ _) ~>ᵛᵛ⟨ ~∘pm~> ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = (_ ::l⟨ f≡L' ⟩ tail) ~>ᵛᵛ⟨ (⟨ ~∘pm~> ⟩::l⟨ f≡L' ⨾ f≡L' ⟩ tail) ⟩ (⟪ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail)
-⟪ .(∘ _) ~>ᵛᵛ⟨ ~∘unit~> ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = (_ ::l⟨ f≡L' ⟩ tail) ~>ᵛᵛ⟨ (⟨ ~∘unit~> ⟩::l⟨ f≡L' ⨾ f≡L' ⟩ tail) ⟩ (⟪ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail)
-
-⟪ .(∙[var] (var i ﹐ γ ∷pm⟨ _ ⟩ pm M N ﹐ γ' ∷pm⟨ _ ⟩ tail₁)) ~>ᵛᵛ⟨ ~∙var∷pm∷pm~> γ γ' i M N ≡M ≡M' tail₁ ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = (_ ::l⟨ f≡L' ⟩ tail) ~>ᵛᵛ⟨ (⟨ ~∙var∷pm∷pm~> γ γ' i M N ≡M ≡M' tail₁ ⟩::l⟨ f≡L' ⨾ f≡L' ⟩ tail) ⟩ (⟪ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail)
-⟪ from ~>ᵛᵛ⟨ ~∙var∷pm∷l~> γ γ' i M N ≡M ≡LHS tail₁ ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = (from ::l⟨ f≡L' ⟩ tail) ~>ᵛᵛ⟨ (⟨ ~∙var∷pm∷l~> γ γ' i M N ≡M ≡LHS tail₁ ⟩::l⟨ f≡L' ⨾ f≡L' ⟩ tail) ⟩ (⟪ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail)
-⟪ .(∙[var] (var i ﹐ γ ∷pm⟨ _ ⟩ pm M N ﹐ γ' ∷r⟨ _ ⟩ tail₁)) ~>ᵛᵛ⟨ ~∙var∷pm∷r~> γ γ' i M N ≡M ≡RHS tail₁ ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = (_ ::l⟨ f≡L' ⟩ tail) ~>ᵛᵛ⟨ (⟨ ~∙var∷pm∷r~> γ γ' i M N ≡M ≡RHS tail₁ ⟩::l⟨ f≡L' ⨾ f≡L' ⟩ tail) ⟩ (⟪ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail)
-
-⟪ .(∙[pair] (pair x y ﹐ γ ∷pm⟨ _ ⟩ pm M N ﹐ γ' ■)) ~>ᵛᵛ⟨ ~∙pair∷pm■~> γ γ' x y M N ≡M ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = {!!}
-
-⟪ .(∙[pair] (pair x y ﹐ γ ∷pm⟨ _ ⟩ pm M N ﹐ γ' ∷pm⟨ _ ⟩ tail₁)) ~>ᵛᵛ⟨ ~∙pair∷pm∷pm~> γ γ' x y M N ≡M ≡M' tail₁ ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = (_ ::l⟨ f≡L' ⟩ tail) ~>ᵛᵛ⟨ (⟨ ~∙pair∷pm∷pm~> γ γ' x y M N ≡M ≡M' tail₁ ⟩::l⟨ f≡L' ⨾ f≡L' ⟩ tail) ⟩ (⟪ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail)
-⟪ from ~>ᵛᵛ⟨ ~∙pair∷pm∷l~> γ γ' x y M N ≡M ≡LHS tail₁ ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = (from ::l⟨ f≡L' ⟩ tail) ~>ᵛᵛ⟨ (⟨ ~∙pair∷pm∷l~> γ γ' x y M N ≡M ≡LHS tail₁ ⟩::l⟨ f≡L' ⨾ f≡L' ⟩ tail) ⟩ (⟪ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail)
-⟪ .(∙[pair] (pair x y ﹐ γ ∷pm⟨ _ ⟩ pm M N ﹐ γ' ∷r⟨ _ ⟩ tail₁)) ~>ᵛᵛ⟨ ~∙pair∷pm∷r~> γ γ' x y M N ≡M ≡RHS tail₁ ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = (_ ::l⟨ f≡L' ⟩ tail) ~>ᵛᵛ⟨ (⟨ ~∙pair∷pm∷r~> γ γ' x y M N ≡M ≡RHS tail₁ ⟩::l⟨ f≡L' ⨾ f≡L' ⟩ tail) ⟩ (⟪ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail)
-
-⟪ .(∙[var] (var i ﹐ γ ∷l⟨ _ ⟩ pair LHS RHS ﹐ γ' ■)) ~>ᵛᵛ⟨ ~∙var∷l■~> γ γ' i LHS RHS ≡LHS ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = {!!}
-
-⟪ from ~>ᵛᵛ⟨ ~∙var∷l∷pm~> γ γ' i LHS RHS ≡LHS ≡M' tail₁ ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = (from ::l⟨ f≡L' ⟩ tail) ~>ᵛᵛ⟨ (⟨ ~∙var∷l∷pm~> γ γ' i LHS RHS ≡LHS ≡M' tail₁ ⟩::l⟨ f≡L' ⨾ f≡L' ⟩ tail) ⟩ (⟪ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail)
-⟪ from ~>ᵛᵛ⟨ ~∙var∷l∷l~> γ γ' i LHS RHS ≡LHS ≡LHS' tail₁ ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = (from ::l⟨ f≡L' ⟩ tail) ~>ᵛᵛ⟨ (⟨ ~∙var∷l∷l~> γ γ' i LHS RHS ≡LHS ≡LHS' tail₁ ⟩::l⟨ f≡L' ⨾ f≡L' ⟩ tail) ⟩ (⟪ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail)
-⟪ from ~>ᵛᵛ⟨ ~∙var∷l∷r~> γ γ' i LHS RHS ≡LHS ≡RHS' tail₁ ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = (from ::l⟨ f≡L' ⟩ tail) ~>ᵛᵛ⟨ (⟨ ~∙var∷l∷r~> γ γ' i LHS RHS ≡LHS ≡RHS' tail₁ ⟩::l⟨ f≡L' ⨾ f≡L' ⟩ tail) ⟩ (⟪ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail)
-
-⟪ .(∙[lam] (lam M ﹐ γ ∷l⟨ _ ⟩ pair LHS RHS ﹐ γ' ■)) ~>ᵛᵛ⟨ ~∙lam∷l■~> γ γ' M LHS RHS ≡LHS ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = {!!}
-
-⟪ from ~>ᵛᵛ⟨ ~∙lam∷l∷pm~> γ γ' M LHS RHS ≡LHS ≡M' tail₁ ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = (from ::l⟨ f≡L' ⟩ tail) ~>ᵛᵛ⟨ (⟨ ~∙lam∷l∷pm~> γ γ' M LHS RHS ≡LHS ≡M' tail₁ ⟩::l⟨ f≡L' ⨾ f≡L' ⟩ tail) ⟩ (⟪ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail)
-⟪ from ~>ᵛᵛ⟨ ~∙lam∷l∷l~> γ γ' M LHS RHS ≡LHS ≡LHS' tail₁ ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = (from ::l⟨ f≡L' ⟩ tail) ~>ᵛᵛ⟨ (⟨ ~∙lam∷l∷l~> γ γ' M LHS RHS ≡LHS ≡LHS' tail₁ ⟩::l⟨ f≡L' ⨾ f≡L' ⟩ tail) ⟩ (⟪ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail)
-⟪ from ~>ᵛᵛ⟨ ~∙lam∷l∷r~> γ γ' M LHS RHS ≡LHS ≡RHS' tail₁ ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = (from ::l⟨ f≡L' ⟩ tail) ~>ᵛᵛ⟨ (⟨ ~∙lam∷l∷r~> γ γ' M LHS RHS ≡LHS ≡RHS' tail₁ ⟩::l⟨ f≡L' ⨾ f≡L' ⟩ tail) ⟩ (⟪ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail)
-
-⟪ .(∙[unit] (unit ﹐ γ ∷l⟨ _ ⟩ pair LHS RHS ﹐ γ' ■)) ~>ᵛᵛ⟨ ~∙unit∷l■~> γ γ' LHS RHS ≡LHS ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = {!!}
-
-⟪ from ~>ᵛᵛ⟨ ~∙unit∷l∷pm~> γ γ' LHS RHS ≡LHS ≡M' tail₁ ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = (from ::l⟨ f≡L' ⟩ tail) ~>ᵛᵛ⟨ (⟨ ~∙unit∷l∷pm~> γ γ' LHS RHS ≡LHS ≡M' tail₁ ⟩::l⟨ f≡L' ⨾ f≡L' ⟩ tail) ⟩ (⟪ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail)
-⟪ from ~>ᵛᵛ⟨ ~∙unit∷l∷l~> γ γ' LHS RHS ≡LHS ≡LHS' tail₁ ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = (from ::l⟨ f≡L' ⟩ tail) ~>ᵛᵛ⟨ (⟨ ~∙unit∷l∷l~> γ γ' LHS RHS ≡LHS ≡LHS' tail₁ ⟩::l⟨ f≡L' ⨾ f≡L' ⟩ tail) ⟩ (⟪ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail)
-⟪ from ~>ᵛᵛ⟨ ~∙unit∷l∷r~> γ γ' LHS RHS ≡LHS ≡RHS' tail₁ ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = (from ::l⟨ f≡L' ⟩ tail) ~>ᵛᵛ⟨ (⟨ ~∙unit∷l∷r~> γ γ' LHS RHS ≡LHS ≡RHS' tail₁ ⟩::l⟨ f≡L' ⨾ f≡L' ⟩ tail) ⟩ (⟪ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail)
-
-⟪ .(∙[pair] (pair x y ﹐ γ ∷l⟨ _ ⟩ pair LHS RHS ﹐ γ' ■)) ~>ᵛᵛ⟨ ~∙pair∷l■~> γ γ' x y LHS RHS ≡LHS ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = {!!}
-
-⟪ from ~>ᵛᵛ⟨ ~∙pair∷l∷pm~> γ γ' x y LHS RHS ≡LHS ≡M' tail₁ ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = (from ::l⟨ f≡L' ⟩ tail) ~>ᵛᵛ⟨ (⟨ ~∙pair∷l∷pm~> γ γ' x y LHS RHS ≡LHS ≡M' tail₁ ⟩::l⟨ f≡L' ⨾ f≡L' ⟩ tail) ⟩ (⟪ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail)
-⟪ from ~>ᵛᵛ⟨ ~∙pair∷l∷l~> γ γ' x y LHS RHS ≡LHS ≡LHS' tail₁ ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = (from ::l⟨ f≡L' ⟩ tail) ~>ᵛᵛ⟨ (⟨ ~∙pair∷l∷l~> γ γ' x y LHS RHS ≡LHS ≡LHS' tail₁ ⟩::l⟨ f≡L' ⨾ f≡L' ⟩ tail) ⟩ (⟪ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail)
-⟪ from ~>ᵛᵛ⟨ ~∙pair∷l∷r~> γ γ' x y LHS RHS ≡LHS ≡RHS' tail₁ ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = (from ::l⟨ f≡L' ⟩ tail) ~>ᵛᵛ⟨ (⟨ ~∙pair∷l∷r~> γ γ' x y LHS RHS ≡LHS ≡RHS' tail₁ ⟩::l⟨ f≡L' ⨾ f≡L' ⟩ tail) ⟩ (⟪ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail)
-
-⟪ .(∙[var] (var i ﹐ γ ∷r⟨ _ ⟩ pair LHS RHS ﹐ γ' ■)) ~>ᵛᵛ⟨ ~∙var∷r■~> γ γ' i LHS RHS ≡RHS ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = {!!}
-
-⟪ .(∙[var] (var i ﹐ γ ∷r⟨ _ ⟩ pair LHS RHS ﹐ γ' ∷pm⟨ _ ⟩ tail₁)) ~>ᵛᵛ⟨ ~∙var∷r∷pm~> γ γ' i LHS RHS ≡RHS ≡M' tail₁ ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = (_ ::l⟨ f≡L' ⟩ tail) ~>ᵛᵛ⟨ (⟨ ~∙var∷r∷pm~> γ γ' i LHS RHS ≡RHS ≡M' tail₁ ⟩::l⟨ f≡L' ⨾ f≡L' ⟩ tail) ⟩ (⟪ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail)
-⟪ from ~>ᵛᵛ⟨ ~∙var∷r∷l~> γ γ' i LHS RHS ≡RHS ≡LHS' tail₁ ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = (from ::l⟨ f≡L' ⟩ tail) ~>ᵛᵛ⟨ (⟨ ~∙var∷r∷l~> γ γ' i LHS RHS ≡RHS ≡LHS' tail₁ ⟩::l⟨ f≡L' ⨾ f≡L' ⟩ tail) ⟩ (⟪ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail)
-⟪ .(∙[var] (var i ﹐ γ ∷r⟨ _ ⟩ pair LHS RHS ﹐ γ' ∷r⟨ _ ⟩ tail₁)) ~>ᵛᵛ⟨ ~∙var∷r∷r~> γ γ' i LHS RHS ≡RHS ≡RHS' tail₁ ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = (_ ::l⟨ f≡L' ⟩ tail) ~>ᵛᵛ⟨ (⟨ ~∙var∷r∷r~> γ γ' i LHS RHS ≡RHS ≡RHS' tail₁ ⟩::l⟨ f≡L' ⨾ f≡L' ⟩ tail) ⟩ (⟪ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail)
-
-⟪ .(∙[lam] (lam M ﹐ γ ∷r⟨ _ ⟩ pair LHS RHS ﹐ γ' ■)) ~>ᵛᵛ⟨ ~∙lam∷r■~> γ γ' M LHS RHS ≡RHS ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = {!!}
-
-⟪ .(∙[lam] (lam M ﹐ γ ∷r⟨ _ ⟩ pair LHS RHS ﹐ γ' ∷pm⟨ _ ⟩ tail₁)) ~>ᵛᵛ⟨ ~∙lam∷r∷pm~> γ γ' M LHS RHS ≡RHS ≡M' tail₁ ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = (_ ::l⟨ f≡L' ⟩ tail) ~>ᵛᵛ⟨ (⟨ ~∙lam∷r∷pm~> γ γ' M LHS RHS ≡RHS ≡M' tail₁ ⟩::l⟨ f≡L' ⨾ f≡L' ⟩ tail) ⟩ (⟪ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail)
-⟪ from ~>ᵛᵛ⟨ ~∙lam∷r∷l~> γ γ' M LHS RHS ≡RHS ≡LHS' tail₁ ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = (from ::l⟨ f≡L' ⟩ tail) ~>ᵛᵛ⟨ (⟨ ~∙lam∷r∷l~> γ γ' M LHS RHS ≡RHS ≡LHS' tail₁ ⟩::l⟨ f≡L' ⨾ f≡L' ⟩ tail) ⟩ (⟪ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail)
-⟪ .(∙[lam] (lam M ﹐ γ ∷r⟨ _ ⟩ pair LHS RHS ﹐ γ' ∷r⟨ _ ⟩ tail₁)) ~>ᵛᵛ⟨ ~∙lam∷r∷r~> γ γ' M LHS RHS ≡RHS ≡RHS' tail₁ ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = (_ ::l⟨ f≡L' ⟩ tail) ~>ᵛᵛ⟨ (⟨ ~∙lam∷r∷r~> γ γ' M LHS RHS ≡RHS ≡RHS' tail₁ ⟩::l⟨ f≡L' ⨾ f≡L' ⟩ tail) ⟩ (⟪ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail)
-
-⟪ .(∙[unit] (unit ﹐ γ ∷r⟨ _ ⟩ pair LHS RHS ﹐ γ' ■)) ~>ᵛᵛ⟨ ~∙unit∷r■~> γ γ' LHS RHS ≡RHS ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = {!!}
-
-⟪ .(∙[unit] (unit ﹐ γ ∷r⟨ _ ⟩ pair LHS RHS ﹐ γ' ∷pm⟨ _ ⟩ tail₁)) ~>ᵛᵛ⟨ ~∙unit∷r∷pm~> γ γ' LHS RHS ≡RHS ≡M' tail₁ ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = (_ ::l⟨ f≡L' ⟩ tail) ~>ᵛᵛ⟨ (⟨ ~∙unit∷r∷pm~> γ γ' LHS RHS ≡RHS ≡M' tail₁ ⟩::l⟨ f≡L' ⨾ f≡L' ⟩ tail) ⟩ (⟪ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail)
-⟪ from ~>ᵛᵛ⟨ ~∙unit∷r∷l~> γ γ' LHS RHS ≡RHS ≡LHS' tail₁ ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = (from ::l⟨ f≡L' ⟩ tail) ~>ᵛᵛ⟨ (⟨ ~∙unit∷r∷l~> γ γ' LHS RHS ≡RHS ≡LHS' tail₁ ⟩::l⟨ f≡L' ⨾ f≡L' ⟩ tail) ⟩ (⟪ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail)
-⟪ .(∙[unit] (unit ﹐ γ ∷r⟨ _ ⟩ pair LHS RHS ﹐ γ' ∷r⟨ _ ⟩ tail₁)) ~>ᵛᵛ⟨ ~∙unit∷r∷r~> γ γ' LHS RHS ≡RHS ≡RHS' tail₁ ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = (_ ::l⟨ f≡L' ⟩ tail) ~>ᵛᵛ⟨ (⟨ ~∙unit∷r∷r~> γ γ' LHS RHS ≡RHS ≡RHS' tail₁ ⟩::l⟨ f≡L' ⨾ f≡L' ⟩ tail) ⟩ (⟪ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail)
-
-⟪ .(∙[pair] (pair x y ﹐ γ ∷r⟨ _ ⟩ pair LHS RHS ﹐ γ' ■)) ~>ᵛᵛ⟨ ~∙pair∷r■~> γ γ' x y LHS RHS ≡RHS ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = {!!}
-
-⟪ .(∙[pair] (pair x y ﹐ γ ∷r⟨ _ ⟩ pair LHS RHS ﹐ γ' ∷pm⟨ _ ⟩ tail₁)) ~>ᵛᵛ⟨ ~∙pair∷r∷pm~> γ γ' x y LHS RHS ≡RHS ≡M' tail₁ ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = (_ ::l⟨ f≡L' ⟩ tail) ~>ᵛᵛ⟨ (⟨ ~∙pair∷r∷pm~> γ γ' x y LHS RHS ≡RHS ≡M' tail₁ ⟩::l⟨ f≡L' ⨾ f≡L' ⟩ tail) ⟩ (⟪ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail)
-⟪ from ~>ᵛᵛ⟨ ~∙pair∷r∷l~> γ γ' x y LHS RHS ≡RHS ≡LHS' tail₁ ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = (from ::l⟨ f≡L' ⟩ tail) ~>ᵛᵛ⟨ (⟨ ~∙pair∷r∷l~> γ γ' x y LHS RHS ≡RHS ≡LHS' tail₁ ⟩::l⟨ f≡L' ⨾ f≡L' ⟩ tail) ⟩ (⟪ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail)
-⟪ .(∙[pair] (pair x y ﹐ γ ∷r⟨ _ ⟩ pair LHS RHS ﹐ γ' ∷r⟨ _ ⟩ tail₁)) ~>ᵛᵛ⟨ ~∙pair∷r∷r~> γ γ' x y LHS RHS ≡RHS ≡RHS' tail₁ ⟩ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail = (_ ::l⟨ f≡L' ⟩ tail) ~>ᵛᵛ⟨ (⟨ ~∙pair∷r∷r~> γ γ' x y LHS RHS ≡RHS ≡RHS' tail₁ ⟩::l⟨ f≡L' ⨾ f≡L' ⟩ tail) ⟩ (⟪ S>>T ⟫::l⟨ f≡L' ⨾ t≡L' ⟩ tail)
-
--- (from ::l⟨ _ ⟩ tail) ~>ᵛᵛ⟨ (⟨ F>S ⟩::l⟨ f≡L' ⨾ _ ⟩ tail) ⟩ {!!}
+F≡T : {from : VState T◾} → {to : VState T◾} → (F>T : from ~>ᵛᵛ to) → {LHS' : Γ' ⊢ᵛ T◾} → {γ' : ⟦ Γ' ⟧ˣ} → {RHS : Γ' ⊢ᵛ B} → (f≡L' : ⟦ from ⟧◑ ≡ ⟦ LHS' ⟧ᵛ γ') → (tail : valStack T◾' (pair LHS' RHS) γ') → (⟦ from ⟧◑ ≡ ⟦ to ⟧◑)
+F≡T ~∘var~> f≡L' tail = refl
+F≡T ~∘lam~> f≡L' tail = refl
+F≡T ~∘pair~> f≡L' tail = refl
+F≡T ~∘pm~> f≡L' tail = refl
+F≡T ~∘unit~> f≡L' tail = refl
+F≡T (~∙var∷pm■~> γ γ' i M N ≡M) f≡L' tail = var∷pm≡N γ γ' i M N ≡M
+F≡T (~∙var∷pm∷pm~> γ γ' i M N ≡M ≡M' tail₁) f≡L' tail = refl
+F≡T (~∙var∷pm∷l~> γ γ' i M N ≡M ≡LHS tail₁) f≡L' tail = refl
+F≡T (~∙var∷pm∷r~> γ γ' i M N ≡M ≡RHS tail₁) f≡L' tail = refl
+F≡T (~∙pair∷pm■~> γ γ' x y M N ≡M) f≡L' tail = {!!}
+F≡T (~∙pair∷pm∷pm~> γ γ' x y M N ≡M ≡M' tail₁) f≡L' tail = refl
+F≡T (~∙pair∷pm∷l~> γ γ' x y M N ≡M ≡LHS tail₁) f≡L' tail = refl
+F≡T (~∙pair∷pm∷r~> γ γ' x y M N ≡M ≡RHS tail₁) f≡L' tail = refl
+F≡T (~∙var∷l■~> γ γ' i LHS RHS ≡LHS) f≡L' tail = {!!}
+F≡T (~∙var∷l∷pm~> γ γ' i LHS RHS ≡LHS ≡M' tail₁) f≡L' tail = refl
+F≡T (~∙var∷l∷l~> γ γ' i LHS RHS ≡LHS ≡LHS' tail₁) f≡L' tail = refl
+F≡T (~∙var∷l∷r~> γ γ' i LHS RHS ≡LHS ≡RHS' tail₁) f≡L' tail = refl
+F≡T (~∙lam∷l■~> γ γ' M LHS RHS ≡LHS) f≡L' tail = {!!}
+F≡T (~∙lam∷l∷pm~> γ γ' M LHS RHS ≡LHS ≡M' tail₁) f≡L' tail = refl
+F≡T (~∙lam∷l∷l~> γ γ' M LHS RHS ≡LHS ≡LHS' tail₁) f≡L' tail = refl
+F≡T (~∙lam∷l∷r~> γ γ' M LHS RHS ≡LHS ≡RHS' tail₁) f≡L' tail = refl
+F≡T (~∙unit∷l■~> γ γ' LHS RHS ≡LHS) f≡L' tail = {!!}
+F≡T (~∙unit∷l∷pm~> γ γ' LHS RHS ≡LHS ≡M' tail₁) f≡L' tail = refl
+F≡T (~∙unit∷l∷l~> γ γ' LHS RHS ≡LHS ≡LHS' tail₁) f≡L' tail = refl
+F≡T (~∙unit∷l∷r~> γ γ' LHS RHS ≡LHS ≡RHS' tail₁) f≡L' tail = refl
+F≡T (~∙pair∷l■~> γ γ' x y LHS RHS ≡LHS) f≡L' tail = {!!}
+F≡T (~∙pair∷l∷pm~> γ γ' x y LHS RHS ≡LHS ≡M' tail₁) f≡L' tail = refl
+F≡T (~∙pair∷l∷l~> γ γ' x y LHS RHS ≡LHS ≡LHS' tail₁) f≡L' tail = refl
+F≡T (~∙pair∷l∷r~> γ γ' x y LHS RHS ≡LHS ≡RHS' tail₁) f≡L' tail = refl
+F≡T (~∙var∷r■~> γ γ' i LHS RHS ≡RHS) f≡L' tail = {!!}
+F≡T (~∙var∷r∷pm~> γ γ' i LHS RHS ≡RHS ≡M' tail₁) f≡L' tail = refl
+F≡T (~∙var∷r∷l~> γ γ' i LHS RHS ≡RHS ≡LHS' tail₁) f≡L' tail = refl
+F≡T (~∙var∷r∷r~> γ γ' i LHS RHS ≡RHS ≡RHS' tail₁) f≡L' tail = refl
+F≡T (~∙lam∷r■~> γ γ' M LHS RHS ≡RHS) f≡L' tail = {!!}
+F≡T (~∙lam∷r∷pm~> γ γ' M LHS RHS ≡RHS ≡M' tail₁) f≡L' tail = refl
+F≡T (~∙lam∷r∷l~> γ γ' M LHS RHS ≡RHS ≡LHS' tail₁) f≡L' tail = refl
+F≡T (~∙lam∷r∷r~> γ γ' M LHS RHS ≡RHS ≡RHS' tail₁) f≡L' tail = refl
+F≡T (~∙unit∷r■~> γ γ' LHS RHS ≡RHS) f≡L' tail = {!!}
+F≡T (~∙unit∷r∷pm~> γ γ' LHS RHS ≡RHS ≡M' tail₁) f≡L' tail = refl
+F≡T (~∙unit∷r∷l~> γ γ' LHS RHS ≡RHS ≡LHS' tail₁) f≡L' tail = refl
+F≡T (~∙unit∷r∷r~> γ γ' LHS RHS ≡RHS ≡RHS' tail₁) f≡L' tail = refl
+F≡T (~∙pair∷r■~> γ γ' x y LHS RHS ≡RHS) f≡L' tail = {!!}
+F≡T (~∙pair∷r∷pm~> γ γ' x y LHS RHS ≡RHS ≡M' tail₁) f≡L' tail = refl
+F≡T (~∙pair∷r∷l~> γ γ' x y LHS RHS ≡RHS ≡LHS' tail₁) f≡L' tail = refl
+F≡T (~∙pair∷r∷r~> γ γ' x y LHS RHS ≡RHS ≡RHS' tail₁) f≡L' tail = refl
 -}
+
+{-
+eqdx : {from : VState T◾} → {to : VState T◾} → (F>>T : from ~>>ᵛᵛ to) → {LHS' : Γ' ⊢ᵛ T◾} → {γ' : ⟦ Γ' ⟧ˣ} → {RHS : Γ' ⊢ᵛ B} → (f≡L' : ⟦ from ⟧◑ ≡ ⟦ LHS' ⟧ᵛ γ') → (tail : valStack T◾' (pair LHS' RHS) γ') → (⟦ from ⟧◑ ≡ ⟦ to ⟧◑)
+eqdx (_ ~>ᵛᵛ⟨ F>T ⟩) f≡L' tail = {!!}
+eqdx (_ ~>ᵛᵛ⟨ F>S ⟩ S>>T) f≡L' tail = {!!}
+-}
+
+-- ⟪_⟫::l⟨_⨾_⟩_ : {from : VState T◾} → {to : VState T◾} → (F>>T : from ~>>ᵛᵛ to) → {LHS' : Γ' ⊢ᵛ T◾} → {γ' : ⟦ Γ' ⟧ˣ} → {RHS : Γ' ⊢ᵛ B} → (f≡L' : ⟦ from ⟧◑ ≡ ⟦ LHS' ⟧ᵛ γ') → (f≡t : ⟦ from ⟧◑ ≡ ⟦ to ⟧◑) → (tail : valStack T◾' (pair LHS' RHS) γ') → (from ::l⟨ f≡L' ⟩ tail) ~>>ᵛᵛ (to ::l⟨ trans (sym f≡t) f≡L' ⟩ tail)
+-- 
+-- ⟪ _ ~>ᵛᵛ⟨ F>S ⟩ ⟫::l⟨ f≡L' ⨾ f≡t ⟩ tail = (_ ::l⟨ _ ⟩ tail) ~>ᵛᵛ⟨ (⟨ F>S ⟩::l⟨ f≡L' ⟩ tail) ⟩
+-- ⟪ _ ~>ᵛᵛ⟨ F>S ⟩ F>>T ⟫::l⟨ f≡L' ⨾ f≡t ⟩ tail = {!!}
