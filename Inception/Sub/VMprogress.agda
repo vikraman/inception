@@ -21,10 +21,10 @@ progress (∘_ {M = unit} _) = step ~∘unit~>
 
 ---
 
-progress (∙[var] (.(var _) ﹐ _ ■)) = done ∙var■
-progress (∙[lam] (.(lam _) ﹐ _ ■)) = done ∙lam■
+progress (∙[var] ((var i) ﹐ γ ■)) = done ∙var i ⹁ γ ■
+progress (∙[lam] ((lam M) ﹐ γ ■)) = done ∙lam M ⹁ γ ■
 progress (∙[unit] (.unit ﹐ _ ■)) = done ∙unit■
-progress (∙[pair] (.(pair _ _) ﹐ _ ■)) = done ∙pair■
+progress (∙[pair] ((pair LHS RHS ) ﹐ γ ■)) = done ∙pair[ LHS ⹁ RHS ]⹁ γ ■
 
 ---
 
