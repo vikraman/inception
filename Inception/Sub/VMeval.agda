@@ -80,10 +80,11 @@ data finiteSteps : VState T◾ → Set where
 
   steps : {S T : VState T◾} → S ~>>ᵛᵛ T →  haltingVState T → finiteSteps S
 
-{-
 eval : (M : Γ ⊢ᵛ X) → (γ : ⟦ Γ ⟧ˣ) → finiteSteps (∘ M ﹐ γ ■)
+
 eval (var i) γ = steps ((∘ var i ﹐ γ ■) ~>ᵛᵛ⟨ ~∘var~> ⟩) (∙var i ⹁ γ ■)
 eval (lam M) γ = steps ((∘ lam M ﹐ γ ■) ~>ᵛᵛ⟨ ~∘lam~> ⟩) (∙lam M ⹁ γ ■)
+eval unit γ = steps ((∘ unit ﹐ γ ■) ~>ᵛᵛ⟨ ~∘unit~> ⟩) ∙unit⹁ γ ■
 
 eval (pair LHS RHS) γ with eval LHS γ | eval RHS γ
 ... | steps {T = ∙[var] var i₁      ﹐ γ₁ ■} LHS>>T' _ | steps {T = ∙[var]  var i₂     ﹐ γ₂ ■} RHS>>T'' _ =
@@ -108,12 +109,24 @@ eval (pair LHS RHS) γ with eval LHS γ | eval RHS γ
 ... | steps {T = ∙[var] var i₁      ﹐ γ₁ ■} LHS>>T' _ | steps {T = ∙[pair] pair x₂ y₂ ﹐ γ₂ ■} RHS>>T'' _ = {!!}
 
 
+... | steps {T = ∙[lam] lam M₁      ﹐ γ₁ ■} LHS>>T' _ | steps {T = ∙[var]  var i₂     ﹐ γ₂ ■} RHS>>T'' _ = {!!}
+... | steps {T = ∙[lam] lam M₁      ﹐ γ₁ ■} LHS>>T' _ | steps {T = ∙[lam]  lam M₂     ﹐ γ₂ ■} RHS>>T'' _ = {!!}
+... | steps {T = ∙[lam] lam M₁      ﹐ γ₁ ■} LHS>>T' _ | steps {T = ∙[unit] unit       ﹐ γ₂ ■} RHS>>T'' _ = {!!}
+... | steps {T = ∙[lam] lam M₁      ﹐ γ₁ ■} LHS>>T' _ | steps {T = ∙[pair] pair x₂ y₂ ﹐ γ₂ ■} RHS>>T'' _ = {!!}
 
-... | steps {T = ∙[lam] M₁          ﹐ γ₁ ■} LHS>>T' _ | steps {T = T''} RHS>>T'' _ = {!!}
 
-... | steps {T = ∙[unit] unit       ﹐ γ₁ ■} LHS>>T' _ | steps {T = T''} RHS>>T'' _ = {!!}
-... | steps {T = ∙[pair] pair x₁ y₁ ﹐ γ₁ ■} LHS>>T' _ | steps {T = T''} RHS>>T'' _ = {!!}
+... | steps {T = ∙[unit] unit       ﹐ γ₁ ■} LHS>>T' _ | steps {T = ∙[var]  var i₂     ﹐ γ₂ ■} RHS>>T'' _ = {!!}
+... | steps {T = ∙[unit] unit       ﹐ γ₁ ■} LHS>>T' _ | steps {T = ∙[lam]  lam M₂     ﹐ γ₂ ■} RHS>>T'' _ = {!!}
+... | steps {T = ∙[unit] unit       ﹐ γ₁ ■} LHS>>T' _ | steps {T = ∙[unit] unit       ﹐ γ₂ ■} RHS>>T'' _ = {!!}
+... | steps {T = ∙[unit] unit       ﹐ γ₁ ■} LHS>>T' _ | steps {T = ∙[pair] pair x₂ y₂ ﹐ γ₂ ■} RHS>>T'' _ = {!!}
 
-eval (pm M N) γ = steps {!!} {!!}
-eval unit γ = steps ((∘ unit ﹐ γ ■) ~>ᵛᵛ⟨ ~∘unit~> ⟩) ∙unit⹁ γ ■
--}
+
+... | steps {T = ∙[pair] pair x₁ y₁ ﹐ γ₁ ■} LHS>>T' _ | steps {T = ∙[var]  var i₂     ﹐ γ₂ ■} RHS>>T'' _ = {!!}
+... | steps {T = ∙[pair] pair x₁ y₁ ﹐ γ₁ ■} LHS>>T' _ | steps {T = ∙[lam]  lam M₂     ﹐ γ₂ ■} RHS>>T'' _ = {!!}
+... | steps {T = ∙[pair] pair x₁ y₁ ﹐ γ₁ ■} LHS>>T' _ | steps {T = ∙[unit] unit       ﹐ γ₂ ■} RHS>>T'' _ = {!!}
+... | steps {T = ∙[pair] pair x₁ y₁ ﹐ γ₁ ■} LHS>>T' _ | steps {T = ∙[pair] pair x₂ y₂ ﹐ γ₂ ■} RHS>>T'' _ = {!!}
+
+
+eval (pm M N) γ with eval M γ
+... | steps {T = ∙[var]  var i    ﹐ γ ■} M>>T' _ = {!!}
+... | steps {T = ∙[pair] pair x y ﹐ γ ■} M>>T' _ = {!!}
