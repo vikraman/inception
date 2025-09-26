@@ -76,25 +76,44 @@ _ : quick-eval ex2 ((tt , λ _ z → z tt) , tt) ≡ {! quick-eval ex1 tt!}
 _ = refl
 -}
 
-{-
 data finiteSteps : VState T◾ → Set where
 
   steps : {S T : VState T◾} → S ~>>ᵛᵛ T →  haltingVState T → finiteSteps S
 
+{-
 eval : (M : Γ ⊢ᵛ X) → (γ : ⟦ Γ ⟧ˣ) → finiteSteps (∘ M ﹐ γ ■)
 eval (var i) γ = steps ((∘ var i ﹐ γ ■) ~>ᵛᵛ⟨ ~∘var~> ⟩) (∙var i ⹁ γ ■)
 eval (lam M) γ = steps ((∘ lam M ﹐ γ ■) ~>ᵛᵛ⟨ ~∘lam~> ⟩) (∙lam M ⹁ γ ■)
 
 eval (pair LHS RHS) γ with eval LHS γ | eval RHS γ
-... | steps {T = T'} LHS>>T' _ | steps {T = T''} RHS>>T'' _  =
-        steps (~>>ᵛᵛ-trans (~>>ᵛᵛ-trans (~>>ᵛᵛ-trans
-                                ((∘ (pair LHS RHS) ﹐ γ ■) ~>ᵛᵛ⟨ ~∘pair~> ⟩)
-                                (⟪ LHS>>T' ⟫::l⟨ refl ⟩ (pair LHS RHS ﹐ γ ■)) )
-                                {!!}                                             )
-                                {!!}                                          ) {!!}
-            -- (T' ::l⟨ T≡*LHS LHS>>T' refl (pair LHS RHS ﹐ γ ■) ⟩ (pair LHS RHS ﹐ γ ■))
+... | steps {T = ∙[var] var i₁      ﹐ γ₁ ■} LHS>>T' _ | steps {T = ∙[var]  var i₂     ﹐ γ₂ ■} RHS>>T'' _ =
+
+--                 STATE                                                          TRANSITION
+        steps (    (∘ (pair LHS RHS) ﹐ γ ■)                                       ~>ᵛᵛ⟨ ~∘pair~> ⟩
+                +[ _                                                     ]+       ⟪ LHS>>T' ⟫::l⟨ refl ⟩ (pair LHS RHS ﹐ γ ■)
+                +[ (∙[var] var i₁ ﹐ γ₁ ■) ::l⟨ ≡L ⟩ (pair LHS RHS ﹐ γ ■) ]+       _ ~>ᵛᵛ⟨ ~∙var∷l■~> γ₁ γ i₁ LHS RHS ≡L ⟩
+                +[                            RS                         ]+       ⟪ RHS>>T'' ⟫::r⟨ refl ⟩ (pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ ,  ⟦ var i₁ ⟧ᵛ γ₁) ■)
+                +[                            RS'                        ]+       _ ~>ᵛᵛ⟨ ~∙var∷r■~> γ₂ (γ ,  ⟦ var i₁ ⟧ᵛ γ₁) i₂ (var h) (wk-val (wk-wk wk-id) RHS) ≡R ⟩
+              )  ∙pair[ wk-val (wk-wk wk-id) (var h) ⹁ var h ]⹁ ((γ ,  ⟦ var i₁ ⟧ᵛ γ₁) , ⟦ var i₂ ⟧ᵛ γ₂) ■
+
+        where
+         ≡L  = T≡*LHS LHS>>T' refl (pair LHS RHS ﹐ γ ■)
+         RS  = ∘ RHS ﹐ γ ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ ,  ⟦ var i₁ ⟧ᵛ γ₁) ■
+         ≡R  = T≡*RHS RHS>>T'' refl (pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ ,  ⟦ var i₁ ⟧ᵛ γ₁) ■)
+         RS' = (∙[var]  var i₂ ﹐ γ₂ ■) ::r⟨ ≡R ⟩ (pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ ,  ⟦ var i₁ ⟧ᵛ γ₁) ■)
+
+
+... | steps {T = ∙[var] var i₁      ﹐ γ₁ ■} LHS>>T' _ | steps {T = ∙[lam]  lam M₂     ﹐ γ₂ ■} RHS>>T'' _ = {!!}
+... | steps {T = ∙[var] var i₁      ﹐ γ₁ ■} LHS>>T' _ | steps {T = ∙[unit] unit       ﹐ γ₂ ■} RHS>>T'' _ = {!!}
+... | steps {T = ∙[var] var i₁      ﹐ γ₁ ■} LHS>>T' _ | steps {T = ∙[pair] pair x₂ y₂ ﹐ γ₂ ■} RHS>>T'' _ = {!!}
+
+
+
+... | steps {T = ∙[lam] M₁          ﹐ γ₁ ■} LHS>>T' _ | steps {T = T''} RHS>>T'' _ = {!!}
+
+... | steps {T = ∙[unit] unit       ﹐ γ₁ ■} LHS>>T' _ | steps {T = T''} RHS>>T'' _ = {!!}
+... | steps {T = ∙[pair] pair x₁ y₁ ﹐ γ₁ ■} LHS>>T' _ | steps {T = T''} RHS>>T'' _ = {!!}
 
 eval (pm M N) γ = steps {!!} {!!}
 eval unit γ = steps ((∘ unit ﹐ γ ■) ~>ᵛᵛ⟨ ~∘unit~> ⟩) ∙unit⹁ γ ■
-
 -}
