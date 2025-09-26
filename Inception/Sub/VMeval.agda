@@ -124,131 +124,42 @@ get-pair-steps {T' = T'} {T'' = T''} {HT' = HT'} {HT'' = HT''} γ LHS RHS LHS>>T
          γ₁  = getenv T' {HT = HT'}
          γ₂  = getenv T'' {HT = HT''}
 
+-- get-pm-steps : {T' : VState X} → {HT' : haltingVState T'} → (γ : ⟦ Γ ⟧ˣ) → (M : Γ ⊢ᵛ X `× Y) → ((∘ LHS ﹐ γ ■) ~>>ᵛᵛ T') → ((∘ RHS ﹐ γ ■) ~>>ᵛᵛ T'') → finiteSteps (∘ pair LHS RHS ﹐ γ ■)
+-- get-pm-steps {T' = T'} {T'' = T''} {HT' = HT'} {HT'' = HT''} γ LHS RHS LHS>>T' RHS>>T'' =
+--        steps (    (∘ (pair LHS RHS) ﹐ γ ■)                                       ~>ᵛᵛ⟨ ~∘pair~> ⟩
+--                +[ _ ]+       ⟪ LHS>>T' ⟫::l⟨ refl ⟩ (pair LHS RHS ﹐ γ ■)
+--                +[ _ ]+       _ ~>ᵛᵛ⟨ gettrans-left T' γ LHS RHS LHS>>T' ⟩
+--                +[ _ ]+       ⟪ RHS>>T'' ⟫::r⟨ refl ⟩ (pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ ,  ⟦ LHS' ⟧ᵛ γ₁) ■)
+--                +[ _ ]+       _ ~>ᵛᵛ⟨ gettrans-right T' T'' γ LHS RHS RHS>>T'' ⟩
+--              ) ∙pair[ wk-val (wk-wk wk-id) (var h) ⹁ var h ]⹁ ((γ ,  ⟦ LHS' ⟧ᵛ γ₁) , ⟦ RHS' ⟧ᵛ γ₂) ■
+--        where
+--         LHS'  = getterm T' {HT = HT'}
+--         RHS'  = getterm T'' {HT = HT''}
+--         γ₁  = getenv T' {HT = HT'}
+--         γ₂  = getenv T'' {HT = HT''}
 
+{-
 eval : (M : Γ ⊢ᵛ X) → (γ : ⟦ Γ ⟧ˣ) → finiteSteps (∘ M ﹐ γ ■)
-
 eval (var i) γ = steps ((∘ var i ﹐ γ ■) ~>ᵛᵛ⟨ ~∘var~> ⟩) (∙var i ⹁ γ ■)
 eval (lam M) γ = steps ((∘ lam M ﹐ γ ■) ~>ᵛᵛ⟨ ~∘lam~> ⟩) (∙lam M ⹁ γ ■)
 eval unit γ = steps ((∘ unit ﹐ γ ■) ~>ᵛᵛ⟨ ~∘unit~> ⟩) ∙unit⹁ γ ■
-
 eval (pair LHS RHS) γ with eval LHS γ | eval RHS γ
 ... | steps {T = T'} LHS>>T' HT' | steps {T = T''} RHS>>T'' HT'' = get-pair-steps {T' = T'} {T'' = T''} {HT' = HT'} {HT'' = HT''} γ LHS RHS LHS>>T' RHS>>T''
-{-
-... | steps {T = ∙[var] var i₁      ﹐ γ₁ ■} LHS>>T' _ | steps {T = ∙[var]  var i₂     ﹐ γ₂ ■} RHS>>T'' _ =
---                 STATE                                                          TRANSITION
-        steps (    (∘ (pair LHS RHS) ﹐ γ ■)                                       ~>ᵛᵛ⟨ ~∘pair~> ⟩
-                +[ _                                                     ]+       ⟪ LHS>>T' ⟫::l⟨ refl ⟩ (pair LHS RHS ﹐ γ ■)
-                +[ (∙[var] var i₁ ﹐ γ₁ ■) ::l⟨ ≡L ⟩ (pair LHS RHS ﹐ γ ■) ]+       _ ~>ᵛᵛ⟨ ~∙var∷l■~> γ₁ γ i₁ LHS RHS ≡L ⟩
-                +[                            RS                         ]+       ⟪ RHS>>T'' ⟫::r⟨ refl ⟩ (pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ ,  ⟦ var i₁ ⟧ᵛ γ₁) ■)
-                +[                            RS'                        ]+       _ ~>ᵛᵛ⟨ ~∙var∷r■~> γ₂ (γ ,  ⟦ var i₁ ⟧ᵛ γ₁) i₂ (var h) (wk-val (wk-wk wk-id) RHS) ≡R ⟩
-              )  ∙pair[ wk-val (wk-wk wk-id) (var h) ⹁ var h ]⹁ ((γ ,  ⟦ var i₁ ⟧ᵛ γ₁) , ⟦ var i₂ ⟧ᵛ γ₂) ■
-
-        where
-         ≡L  = T≡*LHS LHS>>T' refl (pair LHS RHS ﹐ γ ■)
-         RS  = ∘ RHS ﹐ γ ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ ,  ⟦ var i₁ ⟧ᵛ γ₁) ■
-         ≡R  = T≡*RHS RHS>>T'' refl (pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ ,  ⟦ var i₁ ⟧ᵛ γ₁) ■)
-         RS' = (∙[var]  var i₂ ﹐ γ₂ ■) ::r⟨ ≡R ⟩ (pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ ,  ⟦ var i₁ ⟧ᵛ γ₁) ■)
-
-
-... | steps {T = ∙[var] var i₁      ﹐ γ₁ ■} LHS>>T' _ | steps {T = ∙[lam]  lam M₂     ﹐ γ₂ ■} RHS>>T'' _ =
---      lines different to var-var case marked with an asterisk
---                 STATE                                                          TRANSITION
-        steps (    (∘ (pair LHS RHS) ﹐ γ ■)                                       ~>ᵛᵛ⟨ ~∘pair~> ⟩
-                +[ _                                                     ]+       ⟪ LHS>>T' ⟫::l⟨ refl ⟩ (pair LHS RHS ﹐ γ ■)
-                +[ (∙[var] var i₁ ﹐ γ₁ ■) ::l⟨ ≡L ⟩ (pair LHS RHS ﹐ γ ■) ]+       _ ~>ᵛᵛ⟨ ~∙var∷l■~> γ₁ γ i₁ LHS RHS ≡L ⟩
-                +[                            RS                         ]+       ⟪ RHS>>T'' ⟫::r⟨ refl ⟩ (pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ ,  ⟦ var i₁ ⟧ᵛ γ₁) ■)
-                +[                            RS'                        ]+       (_ ~>ᵛᵛ⟨ ~∙lam∷r■~> γ₂ (γ ,  ⟦ var i₁ ⟧ᵛ γ₁) M₂ (var h) (wk-val (wk-wk wk-id) RHS) ≡R ⟩) -- *
-              )  ∙pair[ wk-val (wk-wk wk-id) (var h) ⹁ var h ]⹁ ((γ ,  ⟦ var i₁ ⟧ᵛ γ₁) , ⟦ lam M₂ ⟧ᵛ γ₂) ■ -- *
-
-        where
-         ≡L  = T≡*LHS LHS>>T' refl (pair LHS RHS ﹐ γ ■)
-         RS  = ∘ RHS ﹐ γ ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ ,  ⟦ var i₁ ⟧ᵛ γ₁) ■
-         ≡R  = T≡*RHS RHS>>T'' refl (pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ ,  ⟦ var i₁ ⟧ᵛ γ₁) ■)
-         RS' =  (∙[lam] lam M₂ ﹐ γ₂ ■) ::r⟨ ≡R ⟩ (pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ ,  ⟦ var i₁ ⟧ᵛ γ₁) ■) -- *
-
-... | steps {T = ∙[var] var i₁      ﹐ γ₁ ■} LHS>>T' _ | steps {T = ∙[unit] unit       ﹐ γ₂ ■} RHS>>T'' _ =
---      lines different to var-var case marked with an asterisk
---                 STATE                                                          TRANSITION
-        steps (    (∘ (pair LHS RHS) ﹐ γ ■)                                       ~>ᵛᵛ⟨ ~∘pair~> ⟩
-                +[ _                                                     ]+       ⟪ LHS>>T' ⟫::l⟨ refl ⟩ (pair LHS RHS ﹐ γ ■)
-                +[ (∙[var] var i₁ ﹐ γ₁ ■) ::l⟨ ≡L ⟩ (pair LHS RHS ﹐ γ ■) ]+       _ ~>ᵛᵛ⟨ ~∙var∷l■~> γ₁ γ i₁ LHS RHS ≡L ⟩
-                +[                            RS                         ]+       ⟪ RHS>>T'' ⟫::r⟨ refl ⟩ (pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ ,  ⟦ var i₁ ⟧ᵛ γ₁) ■)
-                +[                            RS'                        ]+       (_ ~>ᵛᵛ⟨ ~∙unit∷r■~> γ₂ (γ ,  ⟦ var i₁ ⟧ᵛ γ₁) (var h) (wk-val (wk-wk wk-id) RHS) ≡R ⟩) -- *
-              )  ∙pair[ wk-val (wk-wk wk-id) (var h) ⹁ var h ]⹁ ((γ ,  ⟦ var i₁ ⟧ᵛ γ₁) , ⟦ unit ⟧ᵛ γ₂) ■ -- *
-
-        where
-         ≡L  = T≡*LHS LHS>>T' refl (pair LHS RHS ﹐ γ ■)
-         RS  = ∘ RHS ﹐ γ ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ ,  ⟦ var i₁ ⟧ᵛ γ₁) ■
-         ≡R  = T≡*RHS RHS>>T'' refl (pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ ,  ⟦ var i₁ ⟧ᵛ γ₁) ■)
-         RS' =  (∙[unit] unit ﹐ γ₂ ■) ::r⟨ ≡R ⟩ (pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ ,  ⟦ var i₁ ⟧ᵛ γ₁) ■) -- *
-
-... | steps {T = ∙[var] var i₁      ﹐ γ₁ ■} LHS>>T' _ | steps {T = ∙[pair] pair x₂ y₂ ﹐ γ₂ ■} RHS>>T'' _ =
---      lines different to var-var case marked with an asterisk
---                 STATE                                                          TRANSITION
-        steps (    (∘ (pair LHS RHS) ﹐ γ ■)                                       ~>ᵛᵛ⟨ ~∘pair~> ⟩
-                +[ _                                                     ]+       ⟪ LHS>>T' ⟫::l⟨ refl ⟩ (pair LHS RHS ﹐ γ ■)
-                +[ (∙[var] var i₁ ﹐ γ₁ ■) ::l⟨ ≡L ⟩ (pair LHS RHS ﹐ γ ■) ]+       _ ~>ᵛᵛ⟨ ~∙var∷l■~> γ₁ γ i₁ LHS RHS ≡L ⟩
-                +[                            RS                         ]+       ⟪ RHS>>T'' ⟫::r⟨ refl ⟩ (pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ ,  ⟦ var i₁ ⟧ᵛ γ₁) ■)
-                +[                            RS'                        ]+       (_ ~>ᵛᵛ⟨ ~∙pair∷r■~> γ₂ (γ ,  ⟦ var i₁ ⟧ᵛ γ₁) x₂ y₂ (var h) (wk-val (wk-wk wk-id) RHS) ≡R ⟩) -- *
-              )  ∙pair[ wk-val (wk-wk wk-id) (var h) ⹁ var h ]⹁ ((γ ,  ⟦ var i₁ ⟧ᵛ γ₁) , ⟦ pair x₂ y₂ ⟧ᵛ γ₂) ■ -- *
-
-        where
-         ≡L  = T≡*LHS LHS>>T' refl (pair LHS RHS ﹐ γ ■)
-         RS  = ∘ RHS ﹐ γ ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ ,  ⟦ var i₁ ⟧ᵛ γ₁) ■
-         ≡R  = T≡*RHS RHS>>T'' refl (pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ ,  ⟦ var i₁ ⟧ᵛ γ₁) ■)
-         RS' = (∙[pair] pair x₂ y₂ ﹐ γ₂ ■) ::r⟨ ≡R ⟩ (pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ ,  ⟦ var i₁ ⟧ᵛ γ₁) ■) -- *
-
-
-... | steps {T = ∙[lam] lam M₁      ﹐ γ₁ ■} LHS>>T' _ | steps {T = ∙[var]  var i₂     ﹐ γ₂ ■} RHS>>T'' _ = {!!}
---      lines different to var-var case marked with an asterisk
---                 STATE                                                          TRANSITION
-        steps (    (∘ (pair LHS RHS) ﹐ γ ■)                                       ~>ᵛᵛ⟨ ~∘pair~> ⟩
-                +[ _                                                     ]+       ⟪ LHS>>T' ⟫::l⟨ refl ⟩ (pair LHS RHS ﹐ γ ■)
-                +[ ({!!}) ::l⟨ ≡L ⟩ (pair LHS RHS ﹐ γ ■) ]+       _ ~>ᵛᵛ⟨ {!!} ⟩ -- ∙[var] var i₁ ﹐ γ₁ ■     --    ∙[var] var i₁ ﹐ γ₁ ■   |   ~∙var∷l■~> γ₁ γ i₁ LHS RHS ≡L
-                +[                            RS                         ]+       ⟪ RHS>>T'' ⟫::r⟨ refl ⟩ (pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ ,  ⟦ {!!} ⟧ᵛ γ₁) ■) -- var i₁
-                +[                            RS'                        ]+       _ ~>ᵛᵛ⟨ ~∙var∷r■~> γ₂ (γ ,  ⟦ {!!} ⟧ᵛ γ₁) i₂ (var h) (wk-val (wk-wk wk-id) RHS) ≡R ⟩ -- var i₁
-              )  {!!} -- ∙pair[ wk-val (wk-wk wk-id) (var h) ⹁ var h ]⹁ ((γ ,  ⟦ var i₁ ⟧ᵛ γ₁) , ⟦ var i₂ ⟧ᵛ γ₂) ■
-
-        where
-         ≡L  = T≡*LHS LHS>>T' refl (pair LHS RHS ﹐ γ ■)
-         RS  = {!!} -- ∘ RHS ﹐ γ ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ ,  ⟦ var i₁ ⟧ᵛ γ₁) ■
-         ≡R  = {!!} -- T≡*RHS RHS>>T'' refl (pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ ,  ⟦ var i₁ ⟧ᵛ γ₁) ■)
-         RS' = {!!} -- (∙[var]  var i₂ ﹐ γ₂ ■) ::r⟨ ≡R ⟩ (pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ ,  ⟦ var i₁ ⟧ᵛ γ₁) ■)
-
-
-... | steps {T = ∙[lam] lam M₁      ﹐ γ₁ ■} LHS>>T' _ | steps {T = ∙[lam]  lam M₂     ﹐ γ₂ ■} RHS>>T'' _ = {!!}
---      lines different to var-var case marked with an asterisk
---                 STATE                                                          TRANSITION
-        steps (    (∘ (pair LHS RHS) ﹐ γ ■)                                       ~>ᵛᵛ⟨ ~∘pair~> ⟩
-                +[ _                                                     ]+       ⟪ LHS>>T' ⟫::l⟨ refl ⟩ (pair LHS RHS ﹐ γ ■)
-                +[ ({!!}) ::l⟨ ≡L ⟩ (pair LHS RHS ﹐ γ ■) ]+       _ ~>ᵛᵛ⟨ {!!} ⟩ -- ∙[var] var i₁ ﹐ γ₁ ■     --    ∙[var] var i₁ ﹐ γ₁ ■   |   ~∙var∷l■~> γ₁ γ i₁ LHS RHS ≡L
-                +[                            RS                         ]+       ⟪ RHS>>T'' ⟫::r⟨ refl ⟩ (pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ ,  ⟦ {!!} ⟧ᵛ γ₁) ■) -- var i₁
-                +[                            RS'                        ]+       _ ~>ᵛᵛ⟨ {!!} ⟩ -- ~∙var∷r■~> γ₂ (γ ,  ⟦ {!!} ⟧ᵛ γ₁) i₂ (var h) (wk-val (wk-wk wk-id) RHS) ≡R -- var i₁
-              )  {!!} -- ∙pair[ wk-val (wk-wk wk-id) (var h) ⹁ var h ]⹁ ((γ ,  ⟦ var i₁ ⟧ᵛ γ₁) , ⟦ var i₂ ⟧ᵛ γ₂) ■
-
-        where
-         ≡L  = T≡*LHS LHS>>T' refl (pair LHS RHS ﹐ γ ■)
-         RS  = {!!} -- ∘ RHS ﹐ γ ∷r⟨ refl ⟩ pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ ,  ⟦ var i₁ ⟧ᵛ γ₁) ■
-         ≡R  = {!!} -- T≡*RHS RHS>>T'' refl (pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ ,  ⟦ var i₁ ⟧ᵛ γ₁) ■)
-         RS' = {!!} -- (∙[var]  var i₂ ﹐ γ₂ ■) ::r⟨ ≡R ⟩ (pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ ,  ⟦ var i₁ ⟧ᵛ γ₁) ■)
-
-... | steps {T = ∙[lam] lam M₁      ﹐ γ₁ ■} LHS>>T' _ | steps {T = ∙[unit] unit       ﹐ γ₂ ■} RHS>>T'' _ = {!!}
-... | steps {T = ∙[lam] lam M₁      ﹐ γ₁ ■} LHS>>T' _ | steps {T = ∙[pair] pair x₂ y₂ ﹐ γ₂ ■} RHS>>T'' _ = {!!}
-
-
-... | steps {T = ∙[unit] unit       ﹐ γ₁ ■} LHS>>T' _ | steps {T = ∙[var]  var i₂     ﹐ γ₂ ■} RHS>>T'' _ = {!!}
-... | steps {T = ∙[unit] unit       ﹐ γ₁ ■} LHS>>T' _ | steps {T = ∙[lam]  lam M₂     ﹐ γ₂ ■} RHS>>T'' _ = {!!}
-... | steps {T = ∙[unit] unit       ﹐ γ₁ ■} LHS>>T' _ | steps {T = ∙[unit] unit       ﹐ γ₂ ■} RHS>>T'' _ = {!!}
-... | steps {T = ∙[unit] unit       ﹐ γ₁ ■} LHS>>T' _ | steps {T = ∙[pair] pair x₂ y₂ ﹐ γ₂ ■} RHS>>T'' _ = {!!}
-
-
-... | steps {T = ∙[pair] pair x₁ y₁ ﹐ γ₁ ■} LHS>>T' _ | steps {T = ∙[var]  var i₂     ﹐ γ₂ ■} RHS>>T'' _ = {!!}
-... | steps {T = ∙[pair] pair x₁ y₁ ﹐ γ₁ ■} LHS>>T' _ | steps {T = ∙[lam]  lam M₂     ﹐ γ₂ ■} RHS>>T'' _ = {!!}
-... | steps {T = ∙[pair] pair x₁ y₁ ﹐ γ₁ ■} LHS>>T' _ | steps {T = ∙[unit] unit       ﹐ γ₂ ■} RHS>>T'' _ = {!!}
-... | steps {T = ∙[pair] pair x₁ y₁ ﹐ γ₁ ■} LHS>>T' _ | steps {T = ∙[pair] pair x₂ y₂ ﹐ γ₂ ■} RHS>>T'' _ = {!!}
--}
-
 eval (pm M N) γ with eval M γ
-... | steps {T = ∙[var]  var i    ﹐ γ ■} M>>T' _ = {!!}
-... | steps {T = ∙[pair] pair x y ﹐ γ ■} M>>T' _ = {!!}
+... | steps {T = ∙[var]  var i    ﹐ γ' ■} M>>T' _ = {!!}
+... | steps {T = ∙[pair] pair x y ﹐ γ' ■} M>>T' HT' with eval N ((γ ,  ⟦ x ⟧ᵛ γ') ,  ⟦ y ⟧ᵛ γ')
+... |    steps {T = ∙[var] var i₂ ﹐ γ₂ ■} N>>T'' HT'' = {!!}
+... |    steps {T = ∙[lam] lam M₂ ﹐ γ₂ ■} N>>T'' HT'' = {!!}
+... |    steps {T = ∙[unit] unit ﹐ γ₂ ■} N>>T'' HT'' = {!!}
+... |    steps {T = ∙[pair] pair x₂ y₂ ﹐ γ₂ ■} N>>T'' HT'' = --{!!}
+          steps (    (∘ (pm M N) ﹐ γ ■)  ~>ᵛᵛ⟨ ~∘pm~> ⟩
+                  +[ MS  ]+       (⟪ M>>T' ⟫::pm⟨ refl ⟩ ((pm M N) ﹐ γ ■))
+                  +[ MS' ]+       _ ~>ᵛᵛ⟨ ~∙pair∷pm■~> γ' γ x y M N (T≡*M M>>T' refl ((pm M N) ﹐ γ ■)) ⟩
+                  +[ NS  ]+       N>>T''
+                ) ∙pair[ x₂ ⹁ y₂ ]⹁ γ₂ ■
 
+        where
+            MS  = ∘ M ﹐ γ ∷pm⟨ refl ⟩ pm M N ﹐ γ ■
+            MS' = (∙[pair] pair x y ﹐ γ' ■) ::pm⟨ T≡*M M>>T' refl ((pm M N) ﹐ γ ■) ⟩ (pm M N) ﹐ γ ■
+            NS  = ∘ N ﹐ ((γ ,  ⟦ x ⟧ᵛ γ') ,  ⟦ y ⟧ᵛ γ') ■
+-}
