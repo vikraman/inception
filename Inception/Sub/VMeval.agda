@@ -17,8 +17,14 @@ open import Inception.Sub.Syntax
 open import Inception.Sub.CPS R
 
 open import Inception.Sub.ValueMachine R
-open import Inception.Sub.VMprogress R
 open import Inception.Sub.VMcong R
+
+{-
+
+-- Using progress and 'gas' we can evaluate expressions (quick-eval).
+-- However, we can also prove termination and evaluate expressions using that proof (eval).
+
+open import Inception.Sub.VMprogress R
 
 -- cf PLFA
 record Gas : Set where
@@ -58,23 +64,8 @@ calc-steps unit = 1
 
 quick-eval : (M : Γ ⊢ᵛ X) → (γ : ⟦ Γ ⟧ˣ) → Steps (∘ M ﹐ γ ■)
 quick-eval M γ = bounded-eval (gas (calc-steps M)) (∘ M ﹐ γ ■)
-
-ex1 : ε ⊢ᵛ `Unit
-ex1 = pm (pair unit unit) (var (t h))
-
-ex2 : (ε ∙ (`Unit `⇒ `Unit) ∙ `Unit) ⊢ᵛ (`Unit `× (`Unit `⇒ `Unit)) `× `Unit
-ex2 = pair (pair (var h) (var (t h))) (var h)
-
-ex3 : ε ⊢ᵛ (`Unit `⇒ `Unit)
-ex3 = lam (return unit)
-
-ex4 : (ε ∙ `Unit) ⊢ᵛ `Unit `× `Unit
-ex4 = pair (var h) (var h)
-
-{-
-_ : quick-eval ex2 ((tt , λ _ z → z tt) , tt) ≡ {! quick-eval ex1 tt!}
-_ = refl
 -}
+
 
 data finiteSteps : VState T◾ → Set where
 
@@ -124,21 +115,30 @@ get-pair-steps {T' = T'} {T'' = T''} {HT' = HT'} {HT'' = HT''} γ LHS RHS LHS>>T
          γ₁  = getenv T' {HT = HT'}
          γ₂  = getenv T'' {HT = HT''}
 
--- get-pm-steps : {T' : VState X} → {HT' : haltingVState T'} → (γ : ⟦ Γ ⟧ˣ) → (M : Γ ⊢ᵛ X `× Y) → ((∘ LHS ﹐ γ ■) ~>>ᵛᵛ T') → ((∘ RHS ﹐ γ ■) ~>>ᵛᵛ T'') → finiteSteps (∘ pair LHS RHS ﹐ γ ■)
--- get-pm-steps {T' = T'} {T'' = T''} {HT' = HT'} {HT'' = HT''} γ LHS RHS LHS>>T' RHS>>T'' =
---        steps (    (∘ (pair LHS RHS) ﹐ γ ■)                                       ~>ᵛᵛ⟨ ~∘pair~> ⟩
---                +[ _ ]+       ⟪ LHS>>T' ⟫::l⟨ refl ⟩ (pair LHS RHS ﹐ γ ■)
---                +[ _ ]+       _ ~>ᵛᵛ⟨ gettrans-left T' γ LHS RHS LHS>>T' ⟩
---                +[ _ ]+       ⟪ RHS>>T'' ⟫::r⟨ refl ⟩ (pair (var h) (wk-val (wk-wk wk-id) RHS) ﹐ (γ ,  ⟦ LHS' ⟧ᵛ γ₁) ■)
---                +[ _ ]+       _ ~>ᵛᵛ⟨ gettrans-right T' T'' γ LHS RHS RHS>>T'' ⟩
---              ) ∙pair[ wk-val (wk-wk wk-id) (var h) ⹁ var h ]⹁ ((γ ,  ⟦ LHS' ⟧ᵛ γ₁) , ⟦ RHS' ⟧ᵛ γ₂) ■
---        where
---         LHS'  = getterm T' {HT = HT'}
---         RHS'  = getterm T'' {HT = HT''}
---         γ₁  = getenv T' {HT = HT'}
---         γ₂  = getenv T'' {HT = HT''}
+get-pm-N-env : (T' : VState (X `× Y)) → (HT' : haltingVState T') → (γ : ⟦ Γ ⟧ˣ) → ⟦ Γ ∙ X ∙ Y ⟧ˣ
+get-pm-N-env (∙[var] var i ﹐ γ' ■) HT' γ = ((γ , proj₁ (⟦ var i ⟧ᵛ γ')) , proj₂ (⟦ var i ⟧ᵛ γ'))
+get-pm-N-env (∙[pair] pair x y ﹐ γ' ■) HT' γ = ((γ , ⟦ x ⟧ᵛ γ') , ⟦ y ⟧ᵛ γ')
 
-{-
+get-pm-trans : {T' : VState (X `× Y)} → {T'' : VState Z} → {HT' : haltingVState T'} → {HT'' : haltingVState T''} → (γ : ⟦ Γ ⟧ˣ) → (M : Γ ⊢ᵛ X `× Y) → (N : (Γ ∙ X ∙ Y) ⊢ᵛ Z) → (M>>T' : (∘ M ﹐ γ ■) ~>>ᵛᵛ T') → (T' ::pm⟨ T≡*M M>>T' refl ((pm M N) ﹐ γ ■) ⟩ (pm M N) ﹐ γ ■) ~>>ᵛᵛ (∘ N ﹐ get-pm-N-env T' HT' γ ■)
+get-pm-trans {T' = ∙[var] var i ﹐ γ' ■} {T'' = T''} {HT' = HT'} {HT'' = HT''} γ M N M>>T' =  _ ~>ᵛᵛ⟨ ~∙var∷pm■~> γ' γ i M N (T≡*M M>>T' refl ((pm M N) ﹐ γ ■)) ⟩
+get-pm-trans {T' = ∙[pair] pair x y ﹐ γ' ■} {T'' = T''} {HT' = HT'} {HT'' = HT''} γ M N M>>T' = _ ~>ᵛᵛ⟨ ~∙pair∷pm■~> γ' γ x y M N (T≡*M M>>T' refl ((pm M N) ﹐ γ ■)) ⟩
+
+
+get-pm-steps : {T' : VState (X `× Y)} → {T'' : VState Z} → {HT' : haltingVState T'} → {HT'' : haltingVState T''} → (γ : ⟦ Γ ⟧ˣ) → (M : Γ ⊢ᵛ X `× Y) → (N : (Γ ∙ X ∙ Y) ⊢ᵛ Z) → ((∘ M ﹐ γ ■) ~>>ᵛᵛ T') → ((∘ N ﹐ get-pm-N-env T' HT' γ ■) ~>>ᵛᵛ T'') → finiteSteps (∘ pm M N ﹐ γ ■)
+get-pm-steps {T' = T'} {T'' = T''} {HT' = HT'} {HT'' = HT''} γ M N M>>T' N>>T'' =
+
+           steps (    (∘ (pm M N) ﹐ γ ■)  ~>ᵛᵛ⟨ ~∘pm~> ⟩
+                   +[ MS  ]+       (⟪ M>>T' ⟫::pm⟨ refl ⟩ ((pm M N) ﹐ γ ■))
+                   +[ MS' ]+       get-pm-trans {T' = T'} {T'' = T''} {HT' = HT'} {HT'' = HT''} γ M N M>>T'
+                   +[ NS  ]+       N>>T''
+                 ) HT''
+
+         where
+             MS  = ∘ M ﹐ γ ∷pm⟨ refl ⟩ pm M N ﹐ γ ■
+             MS' = T' ::pm⟨ T≡*M M>>T' refl ((pm M N) ﹐ γ ■) ⟩ (pm M N) ﹐ γ ■
+             NS  = ∘ N ﹐ get-pm-N-env T' HT' γ ■
+
+
 eval : (M : Γ ⊢ᵛ X) → (γ : ⟦ Γ ⟧ˣ) → finiteSteps (∘ M ﹐ γ ■)
 eval (var i) γ = steps ((∘ var i ﹐ γ ■) ~>ᵛᵛ⟨ ~∘var~> ⟩) (∙var i ⹁ γ ■)
 eval (lam M) γ = steps ((∘ lam M ﹐ γ ■) ~>ᵛᵛ⟨ ~∘lam~> ⟩) (∙lam M ⹁ γ ■)
@@ -146,20 +146,28 @@ eval unit γ = steps ((∘ unit ﹐ γ ■) ~>ᵛᵛ⟨ ~∘unit~> ⟩) ∙unit�
 eval (pair LHS RHS) γ with eval LHS γ | eval RHS γ
 ... | steps {T = T'} LHS>>T' HT' | steps {T = T''} RHS>>T'' HT'' = get-pair-steps {T' = T'} {T'' = T''} {HT' = HT'} {HT'' = HT''} γ LHS RHS LHS>>T' RHS>>T''
 eval (pm M N) γ with eval M γ
-... | steps {T = ∙[var]  var i    ﹐ γ' ■} M>>T' _ = {!!}
-... | steps {T = ∙[pair] pair x y ﹐ γ' ■} M>>T' HT' with eval N ((γ ,  ⟦ x ⟧ᵛ γ') ,  ⟦ y ⟧ᵛ γ')
-... |    steps {T = ∙[var] var i₂ ﹐ γ₂ ■} N>>T'' HT'' = {!!}
-... |    steps {T = ∙[lam] lam M₂ ﹐ γ₂ ■} N>>T'' HT'' = {!!}
-... |    steps {T = ∙[unit] unit ﹐ γ₂ ■} N>>T'' HT'' = {!!}
-... |    steps {T = ∙[pair] pair x₂ y₂ ﹐ γ₂ ■} N>>T'' HT'' = --{!!}
-          steps (    (∘ (pm M N) ﹐ γ ■)  ~>ᵛᵛ⟨ ~∘pm~> ⟩
-                  +[ MS  ]+       (⟪ M>>T' ⟫::pm⟨ refl ⟩ ((pm M N) ﹐ γ ■))
-                  +[ MS' ]+       _ ~>ᵛᵛ⟨ ~∙pair∷pm■~> γ' γ x y M N (T≡*M M>>T' refl ((pm M N) ﹐ γ ■)) ⟩
-                  +[ NS  ]+       N>>T''
-                ) ∙pair[ x₂ ⹁ y₂ ]⹁ γ₂ ■
+... | steps {T = T'} M>>T' HT' with eval N (get-pm-N-env T' HT' γ)
+...       |    steps {T = T''} N>>T'' HT'' = get-pm-steps {T' = T'} {T'' = T''} {HT' = HT'} {HT'' = HT''} γ M N M>>T' N>>T''
 
-        where
-            MS  = ∘ M ﹐ γ ∷pm⟨ refl ⟩ pm M N ﹐ γ ■
-            MS' = (∙[pair] pair x y ﹐ γ' ■) ::pm⟨ T≡*M M>>T' refl ((pm M N) ﹐ γ ■) ⟩ (pm M N) ﹐ γ ■
-            NS  = ∘ N ﹐ ((γ ,  ⟦ x ⟧ᵛ γ') ,  ⟦ y ⟧ᵛ γ') ■
+
+-------------------------------------
+
+ex1 : ε ⊢ᵛ `Unit
+ex1 = pm (pair unit unit) (var (t h))
+
+ex2 : (ε ∙ (`Unit `⇒ `Unit) ∙ `Unit) ⊢ᵛ (`Unit `× (`Unit `⇒ `Unit)) `× `Unit
+ex2 = pair (pair (var h) (var (t h))) (var h)
+
+ex3 : ε ⊢ᵛ (`Unit `⇒ `Unit)
+ex3 = lam (return unit)
+
+ex4 : (ε ∙ `Unit) ⊢ᵛ `Unit `× `Unit
+ex4 = pair (var h) (var h)
+
+---------------------------------------
+
+{-
+-- calling agda2-compute-normalised in the hole below evaluates ex2
+_ : eval ex2 ((tt , λ _ z → z tt) , tt) ≡ {! eval ex1 tt!}
+_ = refl
 -}
