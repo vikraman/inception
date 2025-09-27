@@ -18,11 +18,22 @@ variable
 
 infixr 35 _~>ᵛᵛ⟨_⟩_
 infix 30 _﹐_■
+
 infixr 25 _﹐_∷pm⟨_⟩_
 infixr 25 _﹐_∷l⟨_⟩_
 infixr 25 _﹐_∷r⟨_⟩_
+
+infix 26 ⇡_
+-- infix 26 ⇡ᴹ_
+-- infix 26 ⇡ᴸ_
+-- infix 26 ⇡ᴿ_
+infixr 25 _⹁_∷_
+
 infix 20 ∘_
+infix 20 ∙_
+
 infix 15 _~>ᵛᵛ_
+infix 15 _→ᵛᵛ_
 
 data valStack : (T◾ : Ty) → (Γ ⊢ᵛ A) → ⟦ Γ ⟧ˣ → Set where
 
@@ -485,3 +496,50 @@ data haltingVState : VState T◾ → Set where
 ⟦ ∙[lam] tail ⟧◑ = ⟦ tail ⟧↥
 ⟦ ∙[unit] tail ⟧◑ = ⟦ tail ⟧↥
 ⟦ ∙[pair] tail ⟧◑ = ⟦ tail ⟧↥
+
+
+--------------------------------------------------
+
+data partialTerm : (Γ : Ctx) → (X : Ty) → Set where
+
+    ⇡_ : (M : Γ ⊢ᵛ X) → partialTerm Γ X
+
+    ⇡ᴹ : (M : Γ ⊢ᵛ X `× Y) → (N : (Γ ∙ X ∙ Y) ⊢ᵛ Z) → partialTerm Γ Z
+
+    ⇡ᴸ : (LHS : Γ ⊢ᵛ X) → (RHS : Γ ⊢ᵛ Y) → partialTerm Γ (X `× Y)
+
+    ⇡ᴿ  : (LHS : Γ ⊢ᵛ X) → (RHS : Γ ⊢ᵛ Y) → partialTerm Γ (X `× Y)
+
+data vStack : (T◾ : Ty) → Set where
+
+    □ : {T◾ : Ty} → vStack T◾
+
+    _⹁_∷_ : partialTerm Γ X → (γ : ⟦ Γ ⟧ˣ) → vStack T◾ → vStack T◾
+
+
+data vState : (T◾ : Ty) → Set where
+
+     ∘_ : vStack T◾ → vState T◾
+
+     ∙_ : vStack T◾ → vState T◾
+
+data _→ᵛᵛ_ : vState T◾ → vState T◾ → Set where
+
+     ~∘var~>   : {γ : ⟦ Γ ⟧ˣ} → {i : Γ ∋ X} → {tail : vStack T◾} → ∘ ⇡ var i ⹁ γ ∷ tail →ᵛᵛ ∙ ⇡ (var i) ⹁ γ ∷ tail
+
+     ~∘lam~> : {γ : ⟦ Γ ⟧ˣ} → {M : (Γ ∙ X) ⊢ᶜ Y} → {tail : vStack T◾} → ∘ ⇡ lam M ⹁ γ ∷ tail →ᵛᵛ ∙ ⇡ lam M ⹁ γ ∷ tail
+
+     ~∘pair~> : {γ : ⟦ Γ ⟧ˣ} → {LHS : Γ ⊢ᵛ X} → {RHS : Γ ⊢ᵛ Y} → {tail : vStack T◾} → ∘ ⇡ pair LHS RHS ⹁ γ ∷ tail →ᵛᵛ ∘ ⇡ LHS ⹁ γ ∷ ⇡ᴸ LHS RHS ⹁ γ ∷ tail
+
+     ~∘pm~> : {γ : ⟦ Γ ⟧ˣ} → {M : Γ ⊢ᵛ X `× Y} → {N : (Γ ∙ X ∙ Y) ⊢ᵛ Z} → {tail : vStack T◾} → ∘ ⇡ pm M N ⹁ γ ∷ tail →ᵛᵛ ∘ ⇡ᴹ M N ⹁ γ ∷ tail
+
+     ~∘unit~> : {γ : ⟦ Γ ⟧ˣ} → {tail : vStack T◾} → ∘ ⇡ unit ⹁ γ ∷ tail →ᵛᵛ ∙ ⇡ unit ⹁ γ ∷ tail
+
+     ~∙M∷pm~> : {γ : ⟦ Γ ⟧ˣ} → {γ' : ⟦ Γ' ⟧ˣ} → {M₂ : Γ ⊢ᵛ X `× Y} → {M : Γ' ⊢ᵛ X `× Y} → {N : (Γ' ∙ X ∙ Y) ⊢ᵛ Z'} → {tail : vStack T◾}
+                 →    ∙ ⇡ M₂ ⹁ γ ∷ ⇡ᴹ M N ⹁ γ' ∷ tail →ᵛᵛ ∘ ⇡ N ⹁ ((γ' , proj₁ (⟦ M₂ ⟧ᵛ γ)) , proj₂ (⟦ M₂ ⟧ᵛ γ)) ∷ tail
+
+     ~∙M∷l~> : {γ : ⟦ Γ ⟧ˣ} → {γ' : ⟦ Γ' ⟧ˣ} → {M : Γ ⊢ᵛ X} → {LHS : Γ' ⊢ᵛ X} → {RHS : Γ' ⊢ᵛ Y} → {tail : vStack T◾}
+                 →    ∙ ⇡ M ⹁ γ ∷ ⇡ᴸ LHS RHS ⹁ γ' ∷ tail →ᵛᵛ ∘ ⇡ RHS ⹁ γ' ∷ ⇡ᴿ (var h) (wk-val (wk-wk wk-id) RHS) ⹁ (γ' ,  ⟦ M ⟧ᵛ γ) ∷ tail
+
+     ~∙M∷r~> : {γ : ⟦ Γ ⟧ˣ} → {γ' : ⟦ Γ' ⟧ˣ} → {M : Γ ⊢ᵛ Y} → {LHS : Γ' ⊢ᵛ X} → {RHS : Γ' ⊢ᵛ Y} → {tail : vStack T◾}
+                 →   ∙ ⇡ M ⹁ γ ∷ ⇡ᴿ LHS RHS ⹁ γ' ∷ tail →ᵛᵛ ∙ ⇡ pair (wk-val (wk-wk wk-id) LHS) (var h) ⹁ (γ' , ⟦ M ⟧ᵛ γ) ∷ tail
