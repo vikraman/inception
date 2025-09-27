@@ -14,6 +14,7 @@ open import Data.Product as P
 
 open import Inception.Sub.ValueMachine R
 
+{-
 _⦂⦂pm⟨_⟩_ : {H : Γ ⊢ᵛ A} → {γ : ⟦ Γ ⟧ˣ} → (head : valStack (T◾₁ `× T◾₂) H γ) → {M' : Γ' ⊢ᵛ T◾₁ `× T◾₂} → {γ' : ⟦ Γ' ⟧ˣ} → {N : (Γ' ∙ T◾₁ ∙ T◾₂) ⊢ᵛ C} → (h≡M' : ⟦ head ⟧↥ ≡ ⟦ M' ⟧ᵛ γ') → valStack T◾' (pm M' N) γ' → valStack T◾' H γ
 _⦂⦂pm⟨_⟩_ {H = H} {γ = γ} (.H ﹐ .γ ■) h≡M' tail = H ﹐ γ ∷pm⟨ h≡M' ⟩ tail
 _⦂⦂pm⟨_⟩_ {H = H} {γ = γ} (.H ﹐ .γ ∷pm⟨ H≡M' ⟩ htail) h≡M' tail = H ﹐ γ ∷pm⟨ H≡M' ⟩ (htail ⦂⦂pm⟨ h≡M' ⟩ tail)
@@ -367,3 +368,4 @@ T≡*M (_ ~>ᵛᵛ⟨ F>S ⟩ S>>T) f≡M' tail = T≡*M S>>T (trans (T≡Fpm F>
 ⟪_⟫::pm⟨_⟩_ : {from : VState (T◾₁ `× T◾₂)} → {to : VState (T◾₁ `× T◾₂)} → (F>>T : from ~>>ᵛᵛ to) → {M' : Γ' ⊢ᵛ (T◾₁ `× T◾₂)} → {γ' : ⟦ Γ' ⟧ˣ} → {N : (Γ' ∙ T◾₁ ∙ T◾₂) ⊢ᵛ C} → (f≡M' : ⟦ from ⟧◑ ≡ ⟦ M' ⟧ᵛ γ') → (tail : valStack T◾ (pm M' N) γ') → (from ::pm⟨ f≡M' ⟩ tail) ~>>ᵛᵛ (to ::pm⟨ T≡*M F>>T f≡M' tail ⟩ tail)
 ⟪ from ~>ᵛᵛ⟨ F>T ⟩ ⟫::pm⟨ f≡M' ⟩ tail = (from ::pm⟨ f≡M' ⟩ tail) ~>ᵛᵛ⟨ (⟨ F>T ⟩::pm⟨ f≡M' ⟩ tail) ⟩
 ⟪ from ~>ᵛᵛ⟨ F>S ⟩ S>>T ⟫::pm⟨ f≡M' ⟩ tail = (from ::pm⟨ f≡M' ⟩ tail) ~>ᵛᵛ⟨ (⟨ F>S ⟩::pm⟨ f≡M' ⟩ tail) ⟩ (⟪ S>>T ⟫::pm⟨ trans (T≡Fpm F>S f≡M' tail) f≡M' ⟩ tail)
+-}
