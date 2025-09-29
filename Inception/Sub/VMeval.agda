@@ -25,6 +25,10 @@ infix 20 ∘_
 infix 20 ∙_
 
 infix 15 _→ᵛᵛ_
+infixr 15 _→ᵛᵛ⟨_⟩_
+
+infixr 10 _⨾_
+
 
 
 ex1 : ε ⊢ᵛ `Unit
@@ -102,62 +106,69 @@ data vState : Ty → Set where
 
 data _→ᵛᵛ_ : vState T◾ → vState T◾ → Set where
 
-     ~∘var~>   : {γ : ⟦ Γ ⟧ˣ} → {i : Γ ∋ X} → {tail : vStack b T◾} → {gt : goodType b X T◾} → ∘ (_⹁_∷_ (⇡ var i) γ tail {gt = gt}) →ᵛᵛ ∙ (_⹁_∷_ (⇡ var i) γ tail {gt = gt})
+     ∘var   : {γ : ⟦ Γ ⟧ˣ} → {i : Γ ∋ X} → {tail : vStack b T◾} → {gt : goodType b X T◾} → ∘ (_⹁_∷_ (⇡ var i) γ tail {gt = gt}) →ᵛᵛ ∙ (_⹁_∷_ (⇡ var i) γ tail {gt = gt})
 
-     ~∘lam~> : {γ : ⟦ Γ ⟧ˣ} → {M : (Γ ∙ X) ⊢ᶜ Y} → {tail : vStack b T◾} → {gt : goodType b (X `⇒ Y) T◾} → ∘ (_⹁_∷_ (⇡ lam M) γ tail {gt = gt}) →ᵛᵛ ∙ (_⹁_∷_ (⇡ lam M) γ tail {gt = gt})
+     ∘lam : {γ : ⟦ Γ ⟧ˣ} → {M : (Γ ∙ X) ⊢ᶜ Y} → {tail : vStack b T◾} → {gt : goodType b (X `⇒ Y) T◾} → ∘ (_⹁_∷_ (⇡ lam M) γ tail {gt = gt}) →ᵛᵛ ∙ (_⹁_∷_ (⇡ lam M) γ tail {gt = gt})
 
-     ~∘pair~> : {γ : ⟦ Γ ⟧ˣ} → {LHS : Γ ⊢ᵛ X} → {RHS : Γ ⊢ᵛ Y} → {tail : vStack b T◾} → {gt : goodType b (X `× Y) T◾} → ∘ ((⇡ pair LHS RHS ⹁ γ ∷ tail) {gt = gt}) →ᵛᵛ ∘ ((⇡ LHS ⹁ γ ∷ ((⇡ᴸ LHS RHS ⹁ γ ∷ tail) {gt = gt})) {gt = ↕})
+     ∘pair : {γ : ⟦ Γ ⟧ˣ} → {LHS : Γ ⊢ᵛ X} → {RHS : Γ ⊢ᵛ Y} → {tail : vStack b T◾} → {gt : goodType b (X `× Y) T◾} → ∘ ((⇡ pair LHS RHS ⹁ γ ∷ tail) {gt = gt}) →ᵛᵛ ∘ ((⇡ LHS ⹁ γ ∷ ((⇡ᴸ LHS RHS ⹁ γ ∷ tail) {gt = gt})) {gt = ↕})
 
-     ~∘pm~> : {γ : ⟦ Γ ⟧ˣ} → {M : Γ ⊢ᵛ X `× Y} → {N : (Γ ∙ X ∙ Y) ⊢ᵛ Z} → {tail : vStack b T◾} → {gt : goodType b Z T◾} → ∘ ((⇡ pm M N ⹁ γ ∷ tail) {gt = gt}) →ᵛᵛ ∘ ((⇡ᴹ M N ⹁ γ ∷ tail) {gt = gt})
+     ∘pm : {γ : ⟦ Γ ⟧ˣ} → {M : Γ ⊢ᵛ X `× Y} → {N : (Γ ∙ X ∙ Y) ⊢ᵛ Z} → {tail : vStack b T◾} → {gt : goodType b Z T◾} → ∘ ((⇡ pm M N ⹁ γ ∷ tail) {gt = gt}) →ᵛᵛ ∘ ((⇡ᴹ M N ⹁ γ ∷ tail) {gt = gt})
 
-     ~∘unit~> : {γ : ⟦ Γ ⟧ˣ} → {tail : vStack b T◾} → {gt : goodType b `Unit T◾} → ∘ ((⇡ unit ⹁ γ ∷ tail) {gt = gt}) →ᵛᵛ ∙ ((⇡ unit ⹁ γ ∷ tail) {gt = gt})
+     ∘unit : {γ : ⟦ Γ ⟧ˣ} → {tail : vStack b T◾} → {gt : goodType b `Unit T◾} → ∘ ((⇡ unit ⹁ γ ∷ tail) {gt = gt}) →ᵛᵛ ∙ ((⇡ unit ⹁ γ ∷ tail) {gt = gt})
 
-     ~∙M∷pm~> : {γ : ⟦ Γ ⟧ˣ} → {γ' : ⟦ Γ' ⟧ˣ} → {M₂ : Γ ⊢ᵛ X `× Y} → {M : Γ' ⊢ᵛ X `× Y} → {N : (Γ' ∙ X ∙ Y) ⊢ᵛ Z'} → {tail : vStack b T◾} → {gt : goodType b Z' T◾}
+     ∙M∷pm : {γ : ⟦ Γ ⟧ˣ} → {γ' : ⟦ Γ' ⟧ˣ} → {M₂ : Γ ⊢ᵛ X `× Y} → {M : Γ' ⊢ᵛ X `× Y} → {N : (Γ' ∙ X ∙ Y) ⊢ᵛ Z'} → {tail : vStack b T◾} → {gt : goodType b Z' T◾}
                  →    ∙ ((⇡ M₂ ⹁ γ ∷ ((⇡ᴹ M N ⹁ γ' ∷ tail) {gt = gt})) {gt = ↕}) →ᵛᵛ ∘ ((⇡ N ⹁ ((γ' , proj₁ (⟦ M₂ ⟧ᵛ γ)) , proj₂ (⟦ M₂ ⟧ᵛ γ)) ∷ tail) {gt = gt})
 
-     ~∙M∷l~> : {γ : ⟦ Γ ⟧ˣ} → {γ' : ⟦ Γ' ⟧ˣ} → {M : Γ ⊢ᵛ X} → {LHS : Γ' ⊢ᵛ X} → {RHS : Γ' ⊢ᵛ Y} → {tail : vStack b T◾} → {gt : goodType b (X `× Y) T◾}
+     ∙M∷l : {γ : ⟦ Γ ⟧ˣ} → {γ' : ⟦ Γ' ⟧ˣ} → {M : Γ ⊢ᵛ X} → {LHS : Γ' ⊢ᵛ X} → {RHS : Γ' ⊢ᵛ Y} → {tail : vStack b T◾} → {gt : goodType b (X `× Y) T◾}
                  →    ∙ ((⇡ M ⹁ γ ∷ ((⇡ᴸ LHS RHS ⹁ γ' ∷ tail) {gt = gt})) {gt = ↕}) →ᵛᵛ ∘ ((⇡ RHS ⹁ γ' ∷ ((⇡ᴿ (var h) (wk-val (wk-wk wk-id) RHS) ⹁ (γ' ,  ⟦ M ⟧ᵛ γ) ∷ tail) {gt = gt})) {gt = ↕})
 
-     ~∙M∷r~> : {γ : ⟦ Γ ⟧ˣ} → {γ' : ⟦ Γ' ⟧ˣ} → {M : Γ ⊢ᵛ Y} → {LHS : Γ' ⊢ᵛ X} → {RHS : Γ' ⊢ᵛ Y} → {tail : vStack b T◾} → {gt : goodType b (X `× Y) T◾}
+     ∙M∷r : {γ : ⟦ Γ ⟧ˣ} → {γ' : ⟦ Γ' ⟧ˣ} → {M : Γ ⊢ᵛ Y} → {LHS : Γ' ⊢ᵛ X} → {RHS : Γ' ⊢ᵛ Y} → {tail : vStack b T◾} → {gt : goodType b (X `× Y) T◾}
                  →   ∙ ((⇡ M ⹁ γ ∷ ((⇡ᴿ LHS RHS ⹁ γ' ∷ tail) {gt = gt})) {gt = ↕}) →ᵛᵛ ∙ ((⇡ pair (wk-val (wk-wk wk-id) LHS) (var h) ⹁ (γ' , ⟦ M ⟧ᵛ γ) ∷ tail) {gt = gt})
+
+-- data _→ᵛᵛ*_ : vState T◾ → vState T◾ → Set where
+-- 
+--   _▣ : (S : vState T◾) → S →ᵛᵛ* S
+-- 
+--   _→ᵛᵛ⟨_⟩_ : (S : vState T◾) → {S' S'' : vState T◾} → S →ᵛᵛ S' → S' →ᵛᵛ* S'' → S →ᵛᵛ* S''
+-- 
+-- _⨾_ : {F S T : vState T◾} → (F →ᵛᵛ* S) → (S →ᵛᵛ* T) → (F →ᵛᵛ* T)
+-- (_ ▣) ⨾ S>>T = S>>T
+-- _ →ᵛᵛ⟨ F>F' ⟩ F'>>S ⨾ S>>T = _ →ᵛᵛ⟨ F>F' ⟩ (F'>>S ⨾ S>>T)
 
 
 data _↠ᵛᵛ_ : vState T◾ → vState T◾ → Set where
 
-  _→ᵛᵛ⟨_⟩ : (S : vState T◾) → {S' : vState T◾} → S →ᵛᵛ S' → S ↠ᵛᵛ S'
+  _→ᵛᵛ_⊲_∥ : (S : vState T◾) → (S' : vState T◾) → S →ᵛᵛ S' → S ↠ᵛᵛ S'
 
-  _→ᵛᵛ⟨_⟩_ : (S : vState T◾) {S' S'' : vState T◾} → S →ᵛᵛ S' → S' ↠ᵛᵛ S'' → S ↠ᵛᵛ S''
+  _→ᵛᵛ⟨_⟩_ : (S : vState T◾) → {S' S'' : vState T◾} → S →ᵛᵛ S' → S' ↠ᵛᵛ S'' → S ↠ᵛᵛ S''
 
--- ~>>ᵛᵛ-trans : {F S T : VState T◾} → (F ~>>ᵛᵛ S) → (S ~>>ᵛᵛ T) → (F ~>>ᵛᵛ T)
--- ~>>ᵛᵛ-trans (F ~>ᵛᵛ⟨ F>S ⟩) S>>T = F ~>ᵛᵛ⟨ F>S ⟩ S>>T
--- ~>>ᵛᵛ-trans (F ~>ᵛᵛ⟨ F>S₁ ⟩ S₁>>S₂) S₂>>T = F ~>ᵛᵛ⟨ F>S₁ ⟩ (~>>ᵛᵛ-trans S₁>>S₂ S₂>>T)
--- 
--- infixr 15 ~>>ᵛᵛ-trans
--- syntax ~>>ᵛᵛ-trans {S = S} F>>S S>>T = F>>S +[ S ]+ S>>T
+
+_⨾_ : {F S T : vState T◾} → (F ↠ᵛᵛ S) → (S ↠ᵛᵛ T) → (F ↠ᵛᵛ T)
+_⨾_ (F →ᵛᵛ _ ⊲ F>S ∥) S>>T = F →ᵛᵛ⟨ F>S ⟩ S>>T
+_⨾_ (F →ᵛᵛ⟨ F>S₁ ⟩ S₁>>S₂) S₂>>T = F →ᵛᵛ⟨ F>S₁ ⟩ (S₁>>S₂ ⨾ S₂>>T)
 
 _⦂⦂_ : vStack b T◾ → vStack true T◾' → vStack true T◾'
 □ ⦂⦂ lower = lower
 (M ⹁ γ ∷ upper) ⦂⦂ lower = (M ⹁ γ ∷ (upper ⦂⦂ lower)) {gt = ↕}
 
-_::_ : vState T◾ → vStack true T◾ → vState T◾
+_::_ : vState T◾ → vStack true T◾' → vState T◾'
 (∘ upper) :: lower = ∘ (upper ⦂⦂ lower)
 (∙ upper) :: lower = ∙ (upper ⦂⦂ lower)
 
-⟨_⟩∷_ : {from : vState T◾} → {to : vState T◾} → (F>T : from →ᵛᵛ to) → (tail : vStack true T◾) → (from :: tail) →ᵛᵛ (to :: tail)
-⟨ ~∘var~> ⟩∷ tail = ~∘var~>
-⟨ ~∘lam~> ⟩∷ tail = ~∘lam~>
-⟨ ~∘pair~> ⟩∷ tail = ~∘pair~>
-⟨ ~∘pm~> ⟩∷ tail = ~∘pm~>
-⟨ ~∘unit~> ⟩∷ tail = ~∘unit~>
-⟨ ~∙M∷pm~> ⟩∷ tail = ~∙M∷pm~>
-⟨ ~∙M∷l~> ⟩∷ tail = ~∙M∷l~>
-⟨ ~∙M∷r~> ⟩∷ tail = ~∙M∷r~>
+⟨_⟩∷_ : {from : vState T◾} → {to : vState T◾} → (F>T : from →ᵛᵛ to) → (tail : vStack true T◾') → (from :: tail) →ᵛᵛ (to :: tail)
+⟨ ∘var ⟩∷ tail = ∘var
+⟨ ∘lam ⟩∷ tail = ∘lam
+⟨ ∘pair ⟩∷ tail = ∘pair
+⟨ ∘pm ⟩∷ tail = ∘pm
+⟨ ∘unit ⟩∷ tail = ∘unit
+⟨ ∙M∷pm ⟩∷ tail = ∙M∷pm
+⟨ ∙M∷l ⟩∷ tail = ∙M∷l
+⟨ ∙M∷r ⟩∷ tail = ∙M∷r
 
 
-⟪_⟫∷_ : {from : vState T◾} → {to : vState T◾} → (F>T : from ↠ᵛᵛ to) → (tail : vStack true T◾) → (from :: tail) ↠ᵛᵛ (to :: tail)
-⟪ _ →ᵛᵛ⟨ F>T ⟩ ⟫∷ tail =  _ →ᵛᵛ⟨ ⟨ F>T ⟩∷ tail ⟩
+⟪_⟫∷_ : {from : vState T◾} → {to : vState T◾} → (F>T : from ↠ᵛᵛ to) → (tail : vStack true T◾') → (from :: tail) ↠ᵛᵛ (to :: tail)
+⟪ _ →ᵛᵛ _ ⊲ F>T ∥ ⟫∷ tail =  _ →ᵛᵛ _ ⊲ ⟨ F>T ⟩∷ tail ∥
 ⟪ _ →ᵛᵛ⟨ F>T ⟩ F>>T ⟫∷ tail =   _ →ᵛᵛ⟨ ⟨ F>T ⟩∷ tail ⟩ (⟪ F>>T ⟫∷ tail)
-
 
 ⟦_⟧↥ : (S : vStack true T◾) → ⟦ T◾ ⟧
 ⟦ ((⇡ M) ⹁ γ ∷ □) {gt = ↓} ⟧↥ = ⟦ M ⟧ᵛ γ
@@ -185,7 +196,29 @@ data vHaltingState : vState T◾ → Set where
 
 data correctSteps : vState T◾ → Set where
 
-  steps : {S T : vState T◾} → S ↠ᵛᵛ T → ⟦ S ⟧◑ ≡ ⟦ T ⟧◑ → vHaltingState T → correctSteps S
+  steps : {S T : vState T◾} → S ↠ᵛᵛ T → vHaltingState T → ⟦ S ⟧◑ ≡ ⟦ T ⟧◑ → correctSteps S
+
+eval : (M : Γ ⊢ᵛ X) → (γ : ⟦ Γ ⟧ˣ) → correctSteps {T◾ = X} (∘ ((⇡ M ⹁ γ ∷ □) {gt = ↓}))
+
+eval (var i) γ = steps ((∘ ⇡ var i ⹁ γ ∷ □) →ᵛᵛ (∙ ⇡ var i ⹁ γ ∷ □) ⊲ ∘var ∥) (∙var i ⹁ γ ■) refl
+eval (lam M) γ = steps ((∘ ⇡ lam M ⹁ γ ∷ □) →ᵛᵛ (∙  ⇡ lam M ⹁ γ ∷ □) ⊲ ∘lam ∥) (∙lam M ⹁ γ ■) refl
+eval unit γ = steps ((∘ ⇡ unit ⹁ γ ∷ □) →ᵛᵛ (∙ ⇡ unit ⹁ γ ∷ □) ⊲ ∘unit ∥) (∙unit⹁ γ ■) refl
+
+eval {X = X `× Y} (pair LHS RHS) γ with eval {X = X} LHS γ | eval RHS γ
+... | steps {T = ∙ ((⇡ M₁ ⹁ γ₁ ∷ □) {gt = ↓})} L>T _ L≡M | steps {T = ∙ ((⇡ M₂ ⹁ γ₂ ∷ □) {gt = ↓})} R>T _ R≡M = steps ((∘ ⇡ pair LHS RHS ⹁ γ ∷ □) →ᵛᵛ (∘ ⇡ LHS ⹁ γ ∷ ⇡ᴸ LHS RHS ⹁ γ ∷ □) ⊲ ∘pair ∥ ⨾
+                                               (⟪ L>T ⟫∷ ((⇡ᴸ LHS RHS ⹁ γ ∷ □) {gt = ↓})) ⨾
+                                               (∙ ⇡ M₁ ⹁ γ₁ ∷ ⇡ᴸ LHS RHS ⹁ γ ∷ □) →ᵛᵛ ∘ (⇡ RHS ⹁ γ ∷ ⇡ᴿ (var h) (wk-val (wk-wk wk-id) RHS) ⹁ (γ ,  ⟦ M₁ ⟧ᵛ γ₁) ∷ □) ⊲ ∙M∷l ∥ ⨾
+                                               ((⟪ R>T ⟫∷ ((⇡ᴿ (var h) (wk-val (wk-wk wk-id) RHS) ⹁ (γ ,  ⟦ M₁ ⟧ᵛ γ₁) ∷ □) {gt = ↓}))) ⨾
+                                               ((∙ ⇡ M₂ ⹁ γ₂ ∷ ⇡ᴿ (var h) (wk-val (wk-wk wk-id) RHS) ⹁ (γ ,  ⟦ M₁ ⟧ᵛ γ₁) ∷ □) →ᵛᵛ ∙ (⇡ pair (wk-val (wk-wk wk-id) (var h)) (var h) ⹁ ((γ ,  ⟦ M₁ ⟧ᵛ γ₁) , ⟦ M₂ ⟧ᵛ γ₂) ∷ □) ⊲ ∙M∷r ∥))
+
+                                               (∙pair[ (wk-val (wk-wk wk-id) (var h)) ⹁ var h ]⹁ ((γ ,  ⟦ M₁ ⟧ᵛ γ₁) , ⟦ M₂ ⟧ᵛ γ₂) ■)
+
+                                               (⟦ pair LHS RHS ⟧ᵛ γ ≡⟨ refl ⟩
+                                               ⟦ pair (wk-val (wk-wk wk-id) (var h)) (var h) ⟧ᵛ ((γ ,  ⟦ LHS ⟧ᵛ γ) , ⟦ RHS ⟧ᵛ γ) ≡⟨ cong (λ x → ⟦ pair (wk-val (wk-wk wk-id) (var h)) (var h) ⟧ᵛ ((γ ,  x) , ⟦ RHS ⟧ᵛ γ)) L≡M  ⟩
+                                               ⟦ pair (wk-val (wk-wk wk-id) (var h)) (var h) ⟧ᵛ ((γ ,  ⟦ M₁ ⟧ᵛ γ₁) , ⟦ RHS ⟧ᵛ γ) ≡⟨ cong (λ x → ⟦ pair (wk-val (wk-wk wk-id) (var h)) (var h) ⟧ᵛ ((γ ,  ⟦ M₁ ⟧ᵛ γ₁) , x)) R≡M ⟩
+                                               ⟦ pair (wk-val (wk-wk wk-id) (var h)) (var h) ⟧ᵛ ((γ ,  ⟦ M₁ ⟧ᵛ γ₁) , ⟦ M₂ ⟧ᵛ γ₂) ∎)
+
+eval (pm M N) γ = {!!}
 
 
 {-
