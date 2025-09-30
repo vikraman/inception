@@ -1,4 +1,4 @@
-module Inception.Sub.VMeval (R : Set) where
+module Inception.Sub.VVmachine (R : Set) where
 
 open import Function.Base using (id)
 open import Data.Product using (proj₁; proj₂; _,_; Σ; ∃; Σ-syntax; ∃-syntax)
@@ -17,21 +17,16 @@ variable
   A' B' C' D' X Y Z X' Y' Z' X₁ Y₁ Z₁ X₂ Y₂ Z₂ X◾ Y◾ Z◾ X↓ Y↓ Z↓ T◾ T◾' T◾₁ T◾₂ : Ty
   Γ' Γ'' Γ''' Δ' Γ₁ Γ₂ Γ◾ Γ↓ : Ctx
 
-infix 26 ⇡_
+infix  26 ⇡_
 infixr 25 _⹁_∷_
---infixr 25 _⹁_∷_﹕_
-
-infix 20 ∘_
-infix 20 ∙_
-
-infix 15 _→ᵛᵛ_
+infix  20 ∘_
+infix  20 ∙_
 infixr 17 _→ᵛᵛ⟨_⟩
 infixr 15 _→ᵛᵛ⟨_⟩_
-
+infix  15 _→ᵛᵛ_
 infixr 10 _⨾_
 
 
---------------
 data partialTerm : (Γ : Ctx) → (X : Ty) → Set where
 
     ⇡_ : (M : Γ ⊢ᵛ X) → partialTerm Γ X
@@ -42,18 +37,15 @@ data partialTerm : (Γ : Ctx) → (X : Ty) → Set where
 
     ⇡ᴿ  : (LHS : Γ ⊢ᵛ X) → (RHS : Γ ⊢ᵛ Y) → partialTerm Γ (X `× Y)
 
+
 data Bool : Set where
      true : Bool
      false : Bool
 
+
 variable
      b b' : Bool
 
--- _or_ : Bool → Bool → Bool
--- true or false = true
--- false or true = true
--- true or true = true
--- false or false = false
 
 data goodType : Bool → Ty → Ty → Set where
 
@@ -61,27 +53,20 @@ data goodType : Bool → Ty → Ty → Set where
 
      ↕ : goodType true X Y
 
+
 data vStack : Bool → Ty → Set where
 
     □ : vStack false T◾
 
     _⹁_∷_ : partialTerm Γ X → (γ : ⟦ Γ ⟧ˣ) → (tail : vStack b T◾) → {gt : goodType b X T◾} → vStack true T◾
 
--- bottom : (S : vStack true T◾) → vStack true T◾
--- bottom (_⹁_∷_ x γ □ {gt = gt}) = _⹁_∷_ x γ □ {gt = gt}
--- bottom (_⹁_∷_ x γ (_⹁_∷_ x₁ γ₁ S {gt = gt₁}) {gt = gt}) = bottom ((_⹁_∷_ x₁ γ₁ S {gt = gt₁}))
-
--- data vStack' : Bool → Ty → Set where
--- 
---     □ : vStack' false T◾
--- 
---     _⹁_∷'_ : partialTerm Γ X → (γ : ⟦ Γ ⟧ˣ) → (tail : vStack' b T◾) → (gt : goodType b X T◾) → vStack' true T◾
 
 data vState : Ty → Set where
 
      ∘_ : vStack true T◾ → vState T◾
 
      ∙_ : vStack true T◾ → vState T◾
+
 
 data _→ᵛᵛ_ : vState T◾ → vState T◾ → Set where
 
@@ -104,16 +89,6 @@ data _→ᵛᵛ_ : vState T◾ → vState T◾ → Set where
      ∙M∷r : {γ : ⟦ Γ ⟧ˣ} → {γ' : ⟦ Γ' ⟧ˣ} → {M : Γ ⊢ᵛ Y} → {LHS : Γ' ⊢ᵛ X} → {RHS : Γ' ⊢ᵛ Y} → {tail : vStack b T◾} → {gt : goodType b (X `× Y) T◾}
                  →   ∙ ((⇡ M ⹁ γ ∷ ((⇡ᴿ LHS RHS ⹁ γ' ∷ tail) {gt = gt})) {gt = ↕}) →ᵛᵛ ∙ ((⇡ pair (wk-val (wk-wk wk-id) LHS) (var h) ⹁ (γ' , ⟦ M ⟧ᵛ γ) ∷ tail) {gt = gt})
 
--- data _→ᵛᵛ*_ : vState T◾ → vState T◾ → Set where
--- 
---   _▣ : (S : vState T◾) → S →ᵛᵛ* S
--- 
---   _→ᵛᵛ⟨_⟩_ : (S : vState T◾) → {S' S'' : vState T◾} → S →ᵛᵛ S' → S' →ᵛᵛ* S'' → S →ᵛᵛ* S''
--- 
--- _⨾_ : {F S T : vState T◾} → (F →ᵛᵛ* S) → (S →ᵛᵛ* T) → (F →ᵛᵛ* T)
--- (_ ▣) ⨾ S>>T = S>>T
--- _ →ᵛᵛ⟨ F>F' ⟩ F'>>S ⨾ S>>T = _ →ᵛᵛ⟨ F>F' ⟩ (F'>>S ⨾ S>>T)
-
 
 data _↠ᵛᵛ_ : vState T◾ → vState T◾ → Set where
 
@@ -121,17 +96,21 @@ data _↠ᵛᵛ_ : vState T◾ → vState T◾ → Set where
 
   _→ᵛᵛ⟨_⟩_ : (S : vState T◾) → {S' S'' : vState T◾} → S →ᵛᵛ S' → S' ↠ᵛᵛ S'' → S ↠ᵛᵛ S''
 
+
 _⨾_ : {F S T : vState T◾} → (F ↠ᵛᵛ S) → (S ↠ᵛᵛ T) → (F ↠ᵛᵛ T)
 _⨾_ (F →ᵛᵛ⟨ F>S ⟩) S>>T = F →ᵛᵛ⟨ F>S ⟩ S>>T
 _⨾_ (F →ᵛᵛ⟨ F>S₁ ⟩ S₁>>S₂) S₂>>T = F →ᵛᵛ⟨ F>S₁ ⟩ (S₁>>S₂ ⨾ S₂>>T)
+
 
 _⦂⦂_ : vStack b T◾ → vStack true T◾' → vStack true T◾'
 □ ⦂⦂ lower = lower
 (M ⹁ γ ∷ upper) ⦂⦂ lower = (M ⹁ γ ∷ (upper ⦂⦂ lower)) {gt = ↕}
 
+
 _::_ : vState T◾ → vStack true T◾' → vState T◾'
 (∘ upper) :: lower = ∘ (upper ⦂⦂ lower)
 (∙ upper) :: lower = ∙ (upper ⦂⦂ lower)
+
 
 ⟨_⟩∷_ : {from : vState T◾} → {to : vState T◾} → (F>T : from →ᵛᵛ to) → (tail : vStack true T◾') → (from :: tail) →ᵛᵛ (to :: tail)
 ⟨ ∘var ⟩∷ tail = ∘var
@@ -143,9 +122,11 @@ _::_ : vState T◾ → vStack true T◾' → vState T◾'
 ⟨ ∙M∷l ⟩∷ tail = ∙M∷l
 ⟨ ∙M∷r ⟩∷ tail = ∙M∷r
 
+
 ⟪_⟫∷_ : {from : vState T◾} → {to : vState T◾} → (F>T : from ↠ᵛᵛ to) → (tail : vStack true T◾') → (from :: tail) ↠ᵛᵛ (to :: tail)
 ⟪ _ →ᵛᵛ⟨ F>T ⟩ ⟫∷ tail =  _ →ᵛᵛ⟨ ⟨ F>T ⟩∷ tail ⟩
 ⟪ _ →ᵛᵛ⟨ F>T ⟩ F>>T ⟫∷ tail =   _ →ᵛᵛ⟨ ⟨ F>T ⟩∷ tail ⟩ (⟪ F>>T ⟫∷ tail)
+
 
 ⟦_⟧↥ : (S : vStack true T◾) → ⟦ T◾ ⟧
 ⟦ ((⇡ M) ⹁ γ ∷ □) {gt = ↓} ⟧↥ = ⟦ M ⟧ᵛ γ
@@ -157,9 +138,11 @@ _::_ : vState T◾ → vStack true T◾' → vState T◾'
 ⟦ (⇡ᴸ LHS RHS ⹁ γ₁ ∷ (M₂ ⹁ γ₂ ∷ S) {gt = gt₂}) {gt = gt₁} ⟧↥ = ⟦ (M₂ ⹁ γ₂ ∷ S) {gt = gt₂} ⟧↥
 ⟦ (⇡ᴿ LHS RHS ⹁ γ₁ ∷ (M₂ ⹁ γ₂ ∷ S) {gt = gt₂}) {gt = gt₁} ⟧↥ = ⟦ (M₂ ⹁ γ₂ ∷ S) {gt = gt₂} ⟧↥
 
+
 ⟦_⟧◑ : (S : vState T◾) → ⟦ T◾ ⟧
 ⟦ ∘ tail ⟧◑ = ⟦ tail ⟧↥
 ⟦ ∙ tail ⟧◑ = ⟦ tail ⟧↥
+
 
 data vHaltingState : vState T◾ → Set where
 
@@ -171,9 +154,11 @@ data vHaltingState : vState T◾ → Set where
 
      ∙lam_⹁_■ : (M : (Γ ∙ X) ⊢ᶜ Y) → (γ : ⟦ Γ ⟧ˣ) → vHaltingState (∙ ((⇡ lam M ⹁ γ ∷ □) {gt = ↓}))
 
+
 data correctSteps : vState T◾ → Set where
 
   steps : {S T : vState T◾} → S ↠ᵛᵛ T → vHaltingState T → ⟦ S ⟧◑ ≡ ⟦ T ⟧◑ → correctSteps S
+
 
 eval : (M : Γ ⊢ᵛ X) → (γ : ⟦ Γ ⟧ˣ) → correctSteps {T◾ = X} (∘ ((⇡ M ⹁ γ ∷ □) {gt = ↓}))
 
