@@ -1,21 +1,21 @@
 module Inception.Sub.VVmachine (R : Set) where
 
-open import Function.Base using (id)
-open import Data.Product using (proj₁; proj₂; _,_; Σ; ∃; Σ-syntax; ∃-syntax)
+open import Data.Product using (proj₁; proj₂; _,_)
 
 import Relation.Binary.PropositionalEquality as Eq
-open Eq using (_≡_; refl; trans; cong; sym)
+open Eq using (_≡_; refl; cong)
 open Eq.≡-Reasoning
 
 open import Inception.Sub.Syntax
 open import Inception.Sub.CPS R
 
-open import Data.Sum using (_⊎_; inj₁; inj₂)
 open import Data.Unit
 
 variable
-  A' B' C' D' X Y Z X' Y' Z' X₁ Y₁ Z₁ X₂ Y₂ Z₂ X◾ Y◾ Z◾ X↓ Y↓ Z↓ T◾ T◾' T◾₁ T◾₂ : Ty
-  Γ' Γ'' Γ''' Δ' Γ₁ Γ₂ Γ◾ Γ↓ : Ctx
+  X Y Z X' Y' Z' T◾ T◾' : Ty
+  Γ' : Ctx
+  γ  : ⟦ Γ ⟧ˣ
+  γ' : ⟦ Γ' ⟧ˣ
 
 infix  26 ⇡_
 infixr 25 _⹁_∷_
@@ -44,7 +44,7 @@ data Bool : Set where
 
 
 variable
-     b b' : Bool
+     b : Bool
 
 
 data goodType : Bool → Ty → Ty → Set where
@@ -70,24 +70,52 @@ data vState : Ty → Set where
 
 data _→ᵛᵛ_ : vState T◾ → vState T◾ → Set where
 
-     ∘var   : {γ : ⟦ Γ ⟧ˣ} → {i : Γ ∋ X} → {tail : vStack b T◾} → {gt : goodType b X T◾} → ∘ (_⹁_∷_ (⇡ var i) γ tail {gt = gt}) →ᵛᵛ ∙ (_⹁_∷_ (⇡ var i) γ tail {gt = gt})
+     ∘var   :  {i : Γ ∋ X}
+             → {tail : vStack b T◾} → {gt : goodType b X T◾}
+               ---------------------------------------------------------------------------
+             →     ∘ ((⇡ var i ⹁ γ ∷ tail) {gt = gt})
+                →ᵛᵛ ∙ ((⇡ var i ⹁ γ ∷ tail) {gt = gt})
 
-     ∘lam : {γ : ⟦ Γ ⟧ˣ} → {M : (Γ ∙ X) ⊢ᶜ Y} → {tail : vStack b T◾} → {gt : goodType b (X `⇒ Y) T◾} → ∘ (_⹁_∷_ (⇡ lam M) γ tail {gt = gt}) →ᵛᵛ ∙ (_⹁_∷_ (⇡ lam M) γ tail {gt = gt})
+     ∘lam   :  {M : (Γ ∙ X) ⊢ᶜ Y}
+             → {tail : vStack b T◾} → {gt : goodType b (X `⇒ Y) T◾}
+               ---------------------------------------------------------------------------
+             →     ∘ ((⇡ lam M ⹁ γ ∷ tail) {gt = gt})
+                →ᵛᵛ ∙ ((⇡ lam M ⹁ γ ∷ tail) {gt = gt})
 
-     ∘pair : {γ : ⟦ Γ ⟧ˣ} → {LHS : Γ ⊢ᵛ X} → {RHS : Γ ⊢ᵛ Y} → {tail : vStack b T◾} → {gt : goodType b (X `× Y) T◾} → ∘ ((⇡ pair LHS RHS ⹁ γ ∷ tail) {gt = gt}) →ᵛᵛ ∘ ((⇡ LHS ⹁ γ ∷ ((⇡ᴸ LHS RHS ⹁ γ ∷ tail) {gt = gt})) {gt = ↕})
+     ∘pair  :  {LHS : Γ ⊢ᵛ X} → {RHS : Γ ⊢ᵛ Y}
+             → {tail : vStack b T◾} → {gt : goodType b (X `× Y) T◾}
+               ---------------------------------------------------------------------------
+             →     ∘ ((⇡ pair LHS RHS ⹁ γ ∷ tail) {gt = gt})
+                →ᵛᵛ ∘ ((⇡ LHS ⹁ γ ∷ ((⇡ᴸ LHS RHS ⹁ γ ∷ tail) {gt = gt})) {gt = ↕})
 
-     ∘pm : {γ : ⟦ Γ ⟧ˣ} → {M : Γ ⊢ᵛ X `× Y} → {N : (Γ ∙ X ∙ Y) ⊢ᵛ Z} → {tail : vStack b T◾} → {gt : goodType b Z T◾} → ∘ ((⇡ pm M N ⹁ γ ∷ tail) {gt = gt}) →ᵛᵛ ∘ ((⇡ M ⹁ γ ∷ (⇡ᴹ M N ⹁ γ ∷ tail) {gt = gt}) {gt = ↕})
+     ∘pm    :  {M : Γ ⊢ᵛ X `× Y} → {N : (Γ ∙ X ∙ Y) ⊢ᵛ Z}
+             → {tail : vStack b T◾} → {gt : goodType b Z T◾}
+               ---------------------------------------------------------------------------
+             →     ∘ ((⇡ pm M N ⹁ γ ∷ tail) {gt = gt})
+                →ᵛᵛ ∘ ((⇡ M ⹁ γ ∷ (⇡ᴹ M N ⹁ γ ∷ tail) {gt = gt}) {gt = ↕})
 
-     ∘unit : {γ : ⟦ Γ ⟧ˣ} → {tail : vStack b T◾} → {gt : goodType b `Unit T◾} → ∘ ((⇡ unit ⹁ γ ∷ tail) {gt = gt}) →ᵛᵛ ∙ ((⇡ unit ⹁ γ ∷ tail) {gt = gt})
+     ∘unit  :  {γ  : ⟦ Γ ⟧ˣ} → {tail : vStack b T◾} → {gt : goodType b `Unit T◾}
+               ---------------------------------------------------------------------------
+             →     ∘ ((⇡ unit ⹁ γ ∷ tail) {gt = gt})
+                →ᵛᵛ ∙ ((⇡ unit ⹁ γ ∷ tail) {gt = gt})
 
-     ∙M∷pm : {γ : ⟦ Γ ⟧ˣ} → {γ' : ⟦ Γ' ⟧ˣ} → {M₂ : Γ ⊢ᵛ X `× Y} → {M : Γ' ⊢ᵛ X `× Y} → {N : (Γ' ∙ X ∙ Y) ⊢ᵛ Z'} → {tail : vStack b T◾} → {gt : goodType b Z' T◾}
-                 →    ∙ ((⇡ M₂ ⹁ γ ∷ ((⇡ᴹ M N ⹁ γ' ∷ tail) {gt = gt})) {gt = ↕}) →ᵛᵛ ∘ ((⇡ N ⹁ ((γ' , proj₁ (⟦ M₂ ⟧ᵛ γ)) , proj₂ (⟦ M₂ ⟧ᵛ γ)) ∷ tail) {gt = gt})
+     ∙M∷pm  :  {M₂ : Γ ⊢ᵛ X `× Y} → {M : Γ' ⊢ᵛ X `× Y} → {N : (Γ' ∙ X ∙ Y) ⊢ᵛ Z'}
+             → {tail : vStack b T◾} → {gt : goodType b Z' T◾}
+               ---------------------------------------------------------------------------
+             →     ∙ ((⇡ M₂ ⹁ γ ∷ ((⇡ᴹ M N ⹁ γ' ∷ tail) {gt = gt})) {gt = ↕})
+                →ᵛᵛ ∘ ((⇡ N ⹁ ((γ' , proj₁ (⟦ M₂ ⟧ᵛ γ)) , proj₂ (⟦ M₂ ⟧ᵛ γ)) ∷ tail) {gt = gt})
 
-     ∙M∷l : {γ : ⟦ Γ ⟧ˣ} → {γ' : ⟦ Γ' ⟧ˣ} → {M : Γ ⊢ᵛ X} → {LHS : Γ' ⊢ᵛ X} → {RHS : Γ' ⊢ᵛ Y} → {tail : vStack b T◾} → {gt : goodType b (X `× Y) T◾}
-                 →    ∙ ((⇡ M ⹁ γ ∷ ((⇡ᴸ LHS RHS ⹁ γ' ∷ tail) {gt = gt})) {gt = ↕}) →ᵛᵛ ∘ ((⇡ RHS ⹁ γ' ∷ ((⇡ᴿ (var h) (wk-val (wk-wk wk-id) RHS) ⹁ (γ' ,  ⟦ M ⟧ᵛ γ) ∷ tail) {gt = gt})) {gt = ↕})
+     ∙M∷l   :  {M : Γ ⊢ᵛ X} → {LHS : Γ' ⊢ᵛ X} → {RHS : Γ' ⊢ᵛ Y}
+             → {tail : vStack b T◾} → {gt : goodType b (X `× Y) T◾}
+               ---------------------------------------------------------------------------
+             →     ∙ ((⇡ M ⹁ γ ∷ ((⇡ᴸ LHS RHS ⹁ γ' ∷ tail) {gt = gt})) {gt = ↕})
+                →ᵛᵛ ∘ ((⇡ RHS ⹁ γ' ∷ ((⇡ᴿ (var h) (wk-val (wk-wk wk-id) RHS) ⹁ (γ' , ⟦ M ⟧ᵛ γ) ∷ tail) {gt = gt})) {gt = ↕})
 
-     ∙M∷r : {γ : ⟦ Γ ⟧ˣ} → {γ' : ⟦ Γ' ⟧ˣ} → {M : Γ ⊢ᵛ Y} → {LHS : Γ' ⊢ᵛ X} → {RHS : Γ' ⊢ᵛ Y} → {tail : vStack b T◾} → {gt : goodType b (X `× Y) T◾}
-                 →   ∙ ((⇡ M ⹁ γ ∷ ((⇡ᴿ LHS RHS ⹁ γ' ∷ tail) {gt = gt})) {gt = ↕}) →ᵛᵛ ∙ ((⇡ pair (wk-val (wk-wk wk-id) LHS) (var h) ⹁ (γ' , ⟦ M ⟧ᵛ γ) ∷ tail) {gt = gt})
+     ∙M∷r   :  {M : Γ ⊢ᵛ Y} → {LHS : Γ' ⊢ᵛ X} → {RHS : Γ' ⊢ᵛ Y}
+             → {tail : vStack b T◾} → {gt : goodType b (X `× Y) T◾}
+               ---------------------------------------------------------------------------
+             →     ∙ ((⇡ M ⹁ γ ∷ ((⇡ᴿ LHS RHS ⹁ γ' ∷ tail) {gt = gt})) {gt = ↕})
+                →ᵛᵛ ∙ ((⇡ pair (wk-val (wk-wk wk-id) LHS) (var h) ⹁ (γ' , ⟦ M ⟧ᵛ γ) ∷ tail) {gt = gt})
 
 
 data _↠ᵛᵛ_ : vState T◾ → vState T◾ → Set where
@@ -169,48 +197,48 @@ eval unit γ = steps (∘ ⇡ unit ⹁ γ ∷ □ →ᵛᵛ⟨ ∘unit ⟩) (∙
 eval {X = X `× Y} (pair LHS RHS) γ with eval {X = X} LHS γ | eval RHS γ
 ... | steps {T = ∙ ((⇡ M₁ ⹁ γ₁ ∷ □) {gt = ↓})} L>T _ L≡M | steps {T = ∙ ((⇡ M₂ ⹁ γ₂ ∷ □) {gt = ↓})} R>T _ R≡M =
 
-                                         steps (
-                                                ∘ ⇡ pair LHS RHS ⹁ γ ∷ □ →ᵛᵛ⟨ ∘pair ⟩  ⨾ -- ∘ ⇡ LHS ⹁ γ ∷ ⇡ᴸ LHS RHS ⹁ γ ∷ □
-                                                ⟪ L>T ⟫∷ ((⇡ᴸ LHS RHS ⹁ γ ∷ □) {gt = ↓}) ⨾
-                                                ∙ ⇡ M₁ ⹁ γ₁ ∷ ⇡ᴸ LHS RHS ⹁ γ ∷ □ →ᵛᵛ⟨ ∙M∷l ⟩ ⨾ -- ∘ (⇡ RHS ⹁ γ ∷ ⇡ᴿ (var h) (wk-val (wk-wk wk-id) RHS) ⹁ (γ ,  ⟦ M₁ ⟧ᵛ γ₁) ∷ □)
-                                                ⟪ R>T ⟫∷ ((⇡ᴿ (var h) (wk-val (wk-wk wk-id) RHS) ⹁ (γ ,  ⟦ M₁ ⟧ᵛ γ₁) ∷ □) {gt = ↓}) ⨾
-                                                ∙ ⇡ M₂ ⹁ γ₂ ∷ ⇡ᴿ (var h) (wk-val (wk-wk wk-id) RHS) ⹁ (γ ,  ⟦ M₁ ⟧ᵛ γ₁) ∷ □ →ᵛᵛ⟨ ∙M∷r ⟩
-                                               )
+  steps (
+        ∘ ⇡ pair LHS RHS ⹁ γ ∷ □ →ᵛᵛ⟨ ∘pair ⟩  ⨾ -- ∘ ⇡ LHS ⹁ γ ∷ ⇡ᴸ LHS RHS ⹁ γ ∷ □
+        ⟪ L>T ⟫∷ ((⇡ᴸ LHS RHS ⹁ γ ∷ □) {gt = ↓}) ⨾
+        ∙ ⇡ M₁ ⹁ γ₁ ∷ ⇡ᴸ LHS RHS ⹁ γ ∷ □ →ᵛᵛ⟨ ∙M∷l ⟩ ⨾ -- ∘ (⇡ RHS ⹁ γ ∷ ⇡ᴿ (var h) (wk-val (wk-wk wk-id) RHS) ⹁ (γ ,  ⟦ M₁ ⟧ᵛ γ₁) ∷ □)
+        ⟪ R>T ⟫∷ ((⇡ᴿ (var h) (wk-val (wk-wk wk-id) RHS) ⹁ (γ ,  ⟦ M₁ ⟧ᵛ γ₁) ∷ □) {gt = ↓}) ⨾
+        ∙ ⇡ M₂ ⹁ γ₂ ∷ ⇡ᴿ (var h) (wk-val (wk-wk wk-id) RHS) ⹁ (γ ,  ⟦ M₁ ⟧ᵛ γ₁) ∷ □ →ᵛᵛ⟨ ∙M∷r ⟩
+        )
 
-                                               (∙pair[ (wk-val (wk-wk wk-id) (var h)) ⹁ var h ]⹁ ((γ ,  ⟦ M₁ ⟧ᵛ γ₁) , ⟦ M₂ ⟧ᵛ γ₂) ■)
+        (∙pair[ (wk-val (wk-wk wk-id) (var h)) ⹁ var h ]⹁ ((γ ,  ⟦ M₁ ⟧ᵛ γ₁) , ⟦ M₂ ⟧ᵛ γ₂) ■)
 
-                                               (
-                                                 ⟦ pair LHS RHS ⟧ᵛ γ
-                                                ≡⟨ refl ⟩
-                                                 ⟦ pair (wk-val (wk-wk wk-id) (var h)) (var h) ⟧ᵛ ((γ ,  ⟦ LHS ⟧ᵛ γ) , ⟦ RHS ⟧ᵛ γ)
-                                                ≡⟨ cong (λ x → ⟦ pair (wk-val (wk-wk wk-id) (var h)) (var h) ⟧ᵛ ((γ ,  x) , ⟦ RHS ⟧ᵛ γ)) L≡M  ⟩
-                                                 ⟦ pair (wk-val (wk-wk wk-id) (var h)) (var h) ⟧ᵛ ((γ ,  ⟦ M₁ ⟧ᵛ γ₁) , ⟦ RHS ⟧ᵛ γ)
-                                                ≡⟨ cong (λ x → ⟦ pair (wk-val (wk-wk wk-id) (var h)) (var h) ⟧ᵛ ((γ ,  ⟦ M₁ ⟧ᵛ γ₁) , x)) R≡M ⟩
-                                                 ⟦ pair (wk-val (wk-wk wk-id) (var h)) (var h) ⟧ᵛ ((γ ,  ⟦ M₁ ⟧ᵛ γ₁) , ⟦ M₂ ⟧ᵛ γ₂) ∎
-                                               )
+        (
+          ⟦ pair LHS RHS ⟧ᵛ γ
+        ≡⟨ refl ⟩
+          ⟦ pair (wk-val (wk-wk wk-id) (var h)) (var h) ⟧ᵛ ((γ ,  ⟦ LHS ⟧ᵛ γ) , ⟦ RHS ⟧ᵛ γ)
+        ≡⟨ cong (λ x → ⟦ pair (wk-val (wk-wk wk-id) (var h)) (var h) ⟧ᵛ ((γ ,  x) , ⟦ RHS ⟧ᵛ γ)) L≡M  ⟩
+          ⟦ pair (wk-val (wk-wk wk-id) (var h)) (var h) ⟧ᵛ ((γ ,  ⟦ M₁ ⟧ᵛ γ₁) , ⟦ RHS ⟧ᵛ γ)
+        ≡⟨ cong (λ x → ⟦ pair (wk-val (wk-wk wk-id) (var h)) (var h) ⟧ᵛ ((γ ,  ⟦ M₁ ⟧ᵛ γ₁) , x)) R≡M ⟩
+          ⟦ pair (wk-val (wk-wk wk-id) (var h)) (var h) ⟧ᵛ ((γ ,  ⟦ M₁ ⟧ᵛ γ₁) , ⟦ M₂ ⟧ᵛ γ₂) ∎
+        )
 
 eval (pm {A = X} {B = Y} M N) γ with eval {X = X `× Y} M γ
 ... | steps {T = ∙ ((⇡ M' ⹁ γ₁ ∷ □) {gt = ↓})} M>T _ M≡T with eval N ((γ , proj₁ (⟦ M' ⟧ᵛ γ₁)) , proj₂ (⟦ M' ⟧ᵛ γ₁))
 ...     | steps {T = ∙ ((⇡ N' ⹁ γ₂ ∷ □) {gt = ↓})} N>T ∙T N≡T  =
 
-                  steps (
-                         ∘ ⇡ pm M N ⹁ γ ∷ □ →ᵛᵛ⟨ ∘pm ⟩ ⨾ -- ∘ ⇡ M ⹁ γ ∷ ⇡ᴹ M N ⹁ γ ∷ □
-                         ⟪ M>T ⟫∷ ((⇡ᴹ M N ⹁ γ ∷ □) {gt = ↓}) ⨾
-                         ∙ ⇡ M' ⹁ γ₁ ∷ ⇡ᴹ M N ⹁ γ ∷ □ →ᵛᵛ⟨ ∙M∷pm ⟩ ⨾ -- ∘ ((⇡ N ⹁ ((γ , proj₁ (⟦ M' ⟧ᵛ γ₁)) , proj₂ (⟦ M' ⟧ᵛ γ₁)) ∷ □) {gt = gt})
-                         N>T
-                        )
+  steps (
+          ∘ ⇡ pm M N ⹁ γ ∷ □ →ᵛᵛ⟨ ∘pm ⟩ ⨾ -- ∘ ⇡ M ⹁ γ ∷ ⇡ᴹ M N ⹁ γ ∷ □
+          ⟪ M>T ⟫∷ ((⇡ᴹ M N ⹁ γ ∷ □) {gt = ↓}) ⨾
+          ∙ ⇡ M' ⹁ γ₁ ∷ ⇡ᴹ M N ⹁ γ ∷ □ →ᵛᵛ⟨ ∙M∷pm ⟩ ⨾ -- ∘ ((⇡ N ⹁ ((γ , proj₁ (⟦ M' ⟧ᵛ γ₁)) , proj₂ (⟦ M' ⟧ᵛ γ₁)) ∷ □) {gt = gt})
+          N>T
+        )
 
-                        ∙T
+        ∙T
 
-                        (
-                           ⟦ pm M N ⟧ᵛ γ
-                         ≡⟨ refl ⟩
-                           ⟦ N ⟧ᵛ (assocl (γ , ⟦ M ⟧ᵛ γ))
-                         ≡⟨ cong (λ x → ⟦ N ⟧ᵛ (assocl (γ , x))) M≡T  ⟩
-                           ⟦ N ⟧ᵛ (assocl (γ , ⟦ M' ⟧ᵛ γ₁))
-                         ≡⟨ N≡T ⟩
-                           ⟦ N' ⟧ᵛ γ₂ ∎
-                        )
+        (
+            ⟦ pm M N ⟧ᵛ γ
+          ≡⟨ refl ⟩
+            ⟦ N ⟧ᵛ (assocl (γ , ⟦ M ⟧ᵛ γ))
+          ≡⟨ cong (λ x → ⟦ N ⟧ᵛ (assocl (γ , x))) M≡T  ⟩
+            ⟦ N ⟧ᵛ (assocl (γ , ⟦ M' ⟧ᵛ γ₁))
+          ≡⟨ N≡T ⟩
+            ⟦ N' ⟧ᵛ γ₂ ∎
+        )
 
 -- EXAMPLES
 --------------------------------------------------
