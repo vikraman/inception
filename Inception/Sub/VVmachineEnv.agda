@@ -30,11 +30,19 @@ data Bool : Set where
      true : Bool
      false : Bool
 
+data valTerm : Ctx → Ty → Set where
+
+    val-pm : Γ ⊢ᵛ X `× Y → (Γ ∙ X ∙ Y) ⊢ᵛ Z → valTerm Γ Z
+
+    val-lam : (Γ ∙ X) ⊢ᶜ Y → valTerm Γ (X `⇒ Y)
+
+    val-pair : Γ ⊢ᵛ X → Γ ⊢ᵛ Y → valTerm Γ (A `× B)
+
 data Env : (Δ : Ctx) → (Γ : Ctx) → {WK : Wk Γ Δ} → Set where
 
     z       :  (γ : ⟦ Γ ⟧ˣ) → Env Γ Γ {WK = wk-id}
 
-    s-val   :  {WK : Wk Γ Δ} → {WK' : Wk Γ' Δ} → (M : Γ ⊢ᵛ X) → Env Δ Γ {WK = WK} → Env Δ Γ' {WK = WK'} → Env Δ (Γ' ∙ X) {WK = wk-wk WK'}
+    s-val   :  {WK : Wk Γ ε} → {WK' : Wk Γ' ε} → (M : Γ ⊢ᵛ X) → Env ε Γ {WK = WK} → Env ε Γ' {WK = WK'} → Env ε (Γ' ∙ X) {WK = wk-wk WK'}
 
 --    s-comp  :  (W : Γ ⊢ᶜ X) → Env Γ → (k : ⟦ X ⟧ → R) → Env Γ' → Env (Γ' ∙ `V)
 
@@ -75,7 +83,9 @@ data lState : Ty → Set where
 
 data _→ᴸᴸ_ : lState X → lState X → Set where
 
-    val-t-step    : {i : Γ' ∋ Y} → {WK : Wk Γ Δ} → {E : Env Δ Γ {WK = WK}} → {M : Γ ⊢ᵛ X} → {WK' : Wk Γ' Δ} → {E' : Env Δ Γ' {WK = WK'}} → ⟨ t i  ∥ s-val M E E' ⟩ →ᴸᴸ ⟨ i ∥ E' ⟩
+    val-h-step    : {i : Γ ∋ Y} → {WK : Wk Γ ε} → {E : Env ε Γ {WK = WK}} → {WK' : Wk Γ' ε} → {E' : Env ε Γ' {WK = WK'}} → ⟨ h  ∥ s-val (var i) E E' ⟩ →ᴸᴸ ⟨ i ∥ E ⟩
+
+    val-t-step    : {i : Γ' ∋ Y} → {WK : Wk Γ ε} → {E : Env ε Γ {WK = WK}} → {M : Γ ⊢ᵛ X} → {WK' : Wk Γ' ε} → {E' : Env ε Γ' {WK = WK'}} → ⟨ t i  ∥ s-val M E E' ⟩ →ᴸᴸ ⟨ i ∥ E' ⟩
 
 --    comp-t-step    : {i : Γ' ∋ Y} → {E : Env Γ} → {W : Γ ⊢ᶜ X} → {k : ⟦ X ⟧ → R} → {E' : Env Γ'} → ⟨ t i  ∥ s-comp W E k E' ⟩ →ᴸᴸ ⟨ i ∥ E' ⟩
 
@@ -96,17 +106,63 @@ data lHaltingState : lState X → Set where
 
       found-z      :  {i : Γ ∙ X ∋ Y} → {γ : ⟦ Γ ∙ X ⟧ˣ} → lHaltingState ⟨ i ∥ z γ ⟩
 
-      found-val    :  {M : Γ ⊢ᵛ X} → {WK : Wk Γ Δ} → {WK' : Wk Γ' Δ} → {γ : Env Δ Γ {WK = WK}} → {γ' : Env Δ Γ' {WK = WK'}} → lHaltingState ⟨ h ∥ s-val M γ γ' ⟩
+      --found-val    :  {M : Γ ⊢ᵛ X} → {WK : Wk Γ ε} → {WK' : Wk Γ' ε} → {γ : Env ε Γ {WK = WK}} → {γ' : Env ε Γ' {WK = WK'}} → lHaltingState ⟨ h ∥ s-val M γ γ' ⟩
 
       --found-comp   :  {W : Γ ⊢ᶜ X} → {γ : Env Γ} → {k : ⟦ X ⟧ → R} → {γ' : Env Γ'} → lHaltingState ⟨ h ∥ s-comp W γ k γ' ⟩
+
+      found-unit : {WK : Wk Γ ε} → {WK' : Wk Γ' ε} → {γ : Env ε Γ {WK = WK}} → {γ' : Env ε Γ' {WK = WK'}} → lHaltingState ⟨ h ∥ s-val unit γ γ' ⟩
+
+      found-pair : {LHS : Γ ⊢ᵛ X} → {RHS : Γ ⊢ᵛ Y} → {WK : Wk Γ ε} → {WK' : Wk Γ' ε} → {γ : Env ε Γ {WK = WK}} → {γ' : Env ε Γ' {WK = WK'}} → lHaltingState ⟨ h ∥ s-val (pair RHS LHS) γ γ' ⟩
+
+      found-lam : {W : (Γ ∙ X) ⊢ᶜ Y} → {WK : Wk Γ ε} → {WK' : Wk Γ' ε} → {γ : Env ε Γ {WK = WK}} → {γ' : Env ε Γ' {WK = WK'}} → lHaltingState ⟨ h ∥ s-val (lam W) γ γ' ⟩
+
+      -- never used
+      found-pm : {M : Γ ⊢ᵛ X `× Y} → {N : (Γ ∙ X ∙ Y) ⊢ᵛ Z} → {WK : Wk Γ ε} → {WK' : Wk Γ' ε} → {γ : Env ε Γ {WK = WK}} → {γ' : Env ε Γ' {WK = WK'}} → lHaltingState ⟨ h ∥ s-val (pm M N) γ γ' ⟩
+
+data nicelHaltingState : lState X → Set where
+
+      found-unit : {WK : Wk Γ ε} → {WK' : Wk Γ' ε} → {γ : Env ε Γ {WK = WK}} → {γ' : Env ε Γ' {WK = WK'}} → nicelHaltingState ⟨ h ∥ s-val unit γ γ' ⟩
+
+      found-pair : {LHS : Γ ⊢ᵛ X} → {RHS : Γ ⊢ᵛ Y} → {WK : Wk Γ ε} → {WK' : Wk Γ' ε} → {γ : Env ε Γ {WK = WK}} → {γ' : Env ε Γ' {WK = WK'}} → nicelHaltingState ⟨ h ∥ s-val (pair RHS LHS) γ γ' ⟩
+
+      found-lam : {W : (Γ ∙ X) ⊢ᶜ Y} → {WK : Wk Γ ε} → {WK' : Wk Γ' ε} → {γ : Env ε Γ {WK = WK}} → {γ' : Env ε Γ' {WK = WK'}} → nicelHaltingState ⟨ h ∥ s-val (lam W) γ γ' ⟩
+
+      -- never used
+      found-pm : {M : Γ ⊢ᵛ X `× Y} → {N : (Γ ∙ X ∙ Y) ⊢ᵛ Z} → {WK : Wk Γ ε} → {WK' : Wk Γ' ε} → {γ : Env ε Γ {WK = WK}} → {γ' : Env ε Γ' {WK = WK'}} → nicelHaltingState ⟨ h ∥ s-val (pm M N) γ γ' ⟩
 
 
 data correctStepsLL : lState X → Set where
 
   steps : {S T : lState X} → S →ᴸᴸ* T → lHaltingState T → ⟦ S ⟧ᴸ ≡ ⟦ T ⟧ᴸ → correctStepsLL S
 
+data nicecorrectStepsLL : lState X → Set where
+
+  steps : {S T : lState X} → S →ᴸᴸ* T → nicelHaltingState T → ⟦ S ⟧ᴸ ≡ ⟦ T ⟧ᴸ → nicecorrectStepsLL S
 
 
+lookup : (i : Γ ∋ X) → {WK : Wk Γ Δ} → (γ : Env Δ Γ {WK = WK}) → correctStepsLL {X = X} ⟨ i ∥ γ ⟩
+lookup h (z γ) = steps (⟨ h ∥ z γ ⟩ ▣) found-z refl
+lookup h (s-val (var i) γ γ₁) with lookup i γ
+... | steps i>>T HT i≡T = steps (_ →ᴸᴸ⟨ val-h-step ⟩ i>>T) HT i≡T
+lookup h (s-val (lam W) γ γ₁) = steps (⟨ h ∥ s-val (lam W) γ γ₁ ⟩ ▣) found-lam refl
+lookup h (s-val (pair LHS RHS) γ γ₁) = steps (⟨ h ∥ s-val (pair LHS RHS) γ γ₁ ⟩ ▣) found-pair refl
+lookup h (s-val (pm M N) γ γ₁) = steps (⟨ h ∥ s-val (pm M N) γ γ₁ ⟩ ▣) found-pm refl
+lookup h (s-val unit γ γ₁) = steps (⟨ h ∥ s-val unit γ γ₁ ⟩ ▣) found-unit refl
+lookup (t i) (z γ) = steps (⟨ t i ∥ z γ ⟩ ▣) found-z refl
+lookup (t i) (s-val M γ γ₁) with lookup i γ₁
+... | steps i>>T HT i≡T = steps (_ →ᴸᴸ⟨ val-t-step ⟩ i>>T) HT i≡T
+
+lookup-s : (i : Γ ∋ X) → {WK : Wk Γ ε} → (γ : Env ε Γ {WK = WK}) → nicecorrectStepsLL {X = X} ⟨ i ∥ γ ⟩
+lookup-s h (s-val (var i) γ γ₁) with lookup-s i γ
+... | steps i>>T HT i≡T = steps (_ →ᴸᴸ⟨ val-h-step ⟩ i>>T) HT i≡T
+lookup-s h (s-val (lam W) γ γ₁) = steps (⟨ h ∥ s-val (lam W) γ γ₁ ⟩ ▣) found-lam refl
+lookup-s h (s-val (pair LHS RHS) γ γ₁) = steps (⟨ h ∥ s-val (pair LHS RHS) γ γ₁ ⟩ ▣) found-pair refl
+lookup-s h (s-val (pm M N) γ γ₁) = steps (⟨ h ∥ s-val (pm M N) γ γ₁ ⟩ ▣) found-pm refl
+lookup-s h (s-val unit γ γ₁) = steps (⟨ h ∥ s-val unit γ γ₁ ⟩ ▣) found-unit refl
+lookup-s (t i) (s-val M γ γ₁) with lookup-s i γ₁
+... | steps i>>T HT i≡T = steps (_ →ᴸᴸ⟨ val-t-step ⟩ i>>T) HT i≡T
+
+{-
 lookup : (i : Γ ∋ X) → {WK : Wk Γ Δ} → (γ : Env Δ Γ {WK = WK}) → correctStepsLL {X = X} ⟨ i ∥ γ ⟩
 lookup h (z γ) = steps (⟨ h ∥ z γ ⟩ ▣) found-z refl
 lookup h (s-val M γ E') = steps (⟨ h ∥ s-val M γ E' ⟩ ▣) found-val refl
@@ -116,6 +172,7 @@ lookup (t i) (s-val M γ E') with lookup i E'
 ... | steps S>T HT S≡T = steps (⟨ t i ∥ s-val M γ E' ⟩ →ᴸᴸ⟨ val-t-step ⟩ S>T) HT S≡T
 --lookup (t i) (s-comp W γ k E') with lookup i E'
 --... | steps S>T HT S≡T = steps (⟨ t i ∥ s-comp W γ k E' ⟩ →ᴸᴸ⟨ comp-t-step ⟩ S>T) HT S≡T
+-}
 
 
 ------------------------------------------------------------------------------
@@ -154,17 +211,17 @@ data vState : Ctx → Ty → Set where
 --
 --     finish-lookup    : {M : (Γ ∙ X) ⊢ᵛ Y} → {γ : Env (Γ ∙ X)} → {γ' : Env Γ'} → {tail : vStack b T◾} → {gt : goodType b Y T◾} → ⟨ h ∥ s-val M γ γ' ∥ tail ﹐ gt ⟩ →ᴸⱽ ∙ ((⇡ M ⹁ γ ∷ tail) {gt = gt})
 
-data _→ᵛᵛ_ : vState Δ T◾ → vState Δ T◾ → Set where
+data _→ᵛᵛ_ : vState ε T◾ → vState ε T◾ → Set where
 
-     ∘var-z    :    {i : Γ ∋ X} → {tail : vStack Γ' b T◾} → {gt : goodType b X T◾}
+     -- ∘var-z    :    {i : Γ ∋ X} → {tail : vStack Γ' b T◾} → {gt : goodType b X T◾}
 
-                → {i' : (Γ') ∋ X} → {γ' : ⟦ Γ' ⟧ˣ}
+     --            → {i' : (Γ') ∋ X} → {γ' : ⟦ Γ' ⟧ˣ}
 
-                → (⟨ i ∥ γ ⟩ →ᴸᴸ* ⟨ i' ∥ z γ' ⟩)
-               ----------------------------------------------------------------
-                → ∘ ((⇡ var i ⹁ γ ∷ tail) {gt = gt}) →ᵛᵛ ∙ ((_⹁_∷_ {Δ = Γ'} (⇡ var i') (z γ') tail) {gt = gt}) -- ((⇡ var i' ⹁ (z γ') ∷ tail) {gt = gt})
+     --            → (⟨ i ∥ γ ⟩ →ᴸᴸ* ⟨ i' ∥ z γ' ⟩)
+     --           ----------------------------------------------------------------
+     --            → ∘ ((⇡ var i ⹁ γ ∷ tail) {gt = gt}) →ᵛᵛ ∙ ((_⹁_∷_ {ε = Γ'} (⇡ var i') (z γ') tail) {gt = gt}) -- ((⇡ var i' ⹁ (z γ') ∷ tail) {gt = gt})
 
-     ∘var    :    {i : Γ ∋ X} → {tail : vStack Δ b T◾} → {gt : goodType b X T◾}
+     ∘var    :    {i : Γ ∋ X} → {tail : vStack ε b T◾} → {gt : goodType b X T◾}
 
                 → {M : Γ' ⊢ᵛ X}
 
@@ -173,62 +230,62 @@ data _→ᵛᵛ_ : vState Δ T◾ → vState Δ T◾ → Set where
                 → ∘ ((⇡ var i ⹁ γ ∷ tail) {gt = gt}) →ᵛᵛ ∙ ((⇡ M ⹁ γ' ∷ tail) {gt = gt})
 
      ∘lam   :  {M : (Γ ∙ X) ⊢ᶜ Y}
-             → {tail : vStack Δ b T◾} → {gt : goodType b (X `⇒ Y) T◾}
+             → {tail : vStack ε b T◾} → {gt : goodType b (X `⇒ Y) T◾}
                ---------------------------------------------------------------------------
              →     ∘ ((⇡ lam M ⹁ γ ∷ tail) {gt = gt})
                 →ᵛᵛ ∙ ((⇡ lam M ⹁ γ ∷ tail) {gt = gt})
 
      ∘pair  :  {LHS : Γ ⊢ᵛ X} → {RHS : Γ ⊢ᵛ Y}
-             → {tail : vStack Δ b T◾} → {gt : goodType b (X `× Y) T◾}
+             → {tail : vStack ε b T◾} → {gt : goodType b (X `× Y) T◾}
                ---------------------------------------------------------------------------
              →     ∘ ((⇡ pair LHS RHS ⹁ γ ∷ tail) {gt = gt})
                 →ᵛᵛ ∘ ((⇡ LHS ⹁ γ ∷ ((⇡ᴸ LHS RHS ⹁ γ ∷ tail) {gt = gt})) {gt = ↕})
 
      ∘pm    :  {M : Γ ⊢ᵛ X `× Y} → {N : (Γ ∙ X ∙ Y) ⊢ᵛ Z}
-             → {tail : vStack Δ b T◾} → {gt : goodType b Z T◾}
+             → {tail : vStack ε b T◾} → {gt : goodType b Z T◾}
                ---------------------------------------------------------------------------
              →     ∘ ((⇡ pm M N ⹁ γ ∷ tail) {gt = gt})
                 →ᵛᵛ ∘ ((⇡ M ⹁ γ ∷ (⇡ᴹ M N ⹁ γ ∷ tail) {gt = gt}) {gt = ↕})
 
-     ∘unit  :  {γ  : Env Δ Γ {WK = WK}} → {tail : vStack Δ b T◾} → {gt : goodType b `Unit T◾}
+     ∘unit  :  {γ  : Env ε Γ {WK = WK}} → {tail : vStack ε b T◾} → {gt : goodType b `Unit T◾}
                ---------------------------------------------------------------------------
              →     ∘ ((⇡ unit ⹁ γ ∷ tail) {gt = gt})
                 →ᵛᵛ ∙ ((⇡ unit ⹁ γ ∷ tail) {gt = gt})
 
      ∙pair∷pm  :  {LHS : Γ ⊢ᵛ X} → {RHS : Γ ⊢ᵛ Y} → {M : Γ' ⊢ᵛ X `× Y} → {N : (Γ' ∙ X ∙ Y) ⊢ᵛ Z'}
-             → {tail : vStack Δ b T◾} → {gt : goodType b Z' T◾}
+             → {tail : vStack ε b T◾} → {gt : goodType b Z' T◾}
                ---------------------------------------------------------------------------
              →     ∙ ((⇡ pair LHS RHS ⹁ γ ∷ ((⇡ᴹ M N ⹁ γ' ∷ tail) {gt = gt})) {gt = ↕})
                 →ᵛᵛ ∘ ((⇡ N ⹁ s-val RHS γ (s-val LHS γ γ') ∷ tail) {gt = gt})
 
      ∙M∷l   :  {M : Γ ⊢ᵛ X} → {LHS : Γ' ⊢ᵛ X} → {RHS : Γ' ⊢ᵛ Y}
-             → {tail : vStack Δ b T◾} → {gt : goodType b (X `× Y) T◾}
+             → {tail : vStack ε b T◾} → {gt : goodType b (X `× Y) T◾}
                ---------------------------------------------------------------------------
              →     ∙ ((⇡ M ⹁ γ ∷ ((⇡ᴸ LHS RHS ⹁ γ' ∷ tail) {gt = gt})) {gt = ↕})
                 →ᵛᵛ ∘ ((⇡ RHS ⹁ γ' ∷ ((⇡ᴿ (var h) (wk-val (wk-wk wk-id) RHS) ⹁ s-val M γ γ' ∷ tail) {gt = gt})) {gt = ↕})
 
      ∙M∷r   :  {M : Γ ⊢ᵛ Y} → {LHS : Γ' ⊢ᵛ X} → {RHS : Γ' ⊢ᵛ Y}
-             → {tail : vStack Δ b T◾} → {gt : goodType b (X `× Y) T◾}
+             → {tail : vStack ε b T◾} → {gt : goodType b (X `× Y) T◾}
                ---------------------------------------------------------------------------
              →     ∙ ((⇡ M ⹁ γ ∷ ((⇡ᴿ LHS RHS ⹁ γ' ∷ tail) {gt = gt})) {gt = ↕})
                 →ᵛᵛ ∙ ((⇡ pair (wk-val (wk-wk wk-id) LHS) (var h) ⹁ s-val M γ γ' ∷ tail) {gt = gt})
 
 
-data _↠ᵛᵛ_ : vState Δ T◾ → vState Δ T◾ → Set where
+data _↠ᵛᵛ_ : vState ε T◾ → vState ε T◾ → Set where
 
-  _→ᵛᵛ⟨_⟩ : (S : vState Δ T◾) → {S' : vState Δ T◾} → (laststep : S →ᵛᵛ S') → S ↠ᵛᵛ S'
+  _→ᵛᵛ⟨_⟩ : (S : vState ε T◾) → {S' : vState ε T◾} → (laststep : S →ᵛᵛ S') → S ↠ᵛᵛ S'
 
-  _→ᵛᵛ⟨_⟩_ : (S : vState Δ T◾) → {S' S'' : vState Δ T◾} → S →ᵛᵛ S' → S' ↠ᵛᵛ S'' → S ↠ᵛᵛ S''
+  _→ᵛᵛ⟨_⟩_ : (S : vState ε T◾) → {S' S'' : vState ε T◾} → S →ᵛᵛ S' → S' ↠ᵛᵛ S'' → S ↠ᵛᵛ S''
 
-_⨾_ : {F S T : vState Δ T◾} → (F ↠ᵛᵛ S) → (S ↠ᵛᵛ T) → (F ↠ᵛᵛ T)
+_⨾_ : {F S T : vState ε T◾} → (F ↠ᵛᵛ S) → (S ↠ᵛᵛ T) → (F ↠ᵛᵛ T)
 _⨾_ (F →ᵛᵛ⟨ F>S ⟩) S>>T = F →ᵛᵛ⟨ F>S ⟩ S>>T
 _⨾_ (F →ᵛᵛ⟨ F>S₁ ⟩ S₁>>S₂) S₂>>T = F →ᵛᵛ⟨ F>S₁ ⟩ (S₁>>S₂ ⨾ S₂>>T)
 
-_⦂⦂_ : vStack Δ b T◾ → vStack Δ true T◾' → vStack Δ true T◾'
+_⦂⦂_ : vStack ε b T◾ → vStack ε true T◾' → vStack ε true T◾'
 □ ⦂⦂ lower = lower
 (M ⹁ γ ∷ upper) ⦂⦂ lower = (M ⹁ γ ∷ (upper ⦂⦂ lower)) {gt = ↕}
 
-_::_ : vState Δ T◾ → vStack Δ true T◾' → vState Δ T◾'
+_::_ : vState ε T◾ → vStack ε true T◾' → vState ε T◾'
 (∘ upper) :: lower = ∘ (upper ⦂⦂ lower)
 (∙ upper) :: lower = ∙ (upper ⦂⦂ lower)
 
@@ -249,8 +306,8 @@ _::_ : vState Δ T◾ → vStack Δ true T◾' → vState Δ T◾'
 ---  ⟪ F ▣ ⟫ᴸᴸ∷ tail =  (F ::ᴸ tail) ▣
 ---  ⟪ _ →ᴸᴸ⟨ F>S ⟩ S>>T ⟫ᴸᴸ∷ tail =  _ →ᴸᴸ⟨ ⟨ F>S ⟩ᴸᴸ∷ tail ⟩ (⟪ S>>T ⟫ᴸᴸ∷ tail)
 
-⟨_⟩∷_ : {from : vState Δ T◾} → {to : vState Δ T◾} → (F>T : from →ᵛᵛ to) → (tail : vStack Δ true T◾') → (from :: tail) →ᵛᵛ (to :: tail)
-⟨ ∘var-z T>>U ⟩∷ tail = ∘var-z T>>U
+⟨_⟩∷_ : {from : vState ε T◾} → {to : vState ε T◾} → (F>T : from →ᵛᵛ to) → (tail : vStack ε true T◾') → (from :: tail) →ᵛᵛ (to :: tail)
+--⟨ ∘var-z T>>U ⟩∷ tail = ∘var-z T>>U
 ⟨ ∘var T>>U ⟩∷ tail = ∘var T>>U
 ⟨ ∘lam ⟩∷ tail = ∘lam
 ⟨ ∘pair ⟩∷ tail = ∘pair
@@ -260,12 +317,12 @@ _::_ : vState Δ T◾ → vStack Δ true T◾' → vState Δ T◾'
 ⟨ ∙M∷l ⟩∷ tail = ∙M∷l
 ⟨ ∙M∷r ⟩∷ tail = ∙M∷r
 
-⟪_⟫∷_ : {from : vState Δ T◾} → {to : vState Δ T◾} → (F>T : from ↠ᵛᵛ to) → (tail : vStack Δ true T◾') → (from :: tail) ↠ᵛᵛ (to :: tail)
+⟪_⟫∷_ : {from : vState ε T◾} → {to : vState ε T◾} → (F>T : from ↠ᵛᵛ to) → (tail : vStack ε true T◾') → (from :: tail) ↠ᵛᵛ (to :: tail)
 ⟪ _ →ᵛᵛ⟨ F>T ⟩ ⟫∷ tail =  _ →ᵛᵛ⟨ ⟨ F>T ⟩∷ tail ⟩
 ⟪ _ →ᵛᵛ⟨ F>T ⟩ F>>T ⟫∷ tail =   _ →ᵛᵛ⟨ ⟨ F>T ⟩∷ tail ⟩ (⟪ F>>T ⟫∷ tail)
 
 
-⟦_⟧↥ : (S : vStack Δ true T◾) → ⟦ T◾ ⟧
+⟦_⟧↥ : (S : vStack ε true T◾) → ⟦ T◾ ⟧
 ⟦ ((⇡ M) ⹁ γ ∷ □) {gt = ↓} ⟧↥ = ⟦ M ⟧ᵛ ⟦ γ ⟧ᴱ
 ⟦ (⇡ᴹ M N ⹁ γ ∷ □) {gt = ↓} ⟧↥ = ⟦ pm M N ⟧ᵛ ⟦ γ ⟧ᴱ
 ⟦ (⇡ᴸ LHS RHS ⹁ γ ∷ □) {gt = ↓} ⟧↥ = ⟦ pair LHS RHS ⟧ᵛ ⟦ γ ⟧ᴱ
@@ -276,7 +333,7 @@ _::_ : vState Δ T◾ → vStack Δ true T◾' → vState Δ T◾'
 ⟦ (⇡ᴿ LHS RHS ⹁ γ₁ ∷ (M₂ ⹁ γ₂ ∷ S) {gt = gt₂}) {gt = gt₁} ⟧↥ = ⟦ (M₂ ⹁ γ₂ ∷ S) {gt = gt₂} ⟧↥
 
 
-⟦_⟧◑ : (S : vState Δ T◾) → ⟦ T◾ ⟧
+⟦_⟧◑ : (S : vState ε T◾) → ⟦ T◾ ⟧
 ⟦ ∘ tail ⟧◑ = ⟦ tail ⟧↥
 ⟦ ∙ tail ⟧◑ = ⟦ tail ⟧↥
 
@@ -291,16 +348,21 @@ data vHaltingState : vState Δ T◾ → Set where
 
 data correctSteps : vState Δ T◾ → Set where
 
-  steps : {S T : vState Δ T◾} → S ↠ᵛᵛ T → vHaltingState T → ⟦ S ⟧◑ ≡ ⟦ T ⟧◑ → correctSteps S
+  steps : {S T : vState ε T◾} → S ↠ᵛᵛ T → vHaltingState T → ⟦ S ⟧◑ ≡ ⟦ T ⟧◑ → correctSteps S
 
 eval : (M : Γ ⊢ᵛ X) → {WK : Wk Γ ε} → (γ : Env ε Γ {WK = WK}) → correctSteps {T◾ = X} (∘ ((⇡ M ⹁ γ ∷ □) {gt = ↓}))
 
-eval (var h) γ = {!!}
--- with lookup h γ
--- ... | steps i>>T HT i≡t = {!!}
+eval (var i) γ with lookup-s i γ
+... | steps i>>T found-unit i≡T = steps (_ →ᵛᵛ⟨ ∘var i>>T ⟩) ∙unit⹁ _ ■ i≡T
+... | steps i>>T found-pair i≡T = steps (_ →ᵛᵛ⟨ ∘var i>>T ⟩) ∙pair[ _ ⹁ _ ]⹁ _ ■ i≡T
+... | steps i>>T found-lam i≡T = steps (_ →ᵛᵛ⟨ ∘var i>>T ⟩) ∙lam _ ⹁ _ ■ i≡T
+... | steps i>>T found-pm i≡T = {!!}
+--with lookup (t i) γ
+--... | steps i>>T HT i≡t = {!!}
 
-eval (var (t i)) γ with lookup (t i) γ
-... | steps i>>T HT i≡t = {!!}
+eval = {!!}
+
+{-
 
 -- with lookup i γ
 -- ... | steps i>>T HT i≡t = {!!}
@@ -355,6 +417,9 @@ eval (pm {A = X} {B = Y} M N) γ with eval M γ
           ≡⟨ N≡T ⟩
             ⟦ N' ⟧ᵛ ⟦ γ₂ ⟧ᴱ ∎
         )
+
+
+
 
 {-
 
@@ -414,4 +479,6 @@ _ = refl
 -}
 
 -}
+-}
+
 -}
