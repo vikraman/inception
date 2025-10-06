@@ -653,44 +653,82 @@ lem2 (wk-wk π₁) (wk-wk π₂) γ = lem2 π₁ (wk-wk π₂) (proj₁ γ)
 
 
 eval : (M : Γ' ⊢ᵛ X) → (γ : Env Γ) → (π : Wk Γ Γ') → correctSteps {T◾ = X} (∘ ((⇡ (wk-val π M) ⹁ γ ∷ □) {gt = ↓}))
-eval (var i) γ π = {!!} --with lookup-t i γ
--- ... | steps i>>T found-unit i≡T π w≡γ = steps (_ →ᵛᵛ⟨ ∘var i>>T π ⟩) (∙ val-unit ⹁ γ ■) refl wk-id
--- ... | steps i>>T (found-pair {LHS = LHS} {RHS = RHS} {γ = γ₁}) i≡T π w≡γ = steps (_ →ᵛᵛ⟨ ∘var i>>T π ⟩) (∙ (wk-valTerm π (val-pair LHS RHS)) ⹁ γ ■)
---            (⟦ i ⟧ᵐ ⟦ γ ⟧ᴱ
---            ≡⟨ i≡T ⟩
---            (< ⟦ valTerm-to-Val LHS ⟧ᵛ , ⟦ valTerm-to-Val RHS ⟧ᵛ > ⟦ γ₁ ⟧ᴱ)
---            ≡⟨ cong (λ x → < ⟦ valTerm-to-Val LHS ⟧ᵛ , ⟦ valTerm-to-Val RHS ⟧ᵛ > x) (sym w≡γ) ⟩
---            (< ⟦ valTerm-to-Val LHS ⟧ᵛ , ⟦ valTerm-to-Val RHS ⟧ᵛ > (⟦ π ⟧ʷ ⟦ γ ⟧ᴱ))
---            ≡⟨ refl ⟩
---            (⟦ wk-val π (valTerm-to-Val LHS) ⟧ᵛ ⟦ γ ⟧ᴱ , ⟦ wk-val π (valTerm-to-Val RHS) ⟧ᵛ ⟦ γ ⟧ᴱ)
---            ≡⟨ cong (λ x → (⟦ x ⟧ᵛ ⟦ γ ⟧ᴱ , ⟦ wk-val π (valTerm-to-Val RHS) ⟧ᵛ ⟦ γ ⟧ᴱ)) (wk-comm {M = LHS} {π = π}) ⟩
---            (⟦ valTerm-to-Val (wk-valTerm π LHS) ⟧ᵛ ⟦ γ ⟧ᴱ , ⟦ wk-val π (valTerm-to-Val RHS) ⟧ᵛ ⟦ γ ⟧ᴱ)
---            ≡⟨ cong (λ x → (⟦ valTerm-to-Val (wk-valTerm π LHS) ⟧ᵛ ⟦ γ ⟧ᴱ , ⟦ x ⟧ᵛ ⟦ γ ⟧ᴱ)) (wk-comm {M = RHS} {π = π}) ⟩
---            (⟦ valTerm-to-Val (wk-valTerm π LHS) ⟧ᵛ ⟦ γ ⟧ᴱ , ⟦ valTerm-to-Val (wk-valTerm π RHS) ⟧ᵛ ⟦ γ ⟧ᴱ)
---            ≡⟨ refl ⟩
---            (< ⟦ valTerm-to-Val (wk-valTerm π LHS) ⟧ᵛ , ⟦ valTerm-to-Val (wk-valTerm π RHS) ⟧ᵛ > ⟦ γ ⟧ᴱ) ∎)
--- 
---            wk-id
--- ... | steps i>>T (found-lam {W = W} {γ = γ₁}) i≡T π w≡γ = steps (_ →ᵛᵛ⟨ ∘var i>>T π ⟩) (∙ (wk-valTerm π (val-lam W)) ⹁ γ ■)
--- 
---            (⟦ i ⟧ᵐ ⟦ γ ⟧ᴱ
---               ≡⟨ i≡T ⟩
---             ((λ y → ⟦ W ⟧ᶜ (⟦ γ₁ ⟧ᴱ , y) ))
---               ≡⟨ cong (λ x → (λ y → ⟦ W ⟧ᶜ (x , y) )) (sym w≡γ) ⟩
---             (λ y → ⟦ W ⟧ᶜ (⟦ π ⟧ʷ ⟦ γ ⟧ᴱ , y) )
---               ≡⟨ refl ⟩
---             (curry (< (λ r → proj₁ r) ； ⟦ π ⟧ʷ , (λ r → proj₂ r) > ； ⟦ W ⟧ᶜ)) ⟦ γ ⟧ᴱ ∎)
--- 
---            wk-id
 
-eval (lam W) γ π = steps (∘ ⇡ (wk-val π (lam W)) ⹁ γ ∷ □ →ᵛᵛ⟨ ∘lam ⟩) (∙ val-lam (wk-comp (wk-cong π) W) ⹁ γ ■) refl wk-id refl --steps (∘ ⇡ lam W ⹁ γ ∷ □ →ᵛᵛ⟨ ∘lam ⟩) (∙ val-lam W ⹁ γ ■) refl wk-id
-eval unit γ π = steps (_ →ᵛᵛ⟨ ∘unit ⟩) (∙ val-unit ⹁ γ ■) refl wk-id refl --steps (_ →ᵛᵛ⟨ ∘unit ⟩) ∙ val-unit ⹁ γ ■ refl wk-id
+eval (var i) γ π with lookup-t (wk-mem π i) γ
+... | steps i>>T found-unit i≡T π₁ w≡γ = steps (_ →ᵛᵛ⟨ ∘var i>>T π₁ ⟩) (∙ val-unit ⹁ γ ■) refl wk-id refl
+... | steps i>>T (found-pair {LHS = LHS} {RHS = RHS} {γ = γ₁}) i≡T π₁ w≡γ = --{!!}
 
-eval (pair {A = X} {B = Y} LHS RHS) γ π = {!!} --with eval {X = X} LHS γ | eval {X = Y} RHS γ
---... | s1 | s2 = {!!}
+           steps
+
+           (_ →ᵛᵛ⟨ ∘var i>>T π₁ ⟩)
+
+           (∙ val-pair (wk-valTerm π₁ LHS) (wk-valTerm π₁ RHS) ⹁ γ ■)
+
+           (⟦ wk-mem π i ⟧ᵐ ⟦ γ ⟧ᴱ
+           ≡⟨ i≡T ⟩
+           (< ⟦ valTerm-to-Val LHS ⟧ᵛ , ⟦ valTerm-to-Val RHS ⟧ᵛ > ⟦ γ₁ ⟧ᴱ)
+           ≡⟨ cong (λ x → < ⟦ valTerm-to-Val LHS ⟧ᵛ , ⟦ valTerm-to-Val RHS ⟧ᵛ > x) (sym w≡γ) ⟩
+           (< ⟦ valTerm-to-Val LHS ⟧ᵛ , ⟦ valTerm-to-Val RHS ⟧ᵛ > (⟦ π₁ ⟧ʷ ⟦ γ ⟧ᴱ))
+           ≡⟨ refl ⟩
+           (⟦ wk-val π₁ (valTerm-to-Val LHS) ⟧ᵛ ⟦ γ ⟧ᴱ , ⟦ wk-val π₁ (valTerm-to-Val RHS) ⟧ᵛ ⟦ γ ⟧ᴱ)
+           ≡⟨ cong (λ x → (⟦ x ⟧ᵛ ⟦ γ ⟧ᴱ , ⟦ wk-val π₁ (valTerm-to-Val RHS) ⟧ᵛ ⟦ γ ⟧ᴱ)) (wk-comm {M = LHS} {π = π₁}) ⟩
+           (⟦ valTerm-to-Val (wk-valTerm π₁ LHS) ⟧ᵛ ⟦ γ ⟧ᴱ , ⟦ wk-val π₁ (valTerm-to-Val RHS) ⟧ᵛ ⟦ γ ⟧ᴱ)
+           ≡⟨ cong (λ x → (⟦ valTerm-to-Val (wk-valTerm π₁ LHS) ⟧ᵛ ⟦ γ ⟧ᴱ , ⟦ x ⟧ᵛ ⟦ γ ⟧ᴱ)) (wk-comm {M = RHS} {π = π₁}) ⟩
+           (⟦ valTerm-to-Val (wk-valTerm π₁ LHS) ⟧ᵛ ⟦ γ ⟧ᴱ , ⟦ valTerm-to-Val (wk-valTerm π₁ RHS) ⟧ᵛ ⟦ γ ⟧ᴱ)
+           ≡⟨ refl ⟩
+           (< ⟦ valTerm-to-Val (wk-valTerm π₁ LHS) ⟧ᵛ , ⟦ valTerm-to-Val (wk-valTerm π₁ RHS) ⟧ᵛ > ⟦ γ ⟧ᴱ) ∎)
+
+           wk-id
+
+           refl
+
+... | steps i>>T (found-lam {W = W} {γ = γ₁}) i≡T π₁ w≡γ =
+
+           steps
+
+           (_ →ᵛᵛ⟨ ∘var i>>T π₁ ⟩)
+
+           (∙ (wk-valTerm π₁ (val-lam W)) ⹁ γ ■)
+
+           (⟦ wk-mem π i ⟧ᵐ ⟦ γ ⟧ᴱ
+             ≡⟨ i≡T ⟩
+           ((λ y → ⟦ W ⟧ᶜ (⟦ γ₁ ⟧ᴱ , y) ))
+             ≡⟨ cong (λ x → (λ y → ⟦ W ⟧ᶜ (x , y) )) (sym w≡γ) ⟩
+           (λ y → ⟦ W ⟧ᶜ (⟦ π₁ ⟧ʷ ⟦ γ ⟧ᴱ , y) )
+             ≡⟨ refl ⟩
+           (curry (< (λ r → proj₁ r) ； ⟦ π₁ ⟧ʷ , (λ r → proj₂ r) > ； ⟦ W ⟧ᶜ)) ⟦ γ ⟧ᴱ ∎)
+
+           wk-id
+
+           refl
+
+eval (lam W) γ π = steps (∘ ⇡ (wk-val π (lam W)) ⹁ γ ∷ □ →ᵛᵛ⟨ ∘lam ⟩) (∙ val-lam (wk-comp (wk-cong π) W) ⹁ γ ■) refl wk-id refl
+eval unit γ π = steps (_ →ᵛᵛ⟨ ∘unit ⟩) (∙ val-unit ⹁ γ ■) refl wk-id refl
+
+eval (pair {A = X} {B = Y} LHS RHS) γ π with eval {X = X} LHS γ π | eval {X = Y} RHS γ π
+... | steps {T = ∙ (⭭_ {X = X} LT ⹁ γ₁ ∷ □) {gt = ↓}} L>T ∙LT L≡T πᴸ wk≡ᴸ | steps {T = ∙ (⭭_ {X = Y} RT ⹁ γ₂ ∷ □) {gt = ↓}} R>T ∙RT R≡T πᴿ wk≡ᴿ = --{!!}
+
+          steps
+
+            (
+             ∘ ⇡ (wk-val π (pair LHS RHS)) ⹁ γ ∷ □ →ᵛᵛ⟨ ∘pair ⟩  ⨾ -- (∘ ⇡ wk-val π LHS ⹁ γ ∷ ⇡ᴸ (wk-val π LHS) (wk-val π RHS) ⹁ γ ∷ □)
+             (⟪ L>T ⟫∷ (⇡ᴸ (wk-val π LHS) (wk-val π RHS) ⹁ γ ∷ □)) ⨾
+             (∙ ⭭ LT ⹁ γ₁ ∷ ⇡ᴸ (wk-val π LHS) (wk-val π RHS) ⹁ γ ∷ □) →ᵛᵛ⟨ ∙M∷l ⟩ ⨾ -- (∘ ⇡ wk-val _π'_3203 (wk-val π RHS) ⹁ γ₁ ∷ ⇡ᴿ LT (wk-val _π'_3203 (wk-val π RHS)) ⹁ γ₁ ∷ □)
+             {!!} ⨾ -- (⟪ R>T ⟫∷ ((⇡ᴿ (var h) (wk-val (wk-wk wk-id) RHS) ⹁ s-val M₁ γ₁ γ ∷ □) {gt = ↓})) ⨾
+             {!!} -- ∙ ⇡ M₂ ⹁ γ₂ ∷ ⇡ᴿ (var h) (wk-val (wk-wk wk-id) RHS) ⹁ s-val M₁ γ₁ γ ∷ □ →ᵛᵛ⟨ ∙M∷r ⟩
+            )
+
+
+            {!!}
+
+            {!!}
+
+            {!!}
+
+            {!!}
 
 eval (pm M N) γ π with eval M γ π
-... | steps M>T ∙ val-pair LHS RHS ⹁ γ₁ ■ M≡T π₁ wk≡₁ with eval N (s-val (wk-valTerm (wk-wk wk-id) RHS) (s-val LHS γ₁)) ((wk-cong (wk-cong (wk-trans π₁ π)))) | (lem1a N (wk-cong (wk-cong π₁)) (wk-cong (wk-cong π))) --eval (wk-val (wk-cong (wk-cong π)) N) (s-val (wk-valTerm (wk-wk wk-id) RHS) (s-val LHS γ₁))
+... | steps M>T ∙ val-pair LHS RHS ⹁ γ₁ ■ M≡T π₁ wk≡₁ with eval N (s-val (wk-valTerm (wk-wk wk-id) RHS) (s-val LHS γ₁)) ((wk-cong (wk-cong (wk-trans π₁ π)))) | (lem1a N (wk-cong (wk-cong π₁)) (wk-cong (wk-cong π)))
 ...    | steps {T = T} N>T ∙T N≡T π₂ wk≡₂ | eq with N>T
 ...      | N>T' rewrite sym eq =
        steps
@@ -703,8 +741,7 @@ eval (pm M N) γ π with eval M γ π
 
          ∙T
 
-         (--(< idf , ⟦ π ⟧ʷ ； ⟦ M ⟧ᵛ > ； assocl ； < (λ r → proj₁ r) ； < (λ r → proj₁ r) ； ⟦ π ⟧ʷ , (λ r → proj₂ r) > , (λ r → proj₂ r) > ； ⟦ N ⟧ᵛ) ⟦ γ ⟧ᴱ
-            ⟦ wk-val π (pm M N) ⟧ᵛ ⟦ γ ⟧ᴱ
+         (  ⟦ wk-val π (pm M N) ⟧ᵛ ⟦ γ ⟧ᴱ
            ≡⟨ refl ⟩
             ⟦ pm (wk-val π M) (wk-val (wk-cong (wk-cong π)) N) ⟧ᵛ ⟦ γ ⟧ᴱ
            ≡⟨ refl ⟩
