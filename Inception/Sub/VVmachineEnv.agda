@@ -14,13 +14,10 @@ open import Data.Unit
 variable
   X Y Z X' Y' Z' T◾ T◾' : Ty
   Γ' Γ'' Θ Θ' Ψ' : Ctx
---  γ  : ⟦ Γ ⟧ˣ
---  γ' : ⟦ Γ' ⟧ˣ
 
 infix  26 ⭭_
 infix  26 ⇡_
 infixr 25 _⹁_∷_
---infixr 25 _⹁_∷⟨_⟩_
 infix  20 ∘_
 infix  20 ∙_
 infixr 17 _→ᵛᵛ⟨_⟩
@@ -37,7 +34,6 @@ data valTerm : Ctx → Ty → Set where
     val-lam : (Γ ∙ X) ⊢ᶜ Y → valTerm Γ (X `⇒ Y)
 
     val-pair : valTerm Γ X → valTerm Γ Y → valTerm Γ (X `× Y)
-    --val-pair : Γ ⊢ᵛ X → Γ ⊢ᵛ Y → valTerm Γ (X `× Y)
 
     val-unit : valTerm Γ `Unit
 
@@ -45,7 +41,6 @@ data Env : (Γ : Ctx) → Set where
 
     z       :  (γ : ⟦ ε ⟧ˣ) → Env ε
 
-    --s-val   :  {WK : Wk Γ ε} → {WK' : Wk Γ' ε} → (M : valTerm Γ X) → Env ε Γ {WK = WK} → Env ε Γ' {WK = WK'} → Env ε (Γ' ∙ X) {WK = wk-wk WK'}
     s-val   :  (M : valTerm Γ X) → Env Γ → Env (Γ ∙ X)
 
 --    s-comp  :  (W : Γ ⊢ᶜ X) → Env Γ → (k : ⟦ X ⟧ → R) → Env Γ' → Env (Γ' ∙ `V)
@@ -53,7 +48,6 @@ data Env : (Γ : Ctx) → Set where
 valTerm-to-Val : valTerm Γ X → Γ ⊢ᵛ X
 valTerm-to-Val (val-lam W) = lam W
 valTerm-to-Val (val-pair LHS RHS) = pair (valTerm-to-Val LHS) (valTerm-to-Val RHS)
---valTerm-to-Val (val-pair LHS RHS) = pair LHS RHS
 valTerm-to-Val (val-unit) = unit
 
 wk-valTerm : Wk Γ Δ -> valTerm Δ X -> valTerm Γ X
@@ -67,13 +61,6 @@ wk-trans (wk-cong π₁) (wk-cong π₂) = wk-cong (wk-trans π₁ π₂)
 wk-trans (wk-cong π₁) (wk-wk π₂) = wk-wk (wk-trans π₁ π₂)
 wk-trans (wk-wk π₁) π₂ = wk-wk (wk-trans π₁ π₂)
 
-wk-trans' : Wk Γ Δ → Wk Δ Ψ → Wk Γ Ψ
-wk-trans' π₁ wk-ε = π₁
-wk-trans' (wk-cong π₁) (wk-cong π₂) = wk-cong (wk-trans' π₁ π₂)
-wk-trans' (wk-cong π₁) (wk-wk π₂) = wk-wk (wk-trans' π₁ π₂)
-wk-trans' (wk-wk π₁) (wk-cong π₂) = wk-wk (wk-trans' π₁ (wk-cong π₂))
-wk-trans' (wk-wk π₁) (wk-wk π₂) = wk-wk (wk-trans' π₁ (wk-wk π₂))
-
 
 variable
     b : Bool
@@ -81,8 +68,6 @@ variable
     γ' : Env Γ'
     γ'' : Env Γ''
 
-
----------------------------------------------------------
 
 infix  15 _→ᴸᴸ_
 
@@ -114,8 +99,6 @@ lTEnv ⟨ i ∥ s-val M E ⟩ = E
 
 data _→ᴸᴸ_ : lState X → lState X → Set where
 
-    --val-h-step    : {i : Γ ∋ Y} → {E : Env Γ} → {E' : Env Γ'} → ⟨ h  ∥ s-val (var i) E E' ⟩ →ᴸᴸ ⟨ i ∥ E ⟩
-
     val-t-step    : {i : Γ ∋ Y} → {E : Env Γ} → {M : valTerm Γ X} → ⟨ t i  ∥ s-val M E ⟩ →ᴸᴸ ⟨ i ∥ E ⟩
 
 --    comp-t-step    : {i : Γ' ∋ Y} → {E : Env Γ} → {W : Γ ⊢ᶜ X} → {k : ⟦ X ⟧ → R} → {E' : Env Γ'} → ⟨ t i  ∥ s-comp W E k E' ⟩ →ᴸᴸ ⟨ i ∥ E' ⟩
@@ -138,7 +121,6 @@ data nicelHaltingState : lState X → Set where
       found-unit : {γ : Env Γ} → nicelHaltingState ⟨ h ∥ s-val val-unit γ ⟩
 
       found-pair : {LHS : valTerm Γ X} → {RHS : valTerm Γ Y} → {γ : Env Γ} → nicelHaltingState ⟨ h ∥ s-val (val-pair LHS RHS) γ ⟩
-      --found-pair : {LHS : Γ ⊢ᵛ X} → {RHS : Γ ⊢ᵛ Y} → {WK : Wk Γ ε} → {γ : Env ε Γ {WK = WK}} → nicelHaltingState ⟨ h ∥ s-val (val-pair RHS LHS) γ ⟩
 
       found-lam : {W : (Γ ∙ X) ⊢ᶜ Y} → {γ : Env Γ} → nicelHaltingState ⟨ h ∥ s-val (val-lam W) γ ⟩
 
@@ -173,7 +155,6 @@ data partialTerm : (Γ : Ctx) → (X : Ty) → Set where
 
     ⇡ᴸ : (LHS : Γ ⊢ᵛ X) → (RHS : Γ ⊢ᵛ Y) → partialTerm Γ (X `× Y)
 
-    --⇡ᴿ  : (LHS : Γ ⊢ᵛ X) → (RHS : Γ ⊢ᵛ Y) → partialTerm Γ (X `× Y)
     ⇡ᴿ  : (LHS : valTerm Γ X) → (RHS : Γ ⊢ᵛ Y) → partialTerm Γ (X `× Y)
 
 
@@ -189,33 +170,11 @@ data vState : Ty → Set where
 
      ∙_ : vStack true T◾ → vState T◾
 
-
---infix  15 _→ⱽᴸ_
---data _→ⱽᴸ_ : vState T◾ → lState X → Set where
---
---     start-lookup    : {i : Γ ∋ X} → {γ : Env Γ} → {tail : vStack b T◾} → {gt : goodType b X T◾} → ∘ ((⇡ var i ⹁ γ ∷ tail) {gt = gt}) →ⱽᴸ ⟨ i ∥ γ ∥ tail ﹐ gt ⟩
---
---infix  15 _→ᴸⱽ_
---data _→ᴸⱽ_ : lState X → vState T◾ → Set where
---
---     finish-lookup    : {M : (Γ ∙ X) ⊢ᵛ Y} → {γ : Env (Γ ∙ X)} → {γ' : Env Γ'} → {tail : vStack b T◾} → {gt : goodType b Y T◾} → ⟨ h ∥ s-val M γ γ' ∥ tail ﹐ gt ⟩ →ᴸⱽ ∙ ((⇡ M ⹁ γ ∷ tail) {gt = gt})
-
 data _→ᵛᵛ_ : vState T◾ → vState T◾ → Set where
 
-     -- ∘var-z    :    {i : Γ ∋ X} → {tail : vStack Γ' b T◾} → {gt : goodType b X T◾}
-
-     --            → {i' : (Γ') ∋ X} → {γ' : ⟦ Γ' ⟧ˣ}
-
-     --            → (⟨ i ∥ γ ⟩ →ᴸᴸ* ⟨ i' ∥ z γ' ⟩)
-     --           ----------------------------------------------------------------
-     --            → ∘ ((⇡ var i ⹁ γ ∷ tail) {gt = gt}) →ᵛᵛ ∙ ((_⹁_∷_ {ε = Γ'} (⇡ var i') (z γ') tail) {gt = gt}) -- ((⇡ var i' ⹁ (z γ') ∷ tail) {gt = gt})
-
      ∘var    :    {i : Γ ∋ X} → {tail : vStack b T◾} → {gt : goodType b X T◾}
-
-                → {M : valTerm Γ' X} 
-
+                → {M : valTerm Γ' X}
                 → (⟨ i ∥ γ ⟩ →ᴸᴸ* ⟨ h ∥ s-val M γ' ⟩) → (πᵥ : Wk Γ Γ')
-
                ----------------------------------------------------------------
                 → ∘ ((⇡ var i ⹁ γ ∷ tail) {gt = gt}) →ᵛᵛ ∙ ((⭭ (wk-valTerm πᵥ M) ⹁ γ ∷ tail) {gt = gt})
 
@@ -249,7 +208,6 @@ data _→ᵛᵛ_ : vState T◾ → vState T◾ → Set where
                ---------------------------------------------------------------------------
              →     ∙ ((⭭ M ⹁ γ ∷ ((⇡ᴸ LHS RHS ⹁ γ' ∷ tail) {gt = gt})) {gt = ↕})
                 →ᵛᵛ ∘ ((⇡ wk-val π' RHS ⹁ γ ∷ ((⇡ᴿ M (wk-val π' RHS) ⹁ γ ∷ tail) {gt = gt})) {gt = ↕})
-                --→ᵛᵛ ∘ ((⇡ RHS ⹁ γ' ∷⟨ ? ⟩ ((⇡ᴿ (var h) (wk-val (wk-wk wk-id) RHS) ⹁ s-val M γ γ' ∷⟨ ? ⟩ tail) {gt = gt})) {gt = ↕})
 
      ∙M∷r   :  {M : valTerm Γ Y} → {LHS : valTerm Γ' X} → {RHS : Γ' ⊢ᵛ Y} {π' : Wk Γ Γ'}
              → {tail : vStack b T◾} → {gt : goodType b (X `× Y) T◾}
@@ -266,13 +224,6 @@ data _→ᵛᵛ_ : vState T◾ → vState T◾ → Set where
                 →ᵛᵛ  ∘ ((⇡ (wk-val (wk-cong (wk-cong π')) N) ⹁ s-val (wk-valTerm (wk-wk wk-id) RHS) ((s-val LHS γ)) ∷ tail) {gt = gt})
 
 
-     -- test   :  {M : valTerm Γ X} → {LHS : Γ' ⊢ᵛ X} → {RHS : Γ' ⊢ᵛ Y} → {π : Wk Γ' Ψ} → {π' : Wk Γ Γ'}
-     --         → {tail : vStack Ψ Θ b T◾} → {gt : goodType b (X `× Y) T◾}
-     --           ---------------------------------------------------------------------------
-     --         →     ∙ ((⭭ M ⹁ γ ∷⟨ π' ⟩ ((⇡ᴸ LHS RHS ⹁ γ' ∷⟨ π ⟩ tail) {gt = gt})) {gt = ↕})
-     --           →ᵛᵛ  ∙ ((⭭ M ⹁ γ ∷⟨ π' ⟩ ((⇡ᴸ LHS RHS ⹁ γ' ∷⟨ π ⟩ tail) {gt = gt})) {gt = ↕})
-
-
 data _↠ᵛᵛ_ : vState T◾ → vState T◾ → Set where
 
   _→ᵛᵛ⟨_⟩ : (S : vState T◾) → {S' : vState T◾} → (laststep : S →ᵛᵛ S') → S ↠ᵛᵛ S'
@@ -287,191 +238,11 @@ _⦂⦂_ : vStack b T◾ → vStack true T◾' → vStack true T◾'
 □ ⦂⦂ lower = lower
 (M ⹁ γ ∷ upper) ⦂⦂ lower = (M ⹁ γ ∷ (upper ⦂⦂ lower)) {gt = ↕}
 
-
-{-
-_⦂⦂⟨_⟩_ : vStack ε Ψ Θ true T◾ → Wk Θ Ψ' → vStack ε Ψ' Θ' true T◾' → vStack ε Ψ Θ' true T◾'
-
-
-(M₁ ⹁ γ₁ ∷⟨ π₁ ⟩ □) ⦂⦂⟨ π ⟩ lower = (M₁ ⹁ γ₁ ∷⟨ wk-trans π₁ π ⟩ lower ) {gt = ↕}
-(M₁ ⹁ γ₁ ∷⟨ π₁ ⟩ ((x ⹁ γ ∷⟨ π₃ ⟩ upper) {gt = gt})) ⦂⦂⟨ π ⟩ lower = (M₁ ⹁ γ₁ ∷⟨ π₁ ⟩ (((x ⹁ γ ∷⟨ π₃ ⟩ upper) {gt = gt} ) ⦂⦂⟨ π ⟩ lower)) {gt = ↕}
---(M₁ ⹁ γ₁ ∷⟨ π₁ ⟩ (x ⹁ γ ∷⟨ π₃ ⟩ □) {gt = ↓}) ⦂⦂⟨ π ⟩ lower = (M₁ ⹁ γ₁ ∷⟨ π₁ ⟩ (x ⹁ γ ∷⟨ wk-trans π₃ π ⟩ lower) {gt = ↕}) {gt = ↕}
---(M₁ ⹁ γ₁ ∷⟨ π₁ ⟩ (x ⹁ γ ∷⟨ π₃ ⟩ (x₁ ⹁ γ₂ ∷⟨ π₂ ⟩ upper) {gt = gt})) ⦂⦂⟨ π ⟩ lower = (M₁ ⹁ γ₁ ∷⟨ π₁ ⟩ (x ⹁ γ ∷⟨ π₃ ⟩ (((x₁ ⹁ γ₂ ∷⟨ π₂ ⟩ upper) {gt = gt} ) ⦂⦂⟨ π ⟩ lower)) {gt = ↕}) {gt = ↕}
-
-{-
-(M₁ ⹁ γ₁ ∷⟨ π₁ ⟩ □) ⦂⦂⟨ π ⟩ ((⭭ x ⹁ γ₂ ∷⟨ π₂ ⟩ lower) {gt = gt}) = (M₁ ⹁ γ₁ ∷⟨ wk-trans π₁ π ⟩ ((⭭ x ⹁ γ₂ ∷⟨ π₂ ⟩ lower)) {gt = gt} ) {gt = ↕}
-(M₁ ⹁ γ₁ ∷⟨ π₁ ⟩ □) ⦂⦂⟨ π ⟩ ((⇡ M ⹁ γ₂ ∷⟨ π₂ ⟩ lower) {gt = gt}) = (M₁ ⹁ γ₁ ∷⟨ wk-trans π₁ π ⟩ ((⇡ M ⹁ γ₂ ∷⟨ π₂ ⟩ lower)) {gt = gt} ) {gt = ↕}
-(M₁ ⹁ γ₁ ∷⟨ π₁ ⟩ □) ⦂⦂⟨ π ⟩ ((⇡ᴹ M N ⹁ γ₂ ∷⟨ π₂ ⟩ lower) {gt = gt}) = (M₁ ⹁ γ₁ ∷⟨ wk-trans π₁ π ⟩ ((⇡ᴹ M N ⹁ γ₂ ∷⟨ π₂ ⟩ lower)) {gt = gt} ) {gt = ↕}
-(M₁ ⹁ γ₁ ∷⟨ π₁ ⟩ □) ⦂⦂⟨ π ⟩ ((⇡ᴸ LHS RHS ⹁ γ₂ ∷⟨ π₂ ⟩ lower) {gt = gt}) = (M₁ ⹁ γ₁ ∷⟨ wk-trans π₁ π ⟩ ((⇡ᴸ LHS RHS ⹁ γ₂ ∷⟨ π₂ ⟩ lower)) {gt = gt} ) {gt = ↕}
-(M₁ ⹁ γ₁ ∷⟨ π₁ ⟩ □) ⦂⦂⟨ π ⟩ ((⇡ᴿ LHS RHS ⹁ γ₂ ∷⟨ π₂ ⟩ lower) {gt = gt}) = (M₁ ⹁ γ₁ ∷⟨ wk-trans π₁ π ⟩ ((⇡ᴿ LHS RHS ⹁ γ₂ ∷⟨ π₂ ⟩ lower)) {gt = gt} ) {gt = ↕}
-((M₁ ⹁ γ₁ ∷⟨ π₁ ⟩ ((x ⹁ γ ∷⟨ π₃ ⟩ upper) {gt = gt})) {gt = ↕}) ⦂⦂⟨ π ⟩ ((M₂ ⹁ γ₂ ∷⟨ π₂ ⟩ lower) {gt = gt2}) = (M₁ ⹁ γ₁ ∷⟨ π₁ ⟩ (((x ⹁ γ ∷⟨ π₃ ⟩ upper) {gt = gt} ) ⦂⦂⟨ π ⟩ ((M₂ ⹁ γ₂ ∷⟨ π₂ ⟩ lower) {gt = gt2}))) {gt = ↕}
--}
--}
-
-{-
-botCtx : vState ε T◾ → Ctx
-botCtx (∘_ {Θ = Θ} x) = Θ
-botCtx (∙_ {Θ = Θ} x) = Θ
-
-topCtx : vState ε T◾ → Ctx
-topCtx (∘_ {Ψ = Ψ} x) = Ψ
-topCtx (∙_ {Ψ = Ψ} x) = Ψ
-
-_::⟨_⟩_ : (upper : vState ε T◾) → Wk (botCtx upper) Ψ → vStack ε Ψ Θ true T◾' → vState ε T◾'
-(∘ upper) ::⟨ π ⟩ lower = ∘ (upper ⦂⦂⟨ π ⟩ lower)
-(∙ upper) ::⟨ π ⟩ lower = ∙ (upper ⦂⦂⟨ π ⟩ lower)
-
--}
-
 _::_ : (upper : vState T◾) → vStack true T◾' → vState T◾'
 (∘ upper) :: lower = ∘ (upper ⦂⦂ lower)
 (∙ upper) :: lower = ∙ (upper ⦂⦂ lower)
 
----  _::ᴸ_ : lState X → vStack true T◾' → lState X
----  ⟨ i ∥ γ ∥ tail ﹐ gt ⟩ ::ᴸ lower = ⟨ i ∥ γ ∥ (tail ⦂⦂ lower) ﹐ ↕ ⟩
----  
----  ⟨_⟩ⱽᴸ∷_ : {from : vState T◾} → {to : lState X} → (F>T : from →ⱽᴸ to) → (tail : vStack true T◾') → (from :: tail) →ⱽᴸ (to ::ᴸ tail)
----  ⟨ start-lookup {i = i} {γ = γ} {tail = tail₁} {gt = gt}⟩ⱽᴸ∷ tail₂ = start-lookup {i = i} {γ = γ} {tail = tail₁ ⦂⦂ tail₂} {gt = ↕}
----  
----  ⟨_⟩ᴸⱽ∷_ : {from : lState X} → {to : vState T◾} → (F>T : from →ᴸⱽ to) → (tail : vStack true T◾') → (from ::ᴸ tail) →ᴸⱽ (to :: tail)
----  ⟨ finish-lookup {M = M} {γ = γ} {γ' = γ'} {tail = tail₁} {gt = gt} ⟩ᴸⱽ∷ tail₂ = finish-lookup {M = M} {γ = γ} {γ' = γ'} {tail = tail₁ ⦂⦂ tail₂} {gt = ↕}
----  
----  ⟨_⟩ᴸᴸ∷_ : {from : lState X} → {to : lState X} → (F>T : from →ᴸᴸ to) → (tail : vStack true T◾') → (from ::ᴸ tail) →ᴸᴸ (to ::ᴸ tail)
----  ⟨ val-t-step {i = i} {E = E} {M = M} {E' = E'} {tail = tail₁} {gt = gt} ⟩ᴸᴸ∷ tail₂ = val-t-step {i = i} {E = E} {M = M} {E' = E'} {tail = tail₁ ⦂⦂ tail₂} {gt = ↕}
----  ⟨ comp-t-step {i = i} {E = E} {W = W} {k = k} {E' = E'} {tail = tail₁} {gt = gt} ⟩ᴸᴸ∷ tail₂ = comp-t-step {i = i} {E = E} {W = W} {k = k} {E' = E'} {tail = tail₁ ⦂⦂ tail₂} {gt = ↕}
----  
----  ⟪_⟫ᴸᴸ∷_ : {from : lState X} → {to : lState X} → (F>>T : from →ᴸᴸ* to) → (tail : vStack true T◾') → (from ::ᴸ tail) →ᴸᴸ* (to ::ᴸ tail)
----  ⟪ F ▣ ⟫ᴸᴸ∷ tail =  (F ::ᴸ tail) ▣
----  ⟪ _ →ᴸᴸ⟨ F>S ⟩ S>>T ⟫ᴸᴸ∷ tail =  _ →ᴸᴸ⟨ ⟨ F>S ⟩ᴸᴸ∷ tail ⟩ (⟪ S>>T ⟫ᴸᴸ∷ tail)
-
-{-
-twk : (from : vState ε T◾) → (to : vState ε T◾) → (F>T : from →ᵛᵛ to) → (π : Wk (botCtx from) Ψ) → Wk (botCtx to) Ψ
-twk .(∘ ⇡ var _ ⹁ _ ∷⟨ _ ⟩ _) .(∙ ⭭ wk-valTerm _ _ ⹁ _ ∷⟨ _ ⟩ _) (∘var x) π = π
-twk _ _ ∘lam π = π
-twk .(∘ ⇡ pair _ _ ⹁ _ ∷⟨ _ ⟩ _) .(∘ ⇡ _ ⹁ _ ∷⟨ wk-id ⟩ ⇡ᴸ _ _ ⹁ _ ∷⟨ _ ⟩ _) ∘pair π = π
-twk .(∘ ⇡ pm _ _ ⹁ _ ∷⟨ _ ⟩ _) .(∘ ⇡ _ ⹁ _ ∷⟨ wk-id ⟩ ⇡ᴹ _ _ ⹁ _ ∷⟨ _ ⟩ _) ∘pm π = π
-twk .(∘ ⇡ unit ⹁ _ ∷⟨ _ ⟩ _) .(∙ ⭭ val-unit ⹁ _ ∷⟨ _ ⟩ _) ∘unit π = π
-twk .(∙ ⭭ _ ⹁ _ ∷⟨ _ ⟩ ⇡ᴸ _ _ ⹁ _ ∷⟨ _ ⟩ _) .(∘ ⇡ wk-val _ _ ⹁ _ ∷⟨ wk-id ⟩ ⇡ᴿ _ (wk-val _ _) ⹁ _ ∷⟨ _ ⟩ _) ∙M∷l π = π
-twk .(∙ ⭭ _ ⹁ _ ∷⟨ _ ⟩ ⇡ᴿ _ _ ⹁ _ ∷⟨ _ ⟩ _) .(∙ ⭭ val-pair (wk-valTerm _ _) _ ⹁ _ ∷⟨ _ ⟩ _) ∙M∷r π = π
-twk .(∙ ⭭ val-pair _ _ ⹁ _ ∷⟨ _ ⟩ ⇡ᴹ _ _ ⹁ _ ∷⟨ _ ⟩ _) .(∘ ⇡ wk-val (wk-cong (wk-cong _)) _ ⹁ s-val (wk-valTerm (wk-wk wk-id) _) (s-val _ _) ∷⟨ wk-wk (wk-wk (_)) ⟩ _) ∙pair∷pm π = π
-twk _ _ test π = π
--}
-
-{-
-
-⟨_⟩∷⟨_⟩_ : {from : vState ε T◾} → {to : vState ε T◾} → (F>T : from →ᵛᵛ to) → (π : Wk (botCtx from) Ψ) → (tail : vStack ε Ψ Θ true T◾') → (from ::⟨ π ⟩ tail) →ᵛᵛ (to ::⟨ twk from to F>T π ⟩ tail)
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ var _ ⹁ _ ∷⟨ _ ⟩ □) {gt = ↓}} (∘var x) π (x₁ ⹁ γ ∷⟨ π₁ ⟩ tail) = ∘var x
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ var _ ⹁ _ ∷⟨ _ ⟩ x₁ ⹁ γ ∷⟨ π₁ ⟩ tail₁) {gt = ↕}} (∘var x) π (x₂ ⹁ γ₁ ∷⟨ π₂ ⟩ tail) = ∘var x
-
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ lam _ ⹁ _ ∷⟨ _ ⟩ □) {gt = ↓}} ∘lam π (x ⹁ γ ∷⟨ π₁ ⟩ tail) = ∘lam
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ lam _ ⹁ _ ∷⟨ _ ⟩ x ⹁ γ ∷⟨ π₁ ⟩ tail₁) {gt = ↕}} ∘lam π (x₁ ⹁ γ₁ ∷⟨ π₂ ⟩ tail) = ∘lam
-
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ pair _ _ ⹁ _ ∷⟨ _ ⟩ □) {gt = ↓}} ∘pair π (x ⹁ γ ∷⟨ π₁ ⟩ tail) = ∘pair
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ pair _ _ ⹁ _ ∷⟨ _ ⟩ x ⹁ γ ∷⟨ π₁ ⟩ tail₁) {gt = ↕}} ∘pair π (x₁ ⹁ γ₁ ∷⟨ π₂ ⟩ tail) = ∘pair
-
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ pm _ _ ⹁ _ ∷⟨ _ ⟩ □) {gt = ↓}} ∘pm π (x ⹁ γ ∷⟨ π₁ ⟩ tail) = ∘pm
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ pm _ _ ⹁ _ ∷⟨ _ ⟩ x ⹁ γ ∷⟨ π₁ ⟩ tail₁) {gt = ↕}} ∘pm π (x₁ ⹁ γ₁ ∷⟨ π₂ ⟩ tail) = ∘pm
-
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ unit ⹁ _ ∷⟨ _ ⟩ □) {gt = ↓}} ∘unit π (x ⹁ γ ∷⟨ π₁ ⟩ tail) = ∘unit
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ unit ⹁ _ ∷⟨ _ ⟩ x ⹁ γ ∷⟨ π₁ ⟩ tail₁) {gt = ↕}} ∘unit π (x₁ ⹁ γ₁ ∷⟨ π₂ ⟩ tail) = ∘unit
-
-⟨_⟩∷⟨_⟩_ {from = ∙ (⭭ _ ⹁ _ ∷⟨ _ ⟩ ((⇡ᴸ LHS RHS ⹁ γ₁ ∷⟨ π₂ ⟩ □) {gt = ↓})) {gt = ↕}} ∙M∷l π ((x ⹁ γ ∷⟨ π₁ ⟩ tail) {gt = gt}) = {!∙M∷l!}
-⟨_⟩∷⟨_⟩_ {from = ∙ (⭭ _ ⹁ _ ∷⟨ _ ⟩ ⇡ᴸ _ _ ⹁ _ ∷⟨ _ ⟩ x₁ ⹁ γ₁ ∷⟨ π₂ ⟩ tail₁) {gt = ↕}} ∙M∷l π (x ⹁ γ ∷⟨ π₁ ⟩ tail) = ∙M∷l
-
-⟨_⟩∷⟨_⟩_ {from = ∙ (⭭ _ ⹁ _ ∷⟨ _ ⟩ ((⇡ᴸ LHS RHS ⹁ γ₁ ∷⟨ π₂ ⟩ □) {gt = ↓})) {gt = ↕}} test π ((x ⹁ γ ∷⟨ π₁ ⟩ tail) {gt = gt}) = test
-⟨_⟩∷⟨_⟩_ {from = ∙ (⭭ _ ⹁ _ ∷⟨ _ ⟩ ⇡ᴸ _ _ ⹁ _ ∷⟨ _ ⟩ x₁ ⹁ γ₁ ∷⟨ π₂ ⟩ tail₁) {gt = ↕}} test π (x ⹁ γ ∷⟨ π₁ ⟩ tail) = test -- ∙M∷l
-
-⟨_⟩∷⟨_⟩_ {from = .(∙ ⭭ _ ⹁ _ ∷⟨ _ ⟩ ⇡ᴿ _ _ ⹁ _ ∷⟨ _ ⟩ _)} ∙M∷r π tail = {!!}
-
-⟨_⟩∷⟨_⟩_ {from = ∙ (⭭ val-pair _ _ ⹁ _ ∷⟨ _ ⟩ ((⇡ᴹ _ _ ⹁ _ ∷⟨ _ ⟩ □) {gt = ↓})) {gt = ↕}} ∙pair∷pm π tail = {!∙pair∷pm!}
-⟨_⟩∷⟨_⟩_ {from = ∙ ⭭ val-pair _ _ ⹁ _ ∷⟨ _ ⟩ ⇡ᴹ _ _ ⹁ _ ∷⟨ _ ⟩ x ⹁ γ ∷⟨ π₁ ⟩ tail₁} ∙pair∷pm π tail = {!!} --∙pair∷pm
-
-{-
-⟨_⟩∷⟨_⟩_ : {from : vState ε T◾} → {to : vState ε T◾} → (F>T : from →ᵛᵛ to) → (π : Wk (botCtx from) Ψ) → (tail : vStack ε Ψ Θ true T◾') → (from ::⟨ π ⟩ tail) →ᵛᵛ (to ::⟨ twk from to F>T π ⟩ tail)
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ var _ ⹁ _ ∷⟨ _ ⟩ □) {gt = ↓}} (∘var x) π (x₁ ⹁ γ ∷⟨ π₁ ⟩ tail) = ∘var x
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ var _ ⹁ _ ∷⟨ _ ⟩ x₁ ⹁ γ ∷⟨ π₁ ⟩ tail₁) {gt = ↕}} (∘var x) π (x₂ ⹁ γ₁ ∷⟨ π₂ ⟩ tail) = ∘var x
-
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ lam _ ⹁ _ ∷⟨ _ ⟩ □) {gt = ↓}} ∘lam π (x ⹁ γ ∷⟨ π₁ ⟩ tail) = ∘lam
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ lam _ ⹁ _ ∷⟨ _ ⟩ x ⹁ γ ∷⟨ π₁ ⟩ tail₁) {gt = ↕}} ∘lam π (x₁ ⹁ γ₁ ∷⟨ π₂ ⟩ tail) = ∘lam
-
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ pair _ _ ⹁ _ ∷⟨ _ ⟩ □) {gt = ↓}} ∘pair π (x ⹁ γ ∷⟨ π₁ ⟩ tail) = ∘pair
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ pair _ _ ⹁ _ ∷⟨ _ ⟩ x ⹁ γ ∷⟨ π₁ ⟩ tail₁) {gt = ↕}} ∘pair π (x₁ ⹁ γ₁ ∷⟨ π₂ ⟩ tail) = ∘pair
-
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ pm _ _ ⹁ _ ∷⟨ _ ⟩ □) {gt = ↓}} ∘pm π (x ⹁ γ ∷⟨ π₁ ⟩ tail) = ∘pm
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ pm _ _ ⹁ _ ∷⟨ _ ⟩ x ⹁ γ ∷⟨ π₁ ⟩ tail₁) {gt = ↕}} ∘pm π (x₁ ⹁ γ₁ ∷⟨ π₂ ⟩ tail) = ∘pm
-
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ unit ⹁ _ ∷⟨ _ ⟩ □) {gt = ↓}} ∘unit π (x ⹁ γ ∷⟨ π₁ ⟩ tail) = ∘unit
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ unit ⹁ _ ∷⟨ _ ⟩ x ⹁ γ ∷⟨ π₁ ⟩ tail₁) {gt = ↕}} ∘unit π (x₁ ⹁ γ₁ ∷⟨ π₂ ⟩ tail) = ∘unit
-
-⟨_⟩∷⟨_⟩_ {from = ∙ (⭭ _ ⹁ _ ∷⟨ _ ⟩ ((⇡ᴸ LHS RHS ⹁ γ₁ ∷⟨ π₂ ⟩ □) {gt = ↓})) {gt = ↕}} ∙M∷l π ((x ⹁ γ ∷⟨ π₁ ⟩ tail) {gt = gt}) = {!!}
-⟨_⟩∷⟨_⟩_ {from = ∙ (⭭ _ ⹁ _ ∷⟨ _ ⟩ ⇡ᴸ _ _ ⹁ _ ∷⟨ _ ⟩ x₁ ⹁ γ₁ ∷⟨ π₂ ⟩ tail₁) {gt = ↕}} ∙M∷l π (x ⹁ γ ∷⟨ π₁ ⟩ tail) = ∙M∷l
-
-⟨_⟩∷⟨_⟩_ {from = .(∙ ⭭ _ ⹁ _ ∷⟨ _ ⟩ ⇡ᴿ _ _ ⹁ _ ∷⟨ _ ⟩ _)} ∙M∷r π tail = {!!}
-
-⟨_⟩∷⟨_⟩_ {from = ∙ (⭭ val-pair _ _ ⹁ _ ∷⟨ _ ⟩ ((⇡ᴹ _ _ ⹁ _ ∷⟨ _ ⟩ □) {gt = ↓})) {gt = ↕}} ∙pair∷pm π tail = {!∙pair∷pm!}
-⟨_⟩∷⟨_⟩_ {from = ∙ ⭭ val-pair _ _ ⹁ _ ∷⟨ _ ⟩ ⇡ᴹ _ _ ⹁ _ ∷⟨ _ ⟩ x ⹁ γ ∷⟨ π₁ ⟩ tail₁} ∙pair∷pm π tail = ∙pair∷pm
--}
-
-{-
-⟨_⟩∷⟨_⟩_ : {from : vState ε T◾} → {to : vState ε T◾} → (F>T : from →ᵛᵛ to) → (π : Wk (botCtx from) Ψ) → (tail : vStack ε Ψ Θ true T◾') → (from ::⟨ π ⟩ tail) →ᵛᵛ (to ::⟨ twk from to F>T π ⟩ tail)
-
-⟨_⟩∷⟨_⟩_ {from = ∘ ⇡ var i ⹁ γ ∷⟨ π₁ ⟩ □} (∘var T>>U) π (⭭ x ⹁ γ₂ ∷⟨ π₂ ⟩ tail) = (∘var T>>U)
-⟨_⟩∷⟨_⟩_ {from = ∘ ⇡ var i ⹁ γ ∷⟨ π₁ ⟩ □} (∘var T>>U) π (⇡ M ⹁ γ₂ ∷⟨ π₂ ⟩ tail) = (∘var T>>U)
-⟨_⟩∷⟨_⟩_ {from = ∘ ⇡ var i ⹁ γ ∷⟨ π₁ ⟩ □} (∘var T>>U) π (⇡ᴹ M N ⹁ γ₂ ∷⟨ π₂ ⟩ tail) = (∘var T>>U)
-⟨_⟩∷⟨_⟩_ {from = ∘ ⇡ var i ⹁ γ ∷⟨ π₁ ⟩ □} (∘var T>>U) π (⇡ᴸ LHS RHS ⹁ γ₂ ∷⟨ π₂ ⟩ tail) = (∘var T>>U)
-⟨_⟩∷⟨_⟩_ {from = ∘ ⇡ var i ⹁ γ ∷⟨ π₁ ⟩ □} (∘var T>>U) π (⇡ᴿ LHS RHS ⹁ γ₂ ∷⟨ π₂ ⟩ tail) = (∘var T>>U)
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ var i ⹁ γ ∷⟨ π₁ ⟩ ((x ⹁ γ₁ ∷⟨ π₃ ⟩ tail₁) {gt = gt})) {gt = ↕}} (∘var T>>U) π (M₂ ⹁ γ₂ ∷⟨ π₂ ⟩ tail) = (∘var T>>U)
-
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ lam M ⹁ γ ∷⟨ π₁ ⟩ □) {gt = ↓}} ∘lam π (⭭ x ⹁ γ₁ ∷⟨ π₂ ⟩ tail) = ∘lam
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ lam M ⹁ γ ∷⟨ π₁ ⟩ □) {gt = ↓}} ∘lam π (⇡ M₁ ⹁ γ₁ ∷⟨ π₂ ⟩ tail) = ∘lam
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ lam M ⹁ γ ∷⟨ π₁ ⟩ □) {gt = ↓}} ∘lam π (⇡ᴹ M₁ N ⹁ γ₁ ∷⟨ π₂ ⟩ tail) = ∘lam
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ lam M ⹁ γ ∷⟨ π₁ ⟩ □) {gt = ↓}} ∘lam π (⇡ᴸ LHS RHS ⹁ γ₁ ∷⟨ π₂ ⟩ tail) = ∘lam
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ lam M ⹁ γ ∷⟨ π₁ ⟩ □) {gt = ↓}} ∘lam π (⇡ᴿ LHS RHS ⹁ γ₁ ∷⟨ π₂ ⟩ tail) = ∘lam
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ lam M ⹁ γ ∷⟨ π₁ ⟩ (x ⹁ γ₁ ∷⟨ π₂ ⟩ upper) {gt = gt}) {gt = ↕}} ∘lam π (x₁ ⹁ γ₂ ∷⟨ π₃ ⟩ tail) = ∘lam
-
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ pair LHS RHS ⹁ γ ∷⟨ π₂ ⟩ □) {gt = ↓}} ∘pair π (⭭ x ⹁ γ₁ ∷⟨ π₁ ⟩ tail) = ∘pair
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ pair LHS RHS ⹁ γ ∷⟨ π₂ ⟩ □) {gt = ↓}} ∘pair π (⇡ M ⹁ γ₁ ∷⟨ π₁ ⟩ tail) = ∘pair
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ pair LHS RHS ⹁ γ ∷⟨ π₂ ⟩ □) {gt = ↓}} ∘pair π (⇡ᴹ M N ⹁ γ₁ ∷⟨ π₁ ⟩ tail) = ∘pair
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ pair LHS RHS ⹁ γ ∷⟨ π₂ ⟩ □) {gt = ↓}} ∘pair π (⇡ᴸ LHS₁ RHS₁ ⹁ γ₁ ∷⟨ π₁ ⟩ tail) = ∘pair
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ pair LHS RHS ⹁ γ ∷⟨ π₂ ⟩ □) {gt = ↓}} ∘pair π (⇡ᴿ LHS₁ RHS₁ ⹁ γ₁ ∷⟨ π₁ ⟩ tail) = ∘pair
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ pair LHS RHS ⹁ γ ∷⟨ π₂ ⟩ ((x ⹁ γ₂ ∷⟨ π₃ ⟩ tail₁) {gt = gt})) {gt = ↕}} ∘pair π (M₁ ⹁ γ₁ ∷⟨ π₁ ⟩ tail) = ∘pair
-
---⟨ ∘pm ⟩∷⟨ π ⟩ tail = {!!}
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ pm M N ⹁ γ ∷⟨ π₁ ⟩ □) {gt = ↓}} ∘pm π (⭭ x ⹁ γₜ ∷⟨ πₜ ⟩ tail) = ∘pm
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ pm M N ⹁ γ ∷⟨ π₁ ⟩ □) {gt = ↓}} ∘pm π (⇡ M₁ ⹁ γₜ ∷⟨ πₜ ⟩ tail) = ∘pm
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ pm M N ⹁ γ ∷⟨ π₁ ⟩ □) {gt = ↓}} ∘pm π (⇡ᴹ M₁ N₁ ⹁ γₜ ∷⟨ πₜ ⟩ tail) = ∘pm
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ pm M N ⹁ γ ∷⟨ π₁ ⟩ □) {gt = ↓}} ∘pm π (⇡ᴸ LHS RHS ⹁ γₜ ∷⟨ πₜ ⟩ tail) = ∘pm
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ pm M N ⹁ γ ∷⟨ π₁ ⟩ □) {gt = ↓}} ∘pm π (⇡ᴿ LHS RHS ⹁ γₜ ∷⟨ πₜ ⟩ tail) = ∘pm
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ pm M N ⹁ γ ∷⟨ π₁ ⟩ ((x ⹁ γ₁ ∷⟨ π₂ ⟩ tail₁) {gt = gt})) {gt = ↕}} ∘pm π (Mₜ ⹁ γₜ ∷⟨ πₜ ⟩ tail) = ∘pm
-
---⟨ ∘unit ⟩∷⟨ π ⟩ tail = {!!}
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ unit ⹁ γ ∷⟨ π₁ ⟩ □) {gt = ↓}} ∘unit π (⭭ x ⹁ γₜ ∷⟨ πₜ ⟩ tail) = ∘unit
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ unit ⹁ γ ∷⟨ π₁ ⟩ □) {gt = ↓}} ∘unit π (⇡ M ⹁ γₜ ∷⟨ πₜ ⟩ tail) = ∘unit
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ unit ⹁ γ ∷⟨ π₁ ⟩ □) {gt = ↓}} ∘unit π (⇡ᴹ M N ⹁ γₜ ∷⟨ πₜ ⟩ tail) = ∘unit
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ unit ⹁ γ ∷⟨ π₁ ⟩ □) {gt = ↓}} ∘unit π (⇡ᴸ LHS RHS ⹁ γₜ ∷⟨ πₜ ⟩ tail) = ∘unit
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ unit ⹁ γ ∷⟨ π₁ ⟩ □) {gt = ↓}} ∘unit π (⇡ᴿ LHS RHS ⹁ γₜ ∷⟨ πₜ ⟩ tail) = ∘unit
-⟨_⟩∷⟨_⟩_ {from = ∘ (⇡ unit ⹁ γ ∷⟨ π₁ ⟩ ((x ⹁ γ₁ ∷⟨ π₂ ⟩ tail₁) {gt = gt})) {gt = ↕}} ∘unit π (Mₜ ⹁ γₜ ∷⟨ πₜ ⟩ tail) = ∘unit
-
---⟨ ∙M∷l ⟩∷⟨ π ⟩ tail = {!!}
-⟨_⟩∷⟨_⟩_ {from = ∙ (⭭ M ⹁ γ ∷⟨ π' ⟩ (⇡ᴸ LHS RHS ⹁ γ' ∷⟨ π₁ ⟩ □) {gt = ↓}) {gt = .↕}} ∙M∷l π (⭭ x ⹁ γₜ ∷⟨ πₜ ⟩ tail) = {!∙M∷l!}
-⟨_⟩∷⟨_⟩_ {from = ∙ (⭭ M ⹁ γ ∷⟨ π' ⟩ (⇡ᴸ LHS RHS ⹁ γ' ∷⟨ π₁ ⟩ □) {gt = ↓}) {gt = .↕}} ∙M∷l π (⇡ M₁ ⹁ γₜ ∷⟨ πₜ ⟩ tail) = {!!}
-⟨_⟩∷⟨_⟩_ {from = ∙ (⭭ M ⹁ γ ∷⟨ π' ⟩ (⇡ᴸ LHS RHS ⹁ γ' ∷⟨ π₁ ⟩ □) {gt = ↓}) {gt = .↕}} ∙M∷l π (⇡ᴹ M₁ N ⹁ γₜ ∷⟨ πₜ ⟩ tail) = {!!}
-⟨_⟩∷⟨_⟩_ {from = ∙ (⭭ M ⹁ γ ∷⟨ π' ⟩ (⇡ᴸ LHS RHS ⹁ γ' ∷⟨ π₁ ⟩ □) {gt = ↓}) {gt = .↕}} ∙M∷l π (⇡ᴸ LHS₁ RHS₁ ⹁ γₜ ∷⟨ πₜ ⟩ tail) = {!!}
-⟨_⟩∷⟨_⟩_ {from = ∙ (⭭ M ⹁ γ ∷⟨ π' ⟩ (⇡ᴸ LHS RHS ⹁ γ' ∷⟨ π₁ ⟩ □) {gt = ↓}) {gt = .↕}} ∙M∷l π (⇡ᴿ LHS₁ RHS₁ ⹁ γₜ ∷⟨ πₜ ⟩ tail) = {!!}
-⟨_⟩∷⟨_⟩_ {from = ∙ (⭭ M ⹁ γ ∷⟨ π' ⟩ ((⇡ᴸ LHS RHS ⹁ γ' ∷⟨ π₁ ⟩ ((x ⹁ γ₁ ∷⟨ π₂ ⟩ tail₁) {gt = gt})) {gt = ↕})) {gt = .↕}} ∙M∷l π (Mₜ ⹁ γₜ ∷⟨ πₜ ⟩ tail) = {!!}
-
---⟨ ∙M∷r ⟩∷⟨ π ⟩ tail = {!!}
-⟨_⟩∷⟨_⟩_ {from = ∙ (⭭ M ⹁ γ ∷⟨ π' ⟩ ((⇡ᴿ LHS RHS ⹁ γ' ∷⟨ π₁ ⟩ □) {gt = ↓})) {gt = .↕}} ∙M∷r π (Mₜ ⹁ γₜ ∷⟨ πₜ ⟩ tail) = {!!}
-⟨_⟩∷⟨_⟩_ {from = ∙ (⭭ M ⹁ γ ∷⟨ π' ⟩ ((⇡ᴿ LHS RHS ⹁ γ' ∷⟨ π₁ ⟩ ((x ⹁ γ₁ ∷⟨ π₂ ⟩ tail₁) {gt = gt})) {gt = ↕})) {gt = .↕}} ∙M∷r π (Mₜ ⹁ γₜ ∷⟨ πₜ ⟩ tail) = {!!}
-
---⟨ ∙pair∷pm ⟩∷⟨ π ⟩ tail = {!!}
-⟨_⟩∷⟨_⟩_ {from = ∙ (⭭ val-pair LHS RHS ⹁ γ ∷⟨ π' ⟩ (⇡ᴹ M N ⹁ γ' ∷⟨ π₁ ⟩ □) {gt = gt}) {gt = ↕}} ∙pair∷pm π (Mₜ ⹁ γₜ ∷⟨ πₜ ⟩ tail) = {!!}
-⟨_⟩∷⟨_⟩_ {from = ∙ (⭭ val-pair LHS RHS ⹁ γ ∷⟨ π' ⟩ (⇡ᴹ M N ⹁ γ' ∷⟨ π₁ ⟩ x ⹁ γ₁ ∷⟨ π₂ ⟩ tail₁) {gt = gt}) {gt = ↕}} ∙pair∷pm π (Mₜ ⹁ γₜ ∷⟨ πₜ ⟩ tail) = {!!}
--}
--}
-
-
 ⟨_⟩∷_ : {from : vState T◾} → {to : vState T◾} → (F>T : from →ᵛᵛ to) → (tail : vStack true T◾') → (from :: tail) →ᵛᵛ (to :: tail)
---⟨ ∘var-z T>>U ⟩∷ tail = ∘var-z T>>U
 ⟨ ∘var T>>U π ⟩∷ tail = ∘var T>>U π
 ⟨ ∘lam ⟩∷ tail = ∘lam
 ⟨ ∘pair ⟩∷ tail = ∘pair
@@ -484,17 +255,6 @@ twk _ _ test π = π
 ⟪_⟫∷_ : {from : vState T◾} → {to : vState T◾} → (F>T : from ↠ᵛᵛ to) → (tail : vStack true T◾') → (from :: tail) ↠ᵛᵛ (to :: tail)
 ⟪ _ →ᵛᵛ⟨ F>T ⟩ ⟫∷ tail =  _ →ᵛᵛ⟨ ⟨ F>T ⟩∷ tail ⟩
 ⟪ _ →ᵛᵛ⟨ F>T ⟩ F>>T ⟫∷ tail =   _ →ᵛᵛ⟨ ⟨ F>T ⟩∷ tail ⟩ (⟪ F>>T ⟫∷ tail)
-
-
--- ⟦_⟧↥ : (S : vStack true T◾) → ⟦ T◾ ⟧
--- ⟦ ((⇡ M) ⹁ γ ∷ □) {gt = ↓} ⟧↥ = ⟦ M ⟧ᵛ ⟦ γ ⟧ᴱ
--- ⟦ (⇡ᴹ M N ⹁ γ ∷ □) {gt = ↓} ⟧↥ = ⟦ pm M N ⟧ᵛ ⟦ γ ⟧ᴱ
--- ⟦ (⇡ᴸ LHS RHS ⹁ γ ∷ □) {gt = ↓} ⟧↥ = ⟦ pair LHS RHS ⟧ᵛ ⟦ γ ⟧ᴱ
--- ⟦ (⇡ᴿ LHS RHS ⹁ γ ∷ □) {gt = ↓} ⟧↥ = ⟦ pair LHS RHS ⟧ᵛ ⟦ γ ⟧ᴱ
--- ⟦ ((⇡ M) ⹁ γ₁ ∷ (M₂ ⹁ γ₂ ∷ S) {gt = gt₂}) {gt = gt₁} ⟧↥ = ⟦ (M₂ ⹁ γ₂ ∷ S) {gt = gt₂} ⟧↥
--- ⟦ (⇡ᴹ M N ⹁ γ₁ ∷ (M₂ ⹁ γ₂ ∷ S) {gt = gt₂}) {gt = gt₁} ⟧↥ = ⟦ (M₂ ⹁ γ₂ ∷ S) {gt = gt₂} ⟧↥
--- ⟦ (⇡ᴸ LHS RHS ⹁ γ₁ ∷ (M₂ ⹁ γ₂ ∷ S) {gt = gt₂}) {gt = gt₁} ⟧↥ = ⟦ (M₂ ⹁ γ₂ ∷ S) {gt = gt₂} ⟧↥
--- ⟦ (⇡ᴿ LHS RHS ⹁ γ₁ ∷ (M₂ ⹁ γ₂ ∷ S) {gt = gt₂}) {gt = gt₁} ⟧↥ = ⟦ (M₂ ⹁ γ₂ ∷ S) {gt = gt₂} ⟧↥
 
 ⟦_⟧↥ : (S : vStack true T◾) → ⟦ T◾ ⟧
 ⟦ (⭭ x ⹁ γ ∷ □) {gt = ↓} ⟧↥ = ⟦ valTerm-to-Val x ⟧ᵛ ⟦ γ ⟧ᴱ
@@ -538,12 +298,6 @@ topEnv (∙ ⇡ᴸ LHS RHS ⹁ γ ∷ x₁) = γ
 topEnv (∙ ⇡ᴿ LHS RHS ⹁ γ ∷ x₁) = γ
 
 data vHaltingState : vState T◾ → Set where
-
-     -- ∙unit⹁_■ : (γ : Env Γ) → vHaltingState (∙ ((⇡ unit ⹁ γ ∷ □) {gt = ↓}))
-
-     -- ∙pair[_⹁_]⹁_■ : (LHS : Γ ⊢ᵛ X) → (RHS : Γ ⊢ᵛ Y) → (γ : Env ε Γ {WK = WK}) → vHaltingState (∙ ((⇡ pair LHS RHS ⹁ γ ∷ □) {gt = ↓}))
-
-     -- ∙lam_⹁_■ : (M : (Γ ∙ X) ⊢ᶜ Y) → (γ : Env ε Γ {WK = WK}) → vHaltingState (∙ ((⇡ lam M ⹁ γ ∷ □) {gt = ↓}))
 
      ∙_⹁_■ : (M : valTerm Γ X) → (γ : Env Γ) → vHaltingState (∙ ((⭭ M ⹁ γ ∷ □) {gt = ↓}))
 
@@ -705,11 +459,6 @@ eval (var i) γ π with lookup-t (wk-mem π i) γ
 eval (lam W) γ π = steps (∘ ⇡ (wk-val π (lam W)) ⹁ γ ∷ □ →ᵛᵛ⟨ ∘lam ⟩) (∙ val-lam (wk-comp (wk-cong π) W) ⹁ γ ■) refl wk-id refl
 eval unit γ π = steps (_ →ᵛᵛ⟨ ∘unit ⟩) (∙ val-unit ⹁ γ ■) refl wk-id refl
 
--- Goal: (∘
---        ⇡ wk-val _π'_3203 (wk-val π RHS) ⹁ γ₁ ∷
---        ⇡ᴿ LT (wk-val _π'_3203 (wk-val π RHS)) ⹁ γ₁ ∷ □)
---       ↠ᵛᵛ _S_3208
-
 eval (pair {A = X} {B = Y} LHS RHS) γ π with eval {X = X} LHS γ π
 ... | steps {T = ∙ (⭭_ {X = X} LT ⹁ γ₁ ∷ □) {gt = ↓}} L>T ∙LT L≡T πᴸ wk≡ᴸ with  eval {X = Y} RHS γ₁ (wk-trans πᴸ π)
 ...      | steps {T = ∙ (⭭_ {X = Y} RT ⹁ γ₂ ∷ □) {gt = ↓}} R>T ∙RT R≡T πᴿ wk≡ᴿ rewrite sym (lem1a RHS πᴸ π) = --{!!}
@@ -821,7 +570,6 @@ ex2 = pm (pm (pair (lam {A = `Unit} {B = `Unit} (return (var h))) unit) (pair un
 ---------------------------------------
 
 -- calling agda2-compute-normalised in the hole below evaluates example
-
-_ : eval ex2 (z tt) wk-id ≡ {!eval ex2 (z tt) wk-id!}
-_ = refl
+-- _ : eval ex2 (z tt) wk-id ≡ {!eval ex2 (z tt) wk-id!}
+-- _ = refl
 
