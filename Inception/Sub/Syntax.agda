@@ -2,6 +2,10 @@ module Inception.Sub.Syntax where
 
 open import Data.Nat
 
+import Relation.Binary.PropositionalEquality as Eq
+open Eq using (_≡_; refl; cong)
+open Eq.≡-Reasoning
+
 infixr 40 _`×_
 infixr 25 _`⇒_
 
@@ -327,3 +331,68 @@ data EqComp Γ where
   sub-push : (M : (Γ ∙ `V) ⊢ᶜ A) -> (N : Γ ⊢ᶜ A) -> (L : (Γ ∙ A) ⊢ᶜ B)
            -------------------------------------------------------------------------------------------
            -> Γ ⊢ᶜ push (sub M N) L ≈ sub (push M (wk-comp (wk-cong (wk-wk wk-id)) L)) (push N L) ∶ B
+
+
+wk-trans : Wk Γ Δ → Wk Δ Ψ → Wk Γ Ψ
+wk-trans wk-ε π₂ = π₂
+wk-trans (wk-cong π₁) (wk-cong π₂) = wk-cong (wk-trans π₁ π₂)
+wk-trans (wk-cong π₁) (wk-wk π₂) = wk-wk (wk-trans π₁ π₂)
+wk-trans (wk-wk π₁) π₂ = wk-wk (wk-trans π₁ π₂)
+
+wk-mem-trans : (i : Γ ∋ A) → (π₁ : Wk Ψ Δ) → (π₂ : Wk Δ Γ) → wk-mem π₁ (wk-mem π₂ i) ≡ wk-mem (wk-trans π₁ π₂) i
+wk-mem-trans h (wk-cong π₁) (wk-cong π₂) = refl
+wk-mem-trans h (wk-cong π₁) (wk-wk π₂) = cong t (wk-mem-trans h π₁ π₂)
+wk-mem-trans h (wk-wk π₁) (wk-cong π₂) = cong t (wk-mem-trans h π₁ (wk-cong π₂))
+wk-mem-trans h (wk-wk π₁) (wk-wk π₂) = cong t (wk-mem-trans h π₁ (wk-wk π₂))
+wk-mem-trans (t i) (wk-cong π₁) (wk-cong π₂) = cong t (wk-mem-trans i π₁ π₂)
+wk-mem-trans (t i) (wk-wk (wk-cong π₁)) (wk-cong π₂) = cong t (cong t (wk-mem-trans i π₁ π₂))
+wk-mem-trans (t i) (wk-wk (wk-wk π₁)) (wk-cong π₂) = cong t (cong t (wk-mem-trans (t i) π₁ (wk-cong π₂)))
+wk-mem-trans (t i) (wk-cong π₁) (wk-wk π₂) = cong t (wk-mem-trans (t i) π₁ π₂)
+wk-mem-trans (t i) (wk-wk (wk-cong π₁)) (wk-wk π₂) = cong t (wk-mem-trans (t i) (wk-cong π₁) (wk-wk π₂))
+wk-mem-trans (t i) (wk-wk (wk-wk π₁)) (wk-wk π₂) = cong t (wk-mem-trans (t i) (wk-wk π₁) (wk-wk π₂))
+
+mutual
+
+  wk-val-trans : (M : Γ ⊢ᵛ A) → (π₁ : Wk Ψ Δ) → (π₂ : Wk Δ Γ) → wk-val π₁ (wk-val π₂ M) ≡ wk-val (wk-trans π₁ π₂) M
+  wk-val-trans (var i) π₁ π₂ = cong var (wk-mem-trans i π₁ π₂)
+  wk-val-trans (lam x) π₁ π₂ = cong lam (wk-comp-trans x (wk-cong π₁) (wk-cong π₂))
+  wk-val-trans (pair LHS RHS) π₁ π₂ = pair (wk-val π₁ (wk-val π₂ LHS)) (wk-val π₁ (wk-val π₂ RHS))
+               ≡⟨ cong (λ x → pair (wk-val π₁ (wk-val π₂ LHS)) x) (wk-val-trans RHS π₁ π₂) ⟩
+               pair (wk-val π₁ (wk-val π₂ LHS)) (wk-val (wk-trans π₁ π₂) RHS)
+               ≡⟨ cong (λ x → pair x (wk-val (wk-trans π₁ π₂) RHS)) (wk-val-trans LHS π₁ π₂) ⟩
+               pair (wk-val (wk-trans π₁ π₂) LHS) (wk-val (wk-trans π₁ π₂) RHS) ∎
+  wk-val-trans (pm M N) π₁ π₂ =
+               pm (wk-val π₁ (wk-val π₂ M)) (wk-val (wk-cong (wk-cong π₁)) (wk-val (wk-cong (wk-cong π₂)) N))
+               ≡⟨ cong (λ x → pm x (wk-val (wk-cong (wk-cong π₁)) (wk-val (wk-cong (wk-cong π₂)) N))) (wk-val-trans M π₁ π₂) ⟩
+               pm (wk-val (wk-trans π₁ π₂) M) (wk-val (wk-cong (wk-cong π₁)) (wk-val (wk-cong (wk-cong π₂)) N))
+               ≡⟨ cong (λ x → pm (wk-val (wk-trans π₁ π₂) M) x) (wk-val-trans N (wk-cong (wk-cong π₁)) (wk-cong (wk-cong π₂)) ) ⟩
+               pm (wk-val (wk-trans π₁ π₂) M) (wk-val (wk-cong (wk-cong (wk-trans π₁ π₂))) N) ∎
+  wk-val-trans unit π₁ π₂ = refl
+
+  wk-comp-trans : (W : Γ ⊢ᶜ A) → (π₁ : Wk Ψ Δ) → (π₂ : Wk Δ Γ) → wk-comp π₁ (wk-comp π₂ W) ≡ wk-comp (wk-trans π₁ π₂) W
+  wk-comp-trans (return M) π₁ π₂ = cong return (wk-val-trans M π₁ π₂)
+  wk-comp-trans (pm M N) π₁ π₂ =
+                pm (wk-val π₁ (wk-val π₂ M)) (wk-comp (wk-cong (wk-cong π₁)) (wk-comp (wk-cong (wk-cong π₂)) N))
+                ≡⟨ cong (λ x → pm x (wk-comp (wk-cong (wk-cong π₁)) (wk-comp (wk-cong (wk-cong π₂)) N))) (wk-val-trans M π₁ π₂) ⟩
+                pm (wk-val (wk-trans π₁ π₂) M) (wk-comp (wk-cong (wk-cong π₁)) (wk-comp (wk-cong (wk-cong π₂)) N))
+                ≡⟨ cong (λ x → pm (wk-val (wk-trans π₁ π₂) M) x) (wk-comp-trans N (wk-cong (wk-cong π₁)) (wk-cong (wk-cong π₂)) ) ⟩
+                pm (wk-val (wk-trans π₁ π₂) M) (wk-comp (wk-cong (wk-cong (wk-trans π₁ π₂))) N) ∎
+  wk-comp-trans (push W W₁) π₁ π₂ =
+                push (wk-comp π₁ (wk-comp π₂ W)) (wk-comp (wk-cong π₁) (wk-comp (wk-cong π₂) W₁))
+                ≡⟨ cong (λ x → push x (wk-comp (wk-cong π₁) (wk-comp (wk-cong π₂) W₁))) (wk-comp-trans W π₁ π₂) ⟩
+                push (wk-comp (wk-trans π₁ π₂) W) (wk-comp (wk-cong π₁) (wk-comp (wk-cong π₂) W₁))
+                ≡⟨ cong (λ x → push (wk-comp (wk-trans π₁ π₂) W) x) (wk-comp-trans W₁ (wk-cong π₁) (wk-cong π₂)) ⟩
+                push (wk-comp (wk-trans π₁ π₂) W) (wk-comp (wk-cong (wk-trans π₁ π₂)) W₁) ∎
+  wk-comp-trans (app x x₁) π₁ π₂ =
+                app (wk-val π₁ (wk-val π₂ x)) (wk-val π₁ (wk-val π₂ x₁))
+                ≡⟨ cong (λ y → app y (wk-val π₁ (wk-val π₂ x₁))) (wk-val-trans x π₁ π₂) ⟩
+                app (wk-val (wk-trans π₁ π₂) x) (wk-val π₁ (wk-val π₂ x₁))
+                ≡⟨ cong (λ y → app (wk-val (wk-trans π₁ π₂) x) y) (wk-val-trans x₁ π₁ π₂) ⟩
+                app (wk-val (wk-trans π₁ π₂) x) (wk-val (wk-trans π₁ π₂) x₁) ∎
+  wk-comp-trans (var x) π₁ π₂ = cong var (wk-val-trans x π₁ π₂)
+  wk-comp-trans (sub W W₁) π₁ π₂ =
+                sub (wk-comp (wk-cong π₁) (wk-comp (wk-cong π₂) W)) (wk-comp π₁ (wk-comp π₂ W₁))
+                ≡⟨ cong (λ x → sub x (wk-comp π₁ (wk-comp π₂ W₁))) (wk-comp-trans W (wk-cong π₁) (wk-cong π₂)) ⟩
+                sub (wk-comp (wk-cong (wk-trans π₁ π₂)) W) (wk-comp π₁ (wk-comp π₂ W₁))
+                ≡⟨ cong (λ x → sub (wk-comp (wk-cong (wk-trans π₁ π₂)) W) x) (wk-comp-trans W₁ π₁ π₂) ⟩
+                sub (wk-comp (wk-cong (wk-trans π₁ π₂)) W) (wk-comp (wk-trans π₁ π₂) W₁) ∎

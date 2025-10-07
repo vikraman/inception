@@ -7,6 +7,7 @@ open import Data.Product as P
 open import Function as F hiding (_∋_)
 open import Data.Sum as S
 open import Relation.Binary.PropositionalEquality
+open Relation.Binary.PropositionalEquality.≡-Reasoning
 open import Inception.Prelude
 
 infixr 4 _；_
@@ -219,3 +220,34 @@ mutual
   eqComp (sub-assoc L M N) = refl
   eqComp (var-push V M) = refl
   eqComp (sub-push M N L) = refl
+
+
+wk-sem-trans : (π₁ : Wk Ψ Δ) → (π₂ : Wk Δ Γ) → (γ : ⟦ Ψ ⟧ˣ) → ⟦ π₂ ⟧ʷ (⟦ π₁ ⟧ʷ γ) ≡ ⟦ wk-trans π₁ π₂ ⟧ʷ γ
+wk-sem-trans wk-ε π₂ γ = refl
+wk-sem-trans {Γ = Cx.ε} (wk-cong π₁) π₂ γ = refl
+wk-sem-trans {Γ = Γ Cx.∙ x} (wk-cong π₁) (wk-cong π₂) γ = -- {!refl!}
+       ⟦ wk-cong π₂ ⟧ʷ (⟦ wk-cong π₁ ⟧ʷ γ)
+      ≡⟨ refl ⟩
+       ⟦ π₂ ⟧ʷ (⟦ π₁ ⟧ʷ (proj₁ γ )) , proj₂ γ
+      ≡⟨ cong (λ y → y , proj₂ γ) (wk-sem-trans π₁ π₂ (proj₁ γ)) ⟩
+       ⟦ wk-trans π₁ π₂ ⟧ʷ (proj₁ γ) , proj₂ γ
+      ≡⟨ refl ⟩
+       ⟦ wk-cong (wk-trans π₁ π₂) ⟧ʷ γ ∎
+wk-sem-trans {Γ = Γ Cx.∙ x} (wk-cong π₁) (wk-wk π₂) γ = --{!!}
+       ⟦ wk-wk π₂ ⟧ʷ (⟦ wk-cong π₁ ⟧ʷ γ)
+      ≡⟨ refl ⟩
+       ⟦ π₂ ⟧ʷ (⟦ π₁ ⟧ʷ (proj₁ γ))
+      ≡⟨ wk-sem-trans π₁ π₂ (proj₁ γ) ⟩
+       ⟦ wk-trans π₁ π₂ ⟧ʷ (proj₁ γ)
+      ≡⟨ refl ⟩
+       ⟦ wk-trans (wk-cong π₁) (wk-wk π₂) ⟧ʷ γ ∎
+wk-sem-trans (wk-wk π₁) wk-ε γ = refl
+wk-sem-trans (wk-wk π₁) (wk-cong π₂) γ = --{!!}
+       ⟦ wk-cong π₂ ⟧ʷ (⟦ wk-wk π₁ ⟧ʷ γ)
+      ≡⟨ refl ⟩
+       ⟦ π₂ ⟧ʷ (proj₁ (⟦ π₁ ⟧ʷ (proj₁ γ))) , proj₂ (⟦ π₁ ⟧ʷ (proj₁ γ))
+      ≡⟨ wk-sem-trans π₁ (wk-cong π₂) (proj₁ γ) ⟩
+       ⟦ wk-trans π₁ (wk-cong π₂) ⟧ʷ (proj₁ γ)
+      ≡⟨ refl ⟩
+       ⟦ wk-wk (wk-trans π₁ (wk-cong π₂)) ⟧ʷ γ ∎
+wk-sem-trans (wk-wk π₁) (wk-wk π₂) γ = wk-sem-trans π₁ (wk-wk π₂) (proj₁ γ)
