@@ -15,6 +15,7 @@ variable
   X Y Z X' Y' Z' T◾ T◾' : Ty
   Γ' Γ'' Θ Θ' Ψ' : Ctx
 
+infixl 26 _﹐_
 infix  26 ⭭_
 infix  26 ⇡_
 infixr 25 _⹁_∷_
@@ -39,9 +40,9 @@ data valTerm : Ctx → Ty → Set where
 
 data Env : (Γ : Ctx) → Set where
 
-    z       :  (γ : ⟦ ε ⟧ˣ) → Env ε
+    z       :  Env ε
 
-    s-val   :  (M : valTerm Γ X) → Env Γ → Env (Γ ∙ X)
+    _﹐_   :   Env Γ → (M : valTerm Γ X) → Env (Γ ∙ X)
 
 --    s-comp  :  (W : Γ ⊢ᶜ X) → Env Γ → (k : ⟦ X ⟧ → R) → Env Γ' → Env (Γ' ∙ `V)
 
@@ -73,8 +74,9 @@ infix  15 _→ᴸᴸ_
 
 
 ⟦_⟧ᴱ : (E : Env Γ) → ⟦ Γ ⟧ˣ
-⟦ z γ ⟧ᴱ = γ
-⟦ s-val M E ⟧ᴱ = ⟦ E ⟧ᴱ , ⟦ valTerm-to-Val M ⟧ᵛ ⟦ E ⟧ᴱ
+-- ⟦ z γ ⟧ᴱ = γ
+⟦ z ⟧ᴱ = tt
+⟦ _﹐_ E M ⟧ᴱ = ⟦ E ⟧ᴱ , ⟦ valTerm-to-Val M ⟧ᵛ ⟦ E ⟧ᴱ
 --⟦ s-comp W E k E' ⟧ᴱ = ⟦ E' ⟧ᴱ , ⟦ W ⟧ᶜ ⟦ E ⟧ᴱ k
 
 data lState : Ty → Set where
@@ -88,18 +90,19 @@ lCtx : (S : lState X) → Ctx
 lCtx (⟨_∥_⟩ {Γ = Γ} i E)= Γ
 
 lTCtx : (S : lState X) → Ctx
-lTCtx (⟨_∥_⟩ i (z γ)) = ε
-lTCtx (⟨_∥_⟩ i (s-val {Γ = Γ} M E)) = Γ
+--lTCtx (⟨_∥_⟩ i (z γ)) = ε
+lTCtx (⟨_∥_⟩ i z) = ε
+lTCtx (⟨_∥_⟩ i (_﹐_ {Γ = Γ} E M)) = Γ
 
 lEnv : (S : lState X) → Env (lCtx S)
 lEnv ⟨ i ∥ E ⟩ = E
 
 lTEnv : (S : lState X) → Env (lTCtx S)
-lTEnv ⟨ i ∥ s-val M E ⟩ = E
+lTEnv ⟨ i ∥ _﹐_ E M ⟩ = E
 
 data _→ᴸᴸ_ : lState X → lState X → Set where
 
-    val-t-step    : {i : Γ ∋ Y} → {E : Env Γ} → {M : valTerm Γ X} → ⟨ t i  ∥ s-val M E ⟩ →ᴸᴸ ⟨ i ∥ E ⟩
+    val-t-step    : {i : Γ ∋ Y} → {E : Env Γ} → {M : valTerm Γ X} → ⟨ t i  ∥ _﹐_ E M ⟩ →ᴸᴸ ⟨ i ∥ E ⟩
 
 --    comp-t-step    : {i : Γ' ∋ Y} → {E : Env Γ} → {W : Γ ⊢ᶜ X} → {k : ⟦ X ⟧ → R} → {E' : Env Γ'} → ⟨ t i  ∥ s-comp W E k E' ⟩ →ᴸᴸ ⟨ i ∥ E' ⟩
 
@@ -118,11 +121,11 @@ _⨾ᴸ_ (F →ᴸᴸ⟨ F>S₁ ⟩ S₁>>S₂) S₂>>T = F →ᴸᴸ⟨ F>S₁ 
 
 data nicelHaltingState : lState X → Set where
 
-      found-unit : {γ : Env Γ} → nicelHaltingState ⟨ h ∥ s-val val-unit γ ⟩
+      found-unit : {γ : Env Γ} → nicelHaltingState ⟨ h ∥ _﹐_ γ val-unit ⟩
 
-      found-pair : {LHS : valTerm Γ X} → {RHS : valTerm Γ Y} → {γ : Env Γ} → nicelHaltingState ⟨ h ∥ s-val (val-pair LHS RHS) γ ⟩
+      found-pair : {LHS : valTerm Γ X} → {RHS : valTerm Γ Y} → {γ : Env Γ} → nicelHaltingState ⟨ h ∥ _﹐_ γ (val-pair LHS RHS) ⟩
 
-      found-lam : {W : (Γ ∙ X) ⊢ᶜ Y} → {γ : Env Γ} → nicelHaltingState ⟨ h ∥ s-val (val-lam W) γ ⟩
+      found-lam : {W : (Γ ∙ X) ⊢ᶜ Y} → {γ : Env Γ} → nicelHaltingState ⟨ h ∥ _﹐_ γ (val-lam W) ⟩
 
 
 data nicecorrectStepsLL : lState X → Set where
@@ -131,10 +134,10 @@ data nicecorrectStepsLL : lState X → Set where
 
 
 lookup-t : (i : Γ ∋ X) → (γ : Env Γ) → nicecorrectStepsLL {X = X} ⟨ i ∥ γ ⟩
-lookup-t h (s-val (val-lam W) γ) = steps (⟨ h ∥ s-val (val-lam W) γ ⟩ ▣) found-lam refl (wk-wk wk-id) refl
-lookup-t h (s-val (val-pair LHS RHS) γ) = steps (⟨ h ∥ s-val (val-pair LHS RHS) γ ⟩ ▣) found-pair refl (wk-wk wk-id) refl
-lookup-t h (s-val val-unit γ) = steps (⟨ h ∥ s-val (val-unit) γ ⟩ ▣) found-unit refl (wk-wk wk-id) refl
-lookup-t (t i) (s-val M γ) with lookup-t i γ
+lookup-t h (_﹐_ γ (val-lam W)) = steps (⟨ h ∥ _﹐_ γ (val-lam W) ⟩ ▣) found-lam refl (wk-wk wk-id) refl
+lookup-t h (_﹐_ γ (val-pair LHS RHS)) = steps (⟨ h ∥ _﹐_ γ (val-pair LHS RHS) ⟩ ▣) found-pair refl (wk-wk wk-id) refl
+lookup-t h (_﹐_ γ val-unit) = steps (⟨ h ∥ _﹐_ γ (val-unit) ⟩ ▣) found-unit refl (wk-wk wk-id) refl
+lookup-t (t i) (_﹐_ γ M) with lookup-t i γ
 ... | steps i>>T HT i≡T WK w≡γ = steps (_ →ᴸᴸ⟨ val-t-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ
 
 ------------------------------------------------------------------------------
@@ -174,7 +177,7 @@ data _→ᵛᵛ_ : vState T◾ → vState T◾ → Set where
 
      ∘var    :    {i : Γ ∋ X} → {tail : vStack b T◾} → {gt : goodType b X T◾}
                 → {M : valTerm Γ' X}
-                → (⟨ i ∥ γ ⟩ →ᴸᴸ* ⟨ h ∥ s-val M γ' ⟩) → (πᵥ : Wk Γ Γ')
+                → (⟨ i ∥ γ ⟩ →ᴸᴸ* ⟨ h ∥ _﹐_ γ' M ⟩) → (πᵥ : Wk Γ Γ')
                ----------------------------------------------------------------
                 → ∘ ((⇡ var i ⹁ γ ∷ tail) {gt = gt}) →ᵛᵛ ∙ ((⭭ (wk-valTerm πᵥ M) ⹁ γ ∷ tail) {gt = gt})
 
@@ -214,14 +217,13 @@ data _→ᵛᵛ_ : vState T◾ → vState T◾ → Set where
                ---------------------------------------------------------------------------
              →     ∙ ((⭭ M ⹁ γ ∷ ((⇡ᴿ LHS RHS ⹁ γ' ∷ tail) {gt = gt})) {gt = ↕})
                 →ᵛᵛ ∙ ((⭭ val-pair (wk-valTerm π' LHS) M ⹁ γ ∷ tail) {gt = gt})
-                --→ᵛᵛ ∙ ((⭭ val-pair (wk-val (wk-wk wk-id) LHS) (var h) ⹁ s-val M γ γ' ∷⟨ ? ⟩ tail) {gt = gt})
 
      ∙pair∷pm  :  {LHS : valTerm Γ X} → {RHS : valTerm Γ Y} → {M : Γ' ⊢ᵛ X `× Y} → {N : (Γ' ∙ X ∙ Y) ⊢ᵛ Z'}
              → {π' : Wk Γ Γ'}
              → {tail : vStack b T◾} → {gt : goodType b Z' T◾}
                ---------------------------------------------------------------------------
              →     ∙ ((⭭ val-pair LHS RHS ⹁ γ ∷ ((⇡ᴹ M N ⹁ γ' ∷ tail) {gt = gt})) {gt = ↕})
-                →ᵛᵛ  ∘ ((⇡ (wk-val (wk-cong (wk-cong π')) N) ⹁ s-val (wk-valTerm (wk-wk wk-id) RHS) ((s-val LHS γ)) ∷ tail) {gt = gt})
+                →ᵛᵛ  ∘ ((⇡ (wk-val (wk-cong (wk-cong π')) N) ⹁ _﹐_ ((_﹐_ γ LHS)) (wk-valTerm (wk-wk wk-id) RHS) ∷ tail) {gt = gt})
 
 
 data _↠ᵛᵛ_ : vState T◾ → vState T◾ → Set where
@@ -510,14 +512,14 @@ eval (pair {A = X} {B = Y} LHS RHS) γ π with eval {X = X} LHS γ π
                ⟦ γ ⟧ᴱ ∎)
 
 eval (pm M N) γ π with eval M γ π
-... | steps M>T ∙ val-pair LHS RHS ⹁ γ₁ ■ M≡T π₁ wk≡₁ with eval N (s-val (wk-valTerm (wk-wk wk-id) RHS) (s-val LHS γ₁)) ((wk-cong (wk-cong (wk-trans π₁ π)))) | (lem1a N (wk-cong (wk-cong π₁)) (wk-cong (wk-cong π)))
+... | steps M>T ∙ val-pair LHS RHS ⹁ γ₁ ■ M≡T π₁ wk≡₁ with eval N (_﹐_ (_﹐_ γ₁ LHS) (wk-valTerm (wk-wk wk-id) RHS)) ((wk-cong (wk-cong (wk-trans π₁ π)))) | (lem1a N (wk-cong (wk-cong π₁)) (wk-cong (wk-cong π)))
 ...    | steps {T = T} N>T ∙T N≡T π₂ wk≡₂ | eq with N>T
 ...      | N>T' rewrite sym eq =
        steps
          (
           (∘ ⇡ pm (wk-val π M) (wk-val (wk-cong (wk-cong π)) N) ⹁ γ ∷ □) →ᵛᵛ⟨ ∘pm ⟩ ⨾ -- (∘ ⇡ wk-val π M ⹁ γ ∷ ⇡ᴹ (wk-val π M) (wk-val (wk-cong (wk-cong π)) N) ⹁ γ ∷ □)
           (⟪ M>T ⟫∷ (⇡ᴹ (wk-val π M) (wk-val (wk-cong (wk-cong π)) N) ⹁ γ ∷ □)) ⨾
-          (∙ ⭭ val-pair LHS RHS ⹁ γ₁ ∷ ⇡ᴹ (wk-val π M) (wk-val (wk-cong (wk-cong π)) N) ⹁ γ ∷ □) →ᵛᵛ⟨ ∙pair∷pm ⟩ ⨾ -- (∘ ⇡ wk-val (wk-cong (wk-cong π₁)) (wk-val (wk-cong (wk-cong π)) N) ⹁ s-val (wk-valTerm (wk-wk wk-id) RHS) (s-val LHS γ₁) ∷ □)
+          (∙ ⭭ val-pair LHS RHS ⹁ γ₁ ∷ ⇡ᴹ (wk-val π M) (wk-val (wk-cong (wk-cong π)) N) ⹁ γ ∷ □) →ᵛᵛ⟨ ∙pair∷pm ⟩ ⨾ -- (∘ ⇡ wk-val (wk-cong (wk-cong π₁)) (wk-val (wk-cong (wk-cong π)) N) ⹁ _﹐_ (_﹐_ γ₁ LHS) (wk-valTerm (wk-wk wk-id) RHS) ∷ □)
           N>T'
          )
 
@@ -570,6 +572,6 @@ ex2 = pm (pm (pair (lam {A = `Unit} {B = `Unit} (return (var h))) unit) (pair un
 ---------------------------------------
 
 -- calling agda2-compute-normalised in the hole below evaluates example
--- _ : eval ex2 (z tt) wk-id ≡ {!eval ex2 (z tt) wk-id!}
--- _ = refl
+--_ : eval ex2 z wk-id ≡ {!eval ex2 z wk-id!}
+--_ = refl
 
