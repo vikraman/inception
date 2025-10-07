@@ -705,8 +705,14 @@ eval (var i) γ π with lookup-t (wk-mem π i) γ
 eval (lam W) γ π = steps (∘ ⇡ (wk-val π (lam W)) ⹁ γ ∷ □ →ᵛᵛ⟨ ∘lam ⟩) (∙ val-lam (wk-comp (wk-cong π) W) ⹁ γ ■) refl wk-id refl
 eval unit γ π = steps (_ →ᵛᵛ⟨ ∘unit ⟩) (∙ val-unit ⹁ γ ■) refl wk-id refl
 
-eval (pair {A = X} {B = Y} LHS RHS) γ π with eval {X = X} LHS γ π | eval {X = Y} RHS γ π
-... | steps {T = ∙ (⭭_ {X = X} LT ⹁ γ₁ ∷ □) {gt = ↓}} L>T ∙LT L≡T πᴸ wk≡ᴸ | steps {T = ∙ (⭭_ {X = Y} RT ⹁ γ₂ ∷ □) {gt = ↓}} R>T ∙RT R≡T πᴿ wk≡ᴿ = --{!!}
+-- Goal: (∘
+--        ⇡ wk-val _π'_3203 (wk-val π RHS) ⹁ γ₁ ∷
+--        ⇡ᴿ LT (wk-val _π'_3203 (wk-val π RHS)) ⹁ γ₁ ∷ □)
+--       ↠ᵛᵛ _S_3208
+
+eval (pair {A = X} {B = Y} LHS RHS) γ π with eval {X = X} LHS γ π
+... | steps {T = ∙ (⭭_ {X = X} LT ⹁ γ₁ ∷ □) {gt = ↓}} L>T ∙LT L≡T πᴸ wk≡ᴸ with  eval {X = Y} RHS γ₁ (wk-trans πᴸ π)
+...      | steps {T = ∙ (⭭_ {X = Y} RT ⹁ γ₂ ∷ □) {gt = ↓}} R>T ∙RT R≡T πᴿ wk≡ᴿ rewrite sym (lem1a RHS πᴸ π) = --{!!}
 
           steps
 
@@ -714,18 +720,45 @@ eval (pair {A = X} {B = Y} LHS RHS) γ π with eval {X = X} LHS γ π | eval {X 
              ∘ ⇡ (wk-val π (pair LHS RHS)) ⹁ γ ∷ □ →ᵛᵛ⟨ ∘pair ⟩  ⨾ -- (∘ ⇡ wk-val π LHS ⹁ γ ∷ ⇡ᴸ (wk-val π LHS) (wk-val π RHS) ⹁ γ ∷ □)
              (⟪ L>T ⟫∷ (⇡ᴸ (wk-val π LHS) (wk-val π RHS) ⹁ γ ∷ □)) ⨾
              (∙ ⭭ LT ⹁ γ₁ ∷ ⇡ᴸ (wk-val π LHS) (wk-val π RHS) ⹁ γ ∷ □) →ᵛᵛ⟨ ∙M∷l ⟩ ⨾ -- (∘ ⇡ wk-val _π'_3203 (wk-val π RHS) ⹁ γ₁ ∷ ⇡ᴿ LT (wk-val _π'_3203 (wk-val π RHS)) ⹁ γ₁ ∷ □)
-             {!!} ⨾ -- (⟪ R>T ⟫∷ ((⇡ᴿ (var h) (wk-val (wk-wk wk-id) RHS) ⹁ s-val M₁ γ₁ γ ∷ □) {gt = ↓})) ⨾
-             {!!} -- ∙ ⇡ M₂ ⹁ γ₂ ∷ ⇡ᴿ (var h) (wk-val (wk-wk wk-id) RHS) ⹁ s-val M₁ γ₁ γ ∷ □ →ᵛᵛ⟨ ∙M∷r ⟩
+             (⟪ R>T ⟫∷ (⇡ᴿ LT (wk-val πᴸ (wk-val π RHS)) ⹁ γ₁ ∷ □)) ⨾
+             (∙ ⭭ RT ⹁ γ₂ ∷ ⇡ᴿ LT (wk-val πᴸ (wk-val π RHS)) ⹁ γ₁ ∷ □) →ᵛᵛ⟨ ∙M∷r ⟩
             )
 
+            ∙ val-pair (wk-valTerm πᴿ LT) RT ⹁ γ₂ ■
 
-            {!!}
+            ( ⟦ wk-val π (pair LHS RHS) ⟧ᵛ ⟦ γ ⟧ᴱ
+             ≡⟨ refl ⟩
+               (⟦ LHS ⟧ᵛ (⟦ π ⟧ʷ ⟦ γ ⟧ᴱ) , ⟦ RHS ⟧ᵛ (⟦ π ⟧ʷ ⟦ γ ⟧ᴱ))
+             ≡⟨ cong (λ y → (⟦ LHS ⟧ᵛ (⟦ π ⟧ʷ ⟦ γ ⟧ᴱ) , ⟦ RHS ⟧ᵛ (⟦ π ⟧ʷ y))) (sym wk≡ᴸ) ⟩
+               (⟦ LHS ⟧ᵛ (⟦ π ⟧ʷ ⟦ γ ⟧ᴱ) , ⟦ RHS ⟧ᵛ (⟦ π ⟧ʷ (⟦ πᴸ ⟧ʷ ⟦ γ₁ ⟧ᴱ)))
+             ≡⟨ cong (λ y → (⟦ LHS ⟧ᵛ (⟦ π ⟧ʷ ⟦ γ ⟧ᴱ) , ⟦ RHS ⟧ᵛ y)) (lem2 πᴸ π ⟦ γ₁ ⟧ᴱ) ⟩
+               (⟦ LHS ⟧ᵛ (⟦ π ⟧ʷ ⟦ γ ⟧ᴱ) , ⟦ RHS ⟧ᵛ (⟦ wk-trans πᴸ π ⟧ʷ ⟦ γ₁ ⟧ᴱ))
+             ≡⟨ cong (λ y → (y , ⟦ RHS ⟧ᵛ (⟦ wk-trans πᴸ π ⟧ʷ ⟦ γ₁ ⟧ᴱ))) L≡T ⟩
+               (⟦ valTerm-to-Val LT ⟧ᵛ ⟦ γ₁ ⟧ᴱ , ⟦ RHS ⟧ᵛ (⟦ wk-trans πᴸ π ⟧ʷ ⟦ γ₁ ⟧ᴱ))
+             ≡⟨ cong (λ y → (⟦ valTerm-to-Val LT ⟧ᵛ y , ⟦ RHS ⟧ᵛ (⟦ wk-trans πᴸ π ⟧ʷ ⟦ γ₁ ⟧ᴱ))) (sym wk≡ᴿ) ⟩
+               (⟦ valTerm-to-Val LT ⟧ᵛ (⟦ πᴿ ⟧ʷ ⟦ γ₂ ⟧ᴱ) , ⟦ RHS ⟧ᵛ (⟦ wk-trans πᴸ π ⟧ʷ ⟦ γ₁ ⟧ᴱ))
+             ≡⟨ refl ⟩
+               (⟦ wk-val πᴿ (valTerm-to-Val LT) ⟧ᵛ ⟦ γ₂ ⟧ᴱ , ⟦ RHS ⟧ᵛ (⟦ wk-trans πᴸ π ⟧ʷ ⟦ γ₁ ⟧ᴱ))
+             ≡⟨ cong (λ y → (⟦ y ⟧ᵛ ⟦ γ₂ ⟧ᴱ  , ⟦ RHS ⟧ᵛ (⟦ wk-trans πᴸ π ⟧ʷ ⟦ γ₁ ⟧ᴱ))) (wk-comm {M = LT} {π = πᴿ}) ⟩
+               (⟦ valTerm-to-Val (wk-valTerm πᴿ LT) ⟧ᵛ ⟦ γ₂ ⟧ᴱ , ⟦ RHS ⟧ᵛ (⟦ wk-trans πᴸ π ⟧ʷ ⟦ γ₁ ⟧ᴱ))
+             ≡⟨ cong (λ y → (⟦ valTerm-to-Val (wk-valTerm πᴿ LT) ⟧ᵛ ⟦ γ₂ ⟧ᴱ , y)) R≡T ⟩
+               (⟦ valTerm-to-Val (wk-valTerm πᴿ LT) ⟧ᵛ ⟦ γ₂ ⟧ᴱ , ⟦ valTerm-to-Val RT ⟧ᵛ ⟦ γ₂ ⟧ᴱ)
+             ≡⟨ refl ⟩
+               ⟦ pair (valTerm-to-Val (wk-valTerm πᴿ LT)) (valTerm-to-Val RT) ⟧ᵛ ⟦ γ₂ ⟧ᴱ
+             ≡⟨ refl ⟩
+               ⟦ valTerm-to-Val (val-pair (wk-valTerm πᴿ LT) RT) ⟧ᵛ ⟦ γ₂ ⟧ᴱ
+             ≡⟨ refl ⟩
+               ⟦ ∙ (⭭ val-pair (wk-valTerm πᴿ LT) RT ⹁ γ₂ ∷ □) {gt = ↓} ⟧◑ ∎ )
 
-            {!!}
+            (wk-trans πᴿ πᴸ)
 
-            {!!}
-
-            {!!}
+            ( ⟦ wk-trans πᴿ πᴸ ⟧ʷ ⟦ γ₂ ⟧ᴱ
+            ≡⟨ sym (lem2 πᴿ πᴸ ⟦ γ₂ ⟧ᴱ) ⟩
+               ⟦ πᴸ ⟧ʷ (⟦ πᴿ ⟧ʷ ⟦ γ₂ ⟧ᴱ)
+            ≡⟨ cong (λ y → ⟦ πᴸ ⟧ʷ y) wk≡ᴿ ⟩
+               ⟦ πᴸ ⟧ʷ ⟦ γ₁ ⟧ᴱ
+            ≡⟨ wk≡ᴸ ⟩
+               ⟦ γ ⟧ᴱ ∎)
 
 eval (pm M N) γ π with eval M γ π
 ... | steps M>T ∙ val-pair LHS RHS ⹁ γ₁ ■ M≡T π₁ wk≡₁ with eval N (s-val (wk-valTerm (wk-wk wk-id) RHS) (s-val LHS γ₁)) ((wk-cong (wk-cong (wk-trans π₁ π)))) | (lem1a N (wk-cong (wk-cong π₁)) (wk-cong (wk-cong π)))
