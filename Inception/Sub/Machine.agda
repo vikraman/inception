@@ -11,44 +11,11 @@ open import Inception.Sub.CPS R
 
 open import Data.Unit
 
-------
-
-{-
-data Env' : (Γ : Ctx) → Set
-
-                                    -- input  /  overall output
-data Cont' (k₀ : ⟦ R₀ ⟧ → R) : (X : Ty) → (R₀ : Ty) → Set where
-
-     ◻     :   Cont' k₀ R₀ R₀
-
-     _⹁_⦂⦂_    : (Γ ∙ Z) ⊢ᶜ X → Env' Γ → (tail : Cont' k₀ X R₀)  → Cont' k₀ Z R₀
-
-data Env' where
-
-    ∗       :  Env' ε
-
-    _﹐_     :  Env' Γ → (M : V̲a̲l̲ Γ X) → Env' (Γ ∙ X)
-
-    s-comp  :  Env' Γ → (W : Γ ⊢ᶜ X) → {k₀ : ⟦ R₀ ⟧ → R} → (cs : Cont' k₀ X R₀) → Env' (Γ ∙ `V)
-
-⟦_⟧ᴱ' : (E : Env' Γ) → ⟦ Γ ⟧ˣ
-⟦_⟧ᶜˢ' : {k₀ : ⟦ R₀ ⟧ → R} → (CS : Cont' k₀ X R₀) → K ⟦ X ⟧ → K ⟦ R₀ ⟧
-
-⟦ ∗ ⟧ᴱ' = tt
-⟦ _﹐_ E M ⟧ᴱ' = ⟦ E ⟧ᴱ' , ⟦ toVal M ⟧ᵛ ⟦ E ⟧ᴱ'
-⟦ s-comp E W {k₀ = k₀} cs ⟧ᴱ' = ⟦ E ⟧ᴱ' , ⟦ cs ⟧ᶜˢ' (⟦ W ⟧ᶜ ⟦ E ⟧ᴱ') k₀ --⟦ E ⟧ᴱ' , ⟦ W ⟧ᶜ ⟦ E ⟧ᴱ' k
-
-⟦ ◻ ⟧ᶜˢ' W = W
-⟦ W₁ ⹁ γ₁ ⦂⦂ tail ⟧ᶜˢ' W =  ⟦ tail ⟧ᶜˢ' (( ⟦ W₁ ⟧ᶜ ♯)(τ (⟦ γ₁ ⟧ᴱ' , W)))
--}
-
 module Main {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where --(R₀ : Ty) (k₀ : ⟦ R₀ ⟧ → R)
 
   variable
     X Y Z T◾ T◾' : Ty
     Γ' Γ'' : Ctx
-    --R₀ : Ty
-    --k₀ : ⟦ R₀ ⟧ → R
 
   infixl 26 _﹐_
   infix  26 ⭭_
@@ -103,7 +70,7 @@ module Main {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where --(R₀ : Ty) (k₀ : 
 
       ◻     :   CompStack R₀ R₀
 
-      _⹁_⦂⦂_    : (Γ ∙ Z) ⊢ᶜ X → Env Γ → (tail : CompStack X R₀) → CompStack Z R₀
+      _⊲_⦂⦂_    : (Γ ∙ Z) ⊢ᶜ X → Env Γ → (tail : CompStack X R₀) → CompStack Z R₀
 
   data Env where
 
@@ -111,7 +78,8 @@ module Main {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where --(R₀ : Ty) (k₀ : 
 
       _﹐_     :  Env Γ → (M : V̲a̲l̲ Γ X) → Env (Γ ∙ X)
 
-      s-comp  :  Env Γ → (W : Γ ⊢ᶜ X) → (cs : CompStack X R₀) → Env (Γ ∙ `V)
+      -- _﹐﹝_∥_﹞/_﹐﹝_╎_﹞
+      _﹐﹝_╎_﹞ :  Env Γ → (W : Γ ⊢ᶜ X) → (cs : CompStack X R₀) → Env (Γ ∙ `V)
 
   variable
       γ  : Env Γ
@@ -122,11 +90,13 @@ module Main {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where --(R₀ : Ty) (k₀ : 
   ⟦_⟧ᶜˢ : (CS : CompStack X R₀) → K ⟦ X ⟧ → K ⟦ R₀ ⟧
 
   ⟦ ∗ ⟧ᴱ = tt
-  ⟦ _﹐_ E M ⟧ᴱ = ⟦ E ⟧ᴱ , ⟦ toVal M ⟧ᵛ ⟦ E ⟧ᴱ
-  ⟦ s-comp E W cs ⟧ᴱ = ⟦ E ⟧ᴱ , ⟦ cs ⟧ᶜˢ (⟦ W ⟧ᶜ ⟦ E ⟧ᴱ) k₀
+  ⟦ E ﹐ M ⟧ᴱ = ⟦ E ⟧ᴱ , ⟦ toVal M ⟧ᵛ ⟦ E ⟧ᴱ
+  ⟦ _﹐﹝_╎_﹞ E W cs ⟧ᴱ = ⟦ E ⟧ᴱ , ⟦ cs ⟧ᶜˢ (⟦ W ⟧ᶜ ⟦ E ⟧ᴱ) k₀
 
   ⟦ ◻ ⟧ᶜˢ W = W
-  ⟦ W₁ ⹁ γ₁ ⦂⦂ tail ⟧ᶜˢ W =  ⟦ tail ⟧ᶜˢ (( ⟦ W₁ ⟧ᶜ ♯)(τ (⟦ γ₁ ⟧ᴱ , W)))
+  ⟦ W₁ ⊲ γ₁ ⦂⦂ tail ⟧ᶜˢ W =  ⟦ tail ⟧ᶜˢ (( ⟦ W₁ ⟧ᶜ ♯)(τ (⟦ γ₁ ⟧ᴱ , W)))
+
+  -- ⟦ tail ⟧ᶜˢ (( ⟦ W₁ ⟧ᶜ ♯)(τ (⟦ γ₁ ⟧ᴱ , W)))
 
   -- Lookup Machine
   ------------------------------------------------------------------------------
@@ -144,14 +114,14 @@ module Main {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where --(R₀ : Ty) (k₀ : 
   lTCtx : (S : LookupState X) → Ctx
   lTCtx (⟨_∥_⟩ i ∗) = ε
   lTCtx (⟨_∥_⟩ i (_﹐_ {Γ = Γ} E M)) = Γ
-  lTCtx (⟨_∥_⟩ i (s-comp {Γ = Γ} E M k)) = Γ
+  lTCtx (⟨_∥_⟩ i (_﹐﹝_╎_﹞ {Γ = Γ} E M k)) = Γ
 
   lEnv : (S : LookupState X) → Env (lCtx S)
   lEnv ⟨ i ∥ E ⟩ = E
 
   lTEnv : (S : LookupState X) → Env (lTCtx S)
   lTEnv ⟨ i ∥ _﹐_ E M ⟩ = E
-  lTEnv ⟨ i ∥ s-comp E M k ⟩ = E
+  lTEnv ⟨ i ∥ _﹐﹝_╎_﹞ E M k ⟩ = E
 
   data _→ᴸ_ : LookupState X → LookupState X → Set where
 
@@ -159,7 +129,7 @@ module Main {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where --(R₀ : Ty) (k₀ : 
 
       val-t-step    : {i : Γ ∋ Y} → {E : Env Γ} → {M : V̲a̲l̲ Γ X} → ⟨ t i  ∥ _﹐_ E M ⟩ →ᴸ ⟨ i ∥ E ⟩
 
-      comp-t-step   : {i : Γ ∋ Y} → {E : Env Γ} → {W : Γ ⊢ᶜ X} → {k : CompStack X R₀} → ⟨ t i  ∥ s-comp E W k ⟩ →ᴸ ⟨ i ∥ E ⟩
+      comp-t-step   : {i : Γ ∋ Y} → {E : Env Γ} → {W : Γ ⊢ᶜ X} → {k : CompStack X R₀} → ⟨ t i  ∥ _﹐﹝_╎_﹞ E W k ⟩ →ᴸ ⟨ i ∥ E ⟩
 
 
   data _→ᴸ*_ : LookupState X → LookupState X → Set where
@@ -182,7 +152,7 @@ module Main {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where --(R₀ : Ty) (k₀ : 
 
         found-lam : {W : (Γ ∙ X) ⊢ᶜ Y} → {γ : Env Γ} → LookupHaltingState ⟨ h ∥ _﹐_ γ (l̲a̲m̲ W) ⟩
 
-        found-comp : {W : Γ ⊢ᶜ X} → {γ : Env Γ} → {k : CompStack X R₀} → LookupHaltingState ⟨ h ∥ s-comp γ W k ⟩
+        found-comp : {W : Γ ⊢ᶜ X} → {γ : Env Γ} → {k : CompStack X R₀} → LookupHaltingState ⟨ h ∥ _﹐﹝_╎_﹞ γ W k ⟩
 
 
   data LookupSteps : LookupState X → Set where
@@ -195,10 +165,10 @@ module Main {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where --(R₀ : Ty) (k₀ : 
   lookup h (γ ﹐ u̲n̲i̲t̲) = steps (⟨ h ∥ _﹐_ γ (u̲n̲i̲t̲) ⟩ ◼) found-unit refl (wk-wk wk-id) refl
   lookup h (γ ﹐ v̲a̲r̲ i) with lookup i γ
   ... | steps i>>T HT i≡T WK w≡γ = steps (_ →ᴸ⟨ val-h-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ
-  lookup h (s-comp γ W k) = steps (⟨ h ∥ s-comp γ W k ⟩ ◼) found-comp refl (wk-wk wk-id) refl
+  lookup h (_﹐﹝_╎_﹞ γ W k) = steps (⟨ h ∥ _﹐﹝_╎_﹞ γ W k ⟩ ◼) found-comp refl (wk-wk wk-id) refl
   lookup (t i) (γ ﹐ M) with lookup i γ
   ... | steps i>>T HT i≡T WK w≡γ = steps (_ →ᴸ⟨ val-t-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ
-  lookup (t i) (s-comp γ W k) with lookup i γ
+  lookup (t i) (_﹐﹝_╎_﹞ γ W k) with lookup i γ
   ... | steps i>>T HT i≡T WK w≡γ = steps (_ →ᴸ⟨ comp-t-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ
 
 
@@ -545,7 +515,6 @@ module Main {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where --(R₀ : Ty) (k₀ : 
   val-eval : (M : ε ⊢ᵛ X) → ValSteps {T◾ = X} (∘ ((⇡ wk-val wk-id M ⊲ ∗ ∷ □) {↥ = 🗆}))
   val-eval M = val-eval-rec M ∗ wk-id
 
-  {----------------------
 
   -- EXAMPLES
   --------------------------------------------------
@@ -558,10 +527,9 @@ module Main {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where --(R₀ : Ty) (k₀ : 
 
   ---------------------------------------
 
-  -- -- calling agda2-compute-normalised in the hole below val-eval-recuates example
+  -- calling agda2-compute-normalised in the hole below val-eval-recuates example
   -- _ : val-eval ex2 ≡ {!val-eval ex2!}
   -- _ = refl
 
-  -}
 
   --------------------------------------------------------------
