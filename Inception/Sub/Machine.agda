@@ -11,7 +11,7 @@ open import Inception.Sub.CPS R
 
 open import Data.Unit
 
-module Main {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where --(R₀ : Ty) (k₀ : ⟦ R₀ ⟧ → R)
+module Main {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   variable
     X Y Z T◾ T◾' : Ty
@@ -46,6 +46,7 @@ module Main {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where --(R₀ : Ty) (k₀ : 
 
       v̲a̲r̲  : (i : Γ ∋ `V) → V̲a̲l̲ Γ `V
 
+
   toVal : V̲a̲l̲ Γ X → Γ ⊢ᵛ X
   toVal (l̲a̲m̲ W) = lam W
   toVal (pa̲i̲r̲ LHS RHS) = pair (toVal LHS) (toVal RHS)
@@ -66,11 +67,11 @@ module Main {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where --(R₀ : Ty) (k₀ : 
 
   data Env : (Γ : Ctx) → Set
 
-  data CompStack : (X : Ty) → Ty → Set where
+  data CompStack : (X : Ty) → Set where
 
-      ◻     :   CompStack R₀ R₀
+      ◻     :   CompStack R₀
 
-      _⊲_⦂⦂_    : (Γ ∙ Z) ⊢ᶜ X → Env Γ → (tail : CompStack X R₀) → CompStack Z R₀
+      _⊲_⦂⦂_    : (Γ ∙ Z) ⊢ᶜ X → Env Γ → (tail : CompStack X) → CompStack Z
 
   data Env where
 
@@ -78,8 +79,7 @@ module Main {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where --(R₀ : Ty) (k₀ : 
 
       _﹐_     :  Env Γ → (M : V̲a̲l̲ Γ X) → Env (Γ ∙ X)
 
-      -- _﹐﹝_∥_﹞/_﹐﹝_╎_﹞
-      _﹐﹝_╎_﹞ :  Env Γ → (W : Γ ⊢ᶜ X) → (cs : CompStack X R₀) → Env (Γ ∙ `V)
+      _﹐﹝_╎_﹞ :  Env Γ → (W : Γ ⊢ᶜ X) → (cs : CompStack X) → Env (Γ ∙ `V)
 
   variable
       γ  : Env Γ
@@ -87,16 +87,14 @@ module Main {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where --(R₀ : Ty) (k₀ : 
       γ'' : Env Γ''
 
   ⟦_⟧ᴱ : (E : Env Γ) → ⟦ Γ ⟧ˣ
-  ⟦_⟧ᶜˢ : (CS : CompStack X R₀) → K ⟦ X ⟧ → K ⟦ R₀ ⟧
+  ⟦_⟧ᶜˢ : (CS : CompStack X) → K ⟦ X ⟧ → K ⟦ R₀ ⟧
 
   ⟦ ∗ ⟧ᴱ = tt
   ⟦ E ﹐ M ⟧ᴱ = ⟦ E ⟧ᴱ , ⟦ toVal M ⟧ᵛ ⟦ E ⟧ᴱ
-  ⟦ _﹐﹝_╎_﹞ E W cs ⟧ᴱ = ⟦ E ⟧ᴱ , ⟦ cs ⟧ᶜˢ (⟦ W ⟧ᶜ ⟦ E ⟧ᴱ) k₀
+  ⟦ E ﹐﹝ W ╎ cs ﹞ ⟧ᴱ = ⟦ E ⟧ᴱ , ⟦ cs ⟧ᶜˢ (⟦ W ⟧ᶜ ⟦ E ⟧ᴱ) k₀
 
   ⟦ ◻ ⟧ᶜˢ W = W
   ⟦ W₁ ⊲ γ₁ ⦂⦂ tail ⟧ᶜˢ W =  ⟦ tail ⟧ᶜˢ (( ⟦ W₁ ⟧ᶜ ♯)(τ (⟦ γ₁ ⟧ᴱ , W)))
-
-  -- ⟦ tail ⟧ᶜˢ (( ⟦ W₁ ⟧ᶜ ♯)(τ (⟦ γ₁ ⟧ᴱ , W)))
 
   -- Lookup Machine
   ------------------------------------------------------------------------------
@@ -120,8 +118,8 @@ module Main {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where --(R₀ : Ty) (k₀ : 
   lEnv ⟨ i ∥ E ⟩ = E
 
   lTEnv : (S : LookupState X) → Env (lTCtx S)
-  lTEnv ⟨ i ∥ _﹐_ E M ⟩ = E
-  lTEnv ⟨ i ∥ _﹐﹝_╎_﹞ E M k ⟩ = E
+  lTEnv ⟨ i ∥ E ﹐ M ⟩ = E
+  lTEnv ⟨ i ∥ E ﹐﹝ M ╎ cs ﹞ ⟩ = E
 
   data _→ᴸ_ : LookupState X → LookupState X → Set where
 
@@ -129,7 +127,7 @@ module Main {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where --(R₀ : Ty) (k₀ : 
 
       val-t-step    : {i : Γ ∋ Y} → {E : Env Γ} → {M : V̲a̲l̲ Γ X} → ⟨ t i  ∥ _﹐_ E M ⟩ →ᴸ ⟨ i ∥ E ⟩
 
-      comp-t-step   : {i : Γ ∋ Y} → {E : Env Γ} → {W : Γ ⊢ᶜ X} → {k : CompStack X R₀} → ⟨ t i  ∥ _﹐﹝_╎_﹞ E W k ⟩ →ᴸ ⟨ i ∥ E ⟩
+      comp-t-step   : {i : Γ ∋ Y} → {E : Env Γ} → {W : Γ ⊢ᶜ X} → {cs : CompStack X} → ⟨ t i  ∥ E ﹐﹝ W ╎ cs ﹞ ⟩ →ᴸ ⟨ i ∥ E ⟩
 
 
   data _→ᴸ*_ : LookupState X → LookupState X → Set where
@@ -152,7 +150,7 @@ module Main {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where --(R₀ : Ty) (k₀ : 
 
         found-lam : {W : (Γ ∙ X) ⊢ᶜ Y} → {γ : Env Γ} → LookupHaltingState ⟨ h ∥ _﹐_ γ (l̲a̲m̲ W) ⟩
 
-        found-comp : {W : Γ ⊢ᶜ X} → {γ : Env Γ} → {k : CompStack X R₀} → LookupHaltingState ⟨ h ∥ _﹐﹝_╎_﹞ γ W k ⟩
+        found-comp : {W : Γ ⊢ᶜ X} → {γ : Env Γ} → {cs : CompStack X} → LookupHaltingState ⟨ h ∥ γ ﹐﹝ W ╎ cs ﹞ ⟩
 
 
   data LookupSteps : LookupState X → Set where
@@ -165,10 +163,10 @@ module Main {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where --(R₀ : Ty) (k₀ : 
   lookup h (γ ﹐ u̲n̲i̲t̲) = steps (⟨ h ∥ _﹐_ γ (u̲n̲i̲t̲) ⟩ ◼) found-unit refl (wk-wk wk-id) refl
   lookup h (γ ﹐ v̲a̲r̲ i) with lookup i γ
   ... | steps i>>T HT i≡T WK w≡γ = steps (_ →ᴸ⟨ val-h-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ
-  lookup h (_﹐﹝_╎_﹞ γ W k) = steps (⟨ h ∥ _﹐﹝_╎_﹞ γ W k ⟩ ◼) found-comp refl (wk-wk wk-id) refl
+  lookup h (γ ﹐﹝ W ╎ cs ﹞ ) = steps (⟨ h ∥ γ ﹐﹝ W ╎ cs ﹞ ⟩ ◼) found-comp refl (wk-wk wk-id) refl
   lookup (t i) (γ ﹐ M) with lookup i γ
   ... | steps i>>T HT i≡T WK w≡γ = steps (_ →ᴸ⟨ val-t-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ
-  lookup (t i) (_﹐﹝_╎_﹞ γ W k) with lookup i γ
+  lookup (t i) (γ ﹐﹝ W ╎ cs ﹞) with lookup i γ
   ... | steps i>>T HT i≡T WK w≡γ = steps (_ →ᴸ⟨ comp-t-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ
 
 
@@ -405,10 +403,6 @@ module Main {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where --(R₀ : Ty) (k₀ : 
 
             refl
 
-  --... | steps i>>T (found-comp {W = W} {γ = γ₁} {k = k}) i≡T π₁ w≡γ =
-  --
-  --            steps {!!} {!!} {!!} {!!} {!!}
-
   val-eval-rec (lam W) γ π = steps (∘ ⇡ (wk-val π (lam W)) ⊲ γ ∷ □ →ᵛ⟨ ∘lam ⟩) (∙ l̲a̲m̲ (wk-comp (wk-cong π) W) ⊲ γ ■) refl wk-id refl
   val-eval-rec unit γ π = steps (_ →ᵛ⟨ ∘unit ⟩) (∙ u̲n̲i̲t̲ ⊲ γ ■) refl wk-id refl
 
@@ -511,10 +505,52 @@ module Main {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where --(R₀ : Ty) (k₀ : 
             ⟦ γ ⟧ᴱ ∎)
 
 
-  --val-eval-rec : (M : Γ' ⊢ᵛ X) → (γ : Env Γ) → (π : Wk Γ Γ') → ValSteps {T◾ = X} (∘ ((⇡ (wk-val π M) ⊲ γ ∷ □) {↥ = 🗆}))
   val-eval : (M : ε ⊢ᵛ X) → ValSteps {T◾ = X} (∘ ((⇡ wk-val wk-id M ⊲ ∗ ∷ □) {↥ = 🗆}))
   val-eval M = val-eval-rec M ∗ wk-id
 
+  -- Computation Machine
+  --------------------------------------------------
+
+  data CompState : Set where
+
+        ⟨_⊰_╎_⟩ : (W : Γ ⊢ᶜ X) → Env Γ → (cs : CompStack X) → CompState
+
+
+  data _→ᶜ_ : CompState → CompState → Set where
+
+        return>  :    {M : Γ ⊢ᵛ X} → {γ : Env Γ} → {N : (Γ'' ∙ X) ⊢ᶜ Y} → {γ'' : Env Γ''} → {π : Wk Γ Γ''} → {cs : CompStack Y}
+                      → {M' : V̲a̲l̲ Γ' X} → {γ' : Env Γ'}
+                      → ((∘ ((⇡ wk-val wk-id M ⊲ γ ∷ □) {↥ = 🗆})) ↠ᵛ (∙ ((⭭ M' ⊲ γ' ∷ □) {↥ = 🗆}))) → (π' : Wk Γ' Γ)
+                  ----------------------------------------------------------------
+                    → ⟨ return M ⊰ γ ╎ N ⊲ γ'' ⦂⦂ cs ⟩ →ᶜ ⟨ wk-comp (wk-cong π') (wk-comp (wk-cong π) N) ⊰ γ' ﹐ M' ╎ cs ⟩
+
+        push>    :    {M : Γ ⊢ᶜ X} → {N : (Γ ∙ X) ⊢ᶜ Y} → {γ : Env Γ} → {cs : CompStack Y}
+                  ----------------------------------------------------------------
+                    → ⟨ push M N ⊰ γ ╎ cs ⟩ →ᶜ ⟨ M ⊰ γ ╎ N ⊲ γ ⦂⦂ cs ⟩
+
+        sub>     :    {M : (Γ ∙ `V) ⊢ᶜ X} → {N : Γ ⊢ᶜ X} → {γ : Env Γ} → {cs : CompStack X}
+                  ----------------------------------------------------------------
+                    → ⟨ sub M N ⊰ γ ╎ cs ⟩ →ᶜ ⟨ M ⊰ γ ﹐﹝ N ╎ cs ﹞ ╎ cs ⟩
+
+        pm>      :    {M : Γ ⊢ᵛ X `× Y} → {γ : Env Γ} → {N : (Γ ∙ X ∙ Y) ⊢ᶜ Z} → {cs : CompStack Z}
+                    → {LHS : V̲a̲l̲ Γ' X} → {RHS : V̲a̲l̲ Γ' Y} → {γ' : Env Γ'}
+                    → ((∘ ((⇡ wk-val wk-id M ⊲ γ ∷ □) {↥ = 🗆})) ↠ᵛ (∙ ((⭭ pa̲i̲r̲ LHS RHS ⊲ γ' ∷ □) {↥ = 🗆}))) → (π' : Wk Γ' Γ)
+                  ----------------------------------------------------------------
+                    → ⟨ pm M N ⊰ γ ╎ cs ⟩ →ᶜ ⟨ wk-comp (wk-cong (wk-cong π')) N ⊰ γ' ﹐ LHS ﹐ wk-v̲a̲l̲ (wk-wk wk-id) RHS ╎ cs ⟩
+
+        app>     :    {M : Γ ⊢ᵛ X `⇒ Y} → {γ : Env Γ} → {N : Γ ⊢ᵛ X} → {cs : CompStack Y}
+                    → {N' : V̲a̲l̲ Γ' X} → {γ' : Env Γ'}
+                    → {M' : (Γ'' ∙ X) ⊢ᶜ (Y)} → {γ'' : Env Γ''}
+                    → ((∘ ((⇡ wk-val wk-id N ⊲ γ ∷ □) {↥ = 🗆})) ↠ᵛ (∙ ((⭭ N' ⊲ γ' ∷ □) {↥ = 🗆}))) → (π' : Wk Γ' Γ)
+                    → ((∘ ((⇡ wk-val π' M ⊲ γ' ∷ □) {↥ = 🗆})) ↠ᵛ (∙ ((⭭ (l̲a̲m̲ M') ⊲ γ'' ∷ □) {↥ = 🗆}))) → (π'' : Wk Γ'' Γ')
+                  ----------------------------------------------------------------
+                    → ⟨ app M N ⊰ γ ╎ cs ⟩ →ᶜ ⟨ M' ⊰ γ'' ﹐ wk-v̲a̲l̲ π'' N' ╎ cs ⟩
+
+        var>     :   {a : Γ ⊢ᵛ `V} → {γ : Env Γ} → {i : Γ' ∋ `V} → {γ' : Env Γ'} → {W : Γ'' ⊢ᶜ X} → {γ'' : Env Γ''} → {cs : CompStack `V} → {cs' : CompStack X}
+                  → ((∘ ((⇡ wk-val wk-id a ⊲ γ ∷ □) {↥ = 🗆})) ↠ᵛ (∙ ((⭭ v̲a̲r̲ i ⊲ γ' ∷ □) {↥ = 🗆}))) → (π' : Wk Γ' Γ)
+                  → (⟨ i ∥ γ' ⟩ →ᴸ* ⟨ h ∥ γ'' ﹐﹝ W ╎ cs' ﹞ ⟩) → (πᵥ : Wk Γ'' Γ')
+                  ----------------------------------------------------------------
+                    → ⟨ var a ⊰ γ ╎ cs ⟩ →ᶜ ⟨ W ⊰ γ'' ╎ cs' ⟩
 
   -- EXAMPLES
   --------------------------------------------------
