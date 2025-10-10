@@ -28,6 +28,7 @@ module Main {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   infixr 15 _→ᶜ⟨_⟩_
   infix  15 _→ᵛ_
   infix  15 _→ᴸ_
+  infixr 10 _⨾ᶜ_
   infixr 10 _⨾_
 
   data IsEmpty : Set where
@@ -47,6 +48,9 @@ module Main {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
       v̲a̲r̲  : (i : Γ ∋ `V) → V̲a̲l̲ Γ `V
 
+  data C̲o̲m̲p : Ctx → Ty → Set where
+
+      r̲e̲t̲u̲r̲n̲ : V̲a̲l̲ Γ X → C̲o̲m̲p Γ X
 
   toVal : V̲a̲l̲ Γ X → Γ ⊢ᵛ X
   toVal (l̲a̲m̲ W) = lam W
@@ -514,44 +518,49 @@ module Main {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   data CompState : Set where
 
-        ⟨_⊰_╎_⟩ : (W : Γ ⊢ᶜ X) → Env Γ → (cs : CompStack X) → CompState
+        ∘⟨_⊰_╎_⟩ : (W : Γ ⊢ᶜ X) → Env Γ → (cs : CompStack X) → CompState
+
+        ∙⟨_⊰_╎_⟩ : (W : C̲o̲m̲p Γ X) → Env Γ → (cs : CompStack X) → CompState
 
 
   data _→ᶜ_ : CompState → CompState → Set where
 
-        return>  :    {M : Γ ⊢ᵛ X} → {γ : Env Γ} → {N : (Γ'' ∙ X) ⊢ᶜ Y} → {γ'' : Env Γ''} → {π : Wk Γ Γ''} → {cs : CompStack Y}
-                      → {M' : V̲a̲l̲ Γ' X} → {γ' : Env Γ'}
-                      → ((∘ ((⇡ wk-val wk-id M ⊲ γ ∷ □) {↥ = 🗆})) ↠ᵛ (∙ ((⭭ M' ⊲ γ' ∷ □) {↥ = 🗆}))) → (π' : Wk Γ' Γ)
+        ∘return  :    {M : Γ ⊢ᵛ X} → {γ : Env Γ'} → {π : Wk Γ' Γ} → {M' : V̲a̲l̲ Γ'' X} → {γ' : Env Γ''} → {cs : CompStack X}
+                      → ((∘ ((⇡ wk-val π M ⊲ γ ∷ □) {↥ = 🗆})) ↠ᵛ (∙ ((⭭ M' ⊲ γ' ∷ □) {↥ = 🗆})))
                   ----------------------------------------------------------------
-                    → ⟨ return M ⊰ γ ╎ N ⊲ γ'' ⦂⦂ cs ⟩ →ᶜ ⟨ wk-comp (wk-cong π') (wk-comp (wk-cong π) N) ⊰ γ' ﹐ M' ╎ cs ⟩
+                    → ∘⟨ wk-comp π (return M) ⊰ γ ╎ cs ⟩ →ᶜ ∙⟨ r̲e̲t̲u̲r̲n̲ M' ⊰ γ' ╎ cs ⟩
 
-        push>    :    {M : Γ ⊢ᶜ X} → {N : (Γ ∙ X) ⊢ᶜ Y} → {γ : Env Γ} → {cs : CompStack Y}
+        ∙return  :    {M : V̲a̲l̲ Γ X} → {γ : Env Γ} → {N : (Γ' ∙ X) ⊢ᶜ Y} → {γ' : Env Γ'} → {π : Wk Γ Γ'} → {cs : CompStack Y}
                   ----------------------------------------------------------------
-                    → ⟨ push M N ⊰ γ ╎ cs ⟩ →ᶜ ⟨ M ⊰ γ ╎ N ⊲ γ ⦂⦂ cs ⟩
+                    → ∙⟨ r̲e̲t̲u̲r̲n̲ M ⊰ γ ╎ N ⊲ γ' ⦂⦂ cs ⟩ →ᶜ ∘⟨ wk-comp (wk-cong π) N ⊰ γ ﹐ M ╎ cs ⟩
 
-        sub>     :    {M : (Γ ∙ `V) ⊢ᶜ X} → {N : Γ ⊢ᶜ X} → {γ : Env Γ} → {cs : CompStack X}
+        ∘push    :    {M : Γ ⊢ᶜ X} → {N : (Γ ∙ X) ⊢ᶜ Y} → {γ : Env Γ} → {cs : CompStack Y}
                   ----------------------------------------------------------------
-                    → ⟨ sub M N ⊰ γ ╎ cs ⟩ →ᶜ ⟨ M ⊰ γ ﹐﹝ N ╎ cs ﹞ ╎ cs ⟩
+                    → ∘⟨ push M N ⊰ γ ╎ cs ⟩ →ᶜ ∘⟨ M ⊰ γ ╎ N ⊲ γ ⦂⦂ cs ⟩
 
-        pm>      :    {M : Γ' ⊢ᵛ X `× Y} → {γ : Env Γ} → {W : (Γ' ∙ X ∙ Y) ⊢ᶜ Z} → {cs : CompStack Z}
+        ∘sub     :    {M : (Γ ∙ `V) ⊢ᶜ X} → {N : Γ ⊢ᶜ X} → {γ : Env Γ} → {cs : CompStack X}
+                  ----------------------------------------------------------------
+                    → ∘⟨ sub M N ⊰ γ ╎ cs ⟩ →ᶜ ∘⟨ M ⊰ γ ﹐﹝ N ╎ cs ﹞ ╎ cs ⟩
+
+        ∘pm      :    {M : Γ' ⊢ᵛ X `× Y} → {γ : Env Γ} → {W : (Γ' ∙ X ∙ Y) ⊢ᶜ Z} → {cs : CompStack Z}
                     → {LHS : V̲a̲l̲ Γ'' X} → {RHS : V̲a̲l̲ Γ'' Y} → {γ'' : Env Γ''} → (π : Wk Γ Γ')
                     → ((∘ ((⇡ wk-val π M ⊲ γ ∷ □) {↥ = 🗆})) ↠ᵛ (∙ ((⭭ pa̲i̲r̲ LHS RHS ⊲ γ'' ∷ □) {↥ = 🗆}))) → (π' : Wk Γ'' Γ)
                   ----------------------------------------------------------------
-                    → ⟨ pm (wk-val π M) (wk-comp (wk-cong (wk-cong π)) W) ⊰ γ ╎ cs ⟩ →ᶜ ⟨ wk-comp (wk-cong (wk-cong π')) (wk-comp (wk-cong (wk-cong π)) W) ⊰ γ' ﹐ LHS ﹐ wk-v̲a̲l̲ (wk-wk wk-id) RHS ╎ cs ⟩
+                    → ∘⟨ pm (wk-val π M) (wk-comp (wk-cong (wk-cong π)) W) ⊰ γ ╎ cs ⟩ →ᶜ ∘⟨ wk-comp (wk-cong (wk-cong π')) (wk-comp (wk-cong (wk-cong π)) W) ⊰ γ' ﹐ LHS ﹐ wk-v̲a̲l̲ (wk-wk wk-id) RHS ╎ cs ⟩
 
-        app>     :    {M : Γ ⊢ᵛ X `⇒ Y} → {γ : Env Γ} → {N : Γ ⊢ᵛ X} → {cs : CompStack Y}
+        ∘app     :    {M : Γ ⊢ᵛ X `⇒ Y} → {γ : Env Γ} → {N : Γ ⊢ᵛ X} → {cs : CompStack Y}
                     → {N' : V̲a̲l̲ Γ' X} → {γ' : Env Γ'}
                     → {M' : (Γ'' ∙ X) ⊢ᶜ (Y)} → {γ'' : Env Γ''}
                     → ((∘ ((⇡ wk-val wk-id N ⊲ γ ∷ □) {↥ = 🗆})) ↠ᵛ (∙ ((⭭ N' ⊲ γ' ∷ □) {↥ = 🗆}))) → (π' : Wk Γ' Γ)
                     → ((∘ ((⇡ wk-val π' M ⊲ γ' ∷ □) {↥ = 🗆})) ↠ᵛ (∙ ((⭭ (l̲a̲m̲ M') ⊲ γ'' ∷ □) {↥ = 🗆}))) → (π'' : Wk Γ'' Γ')
                   ----------------------------------------------------------------
-                    → ⟨ app M N ⊰ γ ╎ cs ⟩ →ᶜ ⟨ M' ⊰ γ'' ﹐ wk-v̲a̲l̲ π'' N' ╎ cs ⟩
+                    → ∘⟨ app M N ⊰ γ ╎ cs ⟩ →ᶜ ∘⟨ M' ⊰ γ'' ﹐ wk-v̲a̲l̲ π'' N' ╎ cs ⟩
 
-        var>     :   {a : Γ ⊢ᵛ `V} → {γ : Env Γ} → {i : Γ' ∋ `V} → {γ' : Env Γ'} → {W : Γ'' ⊢ᶜ X} → {γ'' : Env Γ''} → {cs : CompStack `V} → {cs' : CompStack X}
+        ∘var     :   {a : Γ ⊢ᵛ `V} → {γ : Env Γ} → {i : Γ' ∋ `V} → {γ' : Env Γ'} → {W : Γ'' ⊢ᶜ X} → {γ'' : Env Γ''} → {cs : CompStack `V} → {cs' : CompStack X}
                   → ((∘ ((⇡ wk-val wk-id a ⊲ γ ∷ □) {↥ = 🗆})) ↠ᵛ (∙ ((⭭ v̲a̲r̲ i ⊲ γ' ∷ □) {↥ = 🗆}))) → (π' : Wk Γ' Γ)
                   → (⟨ i ∥ γ' ⟩ →ᴸ* ⟨ h ∥ γ'' ﹐﹝ W ╎ cs' ﹞ ⟩) → (πᵥ : Wk Γ'' Γ')
                   ----------------------------------------------------------------
-                    → ⟨ var a ⊰ γ ╎ cs ⟩ →ᶜ ⟨ W ⊰ γ'' ╎ cs' ⟩
+                    → ∘⟨ var a ⊰ γ ╎ cs ⟩ →ᶜ ∘⟨ W ⊰ γ'' ╎ cs' ⟩
 
   data _→ᶜ*_ : CompState → CompState → Set where
 
@@ -559,31 +568,53 @@ module Main {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
     _→ᶜ⟨_⟩_ : (S : CompState) → {S' S'' : CompState} → S →ᶜ S' → S' →ᶜ* S'' → S →ᶜ* S''
 
+  _⨾ᶜ_ : {F S T : CompState} → (F →ᶜ* S) → (S →ᶜ* T) → (F →ᶜ* T)
+  _⨾ᶜ_ (S ◼) S>>T = S>>T
+  _⨾ᶜ_ (F →ᶜ⟨ F>S₁ ⟩ S₁>>S₂) S₂>>T = F →ᶜ⟨ F>S₁ ⟩ (S₁>>S₂ ⨾ᶜ S₂>>T)
+
   data CompHaltingState {X : Ty} (cs : CompStack X) : CompState → Set where
 
-      ret : {M : Γ ⊢ᵛ X} → {γ : Env Γ} → CompHaltingState cs (⟨ return M ⊰ γ ╎ cs ⟩)
+      ret : {M : V̲a̲l̲ Γ X} → {γ : Env Γ} → CompHaltingState cs (∙⟨ r̲e̲t̲u̲r̲n̲ M ⊰ γ ╎ cs ⟩)
 
   topCompCtx : CompState → Ctx
-  topCompCtx (⟨_⊰_╎_⟩ {Γ = Γ} _ _ _) = Γ
+  topCompCtx (∘⟨_⊰_╎_⟩ {Γ = Γ} _ _ _) = Γ
+  topCompCtx (∙⟨_⊰_╎_⟩ {Γ = Γ} _ _ _) = Γ
 
   data CompSteps {X : Ty} (cs : CompStack X) : CompState → Set where
 
       steps : {S T : CompState} → S →ᶜ* T → CompHaltingState cs T → (π : Wk (topCompCtx T) (topCompCtx S)) → CompSteps cs S
 
   {-
-  comp-eval : (W : Γ' ⊢ᶜ X) → (γ : Env Γ) → (π : Wk Γ Γ') → (cs : CompStack X) → CompSteps cs ⟨ wk-comp π W ⊰ γ ╎ cs ⟩
 
-  comp-eval (return x) γ π cs = steps (⟨ wk-comp π (return x) ⊰ γ ╎ cs ⟩ ◼) ret wk-id
+  comp-eval : (W : Γ' ⊢ᶜ X) → (γ : Env Γ) → (π : Wk Γ Γ') → (cs : CompStack X) → CompSteps cs ∘⟨ wk-comp π W ⊰ γ ╎ cs ⟩
+
+  comp-eval (return {A = X} M) γ π cs with val-eval-rec {X = X} M γ π
+  ... | steps {T = ∙ ((⭭ M₁ ⊲ γ₁ ∷ □) {↥ = 🗆})} M>T ∙T M≡T π' wk≡ = steps (∘⟨ wk-comp π (return M) ⊰ γ ╎ cs ⟩ →ᶜ⟨ ∘return M>T ⟩ (∙⟨ r̲e̲t̲u̲r̲n̲ M₁ ⊰ γ₁ ╎ cs ⟩ ◼)) ret π'
 
   comp-eval (pm {A = X} {B = Y} M W) γ π cs with val-eval-rec {X = X `× Y} M γ π
   ...  | steps {T = ∙ ((⭭_ {X = X `× Y} (pa̲i̲r̲ LHS RHS) ⊲ γ' ∷ □) {↥ = 🗆})} M>T ∙T M≡T π' wk≡ with comp-eval W (γ' ﹐ LHS ﹐ wk-v̲a̲l̲ (wk-wk wk-id) RHS) (wk-trans (wk-cong (wk-cong π')) (wk-cong (wk-cong π))) cs
   ...   | steps W>T HT π₁ with wk-comp-trans W (wk-cong (wk-cong π')) (wk-cong (wk-cong π))
-  ...     | eq rewrite (sym eq) = steps (⟨ wk-comp π (pm M W) ⊰ γ ╎ cs ⟩ →ᶜ⟨ pm> π M>T π' ⟩ W>T) HT (wk-trans π₁ (wk-wk (wk-wk π')))
+  ...     | eq rewrite (sym eq) = steps (∘⟨ wk-comp π (pm M W) ⊰ γ ╎ cs ⟩ →ᶜ⟨ ∘pm π M>T π' ⟩ W>T) HT (wk-trans π₁ (wk-wk (wk-wk π')))
 
-  comp-eval (push W V) γ cs = {!!}
-  comp-eval (app M N) γ cs = {!!}
-  comp-eval (var x) γ cs = {!!}
-  comp-eval (sub W V) γ cs = {!!}
+  --comp-eval (push W V) γ π cs with comp-eval W γ π ((wk-comp (wk-cong π) V) ⊲ γ ⦂⦂ cs)
+  --... | steps {T = ⟨_⊰_╎_⟩ {X = _} .(return _) x .(wk-comp (wk-cong π) V ⊲ γ ⦂⦂ cs)} W>T ret π' = steps (⟨ push (wk-comp π W) (wk-comp (wk-cong π) V) ⊰ γ ╎ cs ⟩ →ᶜ⟨ push> ⟩ W>T) {!ret!} {!!}
+
+  comp-eval (push W V) γ π cs with comp-eval W γ π ((wk-comp (wk-cong π) V) ⊲ γ ⦂⦂ cs)
+  ... | steps {T = ∙⟨ r̲e̲t̲u̲r̲n̲ M ⊰ γ₁ ╎ .(wk-comp (wk-cong π) V ⊲ γ ⦂⦂ cs) ⟩} W>T ret π' = --{!!}
+
+          steps
+                (  ∘⟨ push (wk-comp π W) (wk-comp (wk-cong π) V) ⊰ γ ╎ cs ⟩  →ᶜ⟨ ∘push ⟩ W>T ⨾ᶜ
+                   ∙⟨ r̲e̲t̲u̲r̲n̲ M ⊰ γ₁ ╎ wk-comp (wk-cong π) V ⊲ γ ⦂⦂ cs ⟩       →ᶜ⟨ ∙return ⟩ ∘⟨ wk-comp (wk-cong π') (wk-comp (wk-cong π) V) ⊰ γ₁ ﹐ M ╎  cs ⟩ →ᶜ⟨ {!!} ⟩ {!!} )
+                {!ret!}
+                {!!}
+
+  --comp-eval (push W V) γ π (x ⊲ x₁ ⦂⦂ cs) = {!!}
+
+  comp-eval (app M N) γ π cs = {!!}
+
+  comp-eval (var x) γ π cs = {!!}
+
+  comp-eval (sub W V) γ π cs = {!!}
   -}
 
   -- EXAMPLES
