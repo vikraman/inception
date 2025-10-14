@@ -397,24 +397,23 @@ mutual
                 ≡⟨ cong (λ x → sub (wk-comp (wk-cong (wk-trans π₁ π₂)) W) x) (wk-comp-trans W₁ π₁ π₂) ⟩
                 sub (wk-comp (wk-cong (wk-trans π₁ π₂)) W) (wk-comp (wk-trans π₁ π₂) W₁) ∎
 
--- These are not used anywhere, but maybe they will come in handy at some point :)
 wk-mem-id : {i : Γ ∋ A} → wk-mem wk-id i ≡ i
 wk-mem-id {i = h} = refl
 wk-mem-id {i = t i} = cong t wk-mem-id
 
 mutual
 
-  wk-val-id : {M : Γ ⊢ᵛ A} → wk-val wk-id M ≡ M
-  wk-val-id {M = var i} = cong var wk-mem-id
-  wk-val-id {M = lam W} = cong lam wk-comp-id
-  wk-val-id {M = pair LHS RHS} = pair (wk-val wk-id LHS) (wk-val wk-id RHS) ≡⟨ cong (λ y → pair y (wk-val wk-id RHS)) wk-val-id ⟩ pair LHS (wk-val wk-id RHS) ≡⟨ cong (λ y → pair LHS y) wk-val-id ⟩ pair LHS RHS ∎
-  wk-val-id {M = pm M N} = pm (wk-val wk-id M) (wk-val (wk-cong (wk-cong wk-id)) N) ≡⟨ refl ⟩ pm (wk-val wk-id M) (wk-val wk-id N) ≡⟨ cong (λ y → pm y (wk-val wk-id N)) wk-val-id ⟩ pm M (wk-val wk-id N) ≡⟨ cong (λ y → pm M y) wk-val-id ⟩ pm M N ∎
-  wk-val-id {M = unit} = refl
+  wk-val-id : (M : Γ ⊢ᵛ A) → wk-val wk-id M ≡ M
+  wk-val-id (var i) = cong var wk-mem-id
+  wk-val-id (lam W) = cong lam (wk-comp-id W)
+  wk-val-id (pair LHS RHS) = pair (wk-val wk-id LHS) (wk-val wk-id RHS) ≡⟨ cong (λ y → pair y (wk-val wk-id RHS)) (wk-val-id LHS) ⟩ pair LHS (wk-val wk-id RHS) ≡⟨ cong (λ y → pair LHS y) (wk-val-id RHS) ⟩ pair LHS RHS ∎
+  wk-val-id (pm M N) = pm (wk-val wk-id M) (wk-val (wk-cong (wk-cong wk-id)) N) ≡⟨ refl ⟩ pm (wk-val wk-id M) (wk-val wk-id N) ≡⟨ cong (λ y → pm y (wk-val wk-id N)) (wk-val-id M) ⟩ pm M (wk-val wk-id N) ≡⟨ cong (λ y → pm M y) (wk-val-id N) ⟩ pm M N ∎
+  wk-val-id unit = refl
 
-  wk-comp-id : {W : Γ ⊢ᶜ A} → wk-comp wk-id W ≡ W
-  wk-comp-id {W = return x} = cong return wk-val-id
-  wk-comp-id {W = pm M N} = pm (wk-val wk-id M) (wk-comp (wk-cong (wk-cong wk-id)) N) ≡⟨ refl ⟩ pm (wk-val wk-id M) (wk-comp wk-id N) ≡⟨ cong (λ y → pm y (wk-comp wk-id N)) wk-val-id ⟩ pm M (wk-comp wk-id N) ≡⟨ cong (λ y → pm M y) wk-comp-id ⟩ pm M N ∎
-  wk-comp-id {W = push M N} = push (wk-comp wk-id M) (wk-comp (wk-cong wk-id) N) ≡⟨ cong (λ y → push (wk-comp wk-id M) y) wk-comp-id ⟩ push (wk-comp wk-id M) N ≡⟨ cong (λ y → push y N) wk-comp-id ⟩ push M N ∎
-  wk-comp-id {W = app W W₁} = app (wk-val wk-id W) (wk-val wk-id W₁) ≡⟨ cong (λ y → app y (wk-val wk-id W₁)) wk-val-id ⟩ app W (wk-val wk-id W₁) ≡⟨ cong (λ y → app W y) wk-val-id ⟩ app W W₁ ∎
-  wk-comp-id {W = var x} = cong var wk-val-id
-  wk-comp-id {W = sub W W₁} = sub (wk-comp (wk-cong wk-id) W) (wk-comp wk-id W₁) ≡⟨ cong (λ y → sub y (wk-comp wk-id W₁)) wk-comp-id ⟩ sub W (wk-comp wk-id W₁) ≡⟨ cong (λ y → sub W y) wk-comp-id ⟩ sub W W₁ ∎
+  wk-comp-id : (W : Γ ⊢ᶜ A) → wk-comp wk-id W ≡ W
+  wk-comp-id (return x) = cong return (wk-val-id x)
+  wk-comp-id (pm M N) = pm (wk-val wk-id M) (wk-comp (wk-cong (wk-cong wk-id)) N) ≡⟨ refl ⟩ pm (wk-val wk-id M) (wk-comp wk-id N) ≡⟨ cong (λ y → pm y (wk-comp wk-id N)) (wk-val-id M) ⟩ pm M (wk-comp wk-id N) ≡⟨ cong (λ y → pm M y) (wk-comp-id N) ⟩ pm M N ∎
+  wk-comp-id (push M N) = push (wk-comp wk-id M) (wk-comp (wk-cong wk-id) N) ≡⟨ cong (λ y → push (wk-comp wk-id M) y) (wk-comp-id N) ⟩ push (wk-comp wk-id M) N ≡⟨ cong (λ y → push y N) (wk-comp-id M) ⟩ push M N ∎
+  wk-comp-id (app W W₁) = app (wk-val wk-id W) (wk-val wk-id W₁) ≡⟨ cong (λ y → app y (wk-val wk-id W₁)) (wk-val-id W) ⟩ app W (wk-val wk-id W₁) ≡⟨ cong (λ y → app W y) (wk-val-id W₁) ⟩ app W W₁ ∎
+  wk-comp-id (var x) = cong var (wk-val-id x)
+  wk-comp-id (sub W W₁) = sub (wk-comp (wk-cong wk-id) W) (wk-comp wk-id W₁) ≡⟨ cong (λ y → sub y (wk-comp wk-id W₁)) (wk-comp-id W) ⟩ sub W (wk-comp wk-id W₁) ≡⟨ cong (λ y → sub W y) (wk-comp-id W₁) ⟩ sub W W₁ ∎
