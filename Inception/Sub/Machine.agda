@@ -641,6 +641,7 @@ module Main {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   wk-id-trans {π = wk-cong π} = cong wk-cong wk-id-trans
   wk-id-trans {π = wk-wk π} = cong wk-wk wk-id-trans
 
+  {- REMOVE
   wk-lem : (π₁ : Wk Ψ Δ) → (π₂ : Wk Δ Γ) → (wk-trans (wk-cong {A = X} π₁) (wk-wk π₂)) ≡ wk-trans (wk-cong {A = X} (wk-trans π₁ π₂)) (wk-wk wk-id)
   wk-lem wk-ε wk-ε = refl
   wk-lem (wk-cong π₁) π₂ = cong wk-wk (sym wk-trans-id)
@@ -648,12 +649,6 @@ module Main {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   wk-lemX : (π₁ : Wk Ψ Δ) → (π₂ : Wk Δ Γ) → (wk-trans (wk-cong {A = Y} (wk-cong {A = X} (wk-trans π₁ π₂))) (wk-wk (wk-wk wk-id))) ≡ (wk-trans (wk-wk (wk-wk π₁)) π₂)
   wk-lemX π₁ π₂ = cong wk-wk (cong wk-wk wk-trans-id)
-
-  -- (wk-v̲a̲l̲ (wk-trans (wk-wk (wk-wk π')) π) N)
-  -- (wk-v̲a̲l̲ (wk-wk (wk-wk π')) (wk-v̲a̲l̲ π N))
-  -- wk-v̲a̲l̲ (wk-cong (wk-cong π')) (wk-v̲a̲l̲ (wk-cong (wk-cong π)) (wk-v̲a̲l̲ (wk-wk (wk-wk wk-id)) N))
-  -- (wk-v̲a̲l̲ (wk-cong (wk-cong (wk-trans π' π))) (wk-v̲a̲l̲ (wk-wk (wk-wk wk-id)) N))
-  -- (wk-v̲a̲l̲ (wk-trans (wk-cong (wk-cong (wk-trans π' π))) (wk-wk (wk-wk wk-id))) N)
 
   lem : (N : V̲a̲l̲ Γ Z) → (π' : Wk Ψ Δ) → (π : Wk Δ Γ) →  (wk-v̲a̲l̲ (wk-cong {A = Y} (wk-cong {A = X} (wk-trans π' π))) (wk-v̲a̲l̲ (wk-wk (wk-wk wk-id)) N)) ≡ (wk-v̲a̲l̲ (wk-wk (wk-wk π')) (wk-v̲a̲l̲ π N))
   lem N π' π =
@@ -664,58 +659,74 @@ module Main {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
               wk-v̲a̲l̲ (wk-trans (wk-wk (wk-wk π')) π) N
             ≡⟨ sym (wk-v̲a̲l̲-trans N (wk-wk (wk-wk π')) π) ⟩
               wk-v̲a̲l̲ (wk-wk (wk-wk π')) (wk-v̲a̲l̲ π N) ∎
-
-  {-
-  comp-eval : (W : Γ' ⊢ᶜ X) → (γ : Env Γ) → (π : Wk Γ Γ') → (cs : CompStack X) → CompSteps cs ∘⟨ wk-comp π W ⊰ γ ╎ cs ⟩
-
-  app-eval : (M : Γ' ⊢ᵛ X `⇒ Y) → (N : V̲a̲l̲ Γ' X) → (γ : Env Γ) → (π : Wk Γ Γ') → (cs : CompStack Y) → CompSteps cs ∙⟨ wk-c̲o̲m̲p π (a̲pp M N) ⊰ γ ╎ cs ⟩
-  app-eval (var i) N γ π cs = {!!}
-  app-eval (lam W) N γ π cs with comp-eval W (γ ﹐ wk-v̲a̲l̲ π N) (wk-cong π) cs
-  ... | steps W>WT HT π' rewrite (wk-comp-id W) = steps ( ∙⟨ wk-c̲o̲m̲p π (a̲pp (lam W) N) ⊰ γ ╎ cs ⟩ →ᶜ⟨ ∙app-lam ⟩ W>WT) HT (wk-trans π' (wk-wk wk-id))
-  app-eval (pm M₁ N₁) N γ π cs with val-eval-rec M₁ γ π
-  ... | steps {T = ∙ (⭭ pa̲i̲r̲ {X = X} {Y = Y} LHS RHS ⊲ γ₁ ∷ □) {↥ = 🗆}} M>T ∙T M≡T π' wk≡ with wk-val-trans N₁ (wk-cong (wk-cong π')) (wk-cong (wk-cong π)) | wk-v̲a̲l̲-trans N (wk-wk {A = Y} (wk-wk {A = X} π')) π | wk-v̲a̲l̲-trans (wk-v̲a̲l̲ (wk-wk {A = Y} (wk-wk {A = X} wk-id)) N) (wk-cong (wk-cong π')) (wk-cong (wk-cong π))
-  ...       | eq | eq' | eq'' with app-eval N₁ (wk-v̲a̲l̲ (wk-wk (wk-wk wk-id)) N) (γ₁ ﹐ LHS ﹐ wk-v̲a̲l̲ (wk-wk wk-id) RHS) (wk-cong (wk-cong (wk-trans π' π))) cs
-  ...          | steps N>NT NT π'' rewrite (sym eq) rewrite lem {Y = Y} {X = X} N π' π =
-
-       steps (∙⟨ wk-c̲o̲m̲p π (a̲pp (pm M₁ N₁) N) ⊰ γ ╎ cs ⟩ →ᶜ⟨ ∙app-pm M>T π' ⟩ N>NT) NT (wk-trans π'' (wk-wk (wk-wk π')))
-
-
-  comp-eval (return {A = X} M) γ π cs with val-eval-rec {X = X} M γ π
-  ... | steps {T = ∙ ((⭭ M₁ ⊲ γ₁ ∷ □) {↥ = 🗆})} M>T ∙T M≡T π' wk≡ = steps (∘⟨ wk-comp π (return M) ⊰ γ ╎ cs ⟩ →ᶜ⟨ ∘return M>T ⟩ (∙⟨ r̲e̲t̲u̲r̲n̲ M₁ ⊰ γ₁ ╎ cs ⟩ ◼)) ret π'
-
-  comp-eval (pm {A = X} {B = Y} M W) γ π cs with val-eval-rec {X = X `× Y} M γ π
-  ...  | steps {T = ∙ ((⭭_ {X = X `× Y} (pa̲i̲r̲ LHS RHS) ⊲ γ' ∷ □) {↥ = 🗆})} M>T ∙T M≡T π' wk≡ with comp-eval W (γ' ﹐ LHS ﹐ wk-v̲a̲l̲ (wk-wk wk-id) RHS) (wk-trans (wk-cong (wk-cong π')) (wk-cong (wk-cong π))) cs
-  ...   | steps W>T HT π₁ with wk-comp-trans W (wk-cong (wk-cong π')) (wk-cong (wk-cong π))
-  ...     | eq rewrite (sym eq) = steps (∘⟨ wk-comp π (pm M W) ⊰ γ ╎ cs ⟩ →ᶜ⟨ ∘pm π M>T π' ⟩ W>T) HT (wk-trans π₁ (wk-wk (wk-wk π')))
-
-  comp-eval (push W V) γ π cs with comp-eval W γ π ((wk-comp (wk-cong π) V) ⊲ γ ⦂⦂ cs)
-  ... | steps {T = ∙⟨ r̲e̲t̲u̲r̲n̲ M ⊰ γ₁ ╎ .(wk-comp (wk-cong π) V ⊲ γ ⦂⦂ cs) ⟩} W>T ret π' with comp-eval V (γ₁ ﹐ M) (wk-trans (wk-cong π') (wk-cong π)) cs
-  ...    | steps {T = T} V>T ret π'' with wk-comp-trans V (wk-cong π') (wk-cong π)
-  ...       | eq rewrite (sym eq) =
-
-          steps
-                (  ∘⟨ push (wk-comp π W) (wk-comp (wk-cong π) V) ⊰ γ ╎ cs ⟩  →ᶜ⟨ ∘push ⟩ W>T ⨾ᶜ
-                   ∙⟨ r̲e̲t̲u̲r̲n̲ M ⊰ γ₁ ╎ wk-comp (wk-cong π) V ⊲ γ ⦂⦂ cs ⟩       →ᶜ⟨ ∙return ⟩ V>T )
-                ret
-                (wk-trans π'' (wk-wk π'))
-
-  comp-eval (app (var i) N) γ π cs = {!!}
-
-  comp-eval (app (pm M W) N) γ π cs = {!!}
-
-  comp-eval (app (lam W) N) γ π cs with val-eval-rec N γ π
-  ... | steps {T = ∙ ((⭭_ NT ⊲ γᴺ ∷ □) {↥ = 🗆})} N>NT ∙NT N≡NT πᴺ wk≡ᴺ with comp-eval W (γᴺ ﹐ NT) (wk-cong (wk-trans πᴺ π)) cs
-  ...    | steps W>WT HT πᵂ with wk-comp-trans W (wk-cong πᴺ) (wk-cong π)
-  ...       | eq rewrite (sym eq) = steps
-
-              (∘⟨ app (wk-val π (lam W)) (wk-val π N) ⊰ γ ╎ cs ⟩ →ᶜ⟨ ∘app N>NT πᴺ ⟩ ∙⟨ a̲pp (lam (wk-comp (wk-cong πᴺ) (wk-comp (wk-cong π) W))) NT ⊰ γᴺ ╎ cs ⟩ →ᶜ⟨ ∙app-lam ⟩ W>WT)
-              HT
-              (wk-trans πᵂ (wk-wk πᴺ))
-
-  comp-eval (var x) γ π cs = {!!}
-
-  comp-eval (sub W V) γ π cs = {!!}
   -}
+
+  mutual
+
+    app-eval : (M : Γ' ⊢ᵛ X `⇒ Y) → (N : V̲a̲l̲ Γ X) → (γ : Env Γ) → (π : Wk Γ Γ') → (cs : CompStack Y) → CompSteps cs ∙⟨ (a̲pp (wk-val π M) N) ⊰ γ ╎ cs ⟩
+    app-eval (var i) N γ π cs = {!!}
+    app-eval (lam W) N γ π cs with comp-eval W (γ ﹐ N) (wk-cong π) cs
+    ... | steps W>WT HT π' rewrite (wk-comp-id W) = steps ( ∙⟨ a̲pp (wk-val π (lam W)) N ⊰ γ ╎ cs ⟩ →ᶜ⟨ ∙app-lam ⟩ W>WT) HT (wk-trans π' (wk-wk wk-id))
+    app-eval (pm M₁ N₁) N γ π cs with val-eval-rec M₁ γ π
+    ... | steps {T = ∙ (⭭ pa̲i̲r̲ {X = X} {Y = Y} LHS RHS ⊲ γ₁ ∷ □) {↥ = 🗆}} M>T ∙T M≡T π' wk≡ with wk-val-trans N₁ (wk-cong (wk-cong π')) (wk-cong (wk-cong π))
+    ...       | eq with app-eval N₁ ((wk-v̲a̲l̲ (wk-wk (wk-wk π')) N)) (γ₁ ﹐ LHS ﹐ wk-v̲a̲l̲ (wk-wk wk-id) RHS) (wk-cong (wk-cong (wk-trans π' π))) cs
+    ...          | steps N>NT NT π'' rewrite (sym eq) = --rewrite lem {Y = Y} {X = X} N π' π =
+
+        steps
+         (∙⟨ (a̲pp (wk-val π (pm M₁ N₁)) N) ⊰ γ ╎ cs ⟩ →ᶜ⟨ ∙app-pm M>T π' ⟩ N>NT )
+         NT
+         (wk-trans π'' (wk-wk (wk-wk π')))
+
+
+    comp-eval : (W : Γ' ⊢ᶜ X) → (γ : Env Γ) → (π : Wk Γ Γ') → (cs : CompStack X) → CompSteps cs ∘⟨ wk-comp π W ⊰ γ ╎ cs ⟩
+    comp-eval (return {A = X} M) γ π cs with val-eval-rec {X = X} M γ π
+    ... | steps {T = ∙ ((⭭ M₁ ⊲ γ₁ ∷ □) {↥ = 🗆})} M>T ∙T M≡T π' wk≡ = steps (∘⟨ wk-comp π (return M) ⊰ γ ╎ cs ⟩ →ᶜ⟨ ∘return M>T ⟩ (∙⟨ r̲e̲t̲u̲r̲n̲ M₁ ⊰ γ₁ ╎ cs ⟩ ◼)) ret π'
+
+    comp-eval (pm {A = X} {B = Y} M W) γ π cs with val-eval-rec {X = X `× Y} M γ π
+    ...  | steps {T = ∙ ((⭭_ {X = X `× Y} (pa̲i̲r̲ LHS RHS) ⊲ γ' ∷ □) {↥ = 🗆})} M>T ∙T M≡T π' wk≡ with comp-eval W (γ' ﹐ LHS ﹐ wk-v̲a̲l̲ (wk-wk wk-id) RHS) (wk-trans (wk-cong (wk-cong π')) (wk-cong (wk-cong π))) cs
+    ...   | steps W>T HT π₁ with wk-comp-trans W (wk-cong (wk-cong π')) (wk-cong (wk-cong π))
+    ...     | eq rewrite (sym eq) = steps (∘⟨ wk-comp π (pm M W) ⊰ γ ╎ cs ⟩ →ᶜ⟨ ∘pm π M>T π' ⟩ W>T) HT (wk-trans π₁ (wk-wk (wk-wk π')))
+
+    comp-eval (push W V) γ π cs with comp-eval W γ π ((wk-comp (wk-cong π) V) ⊲ γ ⦂⦂ cs)
+    ... | steps {T = ∙⟨ r̲e̲t̲u̲r̲n̲ M ⊰ γ₁ ╎ .(wk-comp (wk-cong π) V ⊲ γ ⦂⦂ cs) ⟩} W>T ret π' with comp-eval V (γ₁ ﹐ M) (wk-trans (wk-cong π') (wk-cong π)) cs
+    ...    | steps {T = T} V>T ret π'' with wk-comp-trans V (wk-cong π') (wk-cong π)
+    ...       | eq rewrite (sym eq) =
+
+            steps
+                  (  ∘⟨ push (wk-comp π W) (wk-comp (wk-cong π) V) ⊰ γ ╎ cs ⟩  →ᶜ⟨ ∘push ⟩ W>T ⨾ᶜ
+                    ∙⟨ r̲e̲t̲u̲r̲n̲ M ⊰ γ₁ ╎ wk-comp (wk-cong π) V ⊲ γ ⦂⦂ cs ⟩       →ᶜ⟨ ∙return ⟩ V>T )
+                  ret
+                  (wk-trans π'' (wk-wk π'))
+
+    comp-eval (app (var i) N) γ π cs = {!!}
+
+    comp-eval (app (pm M₁ N₁) N) γ π cs with val-eval-rec N γ π
+    ... | steps {T = ∙ ((⭭_ NT ⊲ γᴺ ∷ □) {↥ = 🗆})} N>NT ∙NT N≡NT πᴺ wk≡ᴺ with app-eval (pm M₁ N₁) NT γᴺ (wk-trans πᴺ π) cs
+    ... | steps W>WT HT πᵂ with wk-val-trans N₁ (wk-cong (wk-cong πᴺ)) (wk-cong (wk-cong π))
+    ... | eq rewrite (sym eq) rewrite (sym (wk-val-trans M₁ πᴺ π)) =
+            steps
+
+                ((∘⟨ app (wk-val π (pm M₁ N₁)) (wk-val π N) ⊰ γ ╎ cs ⟩ →ᶜ⟨ ∘app N>NT πᴺ ⟩ W>WT ))
+                HT
+                (wk-trans πᵂ πᴺ)
+
+    comp-eval (app (lam W) N) γ π cs with val-eval-rec N γ π
+    ... | steps {T = ∙ ((⭭_ NT ⊲ γᴺ ∷ □) {↥ = 🗆})} N>NT ∙NT N≡NT πᴺ wk≡ᴺ with app-eval (lam W) NT γᴺ (wk-trans πᴺ π) cs
+    ... | steps W>WT HT πᵂ rewrite (sym (wk-comp-trans W (wk-cong πᴺ) (wk-cong π))) =
+
+    -- with comp-eval W (γᴺ ﹐ NT) (wk-cong (wk-trans πᴺ π)) cs
+    -- ...    | steps W>WT HT πᵂ with wk-comp-trans W (wk-cong πᴺ) (wk-cong π)
+    -- ...       | eq rewrite (sym eq) =
+
+            steps
+
+                (∘⟨ app (wk-val π (lam W)) (wk-val π N) ⊰ γ ╎ cs ⟩ →ᶜ⟨ ∘app N>NT πᴺ ⟩ W>WT ) --∙⟨ a̲pp (lam (wk-comp (wk-cong πᴺ) (wk-comp (wk-cong π) W))) NT ⊰ γᴺ ╎ cs ⟩ →ᶜ⟨ ∙app-lam ⟩ W>WT)
+                HT
+                (wk-trans πᵂ πᴺ) --(wk-trans πᵂ (wk-wk πᴺ))
+
+    comp-eval (var x) γ π cs = {!!}
+
+    comp-eval (sub W V) γ π cs = {!!}
 
   -- EXAMPLES
   --------------------------------------------------
