@@ -1,4 +1,4 @@
-module Inception.Sub.Machine (R : Set) where
+module Inception.Sub.ValueMachine (R : Set) where
 
 open import Data.Product using (proj₁; proj₂; _,_; <_,_>; curry)
 
@@ -12,7 +12,7 @@ open import Inception.Sub.CPS R
 open import Data.Unit
 open import Data.Nat
 
-module Main {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
+module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   variable
     X Y Z Z' T◾ T◾' : Ty
@@ -26,11 +26,11 @@ module Main {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   infix  20 ∙_
   infixr 17 _→ᵛ⟨_⟩
   infixr 15 _→ᵛ⟨_⟩_
-  infixr 15 _→ᶜ⟨_⟩_
+  --infixr 15 _→ᶜ⟨_⟩_
   infix  15 _→ᵛ_
   infix  15 _→ᴸ_
-  infix  15 _→ᶜ*_
-  infixr 10 _⨾ᶜ_
+  -- infix  15 _→ᶜ*_
+  -- infixr 10 _⨾ᶜ_
   infixr 10 _⨾_
 
   data IsEmpty : Set where
@@ -512,7 +512,7 @@ module Main {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   val-eval : (M : ε ⊢ᵛ X) → ValSteps {T◾ = X} (∘ ((⇡ wk-val wk-id M ⊲ ∗ ∷ □) {↥ = 🗆}))
   val-eval M = val-eval-rec M ∗ wk-id
 
-  -- Computation Machine
+{-  -- Computation Machine
   --------------------------------------------------
 
 
@@ -665,8 +665,8 @@ module Main {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   comp-count-vars (sub W₁ W₂) = (comp-count-vars W₁) + (comp-count-vars W₂)
 
   n≥m+n : (n : ℕ) → (m : ℕ) → n ≥ m + n
-  n≥m+n n zero = ?
-  n≥m+n n (suc m) = ?
+  n≥m+n n zero = {!!}
+  n≥m+n n (suc m) = {!!}
 
   mutual
 
@@ -755,3 +755,4 @@ module Main {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
 
   --------------------------------------------------------------
+-}
