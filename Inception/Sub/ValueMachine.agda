@@ -12,11 +12,11 @@ open import Inception.Sub.CPS R
 open import Data.Unit
 open import Data.Nat
 
-module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
+variable
+  X X' Y Y' Z Z' T◾ T◾' : Ty
+  Γ' Γ'' : Ctx
 
-  variable
-    X Y Z Z' T◾ T◾' : Ty
-    Γ' Γ'' : Ctx
+module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   infixl 26 _﹐_
   infix  26 ⭭_
@@ -75,6 +75,21 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       ◻     :   CompStack R₀
 
       _⊲_⦂⦂_    : (Γ ∙ Z) ⊢ᶜ X → Env Γ → (tail : CompStack X) → CompStack Z
+
+  ---
+
+  data C̲o̲m̲p : Ctx → Ty → Set
+  data C̲o̲m̲p where
+
+      r̲e̲t̲u̲r̲n̲ : V̲a̲l̲ Γ X → C̲o̲m̲p Γ X
+
+      a̲pp    : Γ ⊢ᵛ X `⇒ Y -> V̲a̲l̲ Γ X -> C̲o̲m̲p Γ Y
+
+  wk-c̲o̲m̲p : Wk Γ Δ → C̲o̲m̲p Δ X → C̲o̲m̲p Γ X
+  wk-c̲o̲m̲p π (r̲e̲t̲u̲r̲n̲ M) = r̲e̲t̲u̲r̲n̲ (wk-v̲a̲l̲ π M)
+  wk-c̲o̲m̲p π (a̲pp M N) = a̲pp (wk-val π M) (wk-v̲a̲l̲ π N)
+
+  ---
 
   data Env where
 

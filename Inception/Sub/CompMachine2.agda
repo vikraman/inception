@@ -1,4 +1,4 @@
-module Inception.Sub.CompMachine (R : Set) where
+module Inception.Sub.CompMachine2 (R : Set) where
 
 open import Data.Product using (proj₁; proj₂; _,_; <_,_>; curry)
 
@@ -12,11 +12,22 @@ open import Inception.Sub.CPS R
 open import Data.Unit
 open import Data.Nat
 
-module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
+open import Inception.Sub.ValueMachine R
 
-  open import Inception.Sub.ValueMachine R
+module CData {R₁ : Ty} (k₁ : ⟦ R₁ ⟧ → R) where
 
-  open VMain {R₀ = R₀} k₀
+  open VMain {R₀ = R₁} k₁
+
+  data CompState : Set where
+
+        ∘⟨_⊰_╎_⟩ : (W : Γ ⊢ᶜ X) → Env Γ → (cs : CompStack X) → CompState
+
+        ∙⟨_⊰_╎_⟩ : (W : C̲o̲m̲p Γ X) → Env Γ → (cs : CompStack X) → CompState
+
+  data CompHaltingState : CompState → Set where
+
+      ret : {M : V̲a̲l̲ Γ R₁} → {γ : Env Γ} → CompHaltingState (∙⟨ r̲e̲t̲u̲r̲n̲ M ⊰ γ ╎ ◻ ⟩)
+
 
   infixr 15 _→ᶜ⟨_⟩_
   infix  15 _→ᶜ*_
@@ -25,31 +36,9 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   -- Computation Machine
   --------------------------------------------------
 
-
-  -- data C̲o̲m̲p : Ctx → Ty → Set
-  -- data C̲o̲m̲p where
-
-  --     r̲e̲t̲u̲r̲n̲ : V̲a̲l̲ Γ X → C̲o̲m̲p Γ X
-
-  --     a̲pp    : Γ ⊢ᵛ X `⇒ Y -> V̲a̲l̲ Γ X -> C̲o̲m̲p Γ Y
-
-  -- wk-c̲o̲m̲p : Wk Γ Δ → C̲o̲m̲p Δ X → C̲o̲m̲p Γ X
-  -- wk-c̲o̲m̲p π (r̲e̲t̲u̲r̲n̲ M) = r̲e̲t̲u̲r̲n̲ (wk-v̲a̲l̲ π M)
-  -- wk-c̲o̲m̲p π (a̲pp M N) = a̲pp (wk-val π M) (wk-v̲a̲l̲ π N)
-
-  data CompState : Set
-  data CompState where
-
-        ∘⟨_⊰_╎_⟩ : (W : Γ ⊢ᶜ X) → Env Γ → (cs : CompStack X) → CompState
-
-        ∙⟨_⊰_╎_⟩ : (W : C̲o̲m̲p Γ X) → Env Γ → (cs : CompStack X) → CompState
-
   data _→ᶜ*_ : CompState → CompState → Set
   data _→ᶜ_ : CompState → CompState → Set
 
-  data CompHaltingState {X : Ty} (cs : CompStack X) : CompState → Set where
-
-      ret : {M : V̲a̲l̲ Γ X} → {γ : Env Γ} → CompHaltingState cs (∙⟨ r̲e̲t̲u̲r̲n̲ M ⊰ γ ╎ cs ⟩)
 
   ---
 
@@ -101,11 +90,12 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                        → ∘⟨ app M N ⊰ γ ╎ cs ⟩ →ᶜ ∙⟨ a̲pp (wk-val π M) N' ⊰ γ' ╎ cs ⟩
 
 
-        ∘var     :   {a : Γ ⊢ᵛ `V} → {γ : Env Γ} → {i : Γ' ∋ `V} → {γ' : Env Γ'} → {W : Γ'' ⊢ᶜ X} → {γ'' : Env Γ''} → {cs : CompStack `V} → {cs' : CompStack X}
-                  → ((∘ ((⇡ wk-val wk-id a ⊲ γ ∷ □) {↥ = 🗆})) ↠ᵛ (∙ ((⭭ v̲a̲r̲ i ⊲ γ' ∷ □) {↥ = 🗆}))) → (π' : Wk Γ' Γ)
-                  → (⟨ i ∥ γ' ⟩ →ᴸ* ⟨ h ∥ γ'' ﹐﹝ W ╎ cs' ﹞ ⟩) → (πᵥ : Wk Γ'' Γ')
+        -- X and X' should always be the same, but I don't think we can easily check for that
+        ∘var     :   {M : Γ ⊢ᵛ `V} → {γ : Env Γ} → {i : Γ' ∋ `V} → {γ' : Env Γ'} → {W : Γ'' ⊢ᶜ X'} → {γ'' : Env Γ''} → {cs : CompStack X} → {cs' : CompStack X'}
+                  → ((∘ ((⇡ M ⊲ γ ∷ □) {↥ = 🗆})) ↠ᵛ (∙ ((⭭ v̲a̲r̲ i ⊲ γ' ∷ □) {↥ = 🗆}))) → (π' : Wk Γ' Γ)
+                  → (⟨ i ∥ γ' ⟩ →ᴸ* ⟨ h ∥ γ'' ﹐﹝ W ╎ cs' ﹞ ⟩) → (πᵥ : Wk Γ' Γ'')
                   ----------------------------------------------------------------
-                    → ∘⟨ var a ⊰ γ ╎ cs ⟩ →ᶜ ∘⟨ W ⊰ γ'' ╎ cs' ⟩
+                    → ∘⟨ var M ⊰ γ ╎ cs ⟩ →ᶜ ∘⟨ (wk-comp πᵥ W) ⊰ γ' ╎ cs' ⟩
 
   data _→ᶜ*_ where
 
@@ -128,71 +118,71 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   -- wrap W γ π cs (app-wrapper N) = {!∙⟨ a̲pp (wk-val ? W) (wk-v̲a̲l̲ ? N) ⊰ γ ╎ cs ⟩!}
 
   {-
-  wk-v̲a̲l̲-trans : (M : V̲a̲l̲ Γ A) → (π₁ : Wk Ψ Δ) → (π₂ : Wk Δ Γ) → wk-v̲a̲l̲ π₁ (wk-v̲a̲l̲ π₂ M) ≡ wk-v̲a̲l̲ (wk-trans π₁ π₂) M
-  wk-v̲a̲l̲-trans (l̲a̲m̲ W) π₁ π₂ = cong l̲a̲m̲ (wk-comp-trans W (wk-cong π₁) (wk-cong π₂))
-  wk-v̲a̲l̲-trans (pa̲i̲r̲ LHS RHS) π₁ π₂ =
-                             pa̲i̲r̲ (wk-v̲a̲l̲ π₁ (wk-v̲a̲l̲ π₂ LHS)) (wk-v̲a̲l̲ π₁ (wk-v̲a̲l̲ π₂ RHS))
-                            ≡⟨ cong (λ x → pa̲i̲r̲ (wk-v̲a̲l̲ π₁ (wk-v̲a̲l̲ π₂ LHS)) x) (wk-v̲a̲l̲-trans RHS π₁ π₂) ⟩
-                             pa̲i̲r̲ (wk-v̲a̲l̲ π₁ (wk-v̲a̲l̲ π₂ LHS)) (wk-v̲a̲l̲ (wk-trans π₁ π₂) RHS)
-                            ≡⟨ cong (λ x → pa̲i̲r̲ x (wk-v̲a̲l̲ (wk-trans π₁ π₂) RHS)) (wk-v̲a̲l̲-trans LHS π₁ π₂) ⟩
-                             pa̲i̲r̲ (wk-v̲a̲l̲ (wk-trans π₁ π₂) LHS) (wk-v̲a̲l̲ (wk-trans π₁ π₂) RHS) ∎
-  wk-v̲a̲l̲-trans u̲n̲i̲t̲ π₁ π₂ = refl
-  wk-v̲a̲l̲-trans (v̲a̲r̲ i) π₁ π₂ = cong v̲a̲r̲ (wk-mem-trans i π₁ π₂)
+    wk-v̲a̲l̲-trans : (M : V̲a̲l̲ Γ A) → (π₁ : Wk Ψ Δ) → (π₂ : Wk Δ Γ) → wk-v̲a̲l̲ π₁ (wk-v̲a̲l̲ π₂ M) ≡ wk-v̲a̲l̲ (wk-trans π₁ π₂) M
+    wk-v̲a̲l̲-trans (l̲a̲m̲ W) π₁ π₂ = cong l̲a̲m̲ (wk-comp-trans W (wk-cong π₁) (wk-cong π₂))
+    wk-v̲a̲l̲-trans (pa̲i̲r̲ LHS RHS) π₁ π₂ =
+                              pa̲i̲r̲ (wk-v̲a̲l̲ π₁ (wk-v̲a̲l̲ π₂ LHS)) (wk-v̲a̲l̲ π₁ (wk-v̲a̲l̲ π₂ RHS))
+                              ≡⟨ cong (λ x → pa̲i̲r̲ (wk-v̲a̲l̲ π₁ (wk-v̲a̲l̲ π₂ LHS)) x) (wk-v̲a̲l̲-trans RHS π₁ π₂) ⟩
+                              pa̲i̲r̲ (wk-v̲a̲l̲ π₁ (wk-v̲a̲l̲ π₂ LHS)) (wk-v̲a̲l̲ (wk-trans π₁ π₂) RHS)
+                              ≡⟨ cong (λ x → pa̲i̲r̲ x (wk-v̲a̲l̲ (wk-trans π₁ π₂) RHS)) (wk-v̲a̲l̲-trans LHS π₁ π₂) ⟩
+                              pa̲i̲r̲ (wk-v̲a̲l̲ (wk-trans π₁ π₂) LHS) (wk-v̲a̲l̲ (wk-trans π₁ π₂) RHS) ∎
+    wk-v̲a̲l̲-trans u̲n̲i̲t̲ π₁ π₂ = refl
+    wk-v̲a̲l̲-trans (v̲a̲r̲ i) π₁ π₂ = cong v̲a̲r̲ (wk-mem-trans i π₁ π₂)
 
-  wk-trans-id : {π : Wk Δ Γ} → wk-trans π wk-id ≡ π
-  wk-trans-id {π = wk-ε} = refl
-  wk-trans-id {π = wk-cong π} = cong wk-cong wk-trans-id
-  wk-trans-id {π = wk-wk π} = cong wk-wk wk-trans-id
+    wk-trans-id : {π : Wk Δ Γ} → wk-trans π wk-id ≡ π
+    wk-trans-id {π = wk-ε} = refl
+    wk-trans-id {π = wk-cong π} = cong wk-cong wk-trans-id
+    wk-trans-id {π = wk-wk π} = cong wk-wk wk-trans-id
 
-  wk-id-trans : {π : Wk Δ Γ} → wk-trans wk-id π ≡ π
-  wk-id-trans {π = wk-ε} = refl
-  wk-id-trans {π = wk-cong π} = cong wk-cong wk-id-trans
-  wk-id-trans {π = wk-wk π} = cong wk-wk wk-id-trans
+    wk-id-trans : {π : Wk Δ Γ} → wk-trans wk-id π ≡ π
+    wk-id-trans {π = wk-ε} = refl
+    wk-id-trans {π = wk-cong π} = cong wk-cong wk-id-trans
+    wk-id-trans {π = wk-wk π} = cong wk-wk wk-id-trans
 
-  val-count-vars : Γ ⊢ᵛ X → ℕ
-  comp-count-vars : Γ ⊢ᶜ X → ℕ
+    val-count-vars : Γ ⊢ᵛ X → ℕ
+    comp-count-vars : Γ ⊢ᶜ X → ℕ
 
-  val-count-vars (var i) = 1
-  val-count-vars (lam W) = comp-count-vars W
-  val-count-vars (pair LHS RHS) = (val-count-vars LHS) + (val-count-vars RHS)
-  val-count-vars (pm M N) = (val-count-vars M) + (val-count-vars N)
-  val-count-vars unit = 0
+    val-count-vars (var i) = 1
+    val-count-vars (lam W) = comp-count-vars W
+    val-count-vars (pair LHS RHS) = (val-count-vars LHS) + (val-count-vars RHS)
+    val-count-vars (pm M N) = (val-count-vars M) + (val-count-vars N)
+    val-count-vars unit = 0
 
-  v̲a̲l̲-count-vars :  V̲a̲l̲ Γ X → ℕ
-  v̲a̲l̲-count-vars (l̲a̲m̲ M) = comp-count-vars M
-  v̲a̲l̲-count-vars (pa̲i̲r̲ LHS RHS) = (v̲a̲l̲-count-vars LHS) + (v̲a̲l̲-count-vars RHS)
-  v̲a̲l̲-count-vars u̲n̲i̲t̲ = 0
-  v̲a̲l̲-count-vars (v̲a̲r̲ i) = 1
+    v̲a̲l̲-count-vars :  V̲a̲l̲ Γ X → ℕ
+    v̲a̲l̲-count-vars (l̲a̲m̲ M) = comp-count-vars M
+    v̲a̲l̲-count-vars (pa̲i̲r̲ LHS RHS) = (v̲a̲l̲-count-vars LHS) + (v̲a̲l̲-count-vars RHS)
+    v̲a̲l̲-count-vars u̲n̲i̲t̲ = 0
+    v̲a̲l̲-count-vars (v̲a̲r̲ i) = 1
 
-  comp-count-vars (return M) = val-count-vars M
-  comp-count-vars (pm M W) = (val-count-vars M) + (comp-count-vars W)
-  comp-count-vars (push W₁ W₂) = (comp-count-vars W₁) + (comp-count-vars W₂)
-  comp-count-vars (app M N) = (val-count-vars M) + (val-count-vars N)
-  comp-count-vars (var M) = val-count-vars M
-  comp-count-vars (sub W₁ W₂) = (comp-count-vars W₁) + (comp-count-vars W₂)
+    comp-count-vars (return M) = val-count-vars M
+    comp-count-vars (pm M W) = (val-count-vars M) + (comp-count-vars W)
+    comp-count-vars (push W₁ W₂) = (comp-count-vars W₁) + (comp-count-vars W₂)
+    comp-count-vars (app M N) = (val-count-vars M) + (val-count-vars N)
+    comp-count-vars (var M) = val-count-vars M
+    comp-count-vars (sub W₁ W₂) = (comp-count-vars W₁) + (comp-count-vars W₂)
 
-  env-count-vars : Env Γ → ℕ
-  cs-count-vars : CompStack X → ℕ
+    env-count-vars : Env Γ → ℕ
+    cs-count-vars : CompStack X → ℕ
 
-  env-count-vars ∗ = 0
-  env-count-vars (γ ﹐ M) = (env-count-vars γ) + (v̲a̲l̲-count-vars M)
-  env-count-vars (γ ﹐﹝ W ╎ cs ﹞) = (env-count-vars γ) + (comp-count-vars W) + (cs-count-vars cs)
+    env-count-vars ∗ = 0
+    env-count-vars (γ ﹐ M) = (env-count-vars γ) + (v̲a̲l̲-count-vars M)
+    env-count-vars (γ ﹐﹝ W ╎ cs ﹞) = (env-count-vars γ) + (comp-count-vars W) + (cs-count-vars cs)
 
-  cs-count-vars ◻ = 0
-  cs-count-vars (W ⊲ γ ⦂⦂ cs) = (comp-count-vars W) + (env-count-vars γ) + (cs-count-vars cs)
+    cs-count-vars ◻ = 0
+    cs-count-vars (W ⊲ γ ⦂⦂ cs) = (comp-count-vars W) + (env-count-vars γ) + (cs-count-vars cs)
 
-  ≤-trans : {a : ℕ} → {b : ℕ} → {c : ℕ} → (a ≤ b) → (b ≤ c) → (a ≤ c)
-  ≤-trans {zero} _ _ = z≤n
-  ≤-trans (s≤s a≤b) (s≤s b≤c) = s≤s (≤-trans a≤b b≤c)
+    ≤-trans : {a : ℕ} → {b : ℕ} → {c : ℕ} → (a ≤ b) → (b ≤ c) → (a ≤ c)
+    ≤-trans {zero} _ _ = z≤n
+    ≤-trans (s≤s a≤b) (s≤s b≤c) = s≤s (≤-trans a≤b b≤c)
 
-  n≤sn : {n : ℕ} → n ≤ suc n
-  n≤sn {n = zero} = z≤n
-  n≤sn {n = suc n} = s≤s n≤sn
+    n≤sn : {n : ℕ} → n ≤ suc n
+    n≤sn {n = zero} = z≤n
+    n≤sn {n = suc n} = s≤s n≤sn
 
-  m₂≤n : {m₁ : ℕ} → {m₂ : ℕ} → {n : ℕ} → m₁ + m₂ ≤ n → m₂ ≤ n
-  m₂≤n {zero} {m₂} {n} m₁+m₂≤n = m₁+m₂≤n
-  m₂≤n {suc m₁} {zero} {suc n} (s≤s m₁+m₂≤n) = z≤n
-  m₂≤n {suc m₁} {suc m₂} {suc n} (s≤s m₁+m₂≤n) = ≤-trans (m₂≤n m₁+m₂≤n) n≤sn
+    m₂≤n : {m₁ : ℕ} → {m₂ : ℕ} → {n : ℕ} → m₁ + m₂ ≤ n → m₂ ≤ n
+    m₂≤n {zero} {m₂} {n} m₁+m₂≤n = m₁+m₂≤n
+    m₂≤n {suc m₁} {zero} {suc n} (s≤s m₁+m₂≤n) = z≤n
+    m₂≤n {suc m₁} {suc m₂} {suc n} (s≤s m₁+m₂≤n) = ≤-trans (m₂≤n m₁+m₂≤n) n≤sn
   -}
 
   topCompCtx : CompState → Ctx
@@ -200,33 +190,89 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   topCompCtx (∙⟨_⊰_╎_⟩ {Γ = Γ} _ _ _) = Γ
 
   {-
-  topCompTy : (Q : CompState) → Ty
-  topCompTy (∘⟨_⊰_╎_⟩ {X = X} _ _ _) = X
-  topCompTy (∙⟨_⊰_╎_⟩ {X = X} _ _ _) = X
+    topCompTy : (Q : CompState) → Ty
+    topCompTy (∘⟨_⊰_╎_⟩ {X = X} _ _ _) = X
+    topCompTy (∙⟨_⊰_╎_⟩ {X = X} _ _ _) = X
 
-  topCompTerm : (Q : CompState) → (topCompCtx Q) ⊢ᶜ (topCompTy Q)
-  topCompTerm ∘⟨ W ⊰ x ╎ cs ⟩ = W
-  topCompTerm ∙⟨ r̲e̲t̲u̲r̲n̲ M ⊰ x ╎ cs ⟩ = return (toVal M)
-  topCompTerm ∙⟨ a̲pp M N ⊰ x ╎ cs ⟩ = app M (toVal N)
+    topCompTerm : (Q : CompState) → (topCompCtx Q) ⊢ᶜ (topCompTy Q)
+    topCompTerm ∘⟨ W ⊰ x ╎ cs ⟩ = W
+    topCompTerm ∙⟨ r̲e̲t̲u̲r̲n̲ M ⊰ x ╎ cs ⟩ = return (toVal M)
+    topCompTerm ∙⟨ a̲pp M N ⊰ x ╎ cs ⟩ = app M (toVal N)
 
-  topCompEnv : (Q : CompState) → Env (topCompCtx Q)
-  topCompEnv ∘⟨ W ⊰ γ ╎ cs ⟩ = γ
-  topCompEnv ∙⟨ W ⊰ γ ╎ cs ⟩ = γ
+    topCompEnv : (Q : CompState) → Env (topCompCtx Q)
+    topCompEnv ∘⟨ W ⊰ γ ╎ cs ⟩ = γ
+    topCompEnv ∙⟨ W ⊰ γ ╎ cs ⟩ = γ
 
-  topCompCS : (Q : CompState) → CompStack (topCompTy Q)
-  topCompCS ∘⟨ W ⊰ γ ╎ cs ⟩ = cs
-  topCompCS ∙⟨ W ⊰ γ ╎ cs ⟩ = cs
+    topCompCS : (Q : CompState) → CompStack (topCompTy Q)
+    topCompCS ∘⟨ W ⊰ γ ╎ cs ⟩ = cs
+    topCompCS ∙⟨ W ⊰ γ ╎ cs ⟩ = cs
 
-  state-count-vars : CompState → ℕ
-  state-count-vars Q = (comp-count-vars (topCompTerm Q)) + (env-count-vars (topCompEnv Q)) + (cs-count-vars (topCompCS Q))
+    state-count-vars : CompState → ℕ
+    state-count-vars Q = (comp-count-vars (topCompTerm Q)) + (env-count-vars (topCompEnv Q)) + (cs-count-vars (topCompCS Q))
   -}
 
+  topCStackCtx : CompStack X → Ctx
+  topCStackCtx ◻ = ε
+  topCStackCtx (_⊲_⦂⦂_ {Γ = Γ} {Z = Z} M γ cs) = Γ ∙ Z
 
-  data CompSteps {X : Ty} (cs : CompStack X) : CompState → Set where
 
-      steps : {S T : CompState} → S →ᶜ* T → CompHaltingState cs T → (π : Wk (topCompCtx T) (topCompCtx S)) → CompSteps {X = X} cs S
+  data CompSteps : CompState → Set where
+
+      steps : {S T : CompState} → S →ᶜ* T → CompHaltingState T → (π : Wk (topCompCtx T) (topCompCtx S)) → CompSteps S
 
       -- out-of-gas : {S : CompState} → CompSteps {X = X} cs S
+
+
+  comp-eval : (W : Γ' ⊢ᶜ X) → (γ : Env Γ) → (π : Wk Γ Γ') → (cs : CompStack X) → (n : ℕ) → CompSteps ∘⟨ wk-comp π W ⊰ γ ╎ cs ⟩
+  comp-eval (return {A = X} M) γ π ◻ n  with val-eval-rec {X = X} M γ π
+  ... | steps {T = ∙ ((⭭ M₁ ⊲ γ₁ ∷ □) {↥ = 🗆})} M>T ∙T M≡T π' wk≡ = steps (∘⟨ wk-comp π (return M) ⊰ γ ╎ ◻ ⟩ →ᶜ⟨ ∘return M>T ⟩ (∙⟨ r̲e̲t̲u̲r̲n̲ M₁ ⊰ γ₁ ╎ ◻ ⟩ ◼)) ret π'
+  comp-eval (return {A = X} M) γ π (M' ⊲ γ' ⦂⦂ cs) n with val-eval-rec {X = X} M γ π
+  ... | steps {T = ∙ ((⭭ M₁ ⊲ γ₁ ∷ □) {↥ = 🗆})} M>T ∙T M≡T π' wk≡ = steps (∘⟨ wk-comp π (return M) ⊰ γ ╎ (M' ⊲ γ' ⦂⦂ cs) ⟩ →ᶜ⟨ ∘return M>T ⟩ ∙⟨ r̲e̲t̲u̲r̲n̲ M₁ ⊰ γ₁ ╎ M' ⊲ γ' ⦂⦂ cs ⟩ →ᶜ⟨ ∙return ⟩ ∘⟨ wk-comp (wk-cong {!!}) M' ⊰ γ₁ ﹐ M₁ ╎ cs ⟩ →ᶜ⟨ {!!} ⟩ {!!}) {!!} {!!}
+  comp-eval (pm M W) γ π cs n = {!!}
+  comp-eval (push W V) γ π cs n = {!!}
+  comp-eval (app M N) γ π cs n = {!!}
+  comp-eval (var {A = X} M) γ π cs zero = {!!}
+  comp-eval (var {A = X} M) γ π cs (suc n) with val-eval-rec {X = `V} M γ π
+  ... | steps {T = ∙ ((⭭ v̲a̲r̲ i) ⊲ γ₁ ∷ □) {↥ = 🗆}} M>T ∙T M≡T π' wk≡ with lookup i γ₁
+  ... | steps i>>T (found-comp {X = X} {W = W'} {γ = γ'} {cs = cs'}) i≡T π₂ w≡γ with comp-eval W' γ₁ π₂ cs' n
+  ... | steps {T = T} W>T ret π'' =
+              steps
+               (∘⟨ var (wk-val π M) ⊰ γ ╎ cs ⟩ →ᶜ⟨ ∘var M>T π' i>>T π₂ ⟩ W>T)
+               ret
+               (wk-trans π'' π')
+  comp-eval (sub W V) γ π cs n = {!!}
+
+
+module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
+
+  variable
+    R₁ : Ty
+
+  open VMain
+  open CData
+
+  ⟦_⟧ᴷ : {k : ⟦ X ⟧ → R} → (cs : CompStack k Y) → ⟦ Y ⟧ → R
+  ⟦_⟧ᴷ {k = k} cs y = ⟦_⟧ᶜˢ k cs (η y) k
+
+
+  -- comp-eval : (k₁ : ⟦ R₁ ⟧ → R) → (W : Γ' ⊢ᶜ R₁) → (γ : Env k₁ Γ) → (π : Wk Γ Γ') → (n : ℕ) → CompSteps k₁ ∘⟨ wk-comp π W ⊰ γ ╎ ◻ ⟩
+  -- comp-eval k₁ (return {A = R₁} M) γ π n with val-eval-rec k₁ {X = R₁} M γ π
+  -- ... | steps {T = ∙ ((⭭ M₁ ⊲ γ₁ ∷ □) {↥ = 🗆})} M>T ∙T M≡T π' wk≡ = steps ((∘⟨ wk-comp π (return M) ⊰ γ ╎ ◻ ⟩ →ᶜ⟨ ∘return M>T ⟩ (∙⟨ r̲e̲t̲u̲r̲n̲ M₁ ⊰ γ₁ ╎ ◻ ⟩ ◼))) ret π'
+  -- comp-eval k₁ (pm {A = X} {B = Y} M W) γ π n with val-eval-rec k₁ {X = X `× Y} M γ π
+  -- ... | steps {T = ∙ ((⭭_ {X = X `× Y} (pa̲i̲r̲ LHS RHS) ⊲ γ' ∷ □) {↥ = 🗆})} M>T ∙T M≡T π' wk≡ with comp-eval k₁ W (γ' ﹐ LHS ﹐ wk-v̲a̲l̲ k₁ (wk-wk wk-id) RHS) (wk-trans (wk-cong (wk-cong π')) (wk-cong (wk-cong π))) n
+  -- ... | steps W>T HT π₁ rewrite sym (wk-comp-trans W (wk-cong (wk-cong π')) (wk-cong (wk-cong π))) =
+  --         steps (∘⟨ wk-comp π (pm M W) ⊰ γ ╎ ◻ ⟩ →ᶜ⟨ ∘pm π M>T π' ⟩ W>T) HT (wk-trans π₁ (wk-wk (wk-wk π')))
+  -- comp-eval k₁ (push W V) γ π n = {!!} --with comp-eval ⟦ (wk-comp (wk-cong π) V) ⊲ γ ⦂⦂ ◻ ⟧ᴷ W {!ecat γ (wk-comp (wk-cong π) V ⊲ γ ⦂⦂ ◻)!} π n
+  -- --... | steps {T = T} W>T ret π' = steps (∘⟨ push (wk-comp π W) (wk-comp (wk-cong π) V) ⊰ γ ╎ ◻ ⟩ →ᶜ⟨ ∘push ⟩ ∘⟨ (wk-comp π W) ⊰ γ ╎ (wk-comp (wk-cong π) V) ⊲ γ ⦂⦂ ◻ ⟩ →ᶜ⟨ {!!} ⟩ {!!}) {!!} {!!}
+  -- comp-eval k₁ (app x x₁) γ π n = {!!}
+  -- comp-eval k₁ (var {A = R₁} M) γ π n with val-eval-rec k₁ {X = `V} M γ π
+  -- ... | steps {T = ∙ ((⭭ M₁ ⊲ γ₁ ∷ □) {↥ = 🗆})} M>T ∙T M≡T π' wk≡ = -- {!!}
+  --         steps
+  --              (∘⟨ var (wk-val π M) ⊰ γ ╎ ◻ ⟩ →ᶜ⟨ ∘var {!!} {!!} {!!} {!!} ⟩ {!!})
+  --              {!!}
+  --              {!!}
+
+  -- comp-eval k₁ (sub W W₁) γ π n = {!!}
 
   {-
   mutual
