@@ -417,3 +417,7 @@ mutual
   wk-comp-id (app W W₁) = app (wk-val wk-id W) (wk-val wk-id W₁) ≡⟨ cong (λ y → app y (wk-val wk-id W₁)) (wk-val-id W) ⟩ app W (wk-val wk-id W₁) ≡⟨ cong (λ y → app W y) (wk-val-id W₁) ⟩ app W W₁ ∎
   wk-comp-id (var x) = cong var (wk-val-id x)
   wk-comp-id (sub W W₁) = sub (wk-comp (wk-cong wk-id) W) (wk-comp wk-id W₁) ≡⟨ cong (λ y → sub y (wk-comp wk-id W₁)) (wk-comp-id W) ⟩ sub W (wk-comp wk-id W₁) ≡⟨ cong (λ y → sub W y) (wk-comp-id W₁) ⟩ sub W W₁ ∎
+
+wk-wk-ε : Wk Γ ε
+wk-wk-ε {Γ = ε} = wk-ε
+wk-wk-ε {Γ = Γ ∙ X} = wk-wk wk-wk-ε

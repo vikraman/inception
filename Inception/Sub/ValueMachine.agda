@@ -14,7 +14,7 @@ open import Data.Nat
 
 variable
   X X' Y Y' Z Z' T◾ T◾' : Ty
-  Γ' Γ'' : Ctx
+  Γ' Γ'' Δ' : Ctx
 
 module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
@@ -70,11 +70,11 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   data Env : (Γ : Ctx) → Set
 
-  data CompStack : (X : Ty) → Set where
+  data CompStack : (Δ : Ctx) → (X : Ty) → Set where
 
-      ◻     :   CompStack R₀
+      ◻     :   CompStack ε R₀
 
-      _⊲_⦂⦂_    : (Γ ∙ Z) ⊢ᶜ X → Env Γ → (tail : CompStack X) → CompStack Z
+      _⊲_⦂⦂_    : (Γ ∙ Z) ⊢ᶜ X → Env Γ → (tail : CompStack Δ X) → {π : Wk Γ Δ} → CompStack Γ Z
 
   ---
 
@@ -97,7 +97,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
       _﹐_     :  Env Γ → (M : V̲a̲l̲ Γ X) → Env (Γ ∙ X)
 
-      _﹐﹝_╎_﹞ :  Env Γ → (W : Γ ⊢ᶜ X) → (cs : CompStack X) → Env (Γ ∙ `V)
+      _﹐﹝_╎_﹞ :  Env Γ → (W : Γ ⊢ᶜ X) → (cs : CompStack Δ X) → {π : Wk Γ Δ} → Env (Γ ∙ `V)
 
   variable
       γ  : Env Γ
@@ -105,7 +105,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       γ'' : Env Γ''
 
   ⟦_⟧ᴱ : (E : Env Γ) → ⟦ Γ ⟧ˣ
-  ⟦_⟧ᶜˢ : (CS : CompStack X) → K ⟦ X ⟧ → K ⟦ R₀ ⟧
+  ⟦_⟧ᶜˢ : (cs : CompStack Δ X) → K ⟦ X ⟧ → K ⟦ R₀ ⟧
 
   ⟦ ∗ ⟧ᴱ = tt
   ⟦ E ﹐ M ⟧ᴱ = ⟦ E ⟧ᴱ , ⟦ toVal M ⟧ᵛ ⟦ E ⟧ᴱ
@@ -145,7 +145,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
       val-t-step    : {i : Γ ∋ Y} → {E : Env Γ} → {M : V̲a̲l̲ Γ X} → ⟨ t i  ∥ _﹐_ E M ⟩ →ᴸ ⟨ i ∥ E ⟩
 
-      comp-t-step   : {i : Γ ∋ Y} → {E : Env Γ} → {W : Γ ⊢ᶜ X} → {cs : CompStack X} → ⟨ t i  ∥ E ﹐﹝ W ╎ cs ﹞ ⟩ →ᴸ ⟨ i ∥ E ⟩
+      comp-t-step   : {i : Γ ∋ Y} → {E : Env Γ} → {W : Γ ⊢ᶜ X} → {cs : CompStack Δ X} → {π : Wk Γ Δ} → ⟨ t i  ∥ (_﹐﹝_╎_﹞ E W cs {π = π}) ⟩ →ᴸ ⟨ i ∥ E ⟩
 
 
   data _→ᴸ*_ : LookupState X → LookupState X → Set where
@@ -168,7 +168,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
         found-lam : {W : (Γ ∙ X) ⊢ᶜ Y} → {γ : Env Γ} → LookupHaltingState ⟨ h ∥ _﹐_ γ (l̲a̲m̲ W) ⟩
 
-        found-comp : {W : Γ ⊢ᶜ X} → {γ : Env Γ} → {cs : CompStack X} → LookupHaltingState ⟨ h ∥ γ ﹐﹝ W ╎ cs ﹞ ⟩
+        found-comp : {W : Γ ⊢ᶜ X} → {γ : Env Γ} → {cs : CompStack Δ X} → {π : Wk Γ Δ} → LookupHaltingState ⟨ h ∥ (_﹐﹝_╎_﹞ γ W cs {π = π}) ⟩
 
 
   data LookupSteps : LookupState X → Set where
