@@ -37,6 +37,10 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   ⟦_⟧ᴷ : (cs : CompStack Δ Y) → ⟦ Y ⟧ → R
   ⟦_⟧ᴷ cs y = ⟦ cs ⟧ᶜˢ (η y) k₀
 
+  ⟦_⟧ᶜꟴ : CompState → K ⟦ R₀ ⟧
+  ⟦ ∘⟨ W ⊰ γ ╎ cs ⟩ ⟧ᶜꟴ = ⟦ cs ⟧ᶜˢ (⟦ W ⟧ᶜ ⟦ γ ⟧ᴱ)
+  ⟦ ∙⟨ W ⊰ γ ╎ cs ⟩ ⟧ᶜꟴ = ⟦ cs ⟧ᶜˢ (⟦ toComp W ⟧ᶜ ⟦ γ ⟧ᴱ)
+
   -- Computation Machine
   --------------------------------------------------
 
