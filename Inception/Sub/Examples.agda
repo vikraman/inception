@@ -24,7 +24,5 @@ ex3 = return (pm (pair unit unit) (var (t h)))
 ex4 : ε ⊢ᶜ `Unit
 ex4 = sub (var (var h)) (return (pm (pair unit unit) (var (t h))))
 
--- comp-eval : (W : Γ' ⊢ᶜ X) → (γ : Env Γ) → (π : Wk Γ Γ') → (cs : CompStack Δ X) → (πₓ : Wk Γ Δ) → (n : ℕ) → CompSteps ((∘⟨ wk-comp π W ⊰ γ ╎ cs ⟩) {π = πₓ})
-
-_ : comp-eval ex4 ≡ {!comp-eval ex4!}
-_ = refl
+-- _ : comp-eval ex4 ≡ {!comp-eval ex4!}
+-- _ = refl
