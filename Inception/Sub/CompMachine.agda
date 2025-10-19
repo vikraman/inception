@@ -19,10 +19,6 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   open VMain {R₀ = R₀} k₀
 
-  topCsEnv : CompStack Δ X → Env Δ
-  topCsEnv ◻ = ∗
-  topCsEnv (W ⊲ γ ⦂⦂ cs) = γ
-
   data CompState : Set where
 
         ∘⟨_⊰_╎_⟩ : (W : Γ ⊢ᶜ X) → (γ : Env Γ) → (cs : CompStack Δ X) → {π : Wk Γ Δ} → {wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ} → CompState
@@ -72,7 +68,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
         ∘sub     :    {M : (Γ ∙ `V) ⊢ᶜ X} → {N : Γ ⊢ᶜ X} → {γ : Env Γ} → {cs : CompStack Δ X} → {πₓ : Wk Γ Δ} → {wk≡ₓ : ⟦ πₓ ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ}
                   ----------------------------------------------------------------
-                    → ((∘⟨ sub M N ⊰ γ ╎ cs ⟩) {π = πₓ} {wk≡ = wk≡ₓ}) →ᶜ ((∘⟨ M ⊰ ((γ ﹐﹝ N ╎ cs ﹞) {π = πₓ}) ╎ cs ⟩) {π = wk-wk πₓ} {wk≡ = wk≡ₓ})
+                    → ((∘⟨ sub M N ⊰ γ ╎ cs ⟩) {π = πₓ} {wk≡ = wk≡ₓ}) →ᶜ ((∘⟨ M ⊰ ((γ ﹐﹝ N ╎ cs ﹞) {π = πₓ} {wk≡ = wk≡ₓ}) ╎ cs ⟩) {π = wk-wk πₓ} {wk≡ = wk≡ₓ})
 
         ∘pm      :    {M : Γ' ⊢ᵛ X `× Y} → {γ : Env Γ} → {W : (Γ' ∙ X ∙ Y) ⊢ᶜ Z} → {cs : CompStack Δ Z} → {πₓ : Wk Γ Δ} → {πₓ' : Wk Γ'' Δ} → {wk≡ₓ : ⟦ πₓ ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ} → {wk≡ₓ' : ⟦ πₓ' ⟧ʷ ⟦ γ' ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ}
                     → {LHS : V̲a̲l̲ Γ'' X} → {RHS : V̲a̲l̲ Γ'' Y} → {γ'' : Env Γ''} → (π : Wk Γ Γ')
@@ -105,9 +101,9 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
         -- X and X' should always be the same, but I don't think we can easily check for that
         ∘var     :   {M : Γ ⊢ᵛ `V} → {γ : Env Γ} → {i : Γ' ∋ `V} → {γ' : Env Γ'} → {W : Γ'' ⊢ᶜ X'} → {γ'' : Env Γ''} → {cs : CompStack Δ X} → {cs' : CompStack Δ' X'} → {πₓ : Wk Γ Δ} → {πₓ' : Wk Γ' Δ'} → {πₓ'' : Wk Γ'' Δ'}
-                  → {wk≡ₓ : ⟦ πₓ ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ} → {wk≡ₓ' : ⟦ πₓ' ⟧ʷ ⟦ γ' ⟧ᴱ ≡ ⟦ topCsEnv cs' ⟧ᴱ}
+                  → {wk≡ₓ : ⟦ πₓ ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ} → {wk≡ₓ' : ⟦ πₓ' ⟧ʷ ⟦ γ' ⟧ᴱ ≡ ⟦ topCsEnv cs' ⟧ᴱ} → {wk≡ₓ'' : ⟦ πₓ'' ⟧ʷ ⟦ γ'' ⟧ᴱ ≡ ⟦ topCsEnv cs' ⟧ᴱ}
                   → ((∘ ((⇡ M ⊲ γ ∷ □) {↥ = 🗆})) ↠ᵛ (∙ ((⭭ v̲a̲r̲ i ⊲ γ' ∷ □) {↥ = 🗆}))) → (π' : Wk Γ' Γ)
-                  → (⟨ i ∥ γ' ⟩ →ᴸ* ⟨ h ∥ ((γ'' ﹐﹝ W ╎ cs' ﹞) {π = πₓ''}) ⟩) → (πᵥ : Wk Γ' Γ'')
+                  → (⟨ i ∥ γ' ⟩ →ᴸ* ⟨ h ∥ ((γ'' ﹐﹝ W ╎ cs' ﹞) {π = πₓ''} {wk≡ = wk≡ₓ''}) ⟩) → (πᵥ : Wk Γ' Γ'')
                   ----------------------------------------------------------------
                     → ((∘⟨ var M ⊰ γ ╎ cs ⟩) {π = πₓ} {wk≡ = wk≡ₓ}) →ᶜ ((∘⟨ (wk-comp πᵥ W) ⊰ γ' ╎ cs' ⟩) {π = πₓ'} {wk≡ = wk≡ₓ'})
 
@@ -132,8 +128,31 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   data CompSteps : CompState → Set where
 
       --steps : {S T : CompState} → S →ᶜ* T → CompHaltingState T → (π : Wk (topCompCtx T) (topCompCtx S)) → CompSteps S
-      steps : {S T : CompState} → S →ᶜ* T → CompHaltingState T → ⟦ S ⟧ᶜꟴ ≡ ⟦ T ⟧ᶜꟴ → (π : Wk (topCompCtx T) (topCompCtx S)) → (⟦ π ⟧ʷ ⟦ topCompEnv T ⟧ᴱ ≡ ⟦ topCompEnv S ⟧ᴱ) → CompSteps S
+      steps : {S T : CompState} → S →ᶜ* T → CompHaltingState T → ⟦ S ⟧ᶜꟴ k₀ ≡ ⟦ T ⟧ᶜꟴ k₀ → (π : Wk (topCompCtx T) (topCompCtx S)) → (⟦ π ⟧ʷ ⟦ topCompEnv T ⟧ᴱ ≡ ⟦ topCompEnv S ⟧ᴱ) → CompSteps S
 
+
+  -- -- lem : (cs : CompStack Γ X) (kk : (⟦ R₀ ⟧ → R) → R) → (⟦ cs ⟧ᶜˢ (varK (kk k₀))) ≡ kk
+  -- -- lem ◻ kk = ⟦ ◻ ⟧ᶜˢ (varK (kk k₀)) ≡⟨ refl ⟩ varK (kk k₀) ≡⟨ refl ⟩ (λ _ → kk k₀) ≡⟨ {!!} ⟩ kk ∎
+  -- -- lem (W ⊲ γ ⦂⦂ cs) kk = {!!}
+
+  -- lem : (cs : CompStack Γ X) → (cs' : CompStack Γ' X) → (W : Γ' ⊢ᶜ X) → (γ : Env Γ') → (⟦ cs ⟧ᶜˢ (varK ((⟦ cs' ⟧ᶜˢ (⟦ W ⟧ᶜ ⟦ γ ⟧ᴱ)) k₀))) ≡ (⟦ cs' ⟧ᶜˢ (⟦ W ⟧ᶜ ⟦ γ ⟧ᴱ))
+  -- lem ◻ cs' W γ =
+  --           ⟦ ◻ ⟧ᶜˢ (varK ((⟦ cs' ⟧ᶜˢ (⟦ W ⟧ᶜ ⟦ γ ⟧ᴱ)) k₀))
+  --         ≡⟨ refl ⟩
+  --           varK ((⟦ cs' ⟧ᶜˢ (⟦ W ⟧ᶜ ⟦ γ ⟧ᴱ)) k₀)
+  --         ≡⟨ refl ⟩
+  --           (λ kk → (⟦ cs' ⟧ᶜˢ (⟦ W ⟧ᶜ ⟦ γ ⟧ᴱ)) k₀)
+  --         ≡⟨ cong {!!} {!!} ⟩
+  --           (⟦ cs' ⟧ᶜˢ (⟦ W ⟧ᶜ ⟦ γ ⟧ᴱ)) ∎
+
+  --         where 
+
+  --           lem1 : (λ kk → (⟦ cs' ⟧ᶜˢ (⟦ W ⟧ᶜ ⟦ γ ⟧ᴱ)) k₀) k₀ ≡ (⟦ cs' ⟧ᶜˢ (⟦ W ⟧ᶜ ⟦ γ ⟧ᴱ)) k₀
+  --           lem1 = refl
+
+  -- lem (W₀ ⊲ γ₀ ⦂⦂ cs) cs' W₁ γ₁ = {!!}
+
+{-
   {-# TERMINATING #-}
   mutual
 
@@ -160,32 +179,34 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     comp-eval-rec : (W : Γ' ⊢ᶜ X) → (γ : Env Γ) → (π : Wk Γ Γ') → (cs : CompStack Δ X) → (πₓ : Wk Γ Δ) → (wk≡₀ : ⟦ πₓ ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → (n : ℕ) → CompSteps ((∘⟨ wk-comp π W ⊰ γ ╎ cs ⟩) {π = πₓ} {wk≡ = wk≡₀})
 
     comp-eval-rec (return {A = X} M) γ π ◻ πₓ wk≡₀ n with val-eval-rec {X = X} M γ π
-    ... | steps {T = ∙ ((⭭ M₁ ⊲ γ₁ ∷ □) {↥ = 🗆})} M>T ∙T M≡T π' wk≡ = steps (∘⟨ wk-comp π (return M) ⊰ γ ╎ ◻ ⟩ →ᶜ⟨ ∘return M>T ⟩ (∙⟨ r̲e̲t̲u̲r̲n̲ M₁ ⊰ γ₁ ╎ ◻ ⟩ ◼)) ret (cong η M≡T) π' wk≡
+    -- cong η M≡T
+    ... | steps {T = ∙ ((⭭ M₁ ⊲ γ₁ ∷ □) {↥ = 🗆})} M>T ∙T M≡T π' wk≡ = steps (∘⟨ wk-comp π (return M) ⊰ γ ╎ ◻ ⟩ →ᶜ⟨ ∘return M>T ⟩ (∙⟨ r̲e̲t̲u̲r̲n̲ M₁ ⊰ γ₁ ╎ ◻ ⟩ ◼)) ret (cong (λ x → (η x) k₀) M≡T) π' wk≡
     comp-eval-rec (return {A = X} M) γ π ((M' ⊲ γ' ⦂⦂ cs) {π = π₁}) πₓ wk≡₀ n with val-eval-rec {X = X} M γ π
     ... | steps {T = ∙ ((⭭ M₁ ⊲ γ₁ ∷ □) {↥ = 🗆})} M>T ∙T M≡T π' wk≡ with comp-eval-rec M' (γ₁ ﹐ M₁) (wk-cong (wk-trans π' πₓ)) cs (wk-wk (wk-trans (wk-trans π' πₓ) π₁)) {!!} n
     ... | steps {T = ∙⟨ r̲e̲t̲u̲r̲n̲  M₂ ⊰ γ₂ ╎ ◻ ⟩} M'>T ret S≡T π'' wk≡ᶜ =
 
-                   steps (∘⟨ wk-comp π (return M) ⊰ γ ╎ (M' ⊲ γ' ⦂⦂ cs) ⟩ →ᶜ⟨ ∘return {wk≡ₓ' = ⟦ wk-trans π' πₓ ⟧ʷ ⟦ γ₁ ⟧ᴱ ≡⟨ sym (wk-sem-trans π' πₓ ⟦ γ₁ ⟧ᴱ) ⟩ ⟦ πₓ ⟧ʷ (⟦ π' ⟧ʷ ⟦ γ₁ ⟧ᴱ) ≡⟨ {!!} ⟩ ⟦ πₓ ⟧ʷ ⟦ γ ⟧ᴱ ≡⟨ {!!} ⟩ ⟦ γ' ⟧ᴱ ∎} M>T ⟩ ∙⟨ r̲e̲t̲u̲r̲n̲ M₁ ⊰ γ₁ ╎ M' ⊲ γ' ⦂⦂ cs ⟩ →ᶜ⟨ ∙return {πₓ = wk-trans (wk-trans π' πₓ) π₁} {πₓ' = π₁} ⟩ M'>T)
+                   steps (∘⟨ wk-comp π (return M) ⊰ γ ╎ (M' ⊲ γ' ⦂⦂ cs) ⟩ →ᶜ⟨ ∘return {wk≡ₓ' = ⟦ wk-trans π' πₓ ⟧ʷ ⟦ γ₁ ⟧ᴱ ≡⟨ sym (wk-sem-trans π' πₓ ⟦ γ₁ ⟧ᴱ) ⟩ ⟦ πₓ ⟧ʷ (⟦ π' ⟧ʷ ⟦ γ₁ ⟧ᴱ) ≡⟨ cong ⟦ πₓ ⟧ʷ wk≡ ⟩ ⟦ πₓ ⟧ʷ ⟦ γ ⟧ᴱ ≡⟨ wk≡₀ ⟩ ⟦ γ' ⟧ᴱ ∎} M>T ⟩ ∙⟨ r̲e̲t̲u̲r̲n̲ M₁ ⊰ γ₁ ╎ M' ⊲ γ' ⦂⦂ cs ⟩ →ᶜ⟨ ∙return {πₓ = wk-trans (wk-trans π' πₓ) π₁} {πₓ' = π₁} ⟩ M'>T)
 
                    ret
 
-                   (  ⟦ cs ⟧ᶜˢ ((⟦ M' ⟧ᶜ ♯) (τ (⟦ γ' ⟧ᴱ , ((⟦ π ⟧ʷ ； ⟦ M ⟧ᵛ) ； η) ⟦ γ ⟧ᴱ)))
-                     ≡⟨ cong (λ x → ⟦ cs ⟧ᶜˢ ((⟦ M' ⟧ᶜ ♯) (τ (⟦ γ' ⟧ᴱ , x)))) (cong η M≡T) ⟩
-                        ⟦ cs ⟧ᶜˢ ((⟦ M' ⟧ᶜ ♯) (τ (⟦ γ' ⟧ᴱ , η (⟦ toVal M₁ ⟧ᵛ ⟦ γ₁ ⟧ᴱ))))
-                     ≡⟨ refl ⟩
-                        ⟦ cs ⟧ᶜˢ ((⟦ M' ⟧ᶜ) (⟦ γ' ⟧ᴱ , (⟦ toVal M₁ ⟧ᵛ ⟦ γ₁ ⟧ᴱ)))
-                     ≡⟨ cong (λ x → ⟦ cs ⟧ᶜˢ ((⟦ M' ⟧ᶜ) (x , (⟦ toVal M₁ ⟧ᵛ ⟦ γ₁ ⟧ᴱ)))) {!!}  ⟩
-                        ⟦ cs ⟧ᶜˢ (⟦ M' ⟧ᶜ (⟦ πₓ ⟧ʷ ⟦ γ ⟧ᴱ , ⟦ toVal M₁ ⟧ᵛ ⟦ γ₁ ⟧ᴱ))
-                     ≡⟨ cong (λ x → ⟦ cs ⟧ᶜˢ ((⟦ M' ⟧ᶜ) (⟦ πₓ ⟧ʷ x , (⟦ toVal M₁ ⟧ᵛ ⟦ γ₁ ⟧ᴱ)))) (sym wk≡)  ⟩
-                       ⟦ cs ⟧ᶜˢ (⟦ M' ⟧ᶜ (⟦ πₓ ⟧ʷ (⟦ π' ⟧ʷ ⟦ γ₁ ⟧ᴱ) , ⟦ toVal M₁ ⟧ᵛ ⟦ γ₁ ⟧ᴱ))
-                     ≡⟨ cong (λ x → ⟦ cs ⟧ᶜˢ ((⟦ M' ⟧ᶜ) (x , (⟦ toVal M₁ ⟧ᵛ ⟦ γ₁ ⟧ᴱ)))) (wk-sem-trans π' πₓ ⟦ γ₁ ⟧ᴱ)  ⟩
-                         ⟦ cs ⟧ᶜˢ (⟦ M' ⟧ᶜ (⟦ wk-trans π' πₓ ⟧ʷ ⟦ γ₁ ⟧ᴱ , ⟦ toVal M₁ ⟧ᵛ ⟦ γ₁ ⟧ᴱ))
-                     ≡⟨ refl ⟩
-                         ⟦ cs ⟧ᶜˢ ((⟦ M' ⟧ᶜ ∘ < ⟦ wk-trans π' πₓ ⟧ʷ ∘ (λ r → proj₁ r)  , (λ r → proj₂ r) >) (⟦ γ₁ ⟧ᴱ , ⟦ toVal M₁ ⟧ᵛ ⟦ γ₁ ⟧ᴱ))
-                     ≡⟨ refl ⟩
-                       ⟦ cs ⟧ᶜˢ ((< (λ r → proj₁ r) ； ⟦ wk-trans π' πₓ ⟧ʷ , (λ r → proj₂ r) > ； ⟦ M' ⟧ᶜ) (⟦ γ₁ ⟧ᴱ , ⟦ toVal M₁ ⟧ᵛ ⟦ γ₁ ⟧ᴱ))
-                     ≡⟨ S≡T ⟩
-                      (⟦ toVal M₂ ⟧ᵛ ； η) ⟦ γ₂ ⟧ᴱ ∎)
+                   {!!}
+                   -- (  ⟦ cs ⟧ᶜˢ ((⟦ M' ⟧ᶜ ♯) (τ (⟦ γ' ⟧ᴱ , ((⟦ π ⟧ʷ ； ⟦ M ⟧ᵛ) ； η) ⟦ γ ⟧ᴱ)))
+                   --   ≡⟨ cong (λ x → ⟦ cs ⟧ᶜˢ ((⟦ M' ⟧ᶜ ♯) (τ (⟦ γ' ⟧ᴱ , x)))) (cong η M≡T) ⟩
+                   --      ⟦ cs ⟧ᶜˢ ((⟦ M' ⟧ᶜ ♯) (τ (⟦ γ' ⟧ᴱ , η (⟦ toVal M₁ ⟧ᵛ ⟦ γ₁ ⟧ᴱ))))
+                   --   ≡⟨ refl ⟩
+                   --      ⟦ cs ⟧ᶜˢ ((⟦ M' ⟧ᶜ) (⟦ γ' ⟧ᴱ , (⟦ toVal M₁ ⟧ᵛ ⟦ γ₁ ⟧ᴱ)))
+                   --   ≡⟨ cong (λ x → ⟦ cs ⟧ᶜˢ ((⟦ M' ⟧ᶜ) (x , (⟦ toVal M₁ ⟧ᵛ ⟦ γ₁ ⟧ᴱ)))) (sym wk≡₀)  ⟩
+                   --      ⟦ cs ⟧ᶜˢ (⟦ M' ⟧ᶜ (⟦ πₓ ⟧ʷ ⟦ γ ⟧ᴱ , ⟦ toVal M₁ ⟧ᵛ ⟦ γ₁ ⟧ᴱ))
+                   --   ≡⟨ cong (λ x → ⟦ cs ⟧ᶜˢ ((⟦ M' ⟧ᶜ) (⟦ πₓ ⟧ʷ x , (⟦ toVal M₁ ⟧ᵛ ⟦ γ₁ ⟧ᴱ)))) (sym wk≡)  ⟩
+                   --     ⟦ cs ⟧ᶜˢ (⟦ M' ⟧ᶜ (⟦ πₓ ⟧ʷ (⟦ π' ⟧ʷ ⟦ γ₁ ⟧ᴱ) , ⟦ toVal M₁ ⟧ᵛ ⟦ γ₁ ⟧ᴱ))
+                   --   ≡⟨ cong (λ x → ⟦ cs ⟧ᶜˢ ((⟦ M' ⟧ᶜ) (x , (⟦ toVal M₁ ⟧ᵛ ⟦ γ₁ ⟧ᴱ)))) (wk-sem-trans π' πₓ ⟦ γ₁ ⟧ᴱ)  ⟩
+                   --       ⟦ cs ⟧ᶜˢ (⟦ M' ⟧ᶜ (⟦ wk-trans π' πₓ ⟧ʷ ⟦ γ₁ ⟧ᴱ , ⟦ toVal M₁ ⟧ᵛ ⟦ γ₁ ⟧ᴱ))
+                   --   ≡⟨ refl ⟩
+                   --       ⟦ cs ⟧ᶜˢ ((⟦ M' ⟧ᶜ ∘ < ⟦ wk-trans π' πₓ ⟧ʷ ∘ (λ r → proj₁ r)  , (λ r → proj₂ r) >) (⟦ γ₁ ⟧ᴱ , ⟦ toVal M₁ ⟧ᵛ ⟦ γ₁ ⟧ᴱ))
+                   --   ≡⟨ refl ⟩
+                   --     ⟦ cs ⟧ᶜˢ ((< (λ r → proj₁ r) ； ⟦ wk-trans π' πₓ ⟧ʷ , (λ r → proj₂ r) > ； ⟦ M' ⟧ᶜ) (⟦ γ₁ ⟧ᴱ , ⟦ toVal M₁ ⟧ᵛ ⟦ γ₁ ⟧ᴱ))
+                   --   ≡⟨ S≡T ⟩
+                   --    (⟦ toVal M₂ ⟧ᵛ ； η) ⟦ γ₂ ⟧ᴱ ∎)
 
                    (wk-trans π'' (wk-wk π'))
 
@@ -228,16 +249,36 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     -- comp-eval-rec (var {A = X} M) γ π cs πₓ (suc n) with val-eval-rec {X = `V} M γ π
     comp-eval-rec (var {A = X} M) γ π cs πₓ wk≡₀ n with val-eval-rec {X = `V} M γ π
     ... | steps {T = ∙ ((⭭ v̲a̲r̲ i) ⊲ γ₁ ∷ □) {↥ = 🗆}} M>T ∙T M≡T π' wk≡ with lookup i γ₁
-    ... | steps i>>T (found-comp {X = X} {W = W'} {γ = γ'} {cs = cs'} {π = πᶜ}) i≡T π₂ w≡γ with comp-eval-rec W' γ₁ π₂ cs' (wk-trans π₂ πᶜ) {!!} n
-    ... | steps {T = T} W>T ret S≡T π'' wk≡ᶜ =
+    ... | steps i>>T (found-comp {X = X} {W = W'} {γ = γ'} {cs = cs'} {π = πᶜ} {wk≡ = wk≡c}) i≡T π₂ w≡γ with comp-eval-rec W' γ₁ π₂ cs' (wk-trans π₂ πᶜ) (⟦ wk-trans π₂ πᶜ ⟧ʷ ⟦ γ₁ ⟧ᴱ ≡⟨ sym (wk-sem-trans π₂ πᶜ ⟦ γ₁ ⟧ᴱ) ⟩ ⟦ πᶜ ⟧ʷ (⟦ π₂ ⟧ʷ ⟦ γ₁ ⟧ᴱ)  ≡⟨ cong ⟦ πᶜ ⟧ʷ w≡γ ⟩ ⟦ πᶜ ⟧ʷ ⟦ γ' ⟧ᴱ ≡⟨ wk≡c ⟩ ⟦ topCsEnv cs' ⟧ᴱ ∎) n
+    ... | steps {T = ∙⟨ C̲o̲m̲p.r̲e̲t̲u̲r̲n̲ M₁ ⊰ γ₂ ╎ ◻ ⟩} W>T ret S≡T π'' wk≡ᶜ =
                 steps
                 (∘⟨ var (wk-val π M) ⊰ γ ╎ cs ⟩ →ᶜ⟨ ∘var M>T π' i>>T π₂ ⟩ W>T)
                 ret
                 {!!}
+                --( ⟦ cs ⟧ᶜˢ (((⟦ π ⟧ʷ ； ⟦ M ⟧ᵛ) ； varK) ⟦ γ ⟧ᴱ)
+                -- ≡⟨ refl ⟩
+                -- ⟦ cs ⟧ᶜˢ ((varK ∘ (⟦ M ⟧ᵛ ∘ ⟦ π ⟧ʷ)) ⟦ γ ⟧ᴱ)
+                -- ≡⟨ refl ⟩
+                -- ⟦ cs ⟧ᶜˢ (varK (⟦ M ⟧ᵛ (⟦ π ⟧ʷ ⟦ γ ⟧ᴱ)))
+                -- ≡⟨ cong (λ x → ⟦ cs ⟧ᶜˢ (varK x)) M≡T ⟩
+                --  ⟦ cs ⟧ᶜˢ (varK (⟦ i ⟧ᵐ ⟦ γ₁ ⟧ᴱ))
+                -- ≡⟨ cong (λ x → ⟦ cs ⟧ᶜˢ (varK x)) i≡T ⟩
+                --  ⟦ cs ⟧ᶜˢ (varK (⟦ cs' ⟧ᶜˢ (⟦ W' ⟧ᶜ ⟦ γ' ⟧ᴱ) k₀))
+                -- ≡⟨ {!!} ⟩
+                --  ⟦ cs' ⟧ᶜˢ (⟦ W' ⟧ᶜ ⟦ γ' ⟧ᴱ)
+                -- ≡⟨ cong (λ x → ⟦ cs' ⟧ᶜˢ (⟦ W' ⟧ᶜ x)) (sym w≡γ) ⟩
+                --   ⟦ cs' ⟧ᶜˢ (⟦ W' ⟧ᶜ (⟦ π₂ ⟧ʷ ⟦ γ₁ ⟧ᴱ))
+                -- ≡⟨ refl ⟩
+                --   ⟦ cs' ⟧ᶜˢ ((⟦ W' ⟧ᶜ ∘ ⟦ π₂ ⟧ʷ) ⟦ γ₁ ⟧ᴱ)
+                -- ≡⟨ refl ⟩
+                --   ⟦ cs' ⟧ᶜˢ ((⟦ π₂ ⟧ʷ ； ⟦ W' ⟧ᶜ) ⟦ γ₁ ⟧ᴱ)
+                -- ≡⟨ S≡T ⟩
+                --  (⟦ toVal M₁ ⟧ᵛ ； η) ⟦ γ₂ ⟧ᴱ ∎)
                 (wk-trans π'' π')
                 {!!}
 
-    comp-eval-rec (sub W V) γ π cs πₓ wk≡₀ n with comp-eval-rec W (γ ﹐﹝ wk-comp π V ╎ cs ﹞) (wk-cong π) cs (wk-wk πₓ) {!!} n
+
+    comp-eval-rec (sub W V) γ π cs πₓ wk≡₀ n with comp-eval-rec W ((γ ﹐﹝ wk-comp π V ╎ cs ﹞) {π = {!!}} {wk≡ = {!!}}) (wk-cong π) cs (wk-wk πₓ) wk≡₀ n
     ... | steps W>WT HT S≡T πᵂ wk≡ᶜ =
                 steps
                     (∘⟨ sub (wk-comp (wk-cong π) W) (wk-comp π V) ⊰ γ ╎ cs ⟩ →ᶜ⟨ ∘sub ⟩ W>WT)
@@ -249,3 +290,4 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
     -- comp-eval : (W : ε ⊢ᶜ R₀) → CompSteps ((∘⟨ wk-comp wk-id W ⊰ ∗ ╎ ◻ ⟩) {π = wk-id})
     -- comp-eval W = comp-eval-rec W ∗ wk-id ◻ wk-id 100000000
+-}
