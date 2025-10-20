@@ -115,12 +115,22 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   topCsEnv ◻ = ∗
   topCsEnv (W ⊲ γ ⦂⦂ cs) = γ
 
+  ⟦_⟧ᴷ : (cs : CompStack Δ Y) → ⟦ Y ⟧ → R
+  ⟦_⟧ᴷ cs y = ⟦ cs ⟧ᶜˢ (η y) k₀
+
   ⟦ ∗ ⟧ᴱ = tt
   ⟦ E ﹐ M ⟧ᴱ = ⟦ E ⟧ᴱ , ⟦ toVal M ⟧ᵛ ⟦ E ⟧ᴱ
-  ⟦ E ﹐﹝ W ╎ cs ﹞ ⟧ᴱ = ⟦ E ⟧ᴱ , ⟦ cs ⟧ᶜˢ (⟦ W ⟧ᶜ ⟦ E ⟧ᴱ) k₀
+  --⟦ E ﹐﹝ W ╎ cs ﹞ ⟧ᴱ = ⟦ E ⟧ᴱ , ⟦ cs ⟧ᶜˢ (⟦ W ⟧ᶜ ⟦ E ⟧ᴱ) k₀
+  ⟦ E ﹐﹝ W ╎ cs ﹞ ⟧ᴱ = ⟦ E ⟧ᴱ , ⟦ W ⟧ᶜ ⟦ E ⟧ᴱ ⟦ cs ⟧ᴷ
 
   ⟦ ◻ ⟧ᶜˢ W = W
   ⟦ W₁ ⊲ γ₁ ⦂⦂ tail ⟧ᶜˢ W =  ⟦ tail ⟧ᶜˢ (( ⟦ W₁ ⟧ᶜ ♯)(τ (⟦ γ₁ ⟧ᴱ , W)))
+
+  -- ⟦_⟧ᶜˢ' : (cs : CompStack Δ X) → (W : Γ ⊢ᶜ X) → (γ : Env Γ) → K ⟦ R₀ ⟧
+  -- ⟦ cs ⟧ᶜˢ' W γ k₁ =  ⟦ W ⟧ᶜ ⟦ γ ⟧ᴱ (λ y → ⟦ cs ⟧ᶜˢ (λ k → k y) k₁)
+
+  -- ⟦_⟧ᶜˢ'' : (cs : CompStack Δ X) → (W : ⟦ Γ ⟧ˣ -> K ⟦ X ⟧) → (γ : ⟦ Γ ⟧ˣ) → K ⟦ R₀ ⟧
+  -- ⟦_⟧ᶜˢ'' cs W γ k₁ =  W γ (λ y → ⟦ cs ⟧ᶜˢ'' {!!} {!!} k₁)
 
   -- Lookup Machine
   ------------------------------------------------------------------------------
