@@ -70,11 +70,17 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   data Env : (Γ : Ctx) → Set
 
-  data CompStack : (Δ : Ctx) → (X : Ty) → Set where
+  data CompStack : (Δ : Ctx) → (X : Ty) → Set
+
+  topCsEnv : CompStack Δ X → Env Δ
+  ⟦_⟧ᴱ : (E : Env Γ) → ⟦ Γ ⟧ˣ
+  ⟦_⟧ᶜˢ : (cs : CompStack Δ X) → K ⟦ X ⟧ → K ⟦ R₀ ⟧
+
+  data CompStack  where
 
       ◻     :   CompStack ε R₀
 
-      _⊲_⦂⦂_    : (Γ ∙ Z) ⊢ᶜ X → Env Γ → (tail : CompStack Δ X) → {π : Wk Γ Δ} → CompStack Γ Z
+      _⊲_⦂⦂_    : (Γ ∙ Z) ⊢ᶜ X → (γ : Env Γ) → (tail : CompStack Δ X) → {π : Wk Γ Δ} → {wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv tail ⟧ᴱ} → CompStack Γ Z
 
   ---
 
@@ -94,10 +100,6 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   wk-c̲o̲m̲p π (a̲pp M N) = a̲pp (wk-val π M) (wk-v̲a̲l̲ π N)
 
   ---
-
-  topCsEnv : CompStack Δ X → Env Δ
-  ⟦_⟧ᴱ : (E : Env Γ) → ⟦ Γ ⟧ˣ
-  ⟦_⟧ᶜˢ : (cs : CompStack Δ X) → K ⟦ X ⟧ → K ⟦ R₀ ⟧
 
   data Env where
 
