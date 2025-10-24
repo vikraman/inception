@@ -24,5 +24,9 @@ ex3 = return (pm (pair unit unit) (var (t h)))
 ex4 : ε ⊢ᶜ `Unit
 ex4 = sub (var (var h)) (return (pm (pair unit unit) (var (t h))))
 
--- _ : comp-eval ex4 ≡ {!comp-eval ex4!}
+ex5 : ε ⊢ᶜ `Unit
+ex5 = push (sub (push (return (var h)) (var (var h))) (return (pm (pair unit unit) (var (t h))))) (return (var h))
+
+-- call agda2-compute-normalised in the hole below
+-- _ : comp-eval ex5 ≡ {!comp-eval ex5!}
 -- _ = refl
