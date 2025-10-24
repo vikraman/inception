@@ -502,3 +502,23 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
     comp-eval : (W : ε ⊢ᶜ R₀) → CompSteps ((∘⟨ wk-comp wk-id W ⊰ ∗ ╎ ◻ ⟩) {π = wk-id} {wk≡ = refl})
     comp-eval W = comp-eval-rec W ∗ wk-id ◻ wk-id refl zero -- zero should be replaced with a counter of remaining vars and pushes
+
+---- Examples
+
+postulate k₀ : ⟦ `Unit ⟧ → R
+
+open VMain {R₀ = `Unit} k₀
+open CMain {R₀ = `Unit} k₀
+
+ex3 : ε ⊢ᶜ `Unit
+ex3 = return (pm (pair unit unit) (var (t h)))
+
+ex4 : ε ⊢ᶜ `Unit
+ex4 = sub (var (var h)) (return (pm (pair unit unit) (var (t h))))
+
+ex5 : ε ⊢ᶜ `Unit
+ex5 = push (sub (push (return (var h)) (var (var h))) (return (pm (pair unit unit) (var (t h))))) (return (var h))
+
+-- call agda2-compute-normalised in the hole below
+-- _ : comp-eval ex5 ≡ {!comp-eval ex5!}
+-- _ = refl
