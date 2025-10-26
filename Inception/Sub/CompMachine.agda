@@ -219,17 +219,17 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                     π'
 
     app-eval-rec (lam W) N γ π cs πₓ wk≡₀ n with comp-eval-rec W (γ ﹐ N) (wk-cong π) cs (wk-wk πₓ) wk≡₀ n
-    ... | steps {T = T} W>WT HT S≡T π' rewrite (wk-comp-id W) =
+    ... | steps {T = T} W>WT HT S≡T π' =
 
-                 steps
+                  steps
 
-                    ( ∙⟨ a̲pp (wk-val π (lam W)) N ⊰ γ ╎ cs ⟩ →ᶜ⟨ ∙app-lam ⟩ W>WT)
+                     ( ∙⟨ a̲pp (wk-val π (lam W)) N ⊰ γ ╎ cs ⟩ →ᶜ⟨ ∙app-lam ⟩ W>WT)
 
-                    HT
+                     HT
 
-                    S≡T
+                     S≡T
 
-                    (wk-trans π' (wk-wk wk-id))
+                     (wk-trans π' (wk-wk wk-id))
 
     app-eval-rec (pm M₁ N₁) N γ π cs πₓ wk≡₀ n with val-eval-rec M₁ γ π
     ... | steps {T = ∙ (⭭ pa̲i̲r̲ {X = X} {Y = Y} LHS RHS ⊲ γ₁ ∷ □) {↥ = 🗆}} M>T ∙T M≡T π' wk≡ with wk-val-trans N₁ (wk-cong (wk-cong π')) (wk-cong (wk-cong π))
