@@ -43,42 +43,54 @@
 \thispagestyle{empty}
 
 \subsection{Terms}
-We have value terms and computation terms (subject to term formation rules, which are provided elsewhere).
-For the purposes of the abstract machine, we distinguish between full terms and partial terms.
-Every full term is also a partial term.
+We have value terms and computation terms.
+For the purposes of the abstract machine, we distinguish between full value terms, partial value terms and evaluated value terms.
+We also distinguish between full computation terms and evaluated computation terms.
+Every full value term is also a partial value term.
+Every evaluated value term is also a partial value term.
+
 
 Full value terms are:
 
 \quad
-$x$,
-$\ast$,
-$\lambda x . M$,
-$(L , R)$,
+$x$,\,
+$\ast$,\,
+$\lambda x . W$,\,
+$(L , R)$,\,
 $\PMV ( M , (x,y).N )$
-
-Full computation terms are:
-
-\quad
-$\RET (M)$,
-$\PUSH (M , x.N)$,
-$\APP (M , N)$,
-$\VAR (M)$,
-$\SUB (a.M, N)$,
-$\PMC ( M , (x,y).N )$
 
 Further partial value terms are:
 
 \quad
-$(\_ , R)$,
-$(L , \_)$,
-$\flag{(L , R)}$,
+$(\_ , R)$,\,
+$(L , \_)$,\,
+$\flag{(L , R)}$,\,
 $\PMV(\_, (x , y).N)$
 
-Further partial computation terms are:
+Evaluated value terms are:
 
 \quad
-$\APP(\_ , N)$,
-$\PMC(\_, (x , y).N)$
+$\underline{\ell}$ (where $\ell$ is a label variable),\,
+$\underline{\ast}$,\,
+$(\underline{M}, \underline{N})$,\,
+$\underline{\lambda x . W}$
+
+Full computation terms are:
+
+\quad
+$\RET (M)$,\,
+$\PUSH (M , x.N)$,\,
+$\APP (M , N)$,\,
+$\VAR (M)$,\,
+$\SUB (a.M, N)$,\,
+$\PMC ( M , (x,y).N )$
+
+Evaluated computation terms are:
+
+\quad
+$\underline{\APP} (\underline{M} , \underline{N})$,\,
+$\underline{\RET} (\underline{M})$,\
+
 
 Typing rules for values:
 
@@ -105,9 +117,29 @@ Typing rules for computations:
 && \frac{\Gamma \VTS M : X \times Y \quad \Gamma, x : X , y : Y \CTS N : Z}{\Gamma \CTS \PMC(M, (x,y).N) : Z}
 \end{align*}
 
+The typing rules for evaluated value and computation terms are similar.
+
 \clearpage
+\subsection{Environments}
+
+We fix a type $R_0$.
+
+The unique environment for the empty context is an empty list denoted by $()$.
+An environment $\gamma$ for context $\Gamma, x : X$ is either:
+\begin{itemize}
+	\item A pair $(\gamma' ; \underline{M})$, where $\Gamma \VTS \underline{M} : X$ is an evaluated value term and $\gamma'$ is an environment for context $\Gamma$, or
+  \item A pair $(\gamma' ; (W, c))$, where $\Gamma, \Gamma' \CTS W : X$ is a full computation term and $c$ is a computation stack for context $\Gamma$ and type $X$.
+\end{itemize}
+
+The unique computation stack for the empty context and type $R_0$ is an empty list denoted by $\square$.
+A computation stack for context $\Gamma$ and type $Z$ is a triple $(W ; \gamma ; c)$, where $\Gamma , \Gamma' , z : Z \CTS W : X$ is a computation term, $\gamma$ is an environment for $\Gamma , \Gamma'$ and $c$ is a computation stack for context $\Gamma$ and type $X$.
+We will use the notation $W \triangleleft \gamma :: c$ to denote these triples.
+
+
+%\clearpage
 \subsection{Interpretation}
-Types $A$ are interpreted as sets $\llbracket A \rrbracket$ and contexts $\Gamma = x_1 : A_1 , \dots, x_n : A_n$ as products of sets $\llbracket \Gamma \rrbracket = \llbracket A_1 \rrbracket \times \dots \times \llbracket A_n \rrbracket$ as usual.
+Types $A$ are interpreted as presheaves $\llbracket A \rrbracket$ and contexts $\Gamma = x_1 : A_1 , \dots, x_n : A_n$ as products of presheaves $\llbracket \Gamma \rrbracket = \llbracket A_1 \rrbracket \times \dots \times \llbracket A_n \rrbracket$.
+The empty context is interpreted as the terminal object 1.
 
 Value terms $\Gamma \VTS M : A$ are interpreted as morphisms $\llbracket \Gamma \rrbracket \xrightarrow{\llbracket M \rrbracket} \llbracket A\rrbracket$.
 \begin{enumerate}
@@ -118,124 +150,184 @@ Value terms $\Gamma \VTS M : A$ are interpreted as morphisms $\llbracket \Gamma 
 \item $\llbracket \Gamma \VTS \ast : \unit \rrbracket = \langle \rangle$
 \end{enumerate}
 
-Computation terms $\Gamma \CTS M : A$ are interpreted as morphisms $\llbracket \Gamma \rrbracket \xrightarrow{\llbracket M \rrbracket} K_{\LABEL}\llbracket A\rrbracket$.
+Computation terms $\Gamma \CTS M : A$ are interpreted as morphisms $\llbracket \Gamma \rrbracket \xrightarrow{\llbracket M \rrbracket} S\llbracket A\rrbracket$.
+
 \begin{enumerate}
-%\item $\llbracket \Gamma \CTS \RET (M) : A \rrbracket = \eta \circ \llbracket M \rrbracket$
-\item $\llbracket \Gamma \CTS \RET (M) : A \rrbracket \;\gamma\; k = k \;(\llbracket M \rrbracket\; \gamma)$
-\item $\llbracket \Gamma \CTS \PUSH (M, x.N) : B\rrbracket \;\gamma \; k = ({\llbracket N \rrbracket}^{\sharp} \circ \STR \circ \langle \gamma , \llbracket M \rrbracket \;\gamma \rangle) \; k$ \newline \hspace*{\fill} where ${\_}^{\sharp} : (X \to K_\LABEL Y) \to (K_\LABEL X \to K_\LABEL Y)$
-\item $\llbracket \Gamma \CTS \APP(M , N) : B \rrbracket \; \gamma \; k = (\EVAL \circ \langle \llbracket M \rrbracket , \llbracket N \rrbracket \rangle) \; \gamma \; k$
-\item $\llbracket \Gamma \CTS \VAR(L) : \LABEL \rrbracket \; \gamma \; k = \llbracket L \rrbracket \; \gamma$
-\item $\llbracket \Gamma \CTS \SUB(a.M , N) : A \rrbracket = \llbracket M \rrbracket \; (\gamma , \llbracket N \rrbracket \, \gamma \, k) \; k$
+    \item $\llbracket \Gamma \CTS \RET (M) : X \rrbracket = \eta \circ \llbracket M \rrbracket$
+    \item $\llbracket \Gamma \CTS \PUSH (W_1, x.W_2) : X\rrbracket = {\llbracket W_2 \rrbracket}^{\sharp} \circ \STR \circ \langle \ID , \llbracket W_1 \rrbracket \rangle$
+    \item $\llbracket \Gamma \CTS \APP(M , N) : X \rrbracket = \EVAL \circ \langle \llbracket M \rrbracket , \llbracket N \rrbracket \rangle$
+    \item $\llbracket \Gamma \CTS \VAR(L) : X \rrbracket = \VAR_X \circ \llbracket L \rrbracket$
+    \item $\llbracket \Gamma \CTS \SUB(a.W_1 , W_2) : X \rrbracket = \SUB_X \circ \langle \lambda \llbracket W_1 \rrbracket , \llbracket W_2 \rrbracket \rangle$
 \end{enumerate}
 
-\clearpage
-\subsection{States}
+CPS-translation of interpretation of computation terms $\Gamma \CTS M : A$ (i.e.\ as $\llbracket \Gamma \rrbracket \xrightarrow{\llbracket M \rrbracket} K_{\LABEL}\llbracket A\rrbracket$):
+\begin{enumerate}
+\item $\llbracket \Gamma \CTS \RET (M) : X \rrbracket \;\gamma\; k = k \;(\llbracket M \rrbracket\; \gamma)$
+\item $\llbracket \Gamma \CTS \PUSH (W_1, x.W_2) : X\rrbracket \;\gamma \; k = ({\llbracket W_2 \rrbracket}^{\sharp} \circ \STR \circ \langle \gamma , \llbracket W_1 \rrbracket \;\gamma \rangle) \; k$ %\newline \hspace*{\fill} where ${\_}^{\sharp} : (X \to K_\LABEL Y) \to (K_\LABEL X \to K_\LABEL Y)$
+\item $\llbracket \Gamma \CTS \APP(M , N) : X \rrbracket \; \gamma \; k = (\EVAL \circ \langle \llbracket M \rrbracket , \llbracket N \rrbracket \rangle) \; \gamma \; k$
+\item $\llbracket \Gamma \CTS \VAR(L) : X \rrbracket \; \gamma \; k = \llbracket L \rrbracket \; \gamma$
+\item $\llbracket \Gamma \CTS \SUB(a.W_1 , W_2) : X \rrbracket = \llbracket W_1 \rrbracket \; (\gamma , \llbracket W_2 \rrbracket \, \gamma \, k) \; k$
+\end{enumerate}
 
-States are pairs $\STATE{t}{k}$, where $t$ is a stack of partial terms in an environment (a pair of a partial term and an environment) and $k$ is a stack of continuations (certain computation terms).
-If the partial term at the top of the stack $t$ is a partial value term, then $\STATE{t}{k}$ is a \emph{value state}, otherwise $\STATE{t}{k}$ is a \emph{computation state}.
+Computation stacks $c$ for a context $\Gamma$ and type $X$ are interpreted as morphisms $K_{\LABEL}\llbracket X \rrbracket \xrightarrow{\llbracket c \rrbracket} K_{\LABEL}\llbracket R_0 \rrbracket$. 
+\begin{enumerate}
+  \item ${\llbracket \square \rrbracket}_c = \ID$
+  \item ${\llbracket W \triangleleft \gamma :: c \rrbracket}_c = {\llbracket c \rrbracket}_c \circ {\llbracket W \rrbracket}^{\sharp} \circ \STR \circ \langle \llbracket \gamma \rrbracket , \ID \rangle$
+\end{enumerate}
 
-An \emph{environment} is a map from label variables (i.e.\ those bound by \SUB) to computation states and from non-label variables (i.e.\ all others) to full terms in an environment.
-\vspace{10pt}
+Using the starting continuation $k_0 : \llbracket R_0 \rrbracket \to R$, we can interpret computation stacks $c$ for context $\Gamma$ and type $X$ as continuations $\llbracket X \rrbracket \to R$:
+\[
+  {\llbracket c \rrbracket} (x) = \big({\llbracket c \rrbracket}_c \; (\, \eta (x) \,) \big) \; k_0
+\]
 
-\subsection{Transitions}
+Environments $\gamma$ for context $\Gamma$ are interpreted as morphisms $1 \to \llbracket \Gamma \rrbracket$.
+\begin{enumerate}
+  \item $\llbracket () \rrbracket = \langle \rangle$
+  \item $\llbracket (\gamma , M) \rrbracket = (\llbracket \gamma \rrbracket , \llbracket M \rrbracket \llbracket \gamma \rrbracket)$
+  \item $\llbracket (\gamma , (W , c)) \rrbracket = (\llbracket \gamma \rrbracket , \llbracket W \rrbracket \llbracket \gamma \rrbracket \llbracket c \rrbracket)$
+\end{enumerate}
+
+%\clearpage
+\subsection{Lookup Machine}
+\subsubsection{States}$ $
+
+A lookup state for type $X$ is a pair $(x ; \gamma)$, where $x$ is a variable in $\Gamma$ (i.e.\ an index into $\Gamma$) and $\gamma$ is an environment for $\Gamma$.
+
+The halting states are: $(0 ; (\gamma , \underline{\ast}))$, $(0 ; (\gamma , \underline{\lambda x . W}))$, $(0 ; (\gamma , (\underline{M}, \underline{N})))$ and $(0 ; (W ; c))$
+
+\subsubsection{Transitions}
+
 \begin{align*}
-	%
-	%\intertext{Variable lookup:}
-	%((x, \gamma), \tail ; k) &\leadsto \left\{
-	%\begin{array}{ll}
-	%	((\pi_1 \gamma (x) , \pi_2 \gamma (x)) , \tail ; \pi_3 \gamma (x)) & \text{if $\gamma (x)$ is a c.s.} \\
-	%	((\pi_1 \gamma (x) , \pi_2 \gamma (x)) , \tail ; k) & \text{otherwise}
-	%\end{array}
-	%\right.\\
-  %
-	\intertext{From value states to value states:}
-	\STATE{(x, \gamma) \CAT \tail}{k} &\leadsto \STATE{\gamma(x) \CAT \tail}{k}\\
-	\intertext{\hspace*{\fill}where $x$ is a non-label variable}
-	\\
-  \STATE{( \PMV (M , (x,y).N), \gamma) \CAT \tail}{k} &\leadsto \STATE{( M , \gamma) \CAT (\PMV (\_ , (x,y).N) , \gamma) \CAT \tail}{k}\\
-  \STATE{( \flag{(L, R)}, \gamma) \CAT (\PMV ( \_ , (x , y).N) , \gamma') \CAT \tail}{k} &\leadsto \STATE{( N , \gamma' [ x \mapsto (L , \gamma) , y \mapsto (R , \gamma) ]) \CAT \tail}{k}\\
-	\\
-  \STATE{( (L , R) , \gamma ) \CAT \tail}{k} &\leadsto \STATE{( L , \gamma ) \CAT ( (\_ , R) , \gamma) \CAT \tail}{k}\\
-	%
-  \STATE{( T , \gamma) \CAT ( (\_ , R) , \gamma') \CAT \tail}{k} &\leadsto \STATE{( R , \gamma' ) \CAT ((x , \_) , \gamma' [x \mapsto (T , \gamma)]) \CAT \tail}{k}\\
-  \STATE{( T , \gamma) \CAT ( (L , \_) , \gamma') \CAT \tail}{k} &\leadsto \STATE{(\flag{(L , y)} , \gamma' [y \mapsto (T , \gamma)]) \CAT \tail}{k}\\
-  %(( T , \gamma ) , (\RET (\_) , \gamma') , \tail ; k ) &\leadsto (( \flag{\RET (T)} , \gamma') , \tail ; k)\\
-	\intertext{\hspace*{\fill}where $T = \lambda x . M$ or $T = \flag{(L , R)}$ or $T = \ast$}
-  %
-	% computations
-	%
-	\\
-	\intertext{From value states to computation states:}
-  \STATE{( \flag{(L, R)}, \gamma) \CAT (\PMC ( \_ , (x , y).N) , \gamma') \CAT \tail}{k} &\leadsto \STATE{( N , \gamma' [ x \mapsto (L , \gamma) , y \mapsto (R , \gamma) ]) \CAT \tail}{k}\\
-  \STATE{( \lambda x . M , \gamma) \CAT ( \APP(\_ , N) , \gamma') }{k} &\leadsto \STATE{( M , \gamma [ x \mapsto N ])}{k}\\
-	\\
-  \STATE{( \ell , \gamma)}{k} &\leadsto \gamma (\ell)\\
-	\intertext{\hspace*{\fill}where $\ell$ is a label variable}
-	\\
-	\intertext{From computation states to value states:}
-  \STATE{( \PMC (M , (x,y).N), \gamma)}{k} &\leadsto \STATE{( M , \gamma) \CAT (\PMC (\_ , (x,y).N) , \gamma)}{k}\\
-  \STATE{( \APP (M , N) , \gamma )}{k} &\leadsto \STATE{( M , \gamma) \CAT (\APP (\_ , N) , \gamma)}{k}\\
-  \STATE{( \VAR (M) , \gamma)}{k} &\leadsto \STATE{(M , \gamma)}{k}\\
-	\\
-	\intertext{From computation states to computation states:}
-  %(( \RET (M) , \gamma) , \tail ; k ) &\leadsto ( (M , \gamma) , (\RET (\_) , \gamma) , \tail ; k)\\
-  %(( \flag{\RET (\_)}, \gamma) , \tail ; x.N , k) &\leadsto (( N , \gamma[ x \mapsto M]) , \tail ; k)\\
-  \STATE{( \RET (M) , \gamma)}{x.N \CAT k} &\leadsto \STATE{(N , \gamma[ x \mapsto (M , \gamma , k)])}{k}\\
-  \STATE{( \PUSH (M , x.N) , \gamma)}{k} &\leadsto \STATE{( M , \gamma )}{x.N \CAT k}\\
-  \STATE{( \SUB (a.M , N ), \gamma)}{k} &\leadsto \STATE{( M , \gamma [a \mapsto (N , \gamma, k)] )}{k}
+  (0 ; (\gamma , \underline{y}) ) &\leadsto^L (\underline{\ell} ; \gamma) && \text{where $\ell$ is a label variable} \\
+  (x + 1 ; (\gamma , \underline{M}) ) &\leadsto^L (x ; \gamma)\\
+  (x + 1 ; (\gamma , (W ; c)) ) &\leadsto^L (x ; \gamma)
 \end{align*}
 
-\clearpage
-\subsection{Examples}
 
-%Example:
-%
-%Let $X = \lambda x . x$, $Y = \lambda y . y$ and ${\color{blue}\gamma_0 = (x \mapsto (X , \emptyset) , y \mapsto (Y , \emptyset))}$.
-%Then:
-%
-%\begin{alignat*}{2}
-%           &  \big(\big( \PMV ((a,b) = \PMV ((c,d) = (x,y), (d,c)), \PMV ((e, f) = (b, a), e)),  \gamma_0 \big); {\color{blue} k_0} \big)\\
-%  \leadsto &  \big(\big( \PMV ((c , d) = (x , y) , (d , c))) , \gamma_0 \big) , \big( \PMV ((a,b) = \_ , \PMV ((e , f) = (b , a) , e) ), \gamma_0 \big) ; k_0 \big)\\
-%  \leadsto &  \big(\big( (x , y) , \gamma_0 \big) , \big( \PMV ((c , d) = \_ , (d , c))) , \gamma_0 \big) , \big( \PMV ((a,b) = \_ , \PMV ((e , f) = (b , a) , e) ), \gamma_0 \big) ; k_0 \big)\\
-%  \leadsto &  \big(\big( x , \gamma_0 \big), \big( (\_ , y) , \gamma_0 \big) , \big( \PMV ((c , d) = \_ , (d , c))) , \gamma_0 \big) , \big( \PMV ((a,b) = \_ , \PMV ((e , f) = (b , a) , e) ), \gamma_0 \big) ; k_0 \big)\\
-%  \leadsto &  \big(\big( X , \emptyset \big), \big( (\_ , y) , \gamma_0 \big) , \big( \PMV ((c , d) = \_ , (d , c))) , \gamma_0 \big) , \big( \PMV ((a,b) = \_ , \PMV ((e , f) = (b , a) , e) ), \gamma_0 \big) ; k_0 \big)\\
-%  \leadsto &  \big(\big( y , \gamma_0 \big) , \big( (X , \_) , \gamma_0 \big) , \big( \PMV ((c , d) = \_ , (d , c))) , \gamma_0 \big) , \big( \PMV ((a,b) = \_ , \PMV ((e , f) = (b , a) , e) ), \gamma_0 \big) ; k_0 \big)\\
-%  \leadsto &  \big(\big( Y , \emptyset \big) , \big( (X , \_) , \gamma_0 \big) , \big( \PMV ((c , d) = \_ , (d , c))) , \gamma_0 \big) , \big( \PMV ((a,b) = \_ , \PMV ((e , f) = (b , a) , e) ), \gamma_0 \big) ; k_0 \big)\\
-%  \leadsto &  \big(\big( \flag{(X , Y)} , \gamma_0 \big) , \big( \PMV ((c , d) = \_ , (d , c))) , \gamma_0 \big) , \big( \PMV ((a,b) = \_ , \PMV ((e , f) = (b , a) , e) ), \gamma_0 \big) ; k_0 \big)\\
-%  \leadsto &  \big(\big( (d , c) , {\color{blue}\gamma_1 = \gamma_0 [c \mapsto X , d \mapsto Y]} \big) , \big( \PMV ((a,b) = \_ , \PMV ((e , f) = (b , a) , e) ), \gamma_0 \big) ; k_0 \big)\\
-%  \leadsto &  \big(\big( d , \gamma_1 \big) , \big( (\_ , c) , \gamma_1 \big) , \big( \PMV ((a,b) = \_ , \PMV ((e , f) = (b , a) , e) ), \gamma_0 \big) ; k_0 \big)\\
-%  \leadsto &  \big(\big( Y , \gamma_1 \big) , \big( (\_ , c) , \gamma_1 \big) , \big( \PMV ((a,b) = \_ , \PMV ((e , f) = (b , a) , e) ), \gamma_0 \big) ; k_0 \big)\\
-%  \leadsto &  \big(\big( c , \gamma_1 \big) , \big( (Y , \_) , \gamma_1 \big) , \big( \PMV ((a,b) = \_ , \PMV ((e , f) = (b , a) , e) ), \gamma_0 \big) ; k_0 \big)\\
-%  \leadsto &  \big(\big( X , \gamma_1 \big) , \big( (Y , \_) , \gamma_1 \big) , \big( \PMV ((a,b) = \_ , \PMV ((e , f) = (b , a) , e) ), \gamma_0 \big) ; k_0 \big)\\
-%  \leadsto &  \big(\big( \flag{(Y , X)} , \gamma_1 \big) , \big( \PMV ((a,b) = \_ , \PMV ((e , f) = (b , a) , e) ), \gamma_0 \big) ; k_0 \big)\\
-%  \leadsto &  \big(\big( \PMV ((e , f) = (b , a) , e) , {\color{blue}\gamma_2 = \gamma_0[a \mapsto Y , b \mapsto X]} \big) ; k_0 \big)\\
-%  \leadsto &  \big(\big( (b , a) , \gamma_2 \big) , \big( \PMV ((e , f) = \_ , e) , \gamma_2 \big) ; k_0 \big)\\
-%  \leadsto &  \big(\big( b , \gamma_2 \big), \big( (\_ , a) , \gamma_2 \big) , \big( \PMV ((e , f) = \_ , e) , \gamma_2 \big) ; k_0 \big)\\
-%  \leadsto &  \big(\big( X , \gamma_2 \big), \big( (\_ , a) , \gamma_2 \big) , \big( \PMV ((e , f) = \_ , e) , \gamma_2 \big) ; k_0 \big)\\
-%  \leadsto &  \big(\big( a , \gamma_2 \big), \big( (X , \_) , \gamma_2 \big) , \big( \PMV ((e , f) = \_ , e) , \gamma_2 \big) ; k_0 \big)\\
-%  \leadsto &  \big(\big( Y , \gamma_2 \big), \big( (X , \_) , \gamma_2 \big) , \big( \PMV ((e , f) = \_ , e) , \gamma_2 \big) ; k_0 \big)\\
-%  \leadsto &  \big(\big( \flag{(X , Y)} , \gamma_2 \big) , \big( \PMV ((e , f) = \_ , e) , \gamma_2 \big) ; k_0 \big)\\
-%  \leadsto &  \big(\big( e , {\color{blue} \gamma_3 = \gamma_2[e \mapsto X, f \mapsto Y]} \big) ; k_0 \big)\\
-%  \leadsto &  \big(\big( X , \gamma_3 \big) ; k_0 \big)\\
-%\end{alignat*}
+\subsection{Value Machine}
+\subsubsection{States}
+Value states are associated with a type $X$.
+There are two kinds of value states: evaluated value states and unevaluated value states.
 
-Let $M = \RET (\lambda x . x)$.
-Then:
-%
+To define value states, we first inductively define value stacks of type $X$:
+\begin{itemize}
+  \item The empty value stack of type $X$ is denoted by $\square_X$ (or just $\square$).
+  \item If $M$ is a partial value term of type $X$ in context $\Gamma$ and $\gamma$ is an environment for $\Gamma$, then $M \triangleleft \gamma :: \square_X$ is a value stack of type $X$.
+  \item If $v$ is a non-empty value stack of type $X$ and $M$ is a partial value term in context $\Gamma$ (and of any type) and $\gamma$ is an environment for $\Gamma$, then $M \triangleleft \gamma :: v$ is a value stack of type $X$.
+\end{itemize}
+
+Value states of type $X$ are pairs of a flag ($\bullet$ for evaluated or $\circ$ for unevaluated) and a non-empty value stack $v$ of type $X$ and are denoted $\bullet v$ and $\circ v$, respectively.
+
+Halting states are those of the form $\bullet \underline{M} \triangleleft \gamma :: \square$.
+
+\subsubsection{Transitions}
+
 \begin{align*}
-           &  \STATE{ \big( \SUB(e_1. \PUSH (\SUB(e_2 . \RET (e_2) , \RET (e_1)) , \ell.\VAR (\ell) ) , M) ,  {\color{blue}\gamma_0 = \emptyset} \big)}{ {\color{blue} k_0} }\\
-  \leadsto &  \STATE{ \big( \PUSH (\SUB(e_2 . \RET (e_2) , \RET (e_1)) , \ell.\VAR (\ell) ) ,  {\color{blue}\gamma_1 = \gamma_0[e_1 \mapsto \STATE{ (M , \gamma_0)}{k_0}]} \big) }{ k_0 } \\
-  \leadsto &  \STATE{ \big( \SUB(e_2 . \RET (e_2) , \RET (e_1)) ,  \gamma_1 \big) }{ {\color{blue} k_1 = \ell.\VAR (\ell) , k_0} }\\
-  \leadsto &  \STATE{ \big( \RET (e_2) , {\color{blue}\gamma_2 = \gamma_1[e_2 \mapsto \STATE{(\RET (e_1) , \gamma_1)}{k_1}]} \big) }{ k_1 }\\
-  \leadsto &  \STATE{ \big( \VAR (\ell) , {\color{blue}\gamma_3 = \gamma_2[\ell \mapsto (e_2 , \gamma_2) ] } \big) }{ k_0 }\\
-  \leadsto &  \STATE{ \big( \ell , \gamma_3 \big) }{ k_0 }\\
-  \leadsto &  \STATE{ \big( e_2 , \gamma_2 \big) }{ k_0 }\\
-  \leadsto &  \STATE{ \big( \RET (e_1) , \gamma_1 \big) }{ k_1 }\\
-  \leadsto &  \STATE{ \big( \VAR (\ell) , {\color{blue}\gamma_4 = \gamma_1[\ell \mapsto (e_1 , \gamma_1) ] } \big) }{ k_0 }\\
-  \leadsto &  \STATE{ \big( \ell , \gamma_4 \big) }{ k_0 }\\
-  \leadsto &  \STATE{ \big( e_1 , \gamma_1 \big) }{ k_0 }\\
-  \leadsto &  \STATE{ \big( M , \gamma_0 \big) }{ k_0 }
+  \circ\, \ell \triangleleft \gamma :: v &\leadsto^V \bullet\, \underline{l} \triangleleft \gamma :: v && \text{where $\ell$ is a label variable} \\
+  \circ\, x \triangleleft \gamma :: v &\leadsto^V \bullet\, \underline{M} \triangleleft \gamma :: v && \text{if $(\ell ; \gamma) \leadsto^{L*} (0 ; (\gamma' , \underline{M}))$} \\
+  \circ\, \lambda x . W \triangleleft \gamma :: v &\leadsto^V \bullet\, \underline{\lambda x . W} \triangleleft \gamma :: v\\
+  \circ\, (M , N) \triangleleft \gamma :: v &\leadsto^V \circ\, M \triangleleft \gamma :: (\_ , N) \triangleleft \gamma :: v\\
+  \circ\, \PMV (M , (x,y).N) \triangleleft \gamma :: v &\leadsto^V \circ\, M \triangleleft \gamma :: \PMV(\_ , N) \triangleleft \gamma :: v\\
+  \circ\, \ast\, \triangleleft\, \gamma :: v &\leadsto^V \bullet\, \underline{\ast} \triangleleft \gamma :: v\\
+  \bullet\, \underline{M} \triangleleft \gamma :: (\_ , N) \triangleleft \gamma' :: v &\leadsto^V \circ\, N \triangleleft \gamma :: (\underline{M} , \_) \triangleleft \gamma :: v\\
+  \bullet\, (\underline{M}, \underline{N}) \triangleleft \gamma :: \PMV(\_ , N) \triangleleft \gamma' :: v &\leadsto^V \circ\, N \triangleleft (\gamma , \underline{M}, \underline{N}) :: v\\
 \end{align*}
+
+%	\STATE{(x, \gamma) \CAT \tail}{k} &\leadsto \STATE{\gamma(x) \CAT \tail}{k}\\
+%	\intertext{\hspace*{\fill}where $x$ is a non-label variable}
+%	\\
+%  \STATE{( \PMV (M , (x,y).N), \gamma) \CAT \tail}{k} &\leadsto \STATE{( M , \gamma) \CAT (\PMV (\_ , (x,y).N) , \gamma) \CAT \tail}{k}\\
+%  \STATE{( \flag{(L, R)}, \gamma) \CAT (\PMV ( \_ , (x , y).N) , \gamma') \CAT \tail}{k} &\leadsto \STATE{( N , \gamma' [ x \mapsto (L , \gamma) , y \mapsto (R , \gamma) ]) \CAT \tail}{k}\\
+%	\\
+%  \STATE{( (L , R) , \gamma ) \CAT \tail}{k} &\leadsto \STATE{( L , \gamma ) \CAT ( (\_ , R) , \gamma) \CAT \tail}{k}\\
+%	%
+%  \STATE{( T , \gamma) \CAT ( (\_ , R) , \gamma') \CAT \tail}{k} &\leadsto \STATE{( R , \gamma' ) \CAT ((x , \_) , \gamma' [x \mapsto (T , \gamma)]) \CAT \tail}{k}\\
+%  \STATE{( T , \gamma) \CAT ( (L , \_) , \gamma') \CAT \tail}{k} &\leadsto \STATE{(\flag{(L , y)} , \gamma' [y \mapsto (T , \gamma)]) \CAT \tail}{k}\\
+
+\subsection{Computation Machine}
+
+TODO 
+
+\subsubsection{States}
+
+TODO
+
+%States are pairs $\STATE{t}{k}$, where $t$ is a stack of partial terms in an environment (a pair of a partial term and an environment) and $k$ is a stack of continuations (certain computation terms).
+%If the partial term at the top of the stack $t$ is a partial value term, then $\STATE{t}{k}$ is a \emph{value state}, otherwise $\STATE{t}{k}$ is a \emph{computation state}.
+%
+%An \emph{environment} is a map from label variables (i.e.\ those bound by \SUB) to computation states and from non-label variables (i.e.\ all others) to full terms in an environment.
+%\vspace{10pt}
+
+%% \subsubsection{Transitions}
+%% 
+%% \begin{align*}
+%% 	%
+%% 	%\intertext{Variable lookup:}
+%% 	%((x, \gamma), \tail ; k) &\leadsto \left\{
+%% 	%\begin{array}{ll}
+%% 	%	((\pi_1 \gamma (x) , \pi_2 \gamma (x)) , \tail ; \pi_3 \gamma (x)) & \text{if $\gamma (x)$ is a c.s.} \\
+%% 	%	((\pi_1 \gamma (x) , \pi_2 \gamma (x)) , \tail ; k) & \text{otherwise}
+%% 	%\end{array}
+%% 	%\right.\\
+%%   %
+%% 	\intertext{From value states to value states:}
+%% 	\STATE{(x, \gamma) \CAT \tail}{k} &\leadsto \STATE{\gamma(x) \CAT \tail}{k}\\
+%% 	\intertext{\hspace*{\fill}where $x$ is a non-label variable}
+%% 	\\
+%%   \STATE{( \PMV (M , (x,y).N), \gamma) \CAT \tail}{k} &\leadsto \STATE{( M , \gamma) \CAT (\PMV (\_ , (x,y).N) , \gamma) \CAT \tail}{k}\\
+%%   \STATE{( \flag{(L, R)}, \gamma) \CAT (\PMV ( \_ , (x , y).N) , \gamma') \CAT \tail}{k} &\leadsto \STATE{( N , \gamma' [ x \mapsto (L , \gamma) , y \mapsto (R , \gamma) ]) \CAT \tail}{k}\\
+%% 	\\
+%%   \STATE{( (L , R) , \gamma ) \CAT \tail}{k} &\leadsto \STATE{( L , \gamma ) \CAT ( (\_ , R) , \gamma) \CAT \tail}{k}\\
+%% 	%
+%%   \STATE{( T , \gamma) \CAT ( (\_ , R) , \gamma') \CAT \tail}{k} &\leadsto \STATE{( R , \gamma' ) \CAT ((x , \_) , \gamma' [x \mapsto (T , \gamma)]) \CAT \tail}{k}\\
+%%   \STATE{( T , \gamma) \CAT ( (L , \_) , \gamma') \CAT \tail}{k} &\leadsto \STATE{(\flag{(L , y)} , \gamma' [y \mapsto (T , \gamma)]) \CAT \tail}{k}\\
+%%   %(( T , \gamma ) , (\RET (\_) , \gamma') , \tail ; k ) &\leadsto (( \flag{\RET (T)} , \gamma') , \tail ; k)\\
+%% 	\intertext{\hspace*{\fill}where $T = \lambda x . M$ or $T = \flag{(L , R)}$ or $T = \ast$}
+%%   %
+%% 	% computations
+%% 	%
+%% 	\\
+%% 	\intertext{From value states to computation states:}
+%%   \STATE{( \flag{(L, R)}, \gamma) \CAT (\PMC ( \_ , (x , y).N) , \gamma') \CAT \tail}{k} &\leadsto \STATE{( N , \gamma' [ x \mapsto (L , \gamma) , y \mapsto (R , \gamma) ]) \CAT \tail}{k}\\
+%%   \STATE{( \lambda x . M , \gamma) \CAT ( \APP(\_ , N) , \gamma') }{k} &\leadsto \STATE{( M , \gamma [ x \mapsto N ])}{k}\\
+%% 	\\
+%%   \STATE{( \ell , \gamma)}{k} &\leadsto \gamma (\ell)\\
+%% 	\intertext{\hspace*{\fill}where $\ell$ is a label variable}
+%% 	\\
+%% 	\intertext{From computation states to value states:}
+%%   \STATE{( \PMC (M , (x,y).N), \gamma)}{k} &\leadsto \STATE{( M , \gamma) \CAT (\PMC (\_ , (x,y).N) , \gamma)}{k}\\
+%%   \STATE{( \APP (M , N) , \gamma )}{k} &\leadsto \STATE{( M , \gamma) \CAT (\APP (\_ , N) , \gamma)}{k}\\
+%%   \STATE{( \VAR (M) , \gamma)}{k} &\leadsto \STATE{(M , \gamma)}{k}\\
+%% 	\\
+%% 	\intertext{From computation states to computation states:}
+%%   %(( \RET (M) , \gamma) , \tail ; k ) &\leadsto ( (M , \gamma) , (\RET (\_) , \gamma) , \tail ; k)\\
+%%   %(( \flag{\RET (\_)}, \gamma) , \tail ; x.N , k) &\leadsto (( N , \gamma[ x \mapsto M]) , \tail ; k)\\
+%%   \STATE{( \RET (M) , \gamma)}{x.N \CAT k} &\leadsto \STATE{(N , \gamma[ x \mapsto (M , \gamma , k)])}{k}\\
+%%   \STATE{( \PUSH (M , x.N) , \gamma)}{k} &\leadsto \STATE{( M , \gamma )}{x.N \CAT k}\\
+%%   \STATE{( \SUB (a.M , N ), \gamma)}{k} &\leadsto \STATE{( M , \gamma [a \mapsto (N , \gamma, k)] )}{k}
+%% \end{align*}
+
+%% \clearpage
+%% \subsection{Examples}
+
+
+%%  Let $M = \RET (\lambda x . x)$.
+%%  Then:
+%%  %
+%%  \begin{align*}
+%%             &  \STATE{ \big( \SUB(e_1. \PUSH (\SUB(e_2 . \RET (e_2) , \RET (e_1)) , \ell.\VAR (\ell) ) , M) ,  {\color{blue}\gamma_0 = \emptyset} \big)}{ {\color{blue} k_0} }\\
+%%    \leadsto &  \STATE{ \big( \PUSH (\SUB(e_2 . \RET (e_2) , \RET (e_1)) , \ell.\VAR (\ell) ) ,  {\color{blue}\gamma_1 = \gamma_0[e_1 \mapsto \STATE{ (M , \gamma_0)}{k_0}]} \big) }{ k_0 } \\
+%%    \leadsto &  \STATE{ \big( \SUB(e_2 . \RET (e_2) , \RET (e_1)) ,  \gamma_1 \big) }{ {\color{blue} k_1 = \ell.\VAR (\ell) , k_0} }\\
+%%    \leadsto &  \STATE{ \big( \RET (e_2) , {\color{blue}\gamma_2 = \gamma_1[e_2 \mapsto \STATE{(\RET (e_1) , \gamma_1)}{k_1}]} \big) }{ k_1 }\\
+%%    \leadsto &  \STATE{ \big( \VAR (\ell) , {\color{blue}\gamma_3 = \gamma_2[\ell \mapsto (e_2 , \gamma_2) ] } \big) }{ k_0 }\\
+%%    \leadsto &  \STATE{ \big( \ell , \gamma_3 \big) }{ k_0 }\\
+%%    \leadsto &  \STATE{ \big( e_2 , \gamma_2 \big) }{ k_0 }\\
+%%    \leadsto &  \STATE{ \big( \RET (e_1) , \gamma_1 \big) }{ k_1 }\\
+%%    \leadsto &  \STATE{ \big( \VAR (\ell) , {\color{blue}\gamma_4 = \gamma_1[\ell \mapsto (e_1 , \gamma_1) ] } \big) }{ k_0 }\\
+%%    \leadsto &  \STATE{ \big( \ell , \gamma_4 \big) }{ k_0 }\\
+%%    \leadsto &  \STATE{ \big( e_1 , \gamma_1 \big) }{ k_0 }\\
+%%    \leadsto &  \STATE{ \big( M , \gamma_0 \big) }{ k_0 }
+%%  \end{align*}
 
 %\bibliographystyle{alpha}
 %\bibliography{references.bib}
