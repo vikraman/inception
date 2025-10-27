@@ -59,14 +59,6 @@ $\lambda x . W$,\,
 $(L , R)$,\,
 $\PMV ( M , (x,y).N )$
 
-Further partial value terms are:
-
-\quad
-$(\_ , R)$,\,
-$(L , \_)$,\,
-$\flag{(L , R)}$,\,
-$\PMV(\_, (x , y).N)$
-
 Evaluated value terms are:
 
 \quad
@@ -74,6 +66,14 @@ $\underline{\ell}$ (where $\ell$ is a label variable),\,
 $\underline{\ast}$,\,
 $(\underline{M}, \underline{N})$,\,
 $\underline{\lambda} x . W$
+
+Further partial value terms are:
+
+\quad
+$(\_ , R)$,\,
+$(L , \_)$,\,
+$\flag{(L , R)}$,\,
+$\PMV(\_, (x , y).N)$
 
 Full computation terms are:
 
@@ -123,17 +123,17 @@ The typing rules for evaluated value and computation terms are similar and we wi
 \subsection{Environments}
 
 We fix a type $R_0$.
-
+%
 The unique environment for the empty context is an empty list denoted by $()$.
-An environment $\gamma$ for context $\Gamma, x : X$ is either:
+An environment $\gamma$ for context $\Gamma, \Gamma', x : X$ is either:
 \begin{itemize}
-	\item A pair $(\gamma' ; \underline{M})$, where $\Gamma \VTS \underline{M} : X$ is an evaluated value term and $\gamma'$ is an environment for context $\Gamma$, or
-  \item A pair $(\gamma' ; (W, c))$, where $\Gamma, \Gamma' \CTS W : X$ is a full computation term and $c$ is a computation stack for context $\Gamma$ and type $X$.
+	\item A pair $(\gamma' , \underline{M})$, where $\Gamma, \Gamma' \VTS \underline{M} : X$ is an evaluated value term and $\gamma'$ is an environment for context $\Gamma, \Gamma'$, or
+  \item A pair $(\gamma' , (W ; c))$, where $\Gamma, \Gamma' \CTS W : X$ is a full computation term, $c$ is a computation stack for context $\Gamma$ and type $X$ and $\gamma'$ is an environment for context $\Gamma, \Gamma'$.
 \end{itemize}
 
 The unique computation stack for the empty context and type $R_0$ is an empty list denoted by $\square$.
-A computation stack for context $\Gamma$ and type $Z$ is a triple $(W ; \gamma ; c)$, where $\Gamma , \Gamma' , z : Z \CTS W : X$ is a computation term, $\gamma$ is an environment for $\Gamma , \Gamma'$ and $c$ is a computation stack for context $\Gamma$ and type $X$.
-We will use the notation $W \triangleleft \gamma :: c$ to denote these triples.
+A computation stack for context $\Gamma$ and type $Z$ is a triple $W \triangleleft \gamma :: c$, where $\Gamma , \Gamma' , z : Z \CTS W : X$ is a computation term, $\gamma$ is an environment for $\Gamma , \Gamma'$ and $c$ is a computation stack for $\Gamma$ and $X$.
+%We will use the notation $W \triangleleft \gamma :: c$ to denote these triples.
 
 
 %\clearpage
@@ -150,14 +150,15 @@ Value terms $\Gamma \VTS M : A$ are interpreted as morphisms $\llbracket \Gamma 
 \item $\llbracket \Gamma \VTS \ast : \unit \rrbracket = \langle \rangle$
 \end{enumerate}
 
-Computation terms $\Gamma \CTS M : A$ are interpreted as morphisms $\llbracket \Gamma \rrbracket \xrightarrow{\llbracket M \rrbracket} S\llbracket A\rrbracket$.
+Computation terms $\Gamma \CTS M : A$ are interpreted as morphisms $\llbracket \Gamma \rrbracket \xrightarrow{{\llbracket M \rrbracket}_S} S\llbracket A\rrbracket$.
 
 \begin{enumerate}
-    \item $\llbracket \Gamma \CTS \RET (M) : X \rrbracket = \eta \circ \llbracket M \rrbracket$
-    \item $\llbracket \Gamma \CTS \PUSH (W_1, x.W_2) : X\rrbracket = {\llbracket W_2 \rrbracket}^{\sharp} \circ \STR \circ \langle \ID , \llbracket W_1 \rrbracket \rangle$
-    \item $\llbracket \Gamma \CTS \APP(M , N) : X \rrbracket = \EVAL \circ \langle \llbracket M \rrbracket , \llbracket N \rrbracket \rangle$
-    \item $\llbracket \Gamma \CTS \VAR(L) : X \rrbracket = \VAR_X \circ \llbracket L \rrbracket$
-    \item $\llbracket \Gamma \CTS \SUB(a.W_1 , W_2) : X \rrbracket = \SUB_X \circ \langle \lambda \llbracket W_1 \rrbracket , \llbracket W_2 \rrbracket \rangle$
+  \item ${\llbracket \Gamma \CTS \RET (M) : X \rrbracket}_S = \eta \circ \llbracket M \rrbracket$
+  \item ${\llbracket \Gamma \CTS \PUSH (W_1, x.W_2) : X\rrbracket}_S = {\llbracket W_2 \rrbracket}_S^{\sharp} \circ \STR \circ \langle \ID , {\llbracket W_1 \rrbracket}_S \rangle$
+  \item ${\llbracket \Gamma \CTS \APP(M , N) : X \rrbracket}_S = \EVAL \circ \langle \llbracket M \rrbracket , \llbracket N \rrbracket \rangle$
+  \item ${\llbracket \Gamma \CTS \VAR(L) : X \rrbracket}_S = \VAR_X \circ \llbracket L \rrbracket$
+  \item ${\llbracket \Gamma \CTS \SUB(a.W_1 , W_2) : X \rrbracket}_S = \SUB_X \circ \langle \lambda {\llbracket W_1 \rrbracket}_S , {\llbracket W_2 \rrbracket}_S \rangle$
+  \item ${\llbracket \Gamma \CTS \PMC(M , (x , y).W) : X \rrbracket}_S = {\llbracket W \rrbracket}_S \circ \alpha \circ \langle \ID , \llbracket M \rrbracket \rangle$
 \end{enumerate}
 
 CPS-translation of interpretation of computation terms $\Gamma \CTS M : A$ (i.e.\ as $\llbracket \Gamma \rrbracket \xrightarrow{\llbracket M \rrbracket} K_{\LABEL}\llbracket A\rrbracket$):
@@ -167,40 +168,41 @@ CPS-translation of interpretation of computation terms $\Gamma \CTS M : A$ (i.e.
 \item $\llbracket \Gamma \CTS \APP(M , N) : X \rrbracket \; \gamma \; k = (\EVAL \circ \langle \llbracket M \rrbracket , \llbracket N \rrbracket \rangle) \; \gamma \; k$
 \item $\llbracket \Gamma \CTS \VAR(L) : X \rrbracket \; \gamma \; k = \llbracket L \rrbracket \; \gamma$
 \item $\llbracket \Gamma \CTS \SUB(a.W_1 , W_2) : X \rrbracket = \llbracket W_1 \rrbracket \; (\gamma , \llbracket W_2 \rrbracket \, \gamma \, k) \; k$
+\item $\llbracket \Gamma \CTS \PMC(M , (x , y).W) : X \rrbracket \; \gamma \; k = (\llbracket W \rrbracket \circ \alpha \circ \langle \gamma , \llbracket M \rrbracket \rangle) k$
 \end{enumerate}
 
-Computation stacks $c$ for a context $\Gamma$ and type $X$ are interpreted as morphisms $K_{\LABEL}\llbracket X \rrbracket \xrightarrow{\llbracket c \rrbracket} K_{\LABEL}\llbracket R_0 \rrbracket$.
+Computation stacks $c$ for a context $\Gamma$ and type $X$ are interpreted as morphisms $K_{\LABEL}\llbracket X \rrbracket \xrightarrow{{\llbracket c \rrbracket}_C} K_{\LABEL}\llbracket R_0 \rrbracket$.
 \begin{enumerate}
-  \item ${\llbracket \square \rrbracket}_c = \ID$
-  \item ${\llbracket W \triangleleft \gamma :: c \rrbracket}_c = {\llbracket c \rrbracket}_c \circ {\llbracket W \rrbracket}^{\sharp} \circ \STR \circ \langle \llbracket \gamma \rrbracket , \ID \rangle$
+  \item ${\llbracket \square \rrbracket}_C = \ID$
+  \item ${\llbracket W \triangleleft \gamma :: c \rrbracket}_C = {\llbracket c \rrbracket}_C \circ {\llbracket W \rrbracket}^{\sharp} \circ \STR \circ \langle \llbracket \gamma \rrbracket , \ID \rangle$
 \end{enumerate}
 
 Using the starting continuation $k_0 : \llbracket R_0 \rrbracket \to R$, we can interpret computation stacks $c$ for context $\Gamma$ and type $X$ as continuations $\llbracket X \rrbracket \to R$:
 \[
-  {\llbracket c \rrbracket} (x) = \big({\llbracket c \rrbracket}_c \; (\, \eta (x) \,) \big) \; k_0
+  {\llbracket c \rrbracket} (x) = \big({\llbracket c \rrbracket}_C \; (\, \eta (x) \,) \big) \; k_0
 \]
 
 Environments $\gamma$ for context $\Gamma$ are interpreted as morphisms $1 \to \llbracket \Gamma \rrbracket$.
 \begin{enumerate}
   \item $\llbracket () \rrbracket = \langle \rangle$
   \item $\llbracket (\gamma , M) \rrbracket = (\llbracket \gamma \rrbracket , \llbracket M \rrbracket \llbracket \gamma \rrbracket)$
-  \item $\llbracket (\gamma , (W , c)) \rrbracket = (\llbracket \gamma \rrbracket , \llbracket W \rrbracket \llbracket \gamma \rrbracket \llbracket c \rrbracket)$
+  \item $\llbracket (\gamma , (W ; c)) \rrbracket = (\llbracket \gamma \rrbracket , \llbracket W \rrbracket \llbracket \gamma \rrbracket \llbracket c \rrbracket)$
 \end{enumerate}
 
 %\clearpage
 \subsection{Lookup Machine}
 \subsubsection{States}$ $
 
-A lookup state for type $X$ is a pair $(x ; \gamma)$, where $x$ is a variable in $\Gamma$ (i.e.\ an index into $\Gamma$) and $\gamma$ is an environment for $\Gamma$.
+A lookup state for type $X$ is a pair $\langle x \,|\, \gamma \rangle$, where $x$ is a variable in $\Gamma$ (i.e.\ an index into $\Gamma$) and $\gamma$ is an environment for $\Gamma$.
 
-The halting states are: $(0 ; (\gamma , \underline{\ast}))$, $(0 ; (\gamma , \underline{\lambda} x . W))$, $(0 ; (\gamma , (\underline{M}, \underline{N})))$ and $(0 ; (\gamma , (W ; c)))$
+The halting states are: $\langle 0 \,|\, (\gamma , \underline{\ast}) \rangle$, $\langle 0 \,|\, (\gamma , \underline{\lambda} x . W) \rangle$, $\langle 0 \,|\, (\gamma , (\underline{M}, \underline{N})) \rangle$ and $\langle 0 \,|\, (\gamma , (W ; c)) \rangle$
 
 \subsubsection{Transitions}
 
 \begin{align*}
-  (0 ; (\gamma , \underline{\ell}) ) &\leadsto^L (\underline{\ell} ; \gamma) && \text{where $\ell$ is a label variable} \\
-  (x + 1 ; (\gamma , \underline{M}) ) &\leadsto^L (x ; \gamma)\\
-  (x + 1 ; (\gamma , (W ; c)) ) &\leadsto^L (x ; \gamma)
+  \langle 0 \,|\, (\gamma , \underline{\ell}) \rangle &\leadsto^L \langle \underline{\ell} \,|\, \gamma \rangle && \text{where $\ell$ is a label variable} \\
+  \langle x + 1 \,|\, (\gamma , \underline{M}) \rangle &\leadsto^L \langle x \,|\, \gamma \rangle\\
+  \langle x + 1 \,|\, (\gamma , (W ; c)) \rangle &\leadsto^L \langle x \,|\, \gamma \rangle
 \end{align*}
 
 
@@ -221,7 +223,7 @@ Halting states are those of the form $\underline{M} \triangleleft \gamma :: \squ
 
 \begin{align*}
   \ell \triangleleft \gamma :: v &\leadsto^V \underline{l} \triangleleft \gamma :: v && \text{where $\ell$ is a label variable} \\
-  x \triangleleft \gamma :: v &\leadsto^V \underline{M} \triangleleft \gamma :: v && \text{if $(\ell ; \gamma) \leadsto^{L*} (0 ; (\gamma' , \underline{M}))$} \\
+  x \triangleleft \gamma :: v &\leadsto^V \underline{M} \triangleleft \gamma :: v && \text{if $\langle \ell \,|\, \gamma \rangle \leadsto^{L*} \langle 0 \,|\, (\gamma' , \underline{M}) \rangle$} \\
   \lambda x . W \triangleleft \gamma :: v &\leadsto^V \underline{\lambda} x . W \triangleleft \gamma :: v\\
   (M , N) \triangleleft \gamma :: v &\leadsto^V M \triangleleft \gamma :: (\_ , N) \triangleleft \gamma :: v\\
   \PMV (M , (x,y).N) \triangleleft \gamma :: v &\leadsto^V M \triangleleft \gamma :: \PMV(\_ , N) \triangleleft \gamma :: v\\
@@ -251,12 +253,12 @@ We assume that there is a starting continuation $k_0 : \llbracket R_0 \rrbracket
   \langle \SUB (a.W_1, W_2) \prec \gamma \,|\, c \rangle &\leadsto^C \langle M \prec (\gamma , (N ; c) \,|\, c \rangle \\
   \langle \PMC (M, (x, y).W) \prec \gamma \,|\, c \rangle &\leadsto^C \langle W \prec (\gamma' , M_1 , M_2) \,|\, c \rangle\\ & \hspace{120pt} \text{if $M \triangleleft \gamma :: \square \leadsto^{V*} (\underline{M_1}, \underline{M_2}) \triangleleft \gamma' :: \square$}  \\
   \langle \APP (M , N) \prec \gamma \,|\, c \rangle &\leadsto^C \langle \underline{\APP} (M , \underline{N'}) \prec \gamma' \,|\, c \rangle\\ & \hspace{120pt} \text{if $N \triangleleft \gamma :: \square \leadsto^{V*} \underline{N'} \triangleleft \gamma' :: \square$} \\
-  \langle \underline{\APP} (x , \underline{N}) \prec \gamma \,|\, c \rangle &\leadsto^C \langle \underline{\APP} (\lambda x.W , \underline{N}) \prec \gamma \,|\, c \rangle\\ & \hspace{120pt} \text{if $(x ; \gamma) \leadsto^{L*} (\underline{\lambda} x.W ; \gamma')$}  \\
+  \langle \underline{\APP} (x , \underline{N}) \prec \gamma \,|\, c \rangle &\leadsto^C \langle \underline{\APP} (\lambda x.W , \underline{N}) \prec \gamma \,|\, c \rangle\\ & \hspace{120pt} \text{if $\langle x \,|\, \gamma \rangle \leadsto^{L*} \langle \underline{\lambda} x.W \,|\, \gamma' \rangle$}  \\
   \langle \underline{\APP} (\PMV (M, N_1) , \underline{N_2}) \prec \gamma \,|\, c \rangle &\leadsto^C \langle \underline{\APP} (N_1 , \underline{N}) \prec (\gamma' , \underline{M_1} , \underline{M_2}) \,|\, c \rangle\\ & \hspace{120pt} \text{if $M \triangleleft \gamma :: \square \leadsto^{V*} (\underline{M_1} , \underline{M_2}) \triangleleft \gamma' :: \square$}  \\
   \langle \underline{\APP} (\lambda x. W , \underline{N}) \prec \gamma \,|\, c \rangle &\leadsto^C \langle W \prec (\gamma , \underline{N}) \,|\, c \rangle  \\
   \langle \VAR (M) \prec \gamma \,|\, c \rangle &\leadsto^C \langle W \prec \gamma' \,|\, c' \rangle \\
     & \hspace{120pt} \text{if $M \triangleleft \gamma :: \square \leadsto^{V*} \underline{\ell} \triangleleft \gamma' :: \square$} \\
-    & \hspace{120pt} \text{and $(\ell ; \gamma') \leadsto^{L*} (0 ; (\gamma'', (W ; c')))$} \\
+    & \hspace{120pt} \text{and $\langle \ell \,|\, \gamma' \rangle \leadsto^{L*} \langle 0 \,|\, (\gamma'', (W ; c')) \rangle$} \\
 \end{align*}
 
 
