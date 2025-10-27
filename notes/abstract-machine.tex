@@ -73,7 +73,7 @@ Evaluated value terms are:
 $\underline{\ell}$ (where $\ell$ is a label variable),\,
 $\underline{\ast}$,\,
 $(\underline{M}, \underline{N})$,\,
-$\underline{\lambda x . W}$
+$\underline{\lambda} x . W$
 
 Full computation terms are:
 
@@ -117,7 +117,7 @@ Typing rules for computations:
 && \frac{\Gamma \VTS M : X \times Y \quad \Gamma, x : X , y : Y \CTS N : Z}{\Gamma \CTS \PMC(M, (x,y).N) : Z}
 \end{align*}
 
-The typing rules for evaluated value and computation terms are similar.
+The typing rules for evaluated value and computation terms are similar and we will use the same notation for both typing judgements.
 
 \clearpage
 \subsection{Environments}
@@ -169,7 +169,7 @@ CPS-translation of interpretation of computation terms $\Gamma \CTS M : A$ (i.e.
 \item $\llbracket \Gamma \CTS \SUB(a.W_1 , W_2) : X \rrbracket = \llbracket W_1 \rrbracket \; (\gamma , \llbracket W_2 \rrbracket \, \gamma \, k) \; k$
 \end{enumerate}
 
-Computation stacks $c$ for a context $\Gamma$ and type $X$ are interpreted as morphisms $K_{\LABEL}\llbracket X \rrbracket \xrightarrow{\llbracket c \rrbracket} K_{\LABEL}\llbracket R_0 \rrbracket$. 
+Computation stacks $c$ for a context $\Gamma$ and type $X$ are interpreted as morphisms $K_{\LABEL}\llbracket X \rrbracket \xrightarrow{\llbracket c \rrbracket} K_{\LABEL}\llbracket R_0 \rrbracket$.
 \begin{enumerate}
   \item ${\llbracket \square \rrbracket}_c = \ID$
   \item ${\llbracket W \triangleleft \gamma :: c \rrbracket}_c = {\llbracket c \rrbracket}_c \circ {\llbracket W \rrbracket}^{\sharp} \circ \STR \circ \langle \llbracket \gamma \rrbracket , \ID \rangle$
@@ -193,12 +193,12 @@ Environments $\gamma$ for context $\Gamma$ are interpreted as morphisms $1 \to \
 
 A lookup state for type $X$ is a pair $(x ; \gamma)$, where $x$ is a variable in $\Gamma$ (i.e.\ an index into $\Gamma$) and $\gamma$ is an environment for $\Gamma$.
 
-The halting states are: $(0 ; (\gamma , \underline{\ast}))$, $(0 ; (\gamma , \underline{\lambda x . W}))$, $(0 ; (\gamma , (\underline{M}, \underline{N})))$ and $(0 ; (W ; c))$
+The halting states are: $(0 ; (\gamma , \underline{\ast}))$, $(0 ; (\gamma , \underline{\lambda} x . W))$, $(0 ; (\gamma , (\underline{M}, \underline{N})))$ and $(0 ; (\gamma , (W ; c)))$
 
 \subsubsection{Transitions}
 
 \begin{align*}
-  (0 ; (\gamma , \underline{y}) ) &\leadsto^L (\underline{\ell} ; \gamma) && \text{where $\ell$ is a label variable} \\
+  (0 ; (\gamma , \underline{\ell}) ) &\leadsto^L (\underline{\ell} ; \gamma) && \text{where $\ell$ is a label variable} \\
   (x + 1 ; (\gamma , \underline{M}) ) &\leadsto^L (x ; \gamma)\\
   (x + 1 ; (\gamma , (W ; c)) ) &\leadsto^L (x ; \gamma)
 \end{align*}
@@ -207,127 +207,96 @@ The halting states are: $(0 ; (\gamma , \underline{\ast}))$, $(0 ; (\gamma , \un
 \subsection{Value Machine}
 \subsubsection{States}
 Value states are associated with a type $X$.
-There are two kinds of value states: evaluated value states and unevaluated value states.
 
-To define value states, we first inductively define value stacks of type $X$:
+Value states are stacks, which are inductively defined as follows.
 \begin{itemize}
   \item The empty value stack of type $X$ is denoted by $\square_X$ (or just $\square$).
   \item If $M$ is a partial value term of type $X$ in context $\Gamma$ and $\gamma$ is an environment for $\Gamma$, then $M \triangleleft \gamma :: \square_X$ is a value stack of type $X$.
   \item If $v$ is a non-empty value stack of type $X$ and $M$ is a partial value term in context $\Gamma$ (and of any type) and $\gamma$ is an environment for $\Gamma$, then $M \triangleleft \gamma :: v$ is a value stack of type $X$.
 \end{itemize}
 
-Value states of type $X$ are pairs of a flag ($\bullet$ for evaluated or $\circ$ for unevaluated) and a non-empty value stack $v$ of type $X$ and are denoted $\bullet v$ and $\circ v$, respectively.
-
-Halting states are those of the form $\bullet \underline{M} \triangleleft \gamma :: \square$.
+Halting states are those of the form $\underline{M} \triangleleft \gamma :: \square$ (i.e.\ those with only one evaluated value term on the stack).
 
 \subsubsection{Transitions}
 
 \begin{align*}
-  \circ\, \ell \triangleleft \gamma :: v &\leadsto^V \bullet\, \underline{l} \triangleleft \gamma :: v && \text{where $\ell$ is a label variable} \\
-  \circ\, x \triangleleft \gamma :: v &\leadsto^V \bullet\, \underline{M} \triangleleft \gamma :: v && \text{if $(\ell ; \gamma) \leadsto^{L*} (0 ; (\gamma' , \underline{M}))$} \\
-  \circ\, \lambda x . W \triangleleft \gamma :: v &\leadsto^V \bullet\, \underline{\lambda x . W} \triangleleft \gamma :: v\\
-  \circ\, (M , N) \triangleleft \gamma :: v &\leadsto^V \circ\, M \triangleleft \gamma :: (\_ , N) \triangleleft \gamma :: v\\
-  \circ\, \PMV (M , (x,y).N) \triangleleft \gamma :: v &\leadsto^V \circ\, M \triangleleft \gamma :: \PMV(\_ , N) \triangleleft \gamma :: v\\
-  \circ\, \ast\, \triangleleft\, \gamma :: v &\leadsto^V \bullet\, \underline{\ast} \triangleleft \gamma :: v\\
-  \bullet\, \underline{M} \triangleleft \gamma :: (\_ , N) \triangleleft \gamma' :: v &\leadsto^V \circ\, N \triangleleft \gamma :: (\underline{M} , \_) \triangleleft \gamma :: v\\
-  \bullet\, (\underline{M}, \underline{N}) \triangleleft \gamma :: \PMV(\_ , N) \triangleleft \gamma' :: v &\leadsto^V \circ\, N \triangleleft (\gamma , \underline{M}, \underline{N}) :: v\\
+  \ell \triangleleft \gamma :: v &\leadsto^V \underline{l} \triangleleft \gamma :: v && \text{where $\ell$ is a label variable} \\
+  x \triangleleft \gamma :: v &\leadsto^V \underline{M} \triangleleft \gamma :: v && \text{if $(\ell ; \gamma) \leadsto^{L*} (0 ; (\gamma' , \underline{M}))$} \\
+  \lambda x . W \triangleleft \gamma :: v &\leadsto^V \underline{\lambda} x . W \triangleleft \gamma :: v\\
+  (M , N) \triangleleft \gamma :: v &\leadsto^V M \triangleleft \gamma :: (\_ , N) \triangleleft \gamma :: v\\
+  \PMV (M , (x,y).N) \triangleleft \gamma :: v &\leadsto^V M \triangleleft \gamma :: \PMV(\_ , N) \triangleleft \gamma :: v\\
+  \ast\, \triangleleft\, \gamma :: v &\leadsto^V \underline{\ast} \triangleleft \gamma :: v\\
+  \underline{M} \triangleleft \gamma :: (\_ , N) \triangleleft \gamma' :: v &\leadsto^V N \triangleleft \gamma :: (\underline{M} , \_) \triangleleft \gamma :: v\\
+  (\underline{M}, \underline{N}) \triangleleft \gamma :: \PMV(\_ , N) \triangleleft \gamma' :: v &\leadsto^V N \triangleleft (\gamma , \underline{M}, \underline{N}) :: v\\
 \end{align*}
-
-%	\STATE{(x, \gamma) \CAT \tail}{k} &\leadsto \STATE{\gamma(x) \CAT \tail}{k}\\
-%	\intertext{\hspace*{\fill}where $x$ is a non-label variable}
-%	\\
-%  \STATE{( \PMV (M , (x,y).N), \gamma) \CAT \tail}{k} &\leadsto \STATE{( M , \gamma) \CAT (\PMV (\_ , (x,y).N) , \gamma) \CAT \tail}{k}\\
-%  \STATE{( \flag{(L, R)}, \gamma) \CAT (\PMV ( \_ , (x , y).N) , \gamma') \CAT \tail}{k} &\leadsto \STATE{( N , \gamma' [ x \mapsto (L , \gamma) , y \mapsto (R , \gamma) ]) \CAT \tail}{k}\\
-%	\\
-%  \STATE{( (L , R) , \gamma ) \CAT \tail}{k} &\leadsto \STATE{( L , \gamma ) \CAT ( (\_ , R) , \gamma) \CAT \tail}{k}\\
-%	%
-%  \STATE{( T , \gamma) \CAT ( (\_ , R) , \gamma') \CAT \tail}{k} &\leadsto \STATE{( R , \gamma' ) \CAT ((x , \_) , \gamma' [x \mapsto (T , \gamma)]) \CAT \tail}{k}\\
-%  \STATE{( T , \gamma) \CAT ( (L , \_) , \gamma') \CAT \tail}{k} &\leadsto \STATE{(\flag{(L , y)} , \gamma' [y \mapsto (T , \gamma)]) \CAT \tail}{k}\\
 
 \subsection{Computation Machine}
 
-TODO 
-
 \subsubsection{States}
 
-TODO
-
-%States are pairs $\STATE{t}{k}$, where $t$ is a stack of partial terms in an environment (a pair of a partial term and an environment) and $k$ is a stack of continuations (certain computation terms).
-%If the partial term at the top of the stack $t$ is a partial value term, then $\STATE{t}{k}$ is a \emph{value state}, otherwise $\STATE{t}{k}$ is a \emph{computation state}.
+A computation state is a triple of a computation term $\Gamma, \Gamma' \CTS W : X$ or $\Gamma, \Gamma' \CTS \underline{W} : X$ (i.e.\ a full computation term or an evaluated one), an environment $\gamma$ for $\Gamma, \Gamma'$ and a computation stack $c$ for context $\Gamma$ and type $X$.
 %
-%An \emph{environment} is a map from label variables (i.e.\ those bound by \SUB) to computation states and from non-label variables (i.e.\ all others) to full terms in an environment.
-%\vspace{10pt}
+We denote these triples by $\langle W \prec \gamma \,|\, c \rangle$.
+%
+The only halting state is $\langle \underline{\RET} (\underline{M}) \prec \gamma \,|\, \square \rangle$.
+%
+We assume that there is a starting continuation $k_0 : \llbracket R_0 \rrbracket \to R$.
 
-%% \subsubsection{Transitions}
-%% 
-%% \begin{align*}
-%% 	%
-%% 	%\intertext{Variable lookup:}
-%% 	%((x, \gamma), \tail ; k) &\leadsto \left\{
-%% 	%\begin{array}{ll}
-%% 	%	((\pi_1 \gamma (x) , \pi_2 \gamma (x)) , \tail ; \pi_3 \gamma (x)) & \text{if $\gamma (x)$ is a c.s.} \\
-%% 	%	((\pi_1 \gamma (x) , \pi_2 \gamma (x)) , \tail ; k) & \text{otherwise}
-%% 	%\end{array}
-%% 	%\right.\\
-%%   %
-%% 	\intertext{From value states to value states:}
-%% 	\STATE{(x, \gamma) \CAT \tail}{k} &\leadsto \STATE{\gamma(x) \CAT \tail}{k}\\
-%% 	\intertext{\hspace*{\fill}where $x$ is a non-label variable}
-%% 	\\
-%%   \STATE{( \PMV (M , (x,y).N), \gamma) \CAT \tail}{k} &\leadsto \STATE{( M , \gamma) \CAT (\PMV (\_ , (x,y).N) , \gamma) \CAT \tail}{k}\\
-%%   \STATE{( \flag{(L, R)}, \gamma) \CAT (\PMV ( \_ , (x , y).N) , \gamma') \CAT \tail}{k} &\leadsto \STATE{( N , \gamma' [ x \mapsto (L , \gamma) , y \mapsto (R , \gamma) ]) \CAT \tail}{k}\\
-%% 	\\
-%%   \STATE{( (L , R) , \gamma ) \CAT \tail}{k} &\leadsto \STATE{( L , \gamma ) \CAT ( (\_ , R) , \gamma) \CAT \tail}{k}\\
-%% 	%
-%%   \STATE{( T , \gamma) \CAT ( (\_ , R) , \gamma') \CAT \tail}{k} &\leadsto \STATE{( R , \gamma' ) \CAT ((x , \_) , \gamma' [x \mapsto (T , \gamma)]) \CAT \tail}{k}\\
-%%   \STATE{( T , \gamma) \CAT ( (L , \_) , \gamma') \CAT \tail}{k} &\leadsto \STATE{(\flag{(L , y)} , \gamma' [y \mapsto (T , \gamma)]) \CAT \tail}{k}\\
-%%   %(( T , \gamma ) , (\RET (\_) , \gamma') , \tail ; k ) &\leadsto (( \flag{\RET (T)} , \gamma') , \tail ; k)\\
-%% 	\intertext{\hspace*{\fill}where $T = \lambda x . M$ or $T = \flag{(L , R)}$ or $T = \ast$}
-%%   %
-%% 	% computations
-%% 	%
-%% 	\\
-%% 	\intertext{From value states to computation states:}
-%%   \STATE{( \flag{(L, R)}, \gamma) \CAT (\PMC ( \_ , (x , y).N) , \gamma') \CAT \tail}{k} &\leadsto \STATE{( N , \gamma' [ x \mapsto (L , \gamma) , y \mapsto (R , \gamma) ]) \CAT \tail}{k}\\
-%%   \STATE{( \lambda x . M , \gamma) \CAT ( \APP(\_ , N) , \gamma') }{k} &\leadsto \STATE{( M , \gamma [ x \mapsto N ])}{k}\\
-%% 	\\
-%%   \STATE{( \ell , \gamma)}{k} &\leadsto \gamma (\ell)\\
-%% 	\intertext{\hspace*{\fill}where $\ell$ is a label variable}
-%% 	\\
-%% 	\intertext{From computation states to value states:}
-%%   \STATE{( \PMC (M , (x,y).N), \gamma)}{k} &\leadsto \STATE{( M , \gamma) \CAT (\PMC (\_ , (x,y).N) , \gamma)}{k}\\
-%%   \STATE{( \APP (M , N) , \gamma )}{k} &\leadsto \STATE{( M , \gamma) \CAT (\APP (\_ , N) , \gamma)}{k}\\
-%%   \STATE{( \VAR (M) , \gamma)}{k} &\leadsto \STATE{(M , \gamma)}{k}\\
-%% 	\\
-%% 	\intertext{From computation states to computation states:}
-%%   %(( \RET (M) , \gamma) , \tail ; k ) &\leadsto ( (M , \gamma) , (\RET (\_) , \gamma) , \tail ; k)\\
-%%   %(( \flag{\RET (\_)}, \gamma) , \tail ; x.N , k) &\leadsto (( N , \gamma[ x \mapsto M]) , \tail ; k)\\
-%%   \STATE{( \RET (M) , \gamma)}{x.N \CAT k} &\leadsto \STATE{(N , \gamma[ x \mapsto (M , \gamma , k)])}{k}\\
-%%   \STATE{( \PUSH (M , x.N) , \gamma)}{k} &\leadsto \STATE{( M , \gamma )}{x.N \CAT k}\\
-%%   \STATE{( \SUB (a.M , N ), \gamma)}{k} &\leadsto \STATE{( M , \gamma [a \mapsto (N , \gamma, k)] )}{k}
-%% \end{align*}
+\subsubsection{Transitions}
 
-%% \clearpage
-%% \subsection{Examples}
+\begin{align*}
+  \langle \RET (M) \prec \gamma \,|\, c \rangle &\leadsto^C \langle \underline{\RET} (\underline{M'}) \prec \gamma' \,|\, c \rangle\\ & \hspace{120pt} \text{if $M \triangleleft \gamma :: \square \leadsto^{V*} \underline{M'} \triangleleft \gamma' :: \square$} \\
+  \langle \underline{\RET} (\underline{M}) \prec \gamma \,|\, N \triangleleft \gamma' :: c \rangle &\leadsto^C \langle N \prec (\gamma, \underline{M}) \,|\, c \rangle \\
+  \langle \PUSH (M, x.N) \prec \gamma \,|\, c \rangle &\leadsto^C \langle M \prec \gamma \,|\, N \triangleleft \gamma :: c \rangle \\
+  \langle \SUB (a.W_1, W_2) \prec \gamma \,|\, c \rangle &\leadsto^C \langle M \prec (\gamma , (N ; c) \,|\, c \rangle \\
+  \langle \PMC (M, (x, y).W) \prec \gamma \,|\, c \rangle &\leadsto^C \langle W \prec (\gamma' , M_1 , M_2) \,|\, c \rangle\\ & \hspace{120pt} \text{if $M \triangleleft \gamma :: \square \leadsto^{V*} (\underline{M_1}, \underline{M_2}) \triangleleft \gamma' :: \square$}  \\
+  \langle \APP (M , N) \prec \gamma \,|\, c \rangle &\leadsto^C \langle \underline{\APP} (M , \underline{N'}) \prec \gamma' \,|\, c \rangle\\ & \hspace{120pt} \text{if $N \triangleleft \gamma :: \square \leadsto^{V*} \underline{N'} \triangleleft \gamma' :: \square$} \\
+  \langle \underline{\APP} (x , \underline{N}) \prec \gamma \,|\, c \rangle &\leadsto^C \langle \underline{\APP} (\lambda x.W , \underline{N}) \prec \gamma \,|\, c \rangle\\ & \hspace{120pt} \text{if $(x ; \gamma) \leadsto^{L*} (\underline{\lambda} x.W ; \gamma')$}  \\
+  \langle \underline{\APP} (\PMV (M, N_1) , \underline{N_2}) \prec \gamma \,|\, c \rangle &\leadsto^C \langle \underline{\APP} (N_1 , \underline{N}) \prec (\gamma' , \underline{M_1} , \underline{M_2}) \,|\, c \rangle\\ & \hspace{120pt} \text{if $M \triangleleft \gamma :: \square \leadsto^{V*} (\underline{M_1} , \underline{M_2}) \triangleleft \gamma' :: \square$}  \\
+  \langle \underline{\APP} (\lambda x. W , \underline{N}) \prec \gamma \,|\, c \rangle &\leadsto^C \langle W \prec (\gamma , \underline{N}) \,|\, c \rangle  \\
+  \langle \VAR (M) \prec \gamma \,|\, c \rangle &\leadsto^C \langle W \prec \gamma' \,|\, c' \rangle \\
+    & \hspace{120pt} \text{if $M \triangleleft \gamma :: \square \leadsto^{V*} \underline{\ell} \triangleleft \gamma' :: \square$} \\
+    & \hspace{120pt} \text{and $(\ell ; \gamma') \leadsto^{L*} (0 ; (\gamma'', (W ; c')))$} \\
+\end{align*}
 
 
-%%  Let $M = \RET (\lambda x . x)$.
-%%  Then:
-%%  %
-%%  \begin{align*}
-%%             &  \STATE{ \big( \SUB(e_1. \PUSH (\SUB(e_2 . \RET (e_2) , \RET (e_1)) , \ell.\VAR (\ell) ) , M) ,  {\color{blue}\gamma_0 = \emptyset} \big)}{ {\color{blue} k_0} }\\
-%%    \leadsto &  \STATE{ \big( \PUSH (\SUB(e_2 . \RET (e_2) , \RET (e_1)) , \ell.\VAR (\ell) ) ,  {\color{blue}\gamma_1 = \gamma_0[e_1 \mapsto \STATE{ (M , \gamma_0)}{k_0}]} \big) }{ k_0 } \\
-%%    \leadsto &  \STATE{ \big( \SUB(e_2 . \RET (e_2) , \RET (e_1)) ,  \gamma_1 \big) }{ {\color{blue} k_1 = \ell.\VAR (\ell) , k_0} }\\
-%%    \leadsto &  \STATE{ \big( \RET (e_2) , {\color{blue}\gamma_2 = \gamma_1[e_2 \mapsto \STATE{(\RET (e_1) , \gamma_1)}{k_1}]} \big) }{ k_1 }\\
-%%    \leadsto &  \STATE{ \big( \VAR (\ell) , {\color{blue}\gamma_3 = \gamma_2[\ell \mapsto (e_2 , \gamma_2) ] } \big) }{ k_0 }\\
-%%    \leadsto &  \STATE{ \big( \ell , \gamma_3 \big) }{ k_0 }\\
-%%    \leadsto &  \STATE{ \big( e_2 , \gamma_2 \big) }{ k_0 }\\
-%%    \leadsto &  \STATE{ \big( \RET (e_1) , \gamma_1 \big) }{ k_1 }\\
-%%    \leadsto &  \STATE{ \big( \VAR (\ell) , {\color{blue}\gamma_4 = \gamma_1[\ell \mapsto (e_1 , \gamma_1) ] } \big) }{ k_0 }\\
-%%    \leadsto &  \STATE{ \big( \ell , \gamma_4 \big) }{ k_0 }\\
-%%    \leadsto &  \STATE{ \big( e_1 , \gamma_1 \big) }{ k_0 }\\
-%%    \leadsto &  \STATE{ \big( M , \gamma_0 \big) }{ k_0 }
-%%  \end{align*}
+\clearpage
+\subsection{Running the Machine}
+
+To evaluate a computation $\emptyset \CTS W : R_0$, we need to assume having a starting continuation $k_0 : \llbracket R_0 \rrbracket \to R$.
+We then start the machine in state $\langle W \prec () \,|\, \square \rangle$.
+\vspace{15pt}
+
+\begin{theorem}
+  All three machines are deterministic.
+\end{theorem}
+
+\begin{proof}
+  Immediate from transition rules. (TODO: Formalise in Agda.)
+\end{proof}
+\vspace{15pt}
+
+\begin{theorem}
+  If there exists a sequence of transitions $\langle W \prec () \,|\, \square \rangle \leadsto^{C*} \langle \underline{\RET} (\underline{M}) \prec \gamma \,|\, \square \rangle$, then
+  \[
+    \llbracket W \rrbracket \, \llbracket () \rrbracket \, k_0 = \llbracket \RET (M) \rrbracket \, \llbracket \gamma \rrbracket \, k_0,
+  \]
+  i.e.\ the machine computes correctly.
+\end{theorem}
+
+\begin{proof}
+  See Agda formalisation. (TODO: Outline proof here.) 
+\end{proof}
+\vspace{15pt}
+
+\begin{theorem}
+  There always exists a sequence of transitions $\langle W \prec () \,|\, \square \rangle \leadsto^{C*} \langle \underline{\RET} (\underline{M}) \prec \gamma \,|\, \square \rangle$ (for some $M$ and some $\gamma$), i.e.\ the computation machine halts, when started in state $\langle W \prec () \,|\, \square \rangle$.
+\end{theorem}
+
+\begin{proof}
+  TODO
+\end{proof}
+
 
 %\bibliographystyle{alpha}
 %\bibliography{references.bib}
