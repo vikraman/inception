@@ -28,13 +28,21 @@
 
 \newcommand{\STATE}[2]{\ensuremath{\langle\,#1\;|\;#2\,\rangle}}
 
-\newcommand{\unit}{\textbf{1}}
+\newcommand{\unit}{1}
+
+\newcommand{\VP}{\textbf{V}}
+
+\newcommand\emptyenv{\ensuremath{\diamond}}
+\newcommand\emptycs{\ensuremath{\square}}
+\newcommand\emptyctx{\ensuremath{\varepsilon}}
+\newcommand\cspair[2]{\ensuremath{( #1 ; #2 )}}
+\newcommand\cstack[3]{\ensuremath{#1 \triangleleft #2 :: #3}}
+\newcommand\CStack[2]{\ensuremath{\textsf{CStack}\;#1\;#2}}
+\newcommand\Env[1]{\ensuremath{\textsf{Env}\;#1}}
 
 
 \newcommand{\tail}{\textsf{tail}}
 \newcommand{\flag}[1]{{}^{\bullet}{#1}}
-
-\usepackage{wasysym}
 
 %\usepackage{showframe}
 
@@ -47,7 +55,63 @@
 \pagestyle{empty}
 \thispagestyle{empty}
 
+\subsection{Contexts}
+
+\subsubsection{Grammar}
+
+\begin{align*}
+  \text{Types:} && X \,,\, Y \,,\, Z  &:=\; \unit \mid X \Rightarrow Y \mid X \times Y \mid \LABEL\\
+  \text{Contexts:} && \Gamma \,,\, \Delta &:=\; \emptyctx \mid \Gamma , X\\
+  \text{Variables:} && \ell \,,\, x \,,\, y &:=\; h \mid t ( x )
+\end{align*}
+
+The letter $\ell$ will be used to denote variables of type $\LABEL$ exclusively, while the letters $x$ and $y$ will be used for all variables.
+
+Furthermore, we let $R_0 = V$ (this is a type) and $R = \VP$ (this is a presheaf) for the rest of the document.
+We also fix a continuation $k_0 : \llbracket R_0 \rrbracket \to \llbracket R \rrbracket$ (interpretation is given below).
+
+\subsubsection{Typing rules for membership}
+\begin{align*}
+   \frac{}{h : X \in \Gamma , X}
+  && \frac{x : X \in \Gamma}{t(x) : X \in \Gamma , Y}
+\end{align*}
+
+\subsubsection{Interpretation of types for monad T (where $T = S$ or $T = K_R$)}$ $
+
+Types are interpreted as presheaves in $\textsf{Set}^\mathbb{F}$.
+\begin{align*}
+  {\llbracket \unit \rrbracket}_T &= \top\\
+  {\llbracket X \times Y \rrbracket}_T &= {\llbracket X \rrbracket}_T \times {\llbracket Y \rrbracket}_T\\
+  {\llbracket X \Rightarrow Y \rrbracket}_T &= {\llbracket X \rrbracket}_T \Rightarrow T{\llbracket Y \rrbracket}_T\\
+  {\llbracket \LABEL \rrbracket}_T &= R
+\end{align*}
+
+If $T = K_R$, we will just write $\llbracket X \rrbracket$ instead of ${\llbracket X \rrbracket}_{K_R}$.\newline
+
+\subsubsection{Interpretation of contexts for monad T (where $T = S$ or $T = K_R$)}
+
+\begin{align*}
+  {\llbracket \emptyctx \rrbracket}_T &= \top\\
+  {\llbracket \Gamma, X \rrbracket}_T &= {\llbracket \Gamma \rrbracket}_T \times {\llbracket X \rrbracket}_T
+\end{align*}
+
+If $T = K_R$, we will just write $\llbracket \Gamma \rrbracket$ instead of ${\llbracket \Gamma \rrbracket}_{K_R}$.\newline
+
+\subsubsection{Interpretation of variables}$ $
+
+Variables $x : X \in \Gamma$ are interpreted as morphisms $\llbracket \Gamma \rrbracket \xrightarrow{\llbracket x \rrbracket} \llbracket X \rrbracket$ in $\textsf{Set}^\mathbb{F}$.
+
+\begin{align*}
+  {\llbracket h \rrbracket} &= \pi_2\\
+  {\llbracket t(x) \rrbracket} &= {\llbracket x \rrbracket}_T \circ \pi_1
+\end{align*}
+
+\vfill
+
+\clearpage
 \subsection{Terms}
+
+\subsubsection{Grammar}
 
 \begin{align*}
   \text{Full value terms:} && M \,,\, N &:=\; x \mid \ast \mid \lambda x . W \mid (M , N) \mid \PMV ( M , (x,y).N )\\
@@ -62,7 +126,7 @@
 \end{align*}
 
 
-Typing rules for full value terms:
+\subsubsection{Typing rules for full value terms}$ $
 
 \begin{align*}
    \frac{x : X \in \Gamma}{\Gamma \VTS x : X}
@@ -74,7 +138,7 @@ Typing rules for full value terms:
 && \frac{}{\Gamma \VTS \ast : \unit}
 \end{align*}
 
-Typing rules for evaluated value terms:
+\subsubsection{Typing rules for evaluated value terms}$ $
 
 \begin{align*}
   \frac{}{\Gamma \VVTS \underline{\ast} : \unit}
@@ -83,7 +147,7 @@ Typing rules for evaluated value terms:
   && \frac{\Gamma , X \CTS W : Y}{\Gamma \VVTS \underline{\lambda} W : X \Rightarrow Y}
 \end{align*}
 
-Typing rules for partial value terms:
+\subsubsection{Typing rules for partial value terms}$ $
 
 \begin{align*}
   \frac{\Gamma \VTS M : X \quad \Gamma \VTS N : Y}{\Gamma \VPTS (-_M , N) : X \times Y}
@@ -91,7 +155,7 @@ Typing rules for partial value terms:
   && \frac{\Gamma \VTS M : X \times Y \quad \Gamma, x : X , y : Y \VTS N : Z}{\Gamma \VPTS \PMV(-_M, N) : Z}
 \end{align*}
 
-Typing rules for full computation terms:
+\subsubsection{Typing rules for full computation terms}$ $
 
 \begin{align*}
    \frac{\Gamma \VTS M : X}{\Gamma \CTS \RET (M) : X}
@@ -104,57 +168,35 @@ Typing rules for full computation terms:
 && \frac{\Gamma \VTS M : X \times Y \quad \Gamma, x : X , y : Y \CTS N : Z}{\Gamma \CTS \PMC(M, (x,y).N) : Z}
 \end{align*}
 
-Typing rules for (partially) evaluated computation terms:
+\subsubsection{Typing rules for (partially) evaluated computation terms}$ $
 
 \begin{align*}
   \frac{\Gamma \VTS M : X}{\Gamma \CCTS \underline{\RET} (\underline{M}) : X}
   && \frac{\Gamma \VTS M : X \Rightarrow Y \quad \Gamma \VVTS \underline{N} : X}{\Gamma \CCTS \underline{\APP}(M, \underline{N}) : Y}
 \end{align*}
 
-\clearpage
-\subsection{Environments}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\newcommand\emptyenv{\ensuremath{\diamond}}
-\newcommand\emptycs{\ensuremath{\square}}
-\newcommand\emptyctx{\ensuremath{\varepsilon}}
-\newcommand\cspair[2]{\ensuremath{( #1 ; #2 )}}
-\newcommand\cstack[3]{\ensuremath{#1 \triangleleft #2 :: #3}}
-\newcommand\CStack[2]{\ensuremath{\textsf{CStack}\;#1\;#2}}
-\newcommand\Env[1]{\ensuremath{\textsf{Env}\;#1}}
+\subsubsection{Interpretation of full value terms for monad T (where $T = S$ or $T = K_R$)}$ $
 
-For the rest of the document, we fix a type $R_0$ and a continuation $k_0 : \llbracket R_0 \rrbracket \to \llbracket \LABEL \rrbracket$. (The interpretation of types will be given in the next section.)
+Full value terms $\Gamma \VTS M : X$ are interpreted as morphisms ${\llbracket \Gamma \rrbracket}_T \xrightarrow{{\llbracket M \rrbracket}_T} {\llbracket X \rrbracket}_T$.
 
 \begin{align*}
-  \text{Environment:} && \gamma &:=\; \emptyenv \mid \gamma , M \mid \gamma , \cspair{W}{C}\\ 
-  \text{Computation Stack:} && C &:=\; \emptycs \mid \cstack{W}{\gamma}{C}
+  {\llbracket \Gamma \VTS x : X \rrbracket}_T &= {\llbracket x \rrbracket}_T \\
+  {\llbracket \Gamma \VTS \lambda W : X \Rightarrow Y \rrbracket}_T &= \lambda {\llbracket W \rrbracket}_T \\
+  {\llbracket \Gamma \VTS (M, N) : X \times Y \rrbracket}_T &= \langle {\llbracket M \rrbracket}_T, {\llbracket N \rrbracket}_T \rangle \\
+  {\llbracket \Gamma \VTS \PMV(M , N) : X \rrbracket}_T &= {\llbracket N \rrbracket}_T \circ \alpha \circ \langle \ID , {\llbracket M \rrbracket}_T \rangle \\
+  {\llbracket \Gamma \VTS \ast : \unit \rrbracket}_T &= \top
 \end{align*}
 
-\begin{align*}
-  \frac{}{\emptyenv : \Env{\emptyctx}}
-  && \frac{\gamma : \Env{\Gamma} \quad \Gamma \VVTS \underline{M} : X }{\gamma , \underline{M} : \Env{\Gamma , X}}
-  && \frac{\gamma : \Env{\Gamma} \quad \Gamma \CTS W : X \quad C : \CStack{\Delta}{X} \quad \Gamma = \Delta, \Delta'}{\gamma , \cspair{W}{C} : \Env{\Gamma , \LABEL}}
-\end{align*}
+If $T = K_R$, we will just write $\llbracket \Gamma \VTS M : X \rrbracket$ instead of ${\llbracket \Gamma \VTS M : X \rrbracket}_{K_R}$.\newline
 
-\begin{align*}
-  \frac{}{\emptycs : \CStack{\emptyctx}{R_0}}
-  && \frac{\Gamma , Z \CTS M : X \quad \gamma : \Env{\Gamma} \quad C : \CStack{\Delta}{X} \quad \Gamma = \Delta , \Delta'}{\cstack{M}{\gamma}{C} : \CStack{\Gamma}{Z}}
-\end{align*}
 
-%\clearpage
-\subsection{Interpretation}
-Types $A$ are interpreted as presheaves $\llbracket A \rrbracket$ and contexts $\Gamma = x_1 : A_1 , \dots, x_n : A_n$ as products of presheaves $\llbracket \Gamma \rrbracket = \llbracket A_1 \rrbracket \times \dots \times \llbracket A_n \rrbracket$.
-The empty context is interpreted as the terminal object 1.
+\subsubsection{Interpretation of full computation terms for monad T (where $T = S$ or $T = K_R$)}$ $
 
-Value terms $\Gamma \VTS M : A$ are interpreted as morphisms $\llbracket \Gamma \rrbracket \xrightarrow{\llbracket M \rrbracket} \llbracket A\rrbracket$.
-\begin{enumerate}
-\item $\llbracket x_1 : A_1 , \dots, x_n : A_n \VTS x_i : A_i \rrbracket = \pi_i$
-\item $\llbracket \Gamma \VTS \lambda x.M : A \Rightarrow B \rrbracket = \lambda \llbracket M \rrbracket$
-\item $\llbracket \Gamma \VTS (M, N) : A \times B \rrbracket = \langle \llbracket M \rrbracket, \llbracket N \rrbracket \rangle$
-\item $\llbracket \Gamma \VTS \PMV(M , (x , y).N) : C \rrbracket = \llbracket N \rrbracket \circ \alpha \circ \langle \ID , \llbracket M \rrbracket \rangle$
-\item $\llbracket \Gamma \VTS \ast : \unit \rrbracket = \langle \rangle$
-\end{enumerate}
+Computation terms $\Gamma \CTS W : X$ are interpreted as morphisms ${\llbracket \Gamma \rrbracket}_T \xrightarrow{{\llbracket W \rrbracket}_T} T\llbracket X\rrbracket$.
 
-Computation terms $\Gamma \CTS M : A$ are interpreted as morphisms $\llbracket \Gamma \rrbracket \xrightarrow{{\llbracket M \rrbracket}_S} S\llbracket A\rrbracket$.
+% WORKING HERE
 
 \begin{enumerate}
   \item ${\llbracket \Gamma \CTS \RET (M) : X \rrbracket}_S = \eta \circ \llbracket M \rrbracket$
@@ -175,6 +217,32 @@ CPS-translation of interpretation of computation terms $\Gamma \CTS M : A$ (i.e.
 \item $\llbracket \Gamma \CTS \PMC(M , (x , y).W) : X \rrbracket \; \gamma \; k = (\llbracket W \rrbracket \circ \alpha \circ \langle \gamma , \llbracket M \rrbracket \rangle) k$
 \end{enumerate}
 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\clearpage
+\subsection{Environments}
+
+\begin{align*}
+  \text{Environment:} && \gamma &:=\; \emptyenv \mid \gamma , M \mid \gamma , \cspair{W}{C}\\ 
+  \text{Computation Stack:} && C &:=\; \emptycs \mid \cstack{W}{\gamma}{C}
+\end{align*}
+
+\begin{align*}
+  \frac{}{\emptyenv : \Env{\emptyctx}}
+  && \frac{\gamma : \Env{\Gamma} \quad \Gamma \VVTS \underline{M} : X }{\gamma , \underline{M} : \Env{\Gamma , X}}
+  && \frac{\gamma : \Env{\Gamma} \quad \Gamma \CTS W : X \quad C : \CStack{\Delta}{X} \quad \Gamma = \Delta, \Delta'}{\gamma , \cspair{W}{C} : \Env{\Gamma , \LABEL}}
+\end{align*}
+
+\begin{align*}
+  \frac{}{\emptycs : \CStack{\emptyctx}{R_0}}
+  && \frac{\Gamma , Z \CTS M : X \quad \gamma : \Env{\Gamma} \quad C : \CStack{\Delta}{X} \quad \Gamma = \Delta , \Delta'}{\cstack{M}{\gamma}{C} : \CStack{\Gamma}{Z}}
+\end{align*}
+
+%\clearpage
+\subsubsection{Interpretation}
+
 Computation stacks $c$ for a context $\Gamma$ and type $X$ are interpreted as morphisms $K_{\LABEL}\llbracket X \rrbracket \xrightarrow{{\llbracket c \rrbracket}_C} K_{\LABEL}\llbracket R_0 \rrbracket$.
 \begin{enumerate}
   \item ${\llbracket \square \rrbracket}_C = \ID$
@@ -193,7 +261,7 @@ Environments $\gamma$ for context $\Gamma$ are interpreted as morphisms $1 \to \
   \item $\llbracket (\gamma , (W ; c)) \rrbracket = (\llbracket \gamma \rrbracket , \llbracket W \rrbracket \llbracket \gamma \rrbracket \llbracket c \rrbracket)$
 \end{enumerate}
 
-%\clearpage
+\clearpage
 \subsection{Lookup Machine}
 \subsubsection{States}$ $
 
@@ -236,6 +304,7 @@ Halting states are those of the form $\underline{M} \triangleleft \gamma :: \squ
   (\underline{M}, \underline{N}) \triangleleft \gamma :: \PMV(\_ , N) \triangleleft \gamma' :: v &\leadsto^V N \triangleleft (\gamma , \underline{M}, \underline{N}) :: v\\
 \end{align*}
 
+\clearpage
 \subsection{Computation Machine}
 
 \subsubsection{States}
