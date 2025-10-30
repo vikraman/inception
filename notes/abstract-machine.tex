@@ -192,34 +192,32 @@ Full value terms $\Gamma \VTS M : X$ are interpreted as morphisms ${\llbracket \
 If $T = K_R$, we will just write $\llbracket \Gamma \VTS M : X \rrbracket$ instead of ${\llbracket \Gamma \VTS M : X \rrbracket}_{K_R}$.\newline
 
 
-\subsubsection{Interpretation of full computation terms for monad T (where $T = S$ or $T = K_R$)}$ $
+\subsubsection{Interpretation of full computation terms for monad $S$}$ $
 
-Computation terms $\Gamma \CTS W : X$ are interpreted as morphisms ${\llbracket \Gamma \rrbracket}_T \xrightarrow{{\llbracket W \rrbracket}_T} T\llbracket X\rrbracket$.
+Computation terms $\Gamma \CTS W : X$ are interpreted by ${\llbracket \_ \rrbracket}_S$ as morphisms ${\llbracket \Gamma \rrbracket}_S \xrightarrow{{\llbracket W \rrbracket}_S} S\llbracket X\rrbracket$.
 
-% WORKING HERE
+\begin{align*}
+  {\llbracket \Gamma \CTS \RET (M) : X \rrbracket}_S &= \eta \circ {\llbracket M \rrbracket}_S \\
+  {\llbracket \Gamma \CTS \PUSH (W_1, x.W_2) : X\rrbracket}_S &= {\llbracket W_2 \rrbracket}_S^{\sharp} \circ \STR \circ \langle \ID , {\llbracket W_1 \rrbracket}_S \rangle\\
+  {\llbracket \Gamma \CTS \APP(M , N) : X \rrbracket}_S &= \EVAL \circ \langle {\llbracket M \rrbracket}_S , {\llbracket N \rrbracket}_S \rangle\\
+  {\llbracket \Gamma \CTS \VAR(M) : X \rrbracket}_S &= \VAR_X \circ {\llbracket M \rrbracket}_S\\
+  {\llbracket \Gamma \CTS \SUB(a.W_1 , W_2) : X \rrbracket}_S &= \SUB_X \circ \langle \lambda {\llbracket W_1 \rrbracket}_S , {\llbracket W_2 \rrbracket}_S \rangle\\
+  {\llbracket \Gamma \CTS \PMC(M , (x , y).W) : X \rrbracket}_S &= {\llbracket W \rrbracket}_S \circ \alpha \circ \langle \ID , \llbracket M \rrbracket \rangle
+\end{align*}
 
-\begin{enumerate}
-  \item ${\llbracket \Gamma \CTS \RET (M) : X \rrbracket}_S = \eta \circ \llbracket M \rrbracket$
-  \item ${\llbracket \Gamma \CTS \PUSH (W_1, x.W_2) : X\rrbracket}_S = {\llbracket W_2 \rrbracket}_S^{\sharp} \circ \STR \circ \langle \ID , {\llbracket W_1 \rrbracket}_S \rangle$
-  \item ${\llbracket \Gamma \CTS \APP(M , N) : X \rrbracket}_S = \EVAL \circ \langle \llbracket M \rrbracket , \llbracket N \rrbracket \rangle$
-  \item ${\llbracket \Gamma \CTS \VAR(L) : X \rrbracket}_S = \VAR_X \circ \llbracket L \rrbracket$
-  \item ${\llbracket \Gamma \CTS \SUB(a.W_1 , W_2) : X \rrbracket}_S = \SUB_X \circ \langle \lambda {\llbracket W_1 \rrbracket}_S , {\llbracket W_2 \rrbracket}_S \rangle$
-  \item ${\llbracket \Gamma \CTS \PMC(M , (x , y).W) : X \rrbracket}_S = {\llbracket W \rrbracket}_S \circ \alpha \circ \langle \ID , \llbracket M \rrbracket \rangle$
-\end{enumerate}
+\subsubsection{Interpretation of full computation terms for monad $K_R$}$ $
 
-CPS-translation of interpretation of computation terms $\Gamma \CTS M : A$ (i.e.\ as $\llbracket \Gamma \rrbracket \xrightarrow{\llbracket M \rrbracket} K_{\LABEL}\llbracket A\rrbracket$):
-\begin{enumerate}
-\item $\llbracket \Gamma \CTS \RET (M) : X \rrbracket \;\gamma\; k = k \;(\llbracket M \rrbracket\; \gamma)$
-\item $\llbracket \Gamma \CTS \PUSH (W_1, x.W_2) : X\rrbracket \;\gamma \; k = ({\llbracket W_2 \rrbracket}^{\sharp} \circ \STR \circ \langle \gamma , \llbracket W_1 \rrbracket \;\gamma \rangle) \; k$ %\newline \hspace*{\fill} where ${\_}^{\sharp} : (X \to K_\LABEL Y) \to (K_\LABEL X \to K_\LABEL Y)$
-\item $\llbracket \Gamma \CTS \APP(M , N) : X \rrbracket \; \gamma \; k = (\EVAL \circ \langle \llbracket M \rrbracket , \llbracket N \rrbracket \rangle) \; \gamma \; k$
-\item $\llbracket \Gamma \CTS \VAR(L) : X \rrbracket \; \gamma \; k = \llbracket L \rrbracket \; \gamma$
-\item $\llbracket \Gamma \CTS \SUB(a.W_1 , W_2) : X \rrbracket = \llbracket W_1 \rrbracket \; (\gamma , \llbracket W_2 \rrbracket \, \gamma \, k) \; k$
-\item $\llbracket \Gamma \CTS \PMC(M , (x , y).W) : X \rrbracket \; \gamma \; k = (\llbracket W \rrbracket \circ \alpha \circ \langle \gamma , \llbracket M \rrbracket \rangle) k$
-\end{enumerate}
+Computation terms $\Gamma \CTS W : X$ are interpreted by $\llbracket \_ \rrbracket$ as morphisms $\llbracket \Gamma \rrbracket \xrightarrow{\llbracket W \rrbracket} K_R\llbracket X\rrbracket$.
 
+\begin{align*}
+  \llbracket \Gamma \CTS \RET (M) : X \rrbracket \;\gamma\; k &= k \;(\llbracket M \rrbracket\; \gamma)\\
+  \llbracket \Gamma \CTS \PUSH (W_1, x.W_2) : X\rrbracket \;\gamma \; k &= ({\llbracket W_2 \rrbracket}^{\sharp} \circ \STR \circ \langle \gamma , \llbracket W_1 \rrbracket \;\gamma \rangle) \; k\\
+  \llbracket \Gamma \CTS \APP(M , N) : X \rrbracket \; \gamma \; k &= (\EVAL \circ \langle \llbracket M \rrbracket , \llbracket N \rrbracket \rangle) \; \gamma \; k\\
+  \llbracket \Gamma \CTS \VAR(L) : X \rrbracket \; \gamma \; k &= \llbracket L \rrbracket \; \gamma\\
+  \llbracket \Gamma \CTS \SUB(a.W_1 , W_2) : X \rrbracket &= \llbracket W_1 \rrbracket \; (\gamma , \llbracket W_2 \rrbracket \, \gamma \, k) \; k\\
+  \llbracket \Gamma \CTS \PMC(M , (x , y).W) : X \rrbracket \; \gamma \; k &= (\llbracket W \rrbracket \circ \alpha \circ \langle \gamma , \llbracket M \rrbracket \rangle) k
+\end{align*}
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \clearpage
 \subsection{Environments}
