@@ -222,37 +222,46 @@ Computation terms $\Gamma \CTS W : X$ are interpreted by $\llbracket \_ \rrbrack
 \clearpage
 \subsection{Environments}
 
-\begin{align*}
-  \text{Environment:} && \gamma &:=\; \emptyenv \mid \gamma , M \mid \gamma , \cspair{W}{C}\\ 
-  \text{Computation Stack:} && C &:=\; \emptycs \mid \cstack{W}{\gamma}{C}
-\end{align*}
+\subsubsection{Grammar}
 
 \begin{align*}
-  \frac{}{\emptyenv : \Env{\emptyctx}}
-  && \frac{\gamma : \Env{\Gamma} \quad \Gamma \VVTS \underline{M} : X }{\gamma , \underline{M} : \Env{\Gamma , X}}
-  && \frac{\gamma : \Env{\Gamma} \quad \Gamma \CTS W : X \quad C : \CStack{\Delta}{X} \quad \Gamma = \Delta, \Delta'}{\gamma , \cspair{W}{C} : \Env{\Gamma , \LABEL}}
+  \text{Computation Stack:} && C &:=\; \emptycs \mid \cstack{W}{\gamma}{C}\\
+  \text{Environment:} && \gamma &:=\; \emptyenv \mid \gamma , M \mid \gamma , \cspair{W}{C}
 \end{align*}
+
+\subsubsection{Typing rules for computation stacks}
 
 \begin{align*}
   \frac{}{\emptycs : \CStack{\emptyctx}{R_0}}
   && \frac{\Gamma , Z \CTS M : X \quad \gamma : \Env{\Gamma} \quad C : \CStack{\Delta}{X} \quad \Gamma = \Delta , \Delta'}{\cstack{M}{\gamma}{C} : \CStack{\Gamma}{Z}}
 \end{align*}
 
-%\clearpage
-\subsubsection{Interpretation}
+\subsubsection{Typing rules for environments}
+\begin{align*}
+  \frac{}{\emptyenv : \Env{\emptyctx}}
+  && \frac{\gamma : \Env{\Gamma} \quad \Gamma \VVTS \underline{M} : X }{\gamma , \underline{M} : \Env{\Gamma , X}}
+  && \frac{\gamma : \Env{\Gamma} \quad \Gamma \CTS W : X \quad C : \CStack{\Delta}{X} \quad \Gamma = \Delta, \Delta'}{\gamma , \cspair{W}{C} : \Env{\Gamma , \LABEL}}
+\end{align*}
 
-Computation stacks $c$ for a context $\Gamma$ and type $X$ are interpreted as morphisms $K_{\LABEL}\llbracket X \rrbracket \xrightarrow{{\llbracket c \rrbracket}_C} K_{\LABEL}\llbracket R_0 \rrbracket$.
-\begin{enumerate}
-  \item ${\llbracket \square \rrbracket}_C = \ID$
-  \item ${\llbracket W \triangleleft \gamma :: c \rrbracket}_C = {\llbracket c \rrbracket}_C \circ {\llbracket W \rrbracket}^{\sharp} \circ \STR \circ \langle \llbracket \gamma \rrbracket , \ID \rangle$
-\end{enumerate}
+\subsubsection{Interpretation of computation stacks}$ $
 
-Using the starting continuation $k_0 : \llbracket R_0 \rrbracket \to R$, we can interpret computation stacks $c$ for context $\Gamma$ and type $X$ as continuations $\llbracket X \rrbracket \to R$:
+Computation stacks for any context and type $X$ are interpreted as continuations $\llbracket X \rrbracket \to R$.
+
+In order to define this interpretation inductively, we first set up an intermediate interpretation ${\llbracket \_ \rrbracket}_K$, mapping computation stacks $C$ for any context and type $X$ to morphisms $K_R\llbracket X \rrbracket \xrightarrow{{\llbracket C \rrbracket}_K} K_{\LABEL}\llbracket R_0 \rrbracket$.
+%
+\begin{align*}
+  {\llbracket \emptycs \rrbracket}_K &= \ID\\
+  {\llbracket W \triangleleft \gamma :: C \rrbracket}_K &= {\llbracket C \rrbracket}_K \circ {\llbracket W \rrbracket}^{\sharp} \circ \STR \circ \langle \llbracket \gamma \rrbracket , \ID \rangle
+\end{align*}
+
+Using the starting continuation $k_0 : \llbracket R_0 \rrbracket \to R$, we can now interpret computation stacks $C$ for any context and for type $X$ as continuations $\llbracket X \rrbracket \to R$:
 \[
-  {\llbracket c \rrbracket} (x) = \big({\llbracket c \rrbracket}_C \; (\, \eta (x) \,) \big) \; k_0
+  {\llbracket C \rrbracket} (x) = \big({\llbracket C \rrbracket}_K \; (\, \eta (x) \,) \big) \; k_0
 \]
 
-Environments $\gamma$ for context $\Gamma$ are interpreted as morphisms $1 \to \llbracket \Gamma \rrbracket$.
+\subsubsection{Interpretation of environments}$ $
+
+Environments $\gamma$ for context $\Gamma$ are interpreted as morphisms $\top \to \llbracket \Gamma \rrbracket$.
 \begin{enumerate}
   \item $\llbracket () \rrbracket = \langle \rangle$
   \item $\llbracket (\gamma , M) \rrbracket = (\llbracket \gamma \rrbracket , \llbracket M \rrbracket \llbracket \gamma \rrbracket)$
