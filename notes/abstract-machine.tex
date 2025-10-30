@@ -16,11 +16,14 @@
 \newcommand{\VAR}{\textsf{var}}
 \newcommand{\SUB}{\textsf{sub}}
 \newcommand{\VTS}{\ensuremath{\vdash^{\textsf{v}}}}
+\newcommand{\VVTS}{\ensuremath{\vdash^{\textsf{\underline{v}}}}}
+\newcommand{\VPTS}{\ensuremath{\vdash^{\overline{\textsf{v}}}}}
 \newcommand{\CTS}{\ensuremath{\vdash^{\textsf{c}}}}
+\newcommand{\CCTS}{\ensuremath{\vdash^{\textsf{\underline{c}}}}}
 \newcommand{\ID}{\textsf{id}}
 \newcommand{\STR}{\textsf{str}}
 \newcommand{\EVAL}{\textsf{ev}}
-\newcommand{\LABEL}{\textbf{V}}
+\newcommand{\LABEL}{V}
 \newcommand{\CAT}{\ensuremath{::}}
 
 \newcommand{\STATE}[2]{\ensuremath{\langle\,#1\;|\;#2\,\rangle}}
@@ -30,6 +33,8 @@
 
 \newcommand{\tail}{\textsf{tail}}
 \newcommand{\flag}[1]{{}^{\bullet}{#1}}
+
+\usepackage{wasysym}
 
 %\usepackage{showframe}
 
@@ -43,72 +48,54 @@
 \thispagestyle{empty}
 
 \subsection{Terms}
-We have value terms and computation terms.
-For the purposes of the abstract machine, we distinguish between full value terms, partial value terms and evaluated value terms.
-We also distinguish between full computation terms and evaluated computation terms.
-Every full value term is also a partial value term.
-Every evaluated value term is also a partial value term.
+
+\begin{align*}
+  \text{Full value terms:} && M \,,\, N &:=\; x \mid \ast \mid \lambda x . W \mid (M , N) \mid \PMV ( M , (x,y).N )\\
+  \text{Evaluated value terms:} && \underline{M} \,,\, \underline{N} &:=\; \underline{\ast} \mid (\underline{M} \mid \underline{N}) \mid \underline{\lambda} x . W \mid \underline{\ell} \;\text{(where $\ell$ is a label variable)}\\
+  \text{Partial value terms:} && \overline{M} \,,\, \overline{N} &:=\; (-_M , N) \mid (\underline{M} , -_N) \mid \PMV(-_M, N)\\
+  \text{Value terms:} && \mathbf{M} \,,\, \mathbf{N} &:=\; M \mid \underline{M} \mid \overline{M}\\
+  \text{Full computation terms:} && W &:=\; \RET (M) \mid \PUSH (M , N) \mid \APP (M , N) \mid \\
+                                          &&& \quad\quad \VAR (M) \mid \SUB (M, N) \mid \PMC ( M , N )\\
+  \text{(Partially) evaluated}&\\
+  \text{computation terms:} && \underline{W} &:=\; \underline{\APP} (M , \underline{N}) \mid \underline{\RET} (\underline{M})\\
+  \text{Computation terms:} && \mathbf{W} &:=\; W \mid \underline{W}
+\end{align*}
 
 
-Full value terms are:
-
-\quad
-$x$,\,
-$\ast$,\,
-$\lambda x . W$,\,
-$(L , R)$,\,
-$\PMV ( M , (x,y).N )$
-
-Evaluated value terms are:
-
-\quad
-$\underline{\ell}$ (where $\ell$ is a label variable),\,
-$\underline{\ast}$,\,
-$(\underline{M}, \underline{N})$,\,
-$\underline{\lambda} x . W$
-
-Further partial value terms are:
-
-\quad
-$(\_ , R)$,\,
-$(L , \_)$,\,
-$\flag{(L , R)}$,\,
-$\PMV(\_, (x , y).N)$
-
-Full computation terms are:
-
-\quad
-$\RET (M)$,\,
-$\PUSH (M , x.N)$,\,
-$\APP (M , N)$,\,
-$\VAR (M)$,\,
-$\SUB (a.M, N)$,\,
-$\PMC ( M , (x,y).N )$
-
-Evaluated computation terms are:
-
-\quad
-$\underline{\APP} (\underline{M} , \underline{N})$,\,
-$\underline{\RET} (\underline{M})$,\
-
-
-Typing rules for values:
+Typing rules for full value terms:
 
 \begin{align*}
    \frac{x : X \in \Gamma}{\Gamma \VTS x : X}
-&& \frac{\Gamma , x : X \CTS M : Y}{\Gamma \VTS \lambda x . M : X \Rightarrow Y}
+&& \frac{\Gamma , X \CTS M : Y}{\Gamma \VTS \lambda M : X \Rightarrow Y}
 && \frac{\Gamma \VTS M : X \quad \Gamma \VTS N : Y}{\Gamma \VTS (M , N) : X \times Y}
 \end{align*}
 \begin{align*}
-\frac{\Gamma \VTS M : X \times Y \quad \Gamma, x : X , y : Y \VTS N : Z}{\Gamma \VTS \PMV(M, (x , y).N) : Z}
+\frac{\Gamma \VTS M : X \times Y \quad \Gamma, x : X , y : Y \VTS N : Z}{\Gamma \VTS \PMV(M, N) : Z}
 && \frac{}{\Gamma \VTS \ast : \unit}
 \end{align*}
 
-Typing rules for computations:
+Typing rules for evaluated value terms:
+
+\begin{align*}
+  \frac{}{\Gamma \VVTS \underline{\ast} : \unit}
+  && \frac{\Gamma \VVTS \underline{M} : X \quad \Gamma \VVTS \underline{N} : Y}{\Gamma \VVTS (\underline{M} , \underline{N}) : X \times Y}
+  &&\frac{\ell : \LABEL \in \Gamma}{\Gamma \VVTS \underline{\ell} : \LABEL}
+  && \frac{\Gamma , X \CTS W : Y}{\Gamma \VVTS \underline{\lambda} W : X \Rightarrow Y}
+\end{align*}
+
+Typing rules for partial value terms:
+
+\begin{align*}
+  \frac{\Gamma \VTS M : X \quad \Gamma \VTS N : Y}{\Gamma \VPTS (-_M , N) : X \times Y}
+  && \frac{\Gamma \VVTS \underline{M} : X \quad \Gamma \VTS N : Y}{\Gamma \VPTS (\underline{M} , -_N) : X \times Y}
+  && \frac{\Gamma \VTS M : X \times Y \quad \Gamma, x : X , y : Y \VTS N : Z}{\Gamma \VPTS \PMV(-_M, N) : Z}
+\end{align*}
+
+Typing rules for full computation terms:
 
 \begin{align*}
    \frac{\Gamma \VTS M : X}{\Gamma \CTS \RET (M) : X}
-&& \frac{\Gamma \CTS M : X \quad \Gamma, x : X \CTS N : Y}{\Gamma \CTS \PUSH (M , x.N) : Y}
+&& \frac{\Gamma \CTS W : X \quad \Gamma, X \CTS Y}{\Gamma \CTS \PUSH (M , N) : Y}
 && \frac{\Gamma \VTS M : X \Rightarrow Y \quad \Gamma \VTS N : X}{\Gamma \CTS \APP(M, N) : Y}
 \end{align*}
 \begin{align*}
@@ -117,24 +104,41 @@ Typing rules for computations:
 && \frac{\Gamma \VTS M : X \times Y \quad \Gamma, x : X , y : Y \CTS N : Z}{\Gamma \CTS \PMC(M, (x,y).N) : Z}
 \end{align*}
 
-The typing rules for evaluated value and computation terms are similar and we will use the same notation for both typing judgements.
+Typing rules for (partially) evaluated computation terms:
+
+\begin{align*}
+  \frac{\Gamma \VTS M : X}{\Gamma \CCTS \underline{\RET} (\underline{M}) : X}
+  && \frac{\Gamma \VTS M : X \Rightarrow Y \quad \Gamma \VVTS \underline{N} : X}{\Gamma \CCTS \underline{\APP}(M, \underline{N}) : Y}
+\end{align*}
 
 \clearpage
 \subsection{Environments}
 
-We fix a type $R_0$.
-%
-The unique environment for the empty context is an empty list denoted by $()$.
-An environment $\gamma$ for context $\Gamma, \Gamma', x : X$ is either:
-\begin{itemize}
-	\item A pair $(\gamma' , \underline{M})$, where $\Gamma, \Gamma' \VTS \underline{M} : X$ is an evaluated value term and $\gamma'$ is an environment for context $\Gamma, \Gamma'$, or
-  \item A pair $(\gamma' , (W ; c))$, where $\Gamma, \Gamma' \CTS W : X$ is a full computation term, $c$ is a computation stack for context $\Gamma$ and type $X$ and $\gamma'$ is an environment for context $\Gamma, \Gamma'$.
-\end{itemize}
+\newcommand\emptyenv{\ensuremath{\diamond}}
+\newcommand\emptycs{\ensuremath{\square}}
+\newcommand\emptyctx{\ensuremath{\varepsilon}}
+\newcommand\cspair[2]{\ensuremath{( #1 ; #2 )}}
+\newcommand\cstack[3]{\ensuremath{#1 \triangleleft #2 :: #3}}
+\newcommand\CStack[2]{\ensuremath{\textsf{CStack}\;#1\;#2}}
+\newcommand\Env[1]{\ensuremath{\textsf{Env}\;#1}}
 
-The unique computation stack for the empty context and type $R_0$ is an empty list denoted by $\square$.
-A computation stack for context $\Gamma$ and type $Z$ is a triple $W \triangleleft \gamma :: c$, where $\Gamma , \Gamma' , z : Z \CTS W : X$ is a computation term, $\gamma$ is an environment for $\Gamma , \Gamma'$ and $c$ is a computation stack for $\Gamma$ and $X$.
-%We will use the notation $W \triangleleft \gamma :: c$ to denote these triples.
+For the rest of the document, we fix a type $R_0$ and a continuation $k_0 : \llbracket R_0 \rrbracket \to \llbracket \LABEL \rrbracket$. (The interpretation of types will be given in the next section.)
 
+\begin{align*}
+  \text{Environment:} && \gamma &:=\; \emptyenv \mid \gamma , M \mid \gamma , \cspair{W}{C}\\ 
+  \text{Computation Stack:} && C &:=\; \emptycs \mid \cstack{W}{\gamma}{C}
+\end{align*}
+
+\begin{align*}
+  \frac{}{\emptyenv : \Env{\emptyctx}}
+  && \frac{\gamma : \Env{\Gamma} \quad \Gamma \VVTS \underline{M} : X }{\gamma , \underline{M} : \Env{\Gamma , X}}
+  && \frac{\gamma : \Env{\Gamma} \quad \Gamma \CTS W : X \quad C : \CStack{\Delta}{X} \quad \Gamma = \Delta, \Delta'}{\gamma , \cspair{W}{C} : \Env{\Gamma , \LABEL}}
+\end{align*}
+
+\begin{align*}
+  \frac{}{\emptycs : \CStack{\emptyctx}{R_0}}
+  && \frac{\Gamma , Z \CTS M : X \quad \gamma : \Env{\Gamma} \quad C : \CStack{\Delta}{X} \quad \Gamma = \Delta , \Delta'}{\cstack{M}{\gamma}{C} : \CStack{\Gamma}{Z}}
+\end{align*}
 
 %\clearpage
 \subsection{Interpretation}
