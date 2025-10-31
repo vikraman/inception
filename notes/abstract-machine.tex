@@ -1,4 +1,8 @@
 \documentclass[acmsmall,nonacm,natbib=false]{acmart}
+
+\usepackage{geometry}
+\geometry{top=0.5cm, bottom=0.5cm}
+
 \settopmatter{printacmref=false, printccs=false, printfolios=false}
 
 \setcopyright{none}
@@ -33,12 +37,25 @@
 \newcommand{\VP}{\textbf{V}}
 
 \newcommand\emptyenv{\ensuremath{\diamond}}
+\newcommand\emptyvs{\ensuremath{\square}}
 \newcommand\emptycs{\ensuremath{\square}}
 \newcommand\emptyctx{\ensuremath{\varepsilon}}
 \newcommand\cspair[2]{\ensuremath{( #1 ; #2 )}}
 \newcommand\cstack[3]{\ensuremath{#1 \triangleleft #2 :: #3}}
+\newcommand\vstack[3]{\ensuremath{#1 \triangleleft #2 :: #3}}
 \newcommand\CStack[2]{\ensuremath{\textsf{CStack}\;#1\;#2}}
+\newcommand\VStack[2]{\ensuremath{\textsf{VStack}\;#1\;#2}}
 \newcommand\Env[1]{\ensuremath{\textsf{Env}\;#1}}
+\newcommand\LState[1]{\ensuremath{\textsf{LState}\;#1}}
+\newcommand\VState[1]{\ensuremath{\textsf{VState}\;#1}}
+
+\newcommand\BottomType[3]{\ensuremath{\textsf{BottomType}\;#1\;#2\;#3}}
+
+\newcommand\LS[2]{\ensuremath{\langle \,#1\, \| \,#2\, \rangle}}
+\newcommand\VS[1]{\ensuremath{\langle \,#1\, \rangle}}
+
+\newcommand\emptyf{\textsf{empty}}
+\newcommand\nonemptyf{\textsf{non-empty}}
 
 
 \newcommand{\tail}{\textsf{tail}}
@@ -175,6 +192,8 @@ Variables $x : X \in \Gamma$ are interpreted as morphisms $\llbracket \Gamma \rr
   && \frac{\Gamma \VTS M : X \Rightarrow Y \quad \Gamma \VVTS \underline{N} : X}{\Gamma \CCTS \underline{\APP}(M, \underline{N}) : Y}
 \end{align*}
 
+For the judgements of value terms $\mathbf{M}$ and computation terms $\mathbf{W}$ we will use the notations $\Gamma \VTS \mathbf{M} : X$ and $\Gamma \CTS \mathbf{W} : X$, respectively, which are defined in the obvious way.
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsubsection{Interpretation of full value terms for monad T (where $T = S$ or $T = K_R$)}$ $
@@ -270,45 +289,76 @@ Environments $\gamma$ for context $\Gamma$ are interpreted as morphisms $\top \t
 
 \clearpage
 \subsection{Lookup Machine}
-\subsubsection{States}$ $
+\subsubsection{Grammar for lookup states}$ $
+%
+\begin{align*}
+  \text{Lookup state:} && \mathcal{L} &:=\; \LS{x}{\gamma}
+\end{align*}
 
-A lookup state for type $X$ is a pair $\langle x \,|\, \gamma \rangle$, where $x$ is a variable in $\Gamma$ (i.e.\ an index into $\Gamma$) and $\gamma$ is an environment for $\Gamma$.
+\subsubsection{Typing rules for lookup states}
 
-The halting states are: $\langle 0 \,|\, (\gamma , \underline{\ast}) \rangle$, $\langle 0 \,|\, (\gamma , \underline{\lambda} x . W) \rangle$, $\langle 0 \,|\, (\gamma , (\underline{M}, \underline{N})) \rangle$ and $\langle 0 \,|\, (\gamma , (W ; c)) \rangle$
+\begin{align*}
+  \frac{x : X \in \Gamma \quad \Env{\Gamma}}{\LS{x}{\gamma} : \LState{X}}
+\end{align*}
+
+\subsubsection{Halting lookup states}$ $
+
+The halting states are: $\LS{0}{\gamma , \underline{\ast}}$, $\LS{0}{\gamma , \underline{\lambda} W}$, $\LS{0}{\gamma , (\underline{M}, \underline{N})}$ and $\LS{0}{\gamma , \cspair{W}{C}}$
 
 \subsubsection{Transitions}
 
 \begin{align*}
-  \langle 0 \,|\, (\gamma , \underline{\ell}) \rangle &\leadsto^L \langle \underline{\ell} \,|\, \gamma \rangle && \text{where $\ell$ is a label variable} \\
-  \langle x + 1 \,|\, (\gamma , \underline{M}) \rangle &\leadsto^L \langle x \,|\, \gamma \rangle\\
-  \langle x + 1 \,|\, (\gamma , (W ; c)) \rangle &\leadsto^L \langle x \,|\, \gamma \rangle
+  \LS{0}{\gamma , \underline{\ell}} &\leadsto^L \LS{\underline{\ell}}{\gamma} && \text{where $\ell$ is a label variable} \\
+  \LS{x + 1}{\gamma , \underline{M}} &\leadsto^L \LS{x}{\gamma}\\
+  \LS{x + 1}{\gamma , \cspair{W}{C}} &\leadsto^L \LS{x}{\gamma}
 \end{align*}
 
 
 \subsection{Value Machine}
-\subsubsection{States}
-Value states are associated with a type $X$.
 
-Value states are stacks, which are inductively defined as follows.
-\begin{itemize}
-  \item The empty value stack of type $X$ is denoted by $\square_X$ (or just $\square$).
-  \item If $M$ is a partial value term of type $X$ in context $\Gamma$ and $\gamma$ is an environment for $\Gamma$, then $M \triangleleft \gamma :: \square_X$ is a value stack of type $X$.
-  \item If $v$ is a non-empty value stack of type $X$ and $M$ is a partial value term in context $\Gamma$ (and of any type) and $\gamma$ is an environment for $\Gamma$, then $M \triangleleft \gamma :: v$ is a value stack of type $X$.
-\end{itemize}
+\subsubsection{Grammar for value states}$ $
+\begin{align*}
+  \text{Value stacks:} && \Xi &:=\; \emptyvs \mid \vstack{\mathbf{M}}{\gamma}{\Xi}\\
+  \text{Value states:} && \mathcal{V} &:=\; \VS{\Xi}\\
+  \text{Emptiness flag:} && b &:=\; \emptyf \mid \nonemptyf\\
+  \text{Correctness of bottom type:} && d &:=\; (b , X , Y)
+\end{align*}
 
-Halting states are those of the form $\underline{M} \triangleleft \gamma :: \square$ (i.e.\ those with only one evaluated value term on the stack).
+\subsubsection{Typing rules for value stacks}
+
+\begin{align*}
+  \frac{}{(\emptyf , X , X)    : \BottomType{\empty}{X}{X}} &&
+  \frac{}{(\nonemptyf , X , Y) : \BottomType{\nonemptyf}{X}{Y}}
+\end{align*}
+\begin{align*}
+  \frac{}{\emptyvs : \VStack{\emptyf}{X}} &&
+  \frac{\Gamma \VTS \mathbf{M} : X \quad \gamma : \Env{\Gamma} \quad \Xi : \VStack{b}{Y} \quad d : \BottomType{b}{X}{Y}}{\vstack{\mathbf{M}}{\gamma}{\Xi} : \VStack{\nonemptyf}{X}}
+\end{align*}
+
+\subsubsection{Typing rules for value states}
+
+\begin{align*}
+  \frac{\Xi : \VStack{\nonemptyf}{X}}{\VS{\Xi} : \VState{X}}
+\end{align*}
+
+\subsubsection{Halting value states}
+
+The only halting state is: $\underline{M} \triangleleft \gamma :: \emptyvs$
 
 \subsubsection{Transitions}
 
+% WORKING HERE
+%%%%%%%%%%%%%%%%%%%%%%%%
+
 \begin{align*}
-  \ell \triangleleft \gamma :: v &\leadsto^V \underline{l} \triangleleft \gamma :: v && \text{where $\ell$ is a label variable} \\
-  x \triangleleft \gamma :: v &\leadsto^V \underline{M} \triangleleft \gamma :: v && \text{if $\langle \ell \,|\, \gamma \rangle \leadsto^{L*} \langle 0 \,|\, (\gamma' , \underline{M}) \rangle$} \\
-  \lambda x . W \triangleleft \gamma :: v &\leadsto^V \underline{\lambda} x . W \triangleleft \gamma :: v\\
-  (M , N) \triangleleft \gamma :: v &\leadsto^V M \triangleleft \gamma :: (\_ , N) \triangleleft \gamma :: v\\
-  \PMV (M , (x,y).N) \triangleleft \gamma :: v &\leadsto^V M \triangleleft \gamma :: \PMV(\_ , N) \triangleleft \gamma :: v\\
-  \ast\, \triangleleft\, \gamma :: v &\leadsto^V \underline{\ast} \triangleleft \gamma :: v\\
-  \underline{M} \triangleleft \gamma :: (\_ , N) \triangleleft \gamma' :: v &\leadsto^V N \triangleleft \gamma :: (\underline{M} , \_) \triangleleft \gamma :: v\\
-  (\underline{M}, \underline{N}) \triangleleft \gamma :: \PMV(\_ , N) \triangleleft \gamma' :: v &\leadsto^V N \triangleleft (\gamma , \underline{M}, \underline{N}) :: v\\
+  \VS{\ell \triangleleft \gamma :: \Xi} &\leadsto^V \VS{\underline{\ell} \triangleleft \gamma :: \Xi} && \text{where $\ell$ is a label variable} \\
+  \VS{x \triangleleft \gamma :: \Xi} &\leadsto^V \VS{\underline{M} \triangleleft \gamma :: \Xi} && \text{if $\LS{x}{\gamma} \leadsto^{L*} \LS{0}{\gamma' , \underline{M}}$} \\
+  \VS{\lambda x . W \triangleleft \gamma :: \Xi} &\leadsto^V \VS{\underline{\lambda} x . W \triangleleft \gamma :: \Xi} \\
+  \VS{(M , N) \triangleleft \gamma :: \Xi} &\leadsto^V \VS{M \triangleleft \gamma :: (-_M , N) \triangleleft \gamma :: \Xi}\\
+  \VS{\PMV (M , (x,y).N) \triangleleft \gamma :: \Xi} &\leadsto^V \VS{M \triangleleft \gamma :: \PMV(-_M , N) \triangleleft \gamma :: \Xi}\\
+  \VS{\ast\, \triangleleft\, \gamma :: \Xi} &\leadsto^V \VS{\underline{\ast} \triangleleft \gamma :: \Xi}\\
+  \VS{\underline{M'} \triangleleft \gamma :: (-_M , N) \triangleleft \gamma' :: \Xi} &\leadsto^V \VS{N \triangleleft \gamma :: (\underline{M'} , -_N) \triangleleft \gamma :: \Xi}\\
+  \VS{(\underline{M'}, \underline{N'}) \triangleleft \gamma :: \PMV(-_M , N) \triangleleft \gamma' :: \Xi} &\leadsto^V \VS{N \triangleleft (\gamma , \underline{M'}, \underline{N'}) :: \Xi}\\
 \end{align*}
 
 \clearpage
