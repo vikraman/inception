@@ -406,8 +406,7 @@ The only halting state is: $\CSB{\underline{\RET}(\underline{M})}{\gamma}{\empty
 \clearpage
 \subsection{Running the Machine}
 
-To evaluate a computation $\emptyset \CTS W : R_0$, we need to assume having a starting continuation $k_0 : \llbracket R_0 \rrbracket \to R$.
-We then start the machine in state $\langle W \prec () \,|\, \square \rangle$.
+To evaluate a computation $\emptyset \CTS W : R_0$ we start the machine in state $\CSA{W}{\emptyenv}{\emptycs}$.
 \vspace{15pt}
 
 \begin{theorem}
@@ -420,9 +419,9 @@ We then start the machine in state $\langle W \prec () \,|\, \square \rangle$.
 \vspace{15pt}
 
 \begin{theorem}
-  If there exists a sequence of transitions $\langle W \prec () \,|\, \square \rangle \leadsto^{C*} \langle \underline{\RET} (\underline{M}) \prec \gamma \,|\, \square \rangle$, then
+  If there exists a sequence of transitions $\CSA{W}{\emptyenv}{\emptycs} \leadsto^{C*} \CSB{\underline{\RET} (\underline{M})}{\gamma}{\emptycs}$, then
   \[
-    \llbracket W \rrbracket \, \llbracket () \rrbracket \, k_0 = \llbracket \RET (M) \rrbracket \, \llbracket \gamma \rrbracket \, k_0,
+    \llbracket W \rrbracket \, \llbracket \emptyenv \rrbracket \, k_0 = \llbracket \RET (M) \rrbracket \, \llbracket \gamma \rrbracket \, k_0,
   \]
   i.e.\ the machine computes correctly.
 \end{theorem}
@@ -433,7 +432,7 @@ We then start the machine in state $\langle W \prec () \,|\, \square \rangle$.
 \vspace{15pt}
 
 \begin{theorem}
-  There always exists a sequence of transitions $\langle W \prec () \,|\, \square \rangle \leadsto^{C*} \langle \underline{\RET} (\underline{M}) \prec \gamma \,|\, \square \rangle$ (for some $M$ and some $\gamma$), i.e.\ the computation machine halts, when started in state $\langle W \prec () \,|\, \square \rangle$.
+  There always exists a sequence of transitions $\CSA{W}{\emptyenv}{\emptycs} \leadsto^{C*} \CSB{\underline{\RET} (\underline{M})}{\gamma}{\emptycs}$ (for some $M$ and some $\gamma$), i.e.\ the computation machine halts, when started in state $\CSA{W}{\emptyenv}{\emptycs}$.
 \end{theorem}
 
 \begin{proof}
