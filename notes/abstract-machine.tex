@@ -48,11 +48,14 @@
 \newcommand\Env[1]{\ensuremath{\textsf{Env}\;#1}}
 \newcommand\LState[1]{\ensuremath{\textsf{LState}\;#1}}
 \newcommand\VState[1]{\ensuremath{\textsf{VState}\;#1}}
+\newcommand\CState{\textsf{CState}}
 
 \newcommand\BottomType[3]{\ensuremath{\textsf{BottomType}\;#1\;#2\;#3}}
 
 \newcommand\LS[2]{\ensuremath{\langle \,#1\, \| \,#2\, \rangle}}
 \newcommand\VS[1]{\ensuremath{\langle \,#1\, \rangle}}
+\newcommand\CSA[3]{\ensuremath{\circ\langle \,#1\, \prec \,#2\, \| \,#3\, \rangle}}
+\newcommand\CSB[3]{\ensuremath{\bullet\langle \,#1\, \prec \,#2\, \| \,#3\, \rangle}}
 
 \newcommand\emptyf{\textsf{empty}}
 \newcommand\nonemptyf{\textsf{non-empty}}
@@ -303,14 +306,14 @@ Environments $\gamma$ for context $\Gamma$ are interpreted as morphisms $\top \t
 
 \subsubsection{Halting lookup states}$ $
 
-The halting states are: $\LS{0}{\gamma , \underline{\ast}}$, $\LS{0}{\gamma , \underline{\lambda} W}$, $\LS{0}{\gamma , (\underline{M}, \underline{N})}$ and $\LS{0}{\gamma , \cspair{W}{C}}$
+The halting states are: $\LS{h}{\gamma , \underline{\ast}}$, $\LS{h}{\gamma , \underline{\lambda} W}$, $\LS{h}{\gamma , (\underline{M}, \underline{N})}$ and $\LS{h}{\gamma , \cspair{W}{C}}$
 
 \subsubsection{Transitions}
 
 \begin{align*}
-  \LS{0}{\gamma , \underline{\ell}} &\leadsto^L \LS{\underline{\ell}}{\gamma} && \text{where $\ell$ is a label variable} \\
-  \LS{x + 1}{\gamma , \underline{M}} &\leadsto^L \LS{x}{\gamma}\\
-  \LS{x + 1}{\gamma , \cspair{W}{C}} &\leadsto^L \LS{x}{\gamma}
+  \LS{h}{\gamma , \underline{\ell}} &\leadsto^L \LS{\underline{\ell}}{\gamma} && \text{where $\ell$ is a label variable} \\
+  \LS{t(x)}{\gamma , \underline{M}} &\leadsto^L \LS{x}{\gamma}\\
+  \LS{t(x)}{\gamma , \cspair{W}{C}} &\leadsto^L \LS{x}{\gamma}
 \end{align*}
 
 
@@ -347,15 +350,12 @@ The only halting state is: $\underline{M} \triangleleft \gamma :: \emptyvs$
 
 \subsubsection{Transitions}
 
-% WORKING HERE
-%%%%%%%%%%%%%%%%%%%%%%%%
-
 \begin{align*}
   \VS{\ell \triangleleft \gamma :: \Xi} &\leadsto^V \VS{\underline{\ell} \triangleleft \gamma :: \Xi} && \text{where $\ell$ is a label variable} \\
-  \VS{x \triangleleft \gamma :: \Xi} &\leadsto^V \VS{\underline{M} \triangleleft \gamma :: \Xi} && \text{if $\LS{x}{\gamma} \leadsto^{L*} \LS{0}{\gamma' , \underline{M}}$} \\
+  \VS{x \triangleleft \gamma :: \Xi} &\leadsto^V \VS{\underline{M} \triangleleft \gamma :: \Xi} && \text{if $\LS{x}{\gamma} \leadsto^{L*} \LS{h}{\gamma' , \underline{M}}$} \\
   \VS{\lambda x . W \triangleleft \gamma :: \Xi} &\leadsto^V \VS{\underline{\lambda} x . W \triangleleft \gamma :: \Xi} \\
   \VS{(M , N) \triangleleft \gamma :: \Xi} &\leadsto^V \VS{M \triangleleft \gamma :: (-_M , N) \triangleleft \gamma :: \Xi}\\
-  \VS{\PMV (M , (x,y).N) \triangleleft \gamma :: \Xi} &\leadsto^V \VS{M \triangleleft \gamma :: \PMV(-_M , N) \triangleleft \gamma :: \Xi}\\
+  \VS{\PMV (M , N) \triangleleft \gamma :: \Xi} &\leadsto^V \VS{M \triangleleft \gamma :: \PMV(-_M , N) \triangleleft \gamma :: \Xi}\\
   \VS{\ast\, \triangleleft\, \gamma :: \Xi} &\leadsto^V \VS{\underline{\ast} \triangleleft \gamma :: \Xi}\\
   \VS{\underline{M'} \triangleleft \gamma :: (-_M , N) \triangleleft \gamma' :: \Xi} &\leadsto^V \VS{N \triangleleft \gamma :: (\underline{M'} , -_N) \triangleleft \gamma :: \Xi}\\
   \VS{(\underline{M'}, \underline{N'}) \triangleleft \gamma :: \PMV(-_M , N) \triangleleft \gamma' :: \Xi} &\leadsto^V \VS{N \triangleleft (\gamma , \underline{M'}, \underline{N'}) :: \Xi}\\
@@ -364,31 +364,42 @@ The only halting state is: $\underline{M} \triangleleft \gamma :: \emptyvs$
 \clearpage
 \subsection{Computation Machine}
 
-\subsubsection{States}
+\subsubsection{Grammar for computation states}$ $
+\begin{align*}
+  \text{Computation states:} && Q &:=\; \CSA{W}{\gamma}{C} \;\mid\; \CSB{\underline{W}}{\gamma}{C}
+\end{align*}
 
-A computation state is a triple of a computation term $\Gamma, \Gamma' \CTS W : X$ or $\Gamma, \Gamma' \CTS \underline{W} : X$ (i.e.\ a full computation term or an evaluated one), an environment $\gamma$ for $\Gamma, \Gamma'$ and a computation stack $c$ for context $\Gamma$ and type $X$.
-%
-We denote these triples by $\langle W \prec \gamma \,|\, c \rangle$.
-%
-The only halting state is $\langle \underline{\RET} (\underline{M}) \prec \gamma \,|\, \square \rangle$.
-%
-We assume that there is a starting continuation $k_0 : \llbracket R_0 \rrbracket \to R$.
+\subsubsection{Typing rules for computation states}
+
+\begin{align*}
+  \frac{\Gamma \CTS W : X \quad \gamma : \Env{\Gamma} \quad C : \CStack{\Delta}{X} \quad \Gamma = \Delta , \Delta'}{(\CSA{W}{\gamma}{C}    : \CState}\\
+  \frac{\Gamma \CCTS \underline{W} : X \quad \gamma : \Env{\Gamma} \quad C : \CStack{\Delta}{X} \quad \Gamma = \Delta , \Delta'}{(\CSB{\underline{W}}{\gamma}{C}    : \CState}
+\end{align*}
+
+\subsubsection{Halting computation states}
+
+The only halting state is: $\CSB{\underline{\RET}(\underline{M})}{\gamma}{\emptycs}$
+
+% WORKING HERE
+%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsubsection{Transitions}
 
 \begin{align*}
-  \langle \RET (M) \prec \gamma \,|\, c \rangle &\leadsto^C \langle \underline{\RET} (\underline{M'}) \prec \gamma' \,|\, c \rangle\\ & \hspace{120pt} \text{if $M \triangleleft \gamma :: \square \leadsto^{V*} \underline{M'} \triangleleft \gamma' :: \square$} \\
-  \langle \underline{\RET} (\underline{M}) \prec \gamma \,|\, N \triangleleft \gamma' :: c \rangle &\leadsto^C \langle N \prec (\gamma, \underline{M}) \,|\, c \rangle \\
-  \langle \PUSH (M, x.N) \prec \gamma \,|\, c \rangle &\leadsto^C \langle M \prec \gamma \,|\, N \triangleleft \gamma :: c \rangle \\
-  \langle \SUB (a.W_1, W_2) \prec \gamma \,|\, c \rangle &\leadsto^C \langle M \prec (\gamma , (N ; c) \,|\, c \rangle \\
-  \langle \PMC (M, (x, y).W) \prec \gamma \,|\, c \rangle &\leadsto^C \langle W \prec (\gamma' , M_1 , M_2) \,|\, c \rangle\\ & \hspace{120pt} \text{if $M \triangleleft \gamma :: \square \leadsto^{V*} (\underline{M_1}, \underline{M_2}) \triangleleft \gamma' :: \square$}  \\
-  \langle \APP (M , N) \prec \gamma \,|\, c \rangle &\leadsto^C \langle \underline{\APP} (M , \underline{N'}) \prec \gamma' \,|\, c \rangle\\ & \hspace{120pt} \text{if $N \triangleleft \gamma :: \square \leadsto^{V*} \underline{N'} \triangleleft \gamma' :: \square$} \\
-  \langle \underline{\APP} (x , \underline{N}) \prec \gamma \,|\, c \rangle &\leadsto^C \langle \underline{\APP} (\lambda x.W , \underline{N}) \prec \gamma \,|\, c \rangle\\ & \hspace{120pt} \text{if $\langle x \,|\, \gamma \rangle \leadsto^{L*} \langle \underline{\lambda} x.W \,|\, \gamma' \rangle$}  \\
-  \langle \underline{\APP} (\PMV (M, N_1) , \underline{N_2}) \prec \gamma \,|\, c \rangle &\leadsto^C \langle \underline{\APP} (N_1 , \underline{N}) \prec (\gamma' , \underline{M_1} , \underline{M_2}) \,|\, c \rangle\\ & \hspace{120pt} \text{if $M \triangleleft \gamma :: \square \leadsto^{V*} (\underline{M_1} , \underline{M_2}) \triangleleft \gamma' :: \square$}  \\
-  \langle \underline{\APP} (\lambda x. W , \underline{N}) \prec \gamma \,|\, c \rangle &\leadsto^C \langle W \prec (\gamma , \underline{N}) \,|\, c \rangle  \\
-  \langle \VAR (M) \prec \gamma \,|\, c \rangle &\leadsto^C \langle W \prec \gamma' \,|\, c' \rangle \\
-    & \hspace{120pt} \text{if $M \triangleleft \gamma :: \square \leadsto^{V*} \underline{\ell} \triangleleft \gamma' :: \square$} \\
-    & \hspace{120pt} \text{and $\langle \ell \,|\, \gamma' \rangle \leadsto^{L*} \langle 0 \,|\, (\gamma'', (W ; c')) \rangle$} \\
+  \CSA{\RET (M)}{\gamma}{C} &\leadsto^C \CSB{\underline{\RET} (\underline{M'})}{\gamma'}{C}\\ & \hspace{120pt} \text{if $\VS{\vstack{M}{\gamma}{\emptyvs}} \leadsto^{V*} \VS{\vstack{\underline{M'}}{\gamma'}{\emptyvs}}$} \\
+  \CSB{\underline{\RET} (\underline{M})}{\gamma}{\cstack{N}{\gamma'}{C}} &\leadsto^C \CSA{N}{\gamma, \underline{M}}{C} \\
+  \CSA{\PUSH (M, N)}{\gamma}{C} &\leadsto^C \CSA{M}{\gamma}{\cstack{N}{\gamma}{C}} \\
+  \CSA{\SUB (W_1, W_2)}{\gamma}{C} &\leadsto^C \CSA{M}{\gamma , \cspair{N}{C}}{C} \\
+  \CSA{\PMC (M, W)}{\gamma}{C} &\leadsto^C \CSA{W}{\gamma' , M_1 , M_2}{C}\\ & \hspace{120pt} \text{if $\VS{\vstack{M}{\gamma}{\emptyvs}} \leadsto^{V*} \VS{\vstack{(\underline{M_1}, \underline{M_2})}{\gamma'}{\emptyvs}}$}  \\
+  \CSA{\APP (M , N)}{\gamma}{C} &\leadsto^C \CSB{\underline{\APP} (M , \underline{N'})}{\gamma'}{C}\\ & \hspace{120pt} \text{if $\VS{\vstack{N}{\gamma}{\emptyvs}} \leadsto^{V*} \VS{\vstack{\underline{N'}}{\gamma'}{\emptyvs}}$} \\
+  \CSB{\underline{\APP} (x , \underline{N})}{\gamma}{C} &\leadsto^C \CSB{\underline{\APP} (\lambda W , \underline{N})}{\gamma}{C}\\ & \hspace{120pt} \text{if $\LS{x}{\gamma} \leadsto^{L*} \LS{\underline{\lambda} W}{\gamma'}$}  \\
+  \CSB{\underline{\APP} (\PMV (M, N_1) , \underline{N_2})}{\gamma}{C} &\leadsto^C \CSB{\underline{\APP} (N_1 , \underline{N})}{\gamma' , \underline{M_1} , \underline{M_2}}{C}\\ & \hspace{120pt} \text{if $\VS{\vstack{M}{\gamma}{\emptyvs}} \leadsto^{V*} \VS{\vstack{(\underline{M_1} , \underline{M_2})}{\gamma'}{\emptyvs}}$}  \\
+  \CSB{\underline{\APP} (\lambda W , \underline{N})}{\gamma}{C} &\leadsto^C \CSA{W}{\gamma , \underline{N}}{C}  \\
+  \CSA{\VAR (M)}{\gamma}{C} &\leadsto^C \CSA{W}{\gamma'}{C'} \\
+    & \hspace{120pt} \text{if $\VS{\vstack{M}{\gamma}{\emptyvs}} \leadsto^{V*} \VS{\vstack{\underline{\ell}}{\gamma'}{\emptyvs}}$} \\
+    & \hspace{120pt} \text{and $\LS{\ell}{\gamma'} \leadsto^{L*} \LS{h}{\gamma'', \cspair{W}{C'}}$} \\
 \end{align*}
 
 
