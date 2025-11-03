@@ -504,7 +504,7 @@ ex7 = push (sub (var (pm (pair (var h) unit) (var (t h)))) (return unit)) (retur
 
 -- call agda2-compute-normalised in the hole below
 
-_ : comp-eval ex7 ≡ 
+_ : comp-eval ex7 ≡
 
       steps
       (           ∘⟨ push (sub (var (pm (pair (var h) unit) (var (t h)))) (return unit)) (return (var h)) ⊰ ∗ ╎ ◻ ⟩
@@ -528,4 +528,3 @@ _ : comp-eval ex7 ≡
       ret (trans (cong (λ k → k tt) (extensionality (λ z → refl))) refl)
 
 _ = refl
-
