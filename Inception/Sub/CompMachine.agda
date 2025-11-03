@@ -199,7 +199,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     -- app-eval-rec (var i) N γ π cs πₓ wk≡₀ (suc n) with lookup (wk-mem π i) γ
     app-eval-rec (var i) N γ π cs πₓ wk≡₀ n with lookup (wk-mem π i) γ
     ... | steps i>>T (found-lam {W = W} {γ = γ₁}) i≡T π₁ w≡γ with app-eval-rec (lam W) N γ π₁ cs πₓ wk≡₀ n
-    ... | steps {T = T} W>WT HT S≡T π' =
+    ... | steps {T = T} W>WT HT S≡T πx =
 
                  steps
 
@@ -217,10 +217,10 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                      ≡⟨ S≡T ⟩
                       ⟦ T ⟧ᶜꟴ ∎)
 
-                    π'
+                    πx
 
     app-eval-rec (lam W) N γ π cs πₓ wk≡₀ n with comp-eval-rec W (γ ﹐ N) (wk-cong π) cs (wk-wk πₓ) wk≡₀ n
-    ... | steps {T = T} W>WT HT S≡T π' =
+    ... | steps {T = T} W>WT HT S≡T πx =
 
                   steps
 
@@ -230,7 +230,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
                      S≡T
 
-                     (wk-trans π' (wk-wk wk-id))
+                     (wk-trans πx (wk-wk wk-id))
 
     app-eval-rec (pm M₁ N₁) N γ π cs πₓ wk≡₀ n with val-eval-rec M₁ γ π
     ... | steps {T = ∙ (⭭ pa̲i̲r̲ {X = X} {Y = Y} LHS RHS ⊲ γ₁ ∷ □) {↥ = 🗆}} M>T ∙T M≡T π' wk≡ with wk-val-trans N₁ (wk-cong (wk-cong π')) (wk-cong (wk-cong π))
@@ -247,7 +247,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                        ≡⟨ cong ⟦ πₓ ⟧ʷ wk≡ ⟩ ⟦ πₓ ⟧ʷ ⟦ γ ⟧ᴱ
                        ≡⟨ wk≡₀ ⟩ ⟦ topCsEnv cs ⟧ᴱ ∎)
                       n
-    ...          | steps {T = T} N>NT NT S≡T π'' rewrite (sym eq) =
+    ...          | steps {T = T} N>NT NT S≡T πx rewrite (sym eq) =
 
                  steps
 
@@ -290,7 +290,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                       ≡⟨ S≡T ⟩
                      ⟦ T ⟧ᶜꟴ ∎)
 
-                    (wk-trans π'' (wk-wk (wk-wk π')))
+                    (wk-trans πx (wk-wk (wk-wk π')))
 
     comp-eval-rec : (W : Γ' ⊢ᶜ X) → (γ : Env Γ) → (π : Wk Γ Γ') → (cs : CompStack Δ X) → (πₓ : Wk Γ Δ)
                   → (wk≡₀ : ⟦ πₓ ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → (n : ℕ)
@@ -325,7 +325,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                     ≡⟨ cong ⟦ π₁ ⟧ʷ wk≡₀ ⟩ ⟦ π₁ ⟧ʷ ⟦ γ' ⟧ᴱ
                     ≡⟨ wk≡₁ ⟩ ⟦ topCsEnv cs ⟧ᴱ ∎)
                    n
-    ... | steps {T = ∙⟨ r̲e̲t̲u̲r̲n̲  M₂ ⊰ γ₂ ╎ ◻ ⟩} M'>T ret S≡T π'' =
+    ... | steps {T = ∙⟨ r̲e̲t̲u̲r̲n̲  M₂ ⊰ γ₂ ╎ ◻ ⟩} M'>T ret S≡T πx =
 
                    steps
 
@@ -356,7 +356,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                      ≡⟨ S≡T ⟩
                        (⟦ toVal M₂ ⟧ᵛ ； η) ⟦ γ₂ ⟧ᴱ ⟦ ◻ ⟧ᴷ ∎)
 
-                   (wk-trans π'' (wk-wk π'))
+                   (wk-trans πx (wk-wk π'))
 
     comp-eval-rec (pm {A = X} {B = Y} M W) γ π cs πₓ wk≡₀ n with val-eval-rec {X = X `× Y} M γ π
     ...  | steps {T = ∙ ((⭭_ {X = X `× Y} (pa̲i̲r̲ LHS RHS) ⊲ γ' ∷ □) {↥ = 🗆})} M>T ∙T M≡T π' wk≡ with
@@ -371,7 +371,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                       ≡⟨ cong ⟦ πₓ ⟧ʷ wk≡ ⟩ ⟦ πₓ ⟧ʷ ⟦ γ ⟧ᴱ
                       ≡⟨ wk≡₀ ⟩ ⟦ topCsEnv cs ⟧ᴱ ∎)
                      n
-    ...   | steps {T = T} W>T HT S≡T π₁ with wk-comp-trans W (wk-cong (wk-cong π')) (wk-cong (wk-cong π))
+    ...   | steps {T = T} W>T HT S≡T πx with wk-comp-trans W (wk-cong (wk-cong π')) (wk-cong (wk-cong π))
     ...     | eq rewrite (sym eq) =
 
                 steps
@@ -388,12 +388,12 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                     ≡⟨ S≡T ⟩
                      ⟦ T ⟧ᶜꟴ ∎)
 
-                   (wk-trans π₁ (wk-wk (wk-wk π')))
+                   (wk-trans πx (wk-wk (wk-wk π')))
 
     -- comp-eval-rec (push W V) γ π cs πₓ wk≡₀ zero = {!!}
     -- comp-eval-rec (push W V) γ π cs πₓ wk≡₀ (suc n) with comp-eval-rec W γ π (((wk-comp (wk-cong π) V) ⊲ γ ⦂⦂ cs) {wk≡ = wk≡₀}) wk-id refl n
     comp-eval-rec (push W V) γ π cs πₓ wk≡₀ n with comp-eval-rec W γ π (((wk-comp (wk-cong π) V) ⊲ γ ⦂⦂ cs) {wk≡ = wk≡₀}) wk-id refl n
-    ... | steps {T = ∙⟨ r̲e̲t̲u̲r̲n̲ M ⊰ γ₁ ╎ ◻ ⟩} W>T ret S≡T π' =
+    ... | steps {T = ∙⟨ r̲e̲t̲u̲r̲n̲ M ⊰ γ₁ ╎ ◻ ⟩} W>T ret S≡T πx =
 
                 steps
 
@@ -409,7 +409,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                   ≡⟨ S≡T ⟩
                     (⟦ toVal M ⟧ᵛ ； η) ⟦ γ₁ ⟧ᴱ ⟦ ◻ ⟧ᴷ ∎)
 
-                  π'
+                  πx
 
     comp-eval-rec (app M N) γ π cs πₓ wk≡₀ n with val-eval-rec N γ π
     ... | steps {T = ∙ ((⭭_ NT ⊲ γᴺ ∷ □) {↥ = 🗆})} N>NT ∙NT N≡NT πᴺ wk≡ᴺ with
@@ -425,7 +425,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                        ≡⟨ cong ⟦ πₓ ⟧ʷ wk≡ᴺ ⟩ ⟦ πₓ ⟧ʷ ⟦ γ ⟧ᴱ
                        ≡⟨ wk≡₀ ⟩ ⟦ topCsEnv cs ⟧ᴱ ∎)
                       n
-    ... | steps {T = T} W>WT HT S≡T πᵂ rewrite (sym (wk-val-trans M πᴺ π)) =
+    ... | steps {T = T} W>WT HT S≡T πx rewrite (sym (wk-val-trans M πᴺ π)) =
 
             steps
 
@@ -445,7 +445,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                 ≡⟨ S≡T ⟩
                 ⟦ T ⟧ᶜꟴ ∎)
 
-                (wk-trans πᵂ πᴺ)
+                (wk-trans πx πᴺ)
 
     -- comp-eval-rec (var {A = X} M) γ π cs πₓ wk≡₀ zero = {!!}
     -- comp-eval-rec (var {A = X} M) γ π cs πₓ wk≡₀ (suc n) with val-eval-rec {X = `V} M γ π
@@ -462,7 +462,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                       ≡⟨ sym (wk-sem-trans π₂ πᶜ ⟦ γ₁ ⟧ᴱ) ⟩ ⟦ πᶜ ⟧ʷ (⟦ π₂ ⟧ʷ ⟦ γ₁ ⟧ᴱ)
                       ≡⟨ cong ⟦ πᶜ ⟧ʷ w≡γ ⟩ ⟦ πᶜ ⟧ʷ ⟦ γ' ⟧ᴱ ≡⟨ wk≡c ⟩ ⟦ topCsEnv cs' ⟧ᴱ ∎)
                      n
-    ... | steps {T = ∙⟨ C̲o̲m̲p.r̲e̲t̲u̲r̲n̲ M₁ ⊰ γ₂ ╎ ◻ ⟩} W>T ret S≡T π'' =
+    ... | steps {T = ∙⟨ C̲o̲m̲p.r̲e̲t̲u̲r̲n̲ M₁ ⊰ γ₂ ╎ ◻ ⟩} W>T ret S≡T πx =
 
                 steps
 
@@ -484,11 +484,11 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                 ≡⟨ S≡T ⟩
                   (⟦ toVal M₁ ⟧ᵛ ； η) ⟦ γ₂ ⟧ᴱ ⟦ ◻ ⟧ᴷ ∎)
 
-                (wk-trans π'' π')
+                (wk-trans πx π')
 
 
     comp-eval-rec (sub W V) γ π cs πₓ wk≡₀ n with comp-eval-rec W ((γ ﹐﹝ wk-comp π V ╎ cs ﹞) {π = πₓ} {wk≡ = wk≡₀}) (wk-cong π) cs (wk-wk πₓ) wk≡₀ n
-    ... | steps {T = T} W>WT HT S≡T πᵂ =
+    ... | steps {T = T} W>WT HT S≡T πx =
 
                 steps
 
@@ -498,7 +498,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
                     S≡T
 
-                    (wk-trans πᵂ (wk-wk wk-id))
+                    (wk-trans πx (wk-wk wk-id))
 
 
     comp-eval : (W : ε ⊢ᶜ R₀) → CompSteps ((∘⟨ wk-comp wk-id W ⊰ ∗ ╎ ◻ ⟩) {π = wk-id} {wk≡ = refl})
@@ -553,7 +553,7 @@ _ = refl
 ex7 : ε ⊢ᶜ `Unit
 ex7 = push (sub (var (pm (pair (var h) unit) (var (t h)))) (return unit)) (return (var h))
 
-_ : comp-eval ex7 ≡ 
+_ : comp-eval ex7 ≡
 
       steps
       (∘⟨ push (sub (var (pm (pair (var h) unit) (var (t h)))) (return unit)) (return (var h)) ⊰ ∗ ╎ ◻ ⟩
