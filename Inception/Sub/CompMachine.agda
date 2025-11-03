@@ -117,13 +117,13 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
         -- X and X' should always be the same, but I don't think we can easily check for that
         ∘var         :   {M : Γ ⊢ᵛ `V} → {γ : Env Γ} → {i : Γ' ∋ `V} → {γ' : Env Γ'} → {W : Γ'' ⊢ᶜ X'} → {γ'' : Env Γ''}
-                       → {cs : CompStack Δ X} → {cs' : CompStack Δ' X'} → {πₓ : Wk Γ Δ} → {πₓ' : Wk Γ' Δ'} → {πₓ'' : Wk Γ'' Δ'}
-                       → {wk≡ₓ : ⟦ πₓ ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ} → {wk≡ₓ' : ⟦ πₓ' ⟧ʷ ⟦ γ' ⟧ᴱ ≡ ⟦ topCsEnv cs' ⟧ᴱ} → {wk≡ₓ'' : ⟦ πₓ'' ⟧ʷ ⟦ γ'' ⟧ᴱ ≡ ⟦ topCsEnv cs' ⟧ᴱ}
+                       → {cs : CompStack Δ X} → {cs' : CompStack Δ' X'} → {πₓ : Wk Γ Δ} → {πₓ'' : Wk Γ'' Δ'}
+                       → {wk≡ₓ : ⟦ πₓ ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ} → {wk≡ₓ'' : ⟦ πₓ'' ⟧ʷ ⟦ γ'' ⟧ᴱ ≡ ⟦ topCsEnv cs' ⟧ᴱ}
                        → ((∘ ((⇡ M ⊲ γ ∷ □) {↥ = 🗆})) ↠ᵛ (∙ ((⭭ v̲a̲r̲ i ⊲ γ' ∷ □) {↥ = 🗆}))) → (π' : Wk Γ' Γ)
                        → (⟨ i ∥ γ' ⟩ →ᴸ* ⟨ h ∥ ((γ'' ﹐﹝ W ╎ cs' ﹞) {π = πₓ''} {wk≡ = wk≡ₓ''}) ⟩) → (πᵥ : Wk Γ' Γ'')
                   ----------------------------------------------------------------
                        →    ((∘⟨ var M ⊰ γ ╎ cs ⟩) {π = πₓ} {wk≡ = wk≡ₓ})
-                         →ᶜ ((∘⟨ (wk-comp πᵥ W) ⊰ γ' ╎ cs' ⟩) {π = πₓ'} {wk≡ = wk≡ₓ'})
+                         →ᶜ ((∘⟨ W ⊰ γ'' ╎ cs' ⟩) {π = πₓ''} {wk≡ = wk≡ₓ''})
 
   data _→ᶜ*_ where
 
@@ -438,36 +438,30 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     ... | steps i>>T (found-comp {X = X} {W = W'} {γ = γ'} {cs = cs'} {π = πᶜ} {wk≡ = wk≡c}) i≡T π₂ w≡γ with
                     comp-eval-rec
                      W'
-                     γ₁
-                     π₂
+                     γ'
+                     wk-id
                      cs'
-                     (wk-trans π₂ πᶜ)
-                     (⟦ wk-trans π₂ πᶜ ⟧ʷ ⟦ γ₁ ⟧ᴱ
-                      ≡⟨ sym (wk-sem-trans π₂ πᶜ ⟦ γ₁ ⟧ᴱ) ⟩ ⟦ πᶜ ⟧ʷ (⟦ π₂ ⟧ʷ ⟦ γ₁ ⟧ᴱ)
-                      ≡⟨ cong ⟦ πᶜ ⟧ʷ w≡γ ⟩ ⟦ πᶜ ⟧ʷ ⟦ γ' ⟧ᴱ ≡⟨ wk≡c ⟩ ⟦ topCsEnv cs' ⟧ᴱ ∎)
+                     πᶜ
+                     wk≡c
                      n
-    ... | steps {T = ∙⟨ C̲o̲m̲p.r̲e̲t̲u̲r̲n̲ M₁ ⊰ γ₂ ╎ ◻ ⟩} W>T ret S≡T =
+    ... | steps {T = ∙⟨ C̲o̲m̲p.r̲e̲t̲u̲r̲n̲ M₁ ⊰ γ₂ ╎ ◻ ⟩} W>T ret S≡T rewrite wk-comp-id W' =
 
                 steps
 
-                (∘⟨ var (wk-val π M) ⊰ γ ╎ cs ⟩ →ᶜ⟨ ∘var M>T π' i>>T π₂ ⟩ W>T)
+                  ((∘⟨ var (wk-val π M) ⊰ γ ╎ cs ⟩ →ᶜ⟨ ∘var M>T π' i>>T π₂ ⟩ W>T))
 
-                ret
+                  ret
 
-                ( ((⟦ π ⟧ʷ ； ⟦ M ⟧ᵛ) ； varK) ⟦ γ ⟧ᴱ ⟦ cs ⟧ᴷ
-                ≡⟨ refl ⟩
-                  ⟦ M ⟧ᵛ (⟦ π ⟧ʷ ⟦ γ ⟧ᴱ)
-                ≡⟨ M≡T ⟩
-                   ⟦ i ⟧ᵐ ⟦ γ₁ ⟧ᴱ
-                ≡⟨ i≡T ⟩
-                   ⟦ W' ⟧ᶜ ⟦ γ' ⟧ᴱ (λ y → ⟦ cs' ⟧ᶜˢ (λ k → k y) k₀)
-                ≡⟨ cong (λ x → ⟦ W' ⟧ᶜ x (λ y → ⟦ cs' ⟧ᶜˢ (λ k → k y) k₀)) (sym w≡γ) ⟩
-                   ⟦ W' ⟧ᶜ (⟦ π₂ ⟧ʷ ⟦ γ₁ ⟧ᴱ) (λ y → ⟦ cs' ⟧ᶜˢ (λ k → k y) k₀)
-                ≡⟨ refl ⟩
-                  (⟦ π₂ ⟧ʷ ； ⟦ W' ⟧ᶜ) ⟦ γ₁ ⟧ᴱ ⟦ cs' ⟧ᴷ
-                ≡⟨ S≡T ⟩
-                  (⟦ toVal M₁ ⟧ᵛ ； η) ⟦ γ₂ ⟧ᴱ ⟦ ◻ ⟧ᴷ ∎)
-
+                  (((⟦ π ⟧ʷ ； ⟦ M ⟧ᵛ) ； varK) ⟦ γ ⟧ᴱ ⟦ cs ⟧ᴷ
+                    ≡⟨ refl ⟩
+                      ⟦ M ⟧ᵛ (⟦ π ⟧ʷ ⟦ γ ⟧ᴱ)
+                    ≡⟨ M≡T ⟩
+                      ⟦ i ⟧ᵐ ⟦ γ₁ ⟧ᴱ
+                    ≡⟨ i≡T ⟩
+                      ⟦ W' ⟧ᶜ ⟦ γ' ⟧ᴱ (λ y → ⟦ cs' ⟧ᶜˢ (λ k → k y) k₀)
+                    ≡⟨ S≡T ⟩
+                      (⟦ toVal M₁ ⟧ᵛ ； η) ⟦ γ₂ ⟧ᴱ ⟦ ◻ ⟧ᴷ ∎
+                  )
 
     comp-eval-rec (sub W V) γ π cs πₓ wk≡₀ n with comp-eval-rec W ((γ ﹐﹝ wk-comp π V ╎ cs ﹞) {π = πₓ} {wk≡ = wk≡₀}) (wk-cong π) cs (wk-wk πₓ) wk≡₀ n
     ... | steps {T = T} W>WT HT S≡T =
@@ -507,6 +501,7 @@ ex6 = sub (var (pm (pair (var h) unit) (var (t h)))) (return unit)
 
 -- call agda2-compute-normalised in the hole below
 
+{-
 _ : comp-eval ex6 ≡
 
   steps
@@ -561,3 +556,4 @@ _ : comp-eval ex7 ≡
       ret (trans (cong (λ k → k tt) (extensionality (λ z → refl))) refl)
 
 _ = refl
+-}
