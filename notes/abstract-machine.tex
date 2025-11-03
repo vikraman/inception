@@ -397,7 +397,7 @@ The only halting state is: $\CSB{\underline{\RET}(\underline{M})}{\gamma}{\empty
   \CSB{\underline{\APP} (x , \underline{N})}{\gamma}{C} &\leadsto^C \CSB{\underline{\APP} (\lambda W , \underline{N})}{\gamma}{C}\\ & \hspace{120pt} \text{if $\LS{x}{\gamma} \leadsto^{L*} \LS{\underline{\lambda} W}{\gamma'}$}  \\
   \CSB{\underline{\APP} (\PMV (M, N_1) , \underline{N_2})}{\gamma}{C} &\leadsto^C \CSB{\underline{\APP} (N_1 , \underline{N})}{\gamma' , \underline{M_1} , \underline{M_2}}{C}\\ & \hspace{120pt} \text{if $\VS{\vstack{M}{\gamma}{\emptyvs}} \leadsto^{V*} \VS{\vstack{(\underline{M_1} , \underline{M_2})}{\gamma'}{\emptyvs}}$}  \\
   \CSB{\underline{\APP} (\lambda W , \underline{N})}{\gamma}{C} &\leadsto^C \CSA{W}{\gamma , \underline{N}}{C}  \\
-  \CSA{\VAR (M)}{\gamma}{C} &\leadsto^C \CSA{W}{\gamma'}{C'} \\
+  \CSA{\VAR (M)}{\gamma}{C} &\leadsto^C \CSA{W}{\gamma''}{C'} \\
     & \hspace{120pt} \text{if $\VS{\vstack{M}{\gamma}{\emptyvs}} \leadsto^{V*} \VS{\vstack{\underline{\ell}}{\gamma'}{\emptyvs}}$} \\
     & \hspace{120pt} \text{and $\LS{\ell}{\gamma'} \leadsto^{L*} \LS{h}{\gamma'', \cspair{W}{C'}}$} \\
 \end{align*}
