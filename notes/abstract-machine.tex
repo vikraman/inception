@@ -391,7 +391,7 @@ The only halting state is: $\CSB{\underline{\RET}(\underline{M})}{\gamma}{\empty
   \CSA{\RET (M)}{\gamma}{C} &\leadsto^C \CSB{\underline{\RET} (\underline{M'})}{\gamma'}{C}\\ & \hspace{120pt} \text{if $\VS{\vstack{M}{\gamma}{\emptyvs}} \leadsto^{V*} \VS{\vstack{\underline{M'}}{\gamma'}{\emptyvs}}$} \\
   \CSB{\underline{\RET} (\underline{M})}{\gamma}{\cstack{N}{\gamma'}{C}} &\leadsto^C \CSA{N}{\gamma, \underline{M}}{C} \\
   \CSA{\PUSH (M, N)}{\gamma}{C} &\leadsto^C \CSA{M}{\gamma}{\cstack{N}{\gamma}{C}} \\
-  \CSA{\SUB (W_1, W_2)}{\gamma}{C} &\leadsto^C \CSA{M}{\gamma , \cspair{N}{C}}{C} \\
+  \CSA{\SUB (W_1, W_2)}{\gamma}{C} &\leadsto^C \CSA{W_1}{\gamma , \cspair{W_2}{C}}{C} \\
   \CSA{\PMC (M, W)}{\gamma}{C} &\leadsto^C \CSA{W}{\gamma' , \underline{M_1} , \underline{M_2}}{C}\\ & \hspace{120pt} \text{if $\VS{\vstack{M}{\gamma}{\emptyvs}} \leadsto^{V*} \VS{\vstack{(\underline{M_1}, \underline{M_2})}{\gamma'}{\emptyvs}}$}  \\
   \CSA{\APP (M , N)}{\gamma}{C} &\leadsto^C \CSB{\underline{\APP} (M , \underline{N'})}{\gamma'}{C}\\ & \hspace{120pt} \text{if $\VS{\vstack{N}{\gamma}{\emptyvs}} \leadsto^{V*} \VS{\vstack{\underline{N'}}{\gamma'}{\emptyvs}}$} \\
   \CSB{\underline{\APP} (x , \underline{N})}{\gamma}{C} &\leadsto^C \CSB{\underline{\APP} (\lambda W , \underline{N})}{\gamma}{C}\\ & \hspace{120pt} \text{if $\LS{x}{\gamma} \leadsto^{L*} \LS{\underline{\lambda} W}{\gamma'}$}  \\
