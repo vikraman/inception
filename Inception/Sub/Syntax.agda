@@ -179,7 +179,6 @@ exchg : Sub (Γ ∙ A ∙ B)(Γ ∙ B ∙ A)
 exchg = sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) sub-id) (var h)) (var (t h))
 
 variable
-  n : ℕ
   x : Γ ∋ A
   V V1 V2 V3 V4 W W1 W2 W3 : Γ ⊢ᵛ A
   M M1 M2 M3 M4 N N1 N2 N3 P P1 P2 P3 : Γ ⊢ᶜ A

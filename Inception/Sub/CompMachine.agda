@@ -188,6 +188,54 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   {-# REWRITE wk-comm-explicit #-}
 
+  data WkEnd : (Γ Δ : Ctx) → Set where
+    wk-Γ  : WkEnd Γ Γ
+    wk-wk : WkEnd Γ Δ → WkEnd (Γ ∙ A) Δ
+
+  mutual
+
+    metric-lookup : (i : Γ ∋ X) → (γ : Env Γ') → (π : WkEnd Γ Γ') → (n : ℕ) → (∥ γ ∥ ≤ n) → ℕ
+    metric-lookup {Γ = Γ} {Γ' = Γ'} () ∗ wk-Γ zero z≤n
+    metric-lookup {Γ = Γ} {Γ' = Γ'} i (γ ﹐ M) wk-Γ zero ()
+    metric-lookup {Γ = Γ} {Γ' = Γ'} i (γ ﹐﹝ W ╎ cs ﹞) wk-Γ zero ()
+    metric-lookup {Γ = Γ} {Γ' = Γ'} i (γ ﹐ M) wk-Γ (suc n) m≤n with lookup i (γ ﹐ M)
+    ... | steps i>>T found-unit i≡T π₁ w≡γ m≤n' = 0
+    ... | steps i>>T (found-pair {LHS = LHS} {RHS = RHS} {γ = γ}) i≡T π₁ w≡γ m≤n' = metric-v̲a̲l̲ LHS γ wk-Γ n (p≤p (≤-trans m≤n' m≤n)) + metric-v̲a̲l̲ RHS γ wk-Γ n (p≤p (≤-trans m≤n' m≤n))
+    ... | steps i>>T (found-lam {W = W} {γ = γ}) i≡T π₁ w≡γ m≤n' = metric-comp W γ (wk-wk wk-Γ) n (p≤p (≤-trans m≤n' m≤n))
+    ... | steps i>>T (found-comp {W = W} {γ = γ}) i≡T π₁ w≡γ m≤n' = metric-comp W γ wk-Γ n (p≤p (≤-trans m≤n' m≤n))
+    metric-lookup {Γ = Γ} {Γ' = Γ'} i ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡}) wk-Γ (suc n) m≤n with lookup i ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡})
+    ... | steps i>>T found-unit i≡T π₁ w≡γ m≤n' = 0
+    ... | steps i>>T (found-pair {LHS = LHS} {RHS = RHS} {γ = γ}) i≡T π₁ w≡γ m≤n' = metric-v̲a̲l̲ LHS γ wk-Γ n (p≤p (≤-trans m≤n' m≤n)) + metric-v̲a̲l̲ RHS γ wk-Γ n (p≤p (≤-trans m≤n' m≤n))
+    ... | steps i>>T (found-lam {W = W} {γ = γ}) i≡T π₁ w≡γ m≤n' = metric-comp W γ (wk-wk wk-Γ) n (p≤p (≤-trans m≤n' m≤n))
+    ... | steps i>>T (found-comp {W = W} {γ = γ}) i≡T π₁ w≡γ m≤n' = metric-comp W γ wk-Γ n (p≤p (≤-trans m≤n' m≤n))
+    metric-lookup {Γ = Γ Cx.∙ X} {Γ' = Γ'} Cx.h ∗ (wk-wk π) n m≤n = 0
+    metric-lookup {Γ = Γ Cx.∙ X} {Γ' = Γ'} Cx.h (γ ﹐ M) (wk-wk π) n m≤n = 0
+    metric-lookup {Γ = Γ Cx.∙ X} {Γ' = Γ'} Cx.h (γ ﹐﹝ W ╎ cs ﹞) (wk-wk π) n m≤n = 0
+    metric-lookup {Γ = Γ Cx.∙ X} {Γ' = Γ'} (Cx.t i) ∗ (wk-wk π) n m≤n = 0
+    metric-lookup {Γ = Γ Cx.∙ X} {Γ' = Γ'} (Cx.t i) (γ ﹐ M) (wk-wk π) n m≤n = metric-lookup i (γ ﹐ M) π n m≤n
+    metric-lookup {Γ = Γ Cx.∙ X} {Γ' = Γ'} (Cx.t i) ((γ ﹐﹝ W ╎ cs ﹞) {π = π'} {wk≡ = wk≡}) (wk-wk π) n m≤n = metric-lookup i ((γ ﹐﹝ W ╎ cs ﹞) {π = π'} {wk≡ = wk≡}) π n m≤n
+
+    metric-v̲a̲l̲ : (M : V̲a̲l̲ Γ X) → (γ : Env Γ') → (π : WkEnd Γ Γ') → (n : ℕ) → (∥ γ ∥ ≤ n) → ℕ
+    metric-v̲a̲l̲ (l̲a̲m̲ W) γ π n m≤n = metric-comp W γ (wk-wk π) n m≤n
+    metric-v̲a̲l̲ (pa̲i̲r̲ M N) γ π n m≤n = 0
+    metric-v̲a̲l̲ u̲n̲i̲t̲ γ π n m≤n = 0
+    metric-v̲a̲l̲ (v̲a̲r̲ i) γ π n m≤n = 0
+
+    metric-val : (M : Γ ⊢ᵛ X) → (γ : Env Γ') → (π : WkEnd Γ Γ') → (n : ℕ) → (∥ γ ∥ ≤ n) → ℕ
+    metric-val (var i) γ π n m≤n = suc (metric-lookup i γ π n m≤n)
+    metric-val (lam W) γ π n m≤n = metric-comp W γ (wk-wk π) n m≤n
+    metric-val (pair M N) γ π n m≤n = metric-val M γ π n m≤n + metric-val N γ π n m≤n
+    metric-val (pm M N) γ π n m≤n = metric-val M γ π n m≤n + metric-val N γ (wk-wk (wk-wk π)) n m≤n
+    metric-val unit γ π n m≤n = 0
+
+    metric-comp : (W : Γ ⊢ᶜ X) → (γ : Env Γ') → (π : WkEnd Γ Γ') → (n : ℕ) → (∥ γ ∥ ≤ n) → ℕ
+    metric-comp (return M) γ π n m≤n = suc (metric-val M γ π n m≤n)
+    metric-comp (pm M W) γ π n m≤n = metric-val M γ π n m≤n + metric-comp W γ (wk-wk (wk-wk π)) n m≤n
+    metric-comp (push W₁ W₂) γ π n m≤n = metric-comp W₁ γ π n m≤n + metric-comp W₂ γ (wk-wk π) n m≤n
+    metric-comp (app M N) γ π n m≤n = metric-val M γ π n m≤n + metric-val N γ π n m≤n
+    metric-comp (var M) γ π n m≤n = suc (metric-val M γ π n m≤n)
+    metric-comp (sub W₁ W₂) γ π n m≤n = metric-comp W₁ γ (wk-wk π) n m≤n + metric-comp W₂ γ π n m≤n
+
   {-# TERMINATING #-}
   mutual
 
@@ -198,7 +246,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     -- app-eval-rec (var i) N γ π cs πₓ wk≡₀ zero = {!!}
     -- app-eval-rec (var i) N γ π cs πₓ wk≡₀ (suc n) with lookup (wk-mem π i) γ
     app-eval-rec (var i) N γ π cs πₓ wk≡₀ n with lookup (wk-mem π i) γ
-    ... | steps i>>T (found-lam {W = W} {γ = γ₁}) i≡T π₁ w≡γ with app-eval-rec (lam W) N γ π₁ cs πₓ wk≡₀ n
+    ... | steps i>>T (found-lam {W = W} {γ = γ₁}) i≡T π₁ w≡γ _ with app-eval-rec (lam W) N γ π₁ cs πₓ wk≡₀ n
     ... | steps {T = T} W>WT HT S≡T =
 
                  steps
@@ -435,7 +483,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     -- comp-eval-rec (var {A = X} M) γ π cs πₓ wk≡₀ (suc n) with val-eval-rec {X = `V} M γ π
     comp-eval-rec (var {A = X} M) γ π cs πₓ wk≡₀ n with val-eval-rec {X = `V} M γ π
     ... | steps {T = ∙ ((⭭ v̲a̲r̲ i) ⊲ γ₁ ∷ □) {↥ = 🗆}} M>T ∙T M≡T π' wk≡ with lookup i γ₁
-    ... | steps i>>T (found-comp {X = X} {W = W'} {γ = γ'} {cs = cs'} {π = πᶜ} {wk≡ = wk≡c}) i≡T π₂ w≡γ with
+    ... | steps i>>T (found-comp {X = X} {W = W'} {γ = γ'} {cs = cs'} {π = πᶜ} {wk≡ = wk≡c}) i≡T π₂ w≡γ _ with
                     comp-eval-rec
                      W'
                      γ'
