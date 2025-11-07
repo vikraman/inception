@@ -205,10 +205,17 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   p≤p : suc n ≤ suc m → n ≤ m
   p≤p (s≤s sn≤sm) = sn≤sm
 
+  p≤n : suc n ≤ m → n ≤ m
+  p≤n {m = suc m} (s≤s sn≤m) = n≤sm sn≤m
+
+  data WkEnd : (Γ Δ : Ctx) → Set where
+    wk-Γ  : WkEnd Γ Γ
+    wk-wk : WkEnd Γ Δ → WkEnd (Γ ∙ A) Δ
+
   data LookupSteps : LookupState X → Set where
 
     --steps : {S T : LookupState X} → S →ᴸ* T → LookupHaltingState T → ⟦ S ⟧ᴸ ≡ ⟦ T ⟧ᴸ → (π : Wk (lCtx S) (lTCtx T)) → (⟦ π ⟧ʷ ⟦ lEnv S ⟧ᴱ ≡ ⟦ lTEnv T ⟧ᴱ) → ∥ lTEnv T ∥ ≤ ∥ lEnv S ∥ → LookupSteps S
-    steps : {S T : LookupState X} → S →ᴸ* T → LookupHaltingState T → ⟦ S ⟧ᴸ ≡ ⟦ T ⟧ᴸ → (π : Wk (lCtx S) (lTCtx T)) → (⟦ π ⟧ʷ ⟦ lEnv S ⟧ᴱ ≡ ⟦ lTEnv T ⟧ᴱ) → ∥ lEnv T ∥ ≤ ∥ lEnv S ∥ → LookupSteps S
+    steps : {S T : LookupState X} → S →ᴸ* T → LookupHaltingState T → ⟦ S ⟧ᴸ ≡ ⟦ T ⟧ᴸ → (π : Wk (lCtx S) (lTCtx T)) → (π' : WkEnd (lCtx S) (lTCtx T)) → (⟦ π ⟧ʷ ⟦ lEnv S ⟧ᴱ ≡ ⟦ lTEnv T ⟧ᴱ) → ∥ lEnv T ∥ ≤ ∥ lEnv S ∥ → LookupSteps S
 
   --lookup : (i : Γ ∋ X) → (γ : Env Γ) → LookupSteps {X = X} ⟨ i ∥ γ ⟩
   --lookup h (γ ﹐ l̲a̲m̲ W) = steps (⟨ h ∥ _﹐_ γ (l̲a̲m̲ W) ⟩ ◼) found-lam refl (wk-wk wk-id) refl n≤sn
@@ -222,18 +229,29 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   --lookup (t i) (γ ﹐﹝ W ╎ cs ﹞) with lookup i γ
   --... | steps i>>T HT i≡T WK w≡γ m≤n = steps (_ →ᴸ⟨ comp-t-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ (n≤sm m≤n)
 
-  lookup : (i : Γ ∋ X) → (γ : Env Γ) → LookupSteps {X = X} ⟨ i ∥ γ ⟩
-  lookup h (γ ﹐ l̲a̲m̲ W) = steps (⟨ h ∥ _﹐_ γ (l̲a̲m̲ W) ⟩ ◼) found-lam refl (wk-wk wk-id) refl ≤-refl
-  lookup h (γ ﹐ pa̲i̲r̲ LHS RHS) = steps (⟨ h ∥ _﹐_ γ (pa̲i̲r̲ LHS RHS) ⟩ ◼) found-pair refl (wk-wk wk-id) refl ≤-refl
-  lookup h (γ ﹐ u̲n̲i̲t̲) = steps (⟨ h ∥ _﹐_ γ (u̲n̲i̲t̲) ⟩ ◼) found-unit refl (wk-wk wk-id) refl ≤-refl
-  lookup h (γ ﹐ v̲a̲r̲ i) with lookup i γ
-  ... | steps i>>T HT i≡T WK w≡γ m≤n = steps (_ →ᴸ⟨ val-h-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ (n≤sm m≤n)
-  lookup h (γ ﹐﹝ W ╎ cs ﹞ ) = steps (⟨ h ∥ γ ﹐﹝ W ╎ cs ﹞ ⟩ ◼) found-comp refl (wk-wk wk-id) refl ≤-refl
-  lookup (t i) (γ ﹐ M) with lookup i γ
-  ... | steps i>>T HT i≡T WK w≡γ m≤n = steps (_ →ᴸ⟨ val-t-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ (n≤sm m≤n)
-  lookup (t i) (γ ﹐﹝ W ╎ cs ﹞) with lookup i γ
-  ... | steps i>>T HT i≡T WK w≡γ m≤n = steps (_ →ᴸ⟨ comp-t-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ (n≤sm m≤n)
+  -- lookup : (i : Γ ∋ X) → (γ : Env Γ) → LookupSteps {X = X} ⟨ i ∥ γ ⟩
+  -- lookup h (γ ﹐ l̲a̲m̲ W) = steps (⟨ h ∥ _﹐_ γ (l̲a̲m̲ W) ⟩ ◼) found-lam refl (wk-wk wk-id) refl ≤-refl
+  -- lookup h (γ ﹐ pa̲i̲r̲ LHS RHS) = steps (⟨ h ∥ _﹐_ γ (pa̲i̲r̲ LHS RHS) ⟩ ◼) found-pair refl (wk-wk wk-id) refl ≤-refl
+  -- lookup h (γ ﹐ u̲n̲i̲t̲) = steps (⟨ h ∥ _﹐_ γ (u̲n̲i̲t̲) ⟩ ◼) found-unit refl (wk-wk wk-id) refl ≤-refl
+  -- lookup h (γ ﹐ v̲a̲r̲ i) with lookup i γ
+  -- ... | steps i>>T HT i≡T WK w≡γ m≤n = steps (_ →ᴸ⟨ val-h-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ (n≤sm m≤n)
+  -- lookup h (γ ﹐﹝ W ╎ cs ﹞ ) = steps (⟨ h ∥ γ ﹐﹝ W ╎ cs ﹞ ⟩ ◼) found-comp refl (wk-wk wk-id) refl ≤-refl
+  -- lookup (t i) (γ ﹐ M) with lookup i γ
+  -- ... | steps i>>T HT i≡T WK w≡γ m≤n = steps (_ →ᴸ⟨ val-t-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ (n≤sm m≤n)
+  -- lookup (t i) (γ ﹐﹝ W ╎ cs ﹞) with lookup i γ
+  -- ... | steps i>>T HT i≡T WK w≡γ m≤n = steps (_ →ᴸ⟨ comp-t-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ (n≤sm m≤n)
 
+  lookup : (i : Γ ∋ X) → (γ : Env Γ) → LookupSteps {X = X} ⟨ i ∥ γ ⟩
+  lookup h (γ ﹐ l̲a̲m̲ W) = steps (⟨ h ∥ _﹐_ γ (l̲a̲m̲ W) ⟩ ◼) found-lam refl (wk-wk wk-id) (wk-wk wk-Γ) refl ≤-refl
+  lookup h (γ ﹐ pa̲i̲r̲ LHS RHS) = steps (⟨ h ∥ _﹐_ γ (pa̲i̲r̲ LHS RHS) ⟩ ◼) found-pair refl (wk-wk wk-id) (wk-wk wk-Γ) refl ≤-refl
+  lookup h (γ ﹐ u̲n̲i̲t̲) = steps (⟨ h ∥ _﹐_ γ (u̲n̲i̲t̲) ⟩ ◼) found-unit refl (wk-wk wk-id) (wk-wk wk-Γ) refl ≤-refl
+  lookup h (γ ﹐ v̲a̲r̲ i) with lookup i γ
+  ... | steps i>>T HT i≡T WK WK' w≡γ m≤n = steps (_ →ᴸ⟨ val-h-step ⟩ i>>T) HT i≡T (wk-wk WK) (wk-wk WK') w≡γ (n≤sm m≤n)
+  lookup h (γ ﹐﹝ W ╎ cs ﹞ ) = steps (⟨ h ∥ γ ﹐﹝ W ╎ cs ﹞ ⟩ ◼) found-comp refl (wk-wk wk-id) (wk-wk wk-Γ) refl ≤-refl
+  lookup (t i) (γ ﹐ M) with lookup i γ
+  ... | steps i>>T HT i≡T WK WK' w≡γ m≤n = steps (_ →ᴸ⟨ val-t-step ⟩ i>>T) HT i≡T (wk-wk WK) (wk-wk WK') w≡γ (n≤sm m≤n)
+  lookup (t i) (γ ﹐﹝ W ╎ cs ﹞) with lookup i γ
+  ... | steps i>>T HT i≡T WK WK' w≡γ m≤n = steps (_ →ᴸ⟨ comp-t-step ⟩ i>>T) HT i≡T (wk-wk WK) (wk-wk WK') w≡γ (n≤sm m≤n)
 
   -- Value Machine
   ------------------------------------------------------------------------------
@@ -416,10 +434,10 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   val-eval-rec {X = `V} (var {A = .`V} i) γ π = steps (_ →ᵛ⟨ ∘var-c ⟩．) (∙ v̲a̲r̲ (wk-mem π i) ⊲ γ ■) refl wk-id refl
 
   val-eval-rec {X = `Unit} (var {A = .`Unit} i) γ π with lookup (wk-mem π i) γ
-  ... | steps i>>T found-unit i≡T π₁ w≡γ _ = steps (_ →ᵛ⟨ ∘var i>>T π₁ ⟩．) (∙ u̲n̲i̲t̲ ⊲ γ ■) refl wk-id refl
+  ... | steps i>>T found-unit i≡T π₁ _ w≡γ _ = steps (_ →ᵛ⟨ ∘var i>>T π₁ ⟩．) (∙ u̲n̲i̲t̲ ⊲ γ ■) refl wk-id refl
 
   val-eval-rec {X = X `× X₁} (var {A = .(X `× X₁)} i) γ π with lookup (wk-mem π i) γ
-  ... | steps i>>T (found-pair {LHS = LHS} {RHS = RHS} {γ = γ₁}) i≡T π₁ w≡γ _ =
+  ... | steps i>>T (found-pair {LHS = LHS} {RHS = RHS} {γ = γ₁}) i≡T π₁ _ w≡γ _ =
 
             steps
 
@@ -446,7 +464,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
             refl
   val-eval-rec {X = X `⇒ X₁} (var {A = .(X `⇒ X₁)} i) γ π with lookup (wk-mem π i) γ
 
-  ... | steps i>>T (found-lam {W = W} {γ = γ₁}) i≡T π₁ w≡γ _ =
+  ... | steps i>>T (found-lam {W = W} {γ = γ₁}) i≡T π₁ _ w≡γ _ =
 
             steps
 
@@ -897,4 +915,3 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   sub-cps' : (M : (Γ ∙ `V) ⊢ᶜ X) → (N : Γ ⊢ᶜ X) → (γ : Env Γ) → (cs : CompStack Δ X) → (πₓ : Wk Γ Δ) → (wk≡ : ⟦ πₓ ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → ⟦ sub M N ⟧ᶜ ⟦ γ ⟧ᴱ ⟦ cs ⟧ᴷ ≡ ⟦ M ⟧ᶜ ⟦ (γ ﹐﹝ N ╎ cs ﹞) {π = πₓ} {wk≡ = wk≡} ⟧ᴱ ⟦ cs ⟧ᴷ
   sub-cps' M N γ cs πₓ wk≡ = refl
-
