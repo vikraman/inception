@@ -280,22 +280,175 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     metric-comp (var M) γ π = suc (metric-val M γ π)
     metric-comp (sub W₁ W₂) γ π = metric-comp W₁ γ (wk-wk π) + metric-comp W₂ γ π
 
+    -- metric-comp-wk : (W : Γ' ⊢ᶜ X) → (γ : Env Γ) → (π : Wk Γ Γ') → ℕ
+    -- metric-comp-wk W ∗ wk-ε = 0
+    -- metric-comp-wk W (γ ﹐ M) (wk-cong π) = {!!}
+    -- metric-comp-wk W (γ ﹐﹝ W₁ ╎ cs ﹞) (wk-cong π) = {!!}
+    -- metric-comp-wk W (∗ ﹐ M) (wk-wk wk-ε) = {!!}
+    -- metric-comp-wk W (∗ ﹐﹝ W₁ ╎ cs ﹞) (wk-wk wk-ε) = {!!}
+    -- metric-comp-wk W γ (wk-wk (wk-cong π)) = {!!}
+    -- metric-comp-wk W (γ ﹐ M) (wk-wk (wk-wk π)) = metric-comp-wk W (γ ﹐ M) {!!}
+    -- metric-comp-wk W (γ ﹐﹝ W₁ ╎ cs ﹞) (wk-wk (wk-wk π)) = {!!}
+
   lam-lookup : (i : Γ ∋ X `⇒ Y) → (γ : Env Γ) → (Σ[ Γ' ∈ Ctx ] Σ[ γ₁ ∈ (Env Γ') ] ((Γ' ∙ X) ⊢ᶜ Y) × (Wk Γ Γ') × (WkEnd Γ Γ') × (suc ∥ γ₁ ∥ ≤ ∥ γ ∥))
   lam-lookup i γ with lookup i γ
   ... | steps i>>T (found-lam {Γ = Γ'} {W = W} {γ = γ₁}) _ π π' _ n≤m = Γ' , γ₁ , W , π , π' , n≤m
 
-  -- lem2 : (i : Γ ∋ X `⇒ Y) → (γ : Env Γ) → (metric-comp (wk-comp (wk-cong (proj₁ (proj₂ (proj₂ (proj₂ (lam-lookup i γ)))))) ((proj₁ (proj₂ (proj₂ (lam-lookup i γ)))))) (proj₁ (proj₂ (lam-lookup i γ))) (wk-wk (proj₁ (proj₂ (proj₂ (proj₂ (proj₂ (lam-lookup i γ))))))) ∥ γ ∥ (p≤n (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ (lam-lookup i γ)))))))) ≡ (metric-lookup i γ wk-Γ ∥ γ ∥ ≤-refl)
-  -- lem2 Cx.h (γ ﹐ M) = {!refl!}
-  -- lem2 (Cx.t i) γ = {!!}
+  _⊕_ : Ctx → Ctx → Ctx
+  Γ ⊕ ε = Γ
+  Γ ⊕ (Δ ∙ X) = (Γ ⊕ Δ) ∙ X
 
+  wkE-wks : (π : WkEnd Γ Δ) → (Ψ : Ctx) → WkEnd (Γ ⊕ Ψ) Δ
+  wkE-wks {Γ = Γ} {Δ = Δ} π Cx.ε = π
+  wkE-wks {Γ = Γ} {Δ = Δ} π (Ψ Cx.∙ X) = wk-wk (wkE-wks π Ψ)
+
+  wk-congs : (π : Wk Γ Δ) → (Ψ : Ctx) → (Wk (Γ ⊕ Ψ) (Δ ⊕ Ψ))
+  wk-congs {Γ = Γ} {Δ = Δ} π ε = π
+  wk-congs {Γ = Γ} {Δ = Δ} π (Ψ ∙ X) = wk-cong (wk-congs π Ψ)
+
+
+ {-
+  wk-Ψ : (π : WkEnd Γ Δ) → Ctx
+  wk-Ψ wk-Γ = ε
+  wk-Ψ (wk-wk {A = A} π) = (wk-Ψ π) ∙ A
+  -}
+
+  wk-⊕ : (π : Wk Γ Δ) → (π' : Wk Γ' Δ') → Wk (Γ ⊕ Γ') (Δ ⊕ Δ')
+  wk-⊕ π wk-ε = π
+  wk-⊕ π (wk-cong π') = wk-cong (wk-⊕ π π')
+  wk-⊕ π (wk-wk π') = wk-wk (wk-⊕ π π')
+
+
+  mutual
+
+    lem-wk-lookup : (i : Γ ⊕ Ψ ∋ Y) → (γ : Env Γ) → (π : Wk Δ Ψ) → metric-lookup (wk-mem (wk-⊕ wk-id π) i) γ (wkE-wks wk-Γ Δ) ≡ metric-lookup i γ (wkE-wks wk-Γ Ψ)
+    lem-wk-lookup {Γ = Γ} {Ψ = Cx.ε} {Δ = Δ} Cx.h (γ ﹐ M) wk-ε = refl
+    lem-wk-lookup {Γ = Γ Cx.∙ X} {Ψ = Cx.ε} {Δ = Δ Cx.∙ Y} Cx.h (γ ﹐ M) (wk-wk π) = lem-wk-lookup {Γ = Γ Cx.∙ X} {Ψ = Cx.ε} {Δ = Δ} Cx.h (γ ﹐ M) π
+    lem-wk-lookup {Γ = Γ} {Ψ = Cx.ε} {Δ = Δ} Cx.h (γ ﹐﹝ W ╎ cs ﹞) wk-ε = refl
+    lem-wk-lookup {Γ = Γ} {Ψ = Cx.ε} {Δ = Δ ∙ Y} Cx.h (γ ﹐﹝ W ╎ cs ﹞) (wk-wk π) = lem-wk-lookup {Ψ = Cx.ε} {Δ = Δ} Cx.h (γ ﹐﹝ W ╎ cs ﹞) π
+    lem-wk-lookup {Γ = Γ} {Ψ = Cx.ε} {Δ = Δ} (Cx.t i) (γ ﹐ M) wk-ε rewrite wk-mem-id {i = i} = refl
+    lem-wk-lookup {Γ = Γ} {Ψ = Cx.ε} {Δ = Δ ∙ Y} (Cx.t i) (γ ﹐ M) (wk-wk π) = lem-wk-lookup {Ψ = Cx.ε} {Δ = Δ} (t i) (γ ﹐ M) π
+    lem-wk-lookup {Γ = Γ} {Ψ = Cx.ε} {Δ = Δ} (Cx.t i) (γ ﹐﹝ W ╎ cs ﹞) wk-ε rewrite wk-mem-id {i = i} = refl
+    lem-wk-lookup {Γ = Γ} {Ψ = Cx.ε} {Δ = Δ ∙ Y} (Cx.t i) (γ ﹐﹝ W ╎ cs ﹞) (wk-wk π) = lem-wk-lookup {Ψ = Cx.ε} {Δ = Δ} (t i) (γ ﹐﹝ W ╎ cs ﹞) π
+    lem-wk-lookup {Γ = Γ} {Ψ = Ψ Cx.∙ X} {Δ = Δ} Cx.h ∗ (wk-cong π) = refl
+    lem-wk-lookup {Γ = Γ} {Ψ = Ψ Cx.∙ X} {Δ = Δ} Cx.h ∗ (wk-wk π) = refl
+    lem-wk-lookup {Γ = Γ} {Ψ = Ψ Cx.∙ X} {Δ = Δ ∙ Y} Cx.h (γ ﹐ M) (wk-cong π) = refl
+    lem-wk-lookup {Γ = Γ} {Ψ = Ψ Cx.∙ X} {Δ = Δ ∙ Y} Cx.h (γ ﹐ M) (wk-wk π) = lem-wk-lookup {Γ = Γ} {Ψ = Ψ ∙ X} {Δ = Δ} Cx.h (γ ﹐ M) π
+    lem-wk-lookup {Γ = Γ} {Ψ = Ψ Cx.∙ X} {Δ = Δ ∙ Y} Cx.h (γ ﹐﹝ W ╎ cs ﹞) (wk-cong π) = refl
+    lem-wk-lookup {Γ = Γ} {Ψ = Ψ Cx.∙ X} {Δ = Δ ∙ Y} Cx.h (γ ﹐﹝ W ╎ cs ﹞) (wk-wk π) = lem-wk-lookup {Γ = Γ} {Ψ = Ψ ∙ X} {Δ = Δ} Cx.h (γ ﹐﹝ W ╎ cs ﹞) π
+    lem-wk-lookup {Γ = Γ} {Ψ = Ψ Cx.∙ X} {Δ = Δ} (Cx.t i) ∗ (wk-cong π) = refl
+    lem-wk-lookup {Γ = Γ} {Ψ = Ψ Cx.∙ X} {Δ = Δ} (Cx.t i) ∗ (wk-wk π) = refl
+    lem-wk-lookup {Γ = Γ} {Ψ = Ψ Cx.∙ X} {Δ = Δ Cx.∙ Y} (Cx.t i) (γ ﹐ M) (wk-cong wk-ε) rewrite wk-mem-id {i = i} = refl
+    lem-wk-lookup {Γ = Γ} {Ψ = Ψ Cx.∙ X} {Δ = Δ Cx.∙ Y} (Cx.t i) (γ ﹐ M) (wk-cong (wk-cong wk-ε)) rewrite wk-mem-id {i = i} = refl
+    lem-wk-lookup {Γ = Γ} {Ψ = Ψ Cx.∙ X} {Δ = Δ ∙ A Cx.∙ Y} (Cx.t i) (γ ﹐ M) (wk-cong (wk-cong (wk-cong π))) = lem-wk-lookup {Ψ = Ψ} {Δ = Δ ∙ A} i (γ ﹐ M) ((wk-cong (wk-cong π)))
+    lem-wk-lookup {Γ = Γ} {Ψ = Ψ Cx.∙ X} {Δ = Δ ∙ A Cx.∙ Y} (Cx.t i) (γ ﹐ M) (wk-cong (wk-cong (wk-wk π))) = lem-wk-lookup {Ψ = Ψ} {Δ = Δ ∙ A} i (γ ﹐ M) ((wk-cong (wk-wk π)))
+    lem-wk-lookup {Γ = Γ ∙ Z} {Ψ = Ψ Cx.∙ X} {Δ = Δ ∙ A Cx.∙ Y} (Cx.t i) (γ ﹐ M) (wk-cong (wk-wk π)) = lem-wk-lookup {Ψ = Ψ} {Δ = Δ ∙ A} i (γ ﹐ M) (wk-wk π)
+    lem-wk-lookup {Γ = Γ} {Ψ = Ψ Cx.∙ X} {Δ = Δ Cx.∙ A Cx.∙ Y} (Cx.t i) (γ ﹐ M) (wk-wk π) = lem-wk-lookup {Ψ = Ψ ∙ X} {Δ = Δ ∙ A} (t i) (γ ﹐ M) π
+    lem-wk-lookup {Γ = Γ} {Ψ = Ψ Cx.∙ X} {Δ = Δ Cx.∙ Y} (Cx.t i) (γ ﹐﹝ W ╎ cs ﹞) (wk-cong wk-ε) rewrite wk-mem-id {i = i} = refl
+    lem-wk-lookup {Γ = Γ} {Ψ = Ψ Cx.∙ X} {Δ = Δ Cx.∙ Y} (Cx.t i) (γ ﹐﹝ W ╎ cs ﹞) (wk-cong (wk-cong wk-ε)) rewrite wk-mem-id {i = i} = refl
+    lem-wk-lookup {Γ = Γ} {Ψ = Ψ Cx.∙ X} {Δ = Δ ∙ A Cx.∙ Y} (Cx.t i) (γ ﹐﹝ W ╎ cs ﹞) (wk-cong (wk-cong (wk-cong π))) = lem-wk-lookup {Ψ = Ψ} {Δ = Δ ∙ A} i (γ ﹐﹝ W ╎ cs ﹞) ((wk-cong (wk-cong π)))
+    lem-wk-lookup {Γ = Γ} {Ψ = Ψ Cx.∙ X} {Δ = Δ ∙ A Cx.∙ Y} (Cx.t i) (γ ﹐﹝ W ╎ cs ﹞) (wk-cong (wk-cong (wk-wk π))) = lem-wk-lookup {Ψ = Ψ} {Δ = Δ ∙ A} i (γ ﹐﹝ W ╎ cs ﹞) ((wk-cong (wk-wk π)))
+    lem-wk-lookup {Γ = Γ} {Ψ = Ψ Cx.∙ X} {Δ = Δ ∙ A Cx.∙ Y} (Cx.t i) (γ ﹐﹝ W ╎ cs ﹞) (wk-cong (wk-wk π)) = lem-wk-lookup {Ψ = Ψ} {Δ = Δ ∙ A} i (γ ﹐﹝ W ╎ cs ﹞) (wk-wk π)
+    lem-wk-lookup {Γ = Γ} {Ψ = Ψ Cx.∙ X} {Δ = Δ ∙ A Cx.∙ Y} (Cx.t i) (γ ﹐﹝ W ╎ cs ﹞) (wk-wk π) = lem-wk-lookup {Ψ = Ψ ∙ X} {Δ = Δ ∙ A} (t i) (γ ﹐﹝ W ╎ cs ﹞) π
+
+
+    lem-wk-val : (M : Val (Γ ⊕ Ψ) Y) → (γ : Env Γ) → (π : Wk Δ Ψ) → metric-val (wk-val (wk-⊕ wk-id π) M) γ (wkE-wks wk-Γ Δ) ≡ metric-val M γ (wkE-wks wk-Γ Ψ)
+    lem-wk-val (var i) γ π = cong suc (lem-wk-lookup i γ π)
+    lem-wk-val (lam W) γ π = lem-wk-comp W γ (wk-cong π)
+    lem-wk-val (pair M N) γ π rewrite lem-wk-val M γ π | lem-wk-val N γ π = refl
+    lem-wk-val (pm M N) γ π rewrite lem-wk-val M γ π | lem-wk-val N γ (wk-cong (wk-cong π)) = refl
+    lem-wk-val unit γ π = refl
+
+    lem-wk-comp : (W : Comp (Γ ⊕ Ψ) Y) → (γ : Env Γ) → (π : Wk Δ Ψ) → metric-comp (wk-comp (wk-⊕ wk-id π) W) γ (wkE-wks wk-Γ Δ) ≡ metric-comp W γ (wkE-wks wk-Γ Ψ)
+    lem-wk-comp (return M) γ π = cong suc (lem-wk-val M γ π)
+    lem-wk-comp (pm M W) γ π rewrite lem-wk-val M γ π | lem-wk-comp W γ (wk-cong (wk-cong π)) = refl
+    lem-wk-comp (push W₁ W₂) γ π rewrite lem-wk-comp W₁ γ π | lem-wk-comp W₂ γ (wk-cong π) = refl
+    lem-wk-comp (app M N) γ π rewrite lem-wk-val M γ π | lem-wk-val N γ π = refl
+    lem-wk-comp (var M) γ π rewrite lem-wk-val M γ π = refl
+    lem-wk-comp (sub W₁ W₂) γ π rewrite lem-wk-comp W₁ γ (wk-cong π) | lem-wk-comp W₂ γ π = refl
+
+  lookup-ctx : (i : Γ ∋ X `⇒ Y) → (γ : Env Γ) → Ctx
+  lookup-ctx i γ with lookup i γ
+  ... | steps i>>T (found-lam {Γ = Γ'} {W = W} {γ = γ₁}) _ π π' _ n≤m = Γ'
+
+  lookup-term : (i : Γ ∋ X `⇒ Y) → (γ : Env Γ) → Comp ((lookup-ctx i γ) ∙ X) Y
+  lookup-term i γ with lookup i γ
+  ... | steps i>>T (found-lam {Γ = Γ'} {W = W} {γ = γ₁}) _ π π' _ n≤m = W
+
+  lookup-env : (i : Γ ∋ X `⇒ Y) → (γ : Env Γ) → Env (lookup-ctx i γ)
+  lookup-env i γ with lookup i γ
+  ... | steps i>>T (found-lam {Γ = Γ'} {W = W} {γ = γ₁}) _ π π' _ n≤m = γ₁
+
+  lookup-wk : (i : Γ ∋ X `⇒ Y) → (γ : Env Γ) → Wk Γ (lookup-ctx i γ)
+  lookup-wk i γ with lookup i γ
+  ... | steps i>>T (found-lam {Γ = Γ'} {W = W} {γ = γ₁}) _ π π' _ n≤m = π
+
+  lookup-wke : (i : Γ ∋ X `⇒ Y) → (γ : Env Γ) → WkEnd Γ (lookup-ctx i γ)
+  lookup-wke i γ with lookup i γ
+  ... | steps i>>T (found-lam {Γ = Γ'} {W = W} {γ = γ₁}) _ π π' _ n≤m = π'
+
+  ll-ctx : (i : Γ ∋ X `⇒ Y) → (γ : Env Γ) → (M : V̲a̲l̲ Γ B) → (lookup-ctx (t {B = B} i) (γ ﹐ M)) ≡ (lookup-ctx i γ)
+  ll-ctx i γ M with lookup i γ
+  ... | steps i>>T (found-lam {Γ = Γ'} {W = W} {γ = γ₁}) _ π π' _ n≤m = refl
+
+
+  lem2'' : (i : Γ ∋ X `⇒ Y) → (γ : Env Γ) → (metric-comp (wk-comp (wk-cong (lookup-wk i γ)) (lookup-term i γ)) (lookup-env i γ) (wk-wk (lookup-wke i γ))) ≡ (metric-lookup i γ wk-Γ)
+  lem2'' Cx.h (γ ﹐ l̲a̲m̲ W) = lem-wk-comp W γ (wk-cong (wk-wk wk-ε)) --lemx-comp W γ --lemx-comp W γ
+  lem2'' {Γ = Γ ∙ X `⇒ Y ∙ Z} {X = X} {Y = Y} (Cx.t {A = X `⇒ Y} Cx.h) ((γ ﹐  l̲a̲m̲ W) ﹐ M) with lookup (t h) ((γ ﹐  l̲a̲m̲ W) ﹐ M)
+  ... | steps i>>T (found-lam {Γ = Γ'} {W = W'} {γ = γ₁}) _ π π' _ n≤m =
+       metric-comp (wk-comp (wk-cong (wk-wk {A = Z} (wk-wk wk-id))) W) γ (WkEnd.wk-wk (WkEnd.wk-wk (WkEnd.wk-wk WkEnd.wk-Γ)))
+      ≡⟨ {!!} ⟩
+       metric-comp (wk-comp (wk-cong (wk-wk {A = Z} wk-id)) W) γ (wk-wk (wk-wk wk-Γ))
+      ≡⟨ refl ⟩
+       metric-comp (wk-comp (wk-congs (wk-wk wk-id) (ε ∙ X)) W) γ (wkE-wks (wk-wk wk-Γ) (ε ∙ X))
+      ≡⟨ lem-wk-comp W γ (wk-cong (wk-wk wk-ε)) ⟩
+      --≡⟨ lemx-comp {Ψ = ε ∙ X} {Z = Z} W γ ⟩
+       metric-comp W γ (WkEnd.wk-wk WkEnd.wk-Γ) ∎
+  lem2'' (Cx.t Cx.h) (γ ﹐﹝ W ╎ cs ﹞) = {!!}
+  lem2'' (t (t i)) γ  = {!!}
+
+  {-
   lem2 : (i : Γ ∋ X `⇒ Y) → (γ : Env Γ) → (metric-comp (wk-comp (wk-cong (proj₁ (proj₂ (proj₂ (proj₂ (lam-lookup i γ)))))) ((proj₁ (proj₂ (proj₂ (lam-lookup i γ)))))) (proj₁ (proj₂ (lam-lookup i γ))) (wk-wk (proj₁ (proj₂ (proj₂ (proj₂ (proj₂ (lam-lookup i γ)))))))) ≡ (metric-lookup i γ wk-Γ)
-  lem2 Cx.h (γ ﹐ M) = {!refl!}
-  lem2 (Cx.t i) γ = {!!}
+  lem2 {Γ = Γ ∙ X `⇒ Y} {X = X} {Y = Y} Cx.h (γ ﹐ l̲a̲m̲ W) with (lam-lookup h (γ ﹐ l̲a̲m̲ W))
+  ... | Γ' , γ₁ , W' , π , π' , n≤m = let
+                                        L-cong = (wk-cong {Γ ∙ X `⇒ Y} {Γ} {X} (wk-wk {Γ} {Γ} {X `⇒ Y} (wk-id {Γ})))
+                                        L-End = WkEnd.wk-wk {Γ ∙ X `⇒ Y} {Γ} {X} (WkEnd.wk-wk {Γ} {Γ} {X `⇒ Y} (WkEnd.wk-Γ {Γ}))
+                                        R-End = (WkEnd.wk-wk {Γ} {Γ} {X} (WkEnd.wk-Γ {Γ}))
+                                     in lemx-comp W γ
+  lem2 (Cx.t i) (γ ﹐ M) with lem2 i γ
+  ... | S = {!S!}
+  lem2 (Cx.t i) (γ ﹐﹝ W ╎ cs ﹞) = {!!}
 
-  --lem2 :   (i : Γ ∋ X `⇒ Y) → (γ : Env Γ) → {i>>T : {!!}} → {i≡T : {!!}} → {π₁ : {!!}} → {π' : {!!}} → {w≡γ : {!!}} → {n≤m : {!!}}
-  --       → {H : {!!}} → {W : {!!}} → {γ₁ : {!!}} → (H ≡ found-lam {W = {!W!}} {γ = {!!}}) → (lookup i γ) ≡ (steps i>>T H i≡T π₁ π' w≡γ n≤m)
-  --lem2 i γ = {!!}
+  -- lemx : {Γ Ψ : Ctx} → (W : Comp (Γ' ⊕ Ψ) Y) → (γ : Env Γ) → (π : Wk Γ Γ') → metric-comp (wk-comp (wk-congs π Ψ) W) γ (wkE-wks wk-Γ Ψ) ≡ metric-comp W γ {!!}
+  -- lemx = {!!}
 
+  ll : {Γ : Ctx} → {B : Ty} → (i : Γ ∋ X `⇒ Y) → (γ : Env Γ) → (M : V̲a̲l̲ Γ B) → (lookup-lterm (t {B = B} i) (γ ﹐ M)) ≡ wk-comp (wk-cong (wk-wk wk-id)) (lookup-lterm i γ)
+  ll Cx.h (∗ ﹐ l̲a̲m̲ W) M = {!!}
+  ll Cx.h ((γ ﹐ M₁) ﹐ l̲a̲m̲ W) M = {!!}
+  ll Cx.h ((γ ﹐﹝ W₁ ╎ cs ﹞) ﹐ l̲a̲m̲ W) M = {!!}
+  ll (Cx.t i) γ M = {!!}
+
+
+  ll1 : (i : Γ ∋ X `⇒ Y) → (γ : Env Γ) → (M : V̲a̲l̲ Γ B) → proj₁ (lam-lookup (t {B = B} i) (γ ﹐ M)) ≡ proj₁ (lam-lookup i γ)
+  ll1 i γ M with lookup i γ
+  ... | steps i>>T (found-lam {Γ = Γ'} {W = W} {γ = γ₁}) _ π π' _ n≤m = refl
+
+  -- lam-lookup : (i : Γ ∋ X `⇒ Y) → (γ : Env Γ) → (Σ[ Γ' ∈ Ctx ] Σ[ γ₁ ∈ (Env Γ') ] ((Γ' ∙ X) ⊢ᶜ Y) × (Wk Γ Γ') × (WkEnd Γ Γ') × (suc ∥ γ₁ ∥ ≤ ∥ γ ∥))
+  -- lam-lookup i γ with lookup i γ
+  -- ... | steps i>>T (found-lam {Γ = Γ'} {W = W} {γ = γ₁}) _ π π' _ n≤m = Γ' , γ₁ , W , π , π' , n≤m
+
+  lem2' : (i : Γ ∋ X `⇒ Y) → (γ : Env Γ) → (metric-comp (lookup-lterm i γ) (proj₁ (proj₂ (lam-lookup i γ))) (wk-wk (proj₁ (proj₂ (proj₂ (proj₂ (proj₂ (lam-lookup i γ)))))))) ≡ (metric-lookup i γ wk-Γ)
+  lem2' Cx.h (γ ﹐ l̲a̲m̲ W) = lemx-comp W γ
+  lem2' (Cx.t i) (γ ﹐ M) rewrite ll i γ M = {!lem2' i γ!}
+  lem2' (Cx.t i) (γ ﹐﹝ W ╎ cs ﹞) = {!!}
+  -}
+
+  -- lemx-comp : (W : Comp (Γ ⊕ Ψ) Y) → (γ : Env Γ) → metric-comp (wk-comp (wk-congs (wk-wk {A = Z} wk-id) Ψ) W) γ (wkE-wks (wk-wk wk-Γ) Ψ) ≡ metric-comp W γ (wkE-wks wk-Γ Ψ)
+
+
+  -- lem3 : metric-comp (wk-comp (wk-cong π) W) (γ ﹐ N) wk-Γ ≤  metric-comp (wk-comp (wk-cong π) W) γ (wk-wk wk-Γ) + metric-v̲a̲l̲ N γ wk-Γ
+
+{-
   -- {-# TERMINATING #-}
   mutual
 
@@ -306,7 +459,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     app-eval-rec (var i) N γ π cs πₓ wk≡₀ zero ()
     app-eval-rec (var i) N γ π cs πₓ wk≡₀ (suc n) m≤n with lookup (wk-mem π i) γ
     -- app-eval-rec (var i) N γ π cs πₓ wk≡₀ n with lookup (wk-mem π i) γ
-    ... | steps i>>T (found-lam {W = W} {γ = γ₁}) i≡T π₁ _ w≡γ _ with app-eval-rec (lam W) N γ π₁ cs πₓ wk≡₀ n {!!}
+    ... | steps i>>T (found-lam {X = X} {W = W} {γ = γ₁}) i≡T π₁ _ w≡γ _ with app-eval-rec (lam W) N γ π₁ cs πₓ wk≡₀ n {!!}
     ... | steps {T = T} W>WT HT S≡T =
 
                  steps
@@ -325,6 +478,11 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                      ≡⟨ S≡T ⟩
                       ⟦ T ⟧ᶜꟴ ∎)
 
+                  where
+                  llll : metric-comp (wk-comp (wk-cong π₁) W) γ (wk-wk wk-Γ) ≡ metric-lookup (wk-mem π i) γ WkEnd.wk-Γ
+                  llll = {!!} --lemx-comp W γ
+
+    -- TRICKY (try this first)
     app-eval-rec (lam W) N γ π cs πₓ wk≡₀ n m≤n with comp-eval-rec W (γ ﹐ N) (wk-cong π) cs (wk-wk πₓ) wk≡₀ n {!!}
     ... | steps {T = T} W>WT HT S≡T =
 
@@ -336,6 +494,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
                      S≡T
 
+    -- TRICKY
     app-eval-rec (pm M₁ N₁) N γ π cs πₓ wk≡₀ n m≤n with val-eval-rec M₁ γ π
     ... | steps {T = ∙ (⭭ pa̲i̲r̲ {X = X} {Y = Y} LHS RHS ⊲ γ₁ ∷ □) {↥ = 🗆}} M>T ∙T M≡T π' wk≡ with wk-val-trans N₁ (wk-cong (wk-cong π')) (wk-cong (wk-cong π))
     ...       | eq with
@@ -410,6 +569,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
                     (cong (λ x → (η x) k₀) M≡T)
 
+    -- TRICKY
     comp-eval-rec (return {A = X} M) γ π ((M' ⊲ γ' ⦂⦂ cs) {π = π₁} {wk≡ = wk≡₁}) πₓ wk≡₀ zero ()
     comp-eval-rec (return {A = X} M) γ π ((M' ⊲ γ' ⦂⦂ cs) {π = π₁} {wk≡ = wk≡₁}) πₓ wk≡₀ (suc n) m≤n with val-eval-rec {X = X} M γ π
     -- comp-eval-rec (return {A = X} M) γ π ((M' ⊲ γ' ⦂⦂ cs) {π = π₁} {wk≡ = wk≡₁}) πₓ wk≡₀ n with val-eval-rec {X = X} M γ π
@@ -460,6 +620,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                      ≡⟨ S≡T ⟩
                        (⟦ toVal M₂ ⟧ᵛ ； η) ⟦ γ₂ ⟧ᴱ ⟦ ◻ ⟧ᴷ ∎)
 
+    -- TRICKY
     comp-eval-rec (pm {A = X} {B = Y} M W) γ π cs πₓ wk≡₀ n m≤n with val-eval-rec {X = X `× Y} M γ π
     ...  | steps {T = ∙ ((⭭_ {X = X `× Y} (pa̲i̲r̲ LHS RHS) ⊲ γ' ∷ □) {↥ = 🗆})} M>T ∙T M≡T π' wk≡ with
                     comp-eval-rec
@@ -491,6 +652,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                     ≡⟨ S≡T ⟩
                      ⟦ T ⟧ᶜꟴ ∎)
 
+    -- EASY
     comp-eval-rec (push W V) γ π cs πₓ wk≡₀ n m≤n with comp-eval-rec W γ π (((wk-comp (wk-cong π) V) ⊲ γ ⦂⦂ cs) {wk≡ = wk≡₀}) wk-id refl n {!!}
     ... | steps {T = ∙⟨ r̲e̲t̲u̲r̲n̲ M ⊰ γ₁ ╎ ◻ ⟩} W>T ret S≡T =
 
@@ -508,6 +670,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                   ≡⟨ S≡T ⟩
                     (⟦ toVal M ⟧ᵛ ； η) ⟦ γ₁ ⟧ᴱ ⟦ ◻ ⟧ᴷ ∎)
 
+    -- BY VAL LEMMA
     comp-eval-rec (app M N) γ π cs πₓ wk≡₀ n m≤n with val-eval-rec N γ π
     ... | steps {T = ∙ ((⭭_ NT ⊲ γᴺ ∷ □) {↥ = 🗆})} N>NT ∙NT N≡NT πᴺ wk≡ᴺ with
                     app-eval-rec
@@ -543,6 +706,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                 ≡⟨ S≡T ⟩
                 ⟦ T ⟧ᶜꟴ ∎)
 
+    -- BY VAL LEMMA + LOOKUP LEMMA
     comp-eval-rec (var {A = X} M) γ π cs πₓ wk≡₀ zero ()
     comp-eval-rec (var {A = X} M) γ π cs πₓ wk≡₀ (suc n) m≤n with val-eval-rec {X = `V} M γ π
     -- comp-eval-rec (var {A = X} M) γ π cs πₓ wk≡₀ n with val-eval-rec {X = `V} M γ π
@@ -576,6 +740,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                       (⟦ toVal M₁ ⟧ᵛ ； η) ⟦ γ₂ ⟧ᴱ ⟦ ◻ ⟧ᴷ ∎
                   )
 
+    -- EASY
     comp-eval-rec (sub W V) γ π cs πₓ wk≡₀ n m≤n with comp-eval-rec W ((γ ﹐﹝ wk-comp π V ╎ cs ﹞) {π = πₓ} {wk≡ = wk≡₀}) (wk-cong π) cs (wk-wk πₓ) wk≡₀ n {!!}
     ... | steps {T = T} W>WT HT S≡T =
 
@@ -642,4 +807,6 @@ _ : comp-eval ex7 ≡
       ret (trans (cong (λ k → k tt) (extensionality (λ z → refl))) refl)
 
 _ = refl
+-}
+
 -}
