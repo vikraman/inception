@@ -1,6 +1,7 @@
 module Inception.Sub.CompMachine (R : Set) where
 
 open import Data.Product using (proj₁; proj₂; _,_; <_,_>; curry; _×_; Σ; ∃; Σ-syntax; ∃-syntax)
+open import Data.Sum using (_⊎_; inj₁; inj₂)
 open import Function.Base using (_∘_)
 
 import Relation.Binary.PropositionalEquality as Eq
@@ -189,38 +190,9 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   {-# REWRITE wk-comm-explicit #-}
 
------------------------------------------------------
-
-  mutual
-    count-in-val : (i : Γ ∋ X) → (M : Val Γ Z) → ℕ
-
-    count-in-val Cx.h (var Cx.h) = 1
-    count-in-val Cx.h (var (Cx.t i)) = 0
-    count-in-val (Cx.t i) (var Cx.h) = 0
-    count-in-val (Cx.t i₁) (var (Cx.t i₂)) = count-in-val i₁ (var i₂)
-
-    count-in-val Cx.h (lam W) = count-in-comp (t h) W
-    count-in-val (Cx.t i) (lam W) = count-in-comp (t (t i)) W
-
-    count-in-val Cx.h (pair M N) = count-in-val h M + count-in-val h N
-    count-in-val (Cx.t i) (pair M N) = count-in-val (t i) M + count-in-val (t i) N
-
-    count-in-val Cx.h (pm M N) = count-in-val h M + count-in-val (t (t h)) N
-    count-in-val (Cx.t i) (pm M N) = count-in-val (t i) M + count-in-val (t (t (t i))) N
-
-    count-in-val Cx.h unit = 0
-    count-in-val (Cx.t i) unit = 0
-
-    count-in-comp : (i : Γ ∋ X) → (W : Comp Γ Z) → ℕ
-    count-in-comp i (return M) = count-in-val i M
-    count-in-comp i (pm M W) = count-in-val i M + count-in-comp (t (t i)) W
-    count-in-comp i (push W₁ W₂) = count-in-comp i W₁ + count-in-comp (t i) W₂
-    count-in-comp i (app M N) = count-in-val i M + count-in-val i N
-    count-in-comp i (var M) = count-in-val i M
-    count-in-comp i (sub W₁ W₂) = count-in-comp (t i) W₁ + count-in-comp i W₂
 
 -----------------------------------------------------
-
+{-
   data Nmetric : Ty → Set where
     m-Unit : ℕ → Nmetric `Unit
     m-V : ℕ → Nmetric `V
@@ -362,6 +334,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     comp-conv {Y = A₁ `⇒ A₂} (var {A = A} M) E ϖ = m-⇒ (/ val-conv M E ϖ /) {!fc (val-conv M E ϖ)!} (zero-tree A₂)
     comp-conv {Y = `V} (var {A = A} M) E ϖ = m-V (/ val-conv M E ϖ /)
     comp-conv (sub {A = A} W₁ W₂) E ϖ = incr (/ comp-conv W₂ E ϖ /) (comp-conv W₁ ((`V , m-V (/ comp-conv W₂ E ϖ /)) ∷ E) (wkn-cong ϖ))
+-}
 
 -----------------------------------------------------
 
@@ -686,6 +659,244 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     comp-conv (sub W₁ W₂) E ϖ = {!!}
     -}
 -}
+-----------------------------------------------------
+
+  mutual
+    count-in-val : (i : Γ ∋ X) → (M : Val Γ Z) → ℕ
+
+    count-in-val Cx.h (var Cx.h) = 1
+    count-in-val Cx.h (var (Cx.t i)) = 0
+    count-in-val (Cx.t i) (var Cx.h) = 0
+    count-in-val (Cx.t i₁) (var (Cx.t i₂)) = count-in-val i₁ (var i₂)
+
+    count-in-val Cx.h (lam W) = count-in-comp (t h) W
+    count-in-val (Cx.t i) (lam W) = count-in-comp (t (t i)) W
+
+    count-in-val Cx.h (pair M N) = count-in-val h M + count-in-val h N
+    count-in-val (Cx.t i) (pair M N) = count-in-val (t i) M + count-in-val (t i) N
+
+    count-in-val Cx.h (pm M N) = count-in-val h M + count-in-val (t (t h)) N
+    count-in-val (Cx.t i) (pm M N) = count-in-val (t i) M + count-in-val (t (t (t i))) N
+
+    count-in-val Cx.h unit = 0
+    count-in-val (Cx.t i) unit = 0
+
+    count-in-comp : (i : Γ ∋ X) → (W : Comp Γ Z) → ℕ
+    count-in-comp i (return M) = count-in-val i M
+    count-in-comp i (pm M W) = count-in-val i M + count-in-comp (t (t i)) W
+    count-in-comp i (push W₁ W₂) = count-in-comp i W₁ + count-in-comp (t i) W₂
+    count-in-comp i (app M N) = count-in-val i M + count-in-val i N
+    count-in-comp i (var M) = count-in-val i M
+    count-in-comp i (sub W₁ W₂) = count-in-comp (t i) W₁ + count-in-comp i W₂
+
+-------------------------------
+
+  data Ty' : Ty → Set where
+    Unit' : Ty' `Unit
+    _×'_ : (Ty' X) -> (Ty' Y) -> (Ty' (X `× Y))
+    _⇒'_ : (X : Ty) -> (Ty' Y) -> (Ty' (X `⇒ Y))
+    V' : (Ty' X) -> (Ty' `V)
+    empty : Ty' `V
+
+  variable
+    Xₜ : Ty' X
+    Yₜ : Ty' Y
+    Zₜ : Ty' Z
+
+  data Nmetric : Ty' X → Set where
+    m-Unit : (m : ℕ) → Nmetric Unit'
+    m-V : (m : ℕ) → {Yₜ : Ty' Y} → (Nmetric Yₜ) → Nmetric (V' Yₜ)
+    m-Z : Nmetric empty
+    m-⇒ : (m : ℕ) → (cnt : ℕ) → {Yₜ : Ty' Y} → (Nmetric Yₜ) → Nmetric (X ⇒' Yₜ)
+    m-×   : (m : ℕ) → {Xₜ : Ty' X} → (Nmetric Xₜ) → {Yₜ : Ty' Y} → (Nmetric Yₜ) → Nmetric (Xₜ ×' Yₜ)
+
+  data Wkn : (Γ : Ctx) → (ns : List (Σ[ X ∈ Ty ] (Σ[ Xₜ ∈ Ty' X ] (Nmetric Xₜ)))) → Set where
+    wkn-nil  : Wkn ε []
+    wkn-cong : {Γ : Ctx} → {ne : List (Σ[ X ∈ Ty ] (Σ[ Xₜ ∈ Ty' X ] (Nmetric Xₜ)))} → {Y : Ty} → {e : (Σ[ Yₜ ∈ Ty' Y ] (Nmetric Yₜ))} → (ϖ : Wkn Γ ne) → Wkn (Γ ∙ Y) ((Y , e) ∷ ne)
+    wkn-cons : {Γ : Ctx} → {ne : List (Σ[ X ∈ Ty ] (Σ[ Xₜ ∈ Ty' X ] (Nmetric Xₜ)))} → {Y : Ty} → (ϖ : Wkn Γ ne) → Wkn (Γ ∙ Y) ne
+
+  incr : ℕ → {Xₜ : Ty' X} → Nmetric Xₜ → Nmetric Xₜ
+  incr n (m-Unit m) = m-Unit (n + m)
+  incr n (m-V m nm) = m-V (n + m) nm
+  incr n (m-⇒ m cnt nm) = m-⇒ (n + m) cnt nm
+  incr n (m-× m nm₁ nm₂) = m-× (n + m) nm₁ nm₂
+  incr n (m-Z) = m-Z
+
+  incr+ : ℕ → (Σ[ Yₜ ∈ Ty' Y ] (Nmetric Yₜ)) → (Σ[ Yₜ ∈ Ty' Y ] (Nmetric Yₜ))
+  incr+ n (Yₜ , nm) = Yₜ , incr n nm
+
+  ⟪_⟫ : {Xₜ : Ty' X} → Nmetric Xₜ → ℕ
+  ⟪ m-Unit m ⟫ = m
+  ⟪ m-V m nm ⟫ = m + ⟪ nm ⟫
+  ⟪ m-⇒ m cnt nm ⟫ = m + ⟪ nm ⟫
+  ⟪ m-× m nm₁ nm₂ ⟫ = m + ⟪ nm₁ ⟫ + ⟪ nm₂ ⟫
+  ⟪ m-Z ⟫ = 0
+
+  empty-metric : Σ[ Xₜ ∈ Ty' X ] (Nmetric Xₜ)
+  empty-metric {X = `Unit} = (Unit' , m-Unit 0)
+  empty-metric {X = X `× Y} with empty-metric {X = X} | empty-metric {X = Y}
+  ... | Xₜ , nm₁ | Yₜ , nm₂ = (Xₜ ×' Yₜ , m-× 0 nm₁ nm₂)
+  empty-metric {X = X `⇒ Y} with empty-metric {X = Y}
+  ... | Yₜ , nm = X ⇒' Yₜ , m-⇒ 0 0 nm
+  empty-metric {X = `V} = empty , m-Z
+
+  mutual
+
+    lookup-conv : (i : Γ ∋ Y) → (E : List (Σ[ X ∈ Ty ] (Σ[ Xₜ ∈ Ty' X ] (Nmetric Xₜ)))) → Wkn Γ E → (Σ[ Yₜ ∈ Ty' Y ] (Nmetric Yₜ))
+    lookup-conv Cx.h ((Y , e) ∷ ne) (wkn-cong ϖ) = e
+    lookup-conv (Cx.t i) ((X , e) ∷ ne) (wkn-cong ϖ) = lookup-conv i ne ϖ
+    lookup-conv {Y = Y} Cx.h [] (wkn-cons ϖ) = empty-metric
+    lookup-conv {Y = Y} Cx.h (x ∷ E) (wkn-cons ϖ) = empty-metric
+    lookup-conv {Y = Y} (Cx.t i) [] (wkn-cons ϖ) = empty-metric
+    lookup-conv (Cx.t i) (x ∷ E) (wkn-cons ϖ) = lookup-conv i (x ∷ E) ϖ
+
+    val-conv : (M : Val Γ Y) → (E : List (Σ[ X ∈ Ty ] (Σ[ Xₜ ∈ Ty' X ] (Nmetric Xₜ)))) → Wkn Γ E → (Σ[ Yₜ ∈ Ty' Y ] (Nmetric Yₜ))
+    val-conv (var i) E ϖ = incr+ 1 (lookup-conv i E ϖ)
+    val-conv (lam {A = X} W) E ϖ with comp-conv W E (wkn-cons ϖ)
+    ... | Yₜ , nm = X ⇒' Yₜ , m-⇒ 0 (count-in-comp h W) nm
+    val-conv (pair M N) E ϖ with val-conv M E ϖ | val-conv N E ϖ
+    ... | Xₜ , nm₁ | Yₜ , nm₂ = Xₜ ×' Yₜ , m-× 0 nm₁ nm₂
+    val-conv (pm {A = X} {B = Y} M N) E ϖ with val-conv M E ϖ
+    ... | (Xₜ ×' Yₜ) , m-× m nm₁ nm₂ = val-conv N ((Y , Yₜ , nm₂) ∷ (X , Xₜ , nm₁) ∷ E) (wkn-cong (wkn-cong ϖ))
+    val-conv unit E ϖ = Unit' , m-Unit zero
+
+    comp-conv : (W : Comp Γ Y) → (E : List (Σ[ X ∈ Ty ] (Σ[ Xₜ ∈ Ty' X ] (Nmetric Xₜ)))) → Wkn Γ E → (Σ[ Yₜ ∈ Ty' Y ] (Nmetric Yₜ))
+    comp-conv (return M) E ϖ = incr+ 1 (val-conv M E ϖ)
+    comp-conv (pm {A = X} {B = Y} M W) E ϖ with val-conv M E ϖ
+    ... | (Xₜ ×' Yₜ) , m-× m nm₁ nm₂ = comp-conv W ((Y , Yₜ , nm₂) ∷ (X , Xₜ , nm₁) ∷ E) (wkn-cong (wkn-cong ϖ))
+    comp-conv (push {A = X} {B = Y} W₁ W₂) E ϖ with comp-conv W₁ E ϖ
+    ... | Xₜ , nm = comp-conv W₂ ((X , Xₜ , nm) ∷ E) (wkn-cong ϖ)
+    comp-conv (app M N) E ϖ with val-conv M E ϖ | val-conv N E ϖ
+    ... | (X ⇒' Yₜ) , m-⇒ m cnt nm | Xₜ , e = Yₜ , incr (m * ⟪ e ⟫) nm
+    comp-conv (var {A = Y} M) E ϖ with val-conv M E ϖ
+    ... | V' Xₜ , nm = {!!} , {!!}
+    ... | empty , m-Z = empty-metric
+    comp-conv (sub {A = X} W₁ W₂) E ϖ with comp-conv W₂ E ϖ
+    ... | Xₜ , nm = comp-conv W₁ ((`V , V' Xₜ , m-V 0 nm) ∷ E) (wkn-cong ϖ)
+
+{-
+  incr : ℕ → Nmetric X → Nmetric X
+  incr n (m-Unit m) = m-Unit (n + m)
+  incr n (m-V m nm) = m-V (n + m) nm
+  incr n (m-⇒ m nm) = m-⇒ (n + m) nm
+  incr n (m-× m nm₁ nm₂) = m-× (n + m) nm₁ nm₂
+  incr n m-empty = m-empty
+
+  ⟪_⟫ : Nmetric X → ℕ
+  ⟪ m-Unit m ⟫ = m
+  ⟪ m-empty ⟫ = 0
+  ⟪ m-V m (X , nm) ⟫ = m + ⟪ nm ⟫
+  ⟪ m-⇒ m (Y , nm) ⟫ = m + ⟪ nm ⟫
+  ⟪ m-× m (X , nm₁) (Y , nm₂) ⟫ = m + ⟪ nm₁ ⟫ + ⟪ nm₂ ⟫
+
+  lookup-conv : (i : Γ ∋ Y) → (E : List (Σ[ X ∈ Ty ] ((Ty' X) × (Nmetric X)))) → Wkn Γ E → ((Ty' Y) × (Nmetric Y))
+  lookup-conv Cx.h ((Y , e) ∷ ne) (wkn-cong ϖ) = e
+  lookup-conv (Cx.t i) ((X , e) ∷ ne) (wkn-cong ϖ) = lookup-conv i ne ϖ
+  lookup-conv {Y = Y} Cx.h [] (wkn-cons ϖ) = empty , m-empty
+  lookup-conv {Y = Y} Cx.h (x ∷ E) (wkn-cons ϖ) = empty , m-empty
+  lookup-conv {Y = Y} (Cx.t i) [] (wkn-cons ϖ) = empty , m-empty
+  lookup-conv (Cx.t i) (x ∷ E) (wkn-cons ϖ) = lookup-conv i (x ∷ E) ϖ
+
+  val-conv : (M : Val Γ Y) → (E : List (Σ[ X ∈ Ty ] ((Ty' X) × (Nmetric X)))) → Wkn Γ E → ((Ty' Y) × (Nmetric Y))
+  val-conv (var i) E ϖ = lookup-conv i E ϖ
+  val-conv (lam W) E ϖ = {!!}
+  val-conv (pair M N) E ϖ with val-conv M E ϖ | val-conv N E ϖ
+  ... | Xₜ , nm₁ | Yₜ , nm₂ = Xₜ ×' Yₜ , m-× 0 (Xₜ , nm₁) (Yₜ , nm₂)
+  val-conv (pm {A = X} {B = Y} {C = Z} M N) E ϖ with val-conv M E ϖ
+  ... | (Z ×' Z₁) , nm = {!!}
+  ... | empty , nm = {!!}
+  --val-conv N ({!!} ∷ {!!} ∷ E) {!!}
+  val-conv unit E ϖ = {!!}
+-}
+
+{-
+  incr : ℕ → Nmetric X → Nmetric X
+  incr n (m-Unit m) = m-Unit (n + m)
+  incr n (m-V m nm) = m-V (n + m) nm
+  incr n (m-⇒ m nm) = m-⇒ (n + m) nm
+  incr n (m-× m nm₁ nm₂) = m-× (n + m) nm₁ nm₂
+
+  ⟪_⟫ : Nmetric X → ℕ
+  ⟪ m-Unit m ⟫ = m
+  ⟪ m-V m (inj₁ (Xₜ , nm)) ⟫ = m + ⟪ nm ⟫
+  ⟪ m-V m (inj₂ tt) ⟫ = m
+  ⟪ m-⇒ m (inj₁ (Xₜ , nm)) ⟫ = m + ⟪ nm ⟫
+  ⟪ m-⇒ m (inj₂ tt) ⟫ = m
+  ⟪ m-× m (inj₁ (Xₜ , nm₁)) (inj₁ (Yₜ , nm₂)) ⟫ = m + ⟪ nm₁ ⟫ + ⟪ nm₂ ⟫
+  ⟪ m-× m (inj₁ (Xₜ , nm₁)) (inj₂ tt) ⟫ = m + ⟪ nm₁ ⟫
+  ⟪ m-× m (inj₂ tt) (inj₁ (Yₜ , nm₂)) ⟫ = m + ⟪ nm₂ ⟫
+  ⟪ m-× m (inj₂ tt) (inj₂ tt) ⟫ = m
+
+  lookup-conv : (i : Γ ∋ Y) → (E : List (Σ[ X ∈ Ty ] (((Ty' X) × (Nmetric X)) ⊎ ⊤))) → Wkn Γ E → (((Ty' Y) × (Nmetric Y)) ⊎ ⊤)
+  lookup-conv Cx.h ((Y , e) ∷ ne) (wkn-cong ϖ) = e
+  lookup-conv (Cx.t i) ((X , e) ∷ ne) (wkn-cong ϖ) = lookup-conv i ne ϖ
+  lookup-conv Cx.h [] (wkn-cons ϖ) = inj₂ tt
+  lookup-conv Cx.h (x ∷ E) (wkn-cons ϖ) = inj₂ tt
+  lookup-conv (Cx.t i) [] (wkn-cons ϖ) = inj₂ tt
+  lookup-conv (Cx.t i) (x ∷ E) (wkn-cons ϖ) = lookup-conv i (x ∷ E) ϖ
+
+  val-conv : (M : Val Γ Y) → (E : List (Σ[ X ∈ Ty ] (((Ty' X) × (Nmetric X)) ⊎ ⊤))) → Wkn Γ E → (((Ty' Y) × (Nmetric Y)) ⊎ ⊤)
+  val-conv {Y = Y} (var i) E ϖ = lookup-conv i E ϖ
+  val-conv {Y = Y} (lam W) E ϖ = {!!}
+  val-conv {Y = X `× Y} (pair M N) E ϖ with val-conv M E ϖ | val-conv N E ϖ
+  ... | inj₁ (Xₜ , nm₁) | inj₁ (Yₜ , nm₂) = {!inj₁ (Xₜ )!}
+  ... | inj₁ (Xₜ , nm₁) | inj₂ tt = {!!}
+  ... | inj₂ tt | inj₁ (Yₜ , nm₂) = {!!}
+  ... | inj₂ tt | inj₂ tt = {!!}
+  val-conv {Y = Y} (pm M N) E ϖ = {!!}
+  val-conv {Y = Y} unit E ϖ = {!!}
+-}
+
+{-
+  data Nmetric : Ty' X → Set where
+    m-Unit : (m : ℕ) → Nmetric Unit'
+    m-V : (m : ℕ) → Nmetric Xₜ → Nmetric (V' Xₜ)
+    m-⇒ : (m : ℕ) → Nmetric Yₜ → Nmetric (Xₜ ⇒' Yₜ)
+    m-×   : (m : ℕ) → Nmetric Xₜ → Nmetric Yₜ → Nmetric (Xₜ ×' Yₜ)
+
+  data Wkn : (Γ : Ctx) → (ns : List (Σ[ X ∈ Ty ] ((Σ[ Xₜ ∈ Ty' X ] Nmetric Xₜ) ⊎ ⊤))) → Set where
+    wkn-nil  : Wkn ε []
+    wkn-cong : {Γ : Ctx} → {ne : List (Σ[ X ∈ Ty ] ((Σ[ Xₜ ∈ Ty' X ] Nmetric Xₜ) ⊎ ⊤))} → {Y : Ty} → {e : ((Σ[ Yₜ ∈ Ty' Y ] Nmetric Yₜ) ⊎ ⊤)} → (ϖ : Wkn Γ ne) → Wkn (Γ ∙ Y) ((Y , e) ∷ ne)
+    wkn-cons : {Γ : Ctx} → {ne : List (Σ[ X ∈ Ty ] ((Σ[ Xₜ ∈ Ty' X ] Nmetric Xₜ) ⊎ ⊤))} → {Y : Ty} → (ϖ : Wkn Γ ne) → Wkn (Γ ∙ Y) ne
+
+  incr : {Xₜ : Ty' X} → ℕ → Nmetric Xₜ → Nmetric Xₜ
+  incr n (m-Unit m) = m-Unit (n + m)
+  incr n (m-V m nm) = m-V (n + m) nm
+  incr n (m-⇒ m nm) = m-⇒ (n + m) nm
+  incr n (m-× m nm₁ nm₂) = m-× (n + m) nm₁ nm₂
+
+  incr+ : ℕ → ((Σ[ Yₜ ∈ Ty' Y ] Nmetric Yₜ) ⊎ ⊤) → ((Σ[ Yₜ ∈ Ty' Y ] Nmetric Yₜ) ⊎ ⊤)
+  incr+ n (inj₁ (Y , nm)) = inj₁ (Y , (incr n nm))
+  incr+ n (inj₂ tt) = inj₂ tt
+
+  ⟪_⟫ : {Xₜ : Ty' X} → Nmetric Xₜ → ℕ
+  ⟪ m-Unit m ⟫ = m
+  ⟪ m-V m nm ⟫ = m + ⟪ nm ⟫
+  ⟪ m-⇒ m nm ⟫ = m + ⟪ nm ⟫
+  ⟪ m-× m nm₁ nm₂ ⟫ = m + ⟪ nm₁ ⟫ + ⟪ nm₂ ⟫
+
+  lookup-conv : (i : Γ ∋ Y) → (E : List (Σ[ X ∈ Ty ] ((Σ[ Xₜ ∈ Ty' X ] Nmetric Xₜ) ⊎ ⊤))) → Wkn Γ E → ((Σ[ Yₜ ∈ Ty' Y ] Nmetric Yₜ) ⊎ ⊤)
+  lookup-conv Cx.h ((Y , e) ∷ ne) (wkn-cong ϖ) = e
+  lookup-conv (Cx.t i) ((X , e) ∷ ne) (wkn-cong ϖ) = lookup-conv i ne ϖ
+  lookup-conv Cx.h [] (wkn-cons ϖ) = inj₂ tt
+  lookup-conv Cx.h (x ∷ E) (wkn-cons ϖ) = inj₂ tt
+  lookup-conv (Cx.t i) [] (wkn-cons ϖ) = inj₂ tt
+  lookup-conv (Cx.t i) (x ∷ E) (wkn-cons ϖ) = lookup-conv i (x ∷ E) ϖ
+
+  val-conv : (M : Val Γ Y) → (E : List (Σ[ X ∈ Ty ] ((Σ[ Xₜ ∈ Ty' X ] Nmetric Xₜ) ⊎ ⊤))) → Wkn Γ E → ((Σ[ Yₜ ∈ Ty' Y ] Nmetric Yₜ) ⊎ ⊤)
+  val-conv {Y = Y} (var i) E ϖ = lookup-conv i E ϖ
+  val-conv {Y = Y} (lam W) E ϖ = {!!}
+  val-conv {Y = X `× Y} (pair M N) E ϖ with val-conv M E ϖ | val-conv M E ϖ
+  ... | inj₁ x | inj₁ x₁ = {!!}
+  ... | inj₁ x | inj₂ y = {!!}
+  ... | inj₂ y | G = {!!}
+  val-conv {Y = Y} (pm M N) E ϖ = {!!}
+  val-conv {Y = Y} unit E ϖ = {!!}
+
+  -- comp-conv : (W : Comp Γ Y) → (E : List (Σ[ Xₜ ∈ Ty' ] Nmetric Xₜ)) → Wkn Γ E → (Σ[ Yₜ ∈ Ty' ] Nmetric Yₜ)
+  -- comp-conv W E ϖ = ?
+-}
+
 
 -------------------------------
 
@@ -1063,3 +1274,6 @@ _ = refl
 -}
 
 -}
+
+ex8 : ε ⊢ᶜ `Unit
+ex8 = sub (push (var (var h)) (app (var h) unit)) (return unit)
