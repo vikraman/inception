@@ -673,7 +673,6 @@ postulate k₀ : ⟦ `Unit ⟧ → R
 open VMain {R₀ = `Unit} k₀
 open CMain {R₀ = `Unit} k₀
 
-{-
 ex3 : ε ⊢ᶜ `Unit
 ex3 = return (pm (pair unit unit) (var (t h)))
 
@@ -694,7 +693,7 @@ ex7 = push (sub (var (pm (pair (var h) unit) (var (t h)))) (return unit)) (retur
 
 -- call agda2-compute-normalised in the hole below
 
-_ : comp-eval ex7 ≡
+_ : comp-eval-test ex7 ≡
 
       steps
       (           ∘⟨ push (sub (var (pm (pair (var h) unit) (var (t h)))) (return unit)) (return (var h)) ⊰ ∗ ╎ ◻ ⟩
@@ -715,10 +714,8 @@ _ : comp-eval ex7 ≡
       →ᶜ⟨ ∙return ⟩ ∘⟨ return (var h) ⊰ ∗ ﹐ u̲n̲i̲t̲ ╎ ◻ ⟩
       →ᶜ⟨ ∘return (                         ∘ ⇡ var h ⊲ ∗ ﹐ u̲n̲i̲t̲ ∷ □
                    →ᵛ⟨ ∘var (⟨ h ∥ ∗ ﹐ u̲n̲i̲t̲ ⟩ ◼) (wk-wk wk-ε)⟩．)⟩ (∙⟨ r̲e̲t̲u̲r̲n̲ u̲n̲i̲t̲ ⊰ ∗ ﹐ u̲n̲i̲t̲ ╎ ◻ ⟩ ◼))
-      ret (trans (cong (λ k → k tt) (extensionality (λ z → refl))) refl)
-
+      (6 ∷ 6 ∷ 6 ∷ 3 ∷ 3 ∷ 2 ∷ 1 ∷ [])
 _ = refl
--}
 
 ex8 : ε ⊢ᶜ `Unit
 ex8 = sub (push (var (var h)) (app (var h) unit)) (return unit)
