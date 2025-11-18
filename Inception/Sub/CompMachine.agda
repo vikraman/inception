@@ -301,7 +301,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     comp-conv (app M N) E ϖ with val-conv M E ϖ | val-conv N E ϖ
     ... | (X ⇒' Yₜ) , m-⇒ m cnt nm | Xₜ , e = Yₜ , incr (m * ⟪ e ⟫) nm
     comp-conv (var {A = Y} M) E ϖ with val-conv M E ϖ
-    ... | V' Xₜ , nm = incr+ ⟪ nm ⟫ empty-metric
+    ... | V' Xₜ , nm = incr+ (suc ⟪ nm ⟫) empty-metric
     ... | empty , m-Z = empty-metric
     comp-conv (sub {A = X} W₁ W₂) E ϖ with comp-conv W₂ E ϖ
     ... | Xₜ , nm = comp-conv W₁ ((`V , V' Xₜ , m-V 0 nm) ∷ E) (wkn-cong ϖ)
