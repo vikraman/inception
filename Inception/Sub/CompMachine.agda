@@ -269,16 +269,16 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     val-metric (lam W) E ϖ = m-⇒ 0 (count-in-comp h W) (comp-metric W E (wkn-cons ϖ))
     val-metric (pair M N) E ϖ = m-× 0 (val-metric M E ϖ) (val-metric N E ϖ)
     val-metric (pm {A = X} {B = Y} M N) E ϖ with val-metric M E ϖ
-    ... | m-× m nm₁ nm₂ = val-metric N ((Y , nm₂) ∷ (X , nm₁) ∷ E) (wkn-cong (wkn-cong ϖ))
+    ... | m-× m nm₁ nm₂ = incr m (val-metric N ((Y , nm₂) ∷ (X , nm₁) ∷ E) (wkn-cong (wkn-cong ϖ)))
     val-metric unit E ϖ = m-Unit zero
 
     comp-metric : (W : Comp Γ Y) → (E : List (Σ[ X ∈ Ty ] TermMetric X)) → Wkn Γ E → TermMetric Y
     comp-metric (return M) E ϖ = incr 1 (val-metric M E ϖ)
     comp-metric (pm {A = X} {B = Y} M W) E ϖ with val-metric M E ϖ
-    ... | m-× m nm₁ nm₂ = comp-metric W ((Y , nm₂) ∷ (X , nm₁) ∷ E) (wkn-cong (wkn-cong ϖ))
+    ... | m-× m nm₁ nm₂ = incr m (comp-metric W ((Y , nm₂) ∷ (X , nm₁) ∷ E) (wkn-cong (wkn-cong ϖ)))
     comp-metric (push {A = X} W₁ W₂) E ϖ = comp-metric W₂ ((X , (comp-metric W₁ E ϖ)) ∷ E) (wkn-cong ϖ)
     comp-metric (app M N) E ϖ with val-metric M E ϖ
-    ... | m-⇒ m cnt nm = incr (m * ⟪ val-metric N E ϖ ⟫) nm
+    ... | m-⇒ m cnt nm = incr (m + (cnt * ⟪ val-metric N E ϖ ⟫)) nm
     comp-metric (var M) E ϖ = incr (suc ⟪ val-metric M E ϖ ⟫) zero-metric
     comp-metric (sub W₁ W₂) E ϖ = comp-metric W₁ ((`V , m-V ⟪ comp-metric W₂ E ϖ ⟫) ∷ E) (wkn-cong ϖ)
 
@@ -291,7 +291,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     c̲o̲m̲p-metric : (W : C̲o̲m̲p Γ Y) → (E : List (Σ[ X ∈ Ty ] TermMetric X)) → Wkn Γ E → TermMetric Y
     c̲o̲m̲p-metric (r̲e̲t̲u̲r̲n̲ M) E ϖ = incr 1 (v̲a̲l̲-metric M E ϖ)
     c̲o̲m̲p-metric (a̲pp M N) E ϖ with val-metric M E ϖ
-    ... | m-⇒ m cnt nm = incr (m * ⟪ v̲a̲l̲-metric N E ϖ ⟫) nm
+    ... | m-⇒ m cnt nm = incr (m + (cnt * ⟪ v̲a̲l̲-metric N E ϖ ⟫)) nm
 
 
   env-metric : Env Γ → Σ[ E ∈ List (Σ[ X ∈ Ty ] TermMetric X) ] Wkn Γ E
@@ -666,6 +666,10 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     comp-eval-test W with comp-eval W
     ... | steps x _ _ l = steps x l
 
+    comp-eval-test-metric : (W : ε ⊢ᶜ R₀) → List ℕ
+    comp-eval-test-metric W with comp-eval W
+    ... | steps _ _ _ l = l
+
 ---- Examples
 
 postulate k₀ : ⟦ `Unit ⟧ → R
@@ -676,14 +680,26 @@ open CMain {R₀ = `Unit} k₀
 ex3 : ε ⊢ᶜ `Unit
 ex3 = return (pm (pair unit unit) (var (t h)))
 
+_ : comp-eval-test-metric ex3 ≡ 2 ∷ 1 ∷ []
+_ = refl
+
 ex4 : ε ⊢ᶜ `Unit
 ex4 = sub (var (var h)) (return (pm (pair unit unit) (var (t h))))
+
+_ : comp-eval-test-metric ex4 ≡ 4 ∷ 4 ∷ 2 ∷ 1 ∷ []
+_ = refl
 
 ex5 : ε ⊢ᶜ `Unit
 ex5 = push (sub (push (return (var h)) (var (var h))) (return (pm (pair unit unit) (var (t h))))) (return (var h))
 
+_ : comp-eval-test-metric ex5 ≡ 8 ∷ 8 ∷ 8 ∷ 8 ∷ 8 ∷ 7 ∷ 4 ∷ 3 ∷ 2 ∷ 1 ∷ []
+_ = refl
+
 ex6 : ε ⊢ᶜ `Unit
 ex6 = sub (var (pm (pair (var h) unit) (var (t h)))) (return unit)
+
+_ : comp-eval-test-metric ex6 ≡ 4 ∷ 4 ∷ 1 ∷ 1 ∷ []
+_ = refl
 
 ex7 : ε ⊢ᶜ `Unit
 ex7 = push (sub (var (pm (pair (var h) unit) (var (t h)))) (return unit)) (return (var h))
@@ -719,6 +735,10 @@ _ = refl
 
 ex8 : ε ⊢ᶜ `Unit
 ex8 = sub (push (var (var h)) (app (var h) unit)) (return unit)
+
+_ : comp-eval-test-metric ex8 ≡ 4 ∷ 4 ∷ 4 ∷ 1 ∷ 1 ∷ []
+_ = refl
+
 
 ex9 : ε ⊢ᶜ `Unit
 ex9 = sub (push (sub (return (var h)) ((return (var h)))) (var (var h))) (return unit)
