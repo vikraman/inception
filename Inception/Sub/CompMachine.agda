@@ -376,8 +376,27 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       e = env-metric γ csn
       w = ⟪ c̲o̲m̲p-metric W (proj₁ e) (proj₂ e) csn ⟫
 
-  --postulate metric-decreasing : {Q₁ : CompState} → {Q₂ : CompState} → (Q₁→ᶜQ₂ : Q₁ →ᶜ Q₂) → (compstate-metric Q₂ ≤ suc (compstate-metric Q₁))
+  valstate-metric : ValState X → ℕ
+  valstate-metric (∘ x) = {!!}
+  valstate-metric (∙ x) = {!!}
 
+
+  -- val-metric-decreasing : {Q₁ : ValState X} → {Q₂ : ValState X} → (Q₁→ᶜQ₂ : Q₁ ↠ᵛ Q₂) → (suc (compstate-metric Q₂) ≤ (compstate-metric Q₁))
+  -- val-metric-decreasing = {!!}
+
+  comp-metric-decreasing : {Q₁ : CompState} → {Q₂ : CompState} → (Q₁→ᶜQ₂ : Q₁ →ᶜ Q₂) → (suc (compstate-metric Q₂) ≤ (compstate-metric Q₁))
+  comp-metric-decreasing (∘return M→M') = {!!}
+  comp-metric-decreasing ∙return = {!!}
+  comp-metric-decreasing ∘push = {!!}
+  comp-metric-decreasing ∘sub = {!!}
+  comp-metric-decreasing (∘pm π M→M' π') = {!!}
+  comp-metric-decreasing (∙app-var i→λW πᵥ) = {!!}
+  comp-metric-decreasing (∙app-pm M→M' π) = {!!}
+  comp-metric-decreasing ∙app-lam = {!!}
+  comp-metric-decreasing (∘app N→N' π) = {!!}
+  comp-metric-decreasing (∘var M→i π' x₁ πᵥ) = {!!}
+
+{-
   app-eval-rec₀ :   (i : Γ' ∋ X `⇒ Y) → (N : V̲a̲l̲ Γ X) → (γ : Env Γ) → (π : Wk Γ Γ') → (cs : CompStack Δ Y) → (πₓ : Wk Γ Δ)
                   → (wk≡₀ : ⟦ πₓ ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → (compstate-metric ((∙⟨ (a̲pp (wk-val π (var i)) N) ⊰ γ ╎ cs ⟩) {π = πₓ} {wk≡ = wk≡₀}) ≤ 0)
                   → CompSteps ((∙⟨ (a̲pp (wk-val π (var i)) N) ⊰ γ ╎ cs ⟩) {π = πₓ} {wk≡ = wk≡₀})
@@ -932,3 +951,4 @@ _ = refl
 _ : comp-eval-test-metric ex11 ≡ 801 ∷ 799 ∷ 795 ∷ 793 ∷ 789 ∷ 138 ∷ 120 ∷ 93 ∷ 22 ∷ 18 ∷ 13 ∷ 10 ∷ 9 ∷ 5 ∷ 2 ∷ []
 _ = refl
 
+-}
