@@ -376,6 +376,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       e = env-metric γ csn
       w = ⟪ c̲o̲m̲p-metric W (proj₁ e) (proj₂ e) csn ⟫
 
+  {-
   valstate-metric : ValState X → ℕ
   valstate-metric (∘ x) = {!!}
   valstate-metric (∙ x) = {!!}
@@ -395,8 +396,8 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   comp-metric-decreasing ∙app-lam = {!!}
   comp-metric-decreasing (∘app N→N' π) = {!!}
   comp-metric-decreasing (∘var M→i π' x₁ πᵥ) = {!!}
+  -}
 
-{-
   app-eval-rec₀ :   (i : Γ' ∋ X `⇒ Y) → (N : V̲a̲l̲ Γ X) → (γ : Env Γ) → (π : Wk Γ Γ') → (cs : CompStack Δ Y) → (πₓ : Wk Γ Δ)
                   → (wk≡₀ : ⟦ πₓ ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → (compstate-metric ((∙⟨ (a̲pp (wk-val π (var i)) N) ⊰ γ ╎ cs ⟩) {π = πₓ} {wk≡ = wk≡₀}) ≤ 0)
                   → CompSteps ((∙⟨ (a̲pp (wk-val π (var i)) N) ⊰ γ ╎ cs ⟩) {π = πₓ} {wk≡ = wk≡₀})
@@ -502,7 +503,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     -- app-eval-rec (var i) N γ π cs πₓ wk≡₀ zero m≤n = app-eval-rec₀ i N γ π cs πₓ wk≡₀ m≤n
     -- app-eval-rec (var i) N γ π cs πₓ wk≡₀ (suc n) m≤n with lookup (wk-mem π i) γ
     app-eval-rec (var i) N γ π cs πₓ wk≡₀ n m≤n with lookup (wk-mem π i) γ
-    ... | steps i>>T (found-lam {X = X} {W = W} {γ = γ₁}) i≡T π₁ _ w≡γ _ with app-eval-rec (lam W) N γ π₁ cs πₓ wk≡₀ n  ≤-refl
+    ... | steps i>>T (found-lam {X = X} {W = W} {γ = γ₁}) i≡T π₁ w≡γ with app-eval-rec (lam W) N γ π₁ cs πₓ wk≡₀ n  ≤-refl
     ... | steps {T = T} W>WT HT S≡T cM =
 
                  steps
@@ -764,7 +765,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     -- comp-eval-rec (var {A = X} M) γ π cs πₓ wk≡₀ (suc n) m≤n with val-eval-rec {X = `V} M γ π
     comp-eval-rec (var {A = X} M) γ π cs πₓ wk≡₀ n m≤n with val-eval-rec {X = `V} M γ π
     ... | steps {T = ∙ ((⭭ v̲a̲r̲ i) ⊲ γ₁ ∷ □) {↥ = 🗆}} M>T ∙T M≡T π' wk≡ with lookup i γ₁
-    ... | steps i>>T (found-comp {X = X} {W = W'} {γ = γ'} {cs = cs'} {π = πᶜ} {wk≡ = wk≡c}) i≡T π₂ _ w≡γ _ with
+    ... | steps i>>T (found-comp {X = X} {W = W'} {γ = γ'} {cs = cs'} {π = πᶜ} {wk≡ = wk≡c}) i≡T π₂ w≡γ with
                     comp-eval-rec
                      W'
                      γ'
@@ -951,4 +952,3 @@ _ = refl
 _ : comp-eval-test-metric ex11 ≡ 801 ∷ 799 ∷ 795 ∷ 793 ∷ 789 ∷ 138 ∷ 120 ∷ 93 ∷ 22 ∷ 18 ∷ 13 ∷ 10 ∷ 9 ∷ 5 ∷ 2 ∷ []
 _ = refl
 
--}
