@@ -16,30 +16,6 @@ open import Data.Nat
 variable
   X X' Y Y' Z Z' T◾ T◾' : Ty
   Γ' Γ'' Δ' : Ctx
-  n m n₁ n₂ n₃ m₁ m₂ m₃ : ℕ
-
-≤-trans : n₁ ≤ n₂ → n₂ ≤ n₃ → n₁ ≤ n₃
-≤-trans {n₁ = zero} {n₂ = n₂} {n₃ = n₃} n₁≤n₂ n₂≤n₃ = z≤n
-≤-trans {n₁ = suc n₁} {n₂ = suc n₂} {n₃ = suc n₃} (s≤s n₁≤n₂) (s≤s n₂≤n₃) = s≤s (≤-trans n₁≤n₂ n₂≤n₃)
-
-≤-refl : n ≤ n
-≤-refl {n = zero} = z≤n
-≤-refl {n = suc n} = s≤s ≤-refl
-
-n≤sn : n ≤ suc n
-n≤sn {n = zero} = z≤n
-n≤sn {n = suc n} = s≤s n≤sn
-
-n≤sm : n ≤ m → n ≤ suc m
-n≤sm {n = zero} {m = zero} n≤m = n≤sn
-n≤sm {n = zero} {m = suc m} n≤m = z≤n
-n≤sm {n = suc n} {m = suc m} (s≤s n≤m) = s≤s (≤-trans n≤sn (s≤s n≤m))
-
-p≤p : suc n ≤ suc m → n ≤ m
-p≤p (s≤s sn≤sm) = sn≤sm
-
-p≤n : suc n ≤ m → n ≤ m
-p≤n {m = suc m} (s≤s sn≤m) = n≤sm sn≤m
 
 module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
