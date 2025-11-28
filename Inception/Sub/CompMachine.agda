@@ -404,7 +404,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
         incr (suc ⟪ comp-metric W₁ E ϖ ((count-in-comp h W₂ , ⟪ w ⟫) ∷ csn) ⟫) w
     comp-metric (app M N) E ϖ csn = let IH = val-metric M E ϖ csn in incr (2 + ((p1 IH) + ((suc (p2 IH)) * ⟪ val-metric N E ϖ csn ⟫))) (p3 IH)
     comp-metric (var M) E ϖ csn = incr (suc ⟪ val-metric M E ϖ csn ⟫) zero-metric
-    comp-metric (sub W₁ W₂) E ϖ csn = let w = ⟪ comp-metric W₂ E ϖ csn ⟫ in incr (suc ⟪ comp-metric W₂ E ϖ csn ⟫) (comp-metric W₁ ((`V , m-V (csn-to-nat w csn)) ∷ E) (wkn-cong ϖ) csn)
+    comp-metric (sub W₁ W₂) E ϖ csn = let w = ⟪ comp-metric W₂ E ϖ csn ⟫ in incr (suc ⟪ comp-metric W₂ E ϖ csn ⟫) (comp-metric W₁ ((`V , m-V (w + csn-to-nat₀ w csn)) ∷ E) (wkn-cong ϖ) csn)
 
     v̲a̲l̲-metric : (M : V̲a̲l̲ Γ Y) → (E : List (Σ[ X ∈ Ty ] TermMetric X)) → Wkn Γ E → (csn : List (ℕ × ℕ)) → TermMetric Y
     v̲a̲l̲-metric (l̲a̲m̲ W) E ϖ csn = incr 1 (m-⇒ 0 (count-in-comp h W) (comp-metric W E (wkn-cons ϖ) csn))
@@ -431,7 +431,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
         IH2 = env-metric γ (cs-to-csn cs)
         w = ⟪ comp-metric W (proj₁ IH2) (proj₂ IH2) (cs-to-csn cs) ⟫
       in
-        (`V , m-V (csn-to-nat w (cs-to-csn cs))) ∷ (proj₁ IH) , wkn-cong (proj₂ IH)
+        (`V , m-V (w + csn-to-nat₀ w (cs-to-csn cs))) ∷ (proj₁ IH) , wkn-cong (proj₂ IH)
 
     cs-to-csn : (cs : CompStack Δ Z) → List (ℕ × ℕ)
     cs-to-csn ◻ = []
@@ -449,14 +449,14 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       e = env-metric γ csn
       w = ⟪ comp-metric W (proj₁ e) (proj₂ e) csn ⟫
     in
-      csn-to-nat w csn
+      w + csn-to-nat₀ w csn
   compstate-metric ((∙⟨ W ⊰ γ ╎ cs ⟩) {π = π}) =
     let
       csn = cs-to-csn cs
       e = env-metric γ csn
       w = ⟪ c̲o̲m̲p-metric W (proj₁ e) (proj₂ e) csn ⟫
     in
-      csn-to-nat w csn
+      w + csn-to-nat₀ w csn
 
   botCtx : ValStack non-empty T◾ → Ctx
   botCtx ((_⊲_∷_) {Γ = Γ} _ _ □) = Γ
@@ -483,13 +483,13 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       e = env-metric (botEnv S) csn
       w = partial-term-metric (botTerm S) (proj₁ e) (proj₂ e) csn
     in
-      (csn-to-nat (m + w) csn)
+      (m + w) + (csn-to-nat₀ (m + w) csn)
   valstate-metric (∙ S) m csn =
     let
       e = env-metric (botEnv S) csn
       w = partial-term-metric (botTerm S) (proj₁ e) (proj₂ e) csn
     in
-      (csn-to-nat (m + w) csn)
+      (m + w) + (csn-to-nat₀ (m + w) csn)
 
   {-
   data ExtCS : (CS₁ : CompStack Δ X) → (CS₂ : CompStack Δ' X') → Set where
@@ -717,15 +717,127 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     comp-csn-decreasing (sub W W₁) ϖ (wkm-cong δ x) (extcsn-cong α n₂≤n₁) = {!!}
   -}
 
+  -- nm-M  = v̲a̲l̲-metric M (proj₁ E) (proj₂ E) (cs-to-csn cs)
+  -- nm-N  = comp-metric                      N              (proj₁ E') (wkn-cons (proj₂ E')) (cs-to-csn cs)
+  -- nm-N₂ = comp-metric (wk-comp (wk-cong π) N) ((X , nm-M) ∷ proj₁ E) (wkn-cong (proj₂ E )) (cs-to-csn cs)
+  --    (comp-metric (wk-comp (wk-cong π) N) ((X , v̲a̲l̲-metric M (proj₁ E) (proj₂ E) csn) ∷ proj₁ E) (wkn-cong (proj₂ E )) csn)
+  --  ≤   ⟪ comp-metric N (proj₁ E') (wkn-cons (proj₂ E')) csn ⟫
+  --      + (  count-in-comp h N
+  --         + ⟪ v̲a̲l̲-metric
+  --               M
+  --               (proj₁ E₂)
+  --               (proj₂ E₂)
+  --               ((⟪ (comp-metric (wk-comp (wk-cong π) N) ((X , v̲a̲l̲-metric M (proj₁ E) (proj₂ E) csn) ∷ proj₁ E) (wkn-cong (proj₂ E )) csn) ⟫ , count-in-comp h N) ∷ csn)
+  --            ⟫ * count-in-comp h N)
+
+  csn-decr : (n₁ ≤ n₂) → (csn : List (ℕ × ℕ)) → csn-to-nat₀ n₁ csn ≤ csn-to-nat₀ n₂ csn
+  csn-decr {n₁ = n₁} {n₂ = n₂} z≤n [] = ≤-refl
+  csn-decr {n₁ = n₁} {n₂ = n₂} z≤n (x ∷ csn) = let le1 = (+-≤-cong (≤-refl {n = proj₁ x}) z≤n) in +-≤-cong le1 (csn-decr le1 csn)
+  csn-decr {n₁ = n₁} {n₂ = n₂} (s≤s n₁≤n₂) [] = ≤-refl
+  csn-decr {n₁ = n₁} {n₂ = n₂} (s≤s n₁≤n₂) (x ∷ csn) = let le1 = (+-≤-cong (≤-refl {n = proj₁ x}) (+-≤-cong (≤-refl {n = proj₂ x}) (*-≤-cong n₁≤n₂ (≤-refl {n = proj₂ x})))) in +-≤-cong le1 (csn-decr le1 csn)
+
+  -- Goal: n₂ + n * m₂ + 0 ≤ n₁ + n * m₁ + (n₂ + (n₁ + n * m₁) * m₂ + 0)
+  -- n * m₂ ≤ n₁ + n₁ * m₂
+  -- n * m₂ > n₁ + n₁ * m₂
+  -- n * m₂ > n₁ * (m₂ + 1)
+  -- n * (m₂ / m₂ + 1) > n₁
+  -- 6 * (1/2) > 2
+  -- NOT TRUE:
+  -- csn-decr-2 : (n₁ m₁ : ℕ) → (csn : List (ℕ × ℕ)) → csn-to-nat₀ n csn ≤ csn-to-nat₀ n ((n₁ , m₁) ∷ csn)
+
+  wk-e : (π : Wk Γ Δ) → {E : List (Σ[ X ∈ Ty ] TermMetric X)} → (ϖ : Wkn Δ E) → Wkn Γ E
+  wk-e wk-ε ϖ = ϖ
+  wk-e (wk-cong π) (wkn-cong ϖ) = wkn-cong (wk-e π ϖ)
+  wk-e (wk-cong π) (wkn-cons ϖ) = wkn-cons (wk-e π ϖ)
+  wk-e (wk-wk π) ϖ = wkn-cons (wk-e π ϖ)
+
+  wk-e-id : {E : List (Σ[ X ∈ Ty ] TermMetric X)} → (ϖ : Wkn Γ E) → wk-e wk-id ϖ ≡ ϖ
+  wk-e-id {Γ = Cx.ε} ϖ = refl
+  wk-e-id {Γ = Γ Cx.∙ x} (wkn-cong ϖ) = cong wkn-cong (wk-e-id ϖ)
+  wk-e-id {Γ = Γ Cx.∙ x} (wkn-cons ϖ) = cong wkn-cons (wk-e-id ϖ)
+
+  mutual
+
+    lookup-csn-ext :   (i : Γ ∋ X) → (γ : Env Δ) → (π : Wk Γ Δ) → (csn : List (ℕ × ℕ)) → ⟪ lookup-metric i (proj₁ (env-metric γ csn)) (wk-e π (proj₂ (env-metric γ csn))) ⟫
+                  ≤ ⟪ lookup-metric i (proj₁ (env-metric γ ((n , m) ∷ csn))) (wk-e π (proj₂ (env-metric γ ((n , m) ∷ csn)))) ⟫
+    lookup-csn-ext Cx.h ∗ π csn = ≤-refl
+    lookup-csn-ext {n = n} {m = m} Cx.h (γ ﹐ M) (wk-cong π) csn rewrite (sym (wk-e-id (proj₂ (env-metric γ csn)))) | (sym (wk-e-id (proj₂ (env-metric γ ((n , m) ∷ csn))))) =
+        v̲a̲l̲-csn-ext {n = n} {m = m} M γ wk-id csn
+    lookup-csn-ext Cx.h (γ ﹐ M) (wk-wk π) csn = ≤-refl
+    lookup-csn-ext {n = n} {m = m} Cx.h (γ ﹐﹝ W ╎ cs ﹞) (wk-cong π) csn = ≤-refl
+    lookup-csn-ext Cx.h (γ ﹐﹝ W ╎ cs ﹞) (wk-wk π) csn = ≤-refl
+    lookup-csn-ext (Cx.t i) (γ ﹐ M) (wk-cong π) csn = lookup-csn-ext i γ π csn
+    lookup-csn-ext (Cx.t i) (γ ﹐﹝ W ╎ cs ﹞) (wk-cong π) csn = lookup-csn-ext i γ π csn
+    lookup-csn-ext (Cx.t i) ∗ (wk-wk π) csn = ≤-refl
+    lookup-csn-ext (Cx.t i) (γ ﹐ M) (wk-wk π) csn = lookup-csn-ext i (γ ﹐ M) π csn
+    lookup-csn-ext (Cx.t i) ((γ ﹐﹝ W ╎ cs ﹞) {π = π'} {wk≡ = wk≡}) (wk-wk π) csn = lookup-csn-ext i ((γ ﹐﹝ W ╎ cs ﹞) {π = π'} {wk≡ = wk≡}) π csn
+
+    comp-csn-ext :   (W : Comp Γ X) → (γ : Env Δ) → (π : Wk Γ Δ) → (csn : List (ℕ × ℕ)) → ⟪ comp-metric W (proj₁ (env-metric γ csn)) (wk-e π (proj₂ (env-metric γ csn))) csn ⟫
+                  ≤ ⟪ comp-metric W (proj₁ (env-metric γ ((n , m) ∷ csn))) (wk-e π (proj₂ (env-metric γ ((n , m) ∷ csn)))) ((n , m) ∷ csn) ⟫
+    comp-csn-ext W γ π csn = {!!}
+
+    --v̲a̲l̲-csn-ext :   (M : V̲a̲l̲ Γ X) → (γ : Env Γ) → (csn : List (ℕ × ℕ)) → ⟪ v̲a̲l̲-metric M (proj₁ (env-metric γ csn)) (proj₂ (env-metric γ csn)) csn ⟫
+    --              ≤ ⟪ v̲a̲l̲-metric M (proj₁ (env-metric γ ((n , m) ∷ csn))) (proj₂ (env-metric γ ((n , m) ∷ csn))) ((n , m) ∷ csn) ⟫
+    v̲a̲l̲-csn-ext :   (M : V̲a̲l̲ Γ X) → (γ : Env Δ) → (π : Wk Γ Δ) → (csn : List (ℕ × ℕ)) → ⟪ v̲a̲l̲-metric M (proj₁ (env-metric γ csn)) (wk-e π (proj₂ (env-metric γ csn))) csn ⟫
+                  ≤ ⟪ v̲a̲l̲-metric M (proj₁ (env-metric γ ((n , m) ∷ csn))) (wk-e π (proj₂ (env-metric γ ((n , m) ∷ csn)))) ((n , m) ∷ csn) ⟫
+    v̲a̲l̲-csn-ext (l̲a̲m̲ W) γ π csn = s≤s (comp-csn-ext W γ (wk-wk π) csn) --(comp-csn-ext W {!!} csn)
+    v̲a̲l̲-csn-ext {n = n} {m = m} (pa̲i̲r̲ M N) γ π csn =
+      let
+        a1 = v̲a̲l̲-csn-ext {n = n} {m = m} M γ π csn
+        b1 = v̲a̲l̲-csn-ext {n = n} {m = m} N γ π csn
+      in
+        s≤s (+-≤-cong a1 b1)
+    v̲a̲l̲-csn-ext u̲n̲i̲t̲ γ π csn = ≤-refl
+    v̲a̲l̲-csn-ext (v̲a̲r̲ i) γ π csn = s≤s (lookup-csn-ext i γ π csn)
+    --     E₂ = (env-metric γ ((n , m) ∷ csn))
+    --     E₂ = (env-metric γ ((⟪ nm-N ⟫ , count-in-comp h N) ∷ cs-to-csn cs))
+    --     nm-M₂ = ⟪ v̲a̲l̲-metric M (proj₁ E₂) (proj₂ E₂) ((⟪ nm-N ⟫ , count-in-comp h N) ∷ cs-to-csn cs) ⟫
 
   val-metric-decreasing : {Q₁ : ValState X} → {Q₂ : ValState X} → (Q₁→ᶜQ₂ : Q₁ ↠ᵛ Q₂) → (m : ℕ) → (csn : List (ℕ × ℕ)) → (suc (valstate-metric Q₂ m csn) ≤ (valstate-metric Q₁ m csn))
   val-metric-decreasing = {!!}
 
 
   comp-metric-decreasing : {Q₁ : CompState} → {Q₂ : CompState} → (Q₁→ᶜQ₂ : Q₁ →ᶜ Q₂) → (suc (compstate-metric Q₂) ≤ (compstate-metric Q₁))
-  comp-metric-decreasing (∘return {cs = cs} M→M') with val-metric-decreasing (M→M') 1 (cs-to-csn cs)
-  ... | x = {!!}
-  comp-metric-decreasing ∙return = {!!}
+  comp-metric-decreasing (∘return {M = M} {γ = γ} {π = π} {M' = M'} {γ' = γ'} {cs = cs} M→M') with val-metric-decreasing (M→M') 1 (cs-to-csn cs)
+  ... | s≤s x =
+    let
+      a1 = ⟪ v̲a̲l̲-metric M' (proj₁ (env-metric γ' (cs-to-csn cs))) (proj₂ (env-metric γ' (cs-to-csn cs))) (cs-to-csn cs) ⟫
+      a2 = ⟪ val-metric (wk-val π M) (proj₁ (env-metric γ (cs-to-csn cs))) (proj₂ (env-metric γ (cs-to-csn cs))) (cs-to-csn cs) ⟫
+    in
+      s≤s (s≤s (≤-trans (n≤sn {n = a1 + csn-to-nat₀ (suc a1) (cs-to-csn cs)}) (≤-trans x (+-≤-cong (≤-refl {n = a2}) (csn-decr (n≤sn {n = suc a2}) (cs-to-csn cs))))))
+  comp-metric-decreasing (∙return {X = X} {M = M} {γ = γ} {N = N} {γ' = γ'} {π = π} {cs = cs}) =
+     let
+       E  = (env-metric γ (cs-to-csn cs))
+       E' = (env-metric γ' (cs-to-csn cs))
+       nm-M  = v̲a̲l̲-metric M (proj₁ E) (proj₂ E) (cs-to-csn cs)
+       nm-N  = comp-metric                      N              (proj₁ E') (wkn-cons (proj₂ E')) (cs-to-csn cs)
+       nm-N₂ = comp-metric (wk-comp (wk-cong π) N) ((X , nm-M) ∷ proj₁ E) (wkn-cong (proj₂ E )) (cs-to-csn cs)
+       E₂ = (env-metric γ ((⟪ nm-N ⟫ , count-in-comp h N) ∷ cs-to-csn cs))
+       nm-M₂ = ⟪ v̲a̲l̲-metric M (proj₁ E₂) (proj₂ E₂) ((⟪ nm-N ⟫ , count-in-comp h N) ∷ cs-to-csn cs) ⟫
+       -- nm-M ≤ nm-M₂
+       -- TP: nm-N₂ ≤ ⟪ nm-N ⟫ + (count-in-comp h N + nm-M * count-in-comp h N)
+       -- TP: nm-N₂ ≤ ⟪ nm-N ⟫ + (count-in-comp h N + nm-M₂ * count-in-comp h N)
+     in
+       {!!}
+
+  -- comp-metric-decreasing (∙return {X = X} {M = l̲a̲m̲ x} {γ = γ} {N = N} {γ' = γ'} {π = π} {cs = cs}) = {!!}
+  -- comp-metric-decreasing (∙return {X = X} {M = pa̲i̲r̲ M M₁} {γ = γ} {N = N} {γ' = γ'} {π = π} {cs = cs}) = {!!}
+
+  -- comp-metric-decreasing (∙return {X = X} {M = u̲n̲i̲t̲} {γ = γ} {N = N} {γ' = γ'} {π = π} {cs = cs}) =
+  --     let
+  --       E  = (env-metric γ (cs-to-csn cs))
+  --       E' = (env-metric γ' (cs-to-csn cs))
+  --       -- nm-M  = v̲a̲l̲-metric  u̲n̲i̲t̲ (proj₁ E) (proj₂ E) (cs-to-csn cs)
+  --       nm-N  = comp-metric                      N              (proj₁ E') (wkn-cons (proj₂ E')) (cs-to-csn cs)
+  --       nm-N₂ = comp-metric (wk-comp (wk-cong π) N) ((X , m-Unit 1) ∷ proj₁ E) (wkn-cong (proj₂ E )) (cs-to-csn cs)
+  --       E₂ = (env-metric γ ((⟪ nm-N ⟫ , count-in-comp h N) ∷ cs-to-csn cs))
+  --       -- nm-M₂ = ⟪ v̲a̲l̲-metric u̲n̲i̲t̲ (proj₁ E₂) (proj₂ E₂) ((⟪ nm-N ⟫ , count-in-comp h N) ∷ cs-to-csn cs) ⟫
+  --       -- TP: nm-N₂ ≤ ⟪ nm-N ⟫ + (count-in-comp h N + nm-M₂ * count-in-comp h N)
+  --     in
+  --       {!!}
+
+  -- comp-metric-decreasing (∙return {X = X} {M = v̲a̲r̲ i} {γ = γ} {N = N} {γ' = γ'} {π = π} {cs = cs}) = {!!}
+
   comp-metric-decreasing ∘push = {!!}
   comp-metric-decreasing ∘sub = {!!}
   comp-metric-decreasing (∘pm π M→M' π') = {!!}
@@ -734,6 +846,11 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   comp-metric-decreasing ∙app-lam = {!!}
   comp-metric-decreasing (∘app N→N' π) = {!!}
   comp-metric-decreasing (∘var M→i π' x₁ πᵥ) = {!!}
+
+--  suc (cm-1 + csn-to-nat₀ cm-1 (cs-to-csn cs))
+--   ≤
+--  suc (vm-1 + (⟪ nm-N ⟫ + (count-in-comp h N + vm-1 * count-in-comp h N) + csn-to-nat₀ (⟪ nm-N ⟫ + (count-in-comp h N + vm-1 * count-in-comp h N)) (cs-to-csn cs)))
+
 
 {-
   -- postulate debuglemma : m ≤ n
