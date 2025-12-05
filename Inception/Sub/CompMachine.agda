@@ -514,6 +514,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   wk-e-id {Γ = Γ Cx.∙ x} (wkn-cons ϖ) = cong wkn-cons (wk-e-id ϖ)
 
 ---------------------------------------------------------------
+
   mutual
 
     lookup-csn-ext :   (i : Γ ∋ X) → (γ : Env Δ) → (π : Wk Γ Δ) → (csn : List (ℕ × ℕ)) → lookup-metric i (proj₁ (env-metric γ csn)) (wk-e π (proj₂ (env-metric γ csn)))
@@ -700,14 +701,28 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
        E  = (env-metric γ (cs-to-csn cs))
        E' = (env-metric γ' (cs-to-csn cs))
        nm-M  = v̲a̲l̲-metric M (proj₁ E) (proj₂ E) (cs-to-csn cs)
-       nm-N  = comp-metric                      N              (proj₁ E') (wkn-cons (proj₂ E')) (cs-to-csn cs)
-       nm-N₂ = comp-metric (wk-comp (wk-cong π) N) ((X , nm-M) ∷ proj₁ E) (wkn-cong (proj₂ E )) (cs-to-csn cs)
+       nm-N  = comp-metric                      N              (proj₁ E' ) (wkn-cons (proj₂ E')) (cs-to-csn cs)
+       nm-N₁ = comp-metric                      N  ((X , nm-M) ∷ proj₁ E') (wkn-cong (proj₂ E')) (cs-to-csn cs)
+       --             ==
+       nm-N₂ = comp-metric (wk-comp (wk-cong π) N) ((X , nm-M) ∷ proj₁ E ) (wkn-cong (proj₂ E )) (cs-to-csn cs)
        E₂ = (env-metric γ ((⟪ nm-N ⟫ , count-in-comp h N) ∷ cs-to-csn cs))
        nm-M₂ = ⟪ v̲a̲l̲-metric M (proj₁ E₂) (proj₂ E₂) ((⟪ nm-N ⟫ , count-in-comp h N) ∷ cs-to-csn cs) ⟫
-       -- nm-M ≤ nm-M₂
+       --
+       M-test = l̲a̲m̲ {X = `Unit} (sub (var (var h)) (return unit))
+       N-test = return unit
+       nm = (2 , 0)
+       cs-test = (5 , 2) ∷ []
+       E-test  = (env-metric γ cs-test)
+       E₂-test = (env-metric γ (nm ∷ cs-test))
+       nm-M-test  = v̲a̲l̲-metric M-test (proj₁ E-test) (proj₂ E-test) cs-test
+       nm-M₂-test = ⟪ v̲a̲l̲-metric M-test (proj₁ E₂-test) (proj₂ E₂-test) (nm ∷ cs-test) ⟫
+       nm-N-test  =      comp-metric                      N-test            (proj₁ E-test ) (wkn-cons (proj₂ E-test)) cs-test
+       nm-N₂-test = comp-metric (wk-comp (wk-cong wk-id) N-test) ((`Unit `⇒ `Unit , nm-M-test) ∷ proj₁ E-test ) (wkn-cong (proj₂ E-test )) cs-test
+       -- nm-M ≤ nm-M₂     <------ NOT TRUE
        -- TP: nm-N₂ ≤ ⟪ nm-N ⟫ + (count-in-comp h N + nm-M * count-in-comp h N)
        -- TP: nm-N₂ ≤ ⟪ nm-N ⟫ + (count-in-comp h N + nm-M₂ * count-in-comp h N)
-       -- TP: nm-N₂ ≤ ⟪ nm-N ⟫ + (count-in-comp h N + ⟪ v̲a̲l̲-metric M (proj₁ E₂) (proj₂ E₂) ((⟪ nm-N ⟫ , count-in-comp h N) ∷ cs-to-csn cs) ⟫ * count-in-comp h N)
+       -- TP: ⟪ comp-metric (wk-comp (wk-cong π) N) ((X , nm-M) ∷ proj₁ E ) (wkn-cong (proj₂ E )) (cs-to-csn cs) ⟫
+       --    ≤ ⟪ nm-N ⟫ + (count-in-comp h N + ⟪ v̲a̲l̲-metric M (proj₁ E₂) (proj₂ E₂) ((⟪ nm-N ⟫ , count-in-comp h N) ∷ cs-to-csn cs) ⟫ * count-in-comp h N)
      in
        {!!}
 
@@ -754,8 +769,6 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 --   ≤
 --  suc (vm-1 + (⟪ nm-N ⟫ + (count-in-comp h N + vm-1 * count-in-comp h N) + csn-to-nat₀ (⟪ nm-N ⟫ + (count-in-comp h N + vm-1 * count-in-comp h N)) (cs-to-csn cs)))
 
-
-{-
   -- postulate debuglemma : m ≤ n
   debuglemma = ≤-refl
 
@@ -1099,6 +1112,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     comp-eval-test-metric W with comp-eval W
     ... | steps _ _ _ l = l
 
+{-
 postulate k₀ : ⟦ `Unit ⟧ → R
 
 open VMain {R₀ = `Unit} k₀
@@ -1260,23 +1274,26 @@ _ = refl
 -- (r̲e̲t̲u̲r̲n̲ u̲n̲i̲t̲)                                                                                                 m-Unit 2
 -- return (pm (pair (pair unit unit) (pair unit unit)) unit)                                                     m-Unit 9
 
---  compstate-metric : CompState → ℕ
---  compstate-metric ((∘⟨ W ⊰ γ ╎ cs ⟩) {π = π}) =
---    let
---      csn = cs-to-csn cs
---      e = env-metric γ csn
---      w = ⟪ comp-metric W (proj₁ e) (proj₂ e) csn ⟫
---    in
---      csn-to-nat w csn
---  compstate-metric ((∙⟨ W ⊰ γ ╎ cs ⟩) {π = π}) =
---    let
---      csn = cs-to-csn cs
---      e = env-metric γ csn
---      w = ⟪ c̲o̲m̲p-metric W (proj₁ e) (proj₂ e) csn ⟫
---    in
---      csn-to-nat w csn
+ex14 : ε ⊢ᶜ (`Unit)
+ex14 = push (push (app (lam {A = `Unit} (sub (var (var h)) (return unit))) unit) (return unit)) (app (lam (return unit)) (pair (pair (pair (var h) (var h)) (var h)) (var h)))
+-}
 
-_ : 1 ≡ {! csn-to-nat 9 ([])!}
+
+postulate k₀' : ⟦ (((`Unit `× `Unit) `× `Unit) `× `Unit) ⟧ → R
+open VMain {R₀ = (((`Unit `× `Unit) `× `Unit) `× `Unit)} k₀'
+open CMain {R₀ = (((`Unit `× `Unit) `× `Unit) `× `Unit)} k₀'
+
+ex15 : ε ⊢ᶜ (`Unit `⇒ `Unit)
+ex15 = return (lam {A = `Unit} (sub (var (var h)) (return unit)))
+
+ex16 : ε ⊢ᶜ (`Unit `⇒ `Unit)
+ex16 = push (return (lam (return unit))) (push (return (lam {A = `Unit} (sub (var (var h)) (return unit)))) (return (lam (return unit))))
+
+
+ex17 : ε ⊢ᶜ (((`Unit `× `Unit) `× `Unit) `× `Unit)
+ex17 = push ((push (return (lam {A = `Unit} (sub (var (var h)) (return unit)))) (return unit))) (return (pair (pair (pair (var h) (var h)) (var h)) (var h)))
+
+_ : 1 ≡ {! comp-eval-test-metric ex17!}
 _ = refl
 
 
@@ -1284,4 +1301,3 @@ _ = refl
 -- Goal: csn-to-nat₀ (suc n₂) csn₂ ≤ suc (fst + n₁ * zero + csn-to-nat₀ (suc (fst + n₁ * zero)) csn₁)
 -- Goal: csn-to-nat₀       9    [] ≤ suc (  9 + n₁ * zero + csn-to-nat₀ (suc (fst + n₁ * zero)) csn₁)
 
--}
