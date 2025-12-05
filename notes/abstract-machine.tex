@@ -358,6 +358,7 @@ The only halting state is: $\underline{M} \triangleleft \gamma :: \emptyvs$
   \VS{\PMV (M , N) \triangleleft \gamma :: \Xi} &\leadsto^V \VS{M \triangleleft \gamma :: \PMV(-_M , N) \triangleleft \gamma :: \Xi}\\
   \VS{\ast\, \triangleleft\, \gamma :: \Xi} &\leadsto^V \VS{\underline{\ast} \triangleleft \gamma :: \Xi}\\
   \VS{\underline{M'} \triangleleft \gamma :: (-_M , N) \triangleleft \gamma' :: \Xi} &\leadsto^V \VS{N \triangleleft \gamma :: (\underline{M'} , -_N) \triangleleft \gamma :: \Xi}\\
+  \VS{\underline{N'} \triangleleft \gamma :: (\underline{M'} , -_N) \triangleleft \gamma' :: \Xi} &\leadsto^V \VS{(\underline{M'}, \underline{N'}) \triangleleft \gamma :: \Xi}\\
   \VS{(\underline{M'}, \underline{N'}) \triangleleft \gamma :: \PMV(-_M , N) \triangleleft \gamma' :: \Xi} &\leadsto^V \VS{N \triangleleft (\gamma , \underline{M'}, \underline{N'}) :: \Xi}\\
 \end{align*}
 
