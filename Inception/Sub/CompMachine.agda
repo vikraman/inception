@@ -488,6 +488,11 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   {-# REWRITE incr-coh #-}
 
+  vx+n : (nm : TermMetric (X `× Y)) → vx (incr n nm) ≡ n + (vx nm)
+  vx+n (m-× m nm nm₁) = refl
+
+  {-# REWRITE vx+n #-}
+
 -------------------------------------------------------
 
   data ⊥ : Set where
@@ -609,14 +614,75 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
 -------------------------------------------------------
 
-  return-lemma : (W : Comp (Γ ∙ X) Y) → (M : V̲a̲l̲ Γ X) → (γ : Env Γ) → (csn : List (ℕ × ℕ)) → ⟪ comp-metric (wk-comp (wk-cong wk-id) W) ((X , v̲a̲l̲-metric M (proj₁ (env-metric γ csn)) (proj₂ (env-metric γ csn)) csn) ∷ (proj₁ (env-metric γ csn))) (wkn-cong (proj₂ (env-metric γ csn))) csn ⟫ ≤ ⟪ comp-metric W (proj₁ (env-metric γ csn)) (wkn-cons (proj₂ (env-metric γ csn))) csn ⟫ + (count-in-comp h W + ⟪ v̲a̲l̲-metric M (proj₁ (env-metric γ ((⟪ comp-metric W (proj₁ (env-metric γ csn)) (wkn-cons (proj₂ (env-metric γ csn))) csn ⟫ , count-in-comp h W) ∷ csn))) (proj₂ (env-metric γ ((⟪ comp-metric W (proj₁ (env-metric γ csn)) (wkn-cons (proj₂ (env-metric γ csn))) csn ⟫ , count-in-comp h W) ∷ csn))) ((⟪ comp-metric W (proj₁ (env-metric γ csn)) (wkn-cons (proj₂ (env-metric γ csn))) csn ⟫ , count-in-comp h W) ∷ csn) ⟫ * count-in-comp h W)
+  mutual
 
-  return-lemma (return M₁) M γ csn = {!!}
-  return-lemma (pm M₁ W) M γ csn = {!!}
-  return-lemma (push W₁ W₂) M γ csn = {!!}
-  return-lemma (app M₁ M₂) M γ csn = {!!}
-  return-lemma (var M₁) M γ csn = {!!}
-  return-lemma (sub W₁ W₂) M γ csn = {!!}
+    mem-csn-eq : (i : Γ ∋ X) → (γ : Env Γ) → (csn : List (ℕ × ℕ)) → (n ≤ m) → (cnt : ℕ) →
+                 ⟪ lookup-metric i (proj₁ (env-metric γ ((n , cnt) ∷ csn))) (proj₂ (env-metric γ ((n , cnt) ∷ csn))) ⟫
+                 ≤
+                 ⟪ lookup-metric i (proj₁ (env-metric γ ((m , cnt) ∷ csn))) (proj₂ (env-metric γ ((m , cnt) ∷ csn))) ⟫
+    mem-csn-eq {n = n} {m = m} Cx.h (γ ﹐ M) csn n≤m cnt = v̲a̲l̲-csn-eq M γ csn n≤m cnt
+    mem-csn-eq {n = n} {m = m} Cx.h (γ ﹐﹝ W ╎ cs ﹞) csn n≤m cnt = ≤-refl
+    mem-csn-eq {n = n} {m = m} (Cx.t i) (γ ﹐ M) csn n≤m cnt = mem-csn-eq {n = n} {m = m} i γ csn n≤m cnt
+    mem-csn-eq {n = n} {m = m} (Cx.t i) (γ ﹐﹝ W ╎ cs ﹞) csn n≤m cnt = mem-csn-eq {n = n} {m = m} i γ csn n≤m cnt
+
+    val-csn-eq : (M : Val Γ X) → (γ : Env Γ) → (csn : List (ℕ × ℕ)) → (n ≤ m) → (cnt : ℕ) →
+                 ⟪ val-metric M (proj₁ (env-metric γ ((n , cnt) ∷ csn))) (proj₂ (env-metric γ ((n , cnt) ∷ csn))) ((n , cnt) ∷ csn) ⟫
+                 ≤
+                 ⟪ val-metric M (proj₁ (env-metric γ ((m , cnt) ∷ csn))) (proj₂ (env-metric γ ((m , cnt) ∷ csn))) ((m , cnt) ∷ csn) ⟫
+    val-csn-eq {n = n} {m = m} (var i) γ csn n≤m cnt = {!!}
+    val-csn-eq {n = n} {m = m} (lam W) γ csn n≤m cnt = {!!}
+    val-csn-eq {n = n} {m = m} (pair M₁ M₂) γ csn n≤m cnt = {!!}
+    val-csn-eq {n = n} {m = m} (pm M₁ M₂) γ csn n≤m cnt = {!!}
+    val-csn-eq {n = n} {m = m} unit γ csn n≤m cnt = {!!}
+
+    comp-csn-eq : (W : Comp Γ X) → (γ : Env Γ) → (csn : List (ℕ × ℕ)) → (n ≤ m) → (cnt : ℕ) →
+                 ⟪ comp-metric W (proj₁ (env-metric γ ((n , cnt) ∷ csn))) (proj₂ (env-metric γ ((n , cnt) ∷ csn))) ((n , cnt) ∷ csn) ⟫
+                 ≤
+                 ⟪ comp-metric W (proj₁ (env-metric γ ((m , cnt) ∷ csn))) (proj₂ (env-metric γ ((m , cnt) ∷ csn))) ((m , cnt) ∷ csn) ⟫
+    comp-csn-eq {n = n} {m = m} (return M) γ csn n≤m cnt = s≤s (s≤s (val-csn-eq M γ csn n≤m cnt))
+    comp-csn-eq {n = n} {m = m} (pm M W) γ csn n≤m cnt = s≤s {!+-≤-cong (≤-refl {n = vx (val-metric M (proj₁ (env-metric γ ((n , cnt) ∷ csn))) (proj₂ (env-metric γ ((n , cnt) ∷ csn))) ((n , cnt) ∷ csn))}) ?!}
+    comp-csn-eq {n = n} {m = m} (push W₁ W₂) γ csn n≤m cnt = {!!}
+    comp-csn-eq {n = n} {m = m} (app M₁ M₂) γ csn n≤m cnt = {!!}
+    comp-csn-eq {n = n} {m = m} (var M) γ csn n≤m cnt = {!!}
+    comp-csn-eq {n = n} {m = m} (sub W₁ W₂) γ csn n≤m cnt = {!!}
+
+    v̲a̲l̲-csn-eq : (M : V̲a̲l̲ Γ X) → (γ : Env Γ) → (csn : List (ℕ × ℕ)) → (n ≤ m) → (cnt : ℕ) →
+                 ⟪ v̲a̲l̲-metric M (proj₁ (env-metric γ ((n , cnt) ∷ csn))) (proj₂ (env-metric γ ((n , cnt) ∷ csn))) ((n , cnt) ∷ csn) ⟫
+                 ≤
+                 ⟪ v̲a̲l̲-metric M (proj₁ (env-metric γ ((m , cnt) ∷ csn))) (proj₂ (env-metric γ ((m , cnt) ∷ csn))) ((m , cnt) ∷ csn) ⟫
+    v̲a̲l̲-csn-eq {n = n} {m = m} (l̲a̲m̲ W) γ csn n≤m cnt = s≤s {!c!}
+    v̲a̲l̲-csn-eq {n = n} {m = m} (pa̲i̲r̲ M₁ M₂) γ csn n≤m cnt = {!!}
+    v̲a̲l̲-csn-eq {n = n} {m = m} u̲n̲i̲t̲ γ csn n≤m cnt = {!!}
+    v̲a̲l̲-csn-eq {n = n} {m = m} (v̲a̲r̲ i) γ csn n≤m cnt = {!!}
+
+
+-------------------------------------------------------
+
+  return-val-lemma : (M₁ : Val (Γ ∙ X) Y) → (M : V̲a̲l̲ Γ X) → (γ : Env Γ) → (csn : List (ℕ × ℕ)) → ⟪ val-metric (wk-val (wk-cong wk-id) M₁) ((X , v̲a̲l̲-metric M (proj₁ (env-metric γ csn)) (proj₂ (env-metric γ csn)) csn) ∷ (proj₁ (env-metric γ csn))) (wkn-cong (proj₂ (env-metric γ csn))) csn ⟫ ≤ ⟪ val-metric M₁ (proj₁ (env-metric γ csn)) (wkn-cons (proj₂ (env-metric γ csn))) csn ⟫ + (count-in-val h M₁ + ⟪ v̲a̲l̲-metric M (proj₁ (env-metric γ ((⟪ val-metric M₁ (proj₁ (env-metric γ csn)) (wkn-cons (proj₂ (env-metric γ csn))) csn ⟫ , count-in-val h M₁) ∷ csn))) (proj₂ (env-metric γ ((⟪ val-metric M₁ (proj₁ (env-metric γ csn)) (wkn-cons (proj₂ (env-metric γ csn))) csn ⟫ , count-in-val h M₁) ∷ csn))) ((⟪ val-metric M₁ (proj₁ (env-metric γ csn)) (wkn-cons (proj₂ (env-metric γ csn))) csn ⟫ , count-in-val h M₁) ∷ csn) ⟫ * count-in-val h M₁)
+  return-val-lemma M₁ M γ csn = {!!}
+
+  return-comp-lemma : (W : Comp (Γ ∙ X) Y) → (M : V̲a̲l̲ Γ X) → (γ : Env Γ) → (csn : List (ℕ × ℕ)) → ⟪ comp-metric (wk-comp (wk-cong wk-id) W) ((X , v̲a̲l̲-metric M (proj₁ (env-metric γ csn)) (proj₂ (env-metric γ csn)) csn) ∷ (proj₁ (env-metric γ csn))) (wkn-cong (proj₂ (env-metric γ csn))) csn ⟫ ≤ ⟪ comp-metric W (proj₁ (env-metric γ csn)) (wkn-cons (proj₂ (env-metric γ csn))) csn ⟫ + (count-in-comp h W + ⟪ v̲a̲l̲-metric M (proj₁ (env-metric γ ((⟪ comp-metric W (proj₁ (env-metric γ csn)) (wkn-cons (proj₂ (env-metric γ csn))) csn ⟫ , count-in-comp h W) ∷ csn))) (proj₂ (env-metric γ ((⟪ comp-metric W (proj₁ (env-metric γ csn)) (wkn-cons (proj₂ (env-metric γ csn))) csn ⟫ , count-in-comp h W) ∷ csn))) ((⟪ comp-metric W (proj₁ (env-metric γ csn)) (wkn-cons (proj₂ (env-metric γ csn))) csn ⟫ , count-in-comp h W) ∷ csn) ⟫ * count-in-comp h W)
+
+  return-comp-lemma (return M₁) M γ csn =
+    let
+      a1 = return-val-lemma M₁ M γ csn
+    in
+    {!!}
+  return-comp-lemma (pm M₁ W) M γ csn = {!!}
+  return-comp-lemma (push W₁ W₂) M γ csn = {!!}
+  return-comp-lemma (app M₁ M₂) M γ csn = {!!}
+  return-comp-lemma (var M₁) M γ csn = {!!}
+  return-comp-lemma (sub W₁ W₂) M γ csn = {!!}
+
+{-
+
+Goal: 2+ ⟪val-metric (wk-val (wk-cong wk-id) M₁) ((X , v̲a̲l̲-metric M (proj₁ (env-metric γ csn)) (proj₂ (env-metric γ csn)) csn) ∷ proj₁ (env-metric γ csn)) (wkn-cong (proj₂ (env-metric γ csn))) csn⟫ ≤ 2+ (⟪val-metric M₁ (proj₁ (env-metric γ csn)) (wkn-cons (proj₂ (env-metric γ csn))) csn⟫ + (count-in-val h M₁ + ⟪v̲a̲l̲-metric M (proj₁ (env-metric γ ((2+ ⟪val-metric M₁ (proj₁ (env-metric γ csn)) (wkn-cons (proj₂ (env-metric γ csn))) csn⟫ , count-in-val h M₁) ∷ csn))) (proj₂ (env-metric γ ((2+ ⟪val-metric M₁ (proj₁ (env-metric γ csn)) (wkn-cons (proj₂ (env-metric γ csn))) csn⟫ , count-in-val h M₁) ∷ csn))) ((2+ ⟪val-metric M₁ (proj₁ (env-metric γ csn)) (wkn-cons (proj₂ (env-metric γ csn))) csn⟫ , count-in-val h M₁) ∷ csn)⟫ * count-in-val h M₁))
+a1  :    ⟪val-metric (wk-val (wk-cong wk-id) M₁) ((X , v̲a̲l̲-metric M (proj₁ (env-metric γ csn)) (proj₂ (env-metric γ csn)) csn) ∷ proj₁ (env-metric γ csn)) (wkn-cong (proj₂ (env-metric γ csn))) csn⟫ ≤     ⟪val-metric M₁ (proj₁ (env-metric γ csn)) (wkn-cons (proj₂ (env-metric γ csn))) csn⟫ + (count-in-val h M₁ + ⟪v̲a̲l̲-metric M (proj₁ (env-metric γ ((   ⟪val-metric M₁ (proj₁ (env-metric γ csn)) (wkn-cons (proj₂ (env-metric γ csn))) csn⟫ , count-in-val h M₁) ∷ csn))) (proj₂ (env-metric γ ((   ⟪val-metric M₁ (proj₁ (env-metric γ csn)) (wkn-cons (proj₂ (env-metric γ csn))) csn⟫ , count-in-val h M₁) ∷ csn))) ((   ⟪val-metric M₁ (proj₁ (env-metric γ csn)) (wkn-cons (proj₂ (env-metric γ csn))) csn⟫ , count-in-val h M₁) ∷ csn)⟫ * count-in-val h M₁)
+
+⟪v̲a̲l̲-metric M (proj₁ (env-metric γ ((2+ m , cnt) ∷ csn))) (proj₂ (env-metric γ ((2+ m , cnt) ∷ csn))) ((2+ m , cnt) ∷ csn)⟫
+⟪v̲a̲l̲-metric M (proj₁ (env-metric γ ((   m , cnt) ∷ csn))) (proj₂ (env-metric γ ((   m , cnt) ∷ csn))) ((   m , cnt) ∷ csn)⟫
+
+-}
 
 -------------------------------------------------------
 
