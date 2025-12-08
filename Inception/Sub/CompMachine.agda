@@ -695,6 +695,73 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
    [z≤n] : {n cnt : ℕ} {csn₁ csn₂ : List (ℕ × ℕ)} → csn₁ ≤ᶜˢⁿ csn₂ → ((zero , cnt) ∷ csn₁) ≤ᶜˢⁿ ((n , cnt) ∷ csn₂)
    [s≤s] : {m n cnt : ℕ} {csn₁ csn₂ : List (ℕ × ℕ)} → ((m , cnt) ∷ csn₁) ≤ᶜˢⁿ ((n , cnt) ∷ csn₂) → ((suc m , cnt) ∷ csn₁) ≤ᶜˢⁿ ((suc n , cnt) ∷ csn₂)
 
+  mutual
+
+    mem-csn-eq : (i : Γ ∋ X) → (γ : Env Γ') → (π : Wk Γ Γ') → (csn₁ csn₂ : List (ℕ × ℕ)) → (csn₁ ≤ᶜˢⁿ csn₂) →
+                 ⟪ lookup-metric i (proj₁ (env-metric γ csn₁)) (wk-e π (proj₂ (env-metric γ csn₁))) ⟫
+                 ≤
+                 ⟪ lookup-metric i (proj₁ (env-metric γ csn₂)) (wk-e π (proj₂ (env-metric γ csn₂))) ⟫
+
+    mem-csn-eq Cx.h ∗ π csn₁ csn₂ c₁≤c₂ = ≤-refl
+    mem-csn-eq Cx.h (γ ﹐ M) π csn₁ csn₂ c₁≤c₂ = {!!}
+
+    mem-csn-eq Cx.h (γ ﹐﹝ W ╎ cs ﹞) (wk-cong π) csn₁ csn₂ c₁≤c₂ = ≤-refl
+    mem-csn-eq Cx.h (γ ﹐﹝ W ╎ cs ﹞) (wk-wk π) csn₁ csn₂ c₁≤c₂ = ≤-refl
+
+    mem-csn-eq (Cx.t i) ∗ π csn₁ csn₂ c₁≤c₂ = ≤-refl
+
+    mem-csn-eq (Cx.t i) (γ ﹐ M) (wk-cong π) csn₁ csn₂ c₁≤c₂ = mem-csn-eq i γ π csn₁ csn₂ c₁≤c₂
+    mem-csn-eq (Cx.t i) (γ ﹐ M) (wk-wk π) csn₁ csn₂ c₁≤c₂ = mem-csn-eq i (γ ﹐ M) π csn₁ csn₂ c₁≤c₂
+
+    mem-csn-eq (Cx.t i) (γ ﹐﹝ W ╎ cs ﹞) (wk-cong π) csn₁ csn₂ c₁≤c₂ = mem-csn-eq i γ π csn₁ csn₂ c₁≤c₂
+    mem-csn-eq (Cx.t i) ((γ ﹐﹝ W ╎ cs ﹞) {π = π'} {wk≡ = wk≡}) (wk-wk π) csn₁ csn₂ c₁≤c₂ = mem-csn-eq i ((γ ﹐﹝ W ╎ cs ﹞) {π = π'} {wk≡ = wk≡}) π csn₁ csn₂ c₁≤c₂
+
+
+    val-csn-eq : (M : Val Γ X) → (γ : Env Γ') → (π : Wk Γ Γ') → (csn₁ csn₂ : List (ℕ × ℕ)) → (csn₁ ≤ᶜˢⁿ csn₂) →
+                 ⟪ val-metric M (proj₁ (env-metric γ csn₁)) (wk-e π (proj₂ (env-metric γ csn₁))) csn₁ ⟫
+                 ≤
+                 ⟪ val-metric M (proj₁ (env-metric γ csn₂)) (wk-e π (proj₂ (env-metric γ csn₂))) csn₂ ⟫
+
+    val-csn-eq (var i) γ π csn₁ csn₂ c₁≤c₂ = s≤s (s≤s ( mem-csn-eq i γ π csn₁ csn₂ c₁≤c₂))
+    val-csn-eq (lam W) γ π csn₁ csn₂ c₁≤c₂ = s≤s (s≤s (comp-csn-eq W γ (wk-wk π) csn₁ csn₂ c₁≤c₂))
+    val-csn-eq (pair M₁ M₂) γ π csn₁ csn₂ c₁≤c₂ = s≤s (s≤s (+-≤-cong (val-csn-eq M₁ γ π csn₁ csn₂ c₁≤c₂) (val-csn-eq M₂ γ π csn₁ csn₂ c₁≤c₂)))
+    val-csn-eq (pm M₁ M₂) γ π csn₁ csn₂ c₁≤c₂ = s≤s {!!}
+    val-csn-eq unit γ π csn₁ csn₂ c₁≤c₂ = ≤-refl
+
+    comp-csn-eq : (W : Comp Γ X) → (γ : Env Γ') → (π : Wk Γ Γ') → (csn₁ csn₂ : List (ℕ × ℕ)) → (csn₁ ≤ᶜˢⁿ csn₂) →
+                 ⟪ comp-metric W (proj₁ (env-metric γ csn₁)) (wk-e π (proj₂ (env-metric γ csn₁))) csn₁ ⟫
+                 ≤
+                 ⟪ comp-metric W (proj₁ (env-metric γ csn₂)) (wk-e π (proj₂ (env-metric γ csn₂))) csn₂ ⟫
+    comp-csn-eq (return M) γ π csn₁ csn₂ c₁≤c₂ = s≤s (s≤s (val-csn-eq M γ π csn₁ csn₂ c₁≤c₂))
+    comp-csn-eq (pm M W) γ π csn₁ csn₂ c₁≤c₂ = s≤s {!!}
+    comp-csn-eq (push W₁ W₂) γ π csn₁ csn₂ c₁≤c₂ = s≤s {!!}
+    comp-csn-eq (app M₁ M₂) γ π csn₁ csn₂ c₁≤c₂ = s≤s (s≤s {!!})
+    comp-csn-eq (var M) γ π csn₁ csn₂ c₁≤c₂ = s≤s {!!}
+    comp-csn-eq (sub W₁ W₂) γ π csn₁ csn₂ c₁≤c₂ = s≤s {!!}
+
+    vx-mem-csn-eq : (i : Γ ∋ (X `× Y)) → (γ : Env Γ') → (π : Wk Γ Γ') → (csn₁ csn₂ : List (ℕ × ℕ)) → (csn₁ ≤ᶜˢⁿ csn₂) →
+                 vx (lookup-metric i (proj₁ (env-metric γ csn₁)) (wk-e π (proj₂ (env-metric γ csn₁))))
+                 ≤
+                 vx (lookup-metric i (proj₁ (env-metric γ csn₂)) (wk-e π (proj₂ (env-metric γ csn₂))))
+
+    vx-mem-csn-eq Cx.h ∗ π csn₁ csn₂ c₁≤c₂ = ≤-refl
+    vx-mem-csn-eq Cx.h (γ ﹐ M) (wk-cong π) csn₁ csn₂ c₁≤c₂ = {!!}
+    vx-mem-csn-eq Cx.h (γ ﹐ M) (wk-wk π) csn₁ csn₂ c₁≤c₂ = z≤n
+    vx-mem-csn-eq Cx.h (γ ﹐﹝ W ╎ cs ﹞) (wk-wk π) csn₁ csn₂ c₁≤c₂ = z≤n
+
+    vx-mem-csn-eq (Cx.t i) ∗ π csn₁ csn₂ c₁≤c₂ = ≤-refl
+    vx-mem-csn-eq (Cx.t i) (γ ﹐ M) π csn₁ csn₂ c₁≤c₂ = {!!}
+    vx-mem-csn-eq (Cx.t i) (γ ﹐﹝ W ╎ cs ﹞) π csn₁ csn₂ c₁≤c₂ = {!!}
+
+    vx-val-csn-eq : (M : Val Γ (X `× Y)) → (γ : Env Γ') → (π : Wk Γ Γ') → (csn₁ csn₂ : List (ℕ × ℕ)) → (csn₁ ≤ᶜˢⁿ csn₂) →
+                 vx (val-metric M (proj₁ (env-metric γ csn₁)) (wk-e π (proj₂ (env-metric γ csn₁))) csn₁)
+                 ≤
+                 vx (val-metric M (proj₁ (env-metric γ csn₂)) (wk-e π (proj₂ (env-metric γ csn₂))) csn₂)
+
+    vx-val-csn-eq (var i) γ π csn₁ csn₂ c₁≤c₂ = s≤s (s≤s {!!})
+    vx-val-csn-eq (pair _ _) γ π csn₁ csn₂ c₁≤c₂ = ≤-refl
+    vx-val-csn-eq (pm M₁ M₂) γ π csn₁ csn₂ c₁≤c₂ = s≤s {!!}
+
 {-
   mutual
 
