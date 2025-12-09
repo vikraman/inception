@@ -814,16 +814,16 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     p2-mem-eq {E₁ = x ∷ E₁} {E₂ = []} (Cx.t i) (wkn-cons ϖ₁) (wkn-cons ϖ₂) (≤ʷ-ww θ) = ql (≤ʷ-z-r θ) (p2 (lookup-metric (t {B = R₀} i) (x ∷ E₁) (wkn-cons ϖ₁)) ≡ p2 (lookup-metric (t {B = R₀} i) [] (wkn-cons ϖ₂)))
     p2-mem-eq {E₁ = x ∷ E₁} {E₂ = x₁ ∷ E₂} (Cx.t i) (wkn-cons ϖ₁) (wkn-cons ϖ₂) (≤ʷ-ww θ) = p2-mem-eq i ϖ₁ ϖ₂ θ
 
-    p2-val-eq : {E₁ E₂ : List (Σ[ X ∈ Ty ] TermMetric X)} → (M : Val Γ (X `⇒ Y)) → (ϖ₁ : Wkn Γ E₁) → (ϖ₂ : Wkn Γ E₂) → (θ : ϖ₁ ≤ʷ ϖ₂) → (csn₁ csn₂ : List (ℕ × ℕ)) → p2 (val-metric M E₁ ϖ₁ csn₁) ≡ p2 (val-metric M E₂ ϖ₂ csn₂)
-    p2-val-eq (var i) ϖ₁ ϖ₂ θ csn₁ csn₂ = p2-mem-eq i ϖ₁ ϖ₂ θ
-    p2-val-eq (lam W) ϖ₁ ϖ₂ θ csn₁ csn₂ = refl
-    p2-val-eq (pm M N) ϖ₁ ϖ₂ θ csn₁ csn₂ =
-      {!!}
-    --p2-val-eq N (wkn-cong (wkn-cong ϖ₁)) (wkn-cong (wkn-cong ϖ₂)) {!!} csn₁ csn₂
 
-----------------------------------------------------------------
+    p2-val-eq : {E₁ E₂ : List (Σ[ X ∈ Ty ] TermMetric X)} → (M : Val Γ (X `⇒ Y)) → (E₁≤E₂ : E₁ ≤ᴱ E₂) → (ϖ₁ : Wkn Γ E₁) → (ϖ₂ : Wkn Γ E₂) → (θ : ϖ₁ ≤ʷ ϖ₂) → (csn₁ csn₂ : List (ℕ × ℕ)) → (csn₁ ≤ᶜˢⁿ csn₂) → p2 (val-metric M E₁ ϖ₁ csn₁) ≡ p2 (val-metric M E₂ ϖ₂ csn₂)
+    p2-val-eq (var i) E₁≤E₂ ϖ₁ ϖ₂ θ csn₁ csn₂ c₁≤c₂ = p2-mem-eq i ϖ₁ ϖ₂ θ
+    p2-val-eq (lam W) E₁≤E₂ ϖ₁ ϖ₂ θ csn₁ csn₂ c₁≤c₂ = refl
+    p2-val-eq {E₁ = E₁} {E₂ = E₂} (pm M N) E₁≤E₂ ϖ₁ ϖ₂ θ csn₁ csn₂ c₁≤c₂ =
+      let
+        a1 = val-csn-le M E₁ E₂ E₁≤E₂ ϖ₁ ϖ₂ θ csn₁ csn₂ c₁≤c₂
+      in
+      p2-val-eq N (≤ᴱ-cong (≤ᴱ-cong E₁≤E₂ (≤ᴹ-lhs a1)) (≤ᴹ-rhs a1)) (wkn-cong (wkn-cong ϖ₁)) (wkn-cong (wkn-cong ϖ₂)) (≤ʷ-cc (≤ʷ-cc θ (≤ᴹ-lhs a1)) (≤ᴹ-rhs a1)) csn₁ csn₂ c₁≤c₂
 
-  mutual
 
     mem-csn-le : (i : Γ ∋ X) → (E₁ E₂ : List (Σ[ X ∈ Ty ] TermMetric X)) → (E₁≤E₂ : E₁ ≤ᴱ E₂) → (ϖ₁ : Wkn Γ E₁) → (ϖ₂ : Wkn Γ E₂) → (θ : ϖ₁ ≤ʷ ϖ₂) →
                  (lookup-metric i E₁ ϖ₁) ≤ᴹ (lookup-metric i E₂ ϖ₂)
@@ -907,16 +907,35 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                c1
       in
       ≤ᴹ-incr-cong (s≤s (≤ᴹ⇒≤ d1)) a2
-    comp-csn-le (app M N) E₁ E₂ E₁≤E₂ ϖ₁ ϖ₂ θ csn₁ csn₂ c₁≤c₂ =
-     let
-       a1 = val-csn-le M E₁ E₂ E₁≤E₂ ϖ₁ ϖ₂ θ csn₁ csn₂ c₁≤c₂
-       a2 = val-csn-le N E₁ E₂ E₁≤E₂ ϖ₁ ϖ₂ θ csn₁ csn₂ c₁≤c₂
-       b1 = ≤ᴹ-p1 a1
-       --b2 = ≤ᴹ-p2 a1
-     in
-     {!!}
-    comp-csn-le (var M) E₁ E₂ E₁≤E₂ ϖ₁ ϖ₂ θ csn₁ csn₂ c₁≤c₂ = {!!}
-    comp-csn-le (sub W₁ W₂) E₁ E₂ E₁≤E₂ ϖ₁ ϖ₂ θ csn₁ csn₂ c₁≤c₂ = {!!}
+    comp-csn-le (app M N) E₁ E₂ E₁≤E₂ ϖ₁ ϖ₂ θ csn₁ csn₂ c₁≤c₂
+      rewrite
+        p2-val-eq M E₁≤E₂ ϖ₁ ϖ₂ θ csn₁ csn₂ c₁≤c₂
+      =
+      let
+        a1 = val-csn-le M E₁ E₂ E₁≤E₂ ϖ₁ ϖ₂ θ csn₁ csn₂ c₁≤c₂
+        a2 = val-csn-le N E₁ E₂ E₁≤E₂ ϖ₁ ϖ₂ θ csn₁ csn₂ c₁≤c₂
+        b1 = ≤ᴹ-p1 a1
+        c1 = ≤ᴹ-p3 a1
+        d1 = s≤s (s≤s (+-≤-cong (b1) (+-≤-cong (≤ᴹ⇒≤ a2) (*-≤-cong (≤-refl {n = p2 (val-metric M E₂ ϖ₂ csn₂)}) (≤ᴹ⇒≤ a2)))))
+      in
+      ≤ᴹ-incr-cong d1 c1
+    comp-csn-le (var M) E₁ E₂ E₁≤E₂ ϖ₁ ϖ₂ θ csn₁ csn₂ c₁≤c₂ = ≤ᴹ-incr-cong (s≤s (≤ᴹ⇒≤ (val-csn-le M E₁ E₂ E₁≤E₂ ϖ₁ ϖ₂ θ csn₁ csn₂ c₁≤c₂))) (≤ᴹ-refl {nm = zero-metric})
+    comp-csn-le (sub W₁ W₂) E₁ E₂ E₁≤E₂ ϖ₁ ϖ₂ θ csn₁ csn₂ c₁≤c₂ =
+      let
+        a1 = comp-csn-le W₂ E₁ E₂ E₁≤E₂ ϖ₁ ϖ₂ θ csn₁ csn₂ c₁≤c₂
+        a2 = comp-csn-le
+               W₁
+               ((`V , m-V 0 ⟪ comp-metric W₂ E₁ ϖ₁ csn₁ ⟫ csn₁) ∷ E₁)
+               ((`V , m-V 0 ⟪ comp-metric W₂ E₂ ϖ₂ csn₂ ⟫ csn₂) ∷ E₂)
+               (≤ᴱ-cong E₁≤E₂ (≤-V z≤n (≤ᴹ⇒≤ a1) c₁≤c₂))
+               (wkn-cong ϖ₁)
+               (wkn-cong ϖ₂)
+               (≤ʷ-cc θ (≤-V z≤n (≤ᴹ⇒≤ a1) c₁≤c₂))
+               csn₁
+               csn₂
+               c₁≤c₂
+      in
+      ≤ᴹ-incr-cong (s≤s (≤ᴹ⇒≤ a1)) a2
 
 
 -------------------------------------------------------
