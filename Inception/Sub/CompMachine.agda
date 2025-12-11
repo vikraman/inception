@@ -381,6 +381,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     vm-unit : VMetric (unit {Γ = Γ})
     vm-var-v : {M : Γ ⊢ᵛ X} → {i : Γ ∋ X} → (VMetric M) → VMetric (var i)
     vm-var-c : {W : Γ ⊢ᶜ X} → {i : Γ ∋ `V} → (CMetric W) → (cs : CompStack Δ X) → VMetric (var i)
+    vm-var-z : {i : Γ ∋ X} → VMetric (var i)
     vm-lam : {W : (Γ ∙ X) ⊢ᶜ Y} → (CMetric W) → VMetric (lam W)
     vm-pair : {M₁ : Γ ⊢ᵛ X} {M₂ : Γ ⊢ᵛ Y} → (VMetric M₁) → (VMetric M₂) → VMetric (pair M₁ M₂)
     vm-pm : {M : Γ ⊢ᵛ X `× Y} {N : (Γ ∙ X ∙ Y) ⊢ᵛ Z} → (VMetric M) → (VMetric N) → VMetric (pm M N)
@@ -403,6 +404,49 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     cm-r̲e̲t̲u̲r̲n̲ : {M : V̲a̲l̲ Γ X} → (V̲M̲e̲t̲r̲i̲c̲ M) → C̲M̲e̲t̲r̲i̲c̲ (r̲e̲t̲u̲r̲n̲ M)
     cm-a̲pp : {M : Γ ⊢ᵛ X `⇒ Y} {N : V̲a̲l̲ Γ X} → (VMetric M) → (V̲M̲e̲t̲r̲i̲c̲ N) → C̲M̲e̲t̲r̲i̲c̲  (a̲pp M N)
 
+  data ENV : Ctx → Set where
+      ∗       :  ENV ε
+      _﹐_     :  {M : Γ ⊢ᵛ X} → ENV Γ → (vm : VMetric M) → ENV (Γ ∙ X)
+      _﹐﹝_╎_﹞ :  {W : Γ ⊢ᶜ X} → (E : Env Γ) → (cm : CMetric W) → (cs : CompStack Δ X) → ENV (Γ ∙ `V)
+
+  mutual
+
+    wk-cm : {W : Δ ⊢ᶜ X} → (π : Wk Γ Δ) → CMetric W → CMetric (wk-comp π W)
+    wk-cm π (cm-return vm) = cm-return (wk-vm π vm)
+    wk-cm π (cm-pm vm cm) = cm-pm (wk-vm π vm) (wk-cm (wk-cong (wk-cong π)) cm)
+    wk-cm π (cm-push cm₁ cm₂) = cm-push (wk-cm π cm₁) (wk-cm (wk-cong π) cm₂)
+    wk-cm π (cm-app vm₁ vm₂) = cm-app (wk-vm π vm₁) (wk-vm π vm₂)
+    wk-cm π (cm-var vm) = cm-var (wk-vm π vm)
+    wk-cm π (cm-sub cm₁ cm₂) = cm-sub (wk-cm (wk-cong π) cm₁) (wk-cm π cm₂)
+
+    wk-vm : {M : Δ ⊢ᵛ X} → (π : Wk Γ Δ) → VMetric M → VMetric (wk-val π M)
+    wk-vm π vm-unit = vm-unit
+    wk-vm π (vm-var-v vm) = vm-var-v (wk-vm π vm)
+    wk-vm π (vm-var-c cm cs) = vm-var-c (wk-cm π cm) cs
+    wk-vm π vm-var-z = vm-var-z
+    wk-vm π (vm-lam cm) = vm-lam (wk-cm (wk-cong π) cm)
+    wk-vm π (vm-pair vm₁ vm₂) = vm-pair (wk-vm π vm₁) (wk-vm π vm₂)
+    wk-vm π (vm-pm vm₁ vm₂) = vm-pm (wk-vm π vm₁) (wk-vm (wk-cong (wk-cong π)) vm₂)
+
+  mutual
+
+    val-metric : (M : Val Γ X) → (E : ENV Γ') → (π : Wk Γ Γ') → (cs : CompStack Δ Y) → VMetric M
+
+    val-metric (var Cx.h) ∗ π cs = vm-var-z
+    val-metric {X = X} (var Cx.h) (_﹐_ {X = Y} E vm) (wk-cong π) cs = vm-var-v (wk-vm (wk-wk π) vm)
+    val-metric {X = X} (var Cx.h) (_﹐_ {X = Y} E vm) (wk-wk π) cs = vm-var-z
+    val-metric (var Cx.h) (E ﹐﹝ cm ╎ cs₁ ﹞) (wk-cong π) cs = vm-var-c (wk-cm (wk-wk π) cm) cs₁
+    val-metric (var Cx.h) (E ﹐﹝ cm ╎ cs₁ ﹞) (wk-wk π) cs = vm-var-z
+
+    val-metric (var (Cx.t i)) E π cs = {!!}
+
+    val-metric (lam W) E π cs = {!!}
+    val-metric (pair M₁ M₂) E π cs = {!!}
+    val-metric (pm M N) E π cs = {!!}
+    val-metric unit E π cs = {!!}
+
+    comp-metric : (W : Comp Γ X) → (E : ENV Γ') → (π : Wk Γ Γ') → (cs : CompStack Δ Y) → CMetric W
+    comp-metric W E π cs = {!!}
 
 {-
   data TMetric : Ty → Set where
