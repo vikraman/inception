@@ -375,6 +375,35 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
 -------------------------------------------------------------------------------------------------
 
+  data CMetric : Comp Γ X → Set
+
+  data VMetric : Val Γ X → Set where
+    vm-unit : VMetric (unit {Γ = Γ})
+    vm-var-v : {M : Γ ⊢ᵛ X} → {i : Γ ∋ X} → (VMetric M) → VMetric (var i)
+    vm-var-c : {W : Γ ⊢ᶜ X} → {i : Γ ∋ `V} → (CMetric W) → (cs : CompStack Δ X) → VMetric (var i)
+    vm-lam : {W : (Γ ∙ X) ⊢ᶜ Y} → (CMetric W) → VMetric (lam W)
+    vm-pair : {M₁ : Γ ⊢ᵛ X} {M₂ : Γ ⊢ᵛ Y} → (VMetric M₁) → (VMetric M₂) → VMetric (pair M₁ M₂)
+    vm-pm : {M : Γ ⊢ᵛ X `× Y} {N : (Γ ∙ X ∙ Y) ⊢ᵛ Z} → (VMetric M) → (VMetric N) → VMetric (pm M N)
+
+  data CMetric where
+    cm-return : {M : Γ ⊢ᵛ X} → (VMetric M) → CMetric (return M)
+    cm-pm : {M : Γ ⊢ᵛ X `× Y} {W : (Γ ∙ X ∙ Y) ⊢ᶜ Z} → (VMetric M) → (CMetric W) → CMetric (pm M W)
+    cm-push : {W₁ : Γ ⊢ᶜ X} {W₂ : (Γ ∙ X) ⊢ᶜ Y} → (CMetric W₁) → (CMetric W₂) → CMetric (push W₁ W₂)
+    cm-app : {M : Γ ⊢ᵛ X `⇒ Y} {N : Γ ⊢ᵛ X} → (VMetric M) → (VMetric N) → CMetric (app M N)
+    cm-var : {M : Γ ⊢ᵛ `V} → (VMetric M) → CMetric {X = X} (var M)
+    cm-sub : {W₁ : (Γ ∙ `V) ⊢ᶜ X} {W₂ : Γ ⊢ᶜ X} → (CMetric W₁) → (CMetric W₂) → CMetric {X = X} (sub W₁ W₂)
+
+  data V̲M̲e̲t̲r̲i̲c̲ : V̲a̲l̲ Γ X → Set where
+    vm-l̲a̲m̲ : {W : (Γ ∙ X) ⊢ᶜ Y} → CMetric W → V̲M̲e̲t̲r̲i̲c̲ (l̲a̲m̲ W)
+    vm-pa̲i̲r̲ : {M₁ : V̲a̲l̲ Γ X} → {M₂ : V̲a̲l̲ Γ Y} → V̲M̲e̲t̲r̲i̲c̲ M₁ → V̲M̲e̲t̲r̲i̲c̲ M₂ → V̲M̲e̲t̲r̲i̲c̲ (pa̲i̲r̲ M₁ M₂)
+    vm-u̲n̲i̲t̲ : V̲M̲e̲t̲r̲i̲c̲ (u̲n̲i̲t̲ {Γ = Γ})
+    vm-v̲a̲r̲ : {W : Γ ⊢ᶜ X} → {i : Γ ∋ `V} → (CMetric W) → (cs : CompStack Δ X) → V̲M̲e̲t̲r̲i̲c̲ (v̲a̲r̲ i)
+
+  data C̲M̲e̲t̲r̲i̲c̲ : C̲o̲m̲p Γ X → Set where
+    cm-r̲e̲t̲u̲r̲n̲ : {M : V̲a̲l̲ Γ X} → (V̲M̲e̲t̲r̲i̲c̲ M) → C̲M̲e̲t̲r̲i̲c̲ (r̲e̲t̲u̲r̲n̲ M)
+    cm-a̲pp : {M : Γ ⊢ᵛ X `⇒ Y} {N : V̲a̲l̲ Γ X} → (VMetric M) → (V̲M̲e̲t̲r̲i̲c̲ N) → C̲M̲e̲t̲r̲i̲c̲  (a̲pp M N)
+
+
 {-
   data TMetric : Ty → Set where
     tm-Unit : (m : ℕ) → TMetric `Unit
@@ -438,6 +467,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
 -------------------------------------------------------------------------------------------------
 
+{- B
   lookup-metric : (i : Γ ∋ Y) → (E : List (Σ[ X ∈ Ty ] TermMetric X)) → Wkn Γ E → TermMetric Y
   lookup-metric Cx.h ((Y , e) ∷ ne) (wkn-cong ϖ) = e
   lookup-metric (Cx.t i) ((X , e) ∷ ne) (wkn-cong ϖ) = lookup-metric i ne ϖ
@@ -1158,6 +1188,8 @@ Goal: suc (a1 + (a2 + a1 * count-in-comp h N + csn-to-nat₀ (a2 + a1 * count-in
   comp-metric-decreasing ∙app-lam = {!!}
   comp-metric-decreasing (∘app N→N' π) = {!!}
   comp-metric-decreasing (∘var M→i π' x₁ πᵥ) = {!!}
+
+B -}
 
 -------------------------------------------------------
 -------------------------------------------------------
