@@ -190,37 +190,8 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   {-# REWRITE wk-comm-explicit #-}
 
------------------------------------------------------
 
-  mutual
-    count-in-val : (i : Γ ∋ X) → (M : Val Γ Z) → ℕ
-
-    count-in-val Cx.h (var Cx.h) = 1
-    count-in-val Cx.h (var (Cx.t i)) = 0
-    count-in-val (Cx.t i) (var Cx.h) = 0
-    count-in-val (Cx.t i₁) (var (Cx.t i₂)) = count-in-val i₁ (var i₂)
-
-    count-in-val Cx.h (lam W) = count-in-comp (t h) W
-    count-in-val (Cx.t i) (lam W) = count-in-comp (t (t i)) W
-
-    count-in-val Cx.h (pair M N) = count-in-val h M + count-in-val h N
-    count-in-val (Cx.t i) (pair M N) = count-in-val (t i) M + count-in-val (t i) N
-
-    count-in-val Cx.h (pm M N) = count-in-val h M + count-in-val (t (t h)) N
-    count-in-val (Cx.t i) (pm M N) = count-in-val (t i) M + count-in-val (t (t (t i))) N
-
-    count-in-val Cx.h unit = 0
-    count-in-val (Cx.t i) unit = 0
-
-    count-in-comp : (i : Γ ∋ X) → (W : Comp Γ Z) → ℕ
-    count-in-comp i (return M) = count-in-val i M
-    count-in-comp i (pm M W) = count-in-val i M + count-in-comp (t (t i)) W
-    count-in-comp i (push W₁ W₂) = count-in-comp i W₁ + count-in-comp (t i) W₂
-    count-in-comp i (app M N) = count-in-val i M + count-in-val i N
-    count-in-comp i (var M) = count-in-val i M
-    count-in-comp i (sub W₁ W₂) = count-in-comp (t i) W₁ + count-in-comp i W₂
-
--------------------------------
+  -------------------------------
 
   botCtx : ValStack non-empty T◾ → Ctx
   botCtx ((_⊲_∷_) {Γ = Γ} _ _ □) = Γ
@@ -234,95 +205,8 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   botTerm ((_⊲_∷_) {Γ = Γ} M γ □ {↥ = 🗆}) = M
   botTerm ((x ⊲ γ ∷ ((x₁ ⊲ γ₁ ∷ xs) {↥ = ↥'})) {↥ = ↥}) = botTerm ((x₁ ⊲ γ₁ ∷ xs) {↥ = ↥'})
 
--------------------------------
-
-  csn-to-nat₀ : ℕ → List (ℕ × ℕ) → ℕ
-  csn-to-nat₀ w [] = 0
-  csn-to-nat₀ w ((cnt , tm) ∷ csn) = (tm + (w * cnt)) + (csn-to-nat₀ (tm + (w * cnt)) csn)
-
-  csn-decr : (n₁ ≤ n₂) → (csn : List (ℕ × ℕ)) → csn-to-nat₀ n₁ csn ≤ csn-to-nat₀ n₂ csn
-  csn-decr {n₁ = n₁} {n₂ = n₂} z≤n [] = ≤-refl
-  csn-decr {n₁ = n₁} {n₂ = n₂} z≤n (x ∷ csn) = let le1 = +-≤-cong (≤-refl {n = proj₂ x}) z≤n in +-≤-cong le1 (csn-decr le1 csn)
-  csn-decr {n₁ = n₁} {n₂ = n₂} (s≤s n₁≤n₂) [] = ≤-refl
-  csn-decr {n₁ = n₁} {n₂ = n₂} (s≤s n₁≤n₂) (x ∷ csn) = let le1 = +-≤-cong (≤-refl {n = proj₂ x}) (+-≤-cong (≤-refl {n = proj₁ x}) (*-≤-cong n₁≤n₂ (≤-refl {n = proj₁ x}))) in +-≤-cong le1 (csn-decr le1 csn)
-
-  ⟪_⟫ : TermMetric X → ℕ
-  ⟪ m-Unit m ⟫ = m
-  ⟪ m-V m w csn ⟫ = m + w + csn-to-nat₀ w csn
-  ⟪ m-⇒ m cnt nm ⟫ = m + ⟪ nm ⟫
-  ⟪ m-× m nm₁ nm₂ ⟫ = m + ⟪ nm₁ ⟫ + ⟪ nm₂ ⟫
-
-  incr : ℕ → TermMetric X → TermMetric X
-  incr n (m-Unit m) = m-Unit (n + m)
-  incr n (m-V m w csn) = m-V (n + m) w csn
-  incr n (m-⇒ m cnt nm) = m-⇒ (n + m) cnt nm
-  incr n (m-× m nm₁ nm₂) = m-× (n + m) nm₁ nm₂
-
-  incr-coh : (n : ℕ) → (X : Ty) → (nm : TermMetric X) → ⟪ incr n nm ⟫ ≡ n + ⟪ nm ⟫
-  incr-coh zero `Unit (m-Unit m) = refl
-  incr-coh zero (X `× X₁) (m-× m nm nm₁) = refl
-  incr-coh zero (X `⇒ X₁) (m-⇒ m cnt nm) = refl
-  incr-coh zero `V (m-V m w csn) = refl
-  incr-coh (suc n) `Unit (m-Unit m) = refl
-  incr-coh (suc n) (X `× X₁) (m-× m nm nm₁) rewrite +-assoc {n} {m} {⟪ nm ⟫} | +-assoc {n} {m + ⟪ nm ⟫} {⟪ nm₁ ⟫} = refl
-  incr-coh (suc n) (X `⇒ X₁) (m-⇒ m cnt nm) rewrite +-assoc {n} {m} {⟪ nm ⟫} = refl
-  incr-coh (suc n) `V (m-V m w csn) rewrite +-assoc {n} {m} {w} | +-assoc {n} {m + w} {csn-to-nat₀ w csn} = refl
-
-  {-# REWRITE incr-coh #-}
-
-  incr-zero-coh : (X : Ty) → (nm : TermMetric X) → incr zero nm ≡ nm
-  incr-zero-coh `Unit (m-Unit m) = refl
-  incr-zero-coh (X `× X₁) (m-× m nm₁ nm₂) = refl
-  incr-zero-coh (X `⇒ X₁) (m-⇒ m cnt nm) = refl
-  incr-zero-coh `V (m-V m w csn) = refl
-
-  {-# REWRITE incr-zero-coh #-}
-
-  p1 : TermMetric (X `⇒ Y) → ℕ
-  p1 (m-⇒ m cnt nm) = m
-
-  p2 : TermMetric (X `⇒ Y) → ℕ
-  p2 (m-⇒ m cnt nm) = cnt
-
-  p3 : TermMetric (X `⇒ Y) → TermMetric Y
-  p3 (m-⇒ m cnt nm) = nm
-
-  vx : TermMetric (X `× Y) → ℕ
-  vx (m-× m l r) = m
-
-  vx+n : (nm : TermMetric (X `× Y)) → vx (incr n nm) ≡ n + (vx nm)
-  vx+n (m-× m nm nm₁) = refl
-
-  {-# REWRITE vx+n #-}
-
-  lhs : TermMetric (X `× Y) → TermMetric X
-  lhs (m-× m l r) = l
-
-  rhs : TermMetric (X `× Y) → TermMetric Y
-  rhs (m-× m l r) = r
-
-  lhs-incr-drop : (n : ℕ) → (nm : TermMetric (X `× Y)) → ⟪ lhs (incr n nm) ⟫ ≡ ⟪ lhs nm ⟫
-  lhs-incr-drop n (m-× m nm₁ nm₂) = refl
-
-  rhs-incr-drop : (n : ℕ) → (nm : TermMetric (X `× Y)) → ⟪ rhs (incr n nm) ⟫ ≡ ⟪ rhs nm ⟫
-  rhs-incr-drop n (m-× m nm₁ nm₂) = refl
-
-  zm-coh : (X : Ty) → ⟪ zero-metric {X = X} ⟫ ≡ 0
-  zm-coh `Unit = refl
-  zm-coh (X `× Y) rewrite zm-coh X | zm-coh Y = refl
-  zm-coh (X `⇒ Y) rewrite zm-coh Y = refl
-  zm-coh `V = refl
-
-  {-# REWRITE zm-coh #-}
-
-  -- data Wkn : (Γ : Ctx) → (ns : List (Σ[ X ∈ Ty ] TermMetric X)) → Set where
-  --   wkn-nil  : Wkn ε []
-  --   wkn-cong :   {Γ : Ctx} → {ne : List (Σ[ X ∈ Ty ] TermMetric X)} → {Y : Ty}
-  --              → {e : TermMetric Y} → (ϖ : Wkn Γ ne) → Wkn (Γ ∙ Y) ((Y , e) ∷ ne)
-  --   wkn-cons :   {Γ : Ctx} → {ne : List (Σ[ X ∈ Ty ] TermMetric X)}
-  --              → {Y : Ty} → (ϖ : Wkn Γ ne) → Wkn (Γ ∙ Y) ne
-
 -------------------------------------------------------------------------------------------------
+
 
   ≤ᶜˢⁿ-decr : {csn₁ csn₂ : List (ℕ × ℕ)} → (n₁ ≤ n₂) → csn₁ ≤ᶜˢⁿ csn₂ → csn-to-nat₀ n₁ csn₁ ≤ csn-to-nat₀ n₂ csn₂
   ≤ᶜˢⁿ-decr {n₁ = n₁} {n₂ = n₂} n₁≤n₂ ([c≤c] {csn = csn}) = csn-decr n₁≤n₂ csn
@@ -391,72 +275,6 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 -}
 
 -------------------------------------------------------------------------------------------------
-
-  mutual
-
-    val-metric : (M : Val Γ Y) → (E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → Wkn Γ E → (csn : List (ℕ × ℕ)) → TermMetric Y
-    val-metric (var i) E ϖ csn = incr 2 (lookup-metric i E ϖ csn)
-    val-metric (lam W) E ϖ csn = incr 2 (m-⇒ 0 (count-in-comp h W) (comp-metric W E (wkn-cons ϖ) csn))
-    val-metric (pair M N) E ϖ csn = incr 2 (m-× 0 (val-metric M E ϖ csn) (val-metric N E ϖ csn))
-    val-metric (pm {A = X} {B = Y} M N) E ϖ csn = let IH = val-metric M E ϖ in incr (suc (vx (IH csn) + ⟪ val-metric N E (wkn-cons (wkn-cons ϖ)) csn ⟫)) (val-metric N ((Y , λ c → rhs (IH c)) ∷ (X , λ c → lhs (IH c)) ∷ E) (wkn-cong (wkn-cong ϖ)) csn)
-    val-metric unit E ϖ csn = m-Unit 2
-
-    comp-metric : (W : Comp Γ Y) → (E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → Wkn Γ E → (csn : List (ℕ × ℕ)) → TermMetric Y
-    comp-metric (return M) E ϖ [] = incr 1 (zero-metric) -- send last step
-    comp-metric (return M) E ϖ (x ∷ csn) = incr 2 (val-metric M E ϖ csn)
-    --comp-metric (return M) E ϖ csn = incr 2 (val-metric M E ϖ csn)
-    comp-metric (pm {A = X} {B = Y} M W) E ϖ csn =
-      let
-        IH = val-metric M E ϖ
-      in
-        incr (suc (vx (IH csn) + ⟪ comp-metric W E (wkn-cons (wkn-cons ϖ)) csn ⟫)) (comp-metric W ((Y , λ c → rhs (IH c)) ∷ (X , λ c → lhs (IH c)) ∷ E) (wkn-cong (wkn-cong ϖ)) csn)
-    comp-metric (push {A = X} W₁ W₂) E ϖ csn =
-      let
-        -- w2 = (comp-metric W₂ ((X , comp-metric W₁ E ϖ) ∷ E) (wkn-cong ϖ) csn)
-        w2 = (comp-metric W₂ E (wkn-cons ϖ) csn)
-        csn2 = ((count-in-comp h W₂ , ⟪ w2 ⟫) ∷ csn)
-        w1 = ⟪ comp-metric W₁ E ϖ csn2 ⟫
-      in
-        incr (suc ((suc (count-in-comp h W₂)) * w1)) w2 --incr (suc (w1 + csn-to-nat₀ w1 csn2)) w2
-    comp-metric (app M N) E ϖ csn = let IH = val-metric M E ϖ csn in incr (2 + ((p1 IH) + ((suc (p2 IH)) * ⟪ val-metric N E ϖ csn ⟫))) (p3 IH)
-    comp-metric (var M) E ϖ csn = incr (suc ⟪ val-metric M E ϖ csn ⟫) zero-metric
-    comp-metric (sub W₁ W₂) E ϖ csn = let w = ⟪ comp-metric W₂ E ϖ csn ⟫ in incr (suc ⟪ comp-metric W₂ E ϖ csn ⟫) (comp-metric W₁ (((`V , λ _ → m-V 0 w csn)) ∷ E) (wkn-cong ϖ) csn)
-
-    v̲a̲l̲-metric : (M : V̲a̲l̲ Γ Y) → (E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → Wkn Γ E → (csn : List (ℕ × ℕ)) → TermMetric Y
-    v̲a̲l̲-metric (l̲a̲m̲ W) E ϖ csn = incr 1 (m-⇒ 0 (count-in-comp h W) (comp-metric W E (wkn-cons ϖ) csn))
-    v̲a̲l̲-metric (pa̲i̲r̲ M N) E ϖ csn = incr 1 (m-× 0 (v̲a̲l̲-metric M E ϖ csn) (v̲a̲l̲-metric N E ϖ csn))
-    v̲a̲l̲-metric u̲n̲i̲t̲ E ϖ csn = m-Unit 1
-    v̲a̲l̲-metric (v̲a̲r̲ i) E ϖ csn = incr 1 (lookup-metric i E ϖ csn)
-
-    c̲o̲m̲p-metric : (W : C̲o̲m̲p Γ Y) → (E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → Wkn Γ E → (csn : List (ℕ × ℕ)) → TermMetric Y
-    c̲o̲m̲p-metric (r̲e̲t̲u̲r̲n̲ M) E ϖ [] = zero-metric -- halting state
-    c̲o̲m̲p-metric (r̲e̲t̲u̲r̲n̲ M) E ϖ ((cnt , w) ∷ csn) = incr 1 (v̲a̲l̲-metric M E ϖ csn)
-    c̲o̲m̲p-metric (a̲pp M N) E ϖ csn = let IH = val-metric M E ϖ csn in incr (suc ((p1 IH) + ((suc (p2 IH)) * ⟪ v̲a̲l̲-metric N E ϖ csn ⟫))) (p3 IH)
-
-  mutual
-
-    env-metric : Env Γ → Σ[ E ∈ List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X)) ] Wkn Γ E
-    env-metric ∗ = [] , wkn-nil
-    env-metric {Γ = Γ ∙ X} (γ ﹐ M) =
-      let
-        IH = env-metric γ
-      in
-        (X , (λ csn → v̲a̲l̲-metric M (proj₁ IH) (proj₂ IH) csn)) ∷ (proj₁ IH) , wkn-cong (proj₂ IH)
-    env-metric {Γ = Γ ∙ `V} ((γ ﹐﹝ W ╎ cs ﹞) {π = π}) =
-      let
-        IH = env-metric γ
-        w = ⟪ comp-metric W (proj₁ IH) (proj₂ IH) (cs-to-csn cs) ⟫
-      in
-        (`V , λ _ → m-V 0 w (cs-to-csn cs)) ∷ (proj₁ IH) , wkn-cong (proj₂ IH)
-
-    cs-to-csn : (cs : CompStack Δ Z) → List (ℕ × ℕ)
-    cs-to-csn ◻ = []
-    cs-to-csn ((W ⊲ γ ⦂⦂ cs) {π = π} {wk≡ = wk≡}) =
-      let
-        csn = cs-to-csn cs
-        IH = env-metric γ
-      in
-        ( (count-in-comp h W) , ⟪ comp-metric W (proj₁ IH) (wkn-cons (proj₂ IH)) csn ⟫ ) ∷ csn
 
 {-
   cs-to-csf : (cs : CompStack Δ Z) → (ℕ → ℕ)
@@ -1038,7 +856,6 @@ seems easy
 -------------------------------------------------------
 -------------------------------------------------------
 
-{- A
 -------------------------------------------------------
   -- postulate debuglemma : m ≤ n
   debuglemma = ≤-refl
@@ -1615,4 +1432,3 @@ _ = refl
 -- Goal: csn-to-nat₀       9    [] ≤ suc (  9 + n₁ * zero + csn-to-nat₀ (suc (fst + n₁ * zero)) csn₁)
 -}
 
-A -}
