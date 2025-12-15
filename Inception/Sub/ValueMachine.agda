@@ -510,25 +510,39 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   getLookupEnv : (S : LookupState X) → Env (proj₁ (getIndex S))
   getLookupEnv ⟨ _ ∥ γ ⟩ = γ
 
+  lstate-metric : LookupState X → List (ℕ × ℕ) → TermMetric X
+  lstate-metric ⟨ i ∥ γ ⟩ csn =
+    let
+      EP = (env-metric γ)
+    in
+      lookup-metric i (proj₁ EP) (proj₂ EP) csn
+
+  lhstate-metric : {T : LookupState X} → LookupHaltingState T → List (ℕ × ℕ) → TermMetric X
+  lhstate-metric (found-unit {γ = γ}) csn = m-Unit 1
+  lhstate-metric (found-pair {LHS = LHS} {RHS = RHS} {γ = γ}) csn = let EP = (env-metric γ) in v̲a̲l̲-metric (pa̲i̲r̲ LHS RHS) (proj₁ EP) (proj₂ EP) csn
+  lhstate-metric (found-lam {W = W} {γ = γ}) csn = let EP = (env-metric γ) in v̲a̲l̲-metric (l̲a̲m̲ W) (proj₁ EP) (proj₂ EP) csn
+  lhstate-metric (found-comp {W = W} {γ = γ} {cs = cs}) csn = let EP = (env-metric γ) in m-V 0 ⟪ comp-metric W (proj₁ EP) (proj₂ EP) (cs-to-csn cs) ⟫ csn
+
   --------------------------------------------------------------------
 
   data LookupSteps : LookupState X → Set where
 
-    steps : {S T : LookupState X} → S →ᴸ* T → LookupHaltingState T → ⟦ S ⟧ᴸ ≡ ⟦ T ⟧ᴸ → (π : Wk (lCtx S) (lTCtx T)) → (⟦ π ⟧ʷ ⟦ lEnv S ⟧ᴱ ≡ ⟦ lTEnv T ⟧ᴱ) → LookupSteps S
+    steps : {S T : LookupState X} → S →ᴸ* T → (H : LookupHaltingState T) → ⟦ S ⟧ᴸ ≡ ⟦ T ⟧ᴸ → (π : Wk (lCtx S) (lTCtx T)) → (⟦ π ⟧ʷ ⟦ lEnv S ⟧ᴱ ≡ ⟦ lTEnv T ⟧ᴱ) → (∀ (csn : List (ℕ × ℕ)) → lhstate-metric H csn ≤ᴹ lstate-metric S csn) → LookupSteps S
 
   lookup : (i : Γ ∋ X) → (γ : Env Γ) → LookupSteps {X = X} ⟨ i ∥ γ ⟩
-  lookup h (γ ﹐ l̲a̲m̲ W) = steps (⟨ h ∥ _﹐_ γ (l̲a̲m̲ W) ⟩ ◼) found-lam refl (wk-wk wk-id) refl
-  lookup h (γ ﹐ pa̲i̲r̲ LHS RHS) = steps (⟨ h ∥ _﹐_ γ (pa̲i̲r̲ LHS RHS) ⟩ ◼) found-pair refl (wk-wk wk-id) refl
-  lookup h (γ ﹐ u̲n̲i̲t̲) = steps (⟨ h ∥ _﹐_ γ (u̲n̲i̲t̲) ⟩ ◼) found-unit refl (wk-wk wk-id) refl
+  lookup h (γ ﹐ l̲a̲m̲ W) = steps (⟨ h ∥ _﹐_ γ (l̲a̲m̲ W) ⟩ ◼) found-lam refl (wk-wk wk-id) refl (λ csn → ≤ᴹ-refl)
+  lookup h (γ ﹐ pa̲i̲r̲ LHS RHS) = steps (⟨ h ∥ _﹐_ γ (pa̲i̲r̲ LHS RHS) ⟩ ◼) found-pair refl (wk-wk wk-id) refl (λ csn → ≤ᴹ-refl)
+  lookup h (γ ﹐ u̲n̲i̲t̲) = steps (⟨ h ∥ _﹐_ γ (u̲n̲i̲t̲) ⟩ ◼) found-unit refl (wk-wk wk-id) refl (λ csn → ≤ᴹ-refl)
   lookup h (γ ﹐ v̲a̲r̲ i) with lookup i γ
-  ... | steps i>>T HT i≡T WK w≡γ = steps (_ →ᴸ⟨ val-h-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ
-  lookup h (γ ﹐﹝ W ╎ cs ﹞ ) = steps (⟨ h ∥ γ ﹐﹝ W ╎ cs ﹞ ⟩ ◼) found-comp refl (wk-wk wk-id) refl
+  ... | steps i>>T HT i≡T WK w≡γ _ = steps (_ →ᴸ⟨ val-h-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ {!!}
+  lookup h (γ ﹐﹝ W ╎ cs ﹞ ) = steps (⟨ h ∥ γ ﹐﹝ W ╎ cs ﹞ ⟩ ◼) found-comp refl (wk-wk wk-id) refl {!!}
   lookup (t i) (γ ﹐ M) with lookup i γ
-  ... | steps i>>T HT i≡T WK w≡γ = steps (_ →ᴸ⟨ val-t-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ
+  ... | steps i>>T HT i≡T WK w≡γ _ = steps (_ →ᴸ⟨ val-t-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ {!!}
   lookup (t i) (γ ﹐﹝ W ╎ cs ﹞) with lookup i γ
-  ... | steps i>>T HT i≡T WK w≡γ = steps (_ →ᴸ⟨ comp-t-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ
+  ... | steps i>>T HT i≡T WK w≡γ _ = steps (_ →ᴸ⟨ comp-t-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ {!!}
 
 
+{-
   -- Value Machine
   ------------------------------------------------------------------------------
 
@@ -1191,3 +1205,4 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   sub-cps' : (M : (Γ ∙ `V) ⊢ᶜ X) → (N : Γ ⊢ᶜ X) → (γ : Env Γ) → (cs : CompStack Δ X) → (πₓ : Wk Γ Δ) → (wk≡ : ⟦ πₓ ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → ⟦ sub M N ⟧ᶜ ⟦ γ ⟧ᴱ ⟦ cs ⟧ᴷ ≡ ⟦ M ⟧ᶜ ⟦ (γ ﹐﹝ N ╎ cs ﹞) {π = πₓ} {wk≡ = wk≡} ⟧ᴱ ⟦ cs ⟧ᴷ
   sub-cps' M N γ cs πₓ wk≡ = refl
+-}
