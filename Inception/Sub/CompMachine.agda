@@ -831,7 +831,11 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                 → (π : Wk Γ Γ') → (ϖ : Wkn Γ E) → (ϖ' : Wkn Γ' E') → (θ : Wke π ϖ ϖ') → (csn : List (ℕ × ℕ))
                 → val-metric M E' ϖ' csn ≡ val-metric (wk-val π M) E ϖ csn
     val-wke-lemma (var i) E E' π ϖ ϖ' θ csn = cong (incr 2) (lookup-wke-lemma i E E' π ϖ ϖ' θ csn)
-    val-wke-lemma (lam W) E E' π ϖ ϖ' θ csn = {!!}
+    val-wke-lemma (lam W) E E' π ϖ ϖ' θ csn
+      rewrite
+          comp-wke-lemma W E E' (wk-cong π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-cww π ϖ ϖ' θ) csn
+        | wk-comp-count-eq (wk-cong π) h W
+        = refl
     val-wke-lemma (pair M₁ M₂) E E' π ϖ ϖ' θ csn rewrite val-wke-lemma M₁ E E' π ϖ ϖ' θ csn | val-wke-lemma M₂ E E' π ϖ ϖ' θ csn = refl
     val-wke-lemma (pm {A = A} {B = B} M N) E E' π ϖ ϖ' θ csn
       rewrite
