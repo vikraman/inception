@@ -1,6 +1,6 @@
 module Inception.Sub.ValueMachine (R : Set) where
 
-open import Data.Product using (proj₁; proj₂; _,_; <_,_>; curry)
+open import Data.Product using (proj₁; proj₂; _,_; <_,_>; curry; _×_; Σ; ∃; Σ-syntax; ∃-syntax)
 open import Function.Base using (const)
 
 import Relation.Binary.PropositionalEquality as Eq
@@ -12,10 +12,88 @@ open import Inception.Sub.CPS R
 
 open import Data.Unit
 open import Data.Nat
+open import Data.List using (List; _∷_; []; _++_)
 
 variable
   X X' Y Y' Z Z' T◾ T◾' : Ty
   Γ' Γ'' Δ' : Ctx
+  n m n₁ n₂ n₃ n₄ m₁ m₂ m₃ m₄ : ℕ
+
+≤-trans : n₁ ≤ n₂ → n₂ ≤ n₃ → n₁ ≤ n₃
+≤-trans {n₁ = zero} {n₂ = n₂} {n₃ = n₃} n₁≤n₂ n₂≤n₃ = z≤n
+≤-trans {n₁ = suc n₁} {n₂ = suc n₂} {n₃ = suc n₃} (s≤s n₁≤n₂) (s≤s n₂≤n₃) = s≤s (≤-trans n₁≤n₂ n₂≤n₃)
+
+≤-refl : n ≤ n
+≤-refl {n = zero} = z≤n
+≤-refl {n = suc n} = s≤s ≤-refl
+
+n≤sn : n ≤ suc n
+n≤sn {n = zero} = z≤n
+n≤sn {n = suc n} = s≤s n≤sn
+
+n≤sm : n ≤ m → n ≤ suc m
+n≤sm {n = zero} {m = zero} n≤m = n≤sn
+n≤sm {n = zero} {m = suc m} n≤m = z≤n
+n≤sm {n = suc n} {m = suc m} (s≤s n≤m) = s≤s (≤-trans n≤sn (s≤s n≤m))
+
+p≤p : suc n ≤ suc m → n ≤ m
+p≤p (s≤s sn≤sm) = sn≤sm
+
+p≤n : suc n ≤ m → n ≤ m
+p≤n {m = suc m} (s≤s sn≤m) = n≤sm sn≤m
+
+n+z : (n : ℕ) → n + zero ≡ n
+n+z zero = refl
+n+z (suc n) = cong suc (n+z n)
+
+--{-# REWRITE n+z #-}
+
+-----------------------------------------------------
+
++-assoc : {n₁ n₂ n₃ : ℕ} → n₁ + n₂ + n₃ ≡ n₁ + (n₂ + n₃)
++-assoc {zero} {n₂} {n₃} = refl
++-assoc {suc n₁} {n₂} {n₃} rewrite +-assoc {n₁} {n₂} {n₃} = refl
+
++-comm : n + m ≡ m + n
++-comm {n = zero} {m = zero} = refl
++-comm {n = zero} {m = suc m} = cong suc (+-comm {n = zero} {m = m})
++-comm {n = suc n} {m = zero} = cong suc (+-comm {n = n} {m = zero})
++-comm {n = suc n} {m = suc m} rewrite +-comm {n = n} {m = suc m} | +-comm {n = m} {m = suc n} | +-comm {n = m} {m = n} = refl
+
+*-comm : n * m ≡ m * n
+*-comm {n = zero} {m = zero} = refl
+*-comm {n = zero} {m = suc m} = *-comm {n = zero} {m = m}
+*-comm {n = suc n} {m = zero} = *-comm {n = n} {m = zero}
+*-comm {n = suc n} {m = suc m}
+  rewrite *-comm {n = n} {m = suc m} | *-comm {n = m} {m = suc n}
+    | *-comm {n = n} {m = m}
+    | sym (+-assoc {n₁ = m} {n₂ = n} {n₃ = m * n})
+    | sym (+-assoc {n₁ = n} {n₂ = m} {n₃ = m * n})
+    | +-comm {n = n} {m = m}
+    = refl
+
+-----------------------------------------------------
+
++-≤-cong : (n₁ ≤ n₃) → (n₂ ≤ n₄) → (n₁ + n₂ ≤ n₃ + n₄)
++-≤-cong z≤n z≤n = z≤n
++-≤-cong {n₃ = n₃} z≤n (s≤s {m = m} {n = n} n₂≤n₄) rewrite +-comm {n = n₃} {m = suc n} | +-comm {n = n} {m = n₃} = s≤s (+-≤-cong z≤n n₂≤n₄)
++-≤-cong (s≤s n₁≤n₃) n₂≤n₄ = s≤s (+-≤-cong n₁≤n₃ n₂≤n₄)
+
+snm : suc (n + m) ≡ n + (suc m)
+snm {n = zero} {m = m} = refl
+snm {n = suc n} {m = m} = cong suc snm
+
++-≤-cong-rev-left : (n + m₁ ≤ n + m₂) → (m₁ ≤ m₂)
++-≤-cong-rev-left {n = zero} m₁≤m₂ = m₁≤m₂
++-≤-cong-rev-left {n = suc n} {m₁ = m₁} {m₂ = m₂} m₁≤m₂ rewrite snm {n = n} {m = m₁} | snm {n = n} {m = m₂} = p≤p (+-≤-cong-rev-left m₁≤m₂)
+
+*-≤-cong : (n₁ ≤ n₃) → (n₂ ≤ n₄) → (n₁ * n₂ ≤ n₃ * n₄)
+*-≤-cong z≤n z≤n = z≤n
+*-≤-cong z≤n (s≤s n₂≤n₄) = z≤n
+*-≤-cong (s≤s {m = m} n₁≤n₃) z≤n rewrite *-comm {n = m} {m = zero} = z≤n
+*-≤-cong (s≤s n₁≤n₃) (s≤s n₂≤n₄) = s≤s (+-≤-cong n₂≤n₄ (*-≤-cong n₁≤n₃ (s≤s n₂≤n₄)))
+
+-----------------------------------------------------
 
 module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
@@ -179,6 +257,52 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
         found-comp : {W : Γ ⊢ᶜ X} → {γ : Env Γ} → {cs : CompStack Δ X} → {π : Wk Γ Δ} → {wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ} → LookupHaltingState ⟨ h ∥ (_﹐﹝_╎_﹞ γ W cs {π = π} {wk≡ = wk≡}) ⟩
 
+  --------------------------------------------------------------------
+
+  data TermMetric : Ty → Set where
+    m-Unit : (m : ℕ) → TermMetric `Unit
+    m-V : (m : ℕ) → (w : ℕ) → (csn : List (ℕ × ℕ)) → TermMetric (`V)
+    m-⇒ : (m : ℕ) → (cnt : ℕ) → (nm : TermMetric Y) → TermMetric (X `⇒ Y)
+    m-×   : (m : ℕ) → (nm₁ : TermMetric X) → (nm₂ : TermMetric Y) → TermMetric (X `× Y)
+
+  data Wkn : (Γ : Ctx) → (E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → Set where
+    wkn-nil  : Wkn ε []
+    wkn-cong :   {Γ : Ctx} → {ne : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))} → {Y : Ty}
+               → {e : (List (ℕ × ℕ) → TermMetric Y)} → (ϖ : Wkn Γ ne) → Wkn (Γ ∙ Y) ((Y , e) ∷ ne)
+    wkn-cons :   {Γ : Ctx} → {ne : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))}
+               → {Y : Ty} → (ϖ : Wkn Γ ne) → Wkn (Γ ∙ Y) ne
+
+  data _≤ᶜˢⁿ_ : List (ℕ × ℕ) → List (ℕ × ℕ) → Set where
+   [c≤c] : {csn : List (ℕ × ℕ)} → csn ≤ᶜˢⁿ csn
+   [s≤s] : {cnt : ℕ} {csn₁ csn₂ : List (ℕ × ℕ)} → n₁ ≤ n₂ → csn₁ ≤ᶜˢⁿ csn₂ → ((cnt , n₁) ∷ csn₁) ≤ᶜˢⁿ ((cnt , n₂) ∷ csn₂)
+
+  data _≤ᴹ_ : TermMetric X → TermMetric X → Set where
+    ≤-Unit : (n₁ ≤ n₂) → (m-Unit n₁) ≤ᴹ (m-Unit n₂)
+    ≤-V    : {w₁ w₂ : ℕ} {csn₁ csn₂ : List (ℕ × ℕ)} → (m₁ ≤ m₂) → (w₁ ≤ w₂) → (csn₁ ≤ᶜˢⁿ csn₂) → (m-V m₁ w₁ csn₁) ≤ᴹ (m-V m₂ w₂ csn₂)
+    ≤-⇒    : {cnt : ℕ} {nm₁ nm₂ : TermMetric Y} → (m₁ ≤ m₂) → (nm₁ ≤ᴹ nm₂) → (m-⇒ {X = X} m₁ cnt nm₁) ≤ᴹ (m-⇒ m₂ cnt nm₂)
+    ≤-×    : {lhs₁ lhs₂ : TermMetric X} → {rhs₁ rhs₂ : TermMetric Y} → (n₁ ≤ n₂) → (lhs₁ ≤ᴹ lhs₂) → (rhs₁ ≤ᴹ rhs₂) → (m-× n₁ lhs₁ rhs₁) ≤ᴹ (m-× n₂ lhs₂ rhs₂)
+
+  ≤ᴹ-refl : {nm : TermMetric X} → nm ≤ᴹ nm
+  ≤ᴹ-refl {nm = m-Unit m} = ≤-Unit ≤-refl
+  ≤ᴹ-refl {nm = m-V m n csn} = ≤-V  ≤-refl ≤-refl [c≤c]
+  ≤ᴹ-refl {nm = m-⇒ m cnt nm} = ≤-⇒ ≤-refl ≤ᴹ-refl
+  ≤ᴹ-refl {nm = m-× m nm nm₁} = ≤-× ≤-refl ≤ᴹ-refl ≤ᴹ-refl
+
+  zero-metric : TermMetric X
+  zero-metric {X = `Unit} = m-Unit 0
+  zero-metric {X = X `× Y} = m-× 0 (zero-metric {X = X}) (zero-metric {X = Y})
+  zero-metric {X = X `⇒ Y} = m-⇒ 0 0 (zero-metric {X = Y})
+  zero-metric {X = `V} = m-V 0 0 []
+
+  lookup-metric : (i : Γ ∋ Y) → (E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → Wkn Γ E → (List (ℕ × ℕ) → TermMetric Y)
+  lookup-metric Cx.h ((Y , e) ∷ ne) (wkn-cong ϖ) = e
+  lookup-metric (Cx.t i) ((X , e) ∷ ne) (wkn-cong ϖ) = lookup-metric i ne ϖ
+  lookup-metric {Y = Y} Cx.h [] (wkn-cons ϖ) = λ csn → zero-metric
+  lookup-metric {Y = Y} Cx.h (x ∷ E) (wkn-cons ϖ) = λ csn → zero-metric
+  lookup-metric {Y = Y} (Cx.t i) [] (wkn-cons ϖ) = λ csn → zero-metric
+  lookup-metric (Cx.t i) (x ∷ E) (wkn-cons ϖ) = lookup-metric i (x ∷ E) ϖ
+
+  --------------------------------------------------------------------
 
   data LookupSteps : LookupState X → Set where
 
