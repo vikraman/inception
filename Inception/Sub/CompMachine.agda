@@ -912,47 +912,29 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
 -------------------------------------------------------------------------------------------------
 
+  data PWk : (π : Wk Γ Δ) → Set where
+    pwk-id : {π : Wk Γ Γ} → PWk π
+    pwk-wk : {π : Wk Γ Δ} → PWk π → PWk (wk-wk {A = X} π)
+
   lookup-lemma :   {X : Ty} → {Γ' : Ctx} → {i : Γ ∋ X} → {γ : Env Γ} → {γ' : Env Γ'} → {M : V̲a̲l̲ Γ' X}
                  → (⟨ i ∥ γ ⟩ →ᴸ* ⟨ h ∥ γ' ﹐ M ⟩)
                  → (πᵥ : Wk Γ Γ')
+                 → (pπ : PWk πᵥ)
                  → (csn : List (ℕ × ℕ))
-                 → lookup-metric i (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) csn ≡ v̲a̲l̲-metric (wk-v̲a̲l̲ πᵥ M) (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) csn
-  lookup-lemma {X = X} {i = i} {γ = γ} {γ' = γ'} {M = M} (S ◼) (wk-cong πᵥ) csn = v̲a̲l̲-wke-lemma M ((X , v̲a̲l̲-metric M (proj₁ (env-metric γ')) (proj₂ (env-metric γ'))) ∷ proj₁ (env-metric γ')) (proj₁ (env-metric γ')) (wk-cong πᵥ) (proj₂ (env-metric (γ' ﹐ M))) (proj₂ (env-metric γ')) {!!} csn
-  lookup-lemma {X = X} {i = i} {γ = γ} {γ' = γ'} {M = M} (S ◼) (wk-wk πᵥ) csn =
-    let
-      ϖ = (proj₂ (env-metric γ'))
-    in
-      v̲a̲l̲-wke-lemma M ((X , v̲a̲l̲-metric M (proj₁ (env-metric γ')) (proj₂ (env-metric γ'))) ∷ proj₁ (env-metric γ'))
-      (proj₁ (env-metric γ')) (wk-wk πᵥ) (proj₂ (env-metric (γ' ﹐ M))) (proj₂ (env-metric γ')) (wke-wc- πᵥ ϖ ϖ (v̲a̲l̲-metric M (proj₁ (env-metric γ')) ϖ) wke-id) csn
-  --v̲a̲l̲-wke-lemma M ((X , v̲a̲l̲-metric M (proj₁ (env-metric γ')) (proj₂ (env-metric γ'))) ∷ proj₁ (env-metric γ')) (proj₁ (env-metric γ')) πᵥ (proj₂ (env-metric (γ' ﹐ M))) (proj₂ (env-metric γ')) {!!} csn
-  lookup-lemma {X = X} {i = i} {γ = γ'' ﹐ v̲a̲r̲ i'} {γ' = γ'} {M = M} (⟨ h ∥ γ'' ﹐ v̲a̲r̲ i' ⟩ →ᴸ⟨ val-h-step {E = γ''} {i = i'} ⟩ i→M) (wk-cong πᵥ) csn = {!!}
-  lookup-lemma {X = X} {i = i} {γ = γ'' ﹐ v̲a̲r̲ i'} {γ' = γ'} {M = M} (⟨ h ∥ γ'' ﹐ v̲a̲r̲ i' ⟩ →ᴸ⟨ val-h-step {E = γ''} {i = i'} ⟩ i→M) (wk-wk πᵥ) csn =
-    let
-      a1 = lookup-lemma i→M πᵥ csn
-    in
-    {!!}
-  lookup-lemma {X = X} {i = i} {γ = γ} {γ' = γ'} {M = M} (S →ᴸ⟨ val-t-step ⟩ i→M) πᵥ csn = {!!}
-  lookup-lemma {X = X} {i = i} {γ = γ} {γ' = γ'} {M = M} (S →ᴸ⟨ comp-t-step ⟩ i→M) πᵥ csn = {!!}
-    -- let
-    --   a1 = lookup-lemma i→M ? csn
-    -- in
-
-  -- data Wke :   (π : Wk Γ Γ')
-  --            → {E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))} → {E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))}
-  --            → (ϖ : Wkn Γ E) → (ϖ' : Wkn Γ' E') → Set where
-  --  wke-ε   :     Wke wk-ε wkn-nil wkn-nil
-  --  wke-ccc :     {E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))} → (π : Wk Γ Γ') → (ϖ : Wkn Γ E) → (ϖ' : Wkn Γ' E') → (e : (List (ℕ × ℕ) → TermMetric X))
-  --              → (θ : Wke π ϖ ϖ')
-  --              → (Wke (wk-cong π) {E = (X , e) ∷ E} {E' = (X , e) ∷ E'} (wkn-cong ϖ) (wkn-cong ϖ'))
-  --  wke-wc- :     {E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))} → (π : Wk Γ Γ') → (ϖ : Wkn Γ E) → (ϖ' : Wkn Γ' E') → (e : (List (ℕ × ℕ) → TermMetric X))
-  --              → (θ : Wke π ϖ ϖ')
-  --              → (Wke (wk-wk {A = X} π) {E = (X , e) ∷ E} {E' = E'} (wkn-cong ϖ) ϖ')
-  --  wke-ww- :     {E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))} → (π : Wk Γ Γ') → (ϖ : Wkn Γ E) → (ϖ' : Wkn Γ' E')
-  --              → (θ : Wke π ϖ ϖ')
-  --              → (Wke (wk-wk {A = X} π) {E = E} {E' = E'} (wkn-cons ϖ) ϖ')
-  --  wke-cww :     {E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))} → (π : Wk Γ Γ') → (ϖ : Wkn Γ E) → (ϖ' : Wkn Γ' E')
-  --              → (θ : Wke π ϖ ϖ')
-  --              → (Wke (wk-cong {A = X} π) {E = E} {E' = E'} (wkn-cons ϖ) (wkn-cons ϖ'))
+                 → v̲a̲l̲-metric (wk-v̲a̲l̲ πᵥ M) (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) csn ≤ᴹ lookup-metric i (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) csn
+  lookup-lemma {X = X} {Γ' = Γ'} {i = i} {γ = γ} {γ' = γ'} {M = M} (S ◼) (wk-wk πᵥ) pπ csn
+    rewrite
+      v̲a̲l̲-wke-lemma
+        M
+        ((X , v̲a̲l̲-metric M (proj₁ (env-metric γ')) (proj₂ (env-metric γ'))) ∷ proj₁ (env-metric γ'))
+        (proj₁ (env-metric γ'))
+        (wk-wk πᵥ)
+        (wkn-cong (proj₂ (env-metric γ')))
+        (proj₂ (env-metric γ'))
+        (wke-wc- πᵥ (proj₂ (env-metric γ')) (proj₂ (env-metric γ')) (v̲a̲l̲-metric M (proj₁ (env-metric γ')) (proj₂ (env-metric γ'))) wke-id)
+        csn
+    = ≤ᴹ-refl
+  lookup-lemma {X = X} {i = i} {γ = γ} {γ' = γ'} {M = M} (S →ᴸ⟨ x ⟩ i→M) πᵥ pπ csn = {!!}
 
 -------------------------------------------------------------------------------------------------
 
