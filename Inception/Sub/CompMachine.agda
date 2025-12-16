@@ -102,7 +102,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
         ∙app-var   :     {i : Γ ∋ (Z' `⇒ Z)} → {N : V̲a̲l̲ Γ Z'} → {γ : Env Γ} → {cs : CompStack Δ Z} → {πₓ : Wk Γ Δ} → {wk≡ₓ : ⟦ πₓ ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ}
                        → {W : (Γ' ∙ Z') ⊢ᶜ Z} → {γ' : Env Γ'}
                        → (⟨ i ∥ γ ⟩ →ᴸ* ⟨ h ∥ _﹐_ γ' (l̲a̲m̲ W) ⟩) → (πᵥ : Wk Γ Γ')
-                       → (T≤S : (csn : List (Σ ℕ (λ x → ℕ))) → m-⇒ 1 (count-in-comp h W) (comp-metric W (proj₁ (env-metric γ')) (Wkn.wkn-cons (proj₂ (env-metric γ'))) csn)
+                       → (T≤S : (csn : List (Σ ℕ (λ x → ℕ))) → m-⇒ 1 (inj₁ (Γ' ∙ Z' , W)) (comp-metric W (proj₁ (env-metric γ')) (Wkn.wkn-cons (proj₂ (env-metric γ'))) csn)
                           ≤ᴹ lookup-metric i (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) csn) -- to prove termination
                        → (θ : Wke πᵥ (proj₂ (env-metric γ)) (proj₂ (env-metric γ'))) -- to prove termination
                      ----------------------------------------------------------------
@@ -220,7 +220,6 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
 -------------------------------------------------------------------------------------------------
 
-
   ≤ᶜˢⁿ-decr : {csn₁ csn₂ : List (ℕ × ℕ)} → (n₁ ≤ n₂) → csn₁ ≤ᶜˢⁿ csn₂ → csn-to-nat₀ n₁ csn₁ ≤ csn-to-nat₀ n₂ csn₂
   ≤ᶜˢⁿ-decr {n₁ = n₁} {n₂ = n₂} n₁≤n₂ ([c≤c] {csn = csn}) = csn-decr n₁≤n₂ csn
   ≤ᶜˢⁿ-decr {n₁ = n₁} {n₂ = n₂} n₁≤n₂ ([s≤s] n₃≤n₄ c₁≤c₂) =
@@ -238,13 +237,13 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   +-p1-incr n (m-⇒ {Y = Y} {X = X} m cnt nm) with incr n (m-⇒ {Y = Y} {X = X} m cnt nm)
   ... | x = refl
 
-  ≡-p2-incr : (n : ℕ) → (nm : TermMetric (X `⇒ Y)) → p2 (incr n nm) ≡ p2 nm
-  ≡-p2-incr n (m-⇒ m cnt nm) = refl
+  -- ≡-p2-incr : (n : ℕ) → (nm : TermMetric (X `⇒ Y)) → p2 (incr n nm) ≡ p2 nm
+  -- ≡-p2-incr n (m-⇒ m cnt nm) = refl
+  --{-# REWRITE ≡-p2-incr #-}
 
   ≡-p3-incr : (n : ℕ) → (nm : TermMetric (X `⇒ Y)) → p3 (incr n nm) ≡ p3 nm
   ≡-p3-incr n (m-⇒ m cnt nm) = refl
 
-  {-# REWRITE ≡-p2-incr #-}
 
   ≤ᴹ-p3 : {nm₁ nm₂ : TermMetric (X `⇒ Y)} → (nm₁ ≤ᴹ nm₂) → (p3 nm₁) ≤ᴹ (p3 nm₂)
   ≤ᴹ-p3 (≤-⇒ n₁≤n₂ nm₁≤nm₂) = nm₁≤nm₂
@@ -281,7 +280,6 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   ≤ʷ-z-r : {e : (Σ[ X ∈ Ty ] TermMetric X)} {E : List (Σ[ X ∈ Ty ] TermMetric X)} {ϖ₁ : Wkn Γ (e ∷ E)} {ϖ₂ : Wkn Γ []} → ϖ₁ ≤ʷ ϖ₂ → ⊥
   ≤ʷ-z-r (≤ʷ-ww θ) = ≤ʷ-z-r θ
 -}
-
 -------------------------------------------------------------------------------------------------
 
 {-
@@ -360,7 +358,6 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   -- wk-e-id {Γ = Γ Cx.∙ x} (wkn-cons ϖ) = cong wkn-cons (wk-e-id ϖ)
 
 -------------------------------------------------------------------------------------------------
-
   {-
   comp-wk-e-lemma : (W : Comp Γ X) → (E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → (ϖ : Wkn Γ E) → (π : Wk Δ Γ) → (csn : List (ℕ × ℕ))
               → comp-metric W E ϖ csn ≡ comp-metric (wk-comp π W) E (wk-e π ϖ) csn
@@ -518,7 +515,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       rewrite
           comp-wke-lemma W E E' (wk-cong π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-cww π ϖ ϖ' θ) csn
         | wk-comp-count-eq (wk-cong π) h W
-        = refl
+        = {!!} --refl
     val-wke-lemma (pair M₁ M₂) E E' π ϖ ϖ' θ csn rewrite val-wke-lemma M₁ E E' π ϖ ϖ' θ csn | val-wke-lemma M₂ E E' π ϖ ϖ' θ csn = refl
     val-wke-lemma (pm {A = A} {B = B} M N) E E' π ϖ ϖ' θ csn
       rewrite
@@ -553,7 +550,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       rewrite
           val-wke-lemma M E E' π ϖ ϖ' θ csn
         | val-wke-lemma N E E' π ϖ ϖ' θ csn
-        = refl
+        = {!!} --refl
     comp-wke-lemma (var M) E E' π ϖ ϖ' θ csn rewrite val-wke-lemma M E E' π ϖ ϖ' θ csn = refl
     comp-wke-lemma (sub W₁ W₂) E E' π ϖ ϖ' θ csn
       rewrite
@@ -568,13 +565,14 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       rewrite
           comp-wke-lemma W E E' (wk-cong π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-cww π ϖ ϖ' θ) csn
         | wk-comp-count-eq (wk-cong π) h W
-        = refl
+        = {!!} --refl
   v̲a̲l̲-wke-lemma (pa̲i̲r̲ M₁ M₂) E E' π ϖ ϖ' θ csn rewrite v̲a̲l̲-wke-lemma M₁ E E' π ϖ ϖ' θ csn | v̲a̲l̲-wke-lemma M₂ E E' π ϖ ϖ' θ csn = refl
   v̲a̲l̲-wke-lemma u̲n̲i̲t̲ E E' π ϖ ϖ' θ csn = refl
   v̲a̲l̲-wke-lemma (v̲a̲r̲ i) E E' π ϖ ϖ' θ csn = cong (incr 1) (lookup-wke-lemma i E E' π ϖ ϖ' θ csn)
 
 -------------------------------------------------------------------------------------------------
 
+{-
   mutual
 
     fun-val-lemma : (M : Val (Γ ∙ X) Y) → (nm : (List (ℕ × ℕ) → TermMetric X)) → (E : List (Σ[ Z ∈ Ty ] (List (ℕ × ℕ) → TermMetric Z))) → (ϖ : Wkn Γ E) → (csn : List (ℕ × ℕ)) → ⟪ val-metric M ((X , nm) ∷ E) (wkn-cong ϖ) csn ⟫ ≡ count-in-val h M * ⟪ nm csn ⟫ + ⟪ val-metric M E (wkn-cons ϖ) csn ⟫
@@ -609,6 +607,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     fun-comp-lemma (app M N) nm E ϖ csn = {!!}
     fun-comp-lemma (var M) nm E ϖ csn = {!!}
     fun-comp-lemma (sub W₁ W₂) nm E ϖ csn = {!!}
+-}
 
 -------------------------------------------------------------------------------------------------
 
@@ -783,19 +782,19 @@ Goal: suc (⟪ comp-metric (wk-comp (wk-cong πᵥ) W) ((Z' , v̲a̲l̲-metric N
       suc (p1 (incr 2 b1) + (⟪ a1 ⟫ + p2 b1 * ⟪ a1 ⟫) + VMain.⟪ (λ z → k₀ z) ⟫ (p3 (incr 2 b1)) + csn-to-nat₀ (suc (p1 (incr 2 b1) + (⟪ a1 ⟫ + p2 b1 * ⟪ a1 ⟫) + VMain.⟪ (λ z → k₀ z) ⟫ (p3 (incr 2 b1)))) (cs-to-csn cs))
     -}
     =
-    let
-      a1 = v̲a̲l̲-metric N (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) (cs-to-csn cs)
-      --a2 = comp-metric (wk-comp (wk-cong πᵥ) W) (proj₁ (env-metric γ)) (wkn-cons (proj₂ (env-metric γ))) (cs-to-csn cs)
-      a2 = comp-metric W (proj₁ (env-metric γ')) (wkn-cons (proj₂ (env-metric γ'))) (cs-to-csn cs)
-      b1 = (lookup-metric i (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) (cs-to-csn cs))
-      c1 = T≤S (cs-to-csn cs)
-      c2 = ≤ᴹ-p1 c1
-      c4 = ≤ᴹ-p3 c1
-      e1 = comp-wke-lemma W (proj₁ (env-metric γ)) (proj₁ (env-metric γ')) (wk-cong πᵥ) ((wkn-cons (proj₂ (env-metric γ)))) ((wkn-cons (proj₂ (env-metric γ')))) (wke-cww πᵥ (proj₂ (env-metric γ)) (proj₂ (env-metric γ')) θ) (cs-to-csn cs)
-      -- d1 : a2 ≤ᴹ p3 b1
-      d1 : a2 ≤ᴹ p3 (incr 2 b1)
-      d1 = ≤ᴹ-trans c4 {!!} --(≤ᴹ-incr-cong (z≤n {n = 2}) ≤ᴹ-refl)
-    in
+    -- let
+    --   a1 = v̲a̲l̲-metric N (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) (cs-to-csn cs)
+    --   --a2 = comp-metric (wk-comp (wk-cong πᵥ) W) (proj₁ (env-metric γ)) (wkn-cons (proj₂ (env-metric γ))) (cs-to-csn cs)
+    --   a2 = comp-metric W (proj₁ (env-metric γ')) (wkn-cons (proj₂ (env-metric γ'))) (cs-to-csn cs)
+    --   b1 = (lookup-metric i (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) (cs-to-csn cs))
+    --   c1 = T≤S (cs-to-csn cs)
+    --   c2 = ≤ᴹ-p1 c1
+    --   c4 = ≤ᴹ-p3 c1
+    --   e1 = comp-wke-lemma W (proj₁ (env-metric γ)) (proj₁ (env-metric γ')) (wk-cong πᵥ) ((wkn-cons (proj₂ (env-metric γ)))) ((wkn-cons (proj₂ (env-metric γ')))) (wke-cww πᵥ (proj₂ (env-metric γ)) (proj₂ (env-metric γ')) θ) (cs-to-csn cs)
+    --   -- d1 : a2 ≤ᴹ p3 b1
+    --   d1 : a2 ≤ᴹ p3 (incr 2 b1)
+    --   d1 = ≤ᴹ-trans c4 {!!} --(≤ᴹ-incr-cong (z≤n {n = 2}) ≤ᴹ-refl)
+    -- in
       {!!}
 
 {-
@@ -893,23 +892,23 @@ seems easy
 
 {- A
 -------------------------------------------------------
-  postulate debuglemma : m ≤ n
-  -- debuglemma = ≤-refl
+  --postulate debuglemma : m ≤ n
+  debuglemma = ≤-refl
 
 -------------------------------
-  -- {-# TERMINATING #-}
+  {-# TERMINATING #-}
   mutual
 
     app-eval-rec :   (M : Γ' ⊢ᵛ X `⇒ Y) → (N : V̲a̲l̲ Γ X) → (γ : Env Γ) → (π : Wk Γ Γ') → (cs : CompStack Δ Y) → (πₓ : Wk Γ Δ)
                    → (wk≡₀ : ⟦ πₓ ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → (n : ℕ)
-                   -- → (n ≤ n)
-                   → (compstate-metric ((∙⟨ (a̲pp (wk-val π M) N) ⊰ γ ╎ cs ⟩) {π = πₓ} {wk≡ = wk≡₀}) ≤ n)
+                   → (n ≤ n)
+                   -- → (compstate-metric ((∙⟨ (a̲pp (wk-val π M) N) ⊰ γ ╎ cs ⟩) {π = πₓ} {wk≡ = wk≡₀}) ≤ n)
                    → CompSteps ((∙⟨ (a̲pp (wk-val π M) N) ⊰ γ ╎ cs ⟩) {π = πₓ} {wk≡ = wk≡₀})
 
-    app-eval-rec (var i) N γ π cs πₓ wk≡₀ zero m≤n with m≤n
-    ... | ()
-    app-eval-rec (var i) N γ π cs πₓ wk≡₀ (suc n) m≤n with lookup (wk-mem π i) γ
-    -- app-eval-rec (var i) N γ π cs πₓ wk≡₀ n m≤n with lookup (wk-mem π i) γ
+    -- app-eval-rec (var i) N γ π cs πₓ wk≡₀ zero m≤n with m≤n
+    -- ... | ()
+    -- app-eval-rec (var i) N γ π cs πₓ wk≡₀ (suc n) m≤n with lookup (wk-mem π i) γ
+    app-eval-rec (var i) N γ π cs πₓ wk≡₀ n m≤n with lookup (wk-mem π i) γ
     ... | steps i>>T (found-lam {X = X} {W = W} {γ = γ₁}) i≡T π₁ w≡γ T≤S θ with comp-eval-rec W (γ ﹐ N) (wk-cong π₁) cs (wk-wk πₓ) wk≡₀ n debuglemma
     ... | steps {T = T} W>WT HT S≡T cM =
 
@@ -1030,8 +1029,8 @@ seems easy
 
     comp-eval-rec : (W : Γ' ⊢ᶜ X) → (γ : Env Γ) → (π : Wk Γ Γ') → (cs : CompStack Δ X) → (πₓ : Wk Γ Δ)
                   → (wk≡₀ : ⟦ πₓ ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → (n : ℕ)
-                  -- → (n ≤ n)
-                  → (compstate-metric ((∘⟨ wk-comp π W ⊰ γ ╎ cs ⟩) {π = πₓ} {wk≡ = wk≡₀}) ≤ n)
+                  → (n ≤ n)
+                  -- → (compstate-metric ((∘⟨ wk-comp π W ⊰ γ ╎ cs ⟩) {π = πₓ} {wk≡ = wk≡₀}) ≤ n)
                   → CompSteps ((∘⟨ wk-comp π W ⊰ γ ╎ cs ⟩) {π = πₓ} {wk≡ = wk≡₀})
 
     comp-eval-rec (return {A = X} M) γ π ◻ πₓ wk≡₀ n m≤n with val-eval-rec {X = X} M γ π
@@ -1047,10 +1046,10 @@ seems easy
 
                     (compstate-metric ((∘⟨ wk-comp π (return M) ⊰ γ ╎ ◻ ⟩) {π = πₓ} {wk≡ = wk≡₀}) ∷ compstate-metric ((∙⟨ r̲e̲t̲u̲r̲n̲ M₁ ⊰ γ₁ ╎ ◻ ⟩) {π = wk-trans π' πₓ} {wk≡ = wk≡₀}) ∷ [])
 
-    comp-eval-rec (return {A = X} M) γ π ((M' ⊲ γ' ⦂⦂ cs) {π = π₁} {wk≡ = wk≡₁}) πₓ wk≡₀ zero m≤n with m≤n
-    ... | ()
-    comp-eval-rec (return {A = X} M) γ π ((M' ⊲ γ' ⦂⦂ cs) {π = π₁} {wk≡ = wk≡₁}) πₓ wk≡₀ (suc n) m≤n with val-eval-rec {X = X} M γ π
-    -- comp-eval-rec (return {A = X} M) γ π ((M' ⊲ γ' ⦂⦂ cs) {π = π₁} {wk≡ = wk≡₁}) πₓ wk≡₀ n m≤n with val-eval-rec {X = X} M γ π
+    -- comp-eval-rec (return {A = X} M) γ π ((M' ⊲ γ' ⦂⦂ cs) {π = π₁} {wk≡ = wk≡₁}) πₓ wk≡₀ zero m≤n with m≤n
+    -- ... | ()
+    -- comp-eval-rec (return {A = X} M) γ π ((M' ⊲ γ' ⦂⦂ cs) {π = π₁} {wk≡ = wk≡₁}) πₓ wk≡₀ (suc n) m≤n with val-eval-rec {X = X} M γ π
+    comp-eval-rec (return {A = X} M) γ π ((M' ⊲ γ' ⦂⦂ cs) {π = π₁} {wk≡ = wk≡₁}) πₓ wk≡₀ n m≤n with val-eval-rec {X = X} M γ π
     ... | steps {T = ∙ ((⭭ M₁ ⊲ γ₁ ∷ □) {↥ = 🗆})} M>T ∙T M≡T π' wk≡ with
                  comp-eval-rec
                    M'
@@ -1194,10 +1193,10 @@ seems easy
 
                 (compstate-metric ((∘⟨ app (wk-val π M) (wk-val π N) ⊰ γ ╎ cs ⟩) {π = πₓ} {wk≡ = wk≡₀}) ∷ cM)
 
-    comp-eval-rec (var {A = X} M) γ π cs πₓ wk≡₀ zero m≤n with m≤n
-    ... | ()
-    comp-eval-rec (var {A = X} M) γ π cs πₓ wk≡₀ (suc n) m≤n with val-eval-rec {X = `V} M γ π
-    -- comp-eval-rec (var {A = X} M) γ π cs πₓ wk≡₀ n m≤n with val-eval-rec {X = `V} M γ π
+    -- comp-eval-rec (var {A = X} M) γ π cs πₓ wk≡₀ zero m≤n with m≤n
+    -- ... | ()
+    -- comp-eval-rec (var {A = X} M) γ π cs πₓ wk≡₀ (suc n) m≤n with val-eval-rec {X = `V} M γ π
+    comp-eval-rec (var {A = X} M) γ π cs πₓ wk≡₀ n m≤n with val-eval-rec {X = `V} M γ π
     ... | steps {T = ∙ ((⭭ v̲a̲r̲ i) ⊲ γ₁ ∷ □) {↥ = 🗆}} M>T ∙T M≡T π' wk≡ with lookup i γ₁
     ... | steps i>>T (found-comp {X = X} {W = W'} {γ = γ'} {cs = cs'} {π = πᶜ} {wk≡ = wk≡c}) i≡T π₂ w≡γ T≤S θ with
                     comp-eval-rec
