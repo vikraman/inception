@@ -224,8 +224,15 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   ≤ᴹ-p1 : {nm₁ nm₂ : TermMetric (X `⇒ Y)} → (nm₁ ≤ᴹ nm₂) → (p1 nm₁) ≤ (p1 nm₂)
   ≤ᴹ-p1 (≤-⇒ n₁≤n₂ nm₁≤nm₂) = n₁≤n₂
 
+  +-p1-incr : (n : ℕ) → (nm : TermMetric (X `⇒ Y)) → p1 (incr n nm) ≡ n + (p1 nm)
+  +-p1-incr n (m-⇒ {Y = Y} {X = X} m cnt nm) with incr n (m-⇒ {Y = Y} {X = X} m cnt nm)
+  ... | x = refl
+
   ≡-p2-incr : (n : ℕ) → (nm : TermMetric (X `⇒ Y)) → p2 (incr n nm) ≡ p2 nm
   ≡-p2-incr n (m-⇒ m cnt nm) = refl
+
+  ≡-p3-incr : (n : ℕ) → (nm : TermMetric (X `⇒ Y)) → p3 (incr n nm) ≡ p3 nm
+  ≡-p3-incr n (m-⇒ m cnt nm) = refl
 
   {-# REWRITE ≡-p2-incr #-}
 
@@ -558,6 +565,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
 -------------------------------------------------------------------------------------------------
 
+{-
   data PWk : (π : Wk Γ Δ) → Set where
     pwk-id : {π : Wk Γ Γ} → PWk π
     pwk-wk : {π : Wk Γ Δ} → PWk π → PWk (wk-wk {A = X} π)
@@ -582,9 +590,10 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     = ≤ᴹ-refl
   lookup-lemma {X = X} {i = i} {γ = γ} {γ' = γ'} {M = M} (S →ᴸ⟨ x ⟩ i→M) πᵥ pwk-id csn = {!!}
   lookup-lemma {X = X} {i = i} {γ = γ} {γ' = γ'} {M = M} (S →ᴸ⟨ x ⟩ i→M) (wk-wk πᵥ) (pwk-wk pπ) csn = {!!}
+-}
 
 -------------------------------------------------------------------------------------------------
-
+{-
   val-metric-decreasing : {Q₁ : ValState X} → {Q₂ : ValState X} → (Q₁→ᶜQ₂ : Q₁ ↠ᵛ Q₂) → (csn : List (ℕ × ℕ)) → (suc (valstate-metric Q₂ csn) ≤ (valstate-metric Q₁ csn))
   val-metric-decreasing = {!!}
 
@@ -711,17 +720,24 @@ sufficient to prove ⟪ a1 ⟫ ≤ ⟪ a3 ⟫, i.e.
 seems reasonable
 -}
 
-  comp-metric-decreasing (∙app-var {i = i} {N = N} {γ = γ} {cs = cs} {πₓ = πₓ} {wk≡ₓ = wk≡ₓ} {W = W} {γ' = γ'} i→λW πᵥ T≤S θ) =
+  comp-metric-decreasing (∙app-var {i = i} {N = N} {γ = γ} {cs = cs} {πₓ = πₓ} {wk≡ₓ = wk≡ₓ} {W = W} {γ' = γ'} i→λW πᵥ T≤S θ)
+    rewrite
+        sym (comp-wke-lemma W (proj₁ (env-metric γ)) (proj₁ (env-metric γ')) (wk-cong πᵥ) ((wkn-cons (proj₂ (env-metric γ)))) ((wkn-cons (proj₂ (env-metric γ')))) (wke-cww πᵥ (proj₂ (env-metric γ)) (proj₂ (env-metric γ')) θ) (cs-to-csn cs))
+      | ≡-p3-incr 2 (lookup-metric i (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) (cs-to-csn cs))
+      | +-p1-incr 2 (lookup-metric i (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) (cs-to-csn cs))
+    =
     let
       a1 = v̲a̲l̲-metric N (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) (cs-to-csn cs)
-      a2 = comp-metric (wk-comp (wk-cong πᵥ) W) (proj₁ (env-metric γ)) (wkn-cons (proj₂ (env-metric γ))) (cs-to-csn cs)
+      --a2 = comp-metric (wk-comp (wk-cong πᵥ) W) (proj₁ (env-metric γ)) (wkn-cons (proj₂ (env-metric γ))) (cs-to-csn cs)
+      a2 = comp-metric W (proj₁ (env-metric γ')) (wkn-cons (proj₂ (env-metric γ'))) (cs-to-csn cs)
       b1 = (lookup-metric i (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) (cs-to-csn cs))
       c1 = T≤S (cs-to-csn cs)
       c2 = ≤ᴹ-p1 c1
       c4 = ≤ᴹ-p3 c1
+      e1 = comp-wke-lemma W (proj₁ (env-metric γ)) (proj₁ (env-metric γ')) (wk-cong πᵥ) ((wkn-cons (proj₂ (env-metric γ)))) ((wkn-cons (proj₂ (env-metric γ')))) (wke-cww πᵥ (proj₂ (env-metric γ)) (proj₂ (env-metric γ')) θ) (cs-to-csn cs)
+      -- d1 : a2 ≤ᴹ p3 b1
       d1 : a2 ≤ᴹ p3 (incr 2 b1)
-      d1 = {!c4!}
-      e1 = comp-wke-lemma W (proj₁ (env-metric γ)) (proj₁ (env-metric γ')) (wk-cong πᵥ) ((wkn-cons (proj₂ (env-metric γ)))) ((wkn-cons (proj₂ (env-metric γ')))) (wke-cww πᵥ (proj₂ (env-metric γ)) (proj₂ (env-metric γ')) {!!}) (cs-to-csn cs)
+      d1 = ≤ᴹ-trans c4 {!!} --(≤ᴹ-incr-cong (z≤n {n = 2}) ≤ᴹ-refl)
     in
       {!!}
 
@@ -744,8 +760,13 @@ lookup-lemma : (i→λW : ⟨ i ∥ γ ⟩ →ᴸ* ⟨ h ∥ γ' ﹐ M ⟩) → 
 
 lemma : (i→λW : ⟨ i ∥ γ ⟩ →ᴸ* ⟨ h ∥ γ' ﹐ l̲a̲m̲ W ⟩) → (lookup-metric i E ϖ csn) ≡ comp-metric (wk-comp (wk-cong πᵥ) W) E (wkn-cons ϖ)) csn
 
-
 seems reasonable
+
+---------------------------------------------------------------------
+
+Goal: 2+ (2+ (⟪ a1 ⟫ + count-in-comp h (wk-comp (wk-cong πᵥ) W) * ⟪ a1 ⟫ + ⟪ comp-metric W (proj₁ (env-metric γ')) (Wkn.wkn-cons (proj₂ (env-metric γ'))) (cs-to-csn cs) ⟫ + csn-to-nat₀ (2+ (suc (⟪ a1 ⟫ + count-in-comp h (wk-comp (wk-cong πᵥ) W) * ⟪ a1 ⟫ + ⟪ comp-metric W (proj₁ (env-metric γ')) (Wkn.wkn-cons (proj₂ (env-metric γ'))) (cs-to-csn cs) ⟫))) (cs-to-csn cs)))
+      ≤
+      2+ (suc (p1 b1 + (⟪ a1 ⟫ + p2 b1 * ⟪ a1 ⟫) + ⟪ p3 b1 ⟫                                                                                                              + csn-to-nat₀ (2+ (suc (p1 b1 + (⟪ a1 ⟫ + p2 b1 * ⟪ a1 ⟫) + ⟪ p3 b1 ⟫))) (cs-to-csn cs)))
 
 -}
 
@@ -806,6 +827,8 @@ TP: ⟪ a1 ⟫ ≤ ⟪ a2 ⟫
 seems easy
 
 -}
+
+B -}
 
 -------------------------------------------------------
 -------------------------------------------------------
