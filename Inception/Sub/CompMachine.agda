@@ -533,7 +533,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     comp-wke-lemma : (W : Comp Γ' X) → (E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X)))
                 → (π : Wk Γ Γ') → (ϖ : Wkn Γ E) → (ϖ' : Wkn Γ' E') → (θ : Wke π ϖ ϖ') → (csn : List (ℕ × ℕ))
                 → comp-metric W E' ϖ' csn ≡ comp-metric (wk-comp π W) E ϖ csn
-    comp-wke-lemma (return M) E E' π ϖ ϖ' θ [] = refl
+    comp-wke-lemma (return M) E E' π ϖ ϖ' θ [] = cong (incr 2) (val-wke-lemma M E E' π ϖ ϖ' θ []) --refl
     comp-wke-lemma (return M) E E' π ϖ ϖ' θ (x ∷ csn) = cong (incr 2) (val-wke-lemma M E E' π ϖ ϖ' θ csn)
     comp-wke-lemma (pm {A = A} {B = B} M W) E E' π ϖ ϖ' θ csn
       rewrite
@@ -575,6 +575,18 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
 -------------------------------------------------------------------------------------------------
 
+
+  fun-comp-lemma : (W : Comp (Γ ∙ X) Y) → (nm : (List (ℕ × ℕ) → TermMetric X)) → (E : List (Σ[ Z ∈ Ty ] (List (ℕ × ℕ) → TermMetric Z))) → (ϖ : Wkn Γ E) → (csn : List (ℕ × ℕ)) → ⟪ comp-metric W ((X , nm) ∷ E) (wkn-cong ϖ) csn ⟫ ≡ count-in-comp h W * ⟪ nm csn ⟫ + ⟪ comp-metric W E (wkn-cons ϖ) csn ⟫
+  fun-comp-lemma {X = X} {Y = Y} (return M) nm E ϖ [] = {!⟪ comp-metric (return M) ((X , nm) ∷ E) (wkn-cong ϖ) [] ⟫!}
+  fun-comp-lemma (return M) nm E ϖ (x ∷ csn) = {!!}
+  fun-comp-lemma (pm M W) nm E ϖ csn = {!!}
+  fun-comp-lemma (push W₁ W₂) nm E ϖ csn = {!!}
+  fun-comp-lemma (app M N) nm E ϖ csn = {!!}
+  fun-comp-lemma (var M) nm E ϖ csn = {!!}
+  fun-comp-lemma (sub W₁ W₂) nm E ϖ csn = {!!}
+
+-------------------------------------------------------------------------------------------------
+
 {-
   data PWk : (π : Wk Γ Δ) → Set where
     pwk-id : {π : Wk Γ Γ} → PWk π
@@ -603,12 +615,11 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 -}
 
 -------------------------------------------------------------------------------------------------
-{-
   val-metric-decreasing : {Q₁ : ValState X} → {Q₂ : ValState X} → (Q₁→ᶜQ₂ : Q₁ ↠ᵛ Q₂) → (csn : List (ℕ × ℕ)) → (suc (valstate-metric Q₂ csn) ≤ (valstate-metric Q₁ csn))
   val-metric-decreasing = {!!}
 
   comp-metric-decreasing : {Q₁ : CompState} → {Q₂ : CompState} → (Q₁→ᶜQ₂ : Q₁ →ᶜ Q₂) → (suc (compstate-metric Q₂) ≤ (compstate-metric Q₁))
-  comp-metric-decreasing (∘return {M = M} {γ = γ} {π = π} {M' = M'} {γ' = γ'} {cs = ◻} M→M') = s≤s z≤n
+  comp-metric-decreasing (∘return {M = M} {γ = γ} {π = π} {M' = M'} {γ' = γ'} {cs = ◻} M→M') = {!s≤s (s≤s ?)!} --s≤s z≤n
   comp-metric-decreasing (∘return {M = M} {γ = γ} {π = π} {M' = M'} {γ' = γ'} {cs = W ⊲ γ₁ ⦂⦂ cs} M→M') with val-metric-decreasing (M→M') (cs-to-csn cs)
   ... | x =
     let
@@ -730,11 +741,17 @@ sufficient to prove ⟪ a1 ⟫ ≤ ⟪ a3 ⟫, i.e.
 seems reasonable
 -}
 
-  comp-metric-decreasing (∙app-var {i = i} {N = N} {γ = γ} {cs = cs} {πₓ = πₓ} {wk≡ₓ = wk≡ₓ} {W = W} {γ' = γ'} i→λW πᵥ T≤S θ)
-    rewrite
-        sym (comp-wke-lemma W (proj₁ (env-metric γ)) (proj₁ (env-metric γ')) (wk-cong πᵥ) ((wkn-cons (proj₂ (env-metric γ)))) ((wkn-cons (proj₂ (env-metric γ')))) (wke-cww πᵥ (proj₂ (env-metric γ)) (proj₂ (env-metric γ')) θ) (cs-to-csn cs))
-      | ≡-p3-incr 2 (lookup-metric i (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) (cs-to-csn cs))
-      | +-p1-incr 2 (lookup-metric i (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) (cs-to-csn cs))
+  comp-metric-decreasing (∙app-var {Z' = Z'} {Z = Z} {i = i} {N = N} {γ = γ} {cs = cs} {πₓ = πₓ} {wk≡ₓ = wk≡ₓ} {W = W} {γ' = γ'} i→λW πᵥ T≤S θ)
+    -- rewrite
+    --     sym (comp-wke-lemma W (proj₁ (env-metric γ)) (proj₁ (env-metric γ')) (wk-cong πᵥ) ((wkn-cons (proj₂ (env-metric γ)))) ((wkn-cons (proj₂ (env-metric γ')))) (wke-cww πᵥ (proj₂ (env-metric γ)) (proj₂ (env-metric γ')) θ) (cs-to-csn cs))
+    --   | ≡-p3-incr 2 (lookup-metric i (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) (cs-to-csn cs))
+    --   | +-p1-incr 2 (lookup-metric i (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) (cs-to-csn cs))
+    {-
+Goal: suc (⟪ comp-metric (wk-comp (wk-cong πᵥ) W) ((Z' , v̲a̲l̲-metric N (proj₁ (env-metric γ)) (proj₂ (env-metric γ))) ∷ proj₁ (env-metric γ)) (Wkn.wkn-cong (proj₂ (env-metric γ))) (cs-to-csn cs) ⟫ +
+       csn-to-nat₀ ⟪ comp-metric (wk-comp (wk-cong πᵥ) W) ((Z' , v̲a̲l̲-metric N (proj₁ (env-metric γ)) (proj₂ (env-metric γ))) ∷ proj₁ (env-metric γ)) (Wkn.wkn-cong (proj₂ (env-metric γ))) (cs-to-csn cs) ⟫ (cs-to-csn cs))
+      ≤
+      suc (p1 (incr 2 b1) + (⟪ a1 ⟫ + p2 b1 * ⟪ a1 ⟫) + VMain.⟪ (λ z → k₀ z) ⟫ (p3 (incr 2 b1)) + csn-to-nat₀ (suc (p1 (incr 2 b1) + (⟪ a1 ⟫ + p2 b1 * ⟪ a1 ⟫) + VMain.⟪ (λ z → k₀ z) ⟫ (p3 (incr 2 b1)))) (cs-to-csn cs))
+    -}
     =
     let
       a1 = v̲a̲l̲-metric N (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) (cs-to-csn cs)
@@ -774,9 +791,11 @@ seems reasonable
 
 ---------------------------------------------------------------------
 
-Goal: 2+ (2+ (⟪ a1 ⟫ + count-in-comp h (wk-comp (wk-cong πᵥ) W) * ⟪ a1 ⟫ + ⟪ comp-metric W (proj₁ (env-metric γ')) (Wkn.wkn-cons (proj₂ (env-metric γ'))) (cs-to-csn cs) ⟫ + csn-to-nat₀ (2+ (suc (⟪ a1 ⟫ + count-in-comp h (wk-comp (wk-cong πᵥ) W) * ⟪ a1 ⟫ + ⟪ comp-metric W (proj₁ (env-metric γ')) (Wkn.wkn-cons (proj₂ (env-metric γ'))) (cs-to-csn cs) ⟫))) (cs-to-csn cs)))
+
+Goal: suc (⟪ comp-metric (wk-comp (wk-cong πᵥ) W) ((Z' , v̲a̲l̲-metric N (proj₁ (env-metric γ)) (proj₂ (env-metric γ))) ∷ proj₁ (env-metric γ)) (Wkn.wkn-cong (proj₂ (env-metric γ))) (cs-to-csn cs) ⟫ +
+       csn-to-nat₀ ⟪ comp-metric (wk-comp (wk-cong πᵥ) W) ((Z' , v̲a̲l̲-metric N (proj₁ (env-metric γ)) (proj₂ (env-metric γ))) ∷ proj₁ (env-metric γ)) (Wkn.wkn-cong (proj₂ (env-metric γ))) (cs-to-csn cs) ⟫ (cs-to-csn cs))
       ≤
-      2+ (suc (p1 b1 + (⟪ a1 ⟫ + p2 b1 * ⟪ a1 ⟫) + ⟪ p3 b1 ⟫                                                                                                              + csn-to-nat₀ (2+ (suc (p1 b1 + (⟪ a1 ⟫ + p2 b1 * ⟪ a1 ⟫) + ⟪ p3 b1 ⟫))) (cs-to-csn cs)))
+      suc (p1 (incr 2 b1) + (⟪ a1 ⟫ + p2 b1 * ⟪ a1 ⟫) + VMain.⟪ (λ z → k₀ z) ⟫ (p3 (incr 2 b1)) + csn-to-nat₀ (suc (p1 (incr 2 b1) + (⟪ a1 ⟫ + p2 b1 * ⟪ a1 ⟫) + VMain.⟪ (λ z → k₀ z) ⟫ (p3 (incr 2 b1)))) (cs-to-csn cs))
 
 -}
 
@@ -838,12 +857,11 @@ seems easy
 
 -}
 
-B -}
-
 -------------------------------------------------------
 -------------------------------------------------------
 -------------------------------------------------------
 
+{- A
 -------------------------------------------------------
   postulate debuglemma : m ≤ n
   -- debuglemma = ≤-refl
@@ -1444,3 +1462,4 @@ _ = refl
 -- Goal: csn-to-nat₀       9    [] ≤ suc (  9 + n₁ * zero + csn-to-nat₀ (suc (fst + n₁ * zero)) csn₁)
 -}
 C -}
+A -}
