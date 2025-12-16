@@ -10,6 +10,7 @@ open Eq.≡-Reasoning using (step-≡-⟩; step-≡-∣; step-≡-⟨; _∎; ste
 
 open import Relation.Binary.Reasoning.Syntax
 
+open import Inception.Sub.Contr
 open import Inception.Sub.Syntax
 open import Inception.Sub.CPS R
 
@@ -102,7 +103,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
         ∙app-var   :     {i : Γ ∋ (Z' `⇒ Z)} → {N : V̲a̲l̲ Γ Z'} → {γ : Env Γ} → {cs : CompStack Δ Z} → {πₓ : Wk Γ Δ} → {wk≡ₓ : ⟦ πₓ ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ}
                        → {W : (Γ' ∙ Z') ⊢ᶜ Z} → {γ' : Env Γ'}
                        → (⟨ i ∥ γ ⟩ →ᴸ* ⟨ h ∥ _﹐_ γ' (l̲a̲m̲ W) ⟩) → (πᵥ : Wk Γ Γ')
-                       → (T≤S : (csn : List (Σ ℕ (λ x → ℕ))) → m-⇒ 1 (inj₁ (Γ' ∙ Z' , W)) (comp-metric W (proj₁ (env-metric γ')) (Wkn.wkn-cons (proj₂ (env-metric γ'))) csn)
+                       → (T≤S : (csn : List (Σ ℕ (λ x → ℕ))) → m-⇒ 1 (inj₁ (contr-comp W)) (comp-metric W (proj₁ (env-metric γ')) (Wkn.wkn-cons (proj₂ (env-metric γ'))) csn)
                           ≤ᴹ lookup-metric i (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) csn) -- to prove termination
                        → (θ : Wke πᵥ (proj₂ (env-metric γ)) (proj₂ (env-metric γ'))) -- to prove termination
                      ----------------------------------------------------------------
@@ -410,6 +411,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     -}
 
 ---------------------------------------------------------------------------------------------
+-- SOON OBSOLTE
 
   mutual
 
@@ -456,6 +458,40 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     wk-comp-count-eq π i (app M₁ M₂) = cong₂ _+_ (wk-val-count-eq π i M₁) (wk-val-count-eq π i M₂)
     wk-comp-count-eq π i (var M) = wk-val-count-eq π i M
     wk-comp-count-eq π i (sub W₁ W₂) = cong₂ _+_ (wk-comp-count-eq (wk-cong π) (t i) W₁) (wk-comp-count-eq π i W₂)
+
+---------------------------------------------------------------------------------------------
+
+{-
+  v̲a̲l̲-wke-lemma (l̲a̲m̲ W) E E' π ϖ ϖ' θ csn
+      rewrite
+          comp-wke-lemma W E E' (wk-cong π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-cww π ϖ ϖ' θ) csn
+        | wk-comp-count-eq (wk-cong π) h W
+        = {!!}
+
+  TermMetric.m-⇒ 1 (inj₁ (Γ' ∙ X , W))
+  (comp-metric (wk-comp (wk-cong π) W) E (Wkn.wkn-cons ϖ) csn)
+  ≡
+  TermMetric.m-⇒ 1 (inj₁ (Γ ∙ X , wk-comp (wk-cong π) W))
+  (comp-metric (wk-comp (wk-cong π) W) E (Wkn.wkn-cons ϖ) csn)
+
+csn : List (Σ ℕ (λ x → ℕ))
+θ   : Wke π ϖ ϖ'
+ϖ'  : Wkn Γ' E'
+ϖ   : Wkn Γ E
+E'  : List (Σ Ty (λ X₁ → List (Σ ℕ (λ x → ℕ)) → TermMetric X₁))
+E   : List (Σ Ty (λ X₁ → List (Σ ℕ (λ x → ℕ)) → TermMetric X₁))
+π   : Wk Γ Γ'
+W   : Comp (Γ' ∙ X) Y
+Y   : Ty   (not in scope)
+X   : Ty   (not in scope)
+Γ   : Ctx   (not in scope)
+Γ'  : Ctx   (not in scope)
+k₀  : ⟦ R₀ ⟧ → R
+R₀  : Ty
+R   : Set
+-}
+
+--  fun-eq : (W : Comp (Γ' ∙ X) Y) → (π : Wk Γ Γ') → (nm : TermMetric Y)
 
 ---------------------------------------------------------------------------------------------
 
@@ -558,6 +594,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
         | comp-wke-lemma W₁ ((`V , (λ _ → m-V 0 ⟪ comp-metric (wk-comp π W₂) E ϖ csn ⟫ csn)) ∷ E) ((`V , (λ _ → m-V 0 ⟪ comp-metric (wk-comp π W₂) E ϖ csn ⟫ csn)) ∷ E') (wk-cong π) (wkn-cong ϖ) (wkn-cong ϖ') (wke-ccc π ϖ ϖ' (λ _ → m-V 0 ⟪ comp-metric (wk-comp π W₂) E ϖ csn ⟫ csn) θ) csn
         = refl
 
+  {- not true any more - need to enclose each side in ⟪ ⟫
   v̲a̲l̲-wke-lemma : (M : V̲a̲l̲ Γ' X) → (E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X)))
               → (π : Wk Γ Γ') → (ϖ : Wkn Γ E) → (ϖ' : Wkn Γ' E') → (θ : Wke π ϖ ϖ') → (csn : List (ℕ × ℕ))
               → v̲a̲l̲-metric M E' ϖ' csn ≡ v̲a̲l̲-metric (wk-v̲a̲l̲ π M) E ϖ csn
@@ -569,6 +606,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   v̲a̲l̲-wke-lemma (pa̲i̲r̲ M₁ M₂) E E' π ϖ ϖ' θ csn rewrite v̲a̲l̲-wke-lemma M₁ E E' π ϖ ϖ' θ csn | v̲a̲l̲-wke-lemma M₂ E E' π ϖ ϖ' θ csn = refl
   v̲a̲l̲-wke-lemma u̲n̲i̲t̲ E E' π ϖ ϖ' θ csn = refl
   v̲a̲l̲-wke-lemma (v̲a̲r̲ i) E E' π ϖ ϖ' θ csn = cong (incr 1) (lookup-wke-lemma i E E' π ϖ ϖ' θ csn)
+  -}
 
 -------------------------------------------------------------------------------------------------
 
@@ -889,7 +927,6 @@ seems easy
 -------------------------------------------------------
 -------------------------------------------------------
 -------------------------------------------------------
-
 {- A
 -------------------------------------------------------
   --postulate debuglemma : m ≤ n

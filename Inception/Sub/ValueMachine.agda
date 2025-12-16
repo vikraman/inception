@@ -8,6 +8,7 @@ import Relation.Binary.PropositionalEquality as Eq
 open Eq using (_≡_; refl; cong; sym; trans)
 open Eq.≡-Reasoning
 
+open import Inception.Sub.Contr
 open import Inception.Sub.Syntax
 open import Inception.Sub.CPS R
 
@@ -477,7 +478,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
     val-metric : (M : Val Γ Y) → (E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → Wkn Γ E → (csn : List (ℕ × ℕ)) → TermMetric Y
     val-metric (var i) E ϖ csn = incr 2 (lookup-metric i E ϖ csn)
-    val-metric (lam {Γ = Γ} {A = A} W) E ϖ csn = incr 2 (m-⇒ 0 (inj₁ (Γ ∙ A , W)) (comp-metric W E (wkn-cons ϖ) csn)) --incr 2 (m-⇒ 0 (count-in-comp h W) (comp-metric W E (wkn-cons ϖ) csn))
+    val-metric (lam {Γ = Γ} {A = A} W) E ϖ csn = incr 2 (m-⇒ 0 (inj₁ (contr-comp W)) (comp-metric W E (wkn-cons ϖ) csn)) --incr 2 (m-⇒ 0 (count-in-comp h W) (comp-metric W E (wkn-cons ϖ) csn))
     val-metric (pair M N) E ϖ csn = incr 2 (m-× 0 (val-metric M E ϖ csn) (val-metric N E ϖ csn))
     val-metric (pm {A = X} {B = Y} M N) E ϖ csn = let IH = val-metric M E ϖ in incr (suc (vx (IH csn) + ⟪ val-metric N E (wkn-cons (wkn-cons ϖ)) csn ⟫)) (val-metric N ((Y , λ c → rhs (IH c)) ∷ (X , λ c → lhs (IH c)) ∷ E) (wkn-cong (wkn-cong ϖ)) csn)
     val-metric unit E ϖ csn = m-Unit 2
@@ -502,7 +503,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     comp-metric (sub W₁ W₂) E ϖ csn = let w = ⟪ comp-metric W₂ E ϖ csn ⟫ in incr (suc ⟪ comp-metric W₂ E ϖ csn ⟫) (comp-metric W₁ (((`V , λ _ → m-V 0 w csn)) ∷ E) (wkn-cong ϖ) csn)
 
     v̲a̲l̲-metric : (M : V̲a̲l̲ Γ Y) → (E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → Wkn Γ E → (csn : List (ℕ × ℕ)) → TermMetric Y
-    v̲a̲l̲-metric (l̲a̲m̲ {Γ = Γ} {X = X} W) E ϖ csn = incr 1 (m-⇒ 0 (inj₁ (Γ ∙ X , W)) (comp-metric W E (wkn-cons ϖ) csn)) --incr 1 (m-⇒ 0 (count-in-comp h W) (comp-metric W E (wkn-cons ϖ) csn))
+    v̲a̲l̲-metric (l̲a̲m̲ {Γ = Γ} {X = X} W) E ϖ csn = incr 1 (m-⇒ 0 (inj₁ (contr-comp W)) (comp-metric W E (wkn-cons ϖ) csn)) --incr 1 (m-⇒ 0 (count-in-comp h W) (comp-metric W E (wkn-cons ϖ) csn))
     v̲a̲l̲-metric (pa̲i̲r̲ M N) E ϖ csn = incr 1 (m-× 0 (v̲a̲l̲-metric M E ϖ csn) (v̲a̲l̲-metric N E ϖ csn))
     v̲a̲l̲-metric u̲n̲i̲t̲ E ϖ csn = m-Unit 1
     v̲a̲l̲-metric (v̲a̲r̲ i) E ϖ csn = incr 1 (lookup-metric i E ϖ csn)
