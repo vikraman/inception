@@ -575,15 +575,40 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
 -------------------------------------------------------------------------------------------------
 
+  mutual
 
-  fun-comp-lemma : (W : Comp (Γ ∙ X) Y) → (nm : (List (ℕ × ℕ) → TermMetric X)) → (E : List (Σ[ Z ∈ Ty ] (List (ℕ × ℕ) → TermMetric Z))) → (ϖ : Wkn Γ E) → (csn : List (ℕ × ℕ)) → ⟪ comp-metric W ((X , nm) ∷ E) (wkn-cong ϖ) csn ⟫ ≡ count-in-comp h W * ⟪ nm csn ⟫ + ⟪ comp-metric W E (wkn-cons ϖ) csn ⟫
-  fun-comp-lemma {X = X} {Y = Y} (return M) nm E ϖ [] = {!⟪ comp-metric (return M) ((X , nm) ∷ E) (wkn-cong ϖ) [] ⟫!}
-  fun-comp-lemma (return M) nm E ϖ (x ∷ csn) = {!!}
-  fun-comp-lemma (pm M W) nm E ϖ csn = {!!}
-  fun-comp-lemma (push W₁ W₂) nm E ϖ csn = {!!}
-  fun-comp-lemma (app M N) nm E ϖ csn = {!!}
-  fun-comp-lemma (var M) nm E ϖ csn = {!!}
-  fun-comp-lemma (sub W₁ W₂) nm E ϖ csn = {!!}
+    fun-val-lemma : (M : Val (Γ ∙ X) Y) → (nm : (List (ℕ × ℕ) → TermMetric X)) → (E : List (Σ[ Z ∈ Ty ] (List (ℕ × ℕ) → TermMetric Z))) → (ϖ : Wkn Γ E) → (csn : List (ℕ × ℕ)) → ⟪ val-metric M ((X , nm) ∷ E) (wkn-cong ϖ) csn ⟫ ≡ count-in-val h M * ⟪ nm csn ⟫ + ⟪ val-metric M E (wkn-cons ϖ) csn ⟫
+    fun-val-lemma {X = X} {Y = Y} M nm E ϖ csn = {!!}
+
+    fun-comp-lemma :   (W : Comp (Γ ∙ X) Y) → (nm : (List (ℕ × ℕ) → TermMetric X)) → (E : List (Σ[ Z ∈ Ty ] (List (ℕ × ℕ) → TermMetric Z))) → (ϖ : Wkn Γ E) → (csn : List (ℕ × ℕ))
+                     → ⟪ comp-metric W ((X , nm) ∷ E) (wkn-cong ϖ) csn ⟫ ≡ count-in-comp h W * ⟪ nm csn ⟫ + ⟪ comp-metric W E (wkn-cons ϖ) csn ⟫
+    fun-comp-lemma {X = X} {Y = Y} (return M) nm E ϖ [] =
+                                let
+                                  a1 = fun-val-lemma M nm E ϖ []
+                                in
+                                ⟪ comp-metric (return M) ((X , nm) ∷ E) (wkn-cong ϖ) [] ⟫
+                                ≡⟨ refl ⟩
+                                  2+ ⟪ val-metric M ((X , nm) ∷ E) (Wkn.wkn-cong ϖ) [] ⟫
+                                ≡⟨ {!!} ⟩ -- EASY
+                                  count-in-val h M * ⟪ nm [] ⟫ + 2+ ⟪ val-metric M E (Wkn.wkn-cons ϖ) [] ⟫
+                                ≡⟨ refl ⟩
+                                count-in-comp h (return M) * ⟪ nm [] ⟫ + ⟪ comp-metric (return M) E (wkn-cons ϖ) [] ⟫ ∎
+    fun-comp-lemma {X = X} {Y = Y} (return M) nm E ϖ (x ∷ csn) =
+      let
+        a1 = fun-val-lemma M nm E ϖ csn
+      in
+      ⟪ comp-metric (return M) ((X , nm) ∷ E) (wkn-cong ϖ) (x ∷ csn) ⟫
+      ≡⟨ refl ⟩
+         2+ ⟪ val-metric M ((X , nm) ∷ E) (Wkn.wkn-cong ϖ) csn ⟫
+      ≡⟨ {!!} ⟩
+         count-in-val h M * ⟪ nm (x ∷ csn) ⟫ + 2+ ⟪ val-metric M E (Wkn.wkn-cons ϖ) csn ⟫
+      ≡⟨ refl ⟩
+         count-in-comp h (return M) * ⟪ nm (x ∷ csn) ⟫ + ⟪ comp-metric (return M) E (wkn-cons ϖ) (x ∷ csn) ⟫ ∎
+    fun-comp-lemma (pm M W) nm E ϖ csn = {!!}
+    fun-comp-lemma (push W₁ W₂) nm E ϖ csn = {!!}
+    fun-comp-lemma (app M N) nm E ϖ csn = {!!}
+    fun-comp-lemma (var M) nm E ϖ csn = {!!}
+    fun-comp-lemma (sub W₁ W₂) nm E ϖ csn = {!!}
 
 -------------------------------------------------------------------------------------------------
 
@@ -619,7 +644,12 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   val-metric-decreasing = {!!}
 
   comp-metric-decreasing : {Q₁ : CompState} → {Q₂ : CompState} → (Q₁→ᶜQ₂ : Q₁ →ᶜ Q₂) → (suc (compstate-metric Q₂) ≤ (compstate-metric Q₁))
-  comp-metric-decreasing (∘return {M = M} {γ = γ} {π = π} {M' = M'} {γ' = γ'} {cs = ◻} M→M') = {!s≤s (s≤s ?)!} --s≤s z≤n
+  comp-metric-decreasing (∘return {M = M} {γ = γ} {π = π} {M' = M'} {γ' = γ'} {cs = ◻} M→M') with val-metric-decreasing M→M' []
+  ... | x =
+    let
+      a1 = +-≤-cong x (z≤n {n = zero})
+    in
+    s≤s (≤-trans a1 n≤sn)
   comp-metric-decreasing (∘return {M = M} {γ = γ} {π = π} {M' = M'} {γ' = γ'} {cs = W ⊲ γ₁ ⦂⦂ cs} M→M') with val-metric-decreasing (M→M') (cs-to-csn cs)
   ... | x =
     let
