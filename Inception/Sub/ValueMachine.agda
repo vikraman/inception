@@ -315,7 +315,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   zero-metric {X = `V} = m-V 0 0
 
   --------------------------------------------------------------------
-
+  {-
   mutual
     count-in-val : (i : Γ ∋ X) → (M : Val Γ Z) → ℕ
 
@@ -343,6 +343,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     count-in-comp i (app M N) = count-in-val i M + count-in-val i N
     count-in-comp i (var M) = count-in-val i M
     count-in-comp i (sub W₁ W₂) = count-in-comp (t i) W₁ + count-in-comp i W₂
+  -}
   -------------------------------
 
   {-
@@ -545,9 +546,10 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
         w2 = (comp-metric W₂ E (wkn-cons ϖ) csn)
         --csn2 = ((cterm (count-in-comp h W₂ , ⟪ w2 ⟫)) ∷ csn)
         csn2 = cterm (_ , _ , _ , W₂ , ⟪ w2 ⟫) ∷ csn
-        w1 = ⟪ comp-metric W₁ E ϖ csn2 ⟫
+        w1 = λ c → ⟪ comp-metric W₁ E ϖ c ⟫
       in
-        incr (suc ((suc (count-in-comp h W₂)) * w1)) w2
+        --incr (suc ((suc (count-in-comp h W₂)) * w1)) w2
+        incr (suc (w1 csn2 + csn-multiply (inj₁ (_ , W₂)) w1 csn2)) w2
     comp-metric (app M N) E ϖ csn = let IH = val-metric M E ϖ csn in incr (2 + ((p1 IH) + ⟪ val-metric N E ϖ csn ⟫ + (csn-multiply (p2 IH) (λ c → ⟪ val-metric N E ϖ c ⟫) csn))) (p3 IH) --incr (2 + ((p1 IH) + ((suc (p2 IH)) * ⟪ val-metric N E ϖ csn ⟫))) (p3 IH)
     comp-metric (var M) E ϖ csn = incr (suc ⟪ val-metric M E ϖ csn ⟫) zero-metric
     comp-metric (sub W₁ W₂) E ϖ csn = let w = λ c → ⟪ comp-metric W₂ E ϖ c ⟫ in incr (suc ⟪ comp-metric W₂ E ϖ csn ⟫) (comp-metric W₁ (((`V , λ _ → m-V 0 ((w csn) + csn-to-nat₀ w csn) )) ∷ E) (wkn-cong ϖ) csn)

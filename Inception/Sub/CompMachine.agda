@@ -412,8 +412,8 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     -}
 
 ---------------------------------------------------------------------------------------------
--- SOON OBSOLTE
-
+-- OBSOLTE
+{-
   mutual
 
     wk-val-count-eq : (π : Wk Γ Γ') → (i : Γ' ∋ Y) → (M : Val Γ' X) → count-in-val i M ≡ count-in-val (wk-mem π i) (wk-val π M)
@@ -459,7 +459,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     wk-comp-count-eq π i (app M₁ M₂) = cong₂ _+_ (wk-val-count-eq π i M₁) (wk-val-count-eq π i M₂)
     wk-comp-count-eq π i (var M) = wk-val-count-eq π i M
     wk-comp-count-eq π i (sub W₁ W₂) = cong₂ _+_ (wk-comp-count-eq (wk-cong π) (t i) W₁) (wk-comp-count-eq π i W₂)
-
+-}
 ---------------------------------------------------------------------------------------------
 
 {-
@@ -716,6 +716,16 @@ TP :   a3 + (count-in-comp h W +                      a1 * count-in-comp h W)
 TP : a1 ≤ a2
 
 EASY
+
+----------------------------------------------------------------------------------------------------------------
+
+Goal: a1 + (⟪ comp-metric W (proj₁ (env-metric γ₁)) (Wkn.wkn-cons (proj₂ (env-metric γ₁))) (cs-to-csn cs) ⟫ + csn-comp-multiply h W (λ c → ⟪ c̲o̲m̲p-metric (C̲o̲m̲p.r̲e̲t̲u̲r̲n̲ M') (proj₁ (env-metric γ')) (proj₂ (env-metric γ')) c ⟫) (CTerm.cterm (Δ , X , X₁ , W , ⟪ comp-metric W (proj₁ (env-metric γ₁)) (Wkn.wkn-cons (proj₂ (env-metric γ₁))) (cs-to-csn cs) ⟫) ∷ cs-to-csn cs) + csn-to-nat₀ (λ c → ⟪ comp-metric W (proj₁ (env-metric γ₁)) (Wkn.wkn-cons (proj₂ (env-metric γ₁))) (cs-to-csn cs) ⟫ + csn-comp-multiply h W (λ c₁ → ⟪ c̲o̲m̲p-metric (C̲o̲m̲p.r̲e̲t̲u̲r̲n̲ M') (proj₁ (env-metric γ')) (proj₂ (env-metric γ')) c₁ ⟫) c) (cs-to-csn cs))
+      ≤
+      a2 + (⟪ comp-metric W (proj₁ (env-metric γ₁)) (Wkn.wkn-cons (proj₂ (env-metric γ₁))) (cs-to-csn cs) ⟫ + csn-comp-multiply h W (λ c → ⟪ comp-metric (return (wk-val π M)) (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) c ⟫) (CTerm.cterm (Δ , X , X₁ , W , ⟪ comp-metric W (proj₁ (env-metric γ₁)) (Wkn.wkn-cons (proj₂ (env-metric γ₁))) (cs-to-csn cs) ⟫) ∷ cs-to-csn cs) + csn-to-nat₀ (λ c → ⟪ comp-metric W (proj₁ (env-metric γ₁)) (Wkn.wkn-cons (proj₂ (env-metric γ₁))) (cs-to-csn cs) ⟫ + csn-comp-multiply h W (λ c₁ → ⟪ comp-metric (return (wk-val π M)) (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) c₁ ⟫) c) (cs-to-csn cs))
+
+Goal: a1 + (csn-comp-multiply h W (λ c → ⟪ c̲o̲m̲p-metric (C̲o̲m̲p.r̲e̲t̲u̲r̲n̲ M') (proj₁ (env-metric γ')) (proj₂ (env-metric γ')) c ⟫)    (CTerm.cterm (Δ , X , X₁ , W , ⟪ comp-metric W (proj₁ (env-metric γ₁)) (Wkn.wkn-cons (proj₂ (env-metric γ₁))) (cs-to-csn cs) ⟫) ∷ cs-to-csn cs) + csn-to-nat₀ (λ c → ⟪ comp-metric W (proj₁ (env-metric γ₁)) (Wkn.wkn-cons (proj₂ (env-metric γ₁))) (cs-to-csn cs) ⟫ + csn-comp-multiply h W (λ c₁ → ⟪ c̲o̲m̲p-metric (C̲o̲m̲p.r̲e̲t̲u̲r̲n̲ M')      (proj₁ (env-metric γ')) (proj₂ (env-metric γ')) c₁ ⟫) c) (cs-to-csn cs))
+      ≤
+      a2 + (csn-comp-multiply h W (λ c → ⟪ comp-metric (return (wk-val π M)) (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) c ⟫) (CTerm.cterm (Δ , X , X₁ , W , ⟪ comp-metric W (proj₁ (env-metric γ₁)) (Wkn.wkn-cons (proj₂ (env-metric γ₁))) (cs-to-csn cs) ⟫) ∷ cs-to-csn cs) + csn-to-nat₀ (λ c → ⟪ comp-metric W (proj₁ (env-metric γ₁)) (Wkn.wkn-cons (proj₂ (env-metric γ₁))) (cs-to-csn cs) ⟫ + csn-comp-multiply h W (λ c₁ → ⟪ comp-metric (return (wk-val π M)) (proj₁ (env-metric γ))  (proj₂ (env-metric γ)) c₁ ⟫) c) (cs-to-csn cs))
 
 -}
 
@@ -1537,3 +1547,4 @@ _ = refl
 -- Goal: csn-to-nat₀ (suc n₂) csn₂ ≤ suc (fst + n₁ * zero + csn-to-nat₀ (suc (fst + n₁ * zero)) csn₁)
 -- Goal: csn-to-nat₀       9    [] ≤ suc (  9 + n₁ * zero + csn-to-nat₀ (suc (fst + n₁ * zero)) csn₁)
 -}
+
