@@ -300,16 +300,16 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     let
       csn = cs-to-csn cs
       e = env-metric γ
-      w = ⟪ comp-metric W (proj₁ e) (proj₂ e) csn ⟫
+      w = λ c → ⟪ comp-metric W (proj₁ e) (proj₂ e) c ⟫
     in
-      w + csn-to-nat₀ w csn
+      (w csn) + csn-to-nat₀ w csn
   compstate-metric ((∙⟨ W ⊰ γ ╎ cs ⟩) {π = π}) =
     let
       csn = cs-to-csn cs
       e = env-metric γ
-      w = ⟪ c̲o̲m̲p-metric W (proj₁ e) (proj₂ e) csn ⟫
+      w = λ c → ⟪ c̲o̲m̲p-metric W (proj₁ e) (proj₂ e) c ⟫
     in
-      w + csn-to-nat₀ w csn
+      w csn + csn-to-nat₀ w csn
 
   partial-term-metric : PartialTerm Γ X → (E : List (Σ[ X ∈ Ty ] (List CTerm → TermMetric X))) → Wkn Γ E → List CTerm → ℕ
   partial-term-metric (⭭ M) E ϖ csn = ⟪ v̲a̲l̲-metric M E ϖ csn ⟫
@@ -585,9 +585,9 @@ R   : Set
     comp-wke-lemma (push W₁ W₂) E E' π ϖ ϖ' θ csn
       rewrite
           comp-wke-lemma W₂ E E' (wk-cong π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-cww π ϖ ϖ' θ) csn
-        | comp-wke-lemma W₁ E E' π ϖ ϖ' θ (( (cterm (count-in-comp h W₂ , ⟪ comp-metric (wk-comp (wk-cong π) W₂) E (wkn-cons ϖ) csn ⟫)) ∷ csn))
-        | wk-comp-count-eq (wk-cong π) h W₂
-        = refl
+        -- | comp-wke-lemma W₁ E E' π ϖ ϖ' θ (( (cterm (count-in-comp h W₂ , ⟪ comp-metric (wk-comp (wk-cong π) W₂) E (wkn-cons ϖ) csn ⟫)) ∷ csn))
+        -- | wk-comp-count-eq (wk-cong π) h W₂
+        = {!!} --refl
     comp-wke-lemma (app M N) E E' π ϖ ϖ' θ csn
       rewrite
           val-wke-lemma M E E' π ϖ ϖ' θ csn
@@ -599,8 +599,8 @@ R   : Set
     comp-wke-lemma (sub W₁ W₂) E E' π ϖ ϖ' θ csn
       rewrite
           comp-wke-lemma W₂ E E' π ϖ ϖ' θ csn
-        | comp-wke-lemma W₁ ((`V , (λ _ → m-V 0 (⟪ comp-metric (wk-comp π W₂) E ϖ csn ⟫ + csn-to-nat₀ ⟪ comp-metric (wk-comp π W₂) E ϖ csn ⟫ csn))) ∷ E) ((`V , (λ _ → m-V 0 (⟪ comp-metric (wk-comp π W₂) E ϖ csn ⟫ + csn-to-nat₀ ⟪ comp-metric (wk-comp π W₂) E ϖ csn ⟫ csn))) ∷ E') (wk-cong π) (wkn-cong ϖ) (wkn-cong ϖ') (wke-ccc π ϖ ϖ' (λ _ → m-V 0 (⟪ comp-metric (wk-comp π W₂) E ϖ csn ⟫ + csn-to-nat₀ ⟪ comp-metric (wk-comp π W₂) E ϖ csn ⟫ csn)) θ) csn
-        = refl
+        --| comp-wke-lemma W₁ ((`V , (λ _ → m-V 0 (⟪ comp-metric (wk-comp π W₂) E ϖ csn ⟫ + csn-to-nat₀ ⟪ comp-metric (wk-comp π W₂) E ϖ csn ⟫ csn))) ∷ E) ((`V , (λ _ → m-V 0 (⟪ comp-metric (wk-comp π W₂) E ϖ csn ⟫ + csn-to-nat₀ ⟪ comp-metric (wk-comp π W₂) E ϖ csn ⟫ csn))) ∷ E') (wk-cong π) (wkn-cong ϖ) (wkn-cong ϖ') (wke-ccc π ϖ ϖ' (λ _ → m-V 0 (⟪ comp-metric (wk-comp π W₂) E ϖ csn ⟫ + csn-to-nat₀ ⟪ comp-metric (wk-comp π W₂) E ϖ csn ⟫ csn)) θ) csn
+        = {!!} --refl
 
   {-
   v̲a̲l̲-wke-lemma : (M : V̲a̲l̲ Γ' X) → (E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X)))
@@ -935,7 +935,7 @@ seems easy
 -------------------------------------------------------
 -------------------------------------------------------
 -------------------------------------------------------
-{- A
+
 -------------------------------------------------------
   --postulate debuglemma : m ≤ n
   debuglemma = ≤-refl
@@ -1303,7 +1303,6 @@ seems easy
     comp-eval-test-metric W with comp-eval W
     ... | steps _ _ _ l = l
 
-{- C
 postulate k₀ : ⟦ `Unit ⟧ → R
 
 open VMain {R₀ = `Unit} k₀
@@ -1472,6 +1471,9 @@ ex15 = push (push (app (lam {A = `Unit} (sub (var (var h)) (return unit))) unit)
 
 --  88 ∷ 347 ∷ 102 ∷ 100 ∷ 96 ∷ 91 ∷ 46 ∷ 44 ∷ 42 ∷ 32 ∷ 26 ∷ 14 ∷ 4 ∷ 2 ∷ []
 -- 304 ∷ 347 ∷ 102 ∷ 100 ∷ 96 ∷ 91 ∷ 46 ∷ 44 ∷ 42 ∷ 32 ∷ 26 ∷ 14 ∷ 4 ∷ 2 ∷ []
+
+-- ex13: 22 ∷ 12 ∷ 9 ∷ 2 ∷ []
+-- ex14: 358 ∷ 357 ∷ 104 ∷ 101 ∷ 96 ∷ 91 ∷ 46 ∷ 44 ∷ 42 ∷ 32 ∷ 26 ∷ 14 ∷ 4 ∷ 2 ∷ []
 _ : comp-eval-test-metric ex11 ≡ {! comp-eval-test-metric ex14!}
 _ = let
       tm = push (push (app (lam {A = `Unit} (sub (var (var h)) (return unit))) unit) (return unit)) (app (lam (return unit)) (pair (pair (pair (var h) (var h)) (var h)) (var h)))
@@ -1535,5 +1537,3 @@ _ = refl
 -- Goal: csn-to-nat₀ (suc n₂) csn₂ ≤ suc (fst + n₁ * zero + csn-to-nat₀ (suc (fst + n₁ * zero)) csn₁)
 -- Goal: csn-to-nat₀       9    [] ≤ suc (  9 + n₁ * zero + csn-to-nat₀ (suc (fst + n₁ * zero)) csn₁)
 -}
-C -}
-A -}
