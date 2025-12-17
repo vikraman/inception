@@ -550,8 +550,8 @@ R   : Set
     val-wke-lemma (lam W) E E' π ϖ ϖ' θ csn
       rewrite
           comp-wke-lemma W E E' (wk-cong π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-cww π ϖ ϖ' θ) csn
-        | wk-comp-count-eq (wk-cong π) h W
-        = {!!} --refl
+        | contr-comp-eq W (wk-cong π)
+        = refl
     val-wke-lemma (pair M₁ M₂) E E' π ϖ ϖ' θ csn rewrite val-wke-lemma M₁ E E' π ϖ ϖ' θ csn | val-wke-lemma M₂ E E' π ϖ ϖ' θ csn = refl
     val-wke-lemma (pm {A = A} {B = B} M N) E E' π ϖ ϖ' θ csn
       rewrite
@@ -562,6 +562,11 @@ R   : Set
         | val-wke-lemma N ((B , (λ c → rhs (val-metric (wk-val π M) E ϖ c))) ∷ (A , (λ c → lhs (val-metric (wk-val π M) E ϖ c))) ∷ E) ((B , (λ c → rhs (val-metric (wk-val π M) E ϖ c))) ∷ (A , (λ c → lhs (val-metric (wk-val π M) E ϖ c))) ∷ E') (wk-cong (wk-cong π)) (wkn-cong (wkn-cong ϖ)) (wkn-cong (wkn-cong ϖ')) (wke-ccc (wk-cong π) (wkn-cong ϖ) (wkn-cong ϖ') (λ c → rhs (val-metric (wk-val π M) E ϖ c)) (wke-ccc π ϖ ϖ' (λ c → lhs (val-metric (wk-val π M) E ϖ c)) θ)) csn
       = refl
     val-wke-lemma unit E E' π ϖ ϖ' θ csn = refl
+
+    val-wke-lemma-ext : (M : Val Γ' X) → (E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X)))
+                → (π : Wk Γ Γ') → (ϖ : Wkn Γ E) → (ϖ' : Wkn Γ' E') → (θ : Wke π ϖ ϖ')
+                → val-metric M E' ϖ' ≡ val-metric (wk-val π M) E ϖ
+    val-wke-lemma-ext M E E' π ϖ ϖ' θ = extensionality (val-wke-lemma M E E' π ϖ ϖ' θ)
 
     comp-wke-lemma : (W : Comp Γ' X) → (E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X)))
                 → (π : Wk Γ Γ') → (ϖ : Wkn Γ E) → (ϖ' : Wkn Γ' E') → (θ : Wke π ϖ ϖ') → (csn : List (ℕ × ℕ))
@@ -586,7 +591,9 @@ R   : Set
       rewrite
           val-wke-lemma M E E' π ϖ ϖ' θ csn
         | val-wke-lemma N E E' π ϖ ϖ' θ csn
-        = {!!} --refl
+        | cong (csn-multiply (p2 (val-metric (wk-val π M) E ϖ csn))) (extensionality (val-wke-lemma N E E' π ϖ ϖ' θ))
+        =
+        refl
     comp-wke-lemma (var M) E E' π ϖ ϖ' θ csn rewrite val-wke-lemma M E E' π ϖ ϖ' θ csn = refl
     comp-wke-lemma (sub W₁ W₂) E E' π ϖ ϖ' θ csn
       rewrite
