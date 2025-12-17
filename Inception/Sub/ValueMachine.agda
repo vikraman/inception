@@ -263,8 +263,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   data TermMetric : Ty → Set where
     m-Unit : (m : ℕ) → TermMetric `Unit
-    m-V : (m : ℕ) → (w : ℕ) → (csn : List (ℕ × ℕ)) → TermMetric (`V)
-    -- m-⇒ : (m : ℕ) → (cnt : ℕ) → (nm : TermMetric Y) → TermMetric (X `⇒ Y)
+    m-V : (m : ℕ) → (w : ℕ) → TermMetric (`V)
     m-⇒ : (m : ℕ) → (tm : (Σ[ Γ ∈ Ctx ] (Comp Γ Y)) ⊎ ⊤) → (nm : TermMetric Y) → TermMetric (X `⇒ Y)
     m-×   : (m : ℕ) → (nm₁ : TermMetric X) → (nm₂ : TermMetric Y) → TermMetric (X `× Y)
 
@@ -287,21 +286,19 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   data _≤ᴹ_ : TermMetric X → TermMetric X → Set where
     ≤-Unit : (n₁ ≤ n₂) → (m-Unit n₁) ≤ᴹ (m-Unit n₂)
-    ≤-V    : {w₁ w₂ : ℕ} {csn₁ csn₂ : List (ℕ × ℕ)} → (m₁ ≤ m₂) → (w₁ ≤ w₂) → (csn₁ ≤ᶜˢⁿ csn₂) → (m-V m₁ w₁ csn₁) ≤ᴹ (m-V m₂ w₂ csn₂)
-    -- ≤-⇒    : {cnt : ℕ} {nm₁ nm₂ : TermMetric Y} → (m₁ ≤ m₂) → (nm₁ ≤ᴹ nm₂) → (m-⇒ {X = X} m₁ cnt nm₁) ≤ᴹ (m-⇒ m₂ cnt nm₂)
+    ≤-V    : {w₁ w₂ : ℕ} → (m₁ ≤ m₂) → (w₁ ≤ w₂) → (m-V m₁ w₁) ≤ᴹ (m-V m₂ w₂)
     ≤-⇒    : {tm : (Σ[ Γ ∈ Ctx ] (Comp Γ Y)) ⊎ ⊤} {nm₁ nm₂ : TermMetric Y} → (m₁ ≤ m₂) → (nm₁ ≤ᴹ nm₂) → (m-⇒ {X = X} m₁ tm nm₁) ≤ᴹ (m-⇒ m₂ tm nm₂)
     ≤-×    : {lhs₁ lhs₂ : TermMetric X} → {rhs₁ rhs₂ : TermMetric Y} → (n₁ ≤ n₂) → (lhs₁ ≤ᴹ lhs₂) → (rhs₁ ≤ᴹ rhs₂) → (m-× n₁ lhs₁ rhs₁) ≤ᴹ (m-× n₂ lhs₂ rhs₂)
 
   ≤ᴹ-refl : {nm : TermMetric X} → nm ≤ᴹ nm
   ≤ᴹ-refl {nm = m-Unit m} = ≤-Unit ≤-refl
-  ≤ᴹ-refl {nm = m-V m n csn} = ≤-V  ≤-refl ≤-refl [c≤c]
-  --≤ᴹ-refl {nm = m-⇒ m cnt nm} = ≤-⇒ ≤-refl ≤ᴹ-refl
+  ≤ᴹ-refl {nm = m-V m w} = ≤-V  ≤-refl ≤-refl
   ≤ᴹ-refl {nm = m-⇒ m tm nm} = ≤-⇒ ≤-refl ≤ᴹ-refl
   ≤ᴹ-refl {nm = m-× m nm nm₁} = ≤-× ≤-refl ≤ᴹ-refl ≤ᴹ-refl
 
   ≤ᴹ-trans : {nm₁ nm₂ nm₃ : TermMetric X} → nm₁ ≤ᴹ nm₂ → nm₂ ≤ᴹ nm₃ → nm₁ ≤ᴹ nm₃
   ≤ᴹ-trans (≤-Unit x) (≤-Unit x₁) = ≤-Unit (≤-trans x x₁)
-  ≤ᴹ-trans (≤-V x x₁ x₂) (≤-V x₃ x₄ x₅) = ≤-V (≤-trans x x₃) (≤-trans x₁ x₄) (≤ᶜˢⁿ-trans x₂ x₅)
+  ≤ᴹ-trans (≤-V x x₁) (≤-V x₃ x₄) = ≤-V (≤-trans x x₃) (≤-trans x₁ x₄)
   ≤ᴹ-trans (≤-⇒ x nm₁≤nm₂) (≤-⇒ x₁ nm₂≤nm₃) = ≤-⇒ (≤-trans x x₁) (≤ᴹ-trans nm₁≤nm₂ nm₂≤nm₃)
   ≤ᴹ-trans (≤-× x nm₁≤nm₂ nm₁≤nm₃) (≤-× x₁ nm₂≤nm₃ nm₂≤nm₄) = ≤-× (≤-trans x x₁) (≤ᴹ-trans nm₁≤nm₂ nm₂≤nm₃) (≤ᴹ-trans nm₁≤nm₃ nm₂≤nm₄)
 
@@ -309,7 +306,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   zero-metric {X = `Unit} = m-Unit 0
   zero-metric {X = X `× Y} = m-× 0 (zero-metric {X = X}) (zero-metric {X = Y})
   zero-metric {X = X `⇒ Y} = m-⇒ 0 (inj₂ tt) (zero-metric {X = Y})
-  zero-metric {X = `V} = m-V 0 0 []
+  zero-metric {X = `V} = m-V 0 0
 
   lookup-metric : (i : Γ ∋ Y) → (E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → Wkn Γ E → (List (ℕ × ℕ) → TermMetric Y)
   lookup-metric Cx.h ((Y , e) ∷ ne) (wkn-cong ϖ) = e
@@ -362,13 +359,13 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   ⟪_⟫ : TermMetric X → ℕ
   ⟪ m-Unit m ⟫ = m
-  ⟪ m-V m w csn ⟫ = m + w + csn-to-nat₀ w csn
+  ⟪ m-V m w ⟫ = m + w -- + csn-to-nat₀ w csn
   ⟪ m-⇒ m cnt nm ⟫ = m + ⟪ nm ⟫
   ⟪ m-× m nm₁ nm₂ ⟫ = m + ⟪ nm₁ ⟫ + ⟪ nm₂ ⟫
 
   incr : ℕ → TermMetric X → TermMetric X
   incr n (m-Unit m) = m-Unit (n + m)
-  incr n (m-V m w csn) = m-V (n + m) w csn
+  incr n (m-V m w) = m-V (n + m) w
   incr n (m-⇒ m cnt nm) = m-⇒ (n + m) cnt nm
   incr n (m-× m nm₁ nm₂) = m-× (n + m) nm₁ nm₂
 
@@ -376,11 +373,11 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   incr-coh zero `Unit (m-Unit m) = refl
   incr-coh zero (X `× X₁) (m-× m nm nm₁) = refl
   incr-coh zero (X `⇒ X₁) (m-⇒ m cnt nm) = refl
-  incr-coh zero `V (m-V m w csn) = refl
+  incr-coh zero `V (m-V m w) = refl
   incr-coh (suc n) `Unit (m-Unit m) = refl
   incr-coh (suc n) (X `× X₁) (m-× m nm nm₁) rewrite +-assoc {n} {m} {⟪ nm ⟫} | +-assoc {n} {m + ⟪ nm ⟫} {⟪ nm₁ ⟫} = refl
   incr-coh (suc n) (X `⇒ X₁) (m-⇒ m cnt nm) rewrite +-assoc {n} {m} {⟪ nm ⟫} = refl
-  incr-coh (suc n) `V (m-V m w csn) rewrite +-assoc {n} {m} {w} | +-assoc {n} {m + w} {csn-to-nat₀ w csn} = refl
+  incr-coh (suc n) `V (m-V m w) rewrite +-assoc {n} {m} {w} = refl --rewrite +-assoc {n} {m} {w} | +-assoc {n} {m + w} {csn-to-nat₀ w csn} = refl
 
   {-# REWRITE incr-coh #-}
 
@@ -388,7 +385,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   incr-zero-coh `Unit (m-Unit m) = refl
   incr-zero-coh (X `× X₁) (m-× m nm₁ nm₂) = refl
   incr-zero-coh (X `⇒ X₁) (m-⇒ m cnt nm) = refl
-  incr-zero-coh `V (m-V m w csn) = refl
+  incr-zero-coh `V (m-V m w) = refl
 
   {-# REWRITE incr-zero-coh #-}
 
@@ -436,11 +433,11 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   ≤ᴹ-incr-drop {X = `Unit} n (m-Unit m₁) (m-Unit m₂) (≤-Unit n+m₁≤n+m₂) = ≤-Unit (+-≤-cong-rev-left n+m₁≤n+m₂)
   ≤ᴹ-incr-drop {X = X `× Y} n (m-× m₁ nm₁ nm₂) (m-× m₂ nm₃ nm₄) (≤-× n+m₁≤n+m₂ nm₁≤nm₃ nm₂≤nm₄) = ≤-× (+-≤-cong-rev-left n+m₁≤n+m₂) nm₁≤nm₃ nm₂≤nm₄
   ≤ᴹ-incr-drop {X = X `⇒ Y} n (m-⇒ m₁ cnt nm₁) (m-⇒ m₂ cnt nm₂) (≤-⇒ n+m₁≤n+m₂ nm₁≤nm₂) = ≤-⇒ (+-≤-cong-rev-left n+m₁≤n+m₂) nm₁≤nm₂
-  ≤ᴹ-incr-drop {X = `V} n (m-V m₁ w₁ csn₁) (m-V m₂ w₂ csn₂) (≤-V n+m₁≤n+m₂ w₁≤w₂ c₁≤c₂) = ≤-V (+-≤-cong-rev-left n+m₁≤n+m₂) w₁≤w₂ c₁≤c₂
+  ≤ᴹ-incr-drop {X = `V} n (m-V m₁ w₁) (m-V m₂ w₂) (≤-V n+m₁≤n+m₂ w₁≤w₂) = ≤-V (+-≤-cong-rev-left n+m₁≤n+m₂) w₁≤w₂
 
   ≤ᴹ-incr-cong : (n₁≤n₂ : n₁ ≤ n₂) → {nm₁ nm₂ : TermMetric X} → (nm₁ ≤ᴹ nm₂) → ((incr n₁ nm₁) ≤ᴹ (incr n₂ nm₂))
   ≤ᴹ-incr-cong n₁≤n₂ (≤-Unit m₁≤m₂) = ≤-Unit (+-≤-cong n₁≤n₂ m₁≤m₂)
-  ≤ᴹ-incr-cong n₁≤n₂ (≤-V m₁≤m₂ w₁≤w₂ c₁≤c₂) = ≤-V (+-≤-cong n₁≤n₂ m₁≤m₂) w₁≤w₂ c₁≤c₂
+  ≤ᴹ-incr-cong n₁≤n₂ (≤-V m₁≤m₂ w₁≤w₂) = ≤-V (+-≤-cong n₁≤n₂ m₁≤m₂) w₁≤w₂
   ≤ᴹ-incr-cong n₁≤n₂ (≤-⇒ m₁≤m₂ nm₁≤nm₂) = ≤-⇒ (+-≤-cong n₁≤n₂ m₁≤m₂) nm₁≤nm₂
   ≤ᴹ-incr-cong n₁≤n₂ (≤-× m₁≤m₂ nm₁≤nm₃ nm₂≤nm₄) = ≤-× (+-≤-cong n₁≤n₂ m₁≤m₂) nm₁≤nm₃ nm₂≤nm₄
 
@@ -500,7 +497,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
         incr (suc ((suc (count-in-comp h W₂)) * w1)) w2
     comp-metric (app M N) E ϖ csn = let IH = val-metric M E ϖ csn in incr (2 + ((p1 IH) + ⟪ val-metric N E ϖ csn ⟫ + (csn-multiply (p2 IH) (val-metric N E ϖ) csn))) (p3 IH) --incr (2 + ((p1 IH) + ((suc (p2 IH)) * ⟪ val-metric N E ϖ csn ⟫))) (p3 IH)
     comp-metric (var M) E ϖ csn = incr (suc ⟪ val-metric M E ϖ csn ⟫) zero-metric
-    comp-metric (sub W₁ W₂) E ϖ csn = let w = ⟪ comp-metric W₂ E ϖ csn ⟫ in incr (suc ⟪ comp-metric W₂ E ϖ csn ⟫) (comp-metric W₁ (((`V , λ _ → m-V 0 w csn)) ∷ E) (wkn-cong ϖ) csn)
+    comp-metric (sub W₁ W₂) E ϖ csn = let w = ⟪ comp-metric W₂ E ϖ csn ⟫ in incr (suc ⟪ comp-metric W₂ E ϖ csn ⟫) (comp-metric W₁ (((`V , λ _ → m-V 0 (w + csn-to-nat₀ w csn) )) ∷ E) (wkn-cong ϖ) csn)
 
     v̲a̲l̲-metric : (M : V̲a̲l̲ Γ Y) → (E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → Wkn Γ E → (csn : List (ℕ × ℕ)) → TermMetric Y
     v̲a̲l̲-metric (l̲a̲m̲ {Γ = Γ} {X = X} W) E ϖ csn = incr 1 (m-⇒ 0 (inj₁ (contr-comp W)) (comp-metric W E (wkn-cons ϖ) csn)) --incr 1 (m-⇒ 0 (count-in-comp h W) (comp-metric W E (wkn-cons ϖ) csn))
@@ -527,7 +524,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
         IH = env-metric γ
         w = ⟪ comp-metric W (proj₁ IH) (proj₂ IH) (cs-to-csn cs) ⟫
       in
-        (`V , λ _ → m-V 0 w (cs-to-csn cs)) ∷ (proj₁ IH) , wkn-cong (proj₂ IH)
+        (`V , λ _ → m-V 0 (w + csn-to-nat₀ w (cs-to-csn cs))) ∷ (proj₁ IH) , wkn-cong (proj₂ IH)
 
     cs-to-csn : (cs : CompStack Δ Z) → List (ℕ × ℕ)
     cs-to-csn ◻ = []
@@ -558,7 +555,13 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   lhstate-metric (found-unit {γ = γ}) csn = m-Unit 1
   lhstate-metric (found-pair {LHS = LHS} {RHS = RHS} {γ = γ}) csn = let EP = (env-metric γ) in v̲a̲l̲-metric (pa̲i̲r̲ LHS RHS) (proj₁ EP) (proj₂ EP) csn
   lhstate-metric (found-lam {W = W} {γ = γ}) csn = let EP = (env-metric γ) in v̲a̲l̲-metric (l̲a̲m̲ W) (proj₁ EP) (proj₂ EP) csn
-  lhstate-metric (found-comp {W = W} {γ = γ} {cs = cs}) csn = let EP = (env-metric γ) in m-V 0 ⟪ comp-metric W (proj₁ EP) (proj₂ EP) (cs-to-csn cs) ⟫ (cs-to-csn cs)
+  lhstate-metric (found-comp {W = W} {γ = γ} {cs = cs}) csn =
+    let
+      EP = (env-metric γ)
+      c = (cs-to-csn cs)
+      w = ⟪ comp-metric W (proj₁ EP) (proj₂ EP) c ⟫
+    in
+      m-V 0 (w + csn-to-nat₀ w c)
 
   --------------------------------------------------------------------
 
@@ -620,11 +623,21 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   lookup h (γ ﹐ u̲n̲i̲t̲) = steps (⟨ h ∥ _﹐_ γ (u̲n̲i̲t̲) ⟩ ◼) found-unit refl (wk-wk wk-id) refl (λ csn → ≤ᴹ-refl) (wke-wc- wk-id (proj₂ (env-metric γ)) (proj₂ (env-metric γ)) (v̲a̲l̲-metric u̲n̲i̲t̲ (proj₁ (env-metric γ)) (proj₂ (env-metric γ))) wke-id)
   lookup h (γ ﹐ v̲a̲r̲ i) with lookup i γ
   ... | steps {T = T} i>>T HT i≡T WK w≡γ T≤S θ = steps (_ →ᴸ⟨ val-h-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ (λ csn → ≤ᴹ-incr-cong (z≤n {n = 1}) (T≤S csn)) (wke-wc- WK (proj₂ (env-metric γ)) (proj₂ (env-metric (lTEnv T))) (v̲a̲l̲-metric (v̲a̲r̲ i) (proj₁ (env-metric γ)) (proj₂ (env-metric γ))) θ)
-  lookup h (γ ﹐﹝ W ╎ cs ﹞ ) = steps (⟨ h ∥ γ ﹐﹝ W ╎ cs ﹞ ⟩ ◼) found-comp refl (wk-wk wk-id) refl (λ csn → ≤ᴹ-refl) (wke-wc- wk-id (proj₂ (env-metric γ)) (proj₂ (env-metric γ)) (λ _ → m-V 0 ⟪ comp-metric W (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) (cs-to-csn cs) ⟫ (cs-to-csn cs)) wke-id)
+  lookup h (γ ﹐﹝ W ╎ cs ﹞ ) =
+    let
+      c = cs-to-csn cs
+      w = ⟪ comp-metric W (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) c ⟫
+    in
+      steps (⟨ h ∥ γ ﹐﹝ W ╎ cs ﹞ ⟩ ◼) found-comp refl (wk-wk wk-id) refl (λ csn → ≤ᴹ-refl) (wke-wc- wk-id (proj₂ (env-metric γ)) (proj₂ (env-metric γ)) (λ _ → m-V 0 (w + csn-to-nat₀ w c)) wke-id)
   lookup (t i) (γ ﹐ M) with lookup i γ
   ... | steps {T = T} i>>T HT i≡T WK w≡γ T≤S θ = steps (_ →ᴸ⟨ val-t-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ T≤S (wke-wc- WK (proj₂ (env-metric γ)) (proj₂ (env-metric (lTEnv T))) (v̲a̲l̲-metric M (proj₁ (env-metric γ)) (proj₂ (env-metric γ))) θ)
   lookup (t i) (γ ﹐﹝ W ╎ cs ﹞) with lookup i γ
-  ... | steps {T = T} i>>T HT i≡T WK w≡γ T≤S θ = steps (_ →ᴸ⟨ comp-t-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ T≤S (wke-wc- WK (proj₂ (env-metric γ)) (proj₂ (env-metric (lTEnv T))) (λ _ → m-V 0 ⟪ comp-metric W (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) (cs-to-csn cs) ⟫ (cs-to-csn cs)) θ)
+  ... | steps {T = T} i>>T HT i≡T WK w≡γ T≤S θ =
+    let
+      c = cs-to-csn cs
+      w = ⟪ comp-metric W (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) c ⟫
+    in
+      steps (_ →ᴸ⟨ comp-t-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ T≤S (wke-wc- WK (proj₂ (env-metric γ)) (proj₂ (env-metric (lTEnv T))) (λ _ → m-V 0 (w + csn-to-nat₀ w c)) θ)
 
 
   -- Value Machine
