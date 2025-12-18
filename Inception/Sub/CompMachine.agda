@@ -533,8 +533,9 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     comp-wke-lemma : (W : Comp Γ' X) → (E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X)))
                 → (π : Wk Γ Γ') → (ϖ : Wkn Γ E) → (ϖ' : Wkn Γ' E') → (θ : Wke π ϖ ϖ') → (csn : List (ℕ × ℕ))
                 → comp-metric W E' ϖ' csn ≡ comp-metric (wk-comp π W) E ϖ csn
-    comp-wke-lemma (return M) E E' π ϖ ϖ' θ [] = cong (incr 2) (val-wke-lemma M E E' π ϖ ϖ' θ []) --refl
-    comp-wke-lemma (return M) E E' π ϖ ϖ' θ (x ∷ csn) = cong (incr 2) (val-wke-lemma M E E' π ϖ ϖ' θ csn)
+    -- comp-wke-lemma (return M) E E' π ϖ ϖ' θ [] = cong (incr 2) (val-wke-lemma M E E' π ϖ ϖ' θ []) --refl
+    -- comp-wke-lemma (return M) E E' π ϖ ϖ' θ (x ∷ csn) = cong (incr 2) (val-wke-lemma M E E' π ϖ ϖ' θ csn)
+    comp-wke-lemma (return M) E E' π ϖ ϖ' θ (x ∷ csn) = {!!} --cong (incr 2) (val-wke-lemma M E E' π ϖ ϖ' θ csn)
     comp-wke-lemma (pm {A = A} {B = B} M W) E E' π ϖ ϖ' θ csn
       rewrite
           val-wke-lemma M E E' π ϖ ϖ' θ csn
@@ -575,8 +576,8 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
 -------------------------------------------------------------------------------------------------
 
+{-
   mutual
-
     fun-val-lemma : (M : Val (Γ ∙ X) Y) → (nm : (List (ℕ × ℕ) → TermMetric X)) → (E : List (Σ[ Z ∈ Ty ] (List (ℕ × ℕ) → TermMetric Z))) → (ϖ : Wkn Γ E) → (csn : List (ℕ × ℕ)) → ⟪ val-metric M ((X , nm) ∷ E) (wkn-cong ϖ) csn ⟫ ≡ count-in-val h M * ⟪ nm csn ⟫ + ⟪ val-metric M E (wkn-cons ϖ) csn ⟫
     fun-val-lemma {X = X} {Y = Y} M nm E ϖ csn = {!!}
 
@@ -609,6 +610,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     fun-comp-lemma (app M N) nm E ϖ csn = {!!}
     fun-comp-lemma (var M) nm E ϖ csn = {!!}
     fun-comp-lemma (sub W₁ W₂) nm E ϖ csn = {!!}
+    -}
 
 -------------------------------------------------------------------------------------------------
 
@@ -1426,7 +1428,7 @@ ex15 = push (push (app (lam {A = `Unit} (sub (var (var h)) (return unit))) unit)
 
 --  88 ∷ 347 ∷ 102 ∷ 100 ∷ 96 ∷ 91 ∷ 46 ∷ 44 ∷ 42 ∷ 32 ∷ 26 ∷ 14 ∷ 4 ∷ 2 ∷ []
 -- 304 ∷ 347 ∷ 102 ∷ 100 ∷ 96 ∷ 91 ∷ 46 ∷ 44 ∷ 42 ∷ 32 ∷ 26 ∷ 14 ∷ 4 ∷ 2 ∷ []
-_ : comp-eval-test-metric ex11 ≡ {! comp-eval-test-metric ex14!}
+_ : comp-eval-test-metric ex11 ≡ {! comp-eval-test-metric ex14 !}
 _ = let
       tm = push (push (app (lam {A = `Unit} (sub (var (var h)) (return unit))) unit) (return unit)) (app (lam (return unit)) (pair (pair (pair (var h) (var h)) (var h)) (var h)))
       tmR = (app (lam (return unit)) (pair (pair (pair (var h) (var h)) (var h)) (var h)))

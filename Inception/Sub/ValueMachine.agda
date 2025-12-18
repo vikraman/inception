@@ -351,11 +351,16 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   csn-to-nat₀ w [] = 0
   csn-to-nat₀ w ((cnt , tm) ∷ csn) = (tm + (w * (suc cnt))) + (csn-to-nat₀ (tm + (w * (suc cnt))) csn)
 
-  postulate csn-decr : (n₁ ≤ n₂) → (csn : List (ℕ × ℕ)) → csn-to-nat₀ n₁ csn ≤ csn-to-nat₀ n₂ csn
-  -- csn-decr {n₁ = n₁} {n₂ = n₂} z≤n [] = ≤-refl
-  -- csn-decr {n₁ = n₁} {n₂ = n₂} z≤n (x ∷ csn) = let le1 = +-≤-cong (≤-refl {n = proj₂ x}) z≤n in +-≤-cong le1 (csn-decr le1 csn)
-  -- csn-decr {n₁ = n₁} {n₂ = n₂} (s≤s n₁≤n₂) [] = ≤-refl
-  -- csn-decr {n₁ = n₁} {n₂ = n₂} (s≤s n₁≤n₂) (x ∷ csn) = {!!} --let le1 = +-≤-cong (≤-refl {n = proj₂ x}) (+-≤-cong (≤-refl {n = proj₁ x}) (*-≤-cong n₁≤n₂ (≤-refl {n = proj₁ x}))) in +-≤-cong le1 (csn-decr le1 csn)
+  csn-decr : (n₁ ≤ n₂) → (csn : List (ℕ × ℕ)) → csn-to-nat₀ n₁ csn ≤ csn-to-nat₀ n₂ csn
+  csn-decr {n₁ = n₁} {n₂ = n₂} z≤n [] = ≤-refl
+  csn-decr {n₁ = n₁} {n₂ = n₂} z≤n (x ∷ csn) = let le1 = +-≤-cong (≤-refl {n = proj₂ x}) z≤n in +-≤-cong le1 (csn-decr le1 csn)
+  csn-decr {n₁ = n₁} {n₂ = n₂} (s≤s n₁≤n₂) [] = ≤-refl
+  csn-decr {n₁ = n₁} {n₂ = n₂} (s≤s n₁≤n₂) (x ∷ csn) =
+    let
+      le1 = +-≤-cong (≤-refl {n = proj₂ x}) (s≤s (+-≤-cong (≤-refl {n = proj₁ x}) (*-≤-cong n₁≤n₂ (s≤s (≤-refl {n = proj₁ x})))))
+    in
+      +-≤-cong le1 (csn-decr le1 csn)
+    --let le1 = +-≤-cong (≤-refl {n = proj₂ x}) (+-≤-cong (≤-refl {n = proj₁ x}) (*-≤-cong n₁≤n₂ (≤-refl {n = proj₁ x}))) in +-≤-cong le1 (csn-decr le1 csn)
 
   ⟪_⟫ : TermMetric X → ℕ
   ⟪ m-Unit m ⟫ = m
@@ -450,9 +455,9 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     val-metric unit E ϖ csn = m-Unit 2
 
     comp-metric : (W : Comp Γ Y) → (E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → Wkn Γ E → (csn : List (ℕ × ℕ)) → TermMetric Y
-    comp-metric (return M) E ϖ [] = incr 2 (val-metric M E ϖ []) --incr 1 (zero-metric)
-    comp-metric (return M) E ϖ (x ∷ csn) = incr 2 (val-metric M E ϖ csn)
-    --comp-metric (return M) E ϖ csn = incr 2 (val-metric M E ϖ csn)
+    -- comp-metric (return M) E ϖ [] = incr 2 (val-metric M E ϖ []) --incr 1 (zero-metric)
+    -- comp-metric (return M) E ϖ (x ∷ csn) = incr 2 (val-metric M E ϖ csn)
+    comp-metric (return M) E ϖ csn = incr 2 (val-metric M E ϖ csn)
     comp-metric (pm {A = X} {B = Y} M W) E ϖ csn =
       let
         IH = val-metric M E ϖ
