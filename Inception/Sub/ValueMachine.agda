@@ -546,11 +546,12 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       let
         w2 = (comp-metric W₂ E (wkn-cons ϖ) csn)
         --csn2 = ((cterm (count-in-comp h W₂ , ⟪ w2 ⟫)) ∷ csn)
-        csn2 = cterm (W₂ , ⟪ w2 ⟫) ∷ csn
+        ⌊W₂⌋ = contr-comp W₂
+        csn2 = cterm (proj₂ ⌊W₂⌋ , ⟪ w2 ⟫) ∷ csn
         w1 = λ c → ⟪ comp-metric W₁ E ϖ c ⟫
       in
         --incr (suc ((suc (count-in-comp h W₂)) * w1)) w2
-        incr (suc (w1 csn2 + csn-multiply (inj₁ (_ , W₂)) w1 csn2)) w2
+        incr (suc (w1 csn2 + csn-multiply (inj₁ ⌊W₂⌋) w1 csn2)) w2
     comp-metric (app M N) E ϖ csn = let IH = val-metric M E ϖ csn in incr (2 + ((p1 IH) + ⟪ val-metric N E ϖ csn ⟫ + (csn-multiply (p2 IH) (λ c → ⟪ val-metric N E ϖ c ⟫) csn))) (p3 IH) --incr (2 + ((p1 IH) + ((suc (p2 IH)) * ⟪ val-metric N E ϖ csn ⟫))) (p3 IH)
     comp-metric (var M) E ϖ csn = incr (suc ⟪ val-metric M E ϖ csn ⟫) zero-metric
     comp-metric (sub W₁ W₂) E ϖ csn = let w = λ c → ⟪ comp-metric W₂ E ϖ c ⟫ in incr (suc ⟪ comp-metric W₂ E ϖ csn ⟫) (comp-metric W₁ (((`V , λ _ → m-V 0 ((w csn) + csn-to-nat₀ w csn) )) ∷ E) (wkn-cong ϖ) csn)
@@ -593,7 +594,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
         IH = env-metric γ
       in
         -- (cterm ( (count-in-comp h W) , ⟪ comp-metric W (proj₁ IH) (wkn-cons (proj₂ IH)) csn ⟫ )) ∷ csn
-        cterm (W , ⟪ comp-metric W (proj₁ IH) (wkn-cons (proj₂ IH)) csn ⟫) ∷ csn
+        cterm (proj₂ (contr-comp W) , ⟪ comp-metric W (proj₁ IH) (wkn-cons (proj₂ IH)) csn ⟫) ∷ csn
 
 
   --------------------------------------------------------------------

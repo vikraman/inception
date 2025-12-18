@@ -480,6 +480,35 @@ Goal: incr (suc (⟪ comp-metric W₁ E' ϖ' (CTerm.cterm (Γ' , A , X , W₂ , 
     fun-comp-lemma (sub W₁ W₂) nm E ϖ csn = {!!}
 -}
 
+  return-lemma : (M : Val Γ X) → (M' : V̲a̲l̲ Γ' X) → (E : List (Σ[ X ∈ Ty ] (List CTerm → TermMetric X))) → (E' : List (Σ[ X ∈ Ty ] (List CTerm → TermMetric X)))
+                → (ϖ : Wkn Δ E) → (ϖ' : Wkn Γ' E') → (π : Wk Δ Γ)
+                → ((c : List CTerm) → suc ⟪ v̲a̲l̲-metric M' E' ϖ' c ⟫ ≤ ⟪ val-metric (wk-val π M) E ϖ c ⟫)
+                → (csn : List CTerm)
+                --→ ⟪ c̲o̲m̲p-metric (C̲o̲m̲p.r̲e̲t̲u̲r̲n̲ M') E' ϖ' csn ⟫ ≤ ⟪ comp-metric (return (wk-val π M)) E ϖ csn ⟫
+                → ((λ c → ⟪ c̲o̲m̲p-metric (C̲o̲m̲p.r̲e̲t̲u̲r̲n̲ M') E' ϖ' c ⟫) csn) ≤ ((λ c → ⟪ comp-metric (return (wk-val π M)) E ϖ c ⟫) csn)
+  return-lemma {X = X} M M' E E' ϖ ϖ' π v≤v' [] rewrite (sym (incr-coh 1 X (v̲a̲l̲-metric M' E' ϖ' []))) =
+    let
+      a1 = +-≤-cong (z≤n {n = 2}) (≤-refl {n = ⟪ val-metric (wk-val π M) E ϖ [] ⟫})
+    in
+      ≤-trans (v≤v' []) a1
+  return-lemma {X = X} M M' E E' ϖ ϖ' π v≤v' (x ∷ csn) rewrite (sym (incr-coh 2 X (v̲a̲l̲-metric M' E' ϖ' (x ∷ csn)))) =
+    let
+      a1 = +-≤-cong (z≤n {n = 2}) (≤-refl {n = ⟪ val-metric (wk-val π M) E ϖ csn ⟫})
+    in
+      ≤-trans (v≤v' csn) a1
+
+  -- csn-multiply (inj₁ (contr-comp w)) (λ c → ⟪ c̲o̲m̲p-metric (c̲o̲m̲p.r̲e̲t̲u̲r̲n̲ m')      e' ϖ' c ⟫) (cterm.cterm (proj₂ (contr-comp w) , ⟪ comp-metric w e₁ (wkn.wkn-cons ϖ₁) csn ⟫) ∷ csn)
+
+  multiply-lemma : (tm : (Σ[ Γ ∈ Ctx ] (Comp Γ X)) ⊎ ⊤) → (nm₁ nm₂ : List CTerm → ℕ) → ((c : List CTerm) → nm₁ c ≤ nm₂ c) → (csn : List CTerm) → csn-multiply tm nm₁ csn ≤ csn-multiply tm nm₂ csn
+  multiply-lemma (inj₁ (ε , W)) nm₁ nm₂ dec csn = ≤-refl
+  multiply-lemma (inj₁ (Γ ∙ X , return W)) nm₁ nm₂ dec csn = {!csn-multiply (inj₁ (Γ ∙ X , return W)) nm₁ csn!}
+  multiply-lemma (inj₁ (Γ ∙ X , pm M W)) nm₁ nm₂ dec csn = {!!}
+  multiply-lemma (inj₁ (Γ ∙ X , push W₁ W₂)) nm₁ nm₂ dec csn = {!csn-multiply (inj₁ (Γ ∙ X , push W₁ W₂)) nm₁ csn!}
+  multiply-lemma (inj₁ (Γ ∙ X , app M N)) nm₁ nm₂ dec csn = {!!}
+  multiply-lemma (inj₁ (Γ ∙ X , var M)) nm₁ nm₂ dec csn = {!!}
+  multiply-lemma (inj₁ (Γ ∙ X , sub W₁ W₂)) nm₁ nm₂ dec csn = {!!}
+  multiply-lemma (inj₂ tt) nm₁ nm₂ dec csn = ≤-refl
+
 -------------------------------------------------------------------------------------------------
   val-metric-decreasing : {Q₁ : ValState X} → {Q₂ : ValState X} → (Q₁→ᶜQ₂ : Q₁ ↠ᵛ Q₂) → (csn : List CTerm) → (suc (valstate-metric Q₂ csn) ≤ (valstate-metric Q₁ csn))
   val-metric-decreasing = {!!}
@@ -741,7 +770,7 @@ seems easy
 -------------------------------------------------------
 -------------------------------------------------------
 -------------------------------------------------------
-{-AA
+
 -------------------------------------------------------
   --postulate debuglemma : m ≤ n
   debuglemma = ≤-refl
@@ -1280,7 +1309,8 @@ ex15 = push (push (app (lam {A = `Unit} (sub (var (var h)) (return unit))) unit)
 
 -- ex13: 22 ∷ 12 ∷ 9 ∷ 2 ∷ []
 -- ex14: 358 ∷ 357 ∷ 104 ∷ 101 ∷ 96 ∷ 91 ∷ 46 ∷ 44 ∷ 42 ∷ 32 ∷ 26 ∷ 14 ∷ 4 ∷ 2 ∷ []
-_ : comp-eval-test-metric ex11 ≡ {! comp-eval-test-metric ex14!}
+--       348 ∷ 347 ∷ 102 ∷ 100 ∷ 96 ∷ 91 ∷ 46 ∷ 44 ∷ 42 ∷ 32 ∷ 26 ∷ 14 ∷ 4 ∷ 2 ∷ []
+_ : comp-eval-test-metric ex11 ≡ {! comp-eval-test-metric ex15!}
 _ = let
       tm = push (push (app (lam {A = `Unit} (sub (var (var h)) (return unit))) unit) (return unit)) (app (lam (return unit)) (pair (pair (pair (var h) (var h)) (var h)) (var h)))
       tmR = (app (lam (return unit)) (pair (pair (pair (var h) (var h)) (var h)) (var h)))
@@ -1292,6 +1322,9 @@ _ = let
       cmL = comp-metric tmL (proj₁ e) (proj₂ e) csn2
       cmR = comp-metric tmR (proj₁ e) (wkn-cons (proj₂ e)) csn1
       cmRcong = comp-metric tmR ((`Unit , λ x → comp-metric tmL (proj₁ e) (proj₂ e) csn2) ∷ (proj₁ e)) (wkn-cong (proj₂ e)) csn1
+      c1 : ε ⊢ᶜ (`Unit)
+      c1   = push (app (lam {A = `Unit} (sub (var (var h)) (return unit))) unit) (return unit)
+      c2   = contr-comp c1
       --cm1l = comp-metric tmL (proj₁ e) (proj₂ e) csn1
       --c1+ = csn-to-nat₀ ⟪ cm1 ⟫ csn1
       --cm2 = comp-metric tmL (proj₁ e) (proj₂ e) csn2
@@ -1344,4 +1377,3 @@ _ = refl
 -- Goal: csn-to-nat₀       9    [] ≤ suc (  9 + n₁ * zero + csn-to-nat₀ (suc (fst + n₁ * zero)) csn₁)
 -}
 
-AA -}

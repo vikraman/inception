@@ -8,6 +8,7 @@ open Eq.≡-Reasoning
 
 open import Inception.Sub.Syntax
 
+{-
 wk-ctx : (Γ : Ctx) → Wk Γ ε
 wk-ctx Cx.ε = wk-ε
 wk-ctx (Γ ∙ X) = wk-wk (wk-ctx Γ)
@@ -118,3 +119,10 @@ mutual
   contr-comp-eq (app M N) π rewrite contr-val-eq M π | contr-val-eq N π = refl
   contr-comp-eq (var M) π rewrite contr-val-eq M π = refl
   contr-comp-eq (sub W₁ W₂) π rewrite contr-comp-eq W₁ (wk-cong π) | contr-comp-eq W₂ π = refl
+
+-}
+
+contr-comp : Comp Γ A → Σ[ Δ ∈ Ctx ] Comp Δ A
+contr-comp W = _ , W
+
+postulate contr-comp-eq : {Γ' : Ctx} {X : Ty} → (W : Comp Γ' X) → (π : Wk Γ Γ') → contr-comp W ≡ contr-comp (wk-comp π W)
