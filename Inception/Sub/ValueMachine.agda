@@ -268,7 +268,8 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     m-×   : (m : ℕ) → (nm₁ : TermMetric X) → (nm₂ : TermMetric Y) → TermMetric (X `× Y)
 
   data CTerm : Set where
-    cterm  : Σ[ Γ ∈ Ctx ] Σ[ X ∈ Ty ] Σ[ Z ∈ Ty ] ((Comp (Γ ∙ X) Z) × ℕ) → CTerm
+    cterm  : (Comp Γ Z) × ℕ → CTerm
+    --cterm  : Σ[ Γ ∈ Ctx ] Σ[ X ∈ Ty ] Σ[ Z ∈ Ty ] ((Comp (Γ ∙ X) Z) × ℕ) → CTerm
     --cterm  : (ℕ × ℕ) → CTerm
 
   data Wkn : (Γ : Ctx) → (E : List (Σ[ X ∈ Ty ] (List CTerm → TermMetric X))) → Set where
@@ -504,7 +505,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   -- working: csn-to-nat₀ w (cterm (Γ , X , Z , W , tm) ∷ csn) = (tm + ((w ((cterm (Γ , X , Z , W , tm)) ∷ csn)) * (count-in-comp h W))) + (csn-to-nat₀ (λ x → (tm + ((w ((cterm (Γ , X , Z , W , tm)) ∷ csn)) * (count-in-comp h W)))) csn)
   -- working: csn-to-nat₀ w (cterm (Γ , X , Z , W , tm) ∷ csn) = (tm + (csn-multiply (inj₁ (_ , W)) w ((cterm (Γ , X , Z , W , tm)) ∷ csn) )) + (csn-to-nat₀ (λ x → (tm + (csn-multiply (inj₁ (_ , W)) w ((cterm (Γ , X , Z , W , tm)) ∷ csn) ))) csn)
   -- working:
-  csn-to-nat₀ w (cterm (Γ , X , Z , W , tm) ∷ csn) = (tm + (csn-multiply (inj₁ (_ , W)) w ((cterm (Γ , X , Z , W , tm)) ∷ csn) )) + (csn-to-nat₀ (λ c → (tm + (csn-multiply (inj₁ (_ , W)) w c ))) csn)
+  csn-to-nat₀ w (cterm (W , tm) ∷ csn) = (tm + (csn-multiply (inj₁ (_ , W)) w ((cterm (W , tm)) ∷ csn) )) + (csn-to-nat₀ (λ c → (tm + (csn-multiply (inj₁ (_ , W)) w c ))) csn)
 
 
   -- csn-to-nat₀ w (cterm (Γ , X , Z , W , n) ∷ csn) =
@@ -545,7 +546,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       let
         w2 = (comp-metric W₂ E (wkn-cons ϖ) csn)
         --csn2 = ((cterm (count-in-comp h W₂ , ⟪ w2 ⟫)) ∷ csn)
-        csn2 = cterm (_ , _ , _ , W₂ , ⟪ w2 ⟫) ∷ csn
+        csn2 = cterm (W₂ , ⟪ w2 ⟫) ∷ csn
         w1 = λ c → ⟪ comp-metric W₁ E ϖ c ⟫
       in
         --incr (suc ((suc (count-in-comp h W₂)) * w1)) w2
@@ -592,7 +593,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
         IH = env-metric γ
       in
         -- (cterm ( (count-in-comp h W) , ⟪ comp-metric W (proj₁ IH) (wkn-cons (proj₂ IH)) csn ⟫ )) ∷ csn
-        cterm (_ , _ , _ , W , ⟪ comp-metric W (proj₁ IH) (wkn-cons (proj₂ IH)) csn ⟫) ∷ csn
+        cterm (W , ⟪ comp-metric W (proj₁ IH) (wkn-cons (proj₂ IH)) csn ⟫) ∷ csn
 
 
   --------------------------------------------------------------------
