@@ -891,7 +891,6 @@ seems easy
 -------------------------------------------------------
 -------------------------------------------------------
 
-{- A
 -------------------------------------------------------
   postulate debuglemma : m ≤ n
   -- debuglemma = ≤-refl
@@ -1259,7 +1258,6 @@ seems easy
     comp-eval-test-metric W with comp-eval W
     ... | steps _ _ _ l = l
 
-{- C
 postulate k₀ : ⟦ `Unit ⟧ → R
 
 open VMain {R₀ = `Unit} k₀
@@ -1491,5 +1489,3 @@ _ = refl
 -- Goal: csn-to-nat₀ (suc n₂) csn₂ ≤ suc (fst + n₁ * zero + csn-to-nat₀ (suc (fst + n₁ * zero)) csn₁)
 -- Goal: csn-to-nat₀       9    [] ≤ suc (  9 + n₁ * zero + csn-to-nat₀ (suc (fst + n₁ * zero)) csn₁)
 -}
-C -}
-A -}
