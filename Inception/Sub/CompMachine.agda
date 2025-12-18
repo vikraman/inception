@@ -272,7 +272,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       e = env-metric γ
       w = λ c → ⟪ comp-metric W (proj₁ e) (proj₂ e) c ⟫
     in
-      (w csn) + csn-to-nat₀ w csn
+      w csn + csn-to-nat₀ w csn
   compstate-metric ((∙⟨ W ⊰ γ ╎ cs ⟩) {π = π}) =
     let
       csn = cs-to-csn cs
@@ -1310,7 +1310,79 @@ ex15 = push (push (app (lam {A = `Unit} (sub (var (var h)) (return unit))) unit)
 -- ex13: 22 ∷ 12 ∷ 9 ∷ 2 ∷ []
 -- ex14: 358 ∷ 357 ∷ 104 ∷ 101 ∷ 96 ∷ 91 ∷ 46 ∷ 44 ∷ 42 ∷ 32 ∷ 26 ∷ 14 ∷ 4 ∷ 2 ∷ []
 --       348 ∷ 347 ∷ 102 ∷ 100 ∷ 96 ∷ 91 ∷ 46 ∷ 44 ∷ 42 ∷ 32 ∷ 26 ∷ 14 ∷ 4 ∷ 2 ∷ []
-_ : comp-eval-test-metric ex11 ≡ {! comp-eval-test-metric ex15!}
+-- ex11: 151 ∷ 149 ∷ 145 ∷ 143 ∷ 139 ∷ 110 ∷ 120 ∷ 93 ∷ 22 ∷ 18 ∷ 13 ∷ 5 ∷ 2 ∷ []
+
+{-
+steps
+(  ∘⟨app (lam (app (lam (push (sub (push (var (var h)) (app (var h) unit)) (return (lam (return (var h))))) (app (var h) unit))) unit)) unit ⊰ Env.∗ ╎ CompStack.◻ ⟩
+ →ᶜ⟨∘app (ValState.∘ PartialTerm.⇡ unit ValStack.⊲ Env.∗ ∷ ValStack.□ _↠ᵛ_.→ᵛ⟨ _→ᵛ_.∘unit ⟩．) wk-ε⟩
+   ∙⟨C̲o̲m̲p.a̲pp (lam (app (lam (push (sub (push (var (var h)) (app (var h) unit)) (return (lam (return (var h))))) (app (var h) unit))) unit)) V̲a̲l̲.u̲n̲i̲t̲ ⊰ Env.∗ ╎ CompStack.◻ ⟩
+ →ᶜ⟨ ∙app-lam ⟩
+   ∘⟨app (lam (push (sub (push (var (var h)) (app (var h) unit)) (return (lam (return (var h))))) (app (var h) unit))) unit ⊰ Env.∗ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ ╎ CompStack.◻ ⟩
+ →ᶜ⟨∘app (ValState.∘ PartialTerm.⇡ unit ValStack.⊲ Env.∗ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ ∷ ValStack.□ _↠ᵛ_.→ᵛ⟨ _→ᵛ_.∘unit ⟩．) (wk-cong wk-ε)⟩
+   ∙⟨C̲o̲m̲p.a̲pp (lam (push (sub (push (var (var h)) (app (var h) unit)) (return (lam (return (var h))))) (app (var h) unit))) V̲a̲l̲.u̲n̲i̲t̲ ⊰ Env.∗ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ ╎ CompStack.◻ ⟩
+ →ᶜ⟨ ∙app-lam ⟩
+   ∘⟨push (sub (push (var (var h)) (app (var h) unit)) (return (lam (return (var h))))) (app (var h) unit) ⊰ Env.∗ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ ╎ CompStack.◻ ⟩
+ →ᶜ⟨ ∘push ⟩
+
+   ∘⟨sub (push (var (var h)) (app (var h) unit)) (return (lam (return (var h)))) ⊰ ∗ ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ╎ app (var h) unit ⊲ ∗ ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ⦂⦂ ◻
+ ⟩
+ →ᶜ⟨ ∘sub ⟩
+   ∘⟨ push (var (var h)) (app (var h) unit) ⊰ ∗ ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐﹝return (lam (return (var h))) ╎ app (var h) unit ⊲ ∗ ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ⦂⦂ ◻﹞ ╎ app (var h) unit ⊲ ∗ ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ⦂⦂ ◻⟩
+
+ →ᶜ⟨ ∘push ⟩
+   ∘⟨ var (var h) ⊰ Env.∗ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ Env.﹐﹝return (lam (return (var h))) ╎ app (var h) unit CompStack.⊲ Env.∗ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ ⦂⦂ CompStack.◻﹞ ╎ app (var h) unit CompStack.⊲ Env.∗ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ Env.﹐﹝return (lam (return (var h))) ╎ app (var h) unit CompStack.⊲ Env.∗ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ ⦂⦂ CompStack.◻﹞ ⦂⦂ (app (var h) unit CompStack.⊲ Env.∗ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ ⦂⦂ CompStack.◻)⟩
+ →ᶜ⟨∘var (ValState.∘ PartialTerm.⇡ var h ValStack.⊲ Env.∗ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ Env.﹐﹝return (lam (return (var h))) ╎ app (var h) unit CompStack.⊲ Env.∗ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ ⦂⦂ CompStack.◻﹞ ∷ ValStack.□ _↠ᵛ_.→ᵛ⟨ _→ᵛ_.∘var-c ⟩．) (wk-cong (wk-cong (wk-cong wk-ε))) (LookupState.⟨ h ∥ Env.∗ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ Env.﹐﹝return (lam (return (var h))) ╎ app (var h) unit CompStack.⊲ Env.∗ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ ⦂⦂ CompStack.◻﹞⟩ _→ᴸ*_.◼) (wk-wk (wk-cong (wk-cong wk-ε)))⟩
+   ∘⟨ return (lam (return (var h))) ⊰ Env.∗ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ ╎ app (var h) unit CompStack.⊲ Env.∗ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ ⦂⦂ CompStack.◻⟩
+ →ᶜ⟨∘return (ValState.∘ PartialTerm.⇡ lam (return (var h)) ValStack.⊲ Env.∗ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ ∷ ValStack.□ _↠ᵛ_.→ᵛ⟨ _→ᵛ_.∘lam ⟩．)⟩
+   ∙⟨ C̲o̲m̲p.r̲e̲t̲u̲r̲n̲ (V̲a̲l̲.l̲a̲m̲ (return (var h))) ⊰ Env.∗ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ ╎ app (var h) unit CompStack.⊲ Env.∗ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ ⦂⦂ CompStack.◻⟩
+ →ᶜ⟨ ∙return ⟩
+   ∘⟨ app (var h) unit ⊰ Env.∗ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ Env.﹐ V̲a̲l̲.l̲a̲m̲ (return (var h)) ╎ CompStack.◻ ⟩
+ →ᶜ⟨∘app (ValState.∘ PartialTerm.⇡ unit ValStack.⊲ Env.∗ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ Env.﹐ V̲a̲l̲.l̲a̲m̲ (return (var h)) ∷ ValStack.□ _↠ᵛ_.→ᵛ⟨ _→ᵛ_.∘unit ⟩．) (wk-cong (wk-cong (wk-cong wk-ε)))⟩
+   ∙⟨ C̲o̲m̲p.a̲pp (var h) V̲a̲l̲.u̲n̲i̲t̲ ⊰ Env.∗ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ Env.﹐ V̲a̲l̲.l̲a̲m̲ (return (var h)) ╎ CompStack.◻ ⟩
+ →ᶜ⟨∙app-var (LookupState.⟨ h ∥ Env.∗ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ Env.﹐ V̲a̲l̲.l̲a̲m̲ (return (var h))⟩ _→ᴸ*_.◼) (wk-wk (wk-cong (wk-cong wk-ε))) (λ csn → _≤ᴹ_.≤-⇒ (s≤s z≤n) ≤ᴹ-refl) (Wke.wke-wc- (wk-cong (wk-cong wk-ε)) (Wkn.wkn-cong (Wkn.wkn-cong Wkn.wkn-nil)) (Wkn.wkn-cong (Wkn.wkn-cong Wkn.wkn-nil)) (λ csn → TermMetric.m-⇒ 1 (inj₁ (ε ∙ `Unit ∙ `Unit ∙ `Unit , return (var h))) (comp-metric (return (var h)) ((`Unit , (λ csn₁ → TermMetric.m-Unit 1)) ∷ (`Unit , (λ csn₁ → TermMetric.m-Unit 1)) ∷ []) (Wkn.wkn-cons (Wkn.wkn-cong (Wkn.wkn-cong Wkn.wkn-nil))) csn)) (Wke.wke-ccc (wk-cong wk-ε) (Wkn.wkn-cong Wkn.wkn-nil) (Wkn.wkn-cong Wkn.wkn-nil) (λ csn → TermMetric.m-Unit 1) (Wke.wke-ccc wk-ε Wkn.wkn-nil Wkn.wkn-nil (λ csn → TermMetric.m-Unit 1) Wke.wke-ε)))⟩
+   ∘⟨ return (var h) ⊰ Env.∗ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ Env.﹐ V̲a̲l̲.l̲a̲m̲ (return (var h)) Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ ╎ CompStack.◻ ⟩
+ →ᶜ⟨∘return (ValState.∘ PartialTerm.⇡ var h ValStack.⊲ Env.∗ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ Env.﹐ V̲a̲l̲.l̲a̲m̲ (return (var h)) Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ ∷ ValStack.□ _↠ᵛ_.→ᵛ⟨_→ᵛ_.∘var (LookupState.⟨ h ∥ Env.∗ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ Env.﹐ V̲a̲l̲.l̲a̲m̲ (return (var h)) Env.﹐ V̲a̲l̲.u̲n̲i̲t̲⟩ _→ᴸ*_.◼) (wk-wk (wk-cong (wk-cong (wk-cong wk-ε))))⟩．)⟩
+   (∙⟨ C̲o̲m̲p.r̲e̲t̲u̲r̲n̲ V̲a̲l̲.u̲n̲i̲t̲ ⊰ Env.∗ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ Env.﹐ V̲a̲l̲.l̲a̲m̲ (return (var h)) Env.﹐ V̲a̲l̲.u̲n̲i̲t̲ ╎ CompStack.◻ ⟩ ◼))
+-}
+
+_ : comp-eval-test-metric ex11 ≡ {! comp-eval-test-metric ex14!}
+_ = let
+     w1 : Comp (ε ∙ `Unit ∙ `Unit) (`Unit `⇒ `Unit)
+     w1 = sub (push (var (var h)) (app (var h) unit)) (return (lam (return (var h))))
+     w1r = (return (lam (return (var h))))
+     EW1 = env-metric (∗ ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲)
+     C : CompStack (ε ∙ `Unit ∙ `Unit) (`Unit `⇒ `Unit)
+     C = app (var h) unit ⊲ ∗ ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ⦂⦂ ◻
+     csn = cs-to-csn C
+     w2 : Comp (ε ∙ `Unit ∙ `Unit ∙ `V) (`Unit `⇒ `Unit)
+     w2 = push (var (var h)) (app (var h) unit)
+     EW2 = env-metric (∗ ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐﹝ return (lam (return (var h))) ╎ app (var h) unit ⊲ ∗ ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ⦂⦂ ◻ ﹞)
+     --EW2 = (`V , (λ _ → m-V 0 22)) ∷ (`Unit , (λ _ → m-Unit 1)) ∷ (`Unit , (λ _ → m-Unit 1)) ∷ [] , wkn-cong (wkn-cong (wkn-cong wkn-nil))
+     a1 = comp-metric w1 (proj₁ EW1) (proj₂ EW1)
+     a1r = comp-metric w1r (proj₁ EW1) (proj₂ EW1)
+     a2 = comp-metric w2 (proj₁ EW2) (proj₂ EW2)
+     ax = comp-metric w2 (proj₁ EW1) (wkn-cons (proj₂ EW1))
+     n1 = ⟪ a1 csn ⟫
+     n2 = ⟪ a2 csn ⟫
+     b1 = ⟪ a1 csn ⟫ + csn-to-nat₀ (λ c → ⟪ a1 c ⟫) csn
+     b1r = ⟪ a1r csn ⟫ + csn-to-nat₀ (λ c → ⟪ a1r c ⟫) csn
+     b2 = ⟪ a2 csn ⟫ + csn-to-nat₀ (λ c → ⟪ a2 c ⟫) csn
+     d1 = csn-comp-multiply h (app (var h) unit) (λ c → ⟪ a1 c ⟫) csn
+     d2 = csn-comp-multiply h (app (var h) unit) (λ c → ⟪ a2 c ⟫) csn
+     e1 = csn-comp-multiply h (app (var h) unit) (λ c → ⟪ a1 c ⟫) []
+     e2 = csn-comp-multiply h (app (var h) unit) (λ c → ⟪ a2 c ⟫) []
+    in
+    {! csn-to-nat₀ (λ c → ⟪ a1r c ⟫) []!}
+
+{-
+ ⟩
+ →ᶜ⟨ ∘sub ⟩
+   ∘⟨ push (var (var h)) (app (var h) unit) ⊰ ∗ ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐﹝return (lam (return (var h))) ╎ app (var h) unit ⊲ ∗ ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ⦂⦂ ◻﹞ ╎ app (var h) unit ⊲ ∗ ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ⦂⦂ ◻⟩
+-}
+
+
+{-
 _ = let
       tm = push (push (app (lam {A = `Unit} (sub (var (var h)) (return unit))) unit) (return unit)) (app (lam (return unit)) (pair (pair (pair (var h) (var h)) (var h)) (var h)))
       tmR = (app (lam (return unit)) (pair (pair (pair (var h) (var h)) (var h)) (var h)))
@@ -1343,6 +1415,7 @@ _ = let
       x = {!!}
     in
     {!c2+!}
+-}
 
 -- 138 ∷ 327 ∷ 102 ∷ 100 ∷ 96 ∷ 91 ∷ 46 ∷ 44 ∷ 42 ∷ 32 ∷ 26 ∷ 14 ∷ 4 ∷ 2 ∷ []
 

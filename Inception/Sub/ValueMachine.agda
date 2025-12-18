@@ -499,21 +499,9 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   csn-multiply (inj₁ (Γ ∙ X , W)) nm csn = csn-comp-multiply h W nm csn
   csn-multiply (inj₂ tt) nm csn = 0
 
-  --csn-to-nat₀ : ℕ → List (ℕ × ℕ) → ℕ
   csn-to-nat₀ : (List CTerm → ℕ) → List CTerm → ℕ
   csn-to-nat₀ w [] = 0
-  -- working: csn-to-nat₀ w (cterm (Γ , X , Z , W , tm) ∷ csn) = (tm + ((w ((cterm (Γ , X , Z , W , tm)) ∷ csn)) * (count-in-comp h W))) + (csn-to-nat₀ (λ x → (tm + ((w ((cterm (Γ , X , Z , W , tm)) ∷ csn)) * (count-in-comp h W)))) csn)
-  -- working: csn-to-nat₀ w (cterm (Γ , X , Z , W , tm) ∷ csn) = (tm + (csn-multiply (inj₁ (_ , W)) w ((cterm (Γ , X , Z , W , tm)) ∷ csn) )) + (csn-to-nat₀ (λ x → (tm + (csn-multiply (inj₁ (_ , W)) w ((cterm (Γ , X , Z , W , tm)) ∷ csn) ))) csn)
-  -- working:
   csn-to-nat₀ w (cterm (W , tm) ∷ csn) = (tm + (csn-multiply (inj₁ (_ , W)) w ((cterm (W , tm)) ∷ csn) )) + (csn-to-nat₀ (λ c → (tm + (csn-multiply (inj₁ (_ , W)) w c ))) csn)
-
-
-  -- csn-to-nat₀ w (cterm (Γ , X , Z , W , n) ∷ csn) =
-  --   let
-  --     a1 = csn-multiply (inj₁ (Γ ∙ X , W)) w
-  --   in
-  --   --n + (csn-multiply (inj₁ (Γ ∙ X , W)) w csn) + csn-to-nat₀ (λ c → n + csn-multiply (inj₁ (Γ ∙ X , W)) w c) csn
-  --   n + ((count-in-comp h W) * (w csn)) + csn-to-nat₀ (λ c → n + (count-in-comp h W) * (w csn)) csn
 
   lookup-metric : (i : Γ ∋ Y) → (E : List (Σ[ X ∈ Ty ] (List CTerm → TermMetric X))) → Wkn Γ E → (List CTerm → TermMetric Y)
   lookup-metric Cx.h ((Y , e) ∷ ne) (wkn-cong ϖ) = e
@@ -544,14 +532,14 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
         incr (suc (vx (IH csn) + ⟪ comp-metric W E (wkn-cons (wkn-cons ϖ)) csn ⟫)) (comp-metric W ((Y , λ c → rhs (IH c)) ∷ (X , λ c → lhs (IH c)) ∷ E) (wkn-cong (wkn-cong ϖ)) csn)
     comp-metric (push {A = X} W₁ W₂) E ϖ csn =
       let
-        w2 = (comp-metric W₂ E (wkn-cons ϖ) csn)
+        w2 = comp-metric W₂ E (wkn-cons ϖ)
         --csn2 = ((cterm (count-in-comp h W₂ , ⟪ w2 ⟫)) ∷ csn)
         ⌊W₂⌋ = contr-comp W₂
-        csn2 = cterm (proj₂ ⌊W₂⌋ , ⟪ w2 ⟫) ∷ csn
+        csn2 = cterm (proj₂ ⌊W₂⌋ , ⟪ w2 csn ⟫) ∷ csn
         w1 = λ c → ⟪ comp-metric W₁ E ϖ c ⟫
       in
         --incr (suc ((suc (count-in-comp h W₂)) * w1)) w2
-        incr (suc (w1 csn2 + csn-multiply (inj₁ ⌊W₂⌋) w1 csn2)) w2
+        incr (suc (w1 csn2 + csn-multiply (inj₁ ⌊W₂⌋) w1 csn2)) (w2 csn)
     comp-metric (app M N) E ϖ csn = let IH = val-metric M E ϖ csn in incr (2 + ((p1 IH) + ⟪ val-metric N E ϖ csn ⟫ + (csn-multiply (p2 IH) (λ c → ⟪ val-metric N E ϖ c ⟫) csn))) (p3 IH) --incr (2 + ((p1 IH) + ((suc (p2 IH)) * ⟪ val-metric N E ϖ csn ⟫))) (p3 IH)
     comp-metric (var M) E ϖ csn = incr (suc ⟪ val-metric M E ϖ csn ⟫) zero-metric
     comp-metric (sub W₁ W₂) E ϖ csn = let w = λ c → ⟪ comp-metric W₂ E ϖ c ⟫ in incr (suc ⟪ comp-metric W₂ E ϖ csn ⟫) (comp-metric W₁ (((`V , λ _ → m-V 0 ((w csn) + csn-to-nat₀ w csn) )) ∷ E) (wkn-cong ϖ) csn)
