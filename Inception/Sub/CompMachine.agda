@@ -302,11 +302,11 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
 -------------------------------------------------------------------------------------------------
 
-  -- wk-e : (π : Wk Γ Δ) → {E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))} → (ϖ : Wkn Δ E) → Wkn Γ E
-  -- wk-e wk-ε ϖ = ϖ
-  -- wk-e (wk-cong π) (wkn-cong ϖ) = wkn-cong (wk-e π ϖ)
-  -- wk-e (wk-cong π) (wkn-cons ϖ) = wkn-cons (wk-e π ϖ)
-  -- wk-e (wk-wk π) ϖ = wkn-cons (wk-e π ϖ)
+  wk-e : (π : Wk Γ Δ) → {E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))} → (ϖ : Wkn Δ E) → Wkn Γ E
+  wk-e wk-ε ϖ = ϖ
+  wk-e (wk-cong π) (wkn-cong ϖ) = wkn-cong (wk-e π ϖ)
+  wk-e (wk-cong π) (wkn-cons ϖ) = wkn-cons (wk-e π ϖ)
+  wk-e (wk-wk π) ϖ = wkn-cons (wk-e π ϖ)
 
   -- wk-e-id : {E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))} → (ϖ : Wkn Γ E) → wk-e wk-id ϖ ≡ ϖ
   -- wk-e-id {Γ = Cx.ε} ϖ = refl
@@ -367,6 +367,65 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     -}
 
 ---------------------------------------------------------------------------------------------
+
+  mutual
+
+    postulate wk-val-count-eq :   (π : Wk Γ Γ') → (i : Γ' ∋ Y) → (M : Val Γ' X)
+                      → (E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → (ϖ : Wkn Γ' E) → (csn : List (ℕ × ℕ))
+                      → count-in-val i M E ϖ csn ≡ count-in-val (wk-mem π i) (wk-val π M) E (wk-e π ϖ) csn
+    -- probably easy
+    {-
+    wk-val-count-eq wk-ε () M E ϖ csn
+
+    wk-val-count-eq (wk-cong π) Cx.h (var Cx.h) E ϖ csn = refl
+    wk-val-count-eq (wk-cong π) Cx.h (var (Cx.t i)) E ϖ csn = refl
+
+    wk-val-count-eq (wk-cong π) Cx.h (lam W) E ϖ csn = wk-comp-count-eq (wk-cong (wk-cong π)) (t h) W E (wkn-cons ϖ) csn
+    wk-val-count-eq (wk-cong π) Cx.h (pair M₁ M₂) E ϖ csn = cong₂ _+_ (wk-val-count-eq (wk-cong π) h M₁ E ϖ csn) (wk-val-count-eq (wk-cong π) h M₂ E ϖ csn)
+    wk-val-count-eq (wk-cong π) Cx.h (pm M N) E ϖ csn =
+      let
+        a1 = wk-val-count-eq (wk-cong π) h M E ϖ csn
+        a2 = wk-val-count-eq (wk-cong (wk-cong (wk-cong π))) h N E (wkn-cons (wkn-cons ϖ)) csn
+        a3 = wk-val-count-eq (wk-cong (wk-cong (wk-cong π))) (t h) N E (wkn-cons (wkn-cons ϖ)) csn
+        a4 = wk-val-count-eq (wk-cong (wk-cong (wk-cong π))) (t (t h)) N E (wkn-cons (wkn-cons ϖ)) csn
+        b1 = cong₂ _*_ a1 (cong suc (cong₂ _+_ a2 a3))
+        b2 = cong₂ _+_ b1 a4
+      in
+      count-in-val h (pm M N) E ϖ csn
+      ≡⟨ refl ⟩
+        count-in-val h M E ϖ csn * suc (count-in-val h N E (Wkn.wkn-cons (Wkn.wkn-cons ϖ)) csn + count-in-val (t h) N E (Wkn.wkn-cons (Wkn.wkn-cons ϖ)) csn) + count-in-val (t (t h)) N E (Wkn.wkn-cons (Wkn.wkn-cons ϖ)) csn
+      ≡⟨ b2 ⟩
+        count-in-val h (wk-val (wk-cong π) M) E (wk-e (wk-cong π) ϖ) csn * suc (count-in-val h (wk-val (wk-cong (wk-cong (wk-cong π))) N) E (Wkn.wkn-cons (Wkn.wkn-cons (wk-e (wk-cong π) ϖ))) csn + count-in-val (t h) (wk-val (wk-cong (wk-cong (wk-cong π))) N) E (Wkn.wkn-cons (Wkn.wkn-cons (wk-e (wk-cong π) ϖ))) csn) + count-in-val (t (t h)) (wk-val (wk-cong (wk-cong (wk-cong π))) N) E (Wkn.wkn-cons (Wkn.wkn-cons (wk-e (wk-cong π) ϖ))) csn
+      ≡⟨ refl ⟩
+      count-in-val h (pm (wk-val (wk-cong π) M) (wk-val (wk-cong (wk-cong (wk-cong π))) N)) E (wk-e (wk-cong π) ϖ) csn ∎
+
+    wk-val-count-eq (wk-cong π) Cx.h unit E ϖ csn = refl
+
+    wk-val-count-eq (wk-cong π) (Cx.t i) (var i₁) E ϖ csn = {!!}
+    wk-val-count-eq (wk-cong π) (Cx.t i) (lam W) E ϖ csn = {!!}
+    wk-val-count-eq (wk-cong π) (Cx.t i) (pair M₁ M₂) E ϖ csn = {!!}
+    wk-val-count-eq (wk-cong π) (Cx.t i) (pm M N) E ϖ csn = {!!}
+    wk-val-count-eq (wk-cong π) (Cx.t i) unit E ϖ csn = {!!}
+
+    wk-val-count-eq (wk-wk π) Cx.h (var i) E ϖ csn = {!!}
+    wk-val-count-eq (wk-wk π) Cx.h (lam x) E ϖ csn = {!!}
+    wk-val-count-eq (wk-wk π) Cx.h (pair M M₁) E ϖ csn = {!!}
+    wk-val-count-eq (wk-wk π) Cx.h (pm M M₁) E ϖ csn = {!!}
+    wk-val-count-eq (wk-wk π) Cx.h unit E ϖ csn = {!!}
+    wk-val-count-eq (wk-wk π) (Cx.t i) (var i₁) E ϖ csn = {!!}
+    wk-val-count-eq (wk-wk π) (Cx.t i) (lam x) E ϖ csn = {!!}
+    wk-val-count-eq (wk-wk π) (Cx.t i) (pair M M₁) E ϖ csn = {!!}
+    wk-val-count-eq (wk-wk π) (Cx.t i) (pm M M₁) E ϖ csn = {!!}
+    wk-val-count-eq (wk-wk π) (Cx.t i) unit E ϖ csn = {!!}
+    -}
+
+    postulate wk-comp-count-eq :   (π : Wk Γ Γ') → (i : Γ' ∋ Y) → (W : Comp Γ' X)
+                       → (E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → (ϖ : Wkn Γ' E) → (csn : List (ℕ × ℕ))
+                       → count-in-comp i W E ϖ csn ≡ count-in-comp (wk-mem π i) (wk-comp π W) E (wk-e π ϖ) csn
+    -- probably easy
+    --wk-comp-count-eq π i W E ϖ csn = {!!}
+
+
   {- OLD
   mutual
 
@@ -453,7 +512,6 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   lookup-wke-lemma (Cx.t i) (x ∷ E) [] (wk-cong π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-cww π ϖ ϖ' θ) csn rewrite sym (empty-lookup i ϖ' csn) = lookup-wke-lemma i (x ∷ E) [] π ϖ ϖ' θ csn
   lookup-wke-lemma (Cx.t i) (x ∷ E) (x₁ ∷ E') (wk-cong π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-cww π ϖ ϖ' θ) csn = lookup-wke-lemma i (x ∷ E) (x₁ ∷ E') π ϖ ϖ' θ csn
 
-  {-
   mutual
 
     λ-lhs-val-wke-lemma : (M : Val Γ' (X `× Y)) → (E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X)))
@@ -473,8 +531,8 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     val-wke-lemma (lam W) E E' π ϖ ϖ' θ csn
       rewrite
           comp-wke-lemma W E E' (wk-cong π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-cww π ϖ ϖ' θ) csn
-        | wk-comp-count-eq (wk-cong π) h W
-        = refl
+        | wk-comp-count-eq (wk-cong π) h W E' (wkn-cons ϖ') csn
+        = {!!} --refl
     val-wke-lemma (pair M₁ M₂) E E' π ϖ ϖ' θ csn rewrite val-wke-lemma M₁ E E' π ϖ ϖ' θ csn | val-wke-lemma M₂ E E' π ϖ ϖ' θ csn = refl
     val-wke-lemma (pm {A = A} {B = B} M N) E E' π ϖ ϖ' θ csn
       rewrite
@@ -501,9 +559,9 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     comp-wke-lemma (push W₁ W₂) E E' π ϖ ϖ' θ csn
       rewrite
           comp-wke-lemma W₂ E E' (wk-cong π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-cww π ϖ ϖ' θ) csn
-        | comp-wke-lemma W₁ E E' π ϖ ϖ' θ (((count-in-comp h W₂ , ⟪ comp-metric (wk-comp (wk-cong π) W₂) E (wkn-cons ϖ) csn ⟫) ∷ csn))
-        | wk-comp-count-eq (wk-cong π) h W₂
-        = refl
+        | comp-wke-lemma W₁ E E' π ϖ ϖ' θ (((count-in-comp h W₂ E' (wkn-cons ϖ') csn , ⟪ comp-metric (wk-comp (wk-cong π) W₂) E (wkn-cons ϖ) csn ⟫) ∷ csn))
+        | wk-comp-count-eq (wk-cong π) h W₂ E' (wkn-cons ϖ') csn
+        = {!!} --refl
     comp-wke-lemma (app M N) E E' π ϖ ϖ' θ csn
       rewrite
           val-wke-lemma M E E' π ϖ ϖ' θ csn
@@ -522,12 +580,11 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   v̲a̲l̲-wke-lemma (l̲a̲m̲ W) E E' π ϖ ϖ' θ csn
       rewrite
           comp-wke-lemma W E E' (wk-cong π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-cww π ϖ ϖ' θ) csn
-        | wk-comp-count-eq (wk-cong π) h W
-        = refl
+        | wk-comp-count-eq (wk-cong π) h W E' (wkn-cons ϖ') csn
+        = {!!} --refl
   v̲a̲l̲-wke-lemma (pa̲i̲r̲ M₁ M₂) E E' π ϖ ϖ' θ csn rewrite v̲a̲l̲-wke-lemma M₁ E E' π ϖ ϖ' θ csn | v̲a̲l̲-wke-lemma M₂ E E' π ϖ ϖ' θ csn = refl
   v̲a̲l̲-wke-lemma u̲n̲i̲t̲ E E' π ϖ ϖ' θ csn = refl
   v̲a̲l̲-wke-lemma (v̲a̲r̲ i) E E' π ϖ ϖ' θ csn = cong (incr 1) (lookup-wke-lemma i E E' π ϖ ϖ' θ csn)
-  -}
 
 -------------------------------------------------------------------------------------------------
 
@@ -683,32 +740,31 @@ Goal:   suc (vx (val-metric M ((X , nm) ∷ E) (Wkn.wkn-cong ϖ) csn) + ⟪ comp
       s≤s (s≤s (+-≤-cong a3 a2))
 
   comp-metric-decreasing (∙return {Γ = Γ} {X = X} {Γ' = Γ'} {Y = Y} {M = M} {γ = γ} {N = N} {γ' = γ'} {π = π} {cs = cs}) =
-    {!!}
-    -- let
-    --   EW  = (env-metric γ)
-    --   EW' = (env-metric γ')
-    --   E = proj₁ EW
-    --   E' = proj₁ EW'
-    --   ϖ = proj₂ EW
-    --   ϖ' = proj₂ EW'
-    --   csn = cs-to-csn cs
-    --   ----------------------------------------------------------------
-    --   a0 = ⟪ comp-metric N E' (Wkn.wkn-cons ϖ') csn ⟫
-    --   a1 = ⟪ comp-metric (wk-comp (wk-cong π) N) ((X , v̲a̲l̲-metric M E ϖ) ∷ E) (Wkn.wkn-cong ϖ) csn ⟫
-    --   b1 = ⟪ v̲a̲l̲-metric M E ϖ ((count-in-comp h N , a0) ∷ csn) ⟫
-    --   ----------------------------------------------------------------
-    --   postulate l1 : a1 ≤ a0
-    --   ----------------------------------------------------------------
-    --   l2 : a1 ≤ a0 + suc (count-in-comp h N + b1 * suc (count-in-comp h N))
-    --   l2 = ≤-trans l1 (n≤n+m {n = a0} {m = (suc (count-in-comp h N + b1 * suc (count-in-comp h N)))})
-    --   l3 : csn-to-nat₀ a1 csn ≤ csn-to-nat₀ (a0 + suc (count-in-comp h N + b1 * suc (count-in-comp h N))) csn
-    --   l3 = csn-decr l2 csn
-    --   l4 :        a1 + (csn-to-nat₀ a1 csn)
-    --        ≤      b1 + ((a0 + suc (count-in-comp h N + b1 * suc (count-in-comp h N)))
-    --            + (csn-to-nat₀ (a0 + suc (count-in-comp h N + b1 * suc (count-in-comp h N))) csn))
-    --   l4 = +-≤-cong (z≤n {n = b1}) (+-≤-cong l2 l3)
-    -- in
-    --   s≤s l4
+    let
+      EW  = (env-metric γ)
+      EW' = (env-metric γ')
+      E = proj₁ EW
+      E' = proj₁ EW'
+      ϖ = proj₂ EW
+      ϖ' = proj₂ EW'
+      csn = cs-to-csn cs
+      ----------------------------------------------------------------
+      a0 = ⟪ comp-metric N E' (Wkn.wkn-cons ϖ') csn ⟫
+      a1 = ⟪ comp-metric (wk-comp (wk-cong π) N) ((X , v̲a̲l̲-metric M E ϖ) ∷ E) (Wkn.wkn-cong ϖ) csn ⟫
+      b1 = ⟪ v̲a̲l̲-metric M E ϖ ((count-in-comp h N E' (Wkn.wkn-cons ϖ') csn , a0) ∷ csn) ⟫
+      ----------------------------------------------------------------
+      postulate l1 : a1 ≤ a0
+      ----------------------------------------------------------------
+      l2 : a1 ≤ a0 + suc (count-in-comp h N E' (Wkn.wkn-cons ϖ') csn + b1 * suc (count-in-comp h N E' (Wkn.wkn-cons ϖ') csn))
+      l2 = ≤-trans l1 (n≤n+m {n = a0} {m = (suc (count-in-comp h N E' (Wkn.wkn-cons ϖ') csn + b1 * suc (count-in-comp h N E' (Wkn.wkn-cons ϖ') csn)))})
+      l3 : csn-to-nat₀ a1 csn ≤ csn-to-nat₀ (a0 + suc (count-in-comp h N E' (Wkn.wkn-cons ϖ') csn + b1 * suc (count-in-comp h N E' (Wkn.wkn-cons ϖ') csn))) csn
+      l3 = csn-decr l2 csn
+      l4 :        a1 + (csn-to-nat₀ a1 csn)
+           ≤      b1 + ((a0 + suc (count-in-comp h N E' (Wkn.wkn-cons ϖ') csn + b1 * suc (count-in-comp h N E' (Wkn.wkn-cons ϖ') csn)))
+               + (csn-to-nat₀ (a0 + suc (count-in-comp h N E' (Wkn.wkn-cons ϖ') csn + b1 * suc (count-in-comp h N E' (Wkn.wkn-cons ϖ') csn))) csn))
+      l4 = +-≤-cong (z≤n {n = b1}) (+-≤-cong l2 l3)
+    in
+      s≤s l4
 {-
 a0 = ⟪ comp-metric N E' (Wkn.wkn-cons ϖ') csn ⟫
 a1 = ⟪ comp-metric (wk-comp (wk-cong π) N) ((X , v̲a̲l̲-metric M E ϖ) ∷ E) (Wkn.wkn-cong ϖ) csn ⟫
@@ -721,54 +777,53 @@ Goal:     suc (a1 + csn-to-nat₀ a1 csn)
 -}
 
   comp-metric-decreasing (∘push {X = X} {M = M} {N = N} {γ = γ} {cs = cs} {πₓ = πₓ} {wk≡ₓ = wk≡ₓ} {wk≡ = wk≡}) =
-    {!!}
-    --let
-    --  EW  = (env-metric γ)
-    --  E = proj₁ EW
-    --  ϖ = proj₂ EW
-    --  csn = cs-to-csn cs
-    --  ----------------------------------------------------------------
-    --  a1 = comp-metric N E (Wkn.wkn-cons ϖ) csn
-    --  a2 = comp-metric M E ϖ ((count-in-comp h N , ⟪ a1 ⟫) ∷ csn)
-    --  ----------------------------------------------------------------
-    --  l1  : ⟪ a2 ⟫ * suc (count-in-comp h N) ≤ ⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫
-    --  l1  = subst (λ x → _≤_ x (⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫)) (sym (n*sm≡n+m*n ⟪ a2 ⟫ (count-in-comp h N))) ≤-refl
-    --  l1a :   ⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N)
-    --       ≤ (⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫) + ⟪ a1 ⟫
-    --  l1a = subst
-    --           (_≤_ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N)))
-    --           (+-comm {n = ⟪ a1 ⟫} {m = (⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫)})
-    --           (+-≤-cong (≤-refl {n = ⟪ a1 ⟫}) l1)
-    --  l2  :  (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N))
-    --       ≤ ⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫) + ⟪ a1 ⟫
-    --  l2  = subst
-    --           (_≤_ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N)))
-    --           (sym $ +-assoc {n₁ = ⟪ a2 ⟫} {n₂ = (⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫)} {n₃ = ⟪ a1 ⟫})
-    --           (+-≤-cong (z≤n {n = ⟪ a2 ⟫}) l1a)
-    --  l3  :        ⟪ a1 ⟫ +  ⟪ a2 ⟫ * suc (count-in-comp h N)
-    --        ≤ suc (⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫) + ⟪ a1 ⟫)
-    --  l3  = +-≤-cong (z≤n {n = 1}) l2
-    --  l4  :   csn-to-nat₀ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N)) csn
-    --        ≤ csn-to-nat₀ (suc (⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫) + ⟪ a1 ⟫)) csn
-    --  l4  = csn-decr l3 csn
-    --  l5  :   (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N)      + csn-to-nat₀ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N)) csn)
-    --        ≤ ((⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫) + ⟪ a1 ⟫ + csn-to-nat₀ (suc (⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫) + ⟪ a1 ⟫)) csn)
-    --  l5  = +-≤-cong l1a l4
-    --  l6  :   ⟪ a2 ⟫ + ((⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N)  + csn-to-nat₀ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N)) csn))
-    --        ≤ ⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫) + ⟪ a1 ⟫       + csn-to-nat₀ (suc (⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫) + ⟪ a1 ⟫)) csn
-    --  l6 = subst
-    --            (_≤_ (⟪ a2 ⟫ + ((⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N)  + csn-to-nat₀ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N)) csn))))
-    --            (sym $ +-assoc {n₁ = ⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫)} {n₂ = ⟪ a1 ⟫} {n₃ = csn-to-nat₀ (suc (⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫) + ⟪ a1 ⟫)) csn})
-    --            ( (subst
-    --                  (_≤_ (⟪ a2 ⟫ + ((⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N)  + csn-to-nat₀ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N)) csn))))
-    --                  (sym $ +-assoc {n₁ = ⟪ a2 ⟫} {n₂ = (⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫)} {n₃ = ⟪ a1 ⟫ + csn-to-nat₀ (suc (⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫) + ⟪ a1 ⟫)) csn})
-    --                   (+-≤-cong (≤-refl {n = ⟪ a2 ⟫})
-    --                     (subst
-    --                          (_≤_ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N) + csn-to-nat₀ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N)) csn))
-    --                          (+-assoc {n₁ = ⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫} {n₂ = ⟪ a1 ⟫} {n₃ = csn-to-nat₀ (suc (⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫) + ⟪ a1 ⟫)) csn})
-    --                          l5 ))))
-    --in
-    --  s≤s l6
+    let
+      EW  = (env-metric γ)
+      E = proj₁ EW
+      ϖ = proj₂ EW
+      csn = cs-to-csn cs
+      ----------------------------------------------------------------
+      a1 = comp-metric N E (Wkn.wkn-cons ϖ) csn
+      a2 = comp-metric M E ϖ ((count-in-comp h N E (wkn-cons ϖ) csn , ⟪ a1 ⟫) ∷ csn)
+      ----------------------------------------------------------------
+      l1  : ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn) ≤ ⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫
+      l1  = subst (λ x → _≤_ x (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫)) (sym (n*sm≡n+m*n ⟪ a2 ⟫ (count-in-comp h N E (wkn-cons ϖ) csn))) ≤-refl
+      l1a :   ⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)
+           ≤ (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫) + ⟪ a1 ⟫
+      l1a = subst
+               (_≤_ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)))
+               (+-comm {n = ⟪ a1 ⟫} {m = (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫)})
+               (+-≤-cong (≤-refl {n = ⟪ a1 ⟫}) l1)
+      l2  :  (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn))
+           ≤ ⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫) + ⟪ a1 ⟫
+      l2  = subst
+               (_≤_ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)))
+               (sym $ +-assoc {n₁ = ⟪ a2 ⟫} {n₂ = (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫)} {n₃ = ⟪ a1 ⟫})
+               (+-≤-cong (z≤n {n = ⟪ a2 ⟫}) l1a)
+      l3  :        ⟪ a1 ⟫ +  ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)
+            ≤ suc (⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫) + ⟪ a1 ⟫)
+      l3  = +-≤-cong (z≤n {n = 1}) l2
+      l4  :   csn-to-nat₀ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)) csn
+            ≤ csn-to-nat₀ (suc (⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫) + ⟪ a1 ⟫)) csn
+      l4  = csn-decr l3 csn
+      l5  :   (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)      + csn-to-nat₀ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)) csn)
+            ≤ ((⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫) + ⟪ a1 ⟫ + csn-to-nat₀ (suc (⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫) + ⟪ a1 ⟫)) csn)
+      l5  = +-≤-cong l1a l4
+      l6  :   ⟪ a2 ⟫ + ((⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)  + csn-to-nat₀ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)) csn))
+            ≤ ⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫) + ⟪ a1 ⟫       + csn-to-nat₀ (suc (⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫) + ⟪ a1 ⟫)) csn
+      l6 = subst
+                (_≤_ (⟪ a2 ⟫ + ((⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)  + csn-to-nat₀ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)) csn))))
+                (sym $ +-assoc {n₁ = ⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫)} {n₂ = ⟪ a1 ⟫} {n₃ = csn-to-nat₀ (suc (⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫) + ⟪ a1 ⟫)) csn})
+                ( (subst
+                      (_≤_ (⟪ a2 ⟫ + ((⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)  + csn-to-nat₀ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)) csn))))
+                      (sym $ +-assoc {n₁ = ⟪ a2 ⟫} {n₂ = (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫)} {n₃ = ⟪ a1 ⟫ + csn-to-nat₀ (suc (⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫) + ⟪ a1 ⟫)) csn})
+                       (+-≤-cong (≤-refl {n = ⟪ a2 ⟫})
+                         (subst
+                              (_≤_ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn) + csn-to-nat₀ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)) csn))
+                              (+-assoc {n₁ = ⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫} {n₂ = ⟪ a1 ⟫} {n₃ = csn-to-nat₀ (suc (⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫) + ⟪ a1 ⟫)) csn})
+                              l5 ))))
+    in
+      s≤s l6
 
 {-
 
@@ -964,7 +1019,7 @@ Goal: suc (⟪ a1 ⟫ + csn-to-nat₀ ⟪ a1 ⟫ csn') ≤
 -------------------------------------------------------
 -------------------------------------------------------
 -------------------------------------------------------
-
+{- AA
 -------------------------------------------------------
   postulate debuglemma : m ≤ n
   -- debuglemma = ≤-refl
@@ -1566,3 +1621,4 @@ _ = refl
 -}
 
 
+AA -}
