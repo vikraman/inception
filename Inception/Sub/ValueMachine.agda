@@ -476,8 +476,6 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     val-metric unit E ϖ csn = m-Unit 2
 
     comp-metric : (W : Comp Γ Y) → (E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → Wkn Γ E → (csn : List (ℕ × ℕ)) → TermMetric Y
-    -- comp-metric (return M) E ϖ [] = incr 2 (val-metric M E ϖ []) --incr 1 (zero-metric)
-    -- comp-metric (return M) E ϖ (x ∷ csn) = incr 2 (val-metric M E ϖ csn)
     comp-metric (return M) E ϖ csn = incr 2 (val-metric M E ϖ csn)
     comp-metric (pm {A = X} {B = Y} M W) E ϖ csn =
       let
@@ -503,8 +501,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     v̲a̲l̲-metric (v̲a̲r̲ i) E ϖ csn = incr 1 (lookup-metric i E ϖ csn)
 
     c̲o̲m̲p-metric : (W : C̲o̲m̲p Γ Y) → (E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → Wkn Γ E → (csn : List (ℕ × ℕ)) → TermMetric Y
-    c̲o̲m̲p-metric (r̲e̲t̲u̲r̲n̲ M) E ϖ [] = incr 1 (v̲a̲l̲-metric M E ϖ []) -- zero-metric -- halting state
-    c̲o̲m̲p-metric (r̲e̲t̲u̲r̲n̲ M) E ϖ ((cnt , w) ∷ csn) = incr 1 (v̲a̲l̲-metric M E ϖ csn)
+    c̲o̲m̲p-metric (r̲e̲t̲u̲r̲n̲ M) E ϖ csn = incr 1 (v̲a̲l̲-metric M E ϖ csn)
     c̲o̲m̲p-metric (a̲pp M N) E ϖ csn = let IH = val-metric M E ϖ csn in incr (suc ((p1 IH) + ((suc (p2 IH)) * ⟪ v̲a̲l̲-metric N E ϖ csn ⟫))) (p3 IH)
 
   mutual
