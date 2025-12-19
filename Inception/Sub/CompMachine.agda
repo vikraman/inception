@@ -645,35 +645,15 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   val-metric-decreasing = {!!}
 
   comp-metric-decreasing : {Q₁ : CompState} → {Q₂ : CompState} → (Q₁→ᶜQ₂ : Q₁ →ᶜ Q₂) → (suc (compstate-metric Q₂) ≤ (compstate-metric Q₁))
-  comp-metric-decreasing (∘return {M = M} {γ = γ} {π = π} {M' = M'} {γ' = γ'} {cs = ◻} M→M') with val-metric-decreasing M→M' []
+  comp-metric-decreasing (∘return {M = M} {γ = γ} {π = π} {M' = M'} {γ' = γ'} {cs = cs} M→M') with val-metric-decreasing M→M' (cs-to-csn cs)
   ... | x =
     let
-      a1 = +-≤-cong x (z≤n {n = zero})
+      a0 = +-≤-cong (z≤n {n = 1}) (≤-refl {n = ⟪ v̲a̲l̲-metric M' (proj₁ (env-metric γ')) (proj₂ (env-metric γ')) (cs-to-csn cs) ⟫})
+      a1 = ≤-trans x (+-≤-cong (z≤n {n = 2}) (≤-refl {n = ⟪ val-metric (wk-val π M) (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) (cs-to-csn cs) ⟫}))
+      a2 = csn-decr a1 (cs-to-csn cs)
+      a3 = ≤-trans a0 x
     in
-    s≤s (≤-trans a1 n≤sn)
-  comp-metric-decreasing (∘return {M = M} {γ = γ} {π = π} {M' = M'} {γ' = γ'} {cs = W ⊲ γ₁ ⦂⦂ cs} M→M') with val-metric-decreasing (M→M') (cs-to-csn cs)
-  ... | x =
-    let
-      a1 = ⟪ v̲a̲l̲-metric M' (proj₁ (env-metric γ')) (proj₂ (env-metric γ')) (cs-to-csn cs) ⟫
-      a2 = ⟪ val-metric (wk-val π M) (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) (cs-to-csn cs) ⟫
-      a3 = ⟪ comp-metric W (proj₁ (env-metric γ₁)) (wkn-cons (proj₂ (env-metric γ₁))) (cs-to-csn cs) ⟫
-    in
-      s≤s (s≤s {!!})
-
-{-
-
-Goal: a1 + (a3 + (count-in-comp h W + a1 * count-in-comp h W) + csn-to-nat₀ (a3 + (count-in-comp h W + a1 * count-in-comp h W)) (cs-to-csn cs))
-      ≤
-      a2 + (a3 + (count-in-comp h W + (count-in-comp h W + a2 * count-in-comp h W)) + csn-to-nat₀ (a3 + (count-in-comp h W + (count-in-comp h W + a2 * count-in-comp h W))) (cs-to-csn cs))
-
-TP :   a3 + (count-in-comp h W +                      a1 * count-in-comp h W)
-     ≤ a3 + (count-in-comp h W + (count-in-comp h W + a2 * count-in-comp h W))
-
-TP : a1 ≤ a2
-
-EASY
-
--}
+      s≤s (s≤s (+-≤-cong a3 a2))
 
   comp-metric-decreasing (∙return {X = X} {M = M} {γ = γ} {N = N} {γ' = γ'} {π = π} {cs = cs}) =
     let
