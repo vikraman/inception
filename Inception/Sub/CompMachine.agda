@@ -534,9 +534,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     comp-wke-lemma : (W : Comp Γ' X) → (E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X)))
                 → (π : Wk Γ Γ') → (ϖ : Wkn Γ E) → (ϖ' : Wkn Γ' E') → (θ : Wke π ϖ ϖ') → (csn : List (ℕ × ℕ))
                 → comp-metric W E' ϖ' csn ≡ comp-metric (wk-comp π W) E ϖ csn
-    -- comp-wke-lemma (return M) E E' π ϖ ϖ' θ [] = cong (incr 2) (val-wke-lemma M E E' π ϖ ϖ' θ []) --refl
-    -- comp-wke-lemma (return M) E E' π ϖ ϖ' θ (x ∷ csn) = cong (incr 2) (val-wke-lemma M E E' π ϖ ϖ' θ csn)
-    comp-wke-lemma (return M) E E' π ϖ ϖ' θ (x ∷ csn) = {!!} --cong (incr 2) (val-wke-lemma M E E' π ϖ ϖ' θ csn)
+    comp-wke-lemma (return M) E E' π ϖ ϖ' θ csn = cong (incr 2) (val-wke-lemma M E E' π ϖ ϖ' θ csn)
     comp-wke-lemma (pm {A = A} {B = B} M W) E E' π ϖ ϖ' θ csn
       rewrite
           val-wke-lemma M E E' π ϖ ϖ' θ csn
@@ -560,8 +558,8 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     comp-wke-lemma (sub W₁ W₂) E E' π ϖ ϖ' θ csn
       rewrite
           comp-wke-lemma W₂ E E' π ϖ ϖ' θ csn
-        --| comp-wke-lemma W₁ ((`V , (λ _ → m-V 0 ⟪ comp-metric (wk-comp π W₂) E ϖ csn ⟫ csn)) ∷ E) ((`V , (λ _ → m-V 0 ⟪ comp-metric (wk-comp π W₂) E ϖ csn ⟫ csn)) ∷ E') (wk-cong π) (wkn-cong ϖ) (wkn-cong ϖ') (wke-ccc π ϖ ϖ' (λ _ → m-V 0 ⟪ comp-metric (wk-comp π W₂) E ϖ csn ⟫ csn) θ) csn
-        = {!!} --refl
+        | comp-wke-lemma W₁ ((`V , (λ _ → m-V 0 (⟪ comp-metric (wk-comp π W₂) E ϖ csn ⟫ + csn-to-nat₀ ⟪ comp-metric (wk-comp π W₂) E ϖ csn ⟫ csn))) ∷ E) ((`V , (λ _ → m-V 0 (⟪ comp-metric (wk-comp π W₂) E ϖ csn ⟫ + csn-to-nat₀ ⟪ comp-metric (wk-comp π W₂) E ϖ csn ⟫ csn))) ∷ E') (wk-cong π) (wkn-cong ϖ) (wkn-cong ϖ') (wke-ccc π ϖ ϖ' (λ _ → m-V 0 (⟪ comp-metric (wk-comp π W₂) E ϖ csn ⟫ + csn-to-nat₀ ⟪ comp-metric (wk-comp π W₂) E ϖ csn ⟫ csn)) θ) csn
+        = refl
 
   v̲a̲l̲-wke-lemma : (M : V̲a̲l̲ Γ' X) → (E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X)))
               → (π : Wk Γ Γ') → (ϖ : Wkn Γ E) → (ϖ' : Wkn Γ' E') → (θ : Wke π ϖ ϖ') → (csn : List (ℕ × ℕ))
@@ -893,7 +891,7 @@ seems easy
 -------------------------------------------------------
 -------------------------------------------------------
 -------------------------------------------------------
-
+{- AA
 -------------------------------------------------------
   postulate debuglemma : m ≤ n
   -- debuglemma = ≤-refl
@@ -1493,3 +1491,6 @@ _ = refl
 -- Goal: csn-to-nat₀ (suc n₂) csn₂ ≤ suc (fst + n₁ * zero + csn-to-nat₀ (suc (fst + n₁ * zero)) csn₁)
 -- Goal: csn-to-nat₀       9    [] ≤ suc (  9 + n₁ * zero + csn-to-nat₀ (suc (fst + n₁ * zero)) csn₁)
 -}
+
+
+AA -}
