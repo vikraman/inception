@@ -97,6 +97,12 @@ n≤n+m : n ≤ n + m
 n≤n+m {n = zero} {m = m} = z≤n
 n≤n+m {n = suc n} {m = m} = s≤s n≤n+m
 
+n*sm≡n+n*m : (n : ℕ) → (m : ℕ) → n * suc m ≡ n + n * m
+n*sm≡n+n*m n m rewrite *-comm {n = n} {m = suc m} | *-comm {n = n} {m = m} = refl
+
+n*sm≡n+m*n : (n : ℕ) → (m : ℕ) → n * suc m ≡ n + m * n
+n*sm≡n+m*n n m rewrite *-comm {n = n} {m = suc m} = refl
+
 -----------------------------------------------------
 
 module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where

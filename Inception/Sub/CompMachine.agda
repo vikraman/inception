@@ -2,10 +2,10 @@ module Inception.Sub.CompMachine (R : Set) where
 
 open import Data.Product using (proj₁; proj₂; _,_; <_,_>; curry; _×_; Σ; ∃; Σ-syntax; ∃-syntax)
 open import Data.Sum using (_⊎_; inj₁; inj₂)
-open import Function.Base using (_∘_)
+open import Function.Base using (_∘_; _$_)
 
 import Relation.Binary.PropositionalEquality as Eq
-open Eq using (_≡_; refl; cong; cong₂; sym; trans)
+open Eq using (_≡_; refl; cong; cong₂; sym; trans; subst)
 open Eq.≡-Reasoning using (step-≡-⟩; step-≡-∣; step-≡-⟨; _∎; step-≡)
 
 open import Relation.Binary.Reasoning.Syntax
@@ -733,16 +733,32 @@ Goal:   suc (vx (val-metric M ((X , nm) ∷ E) (Wkn.wkn-cong ϖ) csn) + ⟪ comp
       ϖ = proj₂ EW
       ϖ' = proj₂ EW'
       csn = cs-to-csn cs
+      ----------------------------------------------------------------
+      a0 = ⟪ comp-metric N E' (Wkn.wkn-cons ϖ') csn ⟫
+      a1 = ⟪ comp-metric (wk-comp (wk-cong π) N) ((X , v̲a̲l̲-metric M E ϖ) ∷ E) (Wkn.wkn-cong ϖ) csn ⟫
+      b1 = ⟪ v̲a̲l̲-metric M E ϖ ((count-in-comp h N , a0) ∷ csn) ⟫
+      ----------------------------------------------------------------
+      postulate l1 : a1 ≤ a0
+      ----------------------------------------------------------------
+      l2 : a1 ≤ a0 + suc (count-in-comp h N + b1 * suc (count-in-comp h N))
+      l2 = ≤-trans l1 (n≤n+m {n = a0} {m = (suc (count-in-comp h N + b1 * suc (count-in-comp h N)))})
+      l3 : csn-to-nat₀ a1 csn ≤ csn-to-nat₀ (a0 + suc (count-in-comp h N + b1 * suc (count-in-comp h N))) csn
+      l3 = csn-decr l2 csn
+      l4 :        a1 + (csn-to-nat₀ a1 csn)
+           ≤      b1 + ((a0 + suc (count-in-comp h N + b1 * suc (count-in-comp h N)))
+               + (csn-to-nat₀ (a0 + suc (count-in-comp h N + b1 * suc (count-in-comp h N))) csn))
+      l4 = +-≤-cong (z≤n {n = b1}) (+-≤-cong l2 l3)
     in
-      {!!}
+      s≤s l4
 {-
 a0 = ⟪ comp-metric N E' (Wkn.wkn-cons ϖ') csn ⟫
 a1 = ⟪ comp-metric (wk-comp (wk-cong π) N) ((X , v̲a̲l̲-metric M E ϖ) ∷ E) (Wkn.wkn-cong ϖ) csn ⟫
 b1 = ⟪ v̲a̲l̲-metric M E ϖ ((count-in-comp h N , a0) ∷ csn) ⟫
 
-Goal: suc a1 + csn-to-nat₀ a1 csn
+Goal:     suc (a1 + csn-to-nat₀ a1 csn)
       ≤
-      suc (b1 + (a0 + suc (count-in-comp h N + * suc (count-in-comp h N)) + csn-to-nat₀ (a0 + suc (count-in-comp h N + b1 * suc (count-in-comp h N))) csn))
+          suc (b1 + (a0 + suc (count-in-comp h N + b1 * suc (count-in-comp h N))
+      + csn-to-nat₀ (a0 + suc (count-in-comp h N + b1 * suc (count-in-comp h N))) csn))
 -}
 
   comp-metric-decreasing (∘push {X = X} {M = M} {N = N} {γ = γ} {cs = cs} {πₓ = πₓ} {wk≡ₓ = wk≡ₓ} {wk≡ = wk≡}) =
@@ -751,16 +767,56 @@ Goal: suc a1 + csn-to-nat₀ a1 csn
       E = proj₁ EW
       ϖ = proj₂ EW
       csn = cs-to-csn cs
+      ----------------------------------------------------------------
+      a1 = comp-metric N E (Wkn.wkn-cons ϖ) csn
+      a2 = comp-metric M E ϖ ((count-in-comp h N , ⟪ a1 ⟫) ∷ csn)
+      ----------------------------------------------------------------
+      l1  : ⟪ a2 ⟫ * suc (count-in-comp h N) ≤ ⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫
+      l1  = subst (λ x → _≤_ x (⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫)) (sym (n*sm≡n+m*n ⟪ a2 ⟫ (count-in-comp h N))) ≤-refl
+      l1a :   ⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N)
+           ≤ (⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫) + ⟪ a1 ⟫
+      l1a = subst
+               (_≤_ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N)))
+               (+-comm {n = ⟪ a1 ⟫} {m = (⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫)})
+               (+-≤-cong (≤-refl {n = ⟪ a1 ⟫}) l1)
+      l2  :  (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N))
+           ≤ ⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫) + ⟪ a1 ⟫
+      l2  = subst
+               (_≤_ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N)))
+               (sym $ +-assoc {n₁ = ⟪ a2 ⟫} {n₂ = (⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫)} {n₃ = ⟪ a1 ⟫})
+               (+-≤-cong (z≤n {n = ⟪ a2 ⟫}) l1a)
+      l3  :        ⟪ a1 ⟫ +  ⟪ a2 ⟫ * suc (count-in-comp h N)
+            ≤ suc (⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫) + ⟪ a1 ⟫)
+      l3  = +-≤-cong (z≤n {n = 1}) l2
+      l4  :   csn-to-nat₀ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N)) csn
+            ≤ csn-to-nat₀ (suc (⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫) + ⟪ a1 ⟫)) csn
+      l4  = csn-decr l3 csn
+      l5  :   (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N)      + csn-to-nat₀ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N)) csn)
+            ≤ ((⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫) + ⟪ a1 ⟫ + csn-to-nat₀ (suc (⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫) + ⟪ a1 ⟫)) csn)
+      l5  = +-≤-cong l1a l4
+      l6  :   ⟪ a2 ⟫ + ((⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N)  + csn-to-nat₀ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N)) csn))
+            ≤ ⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫) + ⟪ a1 ⟫       + csn-to-nat₀ (suc (⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫) + ⟪ a1 ⟫)) csn
+      l6 = subst
+                (_≤_ (⟪ a2 ⟫ + ((⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N)  + csn-to-nat₀ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N)) csn))))
+                (sym $ +-assoc {n₁ = ⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫)} {n₂ = ⟪ a1 ⟫} {n₃ = csn-to-nat₀ (suc (⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫) + ⟪ a1 ⟫)) csn})
+                ( (subst
+                      (_≤_ (⟪ a2 ⟫ + ((⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N)  + csn-to-nat₀ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N)) csn))))
+                      (sym $ +-assoc {n₁ = ⟪ a2 ⟫} {n₂ = (⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫)} {n₃ = ⟪ a1 ⟫ + csn-to-nat₀ (suc (⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫) + ⟪ a1 ⟫)) csn})
+                       (+-≤-cong (≤-refl {n = ⟪ a2 ⟫})
+                         (subst
+                              (_≤_ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N) + csn-to-nat₀ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N)) csn))
+                              (+-assoc {n₁ = ⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫} {n₂ = ⟪ a1 ⟫} {n₃ = csn-to-nat₀ (suc (⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫) + ⟪ a1 ⟫)) csn})
+                              l5 ))))
     in
-      {! !}
+      s≤s l6
 
 {-
 
 a1 = comp-metric N E (Wkn.wkn-cons ϖ) csn
 a2 = comp-metric M E ϖ ((count-in-comp h N , ⟪ a1 ⟫) ∷ csn)
 
-Goal:           suc (⟪ a2 ⟫ + (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N)
-      + csn-to-nat₀ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N)) csn))
+Goal:   suc (                      ⟪ a2 ⟫ + (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N)
+      +   csn-to-nat₀ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N)) csn))
       ≤
                      suc (⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫) + ⟪ a1 ⟫
       + csn-to-nat₀ (suc (⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫) + ⟪ a1 ⟫)) csn)
