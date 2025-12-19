@@ -575,41 +575,32 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
 -------------------------------------------------------------------------------------------------
 
-{-
   mutual
     fun-val-lemma : (M : Val (Γ ∙ X) Y) → (nm : (List (ℕ × ℕ) → TermMetric X)) → (E : List (Σ[ Z ∈ Ty ] (List (ℕ × ℕ) → TermMetric Z))) → (ϖ : Wkn Γ E) → (csn : List (ℕ × ℕ)) → ⟪ val-metric M ((X , nm) ∷ E) (wkn-cong ϖ) csn ⟫ ≡ count-in-val h M * ⟪ nm csn ⟫ + ⟪ val-metric M E (wkn-cons ϖ) csn ⟫
     fun-val-lemma {X = X} {Y = Y} M nm E ϖ csn = {!!}
 
     fun-comp-lemma :   (W : Comp (Γ ∙ X) Y) → (nm : (List (ℕ × ℕ) → TermMetric X)) → (E : List (Σ[ Z ∈ Ty ] (List (ℕ × ℕ) → TermMetric Z))) → (ϖ : Wkn Γ E) → (csn : List (ℕ × ℕ))
                      → ⟪ comp-metric W ((X , nm) ∷ E) (wkn-cong ϖ) csn ⟫ ≡ count-in-comp h W * ⟪ nm csn ⟫ + ⟪ comp-metric W E (wkn-cons ϖ) csn ⟫
-    fun-comp-lemma {X = X} {Y = Y} (return M) nm E ϖ [] =
-                                let
-                                  a1 = fun-val-lemma M nm E ϖ []
-                                in
-                                ⟪ comp-metric (return M) ((X , nm) ∷ E) (wkn-cong ϖ) [] ⟫
-                                ≡⟨ refl ⟩
-                                  2+ ⟪ val-metric M ((X , nm) ∷ E) (Wkn.wkn-cong ϖ) [] ⟫
-                                ≡⟨ {!!} ⟩ -- EASY
-                                  count-in-val h M * ⟪ nm [] ⟫ + 2+ ⟪ val-metric M E (Wkn.wkn-cons ϖ) [] ⟫
-                                ≡⟨ refl ⟩
-                                count-in-comp h (return M) * ⟪ nm [] ⟫ + ⟪ comp-metric (return M) E (wkn-cons ϖ) [] ⟫ ∎
-    fun-comp-lemma {X = X} {Y = Y} (return M) nm E ϖ (x ∷ csn) =
-      let
-        a1 = fun-val-lemma M nm E ϖ csn
-      in
-      ⟪ comp-metric (return M) ((X , nm) ∷ E) (wkn-cong ϖ) (x ∷ csn) ⟫
-      ≡⟨ refl ⟩
-         2+ ⟪ val-metric M ((X , nm) ∷ E) (Wkn.wkn-cong ϖ) csn ⟫
-      ≡⟨ {!!} ⟩
-         count-in-val h M * ⟪ nm (x ∷ csn) ⟫ + 2+ ⟪ val-metric M E (Wkn.wkn-cons ϖ) csn ⟫
-      ≡⟨ refl ⟩
-         count-in-comp h (return M) * ⟪ nm (x ∷ csn) ⟫ + ⟪ comp-metric (return M) E (wkn-cons ϖ) (x ∷ csn) ⟫ ∎
-    fun-comp-lemma (pm M W) nm E ϖ csn = {!!}
+    fun-comp-lemma {X = X} {Y = Y} (return M) nm E ϖ csn rewrite
+        +-comm {n = count-in-val h M * ⟪ nm csn ⟫} {m = 2+ ⟪ val-metric M E (wkn-cons ϖ) csn ⟫}
+      | +-comm {n = ⟪ val-metric M E (wkn-cons ϖ) csn ⟫} {m = count-in-val h M * ⟪ nm csn ⟫}
+      | fun-val-lemma M nm E ϖ csn
+      = refl
+    fun-comp-lemma {X = X} (pm {A = A} {B = B} M W) nm E ϖ csn =
+        let
+          a1 = fun-comp-lemma W {!nm!} E (Wkn.wkn-cons (Wkn.wkn-cons ϖ)) csn
+        in
+        ⟪ comp-metric (pm M W) ((X , nm) ∷ E) (wkn-cong ϖ) csn ⟫
+        ≡⟨ refl ⟩
+           suc (vx (val-metric M ((X , nm) ∷ E) (Wkn.wkn-cong ϖ) csn)                                                  + ⟪ comp-metric W ((X , nm) ∷ E) (Wkn.wkn-cons (Wkn.wkn-cons (Wkn.wkn-cong ϖ))) csn ⟫ + ⟪ comp-metric W ((B , (λ c → rhs (val-metric M ((X , nm) ∷ E) (Wkn.wkn-cong ϖ) c))) ∷ (A , (λ c → lhs (val-metric M ((X , nm) ∷ E) (Wkn.wkn-cong ϖ) c))) ∷ (X , nm) ∷ E) (Wkn.wkn-cong (Wkn.wkn-cong (Wkn.wkn-cong ϖ))) csn ⟫)
+        ≡⟨ {!!} ⟩
+           (count-in-val h M + count-in-comp (t (t h)) W) * ⟪ nm csn ⟫ + suc (vx (val-metric M E (Wkn.wkn-cons ϖ) csn) + ⟪ comp-metric W E (Wkn.wkn-cons (Wkn.wkn-cons (Wkn.wkn-cons ϖ))) csn ⟫              + ⟪ comp-metric W ((B , (λ c → rhs (val-metric M E (Wkn.wkn-cons ϖ) c))) ∷ (A , (λ c → lhs (val-metric M E (Wkn.wkn-cons ϖ) c))) ∷ E) (Wkn.wkn-cong (Wkn.wkn-cong (Wkn.wkn-cons ϖ))) csn ⟫)
+        ≡⟨ refl ⟩
+         count-in-comp h (pm M W) * ⟪ nm csn ⟫ + ⟪ comp-metric (pm M W) E (wkn-cons ϖ) csn ⟫ ∎
     fun-comp-lemma (push W₁ W₂) nm E ϖ csn = {!!}
     fun-comp-lemma (app M N) nm E ϖ csn = {!!}
     fun-comp-lemma (var M) nm E ϖ csn = {!!}
     fun-comp-lemma (sub W₁ W₂) nm E ϖ csn = {!!}
-    -}
 
 -------------------------------------------------------------------------------------------------
 
@@ -657,12 +648,34 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   comp-metric-decreasing (∙return {X = X} {M = M} {γ = γ} {N = N} {γ' = γ'} {π = π} {cs = cs}) =
     let
-      a1 = comp-metric (wk-comp (wk-cong π) N) ((X , v̲a̲l̲-metric M (proj₁ (env-metric γ)) (proj₂ (env-metric γ))) ∷ proj₁ (env-metric γ)) (wkn-cong (proj₂ (env-metric γ))) (cs-to-csn cs)
-      a2 = v̲a̲l̲-metric M (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) ((count-in-comp h N , ⟪ comp-metric N (proj₁ (env-metric γ')) (wkn-cons (proj₂ (env-metric γ'))) (cs-to-csn cs) ⟫) ∷ cs-to-csn cs)
-      a3 = comp-metric N (proj₁ (env-metric γ')) (wkn-cons (proj₂ (env-metric γ'))) (cs-to-csn cs)
-      a4 = v̲a̲l̲-metric M (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) (cs-to-csn cs)
+      -- a1 = comp-metric (wk-comp (wk-cong π) N) ((X , v̲a̲l̲-metric M (proj₁ (env-metric γ)) (proj₂ (env-metric γ))) ∷ proj₁ (env-metric γ)) (wkn-cong (proj₂ (env-metric γ))) (cs-to-csn cs)
+      -- a2 = v̲a̲l̲-metric M (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) ((count-in-comp h N , ⟪ comp-metric N (proj₁ (env-metric γ')) (wkn-cons (proj₂ (env-metric γ'))) (cs-to-csn cs) ⟫) ∷ cs-to-csn cs)
+      -- a3 = comp-metric N (proj₁ (env-metric γ')) (wkn-cons (proj₂ (env-metric γ'))) (cs-to-csn cs)
+      -- a4 = v̲a̲l̲-metric M (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) (cs-to-csn cs)
+      EW  = (env-metric γ)
+      EW' = (env-metric γ')
+      E = proj₁ EW
+      E' = proj₁ EW'
+      ϖ = proj₂ EW
+      ϖ' = proj₂ EW'
+      csn = cs-to-csn cs
     in
       {!!}
+{-
+
+Goal:         suc (⟪ comp-metric (wk-comp (wk-cong π) N) ((X , v̲a̲l̲-metric M E ϖ) ∷ E) (Wkn.wkn-cong ϖ) csn ⟫ +
+       csn-to-nat₀ ⟪ comp-metric (wk-comp (wk-cong π) N) ((X , v̲a̲l̲-metric M E ϖ) ∷ E) (Wkn.wkn-cong ϖ) csn ⟫ csn)
+      ≤
+          suc (⟪ v̲a̲l̲-metric M E ϖ ((count-in-comp h N , ⟪ comp-metric N E' (Wkn.wkn-cons ϖ') csn ⟫) ∷ csn) ⟫ + (⟪ comp-metric N E' (Wkn.wkn-cons ϖ') csn ⟫ + suc (count-in-comp h N + ⟪ v̲a̲l̲-metric M E ϖ ((count-in-comp h N , ⟪ comp-metric N E' (Wkn.wkn-cons ϖ') csn ⟫) ∷ csn) ⟫ * suc (count-in-comp h N))
++ csn-to-nat₀ (                                                                                                 ⟪ comp-metric N E' (Wkn.wkn-cons ϖ') csn ⟫ + suc (count-in-comp h N + ⟪ v̲a̲l̲-metric M E ϖ ((count-in-comp h N , ⟪ comp-metric N E' (Wkn.wkn-cons ϖ') csn ⟫) ∷ csn) ⟫ * suc (count-in-comp h N))) csn))
+-}
+
+{-
+Goal: suc (⟪ comp-metric (wk-comp (wk-cong π) N) ((X , v̲a̲l̲-metric M (proj₁ (env-metric γ)) (proj₂ (env-metric γ))) ∷ proj₁ (env-metric γ)) (Wkn.wkn-cong (proj₂ (env-metric γ))) (cs-to-csn cs) ⟫ + csn-to-nat₀ ⟪comp-metric (wk-comp (wk-cong π) N) ((X , v̲a̲l̲-metric M (proj₁ (env-metric γ)) (proj₂ (env-metric γ))) ∷ proj₁ (env-metric γ)) (Wkn.wkn-cong (proj₂ (env-metric γ))) (cs-to-csn cs) ⟫ (cs-to-csn cs))
+      ≤
+      suc (⟪ v̲a̲l̲-metric M (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) ((count-in-comp h N , ⟪ comp-metric N (proj₁ (env-metric γ')) (Wkn.wkn-cons (proj₂ (env-metric γ'))) (cs-to-csn cs) ⟫) ∷ cs-to-csn cs) ⟫ + (⟪ comp-metric N (proj₁ (env-metric γ')) (Wkn.wkn-cons (proj₂ (env-metric γ'))) (cs-to-csn cs) ⟫ + suc (count-in-comp h N + ⟪ v̲a̲l̲-metric M (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) ((count-in-comp h N , ⟪ comp-metric N (proj₁ (env-metric γ')) (Wkn.wkn-cons (proj₂ (env-metric γ'))) (cs-to-csn cs) ⟫) ∷ cs-to-csn cs) ⟫ * suc (count-in-comp h N)) + csn-to-nat₀ (⟪ comp-metric N (proj₁ (env-metric γ')) (Wkn.wkn-cons (proj₂ (env-metric γ'))) (cs-to-csn cs) ⟫ + suc (count-in-comp h N + ⟪ v̲a̲l̲-metric M (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) ((count-in-comp h N , ⟪ comp-metric N (proj₁ (env-metric γ')) (Wkn.wkn-cons (proj₂ (env-metric γ'))) (cs-to-csn cs) ⟫) ∷ cs-to-csn cs) ⟫ * suc (count-in-comp h N))) (cs-to-csn cs)))
+-}
+
 
 {-
    suc (⟪ comp-metric (wk-comp (wk-cong π) N) ((X , v̲a̲l̲-metric M (proj₁ (env-metric γ)) (proj₂ (env-metric γ))) ∷ proj₁ (env-metric γ)) (wkn-cong (proj₂ (env-metric γ))) (cs-to-csn cs) ⟫ + csn-to-nat₀ ⟪ comp-metric (wk-comp (wk-cong π) N) ((X , v̲a̲l̲-metric M (proj₁ (env-metric γ)) (proj₂ (env-metric γ))) ∷ proj₁ (env-metric γ)) (wkn-cong (proj₂ (env-metric γ))) (cs-to-csn cs) ⟫ (cs-to-csn cs))
