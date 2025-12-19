@@ -4,7 +4,7 @@ open import Data.Product using (proj₁; proj₂; _,_; <_,_>; curry; _×_; Σ; �
 open import Function.Base using (const)
 
 import Relation.Binary.PropositionalEquality as Eq
-open Eq using (_≡_; refl; cong; sym; trans)
+open Eq using (_≡_; refl; cong; sym; trans; subst)
 open Eq.≡-Reasoning
 
 open import Inception.Sub.Syntax
@@ -92,6 +92,10 @@ snm {n = suc n} {m = m} = cong suc snm
 *-≤-cong z≤n (s≤s n₂≤n₄) = z≤n
 *-≤-cong (s≤s {m = m} n₁≤n₃) z≤n rewrite *-comm {n = m} {m = zero} = z≤n
 *-≤-cong (s≤s n₁≤n₃) (s≤s n₂≤n₄) = s≤s (+-≤-cong n₂≤n₄ (*-≤-cong n₁≤n₃ (s≤s n₂≤n₄)))
+
+n≤n+m : n ≤ n + m
+n≤n+m {n = zero} {m = m} = z≤n
+n≤n+m {n = suc n} {m = m} = s≤s n≤n+m
 
 -----------------------------------------------------
 
@@ -360,7 +364,24 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       le1 = +-≤-cong (≤-refl {n = proj₂ x}) (s≤s (+-≤-cong (≤-refl {n = proj₁ x}) (*-≤-cong n₁≤n₂ (s≤s (≤-refl {n = proj₁ x})))))
     in
       +-≤-cong le1 (csn-decr le1 csn)
-    --let le1 = +-≤-cong (≤-refl {n = proj₂ x}) (+-≤-cong (≤-refl {n = proj₁ x}) (*-≤-cong n₁≤n₂ (≤-refl {n = proj₁ x}))) in +-≤-cong le1 (csn-decr le1 csn)
+
+  csn-len-decr : (n₀ : ℕ) → (n×m : ℕ × ℕ) → (csn : List (ℕ × ℕ)) → csn-to-nat₀ n₀ csn ≤ csn-to-nat₀ n₀ (n×m ∷ csn)
+  csn-len-decr n₀ n×m [] = z≤n
+  csn-len-decr n₀ n×m (n×m' ∷ csn) =
+    let
+      b0 : n₀ ≤ n₀ + 0
+      b0 = subst (_≤_ n₀) (+-comm {n = 0} {m = n₀}) ≤-refl
+      b1 : n₀ ≤ n₀ * 1
+      b1 = subst (_≤_ n₀) (*-comm {n = 1} {m = n₀}) b0
+      a0 = ≤-trans b1 (*-≤-cong (≤-refl {n = n₀}) ((+-≤-cong (≤-refl {n = 1}) (z≤n {n = proj₁ n×m}))))
+      a1 = +-≤-cong (z≤n {n = proj₂ n×m}) a0
+      a2 = *-≤-cong a1 (≤-refl {n = suc (proj₁ n×m')})
+      a3 = +-≤-cong (≤-refl {n = proj₂ n×m'}) a2
+      c1 = csn-decr a3 csn
+      d1 = +-≤-cong (+-≤-cong (≤-refl {n = proj₂ n×m'}) a2) c1
+      d2 = (+-≤-cong (z≤n {n = proj₂ n×m + n₀ * suc (proj₁ n×m)}) d1)
+    in
+    d2
 
   ⟪_⟫ : TermMetric X → ℕ
   ⟪ m-Unit m ⟫ = m

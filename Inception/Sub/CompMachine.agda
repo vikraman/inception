@@ -1428,6 +1428,7 @@ ex15 = push (push (app (lam {A = `Unit} (sub (var (var h)) (return unit))) unit)
 
 --  88 ∷ 347 ∷ 102 ∷ 100 ∷ 96 ∷ 91 ∷ 46 ∷ 44 ∷ 42 ∷ 32 ∷ 26 ∷ 14 ∷ 4 ∷ 2 ∷ []
 -- 304 ∷ 347 ∷ 102 ∷ 100 ∷ 96 ∷ 91 ∷ 46 ∷ 44 ∷ 42 ∷ 32 ∷ 26 ∷ 14 ∷ 4 ∷ 2 ∷ []
+-- 1109 ∷ 1108 ∷ 662 ∷ 648 ∷ 620 ∷ 585 ∷ 74 ∷ 60 ∷ 46 ∷ 34 ∷ 26 ∷ 14 ∷ 4 ∷ 2 ∷ []
 _ : comp-eval-test-metric ex11 ≡ {! comp-eval-test-metric ex14 !}
 _ = let
       tm = push (push (app (lam {A = `Unit} (sub (var (var h)) (return unit))) unit) (return unit)) (app (lam (return unit)) (pair (pair (pair (var h) (var h)) (var h)) (var h)))
