@@ -368,6 +368,8 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
 ---------------------------------------------------------------------------------------------
 
+  {- MAYBE UNNECCESSARY
+
   mutual
 
     postulate wk-val-count-eq :   (π : Wk Γ Γ') → (i : Γ' ∋ Y) → (M : Val Γ' X)
@@ -474,6 +476,18 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     wk-comp-count-eq π i (sub W₁ W₂) = cong₂ _+_ (wk-comp-count-eq (wk-cong π) (t i) W₁) (wk-comp-count-eq π i W₂)
   -}
 
+  -}
+
+---------------------------------------------------------------------------------------------
+
+  postulate wke-val-count-lemma : (i : Γ' ∋ Y) → (M : Val Γ' X) → (E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X)))
+              → (π : Wk Γ Γ') → (ϖ : Wkn Γ E) → (ϖ' : Wkn Γ' E') → (θ : Wke π ϖ ϖ') → (csn : List (ℕ × ℕ))
+              → count-in-val i M E' ϖ' csn ≡ count-in-val (wk-mem π i) (wk-val π M) E ϖ csn
+
+  postulate wke-comp-count-lemma : (i : Γ' ∋ Y) → (W : Comp Γ' X) → (E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X)))
+              → (π : Wk Γ Γ') → (ϖ : Wkn Γ E) → (ϖ' : Wkn Γ' E') → (θ : Wke π ϖ ϖ') → (csn : List (ℕ × ℕ))
+              → count-in-comp i W E' ϖ' csn ≡ count-in-comp (wk-mem π i) (wk-comp π W) E ϖ csn
+
 ---------------------------------------------------------------------------------------------
 
   wke-z-l : {e : (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))} {E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))} {π : Wk Γ Γ'} {ϖ : Wkn Γ []} {ϖ' : Wkn Γ' (e ∷ E')}
@@ -531,8 +545,9 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     val-wke-lemma (lam W) E E' π ϖ ϖ' θ csn
       rewrite
           comp-wke-lemma W E E' (wk-cong π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-cww π ϖ ϖ' θ) csn
-        | wk-comp-count-eq (wk-cong π) h W E' (wkn-cons ϖ') csn
-        = {!!} --refl
+        --| wk-comp-count-eq (wk-cong π) h W E' (wkn-cons ϖ') csn
+        | wke-comp-count-lemma h W E E' (wk-cong π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-cww π ϖ ϖ' θ) csn
+        = refl
     val-wke-lemma (pair M₁ M₂) E E' π ϖ ϖ' θ csn rewrite val-wke-lemma M₁ E E' π ϖ ϖ' θ csn | val-wke-lemma M₂ E E' π ϖ ϖ' θ csn = refl
     val-wke-lemma (pm {A = A} {B = B} M N) E E' π ϖ ϖ' θ csn
       rewrite
@@ -560,8 +575,9 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       rewrite
           comp-wke-lemma W₂ E E' (wk-cong π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-cww π ϖ ϖ' θ) csn
         | comp-wke-lemma W₁ E E' π ϖ ϖ' θ (((count-in-comp h W₂ E' (wkn-cons ϖ') csn , ⟪ comp-metric (wk-comp (wk-cong π) W₂) E (wkn-cons ϖ) csn ⟫) ∷ csn))
-        | wk-comp-count-eq (wk-cong π) h W₂ E' (wkn-cons ϖ') csn
-        = {!!} --refl
+        --| wk-comp-count-eq (wk-cong π) h W₂ E' (wkn-cons ϖ') csn
+        | wke-comp-count-lemma h W₂ E E' (wk-cong π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-cww π ϖ ϖ' θ) csn
+        = refl
     comp-wke-lemma (app M N) E E' π ϖ ϖ' θ csn
       rewrite
           val-wke-lemma M E E' π ϖ ϖ' θ csn
@@ -580,8 +596,9 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   v̲a̲l̲-wke-lemma (l̲a̲m̲ W) E E' π ϖ ϖ' θ csn
       rewrite
           comp-wke-lemma W E E' (wk-cong π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-cww π ϖ ϖ' θ) csn
-        | wk-comp-count-eq (wk-cong π) h W E' (wkn-cons ϖ') csn
-        = {!!} --refl
+        --| wk-comp-count-eq (wk-cong π) h W E' (wkn-cons ϖ') csn
+        | wke-comp-count-lemma h W E E' (wk-cong π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-cww π ϖ ϖ' θ) csn
+        = refl
   v̲a̲l̲-wke-lemma (pa̲i̲r̲ M₁ M₂) E E' π ϖ ϖ' θ csn rewrite v̲a̲l̲-wke-lemma M₁ E E' π ϖ ϖ' θ csn | v̲a̲l̲-wke-lemma M₂ E E' π ϖ ϖ' θ csn = refl
   v̲a̲l̲-wke-lemma u̲n̲i̲t̲ E E' π ϖ ϖ' θ csn = refl
   v̲a̲l̲-wke-lemma (v̲a̲r̲ i) E E' π ϖ ϖ' θ csn = cong (incr 1) (lookup-wke-lemma i E E' π ϖ ϖ' θ csn)
