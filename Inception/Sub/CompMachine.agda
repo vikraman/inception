@@ -260,7 +260,8 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   ≤ᴹ⇒≤ : {nm₁ nm₂ : TermMetric X} → (nm₁ ≤ᴹ nm₂) → (⟪ nm₁ ⟫ ≤ ⟪ nm₂ ⟫)
   ≤ᴹ⇒≤ (≤-Unit n₁≤n₂) = n₁≤n₂
-  ≤ᴹ⇒≤ (≤-V n₁≤n₂ w₁≤w₂ c₁≤c₂) = +-≤-cong (+-≤-cong n₁≤n₂ w₁≤w₂) (≤ᶜˢⁿ-decr w₁≤w₂ c₁≤c₂)
+  --≤ᴹ⇒≤ (≤-V n₁≤n₂ w₁≤w₂ c₁≤c₂) = +-≤-cong (+-≤-cong n₁≤n₂ w₁≤w₂) (≤ᶜˢⁿ-decr w₁≤w₂ c₁≤c₂)
+  ≤ᴹ⇒≤ (≤-V n₁≤n₂ w₁≤w₂) = +-≤-cong n₁≤n₂ w₁≤w₂
   ≤ᴹ⇒≤ (≤-⇒ n₁≤n₂ nm₁≤nm₂) = +-≤-cong n₁≤n₂ (≤ᴹ⇒≤ nm₁≤nm₂)
   ≤ᴹ⇒≤ (≤-× n₁≤n₂ nm₁≤nm₃ nm₂≤nm₄) = +-≤-cong (+-≤-cong n₁≤n₂ (≤ᴹ⇒≤ nm₁≤nm₃)) (≤ᴹ⇒≤ nm₂≤nm₄)
 
@@ -559,8 +560,8 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     comp-wke-lemma (sub W₁ W₂) E E' π ϖ ϖ' θ csn
       rewrite
           comp-wke-lemma W₂ E E' π ϖ ϖ' θ csn
-        | comp-wke-lemma W₁ ((`V , (λ _ → m-V 0 ⟪ comp-metric (wk-comp π W₂) E ϖ csn ⟫ csn)) ∷ E) ((`V , (λ _ → m-V 0 ⟪ comp-metric (wk-comp π W₂) E ϖ csn ⟫ csn)) ∷ E') (wk-cong π) (wkn-cong ϖ) (wkn-cong ϖ') (wke-ccc π ϖ ϖ' (λ _ → m-V 0 ⟪ comp-metric (wk-comp π W₂) E ϖ csn ⟫ csn) θ) csn
-        = refl
+        --| comp-wke-lemma W₁ ((`V , (λ _ → m-V 0 ⟪ comp-metric (wk-comp π W₂) E ϖ csn ⟫ csn)) ∷ E) ((`V , (λ _ → m-V 0 ⟪ comp-metric (wk-comp π W₂) E ϖ csn ⟫ csn)) ∷ E') (wk-cong π) (wkn-cong ϖ) (wkn-cong ϖ') (wke-ccc π ϖ ϖ' (λ _ → m-V 0 ⟪ comp-metric (wk-comp π W₂) E ϖ csn ⟫ csn) θ) csn
+        = {!!} --refl
 
   v̲a̲l̲-wke-lemma : (M : V̲a̲l̲ Γ' X) → (E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X)))
               → (π : Wk Γ Γ') → (ϖ : Wkn Γ E) → (ϖ' : Wkn Γ' E') → (θ : Wke π ϖ ϖ') → (csn : List (ℕ × ℕ))
@@ -726,7 +727,7 @@ EASY!
 
   comp-metric-decreasing (∘sub {M = M} {N = N} {γ = γ} {cs = cs} {πₓ = πₓ} {wk≡ₓ = wk≡ₓ}) =
     let
-      a1 = comp-metric M ((`V , (λ _ → m-V 0 ⟪ comp-metric N (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) (cs-to-csn cs) ⟫ (cs-to-csn cs))) ∷ proj₁ (env-metric γ)) (wkn-cong (proj₂ (env-metric γ))) (cs-to-csn cs)
+      --a1 = comp-metric M ((`V , (λ _ → m-V 0 ⟪ comp-metric N (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) (cs-to-csn cs) ⟫ (cs-to-csn cs))) ∷ proj₁ (env-metric γ)) (wkn-cong (proj₂ (env-metric γ))) (cs-to-csn cs)
       a2 = comp-metric N (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) (cs-to-csn cs)
     in
       {!!}
