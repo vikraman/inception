@@ -626,8 +626,8 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   data LookupSteps : LookupState X → Set where
 
-    steps : {S T : LookupState X} → S →ᴸ* T → (H : LookupHaltingState T) → ⟦ S ⟧ᴸ ≡ ⟦ T ⟧ᴸ → (π : Wk (lCtx S) (lTCtx T)) → (⟦ π ⟧ʷ ⟦ lEnv S ⟧ᴱ ≡ ⟦ lTEnv T ⟧ᴱ) → (∀ (csn : List (ℕ × ℕ))
-            → lhstate-metric H csn ≤ᴹ lstate-metric S csn)
+    steps : {S T : LookupState X} → S →ᴸ* T → (H : LookupHaltingState T) → ⟦ S ⟧ᴸ ≡ ⟦ T ⟧ᴸ → (π : Wk (lCtx S) (lTCtx T)) → (⟦ π ⟧ʷ ⟦ lEnv S ⟧ᴱ ≡ ⟦ lTEnv T ⟧ᴱ)
+            → (∀ (csn : List (ℕ × ℕ)) → lhstate-metric H csn ≤ᴹ lstate-metric S csn)
             → (θ : Wke π (proj₂ (env-metric (lEnv S))) (proj₂ (env-metric (lTEnv T))))
             → LookupSteps S
   lookup : (i : Γ ∋ X) → (γ : Env Γ) → LookupSteps {X = X} ⟨ i ∥ γ ⟩
@@ -821,10 +821,48 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
       ∙_⊲_■ : (M : V̲a̲l̲ Γ X) → (γ : Env Γ) → ValHaltingState (∙ ((⭭ M ⊲ γ ∷ □) {↥ = 🗆}))
 
+  -------------------------------
+
+  botCtx : ValStack non-empty T◾ → Ctx
+  botCtx ((_⊲_∷_) {Γ = Γ} _ _ □) = Γ
+  botCtx ((x ⊲ γ ∷ ((x₁ ⊲ γ₁ ∷ xs) {↥ = ↥'})) {↥ = ↥}) = botCtx ((x₁ ⊲ γ₁ ∷ xs) {↥ = ↥'})
+
+  botEnv : (S : ValStack non-empty T◾) → Env (botCtx S)
+  botEnv ((_⊲_∷_) {Γ = Γ} _ γ □) = γ
+  botEnv ((x ⊲ γ ∷ ((x₁ ⊲ γ₁ ∷ xs) {↥ = ↥'})) {↥ = ↥}) = botEnv ((x₁ ⊲ γ₁ ∷ xs) {↥ = ↥'})
+
+  botTerm : (S : ValStack non-empty T◾) → PartialTerm (botCtx S) (T◾)
+  botTerm ((_⊲_∷_) {Γ = Γ} M γ □ {↥ = 🗆}) = M
+  botTerm ((x ⊲ γ ∷ ((x₁ ⊲ γ₁ ∷ xs) {↥ = ↥'})) {↥ = ↥}) = botTerm ((x₁ ⊲ γ₁ ∷ xs) {↥ = ↥'})
+
+  partial-term-metric : PartialTerm Γ X → (E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → Wkn Γ E → List (ℕ × ℕ) → ℕ
+  partial-term-metric (⭭ M) E ϖ csn = ⟪ v̲a̲l̲-metric M E ϖ csn ⟫
+  partial-term-metric (⇡ M) E ϖ csn = ⟪ val-metric M E ϖ csn ⟫
+  partial-term-metric (⇡ᴹ M N) E ϖ csn = ⟪ val-metric (pm M N) E ϖ csn ⟫
+  partial-term-metric (⇡ᴸ LHS RHS) E ϖ csn = ⟪ val-metric (pair LHS RHS) E ϖ csn ⟫
+  partial-term-metric (⇡ᴿ LHS RHS) E ϖ csn = ⟪ val-metric (pair (toVal LHS) RHS) E ϖ csn ⟫
+
+  valstate-metric : ValState X → List (ℕ × ℕ) → ℕ
+  valstate-metric (∘ S) csn =
+    let
+      e = env-metric (botEnv S)
+    in
+      partial-term-metric (botTerm S) (proj₁ e) (proj₂ e) csn
+  valstate-metric (∙ S) csn =
+    let
+      e = env-metric (botEnv S)
+    in
+       partial-term-metric (botTerm S) (proj₁ e) (proj₂ e) csn
+
+  -----------------------------
+
 
   data ValSteps : ValState T◾ → Set where
 
-    steps : {S T : ValState T◾} → S ↠ᵛ T → ValHaltingState T → ⟦ S ⟧ᵛꟴ ≡ ⟦ T ⟧ᵛꟴ → (π : Wk (topCtx T) (topCtx S)) → (⟦ π ⟧ʷ ⟦ topEnv T ⟧ᴱ ≡ ⟦ topEnv S ⟧ᴱ) → ValSteps S
+    steps : {S T : ValState T◾} → S ↠ᵛ T → ValHaltingState T → ⟦ S ⟧ᵛꟴ ≡ ⟦ T ⟧ᵛꟴ → (π : Wk (topCtx T) (topCtx S)) → (⟦ π ⟧ʷ ⟦ topEnv T ⟧ᴱ ≡ ⟦ topEnv S ⟧ᴱ)
+            --→ (∀ (csn : List (ℕ × ℕ)) → valstate-metric T csn ≤ᴹ valstate-metric S csn)
+            --→ (θ : Wke π (proj₂ (env-metric (topEnv S))) (proj₂ (env-metric (topEnv T))))
+            → ValSteps S
 
 
   val-eval-rec : (M : Γ' ⊢ᵛ X) → (γ : Env Γ) → (π : Wk Γ Γ') → ValSteps {T◾ = X} (∘ ((⇡ (wk-val π M) ⊲ γ ∷ □) {↥ = 🗆}))

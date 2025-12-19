@@ -204,20 +204,6 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   {-# REWRITE wk-comm-explicit #-}
 
 
-  -------------------------------
-
-  botCtx : ValStack non-empty T◾ → Ctx
-  botCtx ((_⊲_∷_) {Γ = Γ} _ _ □) = Γ
-  botCtx ((x ⊲ γ ∷ ((x₁ ⊲ γ₁ ∷ xs) {↥ = ↥'})) {↥ = ↥}) = botCtx ((x₁ ⊲ γ₁ ∷ xs) {↥ = ↥'})
-
-  botEnv : (S : ValStack non-empty T◾) → Env (botCtx S)
-  botEnv ((_⊲_∷_) {Γ = Γ} _ γ □) = γ
-  botEnv ((x ⊲ γ ∷ ((x₁ ⊲ γ₁ ∷ xs) {↥ = ↥'})) {↥ = ↥}) = botEnv ((x₁ ⊲ γ₁ ∷ xs) {↥ = ↥'})
-
-  botTerm : (S : ValStack non-empty T◾) → PartialTerm (botCtx S) (T◾)
-  botTerm ((_⊲_∷_) {Γ = Γ} M γ □ {↥ = 🗆}) = M
-  botTerm ((x ⊲ γ ∷ ((x₁ ⊲ γ₁ ∷ xs) {↥ = ↥'})) {↥ = ↥}) = botTerm ((x₁ ⊲ γ₁ ∷ xs) {↥ = ↥'})
-
 -------------------------------------------------------------------------------------------------
 
 
@@ -311,41 +297,6 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       w = ⟪ c̲o̲m̲p-metric W (proj₁ e) (proj₂ e) csn ⟫
     in
       w + csn-to-nat₀ w csn
-
-  partial-term-metric : PartialTerm Γ X → (E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → Wkn Γ E → List (ℕ × ℕ) → ℕ
-  partial-term-metric (⭭ M) E ϖ csn = ⟪ v̲a̲l̲-metric M E ϖ csn ⟫
-  partial-term-metric (⇡ M) E ϖ csn = ⟪ val-metric M E ϖ csn ⟫
-  partial-term-metric (⇡ᴹ M N) E ϖ csn = ⟪ val-metric (pm M N) E ϖ csn ⟫
-  partial-term-metric (⇡ᴸ LHS RHS) E ϖ csn = ⟪ val-metric (pair LHS RHS) E ϖ csn ⟫
-  partial-term-metric (⇡ᴿ LHS RHS) E ϖ csn = ⟪ val-metric (pair (toVal LHS) RHS) E ϖ csn ⟫
-
-{-
-  valstate-metric : ValState X → ℕ → List (ℕ × ℕ) → ℕ
-  valstate-metric (∘ S) w csn =
-    let
-      e = env-metric (botEnv S)
-      m = partial-term-metric (botTerm S) (proj₁ e) (proj₂ e) csn
-    in
-      (w + m) + (csn-to-nat₀ (w + m) csn)
-  valstate-metric (∙ S) w csn =
-    let
-      e = env-metric (botEnv S)
-      m = partial-term-metric (botTerm S) (proj₁ e) (proj₂ e) csn
-    in
-      (w + m) + (csn-to-nat₀ (w + m) csn)
--}
-
-  valstate-metric : ValState X → List (ℕ × ℕ) → ℕ
-  valstate-metric (∘ S) csn =
-    let
-      e = env-metric (botEnv S)
-    in
-      partial-term-metric (botTerm S) (proj₁ e) (proj₂ e) csn
-  valstate-metric (∙ S) csn =
-    let
-      e = env-metric (botEnv S)
-    in
-       partial-term-metric (botTerm S) (proj₁ e) (proj₂ e) csn
 
 -------------------------------------------------------------------------------------------------
 
