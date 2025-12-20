@@ -1107,9 +1107,10 @@ a1 = val-metric (wk-val π M) E ϖ
 b1 = comp-metric (wk-comp (wk-cong (wk-cong π)) W) E (Wkn.wkn-cons (Wkn.wkn-cons ϖ)) csn
 c1 = comp-metric (wk-comp (wk-cong (wk-cong π)) W) ((Y , (λ c → rhs (a1 c))) ∷ (X , (λ c → lhs (a1 c))) ∷ E) (Wkn.wkn-cong (Wkn.wkn-cong ϖ)) csn
 
-Goal: suc (⟪ a0 ⟫ + csn-to-nat₀ ⟪ a0 ⟫ csn)
-      ≤
-      suc (vx (a1 csn) + ⟪ b1 ⟫ + ⟪ c1 ⟫ + csn-to-nat₀ (suc (vx (a1 csn) + ⟪ b1 ⟫ + ⟪ c1 ⟫)) csn)
+Goal:   suc (         ⟪ a0 ⟫
+        + csn-to-nat₀ ⟪ a0 ⟫ csn)
+      ≤                suc (vx (a1 csn) + ⟪ b1 ⟫ + ⟪ c1 ⟫
+        + csn-to-nat₀ (suc (vx (a1 csn) + ⟪ b1 ⟫ + ⟪ c1 ⟫)) csn)
 
 -}
 
@@ -1131,10 +1132,11 @@ a1 = v̲a̲l̲-metric N E ϖ
 a2 = comp-metric (wk-comp (wk-cong πᵥ) W) ((Z' , a1) ∷ E) (Wkn.wkn-cong ϖ) csn
 b1 = lookup-metric i E ϖ csn
 
-Goal: suc (⟪ a2 ⟫ + csn-to-nat₀ ⟪ a2 ⟫ csn)
+Goal:    suc (               ⟪ a2 ⟫
+               + csn-to-nat₀ ⟪ a2 ⟫ csn)
       ≤
-                     suc (p1 (incr 2 (b1)) + (⟪ a1 csn ⟫ + p2 (b1) * ⟪ a1 csn ⟫) + ⟪ (p3 (incr 2 (b1))) ⟫
-      + csn-to-nat₀ (suc (p1 (incr 2 (b1)) + (⟪ a1 csn ⟫ + p2 (b1) * ⟪ a1 csn ⟫) + ⟪ (p3 (incr 2 (b1))) ⟫ )) csn)
+                       suc (p1 (incr 2 (b1)) + (⟪ a1 csn ⟫ + p2 (b1) * ⟪ a1 csn ⟫) + ⟪ p3 (incr 2 (b1)) ⟫
+        + csn-to-nat₀ (suc (p1 (incr 2 (b1)) + (⟪ a1 csn ⟫ + p2 (b1) * ⟪ a1 csn ⟫) + ⟪ p3 (incr 2 (b1))) ⟫) csn)
 
 -}
 
@@ -1161,11 +1163,10 @@ b2 = val-metric N₁ ((Y , (λ c → rhs (b1 c))) ∷ (X , (λ c → lhs (b1 c))
 b3 = val-metric N₁ E (Wkn.wkn-cons (Wkn.wkn-cons ϖ)) csn
 b4 = v̲a̲l̲-metric N E ϖ csn
 
-Goal:                 2+ (p1 (a3) + (⟪ a4 ⟫ + p2 (a3) * ⟪ a4 ⟫) + ⟪ p3 a3 ⟫
-      + csn-to-nat₀ (suc (p1 (a3) + (⟪ a4 ⟫ + p2 (a3) * ⟪ a4 ⟫) + ⟪ p3 a3 ⟫ )) csn)
-      ≤
-                     suc (p1 (incr (suc (vx (b1 csn) + ⟪ b3 ⟫)) (b2)) + (⟪ b4 ⟫ + p2 (b2) * ⟪ b4 ⟫) + ⟪ p3 (incr (suc (vx (b1 csn) + ⟪ b3 ⟫)) b2) ⟫
-      + csn-to-nat₀ (suc (p1 (incr (suc (vx (b1 csn) + ⟪ b3 ⟫)) (b2)) + (⟪ b4 ⟫ + p2 (b2) * ⟪ b4 ⟫) + ⟪ p3 (incr (suc (vx (b1 csn) + ⟪ b3 ⟫)) b2) ⟫ )) csn)
+Goal:         2+                 (p1 (a3) + (⟪ a4 ⟫ + p2 (a3) * ⟪ a4 ⟫) + ⟪ (p3 (a3)) ⟫ 
+              + csn-to-nat₀ (suc (p1 (a3) + (⟪ a4 ⟫ + p2 (a3) * ⟪ a4 ⟫) + ⟪ (p3 (a3)) ⟫ )) csn)
+       ≤                     suc (p1 (incr (suc (vx (b1 csn) + ⟪ b3 ⟫)) (b2)) + (⟪ b4 ⟫ + p2 (b2) * ⟪ b4 ⟫) + ⟪ (p3 (incr (suc (vx (b1 csn) + ⟪ b3 ⟫)) (b2))) ⟫
+              + csn-to-nat₀ (suc (p1 (incr (suc (vx (b1 csn) + ⟪ b3 ⟫)) (b2)) + (⟪ b4 ⟫ + p2 (b2) * ⟪ b4 ⟫) + ⟪ (p3 (incr (suc (vx (b1 csn) + ⟪ b3 ⟫)) (b2))) ⟫ )) csn)
 
 -}
 
@@ -1184,10 +1185,10 @@ a1 = v̲a̲l̲-metric N E ϖ
 a2 = comp-metric W ((X , a1) ∷ E) (Wkn.wkn-cong ϖ) csn
 b1 = comp-metric W E (Wkn.wkn-cons ϖ) csn
 
-Goal:   suc (         ⟪ a2 ⟫
-        + csn-to-nat₀ ⟪ a2 ⟫ csn )
-     ≤                 2+ (suc (⟪ a1 csn ⟫ + count-in-comp h W * ⟪ a1 csn ⟫ + ⟪ b1 ⟫
-        + csn-to-nat₀ (2+ (suc (⟪ a1 csn ⟫ + count-in-comp h W * ⟪ a1 csn ⟫ + ⟪ b1 ⟫))) csn))
+Goal:        suc (               ⟪ a2 ⟫
+                   + csn-to-nat₀ ⟪ a2 ⟫ csn)
+          ≤                2+ (suc (⟪ a1 csn ⟫ + count-in-comp h W E (Wkn.wkn-cons ϖ) csn * ⟪ a1 csn ⟫ + ⟪ b1 ⟫
+            + csn-to-nat₀ (2+ (suc (⟪ a1 csn ⟫ + count-in-comp h W E (Wkn.wkn-cons ϖ) csn * ⟪ a1 csn ⟫ + ⟪ b1 ⟫))) csn))
 
 -}
 
@@ -1210,11 +1211,10 @@ a2 = v̲a̲l̲-metric N' E' ϖ' csn
 b1 = val-metric M E ϖ csn
 b2 = val-metric N E ϖ csn
 
-Goal:                 2+ (p1 (a1) + (⟪ a2 ⟫ + p2 (a1) * ⟪ a2 ⟫) + ⟪ p3 a1 ⟫
-      + csn-to-nat₀ (suc (p1 (a1) + (⟪ a2 ⟫ + p2 (a1) * ⟪ a2 ⟫) + ⟪ p3 a1 ⟫)) csn)
-      ≤
-                     2+ (p1 (b1) + (⟪ b2 ⟫ + p2 (b1) * ⟪ b2 ⟫) + ⟪ p3 b1 ⟫
-      + csn-to-nat₀ (2+ (p1 (b1) + (⟪ b2 ⟫ + p2 (b1) * ⟪ b2 ⟫) + ⟪ p3 b1 ⟫ )) csn)
+Goal:    2+ (                 p1 (a1) + (⟪ a2 ⟫ + p2 (a1) * ⟪ a2 ⟫) + ⟪ p3 a1 ⟫
+       +    csn-to-nat₀ (suc (p1 (a1) + (⟪ a2 ⟫ + p2 (a1) * ⟪ a2 ⟫) + ⟪ p3 a1 ⟫ )) csn)
+    ≤    2+                  (p1 (b1) + (⟪ b2 ⟫ + p2 (b1) * ⟪ b2 ⟫) + ⟪ p3 b1 ⟫
+       +    csn-to-nat₀ (2+  (p1 (b1) + (⟪ b2 ⟫ + p2 (b1) * ⟪ b2 ⟫) + ⟪ p3 b1 ⟫ )) csn)
 
 -}
 
@@ -1239,7 +1239,8 @@ Goal:                 2+ (p1 (a1) + (⟪ a2 ⟫ + p2 (a1) * ⟪ a2 ⟫) + ⟪ p3
 a1 = comp-metric W E'' ϖ'' csn'
 a2 = val-metric M E ϖ csn
 
-Goal: suc (⟪ a1 ⟫ + csn-to-nat₀ ⟪ a1 ⟫ csn') ≤
+Goal: suc (⟪ a1 ⟫ + csn-to-nat₀ ⟪ a1 ⟫ csn')
+      ≤
       suc (⟪ a2 ⟫ + 0 + csn-to-nat₀ (suc (⟪ a2 ⟫ + 0)) csn)
 
 -}
