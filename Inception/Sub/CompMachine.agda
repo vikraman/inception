@@ -1072,8 +1072,16 @@ Goal:   suc (                      ⟪ a2 ⟫ + (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (
       E = proj₁ EW
       ϖ = proj₂ EW
       csn = cs-to-csn cs
+      ----------------------------------------------------------------
+      a1 = comp-metric N E ϖ csn
+      a2 = comp-metric M ((`V , (λ _ → TermMetric.m-V 0 (⟪ a1 ⟫ + csn-to-nat₀ ⟪ a1 ⟫ csn))) ∷ E) (Wkn.wkn-cong ϖ) csn
+      ----------------------------------------------------------------
+      l1 : ⟪ a2 ⟫ ≤ suc (⟪ a1 ⟫ + ⟪ a2 ⟫)
+      l1 = ≤-trans (+-≤-cong (z≤n {n = ⟪ a1 ⟫}) (≤-refl {n = ⟪ a2 ⟫})) (n≤sn {n = ⟪ a1 ⟫ + ⟪ a2 ⟫})
+      l2 : csn-to-nat₀ ⟪ a2 ⟫ csn ≤ csn-to-nat₀ (suc (⟪ a1 ⟫ + ⟪ a2 ⟫)) csn
+      l2 = csn-decr l1 csn
     in
-      {!!}
+      s≤s (+-≤-cong (+-≤-cong (z≤n {n = ⟪ a1 ⟫}) (≤-refl {n = ⟪ a2 ⟫})) l2)
 
 {-
 
@@ -1163,7 +1171,7 @@ b2 = val-metric N₁ ((Y , (λ c → rhs (b1 c))) ∷ (X , (λ c → lhs (b1 c))
 b3 = val-metric N₁ E (Wkn.wkn-cons (Wkn.wkn-cons ϖ)) csn
 b4 = v̲a̲l̲-metric N E ϖ csn
 
-Goal:         2+                 (p1 (a3) + (⟪ a4 ⟫ + p2 (a3) * ⟪ a4 ⟫) + ⟪ (p3 (a3)) ⟫ 
+Goal:         2+                 (p1 (a3) + (⟪ a4 ⟫ + p2 (a3) * ⟪ a4 ⟫) + ⟪ (p3 (a3)) ⟫
               + csn-to-nat₀ (suc (p1 (a3) + (⟪ a4 ⟫ + p2 (a3) * ⟪ a4 ⟫) + ⟪ (p3 (a3)) ⟫ )) csn)
        ≤                     suc (p1 (incr (suc (vx (b1 csn) + ⟪ b3 ⟫)) (b2)) + (⟪ b4 ⟫ + p2 (b2) * ⟪ b4 ⟫) + ⟪ (p3 (incr (suc (vx (b1 csn) + ⟪ b3 ⟫)) (b2))) ⟫
               + csn-to-nat₀ (suc (p1 (incr (suc (vx (b1 csn) + ⟪ b3 ⟫)) (b2)) + (⟪ b4 ⟫ + p2 (b2) * ⟪ b4 ⟫) + ⟪ (p3 (incr (suc (vx (b1 csn) + ⟪ b3 ⟫)) (b2))) ⟫ )) csn)
