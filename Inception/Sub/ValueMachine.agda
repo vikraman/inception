@@ -854,6 +854,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   -------------------------------
 
+  {-
   botCtx : ValStack non-empty T◾ → Ctx
   botCtx ((_⊲_∷_) {Γ = Γ} _ _ □) = Γ
   botCtx ((x ⊲ γ ∷ ((x₁ ⊲ γ₁ ∷ xs) {↥ = ↥'})) {↥ = ↥}) = botCtx ((x₁ ⊲ γ₁ ∷ xs) {↥ = ↥'})
@@ -865,7 +866,9 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   botTerm : (S : ValStack non-empty T◾) → PartialTerm (botCtx S) (T◾)
   botTerm ((_⊲_∷_) {Γ = Γ} M γ □ {↥ = 🗆}) = M
   botTerm ((x ⊲ γ ∷ ((x₁ ⊲ γ₁ ∷ xs) {↥ = ↥'})) {↥ = ↥}) = botTerm ((x₁ ⊲ γ₁ ∷ xs) {↥ = ↥'})
+  -}
 
+  {-
   partial-term-metric : PartialTerm Γ X → (E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → Wkn Γ E → List (ℕ × ℕ) → ℕ
   partial-term-metric (⭭ M) E ϖ csn = ⟪ v̲a̲l̲-metric M E ϖ csn ⟫
   partial-term-metric (⇡ M) E ϖ csn = ⟪ val-metric M E ϖ csn ⟫
@@ -884,6 +887,41 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       e = env-metric (botEnv S)
     in
        partial-term-metric (botTerm S) (proj₁ e) (proj₂ e) csn
+  -}
+
+  partial-term-metric : PartialTerm Γ X → (E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → Wkn Γ E → List (ℕ × ℕ) → TermMetric X
+  partial-term-metric (⭭ M) E ϖ csn = v̲a̲l̲-metric M E ϖ csn
+  partial-term-metric (⇡ M) E ϖ csn = val-metric M E ϖ csn
+  partial-term-metric (⇡ᴹ M N) E ϖ csn = val-metric (pm M N) E ϖ csn
+  partial-term-metric (⇡ᴸ LHS RHS) E ϖ csn = val-metric (pair LHS RHS) E ϖ csn
+  partial-term-metric (⇡ᴿ LHS RHS) E ϖ csn = val-metric (pair (toVal LHS) RHS) E ϖ csn
+
+  topStackType : (S : ValStack non-empty T◾) → Ty
+  topStackType (_⊲_∷_ {X = X} _ _ _) = X
+
+  topStackTerm : (S : ValStack non-empty T◾) → PartialTerm (topStackCtx S) (topStackType S)
+  topStackTerm (_⊲_∷_ M _ _) = M
+
+  topType : ValState X → Ty
+  topType (∘ S) = topStackType S
+  topType (∙ S) = topStackType S
+
+  topTerm : (S : ValState X) → PartialTerm (topCtx S) (topType S)
+  topTerm (∘ S) = topStackTerm S
+  topTerm (∙ S) = topStackTerm S
+
+{-
+  valstate-metric : (S : ValState X) → List (ℕ × ℕ) → TermMetric (topStackType S)
+  valstate-metric (∘ S) csn =
+    let
+      e = env-metric (topEnv S)
+    in
+      partial-term-metric (topTerm S) (proj₁ e) (proj₂ e) csn
+  valstate-metric (∙ S) csn =
+    let
+      e = env-metric (botEnv S)
+    in
+       partial-term-metric (botTerm S) (proj₁ e) (proj₂ e) csn
 
   -----------------------------
 
@@ -891,17 +929,17 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   data ValSteps : ValState T◾ → Set where
 
     steps : {S T : ValState T◾} → S ↠ᵛ T → ValHaltingState T → ⟦ S ⟧ᵛꟴ ≡ ⟦ T ⟧ᵛꟴ → (π : Wk (topCtx T) (topCtx S)) → (⟦ π ⟧ʷ ⟦ topEnv T ⟧ᴱ ≡ ⟦ topEnv S ⟧ᴱ)
-            --→ (∀ (csn : List (ℕ × ℕ)) → valstate-metric T csn ≤ᴹ valstate-metric S csn)
+            → (∀ (csn : List (ℕ × ℕ)) → valstate-metric T csn ≤ᴹ valstate-metric S csn)
             --→ (θ : Wke π (proj₂ (env-metric (topEnv S))) (proj₂ (env-metric (topEnv T))))
             → ValSteps S
 
 
   val-eval-rec : (M : Γ' ⊢ᵛ X) → (γ : Env Γ) → (π : Wk Γ Γ') → ValSteps {T◾ = X} (∘ ((⇡ (wk-val π M) ⊲ γ ∷ □) {↥ = 🗆}))
 
-  val-eval-rec {X = `V} (var {A = .`V} i) γ π = steps (_ →ᵛ⟨ ∘var-c ⟩．) (∙ v̲a̲r̲ (wk-mem π i) ⊲ γ ■) refl wk-id refl
+  val-eval-rec {X = `V} (var {A = .`V} i) γ π = steps (_ →ᵛ⟨ ∘var-c ⟩．) (∙ v̲a̲r̲ (wk-mem π i) ⊲ γ ■) refl wk-id refl ? ?
 
   val-eval-rec {X = `Unit} (var {A = .`Unit} i) γ π with lookup (wk-mem π i) γ
-  ... | steps i>>T found-unit i≡T π₁ w≡γ _ _ = steps (_ →ᵛ⟨ ∘var i>>T π₁ ⟩．) (∙ u̲n̲i̲t̲ ⊲ γ ■) refl wk-id refl
+  ... | steps i>>T found-unit i≡T π₁ w≡γ _ _ = steps (_ →ᵛ⟨ ∘var i>>T π₁ ⟩．) (∙ u̲n̲i̲t̲ ⊲ γ ■) refl wk-id refl ? ?
 
   val-eval-rec {X = X `× X₁} (var {A = .(X `× X₁)} i) γ π with lookup (wk-mem π i) γ
   ... | steps i>>T (found-pair {LHS = LHS} {RHS = RHS} {γ = γ₁}) i≡T π₁ w≡γ _ _ =
@@ -929,9 +967,12 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
             wk-id
 
             refl
+
+            ? ?
+
   val-eval-rec {X = X `⇒ X₁} (var {A = .(X `⇒ X₁)} i) γ π with lookup (wk-mem π i) γ
 
-  ... | steps i>>T (found-lam {W = W} {γ = γ₁}) i≡T π₁ w≡γ _ _ =
+  ... | steps i>>T (found-lam {W = W} {γ = γ₁}) i≡T π₁ w≡γ _ _ T≤ᴹS θ =
 
             steps
 
@@ -951,13 +992,15 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
             refl
 
-  val-eval-rec (lam W) γ π = steps (∘ ⇡ (wk-val π (lam W)) ⊲ γ ∷ □ →ᵛ⟨ ∘lam ⟩．) (∙ l̲a̲m̲ (wk-comp (wk-cong π) W) ⊲ γ ■) refl wk-id refl
+            ? ?
 
-  val-eval-rec unit γ π = steps (_ →ᵛ⟨ ∘unit ⟩．) (∙ u̲n̲i̲t̲ ⊲ γ ■) refl wk-id refl
+  val-eval-rec (lam W) γ π = steps (∘ ⇡ (wk-val π (lam W)) ⊲ γ ∷ □ →ᵛ⟨ ∘lam ⟩．) (∙ l̲a̲m̲ (wk-comp (wk-cong π) W) ⊲ γ ■) refl wk-id refl ? ?
+
+  val-eval-rec unit γ π = steps (_ →ᵛ⟨ ∘unit ⟩．) (∙ u̲n̲i̲t̲ ⊲ γ ■) refl wk-id refl ? ?
 
   val-eval-rec (pair {A = X} {B = Y} LHS RHS) γ π with val-eval-rec {X = X} LHS γ π
-  ... | steps {T = ∙ (⭭_ {X = X} LT ⊲ γ₁ ∷ □) {↥ = 🗆}} L>T ∙LT L≡T πᴸ wk≡ᴸ with  val-eval-rec {X = Y} RHS γ₁ (wk-trans πᴸ π)
-  ...      | steps {T = ∙ (⭭_ {X = Y} RT ⊲ γ₂ ∷ □) {↥ = 🗆}} R>T ∙RT R≡T πᴿ wk≡ᴿ rewrite sym (wk-val-trans RHS πᴸ π) =
+  ... | steps {T = ∙ (⭭_ {X = X} LT ⊲ γ₁ ∷ □) {↥ = 🗆}} L>T ∙LT L≡T πᴸ wk≡ᴸ T≤ᴹS θ with  val-eval-rec {X = Y} RHS γ₁ (wk-trans πᴸ π)
+  ...      | steps {T = ∙ (⭭_ {X = Y} RT ⊲ γ₂ ∷ □) {↥ = 🗆}} R>T ∙RT R≡T πᴿ wk≡ᴿ T≤ᴹS' θ' rewrite sym (wk-val-trans RHS πᴸ π) =
 
             steps
 
@@ -1005,9 +1048,11 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
               ≡⟨ wk≡ᴸ ⟩
                 ⟦ γ ⟧ᴱ ∎)
 
+              ? ?
+
   val-eval-rec (pm M N) γ π with val-eval-rec M γ π
-  ... | steps M>T ∙ pa̲i̲r̲ LHS RHS ⊲ γ₁ ■ M≡T π₁ wk≡₁ with val-eval-rec N (_﹐_ (_﹐_ γ₁ LHS) (wk-v̲a̲l̲ (wk-wk wk-id) RHS)) ((wk-cong (wk-cong (wk-trans π₁ π)))) | (wk-val-trans N (wk-cong (wk-cong π₁)) (wk-cong (wk-cong π)))
-  ...    | steps {T = T} N>T ∙T N≡T π₂ wk≡₂ | eq with N>T
+  ... | steps M>T ∙ pa̲i̲r̲ LHS RHS ⊲ γ₁ ■ M≡T π₁ wk≡₁ T≤ᴹS θ with val-eval-rec N (_﹐_ (_﹐_ γ₁ LHS) (wk-v̲a̲l̲ (wk-wk wk-id) RHS)) ((wk-cong (wk-cong (wk-trans π₁ π)))) | (wk-val-trans N (wk-cong (wk-cong π₁)) (wk-cong (wk-cong π)))
+  ...    | steps {T = T} N>T ∙T N≡T π₂ wk≡₂ T≤ᴹS' θ' | eq with N>T
   ...      | N>T' rewrite sym eq =
         steps
           (
@@ -1053,6 +1098,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
             ≡⟨ wk≡₁ ⟩
             ⟦ γ ⟧ᴱ ∎)
 
+          ? ?
 
   val-eval : (M : ε ⊢ᵛ X) → ValSteps {T◾ = X} (∘ ((⇡ wk-val wk-id M ⊲ ∗ ∷ □) {↥ = 🗆}))
   val-eval M = val-eval-rec M ∗ wk-id
@@ -1383,4 +1429,6 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   sub-cps' : (M : (Γ ∙ `V) ⊢ᶜ X) → (N : Γ ⊢ᶜ X) → (γ : Env Γ) → (cs : CompStack Δ X) → (πₓ : Wk Γ Δ) → (wk≡ : ⟦ πₓ ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → ⟦ sub M N ⟧ᶜ ⟦ γ ⟧ᴱ ⟦ cs ⟧ᴷ ≡ ⟦ M ⟧ᶜ ⟦ (γ ﹐﹝ N ╎ cs ﹞) {π = πₓ} {wk≡ = wk≡} ⟧ᴱ ⟦ cs ⟧ᴷ
   sub-cps' M N γ cs πₓ wk≡ = refl
+-}
+
 -}
