@@ -480,16 +480,6 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
 ---------------------------------------------------------------------------------------------
 
-  postulate wke-val-count-lemma : (i : Γ' ∋ Y) → (M : Val Γ' X) → (E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X)))
-              → (π : Wk Γ Γ') → (ϖ : Wkn Γ E) → (ϖ' : Wkn Γ' E') → (θ : Wke π ϖ ϖ') → (csn : List (ℕ × ℕ))
-              → count-in-val i M E' ϖ' csn ≡ count-in-val (wk-mem π i) (wk-val π M) E ϖ csn
-
-  postulate wke-comp-count-lemma : (i : Γ' ∋ Y) → (W : Comp Γ' X) → (E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X)))
-              → (π : Wk Γ Γ') → (ϖ : Wkn Γ E) → (ϖ' : Wkn Γ' E') → (θ : Wke π ϖ ϖ') → (csn : List (ℕ × ℕ))
-              → count-in-comp i W E' ϖ' csn ≡ count-in-comp (wk-mem π i) (wk-comp π W) E ϖ csn
-
----------------------------------------------------------------------------------------------
-
   wke-z-l : {e : (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))} {E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))} {π : Wk Γ Γ'} {ϖ : Wkn Γ []} {ϖ' : Wkn Γ' (e ∷ E')}
             → Wke π ϖ ϖ' → ⊥
   wke-z-l (wke-ww- π ϖ ϖ' θ) = wke-z-l θ
@@ -526,7 +516,228 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   lookup-wke-lemma (Cx.t i) (x ∷ E) [] (wk-cong π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-cww π ϖ ϖ' θ) csn rewrite sym (empty-lookup i ϖ' csn) = lookup-wke-lemma i (x ∷ E) [] π ϖ ϖ' θ csn
   lookup-wke-lemma (Cx.t i) (x ∷ E) (x₁ ∷ E') (wk-cong π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-cww π ϖ ϖ' θ) csn = lookup-wke-lemma i (x ∷ E) (x₁ ∷ E') π ϖ ϖ' θ csn
 
+---------------------------------------------------------------------------------------------
+
+  -- postulate wke-val-count-lemma : (i : Γ' ∋ Y) → (M : Val Γ' X) → (E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X)))
+  --             → (π : Wk Γ Γ') → (ϖ : Wkn Γ E) → (ϖ' : Wkn Γ' E') → (θ : Wke π ϖ ϖ') → (csn : List (ℕ × ℕ))
+  --             → count-in-val i M E' ϖ' csn ≡ count-in-val (wk-mem π i) (wk-val π M) E ϖ csn
+
+  -- postulate wke-comp-count-lemma : (i : Γ' ∋ Y) → (W : Comp Γ' X) → (E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X)))
+  --             → (π : Wk Γ Γ') → (ϖ : Wkn Γ E) → (ϖ' : Wkn Γ' E') → (θ : Wke π ϖ ϖ') → (csn : List (ℕ × ℕ))
+  --             → count-in-comp i W E' ϖ' csn ≡ count-in-comp (wk-mem π i) (wk-comp π W) E ϖ csn
+
   mutual
+
+    wke-val-count-lemma : (i : Γ' ∋ Y) → (M : Val Γ' X) → (E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X)))
+                → (π : Wk Γ Γ') → (ϖ : Wkn Γ E) → (ϖ' : Wkn Γ' E') → (θ : Wke π ϖ ϖ') → (csn : List (ℕ × ℕ))
+                → count-in-val i M E' ϖ' csn ≡ count-in-val (wk-mem π i) (wk-val π M) E ϖ csn
+
+    wke-val-count-lemma Cx.h (var Cx.h) E E' (wk-cong π) ϖ ϖ' (wke-ccc π₁ ϖ₁ ϖ'' e θ) csn = refl
+    wke-val-count-lemma Cx.h (var Cx.h) E E' (wk-cong π) ϖ ϖ' (wke-cww π₁ ϖ₁ ϖ'' θ) csn = refl
+    wke-val-count-lemma Cx.h (var (Cx.t i)) E E' (wk-cong π) ϖ ϖ' θ csn = refl
+
+    wke-val-count-lemma Cx.h (var Cx.h) E E' (wk-wk π) ϖ ϖ' (wke-wc- π₁ ϖ₁ ϖ'' e θ) csn = wke-val-count-lemma h (var h) _ E' π ϖ₁ ϖ' θ csn
+    wke-val-count-lemma Cx.h (var (Cx.t i)) E E' (wk-wk π) ϖ ϖ' (wke-wc- π₁ ϖ₁ ϖ'' e θ) csn = wke-val-count-lemma h (var (t i)) _ E' π ϖ₁ ϖ' θ csn
+
+    wke-val-count-lemma Cx.h (var Cx.h) [] [] (wk-wk π) ϖ ϖ' (wke-ww- π₁ ϖ₁ ϖ'' θ) csn = wke-val-count-lemma h (var h) [] [] π ϖ₁ ϖ' θ csn
+    wke-val-count-lemma Cx.h (var Cx.h) (x ∷ E) [] (wk-wk π) ϖ ϖ' (wke-ww- π₁ ϖ₁ ϖ'' θ) csn = wke-val-count-lemma h (var h) (x ∷ E) [] π ϖ₁ ϖ' θ csn
+    wke-val-count-lemma Cx.h (var Cx.h) [] (x ∷ E') (wk-wk π) ϖ ϖ' (wke-ww- π₁ ϖ₁ ϖ'' θ) csn = wke-val-count-lemma h (var h) [] (x ∷ E') π ϖ₁ ϖ' θ csn
+    wke-val-count-lemma Cx.h (var Cx.h) (x₁ ∷ E) (x ∷ E') (wk-wk π) ϖ ϖ' (wke-ww- π₁ ϖ₁ ϖ'' θ) csn = wke-val-count-lemma h (var h) (x₁ ∷ E) (x ∷ E') π ϖ₁ ϖ' θ csn
+    wke-val-count-lemma Cx.h (var (Cx.t i)) [] [] (wk-wk π) ϖ ϖ' (wke-ww- π₁ ϖ₁ ϖ'' θ) csn = wke-val-count-lemma h (var (t i)) [] [] π ϖ₁ ϖ' θ csn
+    wke-val-count-lemma Cx.h (var (Cx.t i)) [] (x ∷ E') (wk-wk π) ϖ ϖ' (wke-ww- π₁ ϖ₁ ϖ'' θ) csn = wke-val-count-lemma h (var (t i)) [] (x ∷ E') π ϖ₁ ϖ' θ csn
+    wke-val-count-lemma Cx.h (var (Cx.t i)) (x ∷ E) [] (wk-wk π) ϖ ϖ' (wke-ww- π₁ ϖ₁ ϖ'' θ) csn = wke-val-count-lemma h (var (t i)) (x ∷ E) [] π ϖ₁ ϖ' θ csn
+    wke-val-count-lemma Cx.h (var (Cx.t i)) (x ∷ E) (x₁ ∷ E') (wk-wk π) ϖ ϖ' (wke-ww- π₁ ϖ₁ ϖ'' θ) csn = wke-val-count-lemma h (var (t i)) (x ∷ E) (x₁ ∷ E') π ϖ₁ ϖ' θ csn
+
+    wke-val-count-lemma Cx.h (lam W) E E' (wk-cong π) ϖ ϖ' θ csn =
+      count-in-val h (lam W) E' ϖ' csn
+      ≡⟨ refl ⟩
+        count-in-comp (t h) W E' (Wkn.wkn-cons ϖ') csn
+      ≡⟨ wke-comp-count-lemma (t h) W E E' (wk-cong (wk-cong π)) (Wkn.wkn-cons ϖ) (Wkn.wkn-cons ϖ') (Wke.wke-cww (wk-cong π) ϖ ϖ' θ) csn ⟩
+        count-in-comp (t h) (wk-comp (wk-cong (wk-cong π)) W) E (Wkn.wkn-cons ϖ) csn
+      ≡⟨ refl ⟩
+      count-in-val h (lam (wk-comp (wk-cong (wk-cong π)) W)) E ϖ csn ∎
+
+    wke-val-count-lemma Cx.h (lam W) E E' (wk-wk π) ϖ ϖ' θ csn = wke-comp-count-lemma (t h) W E E' (wk-cong (wk-wk π)) (Wkn.wkn-cons ϖ) (Wkn.wkn-cons ϖ') (Wke.wke-cww (wk-wk π) ϖ ϖ' θ) csn
+
+    wke-val-count-lemma Cx.h (pair M₁ M₂) ((Y , e) ∷ E) ((Y , e) ∷ E') (wk-cong π) ϖ ϖ' (wke-ccc π₁ ϖ₁ ϖ'' e θ) csn =
+      count-in-val h (pair M₁ M₂) ((Y , e) ∷ E') (Wkn.wkn-cong ϖ'') csn
+      ≡⟨ refl ⟩
+        count-in-val h M₁ ((Y , e) ∷ E') (Wkn.wkn-cong ϖ'') csn + count-in-val h M₂ ((Y , e) ∷ E') (Wkn.wkn-cong ϖ'') csn
+      ≡⟨ cong₂ _+_ (wke-val-count-lemma Cx.h M₁ ((Y , e) ∷ E) ((Y , e) ∷ E') (wk-cong π) (Wkn.wkn-cong ϖ₁) (Wkn.wkn-cong ϖ'') (Wke.wke-ccc π ϖ₁ ϖ'' e θ) csn) (wke-val-count-lemma Cx.h M₂ ((Y , e) ∷ E) ((Y , e) ∷ E') (wk-cong π) (Wkn.wkn-cong ϖ₁) (Wkn.wkn-cong ϖ'') (Wke.wke-ccc π ϖ₁ ϖ'' e θ) csn) ⟩
+        count-in-val h (wk-val (wk-cong π) M₁) ((Y , e) ∷ E) (Wkn.wkn-cong ϖ₁) csn + count-in-val h (wk-val (wk-cong π) M₂) ((Y , e) ∷ E) (Wkn.wkn-cong ϖ₁) csn
+      ≡⟨ refl ⟩
+      count-in-val h (pair (wk-val (wk-cong π) M₁) (wk-val (wk-cong π) M₂)) ((Y , e) ∷ E) (Wkn.wkn-cong ϖ₁) csn ∎
+
+    wke-val-count-lemma Cx.h (pair M₁ M₂) [] [] (wk-cong π) ϖ ϖ' (wke-cww π₁ ϖ₁ ϖ'' θ) csn = cong₂ _+_ (wke-val-count-lemma Cx.h M₁ [] [] (wk-cong π) (Wkn.wkn-cons ϖ₁) (Wkn.wkn-cons ϖ'') (Wke.wke-cww π ϖ₁ ϖ'' θ) csn) (wke-val-count-lemma Cx.h M₂ [] [] (wk-cong π) (Wkn.wkn-cons ϖ₁) (Wkn.wkn-cons ϖ'') (Wke.wke-cww π ϖ₁ ϖ'' θ) csn)
+    wke-val-count-lemma Cx.h (pair M₁ M₂) [] (x ∷ E') (wk-cong π) ϖ ϖ' (wke-cww π₁ ϖ₁ ϖ'' θ) csn = ql (wke-z-l θ) (count-in-val h (pair M₁ M₂) (x ∷ E') (Wkn.wkn-cons ϖ'') csn ≡ count-in-val (wk-mem (wk-cong π) h) (wk-val (wk-cong π) (pair M₁ M₂)) [] (Wkn.wkn-cons ϖ₁) csn)
+    wke-val-count-lemma Cx.h (pair {Γ = .(_ ∙ _)} M₁ M₂) (x ∷ E) [] (wk-cong {Δ₁ ∙ X} π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-cww {Γ = Δ} π ϖ ϖ' θ) csn = cong₂ _+_ (wke-val-count-lemma Cx.h M₁ (x ∷ E) [] (wk-cong π) (Wkn.wkn-cons ϖ) (Wkn.wkn-cons ϖ') (Wke.wke-cww π ϖ ϖ' θ) csn) (wke-val-count-lemma Cx.h M₂ (x ∷ E) [] (wk-cong π) (Wkn.wkn-cons ϖ) (Wkn.wkn-cons ϖ') (Wke.wke-cww π ϖ ϖ' θ) csn)
+    wke-val-count-lemma Cx.h (pair M₁ M₂) (x ∷ E) (x₁ ∷ E') (wk-cong π) ϖ ϖ' (wke-cww π₁ ϖ₁ ϖ'' θ) csn = cong₂ _+_ (wke-val-count-lemma Cx.h M₁ (x ∷ E) (x₁ ∷ E') (wk-cong π) (Wkn.wkn-cons ϖ₁) (Wkn.wkn-cons ϖ'') (Wke.wke-cww π ϖ₁ ϖ'' θ) csn) (wke-val-count-lemma Cx.h M₂ (x ∷ E) (x₁ ∷ E') (wk-cong π) (Wkn.wkn-cons ϖ₁) (Wkn.wkn-cons ϖ'') (Wke.wke-cww π ϖ₁ ϖ'' θ) csn)
+
+    wke-val-count-lemma Cx.h (pair M₁ M₂) [] [] (wk-wk π) ϖ ϖ' θ csn = cong₂ _+_ (wke-val-count-lemma Cx.h M₁ [] [] (wk-wk π) ϖ ϖ' θ csn) (wke-val-count-lemma Cx.h M₂ [] [] (wk-wk π) ϖ ϖ' θ csn)
+    wke-val-count-lemma Cx.h (pair M₁ M₂) [] (x ∷ E') (wk-wk π) ϖ ϖ' θ csn = ql (wke-z-l θ) _
+
+    wke-val-count-lemma Cx.h (pair M₁ M₂) (x ∷ E) [] (wk-wk π) ϖ ϖ' θ csn = cong₂ _+_ (wke-val-count-lemma Cx.h M₁ (x ∷ E) [] (wk-wk π) ϖ ϖ' θ csn) (wke-val-count-lemma Cx.h M₂ (x ∷ E) [] (wk-wk π) ϖ ϖ' θ csn)
+    wke-val-count-lemma Cx.h (pair M₁ M₂) (x ∷ E) (x₁ ∷ E') (wk-wk π) ϖ ϖ' θ csn = cong₂ _+_ (wke-val-count-lemma Cx.h M₁ (x ∷ E) (x₁ ∷ E') (wk-wk π) ϖ ϖ' θ csn) (wke-val-count-lemma Cx.h M₂ (x ∷ E) (x₁ ∷ E') (wk-wk π) ϖ ϖ' θ csn)
+
+    wke-val-count-lemma Cx.h (pm M N) E E' (wk-cong π) ϖ ϖ' θ csn =
+      let
+       n₁≡m₁ = wke-val-count-lemma Cx.h M E E' (wk-cong π) ϖ ϖ' θ csn
+       n₂≡m₂ = wke-val-count-lemma Cx.h N E E' (wk-cong (wk-cong (wk-cong π))) (Wkn.wkn-cons (Wkn.wkn-cons ϖ)) (Wkn.wkn-cons (Wkn.wkn-cons ϖ')) (Wke.wke-cww (wk-cong (wk-cong π)) (Wkn.wkn-cons ϖ) (Wkn.wkn-cons ϖ') (Wke.wke-cww (wk-cong π) ϖ ϖ' θ)) csn
+       n₃≡m₃ = wke-val-count-lemma (t h) N E E' (wk-cong (wk-cong (wk-cong π))) (Wkn.wkn-cons (Wkn.wkn-cons ϖ)) (Wkn.wkn-cons (Wkn.wkn-cons ϖ')) (Wke.wke-cww (wk-cong (wk-cong π)) (Wkn.wkn-cons ϖ) (Wkn.wkn-cons ϖ') (Wke.wke-cww (wk-cong π) ϖ ϖ' θ)) csn
+       n₄≡m₄ = wke-val-count-lemma (t (t h)) N E E' (wk-cong (wk-cong (wk-cong π))) (Wkn.wkn-cons (Wkn.wkn-cons ϖ)) (Wkn.wkn-cons (Wkn.wkn-cons ϖ')) (Wke.wke-cww (wk-cong (wk-cong π)) (Wkn.wkn-cons ϖ) (Wkn.wkn-cons ϖ') (Wke.wke-cww (wk-cong π) ϖ ϖ' θ)) csn
+       eq1 : n₁ ≡ m₁ → n₂ ≡ m₂ → n₃ ≡ m₃ → n₄ ≡ m₄ → n₁ * suc (n₂ + n₃) + n₄ ≡ m₁ * suc (m₂ + m₃) + m₄
+       eq1 n₁≡m₁ n₂≡m₂ n₃≡m₃ n₄≡m₄ = cong₂ _+_ (cong₂ _*_ n₁≡m₁ (cong suc (cong₂ _+_ n₂≡m₂ n₃≡m₃))) n₄≡m₄
+      in
+        count-in-val h (pm M N) E' ϖ' csn
+      ≡⟨ refl ⟩
+        count-in-val h M E' ϖ' csn * suc (count-in-val h N E' (Wkn.wkn-cons (Wkn.wkn-cons ϖ')) csn + count-in-val (t h) N E' (Wkn.wkn-cons (Wkn.wkn-cons ϖ')) csn) + count-in-val (t (t h)) N E' (Wkn.wkn-cons (Wkn.wkn-cons ϖ')) csn
+      ≡⟨ eq1 n₁≡m₁ n₂≡m₂ n₃≡m₃ n₄≡m₄ ⟩
+        count-in-val h (wk-val (wk-cong π) M) E ϖ csn * suc (count-in-val h (wk-val (wk-cong (wk-cong (wk-cong π))) N) E (Wkn.wkn-cons (Wkn.wkn-cons ϖ)) csn + count-in-val (t h) (wk-val (wk-cong (wk-cong (wk-cong π))) N) E (Wkn.wkn-cons (Wkn.wkn-cons ϖ)) csn) + count-in-val (t (t h)) (wk-val (wk-cong (wk-cong (wk-cong π))) N) E (Wkn.wkn-cons (Wkn.wkn-cons ϖ)) csn
+      ≡⟨ refl ⟩
+        count-in-val h (pm (wk-val (wk-cong π) M) (wk-val (wk-cong (wk-cong (wk-cong π))) N)) E ϖ csn ∎
+    wke-val-count-lemma Cx.h (pm M N) E E' (wk-wk π) ϖ ϖ' θ csn =
+      let
+       n₁≡m₁ = wke-val-count-lemma Cx.h M E E' (wk-wk π) ϖ ϖ' θ csn
+       n₂≡m₂ = wke-val-count-lemma Cx.h N E E' (wk-cong (wk-cong (wk-wk π))) (Wkn.wkn-cons (Wkn.wkn-cons ϖ)) (Wkn.wkn-cons (Wkn.wkn-cons ϖ')) (Wke.wke-cww (wk-cong (wk-wk π)) (Wkn.wkn-cons ϖ) (Wkn.wkn-cons ϖ') (Wke.wke-cww (wk-wk π) ϖ ϖ' θ)) csn
+       n₃≡m₃ = wke-val-count-lemma (t h) N E E' (wk-cong (wk-cong (wk-wk π))) (Wkn.wkn-cons (Wkn.wkn-cons ϖ)) (Wkn.wkn-cons (Wkn.wkn-cons ϖ')) (Wke.wke-cww (wk-cong (wk-wk π)) (Wkn.wkn-cons ϖ) (Wkn.wkn-cons ϖ') (Wke.wke-cww (wk-wk π) ϖ ϖ' θ)) csn
+       n₄≡m₄ = wke-val-count-lemma (t (t h)) N E E' (wk-cong (wk-cong (wk-wk π))) (Wkn.wkn-cons (Wkn.wkn-cons ϖ)) (Wkn.wkn-cons (Wkn.wkn-cons ϖ')) (Wke.wke-cww (wk-cong (wk-wk π)) (Wkn.wkn-cons ϖ) (Wkn.wkn-cons ϖ') (Wke.wke-cww (wk-wk π) ϖ ϖ' θ)) csn
+       eq1 : n₁ ≡ m₁ → n₂ ≡ m₂ → n₃ ≡ m₃ → n₄ ≡ m₄ → n₁ * suc (n₂ + n₃) + n₄ ≡ m₁ * suc (m₂ + m₃) + m₄
+       eq1 n₁≡m₁ n₂≡m₂ n₃≡m₃ n₄≡m₄ = cong₂ _+_ (cong₂ _*_ n₁≡m₁ (cong suc (cong₂ _+_ n₂≡m₂ n₃≡m₃))) n₄≡m₄
+      in
+      eq1 n₁≡m₁ n₂≡m₂ n₃≡m₃ n₄≡m₄
+
+    wke-val-count-lemma Cx.h unit E E' (wk-cong π) ϖ ϖ' θ csn = refl
+    wke-val-count-lemma Cx.h unit E E' (wk-wk π) ϖ ϖ' θ csn = refl
+
+    wke-val-count-lemma (Cx.t i) (var Cx.h) ((B , e) ∷ E) ((B , e) ∷ E') (wk-cong π) (wkn-cong ϖ) (wkn-cong ϖ') (wke-ccc π₁ ϖ₁ ϖ'' e θ) csn = refl
+    wke-val-count-lemma (Cx.t i) (var (Cx.t i₁)) ((B , e) ∷ E) ((B , e) ∷ E') (wk-cong π) (wkn-cong ϖ) (wkn-cong ϖ') (wke-ccc π₁ ϖ₁ ϖ'' e θ) csn = wke-val-count-lemma i (var i₁) E E' π ϖ ϖ' θ csn
+    wke-val-count-lemma (Cx.t i) (var i₁) E E' (wk-cong π) (wkn-cong ϖ) (wkn-cons ϖ') () csn
+    wke-val-count-lemma (Cx.t i) (var i₁) E E' (wk-cong π) (wkn-cons ϖ) (wkn-cong ϖ') () csn
+
+    wke-val-count-lemma (Cx.t i) (var Cx.h) [] [] (wk-cong π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-cww π₁ ϖ₁ ϖ'' θ) csn = refl
+    wke-val-count-lemma (Cx.t i) (var Cx.h) [] (x ∷ E') (wk-cong π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-cww π₁ ϖ₁ ϖ'' θ) csn = refl
+    wke-val-count-lemma (Cx.t i) (var Cx.h) (x ∷ E) [] (wk-cong π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-cww π₁ ϖ₁ ϖ'' θ) csn = refl
+    wke-val-count-lemma (Cx.t i) (var Cx.h) (x ∷ E) (x₁ ∷ E') (wk-cong π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-cww π₁ ϖ₁ ϖ'' θ) csn = refl
+
+    wke-val-count-lemma (Cx.t i) (var (Cx.t i₁)) [] [] (wk-cong π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-cww π ϖ ϖ' θ) csn = wke-val-count-lemma i (var i₁) [] [] π ϖ ϖ' θ csn
+    wke-val-count-lemma (Cx.t i) (var (Cx.t i₁)) [] (x ∷ E') (wk-cong π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-cww π ϖ ϖ' θ) csn = ql (wke-z-l θ) _ --wke-val-count-lemma i (var i₁) [] (x ∷ E') π ϖ ϖ' θ csn
+    wke-val-count-lemma (Cx.t i) (var (Cx.t i₁)) (x ∷ E) [] (wk-cong π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-cww π ϖ ϖ' θ) csn = wke-val-count-lemma i (var i₁) (x ∷ E) [] π ϖ ϖ' θ csn
+    wke-val-count-lemma (Cx.t i) (var (Cx.t i₁)) (x ∷ E) (x₁ ∷ E') (wk-cong π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-cww π ϖ ϖ' θ) csn = wke-val-count-lemma i (var i₁) (x ∷ E) (x₁ ∷ E') π ϖ ϖ' θ csn
+
+    wke-val-count-lemma (Cx.t i) (var Cx.h) ((A , e) ∷ E) [] (wk-wk π) ϖ ϖ' (wke-wc- π₁ ϖ₁ ϖ'' e θ) csn = wke-val-count-lemma (t i) (var h) E [] π ϖ₁ ϖ' θ csn
+    wke-val-count-lemma (Cx.t i) (var Cx.h) ((A , e) ∷ E) (x ∷ E') (wk-wk π) ϖ ϖ' (wke-wc- π₁ ϖ₁ ϖ'' e θ) csn = wke-val-count-lemma (t i) (var h) E (x ∷ E') π ϖ₁ ϖ' θ csn
+
+    wke-val-count-lemma (Cx.t i) (var Cx.h) [] [] (wk-wk π) ϖ ϖ' (wke-ww- π₁ ϖ₁ ϖ'' θ) csn = wke-val-count-lemma (t i) (var h) [] [] π ϖ₁ ϖ' θ csn
+    wke-val-count-lemma (Cx.t i) (var Cx.h) [] (x ∷ E') (wk-wk π) ϖ ϖ' (wke-ww- π₁ ϖ₁ ϖ'' θ) csn = wke-val-count-lemma (t i) (var h) [] (x ∷ E') π ϖ₁ ϖ' θ csn
+    wke-val-count-lemma (Cx.t i) (var Cx.h) (x ∷ E) [] (wk-wk π) ϖ ϖ' (wke-ww- π₁ ϖ₁ ϖ'' θ) csn = wke-val-count-lemma (t i) (var h) (x ∷ E) [] π ϖ₁ ϖ' θ csn
+    wke-val-count-lemma (Cx.t i) (var Cx.h) (x ∷ E) (x₁ ∷ E') (wk-wk π) ϖ ϖ' (wke-ww- π₁ ϖ₁ ϖ'' θ) csn = wke-val-count-lemma (t i) (var h) (x ∷ E) (x₁ ∷ E') π ϖ₁ ϖ' θ csn
+
+    wke-val-count-lemma (Cx.t i) (var (Cx.t i₁)) [] [] (wk-wk π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-ww- π₁ ϖ₁ ϖ'' θ) csn = wke-val-count-lemma (t i) (var (t i₁)) [] [] π ϖ (Wkn.wkn-cons ϖ') θ csn
+    wke-val-count-lemma (Cx.t i) (var (Cx.t i₁)) [] (x ∷ E') (wk-wk π) (wkn-cons ϖ) (wkn-cong ϖ') (wke-ww- π₁ ϖ₁ ϖ'' θ) csn = wke-val-count-lemma (t i) (var (t i₁)) [] ((_ , _) ∷ E') π ϖ (Wkn.wkn-cong ϖ') θ csn
+    wke-val-count-lemma (Cx.t i) (var (Cx.t i₁)) [] (x ∷ E') (wk-wk π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-ww- π₁ ϖ₁ ϖ'' θ) csn = wke-val-count-lemma (t i) (var (t i₁)) [] (x ∷ E') π ϖ (Wkn.wkn-cons ϖ') θ csn
+    wke-val-count-lemma (Cx.t i) (var (Cx.t i₁)) (x ∷ E) [] (wk-wk π) (wkn-cong ϖ) (wkn-cons ϖ') (wke-wc- π₁ ϖ₁ ϖ'' e θ) csn = wke-val-count-lemma (t i) (var (t i₁)) E [] π ϖ (Wkn.wkn-cons ϖ') θ csn
+    wke-val-count-lemma (Cx.t i) (var (Cx.t i₁)) (x ∷ E) [] (wk-wk π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-ww- π₁ ϖ₁ ϖ'' θ) csn = wke-val-count-lemma (t i) (var (t i₁)) (x ∷ E) [] π ϖ (Wkn.wkn-cons ϖ') θ csn
+    wke-val-count-lemma (Cx.t i) (var (Cx.t i₁)) (x ∷ E) (x₁ ∷ E') (wk-wk π) (wkn-cong ϖ) (wkn-cong ϖ') (wke-wc- π₁ ϖ₁ ϖ'' e θ) csn = wke-val-count-lemma (t i) (var (t i₁)) E ((_ , _) ∷ E') π ϖ (Wkn.wkn-cong ϖ') θ csn
+    wke-val-count-lemma (Cx.t i) (var (Cx.t i₁)) (x ∷ E) (x₁ ∷ E') (wk-wk π) (wkn-cong ϖ) (wkn-cons ϖ') (wke-wc- π₁ ϖ₁ ϖ'' e θ) csn = wke-val-count-lemma (t i) (var (t i₁)) E (x₁ ∷ E') π ϖ (Wkn.wkn-cons ϖ') θ csn
+    wke-val-count-lemma (Cx.t i) (var (Cx.t i₁)) (x ∷ E) (x₁ ∷ E') (wk-wk π) (wkn-cons ϖ) (wkn-cong ϖ') (wke-ww- π₁ ϖ₁ ϖ'' θ) csn = wke-val-count-lemma (t i) (var (t i₁)) (x ∷ E) ((_ , _) ∷ E') π ϖ (Wkn.wkn-cong ϖ') θ csn
+    wke-val-count-lemma (Cx.t i) (var (Cx.t i₁)) (x ∷ E) (x₁ ∷ E') (wk-wk π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-ww- π₁ ϖ₁ ϖ'' θ) csn = wke-val-count-lemma (t i) (var (t i₁)) (x ∷ E) (x₁ ∷ E') π ϖ (Wkn.wkn-cons ϖ') θ csn
+
+    wke-val-count-lemma (Cx.t i) (lam W) E E' (wk-cong π) ϖ ϖ' θ csn =
+      count-in-val (t i) (lam W) E' ϖ' csn
+      ≡⟨ refl ⟩
+        count-in-comp (t (t i)) W E' (Wkn.wkn-cons ϖ') csn
+      ≡⟨ wke-comp-count-lemma (t (t i)) W E E' (wk-cong (wk-cong π)) (Wkn.wkn-cons ϖ) (Wkn.wkn-cons ϖ') (Wke.wke-cww (wk-cong π) ϖ ϖ' θ) csn ⟩
+        count-in-comp (t (t (wk-mem π i))) (wk-comp (wk-cong (wk-cong π)) W) E (Wkn.wkn-cons ϖ) csn
+      ≡⟨ refl ⟩
+      count-in-val (t (wk-mem π i)) (lam (wk-comp (wk-cong (wk-cong π)) W)) E ϖ csn ∎
+
+    wke-val-count-lemma (Cx.t i) (lam W) E E' (wk-wk π) ϖ ϖ' θ csn = wke-comp-count-lemma (t (t i)) W E E' (wk-cong (wk-wk π)) (Wkn.wkn-cons ϖ) (Wkn.wkn-cons ϖ') (Wke.wke-cww (wk-wk π) ϖ ϖ' θ) csn
+
+    wke-val-count-lemma (Cx.t i) (pair M₁ M₂) E E' (wk-cong π) ϖ ϖ' θ csn = cong₂ _+_ (wke-val-count-lemma (Cx.t i) M₁ E E' (wk-cong π) ϖ ϖ' θ csn) (wke-val-count-lemma (Cx.t i) M₂ E E' (wk-cong π) ϖ ϖ' θ csn)
+    wke-val-count-lemma (Cx.t i) (pair M₁ M₂) E E' (wk-wk π) ϖ ϖ' θ csn = cong₂ _+_ (wke-val-count-lemma (Cx.t i) M₁ E E' (wk-wk π) ϖ ϖ' θ csn) (wke-val-count-lemma (Cx.t i) M₂ E E' (wk-wk π) ϖ ϖ' θ csn)
+
+    wke-val-count-lemma (Cx.t i) (pm M N) E E' (wk-cong π) ϖ ϖ' θ csn =
+      let
+       n₁≡m₁ = wke-val-count-lemma (t i) M E E' (wk-cong π) ϖ ϖ' θ csn
+       n₂≡m₂ = wke-val-count-lemma Cx.h N E E' (wk-cong (wk-cong (wk-cong π))) (Wkn.wkn-cons (Wkn.wkn-cons ϖ)) (Wkn.wkn-cons (Wkn.wkn-cons ϖ')) (Wke.wke-cww (wk-cong (wk-cong π)) (Wkn.wkn-cons ϖ) (Wkn.wkn-cons ϖ') (Wke.wke-cww (wk-cong π) ϖ ϖ' θ)) csn
+       n₃≡m₃ = wke-val-count-lemma (t h) N E E' (wk-cong (wk-cong (wk-cong π))) (Wkn.wkn-cons (Wkn.wkn-cons ϖ)) (Wkn.wkn-cons (Wkn.wkn-cons ϖ')) (Wke.wke-cww (wk-cong (wk-cong π)) (Wkn.wkn-cons ϖ) (Wkn.wkn-cons ϖ') (Wke.wke-cww (wk-cong π) ϖ ϖ' θ)) csn
+       n₄≡m₄ = wke-val-count-lemma (t (t (t i))) N E E' (wk-cong (wk-cong (wk-cong π))) (Wkn.wkn-cons (Wkn.wkn-cons ϖ)) (Wkn.wkn-cons (Wkn.wkn-cons ϖ')) (Wke.wke-cww (wk-cong (wk-cong π)) (Wkn.wkn-cons ϖ) (Wkn.wkn-cons ϖ') (Wke.wke-cww (wk-cong π) ϖ ϖ' θ)) csn
+       eq1 : n₁ ≡ m₁ → n₂ ≡ m₂ → n₃ ≡ m₃ → n₄ ≡ m₄ → n₁ * suc (n₂ + n₃) + n₄ ≡ m₁ * suc (m₂ + m₃) + m₄
+       eq1 n₁≡m₁ n₂≡m₂ n₃≡m₃ n₄≡m₄ = cong₂ _+_ (cong₂ _*_ n₁≡m₁ (cong suc (cong₂ _+_ n₂≡m₂ n₃≡m₃))) n₄≡m₄
+      in
+      eq1 n₁≡m₁ n₂≡m₂ n₃≡m₃ n₄≡m₄
+
+    wke-val-count-lemma (Cx.t i) (pm M N) E E' (wk-wk π) ϖ ϖ' θ csn =
+      let
+       n₁≡m₁ = wke-val-count-lemma (t i) M E E' (wk-wk π) ϖ ϖ' θ csn
+       n₂≡m₂ = wke-val-count-lemma h N E E' (wk-cong (wk-cong (wk-wk π))) (Wkn.wkn-cons (Wkn.wkn-cons ϖ)) (Wkn.wkn-cons (Wkn.wkn-cons ϖ')) (Wke.wke-cww (wk-cong (wk-wk π)) (Wkn.wkn-cons ϖ) (Wkn.wkn-cons ϖ') (Wke.wke-cww (wk-wk π) ϖ ϖ' θ)) csn
+       n₃≡m₃ = wke-val-count-lemma (t h) N E E' (wk-cong (wk-cong (wk-wk π))) (Wkn.wkn-cons (Wkn.wkn-cons ϖ)) (Wkn.wkn-cons (Wkn.wkn-cons ϖ')) (Wke.wke-cww (wk-cong (wk-wk π)) (Wkn.wkn-cons ϖ) (Wkn.wkn-cons ϖ') (Wke.wke-cww (wk-wk π) ϖ ϖ' θ)) csn
+       n₄≡m₄ = wke-val-count-lemma (t (t (t i))) N E E' (wk-cong (wk-cong (wk-wk π))) (Wkn.wkn-cons (Wkn.wkn-cons ϖ)) (Wkn.wkn-cons (Wkn.wkn-cons ϖ')) (Wke.wke-cww (wk-cong (wk-wk π)) (Wkn.wkn-cons ϖ) (Wkn.wkn-cons ϖ') (Wke.wke-cww (wk-wk π) ϖ ϖ' θ)) csn
+       eq1 : n₁ ≡ m₁ → n₂ ≡ m₂ → n₃ ≡ m₃ → n₄ ≡ m₄ → n₁ * suc (n₂ + n₃) + n₄ ≡ m₁ * suc (m₂ + m₃) + m₄
+       eq1 n₁≡m₁ n₂≡m₂ n₃≡m₃ n₄≡m₄ = cong₂ _+_ (cong₂ _*_ n₁≡m₁ (cong suc (cong₂ _+_ n₂≡m₂ n₃≡m₃))) n₄≡m₄
+      in
+      eq1 n₁≡m₁ n₂≡m₂ n₃≡m₃ n₄≡m₄
+
+    wke-val-count-lemma (Cx.t i) unit E E' (wk-cong π) ϖ ϖ' θ csn = refl
+    wke-val-count-lemma (Cx.t i) unit E E' (wk-wk π) ϖ ϖ' θ csn = refl
+
+
+    wke-comp-count-lemma : (i : Γ' ∋ Y) → (W : Comp Γ' X) → (E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X)))
+                → (π : Wk Γ Γ') → (ϖ : Wkn Γ E) → (ϖ' : Wkn Γ' E') → (θ : Wke π ϖ ϖ') → (csn : List (ℕ × ℕ))
+                → count-in-comp i W E' ϖ' csn ≡ count-in-comp (wk-mem π i) (wk-comp π W) E ϖ csn
+    wke-comp-count-lemma i (return M) E E' π ϖ ϖ' θ csn = wke-val-count-lemma i M E E' π ϖ ϖ' θ csn
+    wke-comp-count-lemma i (pm M W) E E' π ϖ ϖ' θ csn =
+      let
+       n₁≡m₁ = wke-val-count-lemma i M E E' π ϖ ϖ' θ csn
+       n₂≡m₂ = wke-comp-count-lemma h W E E' (wk-cong (wk-cong π)) (Wkn.wkn-cons (Wkn.wkn-cons ϖ)) (Wkn.wkn-cons (Wkn.wkn-cons ϖ')) (Wke.wke-cww (wk-cong π) (Wkn.wkn-cons ϖ) (Wkn.wkn-cons ϖ') (Wke.wke-cww π ϖ ϖ' θ)) csn
+       n₃≡m₃ = wke-comp-count-lemma (t h) W E E' (wk-cong (wk-cong π)) (Wkn.wkn-cons (Wkn.wkn-cons ϖ)) (Wkn.wkn-cons (Wkn.wkn-cons ϖ')) (Wke.wke-cww (wk-cong π) (Wkn.wkn-cons ϖ) (Wkn.wkn-cons ϖ') (Wke.wke-cww π ϖ ϖ' θ)) csn
+       n₄≡m₄ = wke-comp-count-lemma (t (t i)) W E E' (wk-cong (wk-cong π)) (Wkn.wkn-cons (Wkn.wkn-cons ϖ)) (Wkn.wkn-cons (Wkn.wkn-cons ϖ')) (Wke.wke-cww (wk-cong π) (Wkn.wkn-cons ϖ) (Wkn.wkn-cons ϖ') (Wke.wke-cww π ϖ ϖ' θ)) csn
+       eq1 : n₁ ≡ m₁ → n₂ ≡ m₂ → n₃ ≡ m₃ → n₄ ≡ m₄ → n₁ * suc (n₂ + n₃) + n₄ ≡ m₁ * suc (m₂ + m₃) + m₄
+       eq1 n₁≡m₁ n₂≡m₂ n₃≡m₃ n₄≡m₄ = cong₂ _+_ (cong₂ _*_ n₁≡m₁ (cong suc (cong₂ _+_ n₂≡m₂ n₃≡m₃))) n₄≡m₄
+      in
+      eq1 n₁≡m₁ n₂≡m₂ n₃≡m₃ n₄≡m₄
+
+    wke-comp-count-lemma i (push W₁ W₂) E E' π ϖ ϖ' θ csn =
+      let
+        n₁≡m₁ = wke-comp-count-lemma i W₁ E E' π ϖ ϖ' θ csn
+        n₂≡m₂ = wke-comp-count-lemma h W₂ E E' (wk-cong π) (Wkn.wkn-cons ϖ) (Wkn.wkn-cons ϖ') (Wke.wke-cww π ϖ ϖ' θ) csn
+        n₃≡m₃ = wke-comp-count-lemma (t i) W₂ E E' (wk-cong π) (Wkn.wkn-cons ϖ) (Wkn.wkn-cons ϖ') (Wke.wke-cww π ϖ ϖ' θ) csn
+        eq2 : n₁ ≡ m₁ → n₂ ≡ m₂ → n₃ ≡ m₃ → n₁ * suc n₂ + n₃ ≡ m₁ * suc m₂ + m₃
+        eq2 n₁≡m₁ n₂≡m₂ n₃≡m₃ = cong₂ _+_ (cong₂ _*_ n₁≡m₁ (cong suc n₂≡m₂)) n₃≡m₃
+      in
+      count-in-comp i (push W₁ W₂) E' ϖ' csn
+      ≡⟨ refl ⟩
+        count-in-comp i W₁ E' ϖ' csn * suc (count-in-comp h W₂ E' (Wkn.wkn-cons ϖ') csn) + count-in-comp (t i) W₂ E' (Wkn.wkn-cons ϖ') csn
+      ≡⟨ eq2 n₁≡m₁ n₂≡m₂ n₃≡m₃ ⟩
+        count-in-comp (wk-mem π i) (wk-comp π W₁) E ϖ csn * suc (count-in-comp h (wk-comp (wk-cong π) W₂) E (Wkn.wkn-cons ϖ) csn) + count-in-comp (t (wk-mem π i)) (wk-comp (wk-cong π) W₂) E (Wkn.wkn-cons ϖ) csn
+      ≡⟨ refl ⟩
+      count-in-comp (wk-mem π i) (push (wk-comp π W₁) (wk-comp (wk-cong π) W₂)) E ϖ csn ∎
+
+    wke-comp-count-lemma i (app M N) E E' π ϖ ϖ' θ csn =
+      let
+        n₁≡m₁ = wke-val-count-lemma i M E E' π ϖ ϖ' θ csn
+        n₂≡m₂ = wke-val-count-lemma i N E E' π ϖ ϖ' θ csn
+        n₃≡m₃ = cong p2 (val-wke-lemma M E E' π ϖ ϖ' θ csn)
+        eq3 : n₁ ≡ m₁ → n₂ ≡ m₂ → n₃ ≡ m₃ → n₁ + n₂ * suc n₃ ≡ m₁ + m₂ * suc m₃
+        eq3 n₁≡m₁ n₂≡m₂ n₃≡m₃ = cong₂ _+_ n₁≡m₁ (cong₂ _*_ n₂≡m₂ (cong suc n₃≡m₃))
+      in
+       count-in-comp i (app M N) E' ϖ' csn
+      ≡⟨ refl ⟩
+        count-in-val i M E' ϖ' csn + count-in-val i N E' ϖ' csn * suc (p2 (val-metric M E' ϖ' csn))
+      ≡⟨ eq3 n₁≡m₁ n₂≡m₂ n₃≡m₃ ⟩
+        count-in-val (wk-mem π i) (wk-val π M) E ϖ csn + count-in-val (wk-mem π i) (wk-val π N) E ϖ csn * suc (p2 (val-metric (wk-val π M) E ϖ csn))
+      ≡⟨ refl ⟩
+        count-in-comp (wk-mem π i) (app (wk-val π M) (wk-val π N)) E ϖ csn ∎
+    wke-comp-count-lemma i (var M) E E' π ϖ ϖ' θ csn = wke-val-count-lemma i M E E' π ϖ ϖ' θ csn
+    wke-comp-count-lemma i (sub W₁ W₂) E E' π ϖ ϖ' θ csn =
+      let
+        n₁≡m₁ = wke-comp-count-lemma (t i) W₁ E E' (wk-cong π) (Wkn.wkn-cons ϖ) (Wkn.wkn-cons ϖ') (Wke.wke-cww π ϖ ϖ' θ) csn
+        n₂≡m₂ = wke-comp-count-lemma i W₂ E E' π ϖ ϖ' θ csn
+        n₃≡m₃ = wke-comp-count-lemma h W₁ E E' (wk-cong π) (Wkn.wkn-cons ϖ) (Wkn.wkn-cons ϖ') (Wke.wke-cww π ϖ ϖ' θ) csn
+        eq3 : n₁ ≡ m₁ → n₂ ≡ m₂ → n₃ ≡ m₃ → n₁ + n₂ * suc n₃ ≡ m₁ + m₂ * suc m₃
+        eq3 n₁≡m₁ n₂≡m₂ n₃≡m₃ = cong₂ _+_ n₁≡m₁ (cong₂ _*_ n₂≡m₂ (cong suc n₃≡m₃))
+      in
+      eq3 n₁≡m₁ n₂≡m₂ n₃≡m₃
 
     λ-lhs-val-wke-lemma : (M : Val Γ' (X `× Y)) → (E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X)))
                   → (π : Wk Γ Γ') → (ϖ : Wkn Γ E) → (ϖ' : Wkn Γ' E') → (θ : Wke π ϖ ϖ')

@@ -510,7 +510,8 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
     count-in-comp : (i : Γ ∋ X) → (W : Comp Γ Z) → (E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → Wkn Γ E → (csn : List (ℕ × ℕ)) → ℕ
     count-in-comp i (return M) E ϖ csn = count-in-val i M E ϖ csn
-    count-in-comp i (pm M W) E ϖ csn = count-in-val i M E ϖ csn + count-in-comp (t (t i)) W E (wkn-cons (wkn-cons ϖ)) csn
+    count-in-comp i (pm M W) E ϖ csn = count-in-val i M E ϖ csn * (suc (count-in-comp h W E (wkn-cons (wkn-cons ϖ)) csn + count-in-comp (t h) W E (wkn-cons (wkn-cons ϖ)) csn)) + count-in-comp (t (t i)) W E (wkn-cons (wkn-cons ϖ)) csn
+
     count-in-comp i (push W₁ W₂) E ϖ csn = count-in-comp i W₁ E ϖ csn * (suc (count-in-comp h W₂ E (wkn-cons ϖ) csn)) + count-in-comp (t i) W₂ E (wkn-cons ϖ) csn
     count-in-comp i (app M N) E ϖ csn = count-in-val i M E ϖ csn + count-in-val i N E ϖ csn * (suc (p2 (val-metric M E ϖ csn)))
     count-in-comp i (var M) E ϖ csn = count-in-val i M E ϖ csn
