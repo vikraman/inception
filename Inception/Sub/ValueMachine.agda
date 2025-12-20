@@ -824,29 +824,19 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   ⟦ ∘ tail ⟧ᵛꟴ = ⟦ tail ⟧ᵛˢ
   ⟦ ∙ tail ⟧ᵛꟴ = ⟦ tail ⟧ᵛˢ
 
+  topStackCtx : (S : ValStack non-empty T◾) → Ctx
+  topStackCtx (_⊲_∷_ {Γ = Γ} _ _ _) = Γ
+
   topCtx : ValState T◾ → Ctx
-  topCtx (∘ ⭭_ {Γ = Γ} x ⊲ γ ∷ x₁) = Γ
-  topCtx (∘ ⇡_ {Γ = Γ} M ⊲ γ ∷ x₁) = Γ
-  topCtx (∘ ⇡ᴹ {Γ = Γ} M N ⊲ γ ∷ x₁) = Γ
-  topCtx (∘ ⇡ᴸ {Γ = Γ} LHS RHS ⊲ γ ∷ x₁) = Γ
-  topCtx (∘ ⇡ᴿ {Γ = Γ} LHS RHS ⊲ γ ∷ x₁) = Γ
-  topCtx (∙ ⭭_ {Γ = Γ} x ⊲ γ ∷ x₁) = Γ
-  topCtx (∙ ⇡_ {Γ = Γ} M ⊲ γ ∷ x₁) = Γ
-  topCtx (∙ ⇡ᴹ {Γ = Γ} M N ⊲ γ ∷ x₁) = Γ
-  topCtx (∙ ⇡ᴸ {Γ = Γ} LHS RHS ⊲ γ ∷ x₁) = Γ
-  topCtx (∙ ⇡ᴿ {Γ = Γ} LHS RHS ⊲ γ ∷ x₁) = Γ
+  topCtx (∘ S) = topStackCtx S
+  topCtx (∙ S) = topStackCtx S
+
+  topStackEnv : (S : ValStack non-empty T◾) → Env (topStackCtx S)
+  topStackEnv (_⊲_∷_ _ γ _) = γ
 
   topEnv : (S : ValState T◾) → Env (topCtx S)
-  topEnv (∘ ⭭ x ⊲ γ ∷ x₁) = γ
-  topEnv (∘ ⇡ M ⊲ γ ∷ x₁) = γ
-  topEnv (∘ ⇡ᴹ M N ⊲ γ ∷ x₁) = γ
-  topEnv (∘ ⇡ᴸ LHS RHS ⊲ γ ∷ x₁) = γ
-  topEnv (∘ ⇡ᴿ LHS RHS ⊲ γ ∷ x₁) = γ
-  topEnv (∙ ⭭ x ⊲ γ ∷ x₁) = γ
-  topEnv (∙ ⇡ M ⊲ γ ∷ x₁) = γ
-  topEnv (∙ ⇡ᴹ M N ⊲ γ ∷ x₁) = γ
-  topEnv (∙ ⇡ᴸ LHS RHS ⊲ γ ∷ x₁) = γ
-  topEnv (∙ ⇡ᴿ LHS RHS ⊲ γ ∷ x₁) = γ
+  topEnv (∘ S) = topStackEnv S
+  topEnv (∙ S) = topStackEnv S
 
   data ValHaltingState : ValState T◾ → Set where
 
