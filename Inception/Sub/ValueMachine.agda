@@ -1282,13 +1282,20 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   val-eval-rec : (M : Γ' ⊢ᵛ X) → (γ : Env Γ) → (π : Wk Γ Γ') → ValSteps {T◾ = X} (∘ ((⇡ (wk-val π M) ⊲ γ ∷ □) {↥ = 🗆}))
 
-  val-eval-rec {X = `V} (var {A = .`V} i) γ π = steps (_ →ᵛ⟨ ∘var-c ⟩．) (∙ v̲a̲r̲ (wk-mem π i) ⊲ γ ■) refl wk-id refl {!!} wke-id
+  val-eval-rec {X = `V} (var {A = .`V} i) γ π = steps (_ →ᵛ⟨ ∘var-c ⟩．) (∙ v̲a̲r̲ (wk-mem π i) ⊲ γ ■) refl wk-id refl (λ csn → ≤ᴹ-incr-cong (s≤s (z≤n {n = 1})) (≤ᴹ-refl {nm = (lookup-metric (wk-mem π i) (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) csn)})) wke-id
 
   val-eval-rec {X = `Unit} (var {A = .`Unit} i) γ π with lookup (wk-mem π i) γ
-  ... | steps i>>T found-unit i≡T π₁ w≡γ _ _ = steps (_ →ᵛ⟨ ∘var i>>T π₁ ⟩．) (∙ u̲n̲i̲t̲ ⊲ γ ■) refl wk-id refl {!!} wke-id
+  ... | steps i>>T found-unit i≡T π₁ w≡γ T≤ᴹS _ = steps (_ →ᵛ⟨ ∘var i>>T π₁ ⟩．) (∙ u̲n̲i̲t̲ ⊲ γ ■) refl wk-id refl (λ csn → ≤ᴹ-trans (T≤ᴹS csn) (≤ᴹ-incr-cong (z≤n {n = 2}) (≤ᴹ-refl {nm = (lookup-metric (wk-mem π i) (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) csn)}))) wke-id
 
   val-eval-rec {X = X `× X₁} (var {A = .(X `× X₁)} i) γ π with lookup (wk-mem π i) γ
-  ... | steps i>>T (found-pair {LHS = LHS} {RHS = RHS} {γ = γ₁}) i≡T π₁ w≡γ _ _ =
+  ... | steps i>>T (found-pair {LHS = LHS} {RHS = RHS} {γ = γ₁}) i≡T π₁ w≡γ T≤ᴹS θ =
+
+            let
+              a1 = λ csn → v̲a̲l̲-wke-lemma LHS (proj₁ (env-metric γ)) (proj₁ (env-metric γ₁)) π₁ (proj₂ (env-metric γ)) (proj₂ (env-metric γ₁)) θ csn
+              a2 = λ csn → v̲a̲l̲-wke-lemma RHS (proj₁ (env-metric γ)) (proj₁ (env-metric γ₁)) π₁ (proj₂ (env-metric γ)) (proj₂ (env-metric γ₁)) θ csn
+              T≤ᴹS' csn  = subst (λ x → m-× 1 x (v̲a̲l̲-metric RHS (proj₁ (env-metric γ₁)) (proj₂ (env-metric γ₁)) csn) ≤ᴹ lookup-metric (wk-mem π i) (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) csn) (a1 csn) (T≤ᴹS csn)
+              T≤ᴹS'' csn = subst (λ x → m-× 1 (v̲a̲l̲-metric (wk-v̲a̲l̲ π₁ LHS) (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) csn) x ≤ᴹ lookup-metric (wk-mem π i) (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) csn) (a2 csn) (T≤ᴹS' csn)
+            in
 
             steps
 
@@ -1314,13 +1321,20 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
             refl
 
-            {!!}
+            (λ csn → ≤ᴹ-trans (T≤ᴹS'' csn) (≤ᴹ-incr-cong (z≤n {n = 2}) (≤ᴹ-refl {nm = (lookup-metric (wk-mem π i) (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) csn)})))
 
             wke-id
 
   val-eval-rec {X = X `⇒ X₁} (var {A = .(X `⇒ X₁)} i) γ π with lookup (wk-mem π i) γ
 
-  ... | steps i>>T (found-lam {W = W} {γ = γ₁}) i≡T π₁ w≡γ _ _ =
+  ... | steps i>>T (found-lam {W = W} {γ = γ₁}) i≡T π₁ w≡γ T≤ᴹS θ =
+
+            let
+              a1 = λ csn → wke-comp-count-lemma h W (proj₁ (env-metric γ)) (proj₁ (env-metric γ₁)) (wk-cong π₁) (wkn-cons (proj₂ (env-metric γ))) (wkn-cons (proj₂ (env-metric γ₁))) (wke-cww π₁ (proj₂ (env-metric γ)) (proj₂ (env-metric γ₁)) θ) csn
+              a2 = λ csn → comp-wke-lemma W (proj₁ (env-metric γ)) (proj₁ (env-metric γ₁)) (wk-cong π₁) (wkn-cons (proj₂ (env-metric γ))) (wkn-cons (proj₂ (env-metric γ₁))) (wke-cww π₁ (proj₂ (env-metric γ)) (proj₂ (env-metric γ₁)) θ) csn
+              T≤ᴹS'  csn = subst (λ x → m-⇒ 1 x (comp-metric W (proj₁ (env-metric γ₁)) (wkn-cons (proj₂ (env-metric γ₁))) csn) ≤ᴹ lookup-metric (wk-mem π i) (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) csn) (a1 csn) (T≤ᴹS csn)
+              T≤ᴹS'' csn = subst (λ x → m-⇒ 1 (count-in-comp h (wk-comp (wk-cong π₁) W) (proj₁ (env-metric γ)) (wkn-cons (proj₂ (env-metric γ))) csn) x ≤ᴹ lookup-metric (wk-mem π i) (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) csn) (a2 csn) (T≤ᴹS' csn)
+            in
 
             steps
 
@@ -1340,13 +1354,13 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
             refl
 
-            {!!}
+            (λ csn → ≤ᴹ-trans (T≤ᴹS'' csn) (≤ᴹ-incr-cong (z≤n {n = 2}) (≤ᴹ-refl {nm = (lookup-metric (wk-mem π i) (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) csn)})))
 
             wke-id
 
-  val-eval-rec (lam W) γ π = steps (∘ ⇡ (wk-val π (lam W)) ⊲ γ ∷ □ →ᵛ⟨ ∘lam ⟩．) (∙ l̲a̲m̲ (wk-comp (wk-cong π) W) ⊲ γ ■) refl wk-id refl {!!} wke-id
+  val-eval-rec (lam W) γ π = steps (∘ ⇡ (wk-val π (lam W)) ⊲ γ ∷ □ →ᵛ⟨ ∘lam ⟩．) (∙ l̲a̲m̲ (wk-comp (wk-cong π) W) ⊲ γ ■) refl wk-id refl (λ csn → ≤ᴹ-incr-cong (z≤n {n = 1}) (≤ᴹ-refl {nm = m-⇒ 1 (count-in-comp h (wk-comp (wk-cong π) W) (proj₁ (env-metric γ)) (wkn-cons (proj₂ (env-metric γ))) csn) (comp-metric (wk-comp (wk-cong π) W) (proj₁ (env-metric γ)) (wkn-cons (proj₂ (env-metric γ))) csn)})) wke-id
 
-  val-eval-rec unit γ π = steps (_ →ᵛ⟨ ∘unit ⟩．) (∙ u̲n̲i̲t̲ ⊲ γ ■) refl wk-id refl {!!} wke-id
+  val-eval-rec unit γ π = steps (_ →ᵛ⟨ ∘unit ⟩．) (∙ u̲n̲i̲t̲ ⊲ γ ■) refl wk-id refl (λ csn → ≤ᴹ-incr-cong (z≤n {n = 1}) (≤ᴹ-refl {nm = m-Unit 1})) wke-id
 
   val-eval-rec (pair {A = X} {B = Y} LHS RHS) γ π with val-eval-rec {X = X} LHS γ π
   ... | steps {T = ∙ (⭭_ {X = X} LT ⊲ γ₁ ∷ □) {↥ = 🗆}} L>T ∙LT L≡T πᴸ wk≡ᴸ T≤ᴹS θ with  val-eval-rec {X = Y} RHS γ₁ (wk-trans πᴸ π)
