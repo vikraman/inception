@@ -247,36 +247,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   ≤ᴹ⇒≤ (≤-⇒ n₁≤n₂ nm₁≤nm₂) = +-≤-cong n₁≤n₂ (≤ᴹ⇒≤ nm₁≤nm₂)
   ≤ᴹ⇒≤ (≤-× n₁≤n₂ nm₁≤nm₃ nm₂≤nm₄) = +-≤-cong (+-≤-cong n₁≤n₂ (≤ᴹ⇒≤ nm₁≤nm₃)) (≤ᴹ⇒≤ nm₂≤nm₄)
 
-{-
-  data _≤ᴱ_       : (E₁ E₂ : List (Σ[ X ∈ Ty ] TermMetric X)) → Set where
-    ≤ᴱ-id       : {E : List (Σ[ X ∈ Ty ] TermMetric X)} → E ≤ᴱ E
-    ≤ᴱ-cong     : {E₁ E₂ : List (Σ[ X ∈ Ty ] TermMetric X)} → {nm₁ nm₂ : TermMetric X} → (E₁≤E₂ : E₁ ≤ᴱ E₂) → (nm₁≤nm₂ : nm₁ ≤ᴹ nm₂) → ((X , nm₁) ∷ E₁) ≤ᴱ ((X , nm₂) ∷ E₂)
-
-  -- maybe get rid of Wke
-  data _≤ʷ_ : {E₁ E₂ : List (Σ[ X ∈ Ty ] TermMetric X)} → (ϖ₁ : Wkn Γ E₁) → (ϖ₂ : Wkn Γ E₂) → Set where
-   ≤ʷ-nil : wkn-nil ≤ʷ wkn-nil
-   ≤ʷ-cc  : {E₁ E₂ : List (Σ[ X ∈ Ty ] TermMetric X)} → {ϖ₁ : Wkn Γ E₁} → {ϖ₂ : Wkn Γ E₂} → (θ : ϖ₁ ≤ʷ ϖ₂) → {nm₁ nm₂ : TermMetric Y} → (nm₁≤nm₂ : nm₁ ≤ᴹ nm₂) → (wkn-cong {Y = Y} {e = nm₁} ϖ₁) ≤ʷ (wkn-cong {Y = Y} {e = nm₂} ϖ₂)
-   ≤ʷ-ww  : {E₁ E₂ : List (Σ[ X ∈ Ty ] TermMetric X)} → {ϖ₁ : Wkn Γ E₁} → {ϖ₂ : Wkn Γ E₂} → (θ : ϖ₁ ≤ʷ ϖ₂) → (wkn-cons {Y = Y} ϖ₁) ≤ʷ (wkn-cons {Y = Y} ϖ₂)
-
-  ≤ʷ-z-l : {e : (Σ[ X ∈ Ty ] TermMetric X)} {E : List (Σ[ X ∈ Ty ] TermMetric X)} {ϖ₁ : Wkn Γ []} {ϖ₂ : Wkn Γ (e ∷ E)} → ϖ₁ ≤ʷ ϖ₂ → ⊥
-  ≤ʷ-z-l (≤ʷ-ww θ) = ≤ʷ-z-l θ
-
-  ≤ʷ-z-r : {e : (Σ[ X ∈ Ty ] TermMetric X)} {E : List (Σ[ X ∈ Ty ] TermMetric X)} {ϖ₁ : Wkn Γ (e ∷ E)} {ϖ₂ : Wkn Γ []} → ϖ₁ ≤ʷ ϖ₂ → ⊥
-  ≤ʷ-z-r (≤ʷ-ww θ) = ≤ʷ-z-r θ
--}
-
 -------------------------------------------------------------------------------------------------
-
-{-
-  cs-to-csf : (cs : CompStack Δ Z) → (ℕ → ℕ)
-  cs-to-csf ◻ w = 0
-  cs-to-csf ((W ⊲ γ ⦂⦂ cs) {π = π} {wk≡ = wk≡}) w =
-    let
-      csf = cs-to-csn cs
-      IH = env-metric γ
-    in
-      ⟪ comp-metric W (proj₁ IH) (wkn-cons (proj₂ IH)) csn ⟫
-  -}
 
   compstate-metric : CompState → ℕ
   compstate-metric ((∘⟨ W ⊰ γ ╎ cs ⟩) {π = π}) =

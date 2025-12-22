@@ -985,6 +985,121 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   --------------------------------------------------------------------
 
+  LHS≤ᴹlhs : {LHSnm : TermMetric X} → {RHSnm : TermMetric Y} → {nm : TermMetric (X `× Y)} → (m-× n LHSnm RHSnm) ≤ᴹ nm → LHSnm ≤ᴹ (lhs nm)
+  LHS≤ᴹlhs (≤-× x lhs₁≤ᴹlhs₂ rhs₁≤ᴹrhs₂) = lhs₁≤ᴹlhs₂
+
+  RHS≤ᴹrhs : {LHSnm : TermMetric X} → {RHSnm : TermMetric Y} → {nm : TermMetric (X `× Y)} → (m-× n LHSnm RHSnm) ≤ᴹ nm → RHSnm ≤ᴹ (rhs nm)
+  RHS≤ᴹrhs (≤-× x lhs₁≤ᴹlhs₂ rhs₁≤ᴹrhs₂) = rhs₁≤ᴹrhs₂
+
+  ×≡vlr : (nm : TermMetric (X `× Y)) → nm ≡ (m-× (vx nm) (lhs nm) (rhs nm))
+  ×≡vlr (m-× m l r) = refl
+
+  --------------------------------------------------------------------
+
+  data _≤ᴱ_  : {E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))} → (ϖ : Wkn Γ E) → (ϖ' : Wkn Γ' E') → Set where
+    ≤ᴱ-bc       : {E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))} → {π : Wk Γ Γ'} → {ϖ : Wkn Γ E} → {ϖ' : Wkn Γ' E'} → (θ : Wke π ϖ ϖ') → ϖ ≤ᴱ ϖ'
+    ≤ᴱ-cong     :   {E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))}
+                  → {π : Wk Γ Γ'} → {ϖ : Wkn Γ E} → {ϖ' : Wkn Γ' E'}
+                  → {nm₁ nm₂ : (List (ℕ × ℕ) → TermMetric X)}
+                  → (nm₁≤nm₂ : ((csn : (List (ℕ × ℕ))) → (nm₁ csn) ≤ᴹ (nm₂ csn)))
+                  → (ϖ≤ϖ' : ϖ ≤ᴱ ϖ') → (wkn-cong {e = nm₁} ϖ) ≤ᴱ (wkn-cong {e = nm₂} ϖ')
+    ≤ᴱ-wk       :   {E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))}
+                  → {π : Wk Γ Γ'} → {ϖ : Wkn Γ E} → {ϖ' : Wkn Γ' E'}
+                  → (ϖ≤ϖ' : ϖ ≤ᴱ ϖ') → (wkn-cons {Y = Y} ϖ) ≤ᴱ (wkn-cons {Y = Y} ϖ')
+
+{-
+  data _≤ᴱ[_]_  : (E₁ : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → {E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))} → {π : Wk Γ Γ'} → {ϖ : Wkn Γ E} → {ϖ' : Wkn Γ' E'} → (θ : Wke π ϖ ϖ') → (E₂ : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → Set where
+    ≤ᴱ-bc       : {E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))} → {π : Wk Γ Γ'} → {ϖ : Wkn Γ E} → {ϖ' : Wkn Γ' E'} → (θ : Wke π ϖ ϖ') → E ≤ᴱ[ θ ] E'
+    ≤ᴱ-cong     :    {E₁ E₂ : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))}
+                  → {E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))}
+                  → {π : Wk Γ Γ'} → {ϖ : Wkn Γ E} → {ϖ' : Wkn Γ' E'} → {θ : Wke π ϖ ϖ'}
+                  → {nm₁ nm₂ : (List (ℕ × ℕ) → TermMetric X)}
+                  → (nm₁≤nm₂ : ((csn : (List (ℕ × ℕ))) → (nm₁ csn) ≤ᴹ (nm₂ csn)))
+                  → (E₁≤E₂ : E₁ ≤ᴱ[ θ ] E₂) → ((X , nm₁) ∷ E₁) ≤ᴱ[ θ ] ((X , nm₂) ∷ E₂)
+-}
+
+  -- prev-var : (Γ ∙ Y ∙ X) ∋ Z → (Γ ∙ Y) ∋ Z
+  -- prev-var Cx.h = {!h!}
+  -- prev-var (Cx.t i) = {!!}
+
+  wke-z-r : {e : (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))} {E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))} {π : Wk Γ Γ} {ϖ : Wkn Γ (e ∷ E')}  {ϖ' : Wkn Γ []}
+            → Wke π ϖ ϖ' → ⊥
+  wke-z-r (wke-wc- π ϖ ϖ' e θ) = wk-absurd (wk-wk π) π
+  wke-z-r (wke-ww- π ϖ ϖ' θ) = wk-absurd (wk-wk π) π
+  wke-z-r (wke-cww π ϖ ϖ' θ) = wke-z-r θ
+
+  ≤ᴱ-z-r : {e : (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))} {E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))} {ϖ : Wkn Γ (e ∷ E')}  {ϖ' : Wkn Γ []} → (ϖ≤ᴱϖ' : ϖ ≤ᴱ ϖ') → ⊥
+  ≤ᴱ-z-r (≤ᴱ-bc θ) = wke-z-r θ
+  ≤ᴱ-z-r (≤ᴱ-wk ϖ≤ᴱϖ') = ≤ᴱ-z-r ϖ≤ᴱϖ'
+
+  ≤ᴱ-z-l : {e : (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))} {E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))} {ϖ : Wkn Γ []} {ϖ' : Wkn Γ' (e ∷ E')} → (ϖ≤ᴱϖ' : ϖ ≤ᴱ ϖ') → ⊥
+  ≤ᴱ-z-l (≤ᴱ-bc θ) = wke-z-l θ
+  ≤ᴱ-z-l (≤ᴱ-wk ϖ≤ᴱϖ') = ≤ᴱ-z-l ϖ≤ᴱϖ'
+
+  lookup-env-lemma : (i : Γ ∋ X) → (E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X)))
+              → (ϖ : Wkn Γ E) → (ϖ' : Wkn Γ E') → (ϖ≤ᴱϖ' : ϖ ≤ᴱ ϖ') → (csn : List (ℕ × ℕ))
+              → lookup-metric i E ϖ csn ≤ᴹ lookup-metric i E' ϖ' csn
+
+  lookup-env-lemma Cx.h [] [] (wkn-cons ϖ) (wkn-cons ϖ') (≤ᴱ-bc θ) csn = ≤ᴹ-refl
+  lookup-env-lemma Cx.h [] [] (wkn-cons ϖ) (wkn-cons ϖ') (≤ᴱ-wk ϖ≤ᴱϖ') csn = ≤ᴹ-refl
+  lookup-env-lemma Cx.h [] (x ∷ E') (wkn-cons ϖ) (wkn-cong ϖ') (≤ᴱ-bc θ) csn = ql (wke-z-l θ) _ --(lookup-metric h [] (wkn-cons ϖ) csn ≤ᴹ lookup-metric h ((_ , _) ∷ E') (wkn-cong ϖ') csn)
+  lookup-env-lemma Cx.h [] (x ∷ E') (wkn-cons ϖ) (wkn-cons ϖ') (≤ᴱ-bc θ) csn = ≤ᴹ-refl
+  lookup-env-lemma Cx.h [] (x ∷ E') (wkn-cons ϖ) (wkn-cons ϖ') (≤ᴱ-wk ϖ≤ᴱϖ') csn = ≤ᴹ-refl
+  lookup-env-lemma Cx.h (x ∷ E) [] (wkn-cong ϖ) (wkn-cons ϖ') (≤ᴱ-bc θ) csn = ql (wke-z-r θ) _ --(lookup-metric h ((_ , _) ∷ E) (wkn-cong ϖ) csn ≤ᴹ lookup-metric h [] (wkn-cons ϖ') csn)
+  lookup-env-lemma Cx.h (x ∷ E) [] (wkn-cons ϖ) (wkn-cons ϖ') (≤ᴱ-bc θ) csn = ≤ᴹ-refl
+  lookup-env-lemma Cx.h (x ∷ E) [] (wkn-cons ϖ) (wkn-cons ϖ') (≤ᴱ-wk ϖ≤ᴱϖ') csn = ≤ᴹ-refl
+  lookup-env-lemma Cx.h (x ∷ E) (x₁ ∷ E') (wkn-cong ϖ) (wkn-cong ϖ') (≤ᴱ-bc (wke-ccc π ϖ₁ ϖ'' e θ)) csn = ≤ᴹ-refl
+  lookup-env-lemma Cx.h (x ∷ E) (x₁ ∷ E') (wkn-cong ϖ) (wkn-cong ϖ') (≤ᴱ-bc (wke-wc- π ϖ₁ ϖ'' e θ)) csn = ql (wk-absurd (wk-wk π) π) _ -- (lookup-metric h ((_ , e) ∷ E) (wkn-cong ϖ) csn ≤ᴹ lookup-metric h ((_ , _) ∷ E') (wkn-cong ϖ') csn)
+  lookup-env-lemma Cx.h (x ∷ E) (x₁ ∷ E') (wkn-cong ϖ) (wkn-cong ϖ') (≤ᴱ-cong nm₁≤nm₂ ϖ≤ᴱϖ') csn = nm₁≤nm₂ csn
+  lookup-env-lemma Cx.h (x ∷ E) (x₁ ∷ E') (wkn-cong ϖ) (wkn-cons ϖ') (≤ᴱ-bc (wke-wc- π ϖ₁ ϖ'' e θ)) csn = ql (wk-absurd (wk-wk π) π) _ --(lookup-metric h ((_ , e) ∷ E) (wkn-cong ϖ) csn ≤ᴹ lookup-metric h (x₁ ∷ E') (wkn-cons ϖ') csn)
+  lookup-env-lemma Cx.h (x ∷ E) (x₁ ∷ E') (wkn-cons ϖ) (wkn-cong ϖ') (≤ᴱ-bc (wke-ww- π ϖ₁ ϖ'' θ)) csn = ql (wk-absurd (wk-wk π) π) _ -- (lookup-metric h (x ∷ E) (wkn-cons ϖ) csn ≤ᴹ lookup-metric h ((_ , _) ∷ E') (wkn-cong ϖ') csn)
+  lookup-env-lemma Cx.h (x ∷ E) (x₁ ∷ E') (wkn-cons ϖ) (wkn-cons ϖ') (≤ᴱ-bc θ) csn = ≤ᴹ-refl
+  lookup-env-lemma Cx.h (x ∷ E) (x₁ ∷ E') (wkn-cons ϖ) (wkn-cons ϖ') (≤ᴱ-wk ϖ≤ᴱϖ') csn = ≤ᴹ-refl
+  lookup-env-lemma (Cx.t i) [] [] (wkn-cons ϖ) (wkn-cons ϖ') (≤ᴱ-bc θ) csn = ≤ᴹ-refl
+  lookup-env-lemma (Cx.t i) [] [] (wkn-cons ϖ) (wkn-cons ϖ') (≤ᴱ-wk ϖ≤ᴱϖ') csn = ≤ᴹ-refl
+  lookup-env-lemma (Cx.t i) [] (x ∷ E') (wkn-cons ϖ) (wkn-cong ϖ') (≤ᴱ-bc θ) csn = ql (wke-z-l θ) _ -- (lookup-metric (t i) [] (wkn-cons ϖ) csn ≤ᴹ lookup-metric (t i) ((_ , _) ∷ E') (wkn-cong ϖ') csn)
+  lookup-env-lemma (Cx.t i) [] (x ∷ E') (wkn-cons ϖ) (wkn-cons ϖ') (≤ᴱ-bc θ) csn = ql (wke-z-l θ) _ -- (lookup-metric (t i) [] (wkn-cons ϖ) csn ≤ᴹ lookup-metric (t i) (x ∷ E') (wkn-cons ϖ') csn)
+  lookup-env-lemma (Cx.t i) [] (x ∷ E') (wkn-cons ϖ) (wkn-cons ϖ') (≤ᴱ-wk ϖ≤ᴱϖ') csn = ql (≤ᴱ-z-l ϖ≤ᴱϖ') _ -- (lookup-metric (t i) [] (wkn-cons ϖ) csn ≤ᴹ lookup-metric (t i) (x ∷ E') (wkn-cons ϖ') csn)
+  lookup-env-lemma (Cx.t i) (x ∷ E) [] (wkn-cong ϖ) (wkn-cons ϖ') (≤ᴱ-bc θ) csn = ql (wke-z-r θ) _ -- (lookup-metric (t i) ((_ , _) ∷ E) (wkn-cong ϖ) csn ≤ᴹ lookup-metric (t i) [] (wkn-cons ϖ') csn)
+  lookup-env-lemma (Cx.t i) (x ∷ E) [] (wkn-cons ϖ) (wkn-cons ϖ') (≤ᴱ-bc θ) csn = ql (wke-z-r θ) _ -- (lookup-metric (t i) (x ∷ E) (wkn-cons ϖ) csn ≤ᴹ lookup-metric (t i) [] (wkn-cons ϖ') csn)
+  lookup-env-lemma (Cx.t i) (x ∷ E) [] (wkn-cons ϖ) (wkn-cons ϖ') (≤ᴱ-wk ϖ≤ᴱϖ') csn = ql (≤ᴱ-z-r ϖ≤ᴱϖ') _ -- (lookup-metric (t i) (x ∷ E) (wkn-cons ϖ) csn ≤ᴹ lookup-metric (t i) [] (wkn-cons ϖ') csn)
+  lookup-env-lemma (Cx.t i) (x ∷ E) (x₁ ∷ E') (wkn-cong ϖ) (wkn-cong ϖ') (≤ᴱ-bc (wke-ccc π ϖ₁ ϖ'' e θ)) csn = lookup-env-lemma i E E' ϖ ϖ' (≤ᴱ-bc θ) csn
+  lookup-env-lemma (Cx.t i) (x ∷ E) (x₁ ∷ E') (wkn-cong ϖ) (wkn-cong ϖ') (≤ᴱ-bc (wke-wc- π ϖ₁ ϖ'' e θ)) csn = lookup-env-lemma i E E' ϖ ϖ' (ql (wk-absurd (wk-wk π) π) (ϖ ≤ᴱ ϖ')) csn
+  lookup-env-lemma (Cx.t i) (x ∷ E) (x₁ ∷ E') (wkn-cong ϖ) (wkn-cong ϖ') (≤ᴱ-cong nm₁≤nm₂ ϖ≤ᴱϖ') csn = lookup-env-lemma i E E' ϖ ϖ' ϖ≤ᴱϖ' csn
+  lookup-env-lemma (Cx.t i) (x ∷ E) (x₁ ∷ E') (wkn-cong ϖ) (wkn-cons ϖ') (≤ᴱ-bc (wke-wc- π ϖ₁ ϖ'' e θ)) csn = ql (wk-absurd (wk-wk π) π) _ --(lookup-metric (t i) ((_ , e) ∷ E) (wkn-cong ϖ) csn ≤ᴹ lookup-metric (t i) (x₁ ∷ E') (wkn-cons ϖ') csn)
+  lookup-env-lemma (Cx.t i) (x ∷ E) (x₁ ∷ E') (wkn-cons ϖ) (wkn-cong ϖ') (≤ᴱ-bc (wke-ww- π ϖ₁ ϖ'' θ)) csn = ql (wk-absurd (wk-wk π) π) _ -- (lookup-metric (t i) (x ∷ E) (wkn-cons ϖ) csn ≤ᴹ lookup-metric (t i) ((_ , _) ∷ E') (wkn-cong ϖ') csn)
+  lookup-env-lemma (Cx.t i) (x ∷ E) (x₁ ∷ E') (wkn-cons ϖ) (wkn-cons ϖ') (≤ᴱ-bc (wke-ww- π ϖ₁ ϖ'' θ)) csn = ql (wk-absurd (wk-wk π) π) _ -- (lookup-metric (t i) (x ∷ E) (wkn-cons ϖ) csn ≤ᴹ lookup-metric (t i) (x₁ ∷ E') (wkn-cons ϖ') csn)
+  lookup-env-lemma (Cx.t i) (x ∷ E) (x₁ ∷ E') (wkn-cons ϖ) (wkn-cons ϖ') (≤ᴱ-bc (wke-cww π ϖ₁ ϖ'' θ)) csn = lookup-env-lemma i (x ∷ E) (x₁ ∷ E') ϖ ϖ' (≤ᴱ-bc θ) csn
+  lookup-env-lemma (Cx.t i) (x ∷ E) (x₁ ∷ E') (wkn-cons ϖ) (wkn-cons ϖ') (≤ᴱ-wk ϖ≤ᴱϖ') csn = lookup-env-lemma i (x ∷ E) (x₁ ∷ E') ϖ ϖ' ϖ≤ᴱϖ' csn
+
+
+  mutual
+    val-env-lemma : (M : Val Γ X) → (E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X)))
+                → (ϖ : Wkn Γ E) → (ϖ' : Wkn Γ E') → (ϖ≤ᴱϖ' : ϖ ≤ᴱ ϖ') → (csn : List (ℕ × ℕ))
+                → val-metric M E ϖ csn ≤ᴹ val-metric M E' ϖ' csn
+    val-env-lemma (var i) E E' ϖ ϖ' ϖ≤ᴱϖ' csn = ≤ᴹ-incr-cong (≤-refl {n = 2}) (lookup-env-lemma i E E' ϖ ϖ' ϖ≤ᴱϖ' csn)
+    val-env-lemma (lam {A = A} W) E E' ϖ ϖ' ϖ≤ᴱϖ' csn =
+      let
+        a0 = comp-env-lemma W E E' (wkn-cons ϖ) (wkn-cons ϖ') (≤ᴱ-wk {Y = A} {π = wk-id} ϖ≤ᴱϖ') csn
+      in
+      {!!}
+    val-env-lemma (pair M M₁) E E' ϖ ϖ' ϖ≤ᴱϖ' csn = {!!}
+    val-env-lemma (pm M N) E E' ϖ ϖ' ϖ≤ᴱϖ' csn =
+      let
+        a0 = val-env-lemma M E E' ϖ ϖ' ϖ≤ᴱϖ' csn
+
+      in
+      {!!}
+    val-env-lemma unit E E' ϖ ϖ' ϖ≤ᴱϖ' csn = ≤ᴹ-refl
+
+    comp-env-lemma : (W : Comp Γ X) → (E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X)))
+                → (ϖ : Wkn Γ E) → (ϖ' : Wkn Γ E') → (ϖ≤ᴱϖ' : ϖ ≤ᴱ ϖ') → (csn : List (ℕ × ℕ))
+                → comp-metric W E ϖ csn ≤ᴹ comp-metric W E' ϖ' csn
+    comp-env-lemma W E E' ϖ ϖ' ϖ≤ᴱϖ' csn = {!!}
+
+
+ --AA
+  --------------------------------------------------------------------
   -- Wke πᵥ (proj₂ (env-metric γ)) (proj₂ (env-metric γ'))
 
   data LookupSteps : LookupState X → Set where
@@ -1280,6 +1395,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   wke-trans {E = E} {E' = E'} {E'' = E''} {π₁ = π₁} {π₂ = π₂} {ϖ₁ = ϖ₁} {ϖ = ϖ} {ϖ₂ = ϖ₂} (wke-cww π ϖ₃ ϖ' θ₁) (wke-ww- π₃ ϖ₄ ϖ'' θ₂) = wke-ww- (wk-trans π π₃) ϖ₃ ϖ₂ (wke-trans θ₁ θ₂)
   wke-trans {E = E} {E' = E'} {E'' = E''} {π₁ = π₁} {π₂ = π₂} {ϖ₁ = ϖ₁} {ϖ = ϖ} {ϖ₂ = ϖ₂} (wke-cww π ϖ₃ ϖ' θ₁) (wke-cww π₃ ϖ₄ ϖ'' θ₂) = wke-cww (wk-trans π π₃) ϖ₃ ϖ'' (wke-trans θ₁ θ₂)
 
+
   val-eval-rec : (M : Γ' ⊢ᵛ X) → (γ : Env Γ) → (π : Wk Γ Γ') → ValSteps {T◾ = X} (∘ ((⇡ (wk-val π M) ⊲ γ ∷ □) {↥ = 🗆}))
 
   val-eval-rec {X = `V} (var {A = .`V} i) γ π = steps (_ →ᵛ⟨ ∘var-c ⟩．) (∙ v̲a̲r̲ (wk-mem π i) ⊲ γ ■) refl wk-id refl (λ csn → ≤ᴹ-incr-cong (s≤s (z≤n {n = 1})) (≤ᴹ-refl {nm = (lookup-metric (wk-mem π i) (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) csn)})) wke-id
@@ -1365,6 +1481,12 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   val-eval-rec (pair {A = X} {B = Y} LHS RHS) γ π with val-eval-rec {X = X} LHS γ π
   ... | steps {T = ∙ (⭭_ {X = X} LT ⊲ γ₁ ∷ □) {↥ = 🗆}} L>T ∙LT L≡T πᴸ wk≡ᴸ T≤ᴹS θ with  val-eval-rec {X = Y} RHS γ₁ (wk-trans πᴸ π)
   ...      | steps {T = ∙ (⭭_ {X = Y} RT ⊲ γ₂ ∷ □) {↥ = 🗆}} R>T ∙RT R≡T πᴿ wk≡ᴿ T≤ᴹS' θ' rewrite sym (wk-val-trans RHS πᴸ π) =
+            let
+              a1     csn = v̲a̲l̲-wke-lemma LT (proj₁ (env-metric γ₂)) (proj₁ (env-metric γ₁)) πᴿ (proj₂ (env-metric γ₂)) (proj₂ (env-metric γ₁)) θ' csn
+              a2     csn = sym (val-wke-lemma (wk-val π RHS) (proj₁ (env-metric γ₁)) (proj₁ (env-metric γ)) πᴸ (proj₂ (env-metric γ₁)) (proj₂ (env-metric γ)) θ csn)
+              T≤ᴹS₁  csn = subst (λ x → x ≤ᴹ val-metric (wk-val π LHS) (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) csn) (a1 csn) (T≤ᴹS csn)
+              T≤ᴹS'₁ csn = subst (λ x → (v̲a̲l̲-metric RT (proj₁ (env-metric γ₂)) (proj₂ (env-metric γ₂)) csn) ≤ᴹ x) (a2 csn) (T≤ᴹS' csn)
+            in
 
             steps
 
@@ -1412,14 +1534,86 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
               ≡⟨ wk≡ᴸ ⟩
                 ⟦ γ ⟧ᴱ ∎)
 
-              {!!}
+              (λ csn → ≤-× (s≤s (z≤n {n = 1})) (T≤ᴹS₁ csn) (T≤ᴹS'₁ csn))
 
               (wke-trans θ' θ)
 
-  val-eval-rec (pm M N) γ π with val-eval-rec M γ π
-  ... | steps M>T ∙ pa̲i̲r̲ LHS RHS ⊲ γ₁ ■ M≡T π₁ wk≡₁ T≤ᴹS θ with val-eval-rec N (_﹐_ (_﹐_ γ₁ LHS) (wk-v̲a̲l̲ (wk-wk wk-id) RHS)) ((wk-cong (wk-cong (wk-trans π₁ π)))) | (wk-val-trans N (wk-cong (wk-cong π₁)) (wk-cong (wk-cong π)))
+  val-eval-rec (pm {A = A} {B = B} M N) γ π with val-eval-rec M γ π
+  ... | steps {S = S} M>T ∙ pa̲i̲r̲ LHS RHS ⊲ γ₁ ■ M≡T π₁ wk≡₁ T≤ᴹS θ with val-eval-rec N (_﹐_ (_﹐_ γ₁ LHS) (wk-v̲a̲l̲ (wk-wk wk-id) RHS)) ((wk-cong (wk-cong (wk-trans π₁ π)))) | (wk-val-trans N (wk-cong (wk-cong π₁)) (wk-cong (wk-cong π)))
   ...    | steps {T = T} N>T ∙T N≡T π₂ wk≡₂ T≤ᴹS' θ' | eq with N>T
   ...      | N>T' rewrite sym eq =
+
+        let
+          -- Goal: (csn : List (ℕ × ℕ)) →
+          --          valstate-metric T csn
+          --       ≤ᴹ incr ( suc ( vx (val-metric (wk-val π M) (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) csn)
+          --                     + ⟪ val-metric (wk-val (wk-cong (wk-cong π)) N) (proj₁ (env-metric γ)) (wkn-cons (wkn-cons (proj₂ (env-metric γ)))) csn ⟫ ) )
+          --               (val-metric (wk-val (wk-cong (wk-cong π)) N)
+          --                    ((B , (λ c → rhs (val-metric (wk-val π M) (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) c))) ∷ (A , (λ c → lhs (val-metric (wk-val π M) (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) c))) ∷ proj₁ (env-metric γ))
+          --                    (wkn-cong (wkn-cong (proj₂ (env-metric γ)))) csn)
+
+{-        ————————————————————————————————————————————————————————————
+      θ     : Wke π₁ (proj₂ (env-metric γ₁)) (proj₂ (env-metric γ))
+      T≤ᴹS  : (csn : List (Σ ℕ (λ x → ℕ))) →
+              m-× 1 (v̲a̲l̲-metric LHS (proj₁ (env-metric γ₁)) (proj₂ (env-metric γ₁)) csn) (v̲a̲l̲-metric RHS (proj₁ (env-metric γ₁)) (proj₂ (env-metric γ₁)) csn)
+              ≤ᴹ  val-metric (wk-val π M) (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) csn
+      θ'    : Wke π₂ (proj₂ (env-metric (botEnv T)))
+              (wkn-cong (wkn-cong (proj₂ (env-metric γ₁))))
+      T≤ᴹS' : (csn : List (Σ ℕ (λ x → ℕ)))
+              → valstate-metric T csn ≤ᴹ
+              val-metric (wk-val (wk-cong (wk-cong π₁))
+                         (wk-val (wk-cong (wk-cong π)) N))
+                         ((B , v̲a̲l̲-metric (wk-v̲a̲l̲ (wk-wk wk-id) RHS) ((A , v̲a̲l̲-metric LHS (proj₁ (env-metric γ₁)) (proj₂ (env-metric γ₁))) ∷ proj₁ (env-metric γ₁)) (wkn-cong (proj₂ (env-metric γ₁)))) ∷ (A , v̲a̲l̲-metric LHS (proj₁ (env-metric γ₁)) (proj₂ (env-metric γ₁))) ∷ proj₁ (env-metric γ₁))
+                         (wkn-cong (wkn-cong (proj₂ (env-metric γ₁)))) csn
+      π₂    : Wk (botCtx T) (Γ₁ ∙ A ∙ B)
+
+      LHS≤ᴹlhs : {LHSnm : TermMetric X} → {RHSnm : TermMetric Y} → {nm : TermMetric (X `× Y)} → (m-× n LHSnm RHSnm) ≤ᴹ nm → LHSnm ≤ᴹ (lhs nm)
+      LHS≤ᴹlhs (≤-× x lhs₁≤ᴹlhs₂ rhs₁≤ᴹrhs₂) = lhs₁≤ᴹlhs₂
+
+      RHS≤ᴹrhs : {LHSnm : TermMetric X} → {RHSnm : TermMetric Y} → {nm : TermMetric (X `× Y)} → (m-× n LHSnm RHSnm) ≤ᴹ nm → RHSnm ≤ᴹ (rhs nm)
+      RHS≤ᴹrhs (≤-× x lhs₁≤ᴹlhs₂ rhs₁≤ᴹrhs₂) = rhs₁≤ᴹrhs₂
+
+-}
+          --×≡vlr
+          T≤ᴹS₁ csn = subst
+                        (λ x → m-× 1 (v̲a̲l̲-metric LHS (proj₁ (env-metric γ₁)) (proj₂ (env-metric γ₁)) csn) (v̲a̲l̲-metric RHS (proj₁ (env-metric γ₁)) (proj₂ (env-metric γ₁)) csn) ≤ᴹ x)
+                        (×≡vlr (val-metric (wk-val π M) (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) csn))
+                        (T≤ᴹS csn)
+          L≤ᴹl csn = LHS≤ᴹlhs (T≤ᴹS csn)
+          R≤ᴹr csn = RHS≤ᴹrhs (T≤ᴹS csn)
+          ϖₙ : Wkn ((botCtx S) ∙ A ∙ B) ((B , v̲a̲l̲-metric (wk-v̲a̲l̲ (wk-wk wk-id) RHS) ((A , v̲a̲l̲-metric LHS (proj₁ (env-metric γ₁)) (proj₂ (env-metric γ₁))) ∷ proj₁ (env-metric γ₁)) (wkn-cong (proj₂ (env-metric γ₁)))) ∷ (A , v̲a̲l̲-metric LHS (proj₁ (env-metric γ₁)) (proj₂ (env-metric γ₁))) ∷ proj₁ (env-metric γ))
+          ϖₙ = wkn-cong (wkn-cong (proj₂ (env-metric γ)))
+          θₙ : Wke (wk-cong (wk-cong π₁)) (wkn-cong {e =  v̲a̲l̲-metric (wk-v̲a̲l̲ (wk-wk wk-id) RHS) ((A , v̲a̲l̲-metric LHS (proj₁ (env-metric γ₁)) (proj₂ (env-metric γ₁))) ∷ proj₁ (env-metric γ₁)) (wkn-cong (proj₂ (env-metric γ₁)))} (wkn-cong {e =  v̲a̲l̲-metric LHS (proj₁ (env-metric γ₁)) (proj₂ (env-metric γ₁))} (proj₂ (env-metric γ₁)))) ϖₙ
+          θₙ = wke-ccc (wk-cong π₁) (wkn-cong (proj₂ (env-metric γ₁))) (wkn-cong (proj₂ (env-metric γ))) (v̲a̲l̲-metric (wk-v̲a̲l̲ (wk-wk wk-id) RHS) ((A , v̲a̲l̲-metric LHS (proj₁ (env-metric γ₁)) (proj₂ (env-metric γ₁))) ∷ proj₁ (env-metric γ₁)) (wkn-cong (proj₂ (env-metric γ₁)))) (wke-ccc π₁ (proj₂ (env-metric γ₁)) (proj₂ (env-metric γ)) (v̲a̲l̲-metric LHS (proj₁ (env-metric γ₁)) (proj₂ (env-metric γ₁))) θ)
+          a2 = val-wke-lemma (wk-val (wk-cong (wk-cong π)) N)
+                  ((B , v̲a̲l̲-metric (wk-v̲a̲l̲ (wk-wk wk-id) RHS) ((A , v̲a̲l̲-metric LHS (proj₁ (env-metric γ₁)) (proj₂ (env-metric γ₁))) ∷ proj₁ (env-metric γ₁)) (wkn-cong (proj₂ (env-metric γ₁)))) ∷ (A , v̲a̲l̲-metric LHS (proj₁ (env-metric γ₁)) (proj₂ (env-metric γ₁))) ∷ proj₁ (env-metric γ₁))
+                  ((B , v̲a̲l̲-metric (wk-v̲a̲l̲ (wk-wk wk-id) RHS) ((A , v̲a̲l̲-metric LHS (proj₁ (env-metric γ₁)) (proj₂ (env-metric γ₁))) ∷ proj₁ (env-metric γ₁)) (wkn-cong (proj₂ (env-metric γ₁)))) ∷ (A , v̲a̲l̲-metric LHS (proj₁ (env-metric γ₁)) (proj₂ (env-metric γ₁))) ∷ proj₁ (env-metric γ))
+                  (wk-cong (wk-cong π₁))
+                  (wkn-cong (wkn-cong (proj₂ (env-metric γ₁))))
+                  ϖₙ
+                  θₙ
+          r≡      : (csn : List (ℕ × ℕ)) →
+                      v̲a̲l̲-metric                       RHS                                                                         (proj₁ (env-metric γ₁))           (proj₂ (env-metric γ₁)) csn
+                    ≡ v̲a̲l̲-metric (wk-v̲a̲l̲ (wk-wk wk-id) RHS) ((A , v̲a̲l̲-metric LHS (proj₁ (env-metric γ₁)) (proj₂ (env-metric γ₁))) ∷ proj₁ (env-metric γ₁)) (wkn-cong (proj₂ (env-metric γ₁))) csn
+          r≡  csn = v̲a̲l̲-wke-lemma RHS ((A , v̲a̲l̲-metric LHS (proj₁ (env-metric γ₁)) (proj₂ (env-metric γ₁))) ∷ proj₁ (env-metric γ₁)) ((proj₁ (env-metric γ₁))) (wk-wk wk-id) (wkn-cong (proj₂ (env-metric γ₁))) (proj₂ (env-metric γ₁)) (wke-wc- wk-id (proj₂ (env-metric γ₁)) (proj₂ (env-metric γ₁)) (v̲a̲l̲-metric LHS (proj₁ (env-metric γ₁)) (proj₂ (env-metric γ₁))) wke-id) csn
+          R≤ᴹr' csn  = subst (λ x → x ≤ᴹ rhs (val-metric (wk-val π M) (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) csn)) (r≡ csn) (R≤ᴹr csn)
+          -- a≤ᴱb : ((B , v̲a̲l̲-metric (wk-v̲a̲l̲ (wk-wk wk-id) RHS) ((A , v̲a̲l̲-metric LHS (proj₁ (env-metric γ₁)) (proj₂ (env-metric γ₁))) ∷ proj₁ (env-metric γ₁)) (wkn-cong (proj₂ (env-metric γ₁)))) ∷ (A , v̲a̲l̲-metric LHS (proj₁ (env-metric γ₁)) (proj₂ (env-metric γ₁))) ∷ proj₁ (env-metric γ))
+          --         ≤ᴱ
+          --        ((B , (λ c → rhs (val-metric (wk-val π M) (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) c))) ∷ (A , (λ c → lhs (val-metric (wk-val π M) (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) c))) ∷ proj₁ (env-metric γ))
+          -- a≤ᴱb = ≤ᴱ-cong R≤ᴹr' (≤ᴱ-cong L≤ᴹl (≤ᴱ-id))
+          ---------
+          -- a≤ᴱb : ((B , v̲a̲l̲-metric (wk-v̲a̲l̲ (wk-wk wk-id) RHS) ((A , v̲a̲l̲-metric LHS (proj₁ (env-metric γ₁)) (proj₂ (env-metric γ₁))) ∷ proj₁ (env-metric γ₁)) (wkn-cong (proj₂ (env-metric γ₁)))) ∷ (A , v̲a̲l̲-metric LHS (proj₁ (env-metric γ₁)) (proj₂ (env-metric γ₁))) ∷ proj₁ (env-metric γ₁))
+          --         ≤ᴱ[ θ ]
+          --        ((B , (λ c → rhs (val-metric (wk-val π M) (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) c))) ∷ (A , (λ c → lhs (val-metric (wk-val π M) (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) c))) ∷ proj₁ (env-metric γ))
+          -- a≤ᴱb =  ≤ᴱ-cong R≤ᴹr' (≤ᴱ-cong L≤ᴹl (≤ᴱ-bc θ))
+          ---------
+          a≤ᴱb : (wkn-cong {e = v̲a̲l̲-metric (wk-v̲a̲l̲ (wk-wk wk-id) RHS) ((A , v̲a̲l̲-metric LHS (proj₁ (env-metric γ₁)) (proj₂ (env-metric γ₁))) ∷ proj₁ (env-metric γ₁)) (wkn-cong (proj₂ (env-metric γ₁)))}
+                  (wkn-cong {e = v̲a̲l̲-metric LHS (proj₁ (env-metric γ₁)) (proj₂ (env-metric γ₁))} (proj₂ (env-metric γ)))) ≤ᴱ
+                 wkn-cong {e = λ c → rhs (val-metric (wk-val π M) (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) c)} (wkn-cong {e = λ c → lhs (val-metric (wk-val π M) (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) c)} (proj₂ (env-metric γ)) )
+          a≤ᴱb = ≤ᴱ-cong {π = wk-id } R≤ᴹr' (≤ᴱ-cong {π = wk-id} L≤ᴹl (≤ᴱ-bc (wke-id {π = wk-id})))
+          --a1 = {!!}
+        in
+
         steps
           (
             (∘ ⇡ pm (wk-val π M) (wk-val (wk-cong (wk-cong π)) N) ⊲ γ ∷ □) →ᵛ⟨ ∘pm ⟩． ⨾ -- (∘ ⇡ wk-val π M ⊲ γ ∷ ⇡ᴹ (wk-val π M) (wk-val (wk-cong (wk-cong π)) N) ⊲ γ ∷ □)
@@ -1486,307 +1680,6 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   -- call agda2-compute-normalised in the hole below
   -- _ : val-eval ex2 ≡ {!val-eval ex2!}
   -- _ = refl
-
-  _ : val-eval ex2 ≡
-      steps
-      (∘
-      ⇡
-      pm (pm (pair (lam (return (var h))) unit) (pair unit (var (t h))))
-      (pm (pair unit unit) (pair (var (t h)) (var (t (t (t h))))))
-      ⊲ ∗ ∷ □
-      →ᵛ⟨ ∘pm ⟩
-      ∘
-      ⇡ pm (pair (lam (return (var h))) unit) (pair unit (var (t h))) ⊲ ∗
-      ∷
-      ⇡ᴹ (pm (pair (lam (return (var h))) unit) (pair unit (var (t h))))
-      (pm (pair unit unit) (pair (var (t h)) (var (t (t (t h))))))
-      ⊲ ∗ ∷ □
-      →ᵛ⟨ ∘pm ⟩
-      ∘
-      ⇡ pair (lam (return (var h))) unit ⊲ ∗ ∷
-      ⇡ᴹ (pair (lam (return (var h))) unit) (pair unit (var (t h))) ⊲ ∗ ∷
-      ⇡ᴹ (pm (pair (lam (return (var h))) unit) (pair unit (var (t h))))
-      (pm (pair unit unit) (pair (var (t h)) (var (t (t (t h))))))
-      ⊲ ∗ ∷ □
-      →ᵛ⟨ ∘pair ⟩
-      ∘
-      ⇡ lam (return (var h)) ⊲ ∗ ∷
-      ⇡ᴸ (lam (return (var h))) unit ⊲ ∗ ∷
-      ⇡ᴹ (pair (lam (return (var h))) unit) (pair unit (var (t h))) ⊲ ∗ ∷
-      ⇡ᴹ (pm (pair (lam (return (var h))) unit) (pair unit (var (t h))))
-      (pm (pair unit unit) (pair (var (t h)) (var (t (t (t h))))))
-      ⊲ ∗ ∷ □
-      →ᵛ⟨ ∘lam ⟩
-      ∙
-      ⭭ l̲a̲m̲ (return (var h)) ⊲ ∗ ∷
-      ⇡ᴸ (lam (return (var h))) unit ⊲ ∗ ∷
-      ⇡ᴹ (pair (lam (return (var h))) unit) (pair unit (var (t h))) ⊲ ∗ ∷
-      ⇡ᴹ (pm (pair (lam (return (var h))) unit) (pair unit (var (t h))))
-      (pm (pair unit unit) (pair (var (t h)) (var (t (t (t h))))))
-      ⊲ ∗ ∷ □
-      →ᵛ⟨ ∙M∷l ⟩
-      ∘
-      ⇡ unit ⊲ ∗ ∷
-      ⇡ᴿ (l̲a̲m̲ (return (var h))) unit ⊲ ∗ ∷
-      ⇡ᴹ (pair (lam (return (var h))) unit) (pair unit (var (t h))) ⊲ ∗ ∷
-      ⇡ᴹ (pm (pair (lam (return (var h))) unit) (pair unit (var (t h))))
-      (pm (pair unit unit) (pair (var (t h)) (var (t (t (t h))))))
-      ⊲ ∗ ∷ □
-      →ᵛ⟨ ∘unit ⟩
-      ∙
-      ⭭ u̲n̲i̲t̲ ⊲ ∗ ∷
-      ⇡ᴿ (l̲a̲m̲ (return (var h))) unit ⊲ ∗ ∷
-      ⇡ᴹ (pair (lam (return (var h))) unit) (pair unit (var (t h))) ⊲ ∗ ∷
-      ⇡ᴹ (pm (pair (lam (return (var h))) unit) (pair unit (var (t h))))
-      (pm (pair unit unit) (pair (var (t h)) (var (t (t (t h))))))
-      ⊲ ∗ ∷ □
-      →ᵛ⟨ ∙M∷r ⟩
-      ∙
-      ⭭ pa̲i̲r̲ (l̲a̲m̲ (return (var h))) u̲n̲i̲t̲ ⊲ ∗ ∷
-      ⇡ᴹ (pair (lam (return (var h))) unit) (pair unit (var (t h))) ⊲ ∗ ∷
-      ⇡ᴹ (pm (pair (lam (return (var h))) unit) (pair unit (var (t h))))
-      (pm (pair unit unit) (pair (var (t h)) (var (t (t (t h))))))
-      ⊲ ∗ ∷ □
-      →ᵛ⟨ ∙pair∷pm ⟩
-      ∘
-      ⇡ pair unit (var (t h)) ⊲ ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ∷
-      ⇡ᴹ (pm (pair (lam (return (var h))) unit) (pair unit (var (t h))))
-      (pm (pair unit unit) (pair (var (t h)) (var (t (t (t h))))))
-      ⊲ ∗ ∷ □
-      →ᵛ⟨ ∘pair ⟩
-      ∘
-      ⇡ unit ⊲ ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ∷
-      ⇡ᴸ unit (var (t h)) ⊲ ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ∷
-      ⇡ᴹ (pm (pair (lam (return (var h))) unit) (pair unit (var (t h))))
-      (pm (pair unit unit) (pair (var (t h)) (var (t (t (t h))))))
-      ⊲ ∗ ∷ □
-      →ᵛ⟨ ∘unit ⟩
-      ∙
-      ⭭ u̲n̲i̲t̲ ⊲ ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ∷
-      ⇡ᴸ unit (var (t h)) ⊲ ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ∷
-      ⇡ᴹ (pm (pair (lam (return (var h))) unit) (pair unit (var (t h))))
-      (pm (pair unit unit) (pair (var (t h)) (var (t (t (t h))))))
-      ⊲ ∗ ∷ □
-      →ᵛ⟨ ∙M∷l ⟩
-      ∘
-      ⇡ var (t h) ⊲ ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ∷
-      ⇡ᴿ u̲n̲i̲t̲ (var (t h)) ⊲ ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ∷
-      ⇡ᴹ (pm (pair (lam (return (var h))) unit) (pair unit (var (t h))))
-      (pm (pair unit unit) (pair (var (t h)) (var (t (t (t h))))))
-      ⊲ ∗ ∷ □
-      →ᵛ⟨
-      ∘var
-      (⟨ t h ∥ ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ⟩ →ᴸ⟨ val-t-step ⟩
-        (⟨ h ∥ ∗ ﹐ l̲a̲m̲ (return (var h)) ⟩ ◼))
-      (wk-wk (wk-wk wk-ε))
-      ⟩
-      ∙
-      ⭭ l̲a̲m̲ (return (var h)) ⊲ ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲
-      ∷
-      ⇡ᴿ u̲n̲i̲t̲ (var (t h)) ⊲ ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ∷
-      ⇡ᴹ (pm (pair (lam (return (var h))) unit) (pair unit (var (t h))))
-      (pm (pair unit unit) (pair (var (t h)) (var (t (t (t h))))))
-      ⊲ ∗ ∷ □
-      →ᵛ⟨ ∙M∷r ⟩
-      ∙
-      ⭭ pa̲i̲r̲ u̲n̲i̲t̲ (l̲a̲m̲ (return (var h))) ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ∷
-      ⇡ᴹ (pm (pair (lam (return (var h))) unit) (pair unit (var (t h))))
-      (pm (pair unit unit) (pair (var (t h)) (var (t (t (t h))))))
-      ⊲ ∗ ∷ □
-      →ᵛ⟨ ∙pair∷pm ⟩
-      ∘
-      ⇡ pm (pair unit unit) (pair (var (t h)) (var (t (t (t h))))) ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ∷ □
-      →ᵛ⟨ ∘pm ⟩
-      ∘
-      ⇡ pair unit unit ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ∷
-      ⇡ᴹ (pair unit unit) (pair (var (t h)) (var (t (t (t h))))) ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ∷ □
-      →ᵛ⟨ ∘pair ⟩
-      ∘
-      ⇡ unit ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ∷
-      ⇡ᴸ unit unit ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ∷
-      ⇡ᴹ (pair unit unit) (pair (var (t h)) (var (t (t (t h))))) ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ∷ □
-      →ᵛ⟨ ∘unit ⟩
-      ∙
-      ⭭ u̲n̲i̲t̲ ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ∷
-      ⇡ᴸ unit unit ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ∷
-      ⇡ᴹ (pair unit unit) (pair (var (t h)) (var (t (t (t h))))) ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ∷ □
-      →ᵛ⟨ ∙M∷l ⟩
-      ∘
-      ⇡ unit ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ∷
-      ⇡ᴿ u̲n̲i̲t̲ unit ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ∷
-      ⇡ᴹ (pair unit unit) (pair (var (t h)) (var (t (t (t h))))) ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ∷ □
-      →ᵛ⟨ ∘unit ⟩
-      ∙
-      ⭭ u̲n̲i̲t̲ ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ∷
-      ⇡ᴿ u̲n̲i̲t̲ unit ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ∷
-      ⇡ᴹ (pair unit unit) (pair (var (t h)) (var (t (t (t h))))) ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ∷ □
-      →ᵛ⟨ ∙M∷r ⟩
-      ∙
-      ⭭ pa̲i̲r̲ u̲n̲i̲t̲ u̲n̲i̲t̲ ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ∷
-      ⇡ᴹ (pair unit unit) (pair (var (t h)) (var (t (t (t h))))) ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ∷ □
-      →ᵛ⟨ ∙pair∷pm ⟩
-      ∘
-      ⇡ pair (var (t h)) (var (t (t (t h)))) ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ﹐ u̲n̲i̲t̲
-      ﹐ u̲n̲i̲t̲
-      ∷ □
-      →ᵛ⟨ ∘pair ⟩
-      ∘
-      ⇡ var (t h) ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ﹐ u̲n̲i̲t̲
-      ﹐ u̲n̲i̲t̲
-      ∷
-      ⇡ᴸ (var (t h)) (var (t (t (t h)))) ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ﹐ u̲n̲i̲t̲
-      ﹐ u̲n̲i̲t̲
-      ∷ □
-      →ᵛ⟨
-      ∘var
-      (⟨ t h ∥
-        ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-        l̲a̲m̲ (return (var h))
-        ﹐ u̲n̲i̲t̲
-        ﹐ u̲n̲i̲t̲
-        ⟩
-        →ᴸ⟨ val-t-step ⟩
-        (⟨ h ∥
-        ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-        l̲a̲m̲ (return (var h))
-        ﹐ u̲n̲i̲t̲
-        ⟩
-        ◼))
-      (wk-wk (wk-wk (wk-cong (wk-cong (wk-cong (wk-cong wk-ε))))))
-      ⟩
-      ∙
-      ⭭ u̲n̲i̲t̲ ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ﹐ u̲n̲i̲t̲
-      ﹐ u̲n̲i̲t̲
-      ∷
-      ⇡ᴸ (var (t h)) (var (t (t (t h)))) ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ﹐ u̲n̲i̲t̲
-      ﹐ u̲n̲i̲t̲
-      ∷ □
-      →ᵛ⟨ ∙M∷l ⟩
-      ∘
-      ⇡ var (t (t (t h))) ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ﹐ u̲n̲i̲t̲
-      ﹐ u̲n̲i̲t̲
-      ∷
-      ⇡ᴿ u̲n̲i̲t̲ (var (t (t (t h)))) ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ﹐ u̲n̲i̲t̲
-      ﹐ u̲n̲i̲t̲
-      ∷ □
-      →ᵛ⟨
-      ∘var
-      (⟨ t (t (t h)) ∥
-        ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-        l̲a̲m̲ (return (var h))
-        ﹐ u̲n̲i̲t̲
-        ﹐ u̲n̲i̲t̲
-        ⟩
-        →ᴸ⟨ val-t-step ⟩
-        (⟨ t (t h) ∥
-        ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-        l̲a̲m̲ (return (var h))
-        ﹐ u̲n̲i̲t̲
-        ⟩
-        →ᴸ⟨ val-t-step ⟩
-        (⟨ t h ∥
-          ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-          l̲a̲m̲ (return (var h))
-          ⟩
-          →ᴸ⟨ val-t-step ⟩
-          (⟨ h ∥ ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ⟩ ◼))))
-      (wk-wk (wk-wk (wk-wk (wk-wk (wk-cong (wk-cong wk-ε))))))
-      ⟩
-      ∙
-      ⭭ u̲n̲i̲t̲ ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ﹐ u̲n̲i̲t̲
-      ﹐ u̲n̲i̲t̲
-      ∷
-      ⇡ᴿ u̲n̲i̲t̲ (var (t (t (t h)))) ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ﹐ u̲n̲i̲t̲
-      ﹐ u̲n̲i̲t̲
-      ∷ □
-      →ᵛ⟨ ∙M∷r ⟩．)
-      ∙ pa̲i̲r̲ u̲n̲i̲t̲ u̲n̲i̲t̲ ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ﹐ u̲n̲i̲t̲
-      ﹐ u̲n̲i̲t̲
-      ■
-      refl (wk-wk (wk-wk (wk-wk (wk-wk (wk-wk (wk-wk wk-ε)))))) refl
-  _ = refl
 
   --------------------------------------------------------------
 
