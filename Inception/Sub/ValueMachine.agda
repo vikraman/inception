@@ -1274,10 +1274,40 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       cong₂ _+_ a0 (cong₂ _*_ a1 (cong suc a2))
 
 
-    postulate val-wkx-lemma : (M : Val Γ X) → (E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X)))
+    val-wkx-lemma : (M : Val Γ X) → (E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X)))
                 → (π : Wk Γ Γ) → (ϖ : Wkn Γ E) → (ϖ' : Wkn Γ E') → (ϕ : Wkx π ϖ ϖ') → (csn : List (ℕ × ℕ))
                 → val-metric M E ϖ csn ≤ᴹ val-metric M E' ϖ' csn
-    postulate comp-env-lemma : (W : Comp Γ X) → (E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X)))
+    val-wkx-lemma (var i) E E' π₀ ϖ ϖ' ϕ csn = ≤ᴹ-incr-cong (≤-refl {n = 2}) (lookup-wkx-lemma i E E' π₀ ϖ ϖ' ϕ csn)
+    val-wkx-lemma (lam {A = A} W) E E' π₀ ϖ ϖ' ϕ csn
+      rewrite
+        comp-count-wkx-lemma h W E E' (wk-cong π₀) (wkn-cons ϖ) (wkn-cons ϖ') (wkx-wk ϕ) csn
+      =
+      let
+        a0 = comp-wkx-lemma W E E' (wk-cong π₀) (wkn-cons ϖ) (wkn-cons ϖ') (wkx-wk {Y = A} ϕ) csn
+      in
+      ≤-⇒ (s≤s (s≤s z≤n)) a0
+    val-wkx-lemma (pair M₁ M₂) E E' π₀ ϖ ϖ' ϕ csn = ≤-× (≤-refl {n = 2}) (val-wkx-lemma M₁ E E' π₀ ϖ ϖ' ϕ csn) (val-wkx-lemma M₂ E E' π₀ ϖ ϖ' ϕ csn)
+    val-wkx-lemma (pm {Γ = Γ} {A = A} {B = B} M N) E E' π₀ ϖ ϖ' ϕ csn =
+      let
+        a0 c = val-wkx-lemma M E E' π₀ ϖ ϖ' ϕ c
+        avx c = ≤ᴹ-vx (a0 c)
+        al c = ≤ᴹ-lhs (a0 c)
+        ar c = ≤ᴹ-rhs (a0 c)
+        E₁ = ((B , (λ c → rhs (val-metric M E ϖ c))) ∷ (A , (λ c → lhs (val-metric M E ϖ c))) ∷ E)
+        E₂ = ((B , (λ c → rhs (val-metric M E' ϖ' c))) ∷ (A , (λ c → lhs (val-metric M E' ϖ' c))) ∷ E')
+        ϖ₁ : Wkn (Γ ∙ A ∙ B) E₁
+        ϖ₁ = wkn-cong (wkn-cong ϖ)
+        ϖ₂ : Wkn (Γ ∙ A ∙ B) E₂
+        ϖ₂ = wkn-cong (wkn-cong ϖ')
+        θ : Wkx (wk-cong (wk-cong π₀)) ϖ₁ ϖ₂
+        θ = wkx-cong ar (wkx-cong al ϕ)
+        b0 = val-wkx-lemma N E E' (wk-cong (wk-cong π₀)) (wkn-cons (wkn-cons ϖ)) (wkn-cons (wkn-cons ϖ')) (wkx-wk (wkx-wk ϕ)) csn
+        b1 = val-wkx-lemma N E₁ E₂ (wk-cong (wk-cong π₀)) (wkn-cong (wkn-cong ϖ)) (wkn-cong (wkn-cong ϖ')) θ csn
+      in
+      ≤ᴹ-incr-cong (+-≤-cong (s≤s (avx csn)) (≤ᴹ⇒≤ b0)) b1
+    val-wkx-lemma unit E E' π₀ ϖ ϖ' ϕ csn = ≤ᴹ-refl
+
+    postulate comp-wkx-lemma : (W : Comp Γ X) → (E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X)))
                 → (π : Wk Γ Γ) → (ϖ : Wkn Γ E) → (ϖ' : Wkn Γ E') → (ϕ : Wkx π ϖ ϖ') → (csn : List (ℕ × ℕ))
                 → comp-metric W E ϖ csn ≤ᴹ comp-metric W E' ϖ' csn
 
