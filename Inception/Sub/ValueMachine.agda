@@ -1238,9 +1238,42 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       in
       p2-val-wkx-lemma N E₁ E₂ (wk-cong (wk-cong π₀)) (wkn-cong (wkn-cong ϖ)) (wkn-cong (wkn-cong ϖ')) θ csn
 
-    postulate comp-count-wkx-lemma : (i : Γ ∋ Y) → (W : Comp Γ X) → (E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X)))
+    comp-count-wkx-lemma : (i : Γ ∋ Y) → (W : Comp Γ X) → (E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X)))
                 → (π : Wk Γ Γ) → (ϖ : Wkn Γ E) → (ϖ' : Wkn Γ E') → (ϕ : Wkx π ϖ ϖ') → (csn : List (ℕ × ℕ))
                 → count-in-comp i W E' ϖ' csn ≡ count-in-comp i W E ϖ csn
+    comp-count-wkx-lemma i (return M) E E' π₀ ϖ ϖ' ϕ csn = val-count-wkx-lemma i M E E' π₀ ϖ ϖ' ϕ csn
+    comp-count-wkx-lemma i (pm M W) E E' π₀ ϖ ϖ' ϕ csn =
+      let
+        a0 = val-count-wkx-lemma i M E E' π₀ ϖ ϖ' ϕ csn
+        a1 = comp-count-wkx-lemma h W E E' (wk-cong (wk-cong π₀)) (wkn-cons (wkn-cons ϖ)) (wkn-cons (wkn-cons ϖ')) (wkx-wk (wkx-wk ϕ)) csn
+        a2 = comp-count-wkx-lemma (t h) W E E' (wk-cong (wk-cong π₀)) (wkn-cons (wkn-cons ϖ)) (wkn-cons (wkn-cons ϖ')) (wkx-wk (wkx-wk ϕ)) csn
+        a3 = comp-count-wkx-lemma (t (t i)) W E E' (wk-cong (wk-cong π₀)) (wkn-cons (wkn-cons ϖ)) (wkn-cons (wkn-cons ϖ')) (wkx-wk (wkx-wk ϕ)) csn
+      in
+      cong₂ _+_ (cong₂ _*_ a0 (cong suc (cong₂ _+_ a1 a2))) a3
+    comp-count-wkx-lemma i (push W₁ W₂) E E' π₀ ϖ ϖ' ϕ csn =
+      let
+        a0 = comp-count-wkx-lemma i W₁ E E' π₀ ϖ ϖ' ϕ csn
+        a1 = comp-count-wkx-lemma h W₂ E E' (wk-cong π₀) (wkn-cons ϖ) (wkn-cons ϖ') (wkx-wk ϕ) csn
+        a2 = comp-count-wkx-lemma (t i) W₂ E E' (wk-cong π₀) (wkn-cons ϖ) (wkn-cons ϖ') (wkx-wk ϕ) csn
+      in
+      cong₂ _+_ (cong₂ _*_ a0 (cong suc a1)) a2
+    comp-count-wkx-lemma i (app M N) E E' π₀ ϖ ϖ' ϕ csn =
+      let
+        a0 = val-count-wkx-lemma i M E E' π₀ ϖ ϖ' ϕ csn
+        a1 = val-count-wkx-lemma i N E E' π₀ ϖ ϖ' ϕ csn
+        a2 = p2-val-wkx-lemma M E E' π₀ ϖ ϖ' ϕ csn
+      in
+      cong₂ _+_ a0 (cong₂ _*_ a1 (cong suc a2))
+    comp-count-wkx-lemma i (var M) E E' π₀ ϖ ϖ' ϕ csn = val-count-wkx-lemma i M E E' π₀ ϖ ϖ' ϕ csn
+    comp-count-wkx-lemma i (sub W₁ W₂) E E' π₀ ϖ ϖ' ϕ csn =
+      let
+        a0 = comp-count-wkx-lemma (t i) W₁ E E' (wk-cong π₀) (wkn-cons ϖ) (wkn-cons ϖ') (wkx-wk ϕ) csn
+        a1 = comp-count-wkx-lemma i W₂ E E' π₀ ϖ ϖ' ϕ csn
+        a2 = comp-count-wkx-lemma h W₁ E E' (wk-cong π₀) (wkn-cons ϖ) (wkn-cons ϖ') (wkx-wk ϕ) csn
+      in
+      cong₂ _+_ a0 (cong₂ _*_ a1 (cong suc a2))
+
+
     postulate val-wkx-lemma : (M : Val Γ X) → (E E' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X)))
                 → (π : Wk Γ Γ) → (ϖ : Wkn Γ E) → (ϖ' : Wkn Γ E') → (ϕ : Wkx π ϖ ϖ') → (csn : List (ℕ × ℕ))
                 → val-metric M E ϖ csn ≤ᴹ val-metric M E' ϖ' csn
