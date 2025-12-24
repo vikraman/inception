@@ -1,7 +1,7 @@
 module Inception.Sub.ValueMachine (R : Set) where
 
 open import Data.Product using (proj₁; proj₂; _,_; <_,_>; curry; _×_; Σ; ∃; Σ-syntax; ∃-syntax)
-open import Function.Base using (const; _∘_)
+open import Function.Base using (const; _∘_; _$_)
 
 import Relation.Binary.PropositionalEquality as Eq
 open Eq using (_≡_; refl; cong; cong₂; sym; trans; subst)
@@ -329,38 +329,6 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   lookup-metric {Y = Y} (Cx.t i) [] (wkn-cons ϖ) = λ csn → zero-metric
   lookup-metric (Cx.t i) (x ∷ E) (wkn-cons ϖ) = lookup-metric i (x ∷ E) ϖ
 
-  --------------------------------------------------------------------
-
-  {- OLD
-  mutual
-    count-in-val : (i : Γ ∋ X) → (M : Val Γ Z) → ℕ
-
-    count-in-val Cx.h (var Cx.h) = 1
-    count-in-val Cx.h (var (Cx.t i)) = 0
-    count-in-val (Cx.t i) (var Cx.h) = 0
-    count-in-val (Cx.t i₁) (var (Cx.t i₂)) = count-in-val i₁ (var i₂)
-
-    count-in-val Cx.h (lam W) = count-in-comp (t h) W
-    count-in-val (Cx.t i) (lam W) = count-in-comp (t (t i)) W
-
-    count-in-val Cx.h (pair M N) = count-in-val h M + count-in-val h N
-    count-in-val (Cx.t i) (pair M N) = count-in-val (t i) M + count-in-val (t i) N
-
-    count-in-val Cx.h (pm M N) = count-in-val h M + count-in-val (t (t h)) N
-    count-in-val (Cx.t i) (pm M N) = count-in-val (t i) M + count-in-val (t (t (t i))) N
-
-    count-in-val Cx.h unit = 0
-    count-in-val (Cx.t i) unit = 0
-
-    count-in-comp : (i : Γ ∋ X) → (W : Comp Γ Z) → ℕ
-    count-in-comp i (return M) = count-in-val i M
-    count-in-comp i (pm M W) = count-in-val i M + count-in-comp (t (t i)) W
-    count-in-comp i (push W₁ W₂) = count-in-comp i W₁ + count-in-comp (t i) W₂
-    count-in-comp i (app M N) = count-in-val i M + count-in-val i N
-    count-in-comp i (var M) = count-in-val i M
-    count-in-comp i (sub W₁ W₂) = count-in-comp (t i) W₁ + count-in-comp i W₂
-  -}
-
   -------------------------------
 
   csn-to-nat₀ : ℕ → List (ℕ × ℕ) → ℕ
@@ -532,6 +500,142 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   mutual
 
+    mono-val-count : (i : Γ ∋ X) → (M : Val Γ Z) → (E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → Wkn Γ E
+                             → Σ[ f ∈ (List (ℕ × ℕ) → ℕ) ] ({csn₁ csn₂ : List (ℕ × ℕ)} → csn₁ ≤ᶜˢⁿ csn₂ → f csn₁ ≤ f csn₂)
+
+    mono-val-count Cx.h (var Cx.h) E ϖ = (λ _ → 1) , λ _ → s≤s z≤n
+    mono-val-count Cx.h (var (Cx.t i)) E ϖ = (λ _ → 0) , λ _ → z≤n
+    mono-val-count (Cx.t i) (var Cx.h) E ϖ = (λ _ → 0) , λ _ → z≤n
+    mono-val-count (Cx.t i₁) (var (Cx.t i₂)) ((B , e) ∷ E) (wkn-cong ϖ) =
+      let
+        IH = mono-val-count i₁ (var i₂) E ϖ
+      in
+      (proj₁ IH) , proj₂ IH
+    mono-val-count (Cx.t i₁) (var (Cx.t i₂)) [] (wkn-cons ϖ) =
+      let
+        IH = mono-val-count i₁ (var i₂) [] ϖ
+      in
+      (proj₁ IH) , proj₂ IH
+    mono-val-count (Cx.t i₁) (var (Cx.t i₂)) (x ∷ E) (wkn-cons ϖ) =
+      let
+        IH = mono-val-count i₁ (var i₂) (x ∷ E) ϖ
+      in
+      (proj₁ IH) , proj₂ IH
+
+    mono-val-count Cx.h (lam W) E ϖ = {!!} --count-in-comp (t h) W E (wkn-cons ϖ) csn
+    mono-val-count (Cx.t i) (lam W) E ϖ = {!!} --count-in-comp (t (t i)) W E (wkn-cons ϖ) csn
+
+    mono-val-count Cx.h (pair M N) E ϖ =
+      let
+        IH1 = mono-val-count h M E ϖ
+        IH2 = mono-val-count h N E ϖ
+      in
+      (λ csn → (proj₁ IH1) csn + (proj₁ IH2) csn) , λ c≤c' → +-≤-cong ((proj₂ IH1) c≤c') ((proj₂ IH2) c≤c')
+    mono-val-count (Cx.t i) (pair M N) E ϖ =
+      let
+        IH1 = mono-val-count (t i) M E ϖ
+        IH2 = mono-val-count (t i) N E ϖ
+      in
+      (λ csn → (proj₁ IH1) csn + (proj₁ IH2) csn) , λ c≤c' → +-≤-cong ((proj₂ IH1) c≤c') ((proj₂ IH2) c≤c')
+
+    mono-val-count Cx.h (pm M N) E ϖ =
+      let
+        IH1 = mono-val-count h M E ϖ
+        IH2 = mono-val-count h N E (wkn-cons (wkn-cons ϖ))
+        IH3 = mono-val-count (t h) N E (wkn-cons (wkn-cons ϖ))
+        IH4 = mono-val-count (t (t h)) N E (wkn-cons (wkn-cons ϖ))
+      in
+      (λ csn → (proj₁ IH1 ) csn * (suc ((proj₁ IH2) csn + (proj₁ IH3) csn)) + (proj₁ IH4) csn) ,
+      λ c≤c' → +-≤-cong (*-≤-cong ((proj₂ IH1) c≤c') (s≤s (+-≤-cong ((proj₂ IH2) c≤c') ((proj₂ IH3) c≤c')))) ((proj₂ IH4) c≤c')
+    mono-val-count (Cx.t i) (pm M N) E ϖ =
+      let
+        IH1 = mono-val-count (t i) M E ϖ
+        IH2 = mono-val-count h N E (wkn-cons (wkn-cons ϖ))
+        IH3 = mono-val-count (t h) N E (wkn-cons (wkn-cons ϖ))
+        IH4 = mono-val-count (t (t (t i))) N E (wkn-cons (wkn-cons ϖ))
+      in
+      --(λ csn → (proj₁ $ mono-val-count (t i) M E ϖ) csn * (suc ((proj₁ $ mono-val-count h N E (wkn-cons (wkn-cons ϖ))) csn + (proj₁ $ mono-val-count (t h) N E (wkn-cons (wkn-cons ϖ))) csn)) + (proj₁ $ mono-val-count (t (t (t i))) N E (wkn-cons (wkn-cons ϖ))) csn) , {!!}
+      (λ csn → (proj₁ IH1 ) csn * (suc ((proj₁ IH2) csn + (proj₁ IH3) csn)) + (proj₁ IH4) csn) ,
+      λ c≤c' → +-≤-cong (*-≤-cong ((proj₂ IH1) c≤c') (s≤s (+-≤-cong ((proj₂ IH2) c≤c') ((proj₂ IH3) c≤c')))) ((proj₂ IH4) c≤c')
+
+    mono-val-count Cx.h unit E ϖ = (λ _ → 0) , λ _ → z≤n
+    mono-val-count (Cx.t i) unit E ϖ = (λ _ → 0) , λ _ → z≤n
+{-
+    count-in-val Cx.h (var Cx.h) E ϖ csn = 1
+    count-in-val Cx.h (var (Cx.t i)) E ϖ csn = 0
+    count-in-val (Cx.t i) (var Cx.h) E ϖ csn = 0
+    count-in-val (Cx.t i₁) (var (Cx.t i₂)) ((B , e) ∷ E) (wkn-cong ϖ) csn = count-in-val i₁ (var i₂) E ϖ csn
+    count-in-val (Cx.t i₁) (var (Cx.t i₂)) [] (wkn-cons ϖ) csn =  count-in-val i₁ (var i₂) [] ϖ csn
+    count-in-val (Cx.t i₁) (var (Cx.t i₂)) (x ∷ E) (wkn-cons ϖ) csn = count-in-val i₁ (var i₂) (x ∷ E) ϖ csn
+
+    count-in-val Cx.h (lam W) E ϖ csn = count-in-comp (t h) W E (wkn-cons ϖ) csn
+    count-in-val (Cx.t i) (lam W) E ϖ csn = count-in-comp (t (t i)) W E (wkn-cons ϖ) csn
+
+    count-in-val Cx.h (pair M N) E ϖ csn = count-in-val h M E ϖ csn + count-in-val h N E ϖ csn
+    count-in-val (Cx.t i) (pair M N) E ϖ csn = count-in-val (t i) M E ϖ csn + count-in-val (t i) N E ϖ csn
+
+    count-in-val Cx.h (pm M N) E ϖ csn = count-in-val h M E ϖ csn * (suc (count-in-val h N E (wkn-cons (wkn-cons ϖ)) csn + count-in-val (t h) N E (wkn-cons (wkn-cons ϖ)) csn)) + count-in-val (t (t h)) N E (wkn-cons (wkn-cons ϖ)) csn
+    count-in-val (Cx.t i) (pm M N) E ϖ csn = count-in-val (t i) M E ϖ csn * (suc (count-in-val h N E (wkn-cons (wkn-cons ϖ)) csn + count-in-val (t h) N E (wkn-cons (wkn-cons ϖ)) csn)) + count-in-val (t (t (t i))) N E (wkn-cons (wkn-cons ϖ)) csn
+
+    count-in-val Cx.h unit E ϖ csn = 0
+    count-in-val (Cx.t i) unit E ϖ csn = 0
+
+    count-in-comp : (i : Γ ∋ X) → (W : Comp Γ Z) → (E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → Wkn Γ E → (csn : List (ℕ × ℕ)) → ℕ
+    count-in-comp i (return M) E ϖ csn = count-in-val i M E ϖ csn
+    count-in-comp i (pm M W) E ϖ csn = count-in-val i M E ϖ csn * (suc (count-in-comp h W E (wkn-cons (wkn-cons ϖ)) csn + count-in-comp (t h) W E (wkn-cons (wkn-cons ϖ)) csn)) + count-in-comp (t (t i)) W E (wkn-cons (wkn-cons ϖ)) csn
+
+    count-in-comp i (push W₁ W₂) E ϖ csn = count-in-comp i W₁ E ϖ csn * (suc (count-in-comp h W₂ E (wkn-cons ϖ) csn)) + count-in-comp (t i) W₂ E (wkn-cons ϖ) csn
+    count-in-comp i (app M N) E ϖ csn = count-in-val i M E ϖ csn + count-in-val i N E ϖ csn * (suc (p2 (val-metric M E ϖ csn)))
+    count-in-comp i (var M) E ϖ csn = count-in-val i M E ϖ csn
+    count-in-comp i (sub W₁ W₂) E ϖ csn = count-in-comp (t i) W₁ E (wkn-cons ϖ) csn + count-in-comp i W₂ E ϖ csn * (suc (count-in-comp h W₁ E (wkn-cons ϖ) csn))
+
+    val-metric : (M : Val Γ Y) → (E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → Wkn Γ E → (csn : List (ℕ × ℕ)) → TermMetric Y
+    val-metric (var i) E ϖ csn = incr 2 (lookup-metric i E ϖ csn)
+    val-metric (lam W) E ϖ csn = incr 2 (m-⇒ 0 (count-in-comp h W E (wkn-cons ϖ) csn) (comp-metric W E (wkn-cons ϖ) csn))
+    val-metric (pair M N) E ϖ csn = incr 2 (m-× 0 (val-metric M E ϖ csn) (val-metric N E ϖ csn))
+    val-metric (pm {A = X} {B = Y} M N) E ϖ csn = let IH = val-metric M E ϖ in incr (suc (vx (IH csn) + ⟪ val-metric N E (wkn-cons (wkn-cons ϖ)) csn ⟫)) (val-metric N ((Y , λ c → rhs (IH c)) ∷ (X , λ c → lhs (IH c)) ∷ E) (wkn-cong (wkn-cong ϖ)) csn)
+    val-metric unit E ϖ csn = m-Unit 2
+
+    comp-metric : (W : Comp Γ Y) → (E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → Wkn Γ E → (csn : List (ℕ × ℕ)) → TermMetric Y
+    comp-metric (return M) E ϖ csn = incr 2 (val-metric M E ϖ csn)
+    comp-metric (pm {A = X} {B = Y} M W) E ϖ csn =
+      let
+        IH = val-metric M E ϖ
+      in
+        incr (suc (vx (IH csn) + ⟪ comp-metric W E (wkn-cons (wkn-cons ϖ)) csn ⟫)) (comp-metric W ((Y , λ c → rhs (IH c)) ∷ (X , λ c → lhs (IH c)) ∷ E) (wkn-cong (wkn-cong ϖ)) csn)
+    comp-metric (push {A = X} W₁ W₂) E ϖ csn =
+      let
+        -- w2 = (comp-metric W₂ ((X , comp-metric W₁ E ϖ) ∷ E) (wkn-cong ϖ) csn)
+        w2 = (comp-metric W₂ E (wkn-cons ϖ) csn)
+        csn2 = ((count-in-comp h W₂ E (wkn-cons ϖ) csn , ⟪ w2 ⟫) ∷ csn)
+        w1 = ⟪ comp-metric W₁ E ϖ csn2 ⟫
+      in
+        incr (suc ((2+ (count-in-comp h W₂ E (wkn-cons ϖ) csn)) * w1)) w2 --incr (suc (w1 + csn-to-nat₀ w1 csn2)) w2
+    comp-metric (app M N) E ϖ csn = let IH = val-metric M E ϖ csn in incr (2 + ((p1 IH) + ((suc (p2 IH)) * ⟪ val-metric N E ϖ csn ⟫))) (p3 IH)
+    comp-metric (var M) E ϖ csn = incr (suc ⟪ val-metric M E ϖ csn ⟫) zero-metric
+    --comp-metric (sub W₁ W₂) E ϖ csn = let w = ⟪ comp-metric W₂ E ϖ csn ⟫ in incr (suc ⟪ comp-metric W₂ E ϖ csn ⟫) (comp-metric W₁ (((`V , λ _ → m-V 0 w csn)) ∷ E) (wkn-cong ϖ) csn)
+    comp-metric (sub W₁ W₂) E ϖ csn = let w = ⟪ comp-metric W₂ E ϖ csn ⟫ in incr (suc ⟪ comp-metric W₂ E ϖ csn ⟫) (comp-metric W₁ (((`V , λ _ → m-V 0 (w + csn-to-nat₀ w csn))) ∷ E) (wkn-cong ϖ) csn)
+
+    v̲a̲l̲-metric : (M : V̲a̲l̲ Γ Y) → (E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → Wkn Γ E → (csn : List (ℕ × ℕ)) → TermMetric Y
+    v̲a̲l̲-metric (l̲a̲m̲ W) E ϖ csn = incr 1 (m-⇒ 0 (count-in-comp h W E (wkn-cons ϖ) csn) (comp-metric W E (wkn-cons ϖ) csn))
+    v̲a̲l̲-metric (pa̲i̲r̲ M N) E ϖ csn = incr 1 (m-× 0 (v̲a̲l̲-metric M E ϖ csn) (v̲a̲l̲-metric N E ϖ csn))
+    v̲a̲l̲-metric u̲n̲i̲t̲ E ϖ csn = m-Unit 1
+    v̲a̲l̲-metric (v̲a̲r̲ i) E ϖ csn = incr 1 (lookup-metric i E ϖ csn)
+
+    c̲o̲m̲p-metric : (W : C̲o̲m̲p Γ Y) → (E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → Wkn Γ E → (csn : List (ℕ × ℕ)) → TermMetric Y
+    c̲o̲m̲p-metric (r̲e̲t̲u̲r̲n̲ M) E ϖ csn = incr 1 (v̲a̲l̲-metric M E ϖ csn)
+    c̲o̲m̲p-metric (a̲pp M N) E ϖ csn = let IH = val-metric M E ϖ csn in incr (suc ((p1 IH) + ((suc (p2 IH)) * ⟪ v̲a̲l̲-metric N E ϖ csn ⟫))) (p3 IH)
+
+-}
+
+
+
+
+
+  --------------------------------------------------------------------
+
+  mutual
+
     count-in-val : (i : Γ ∋ X) → (M : Val Γ Z) → (E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → Wkn Γ E → (csn : List (ℕ × ℕ)) → ℕ
 
     count-in-val Cx.h (var Cx.h) E ϖ csn = 1
@@ -599,6 +703,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     c̲o̲m̲p-metric (r̲e̲t̲u̲r̲n̲ M) E ϖ csn = incr 1 (v̲a̲l̲-metric M E ϖ csn)
     c̲o̲m̲p-metric (a̲pp M N) E ϖ csn = let IH = val-metric M E ϖ csn in incr (suc ((p1 IH) + ((suc (p2 IH)) * ⟪ v̲a̲l̲-metric N E ϖ csn ⟫))) (p3 IH)
 
+{- ZZZ
   mutual
 
     env-metric : Env Γ → Σ[ E ∈ List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X)) ] Wkn Γ E
@@ -1901,3 +2006,5 @@ CC-}
   sub-cps' : (M : (Γ ∙ `V) ⊢ᶜ X) → (N : Γ ⊢ᶜ X) → (γ : Env Γ) → (cs : CompStack Δ X) → (πₓ : Wk Γ Δ) → (wk≡ : ⟦ πₓ ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → ⟦ sub M N ⟧ᶜ ⟦ γ ⟧ᴱ ⟦ cs ⟧ᴷ ≡ ⟦ M ⟧ᶜ ⟦ (γ ﹐﹝ N ╎ cs ﹞) {π = πₓ} {wk≡ = wk≡} ⟧ᴱ ⟦ cs ⟧ᴷ
   sub-cps' M N γ cs πₓ wk≡ = refl
 -}
+
+ZZZ -}
