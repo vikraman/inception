@@ -321,14 +321,6 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   --zero-metric {X = `V} = m-V 0 0 []
   zero-metric {X = `V} = m-V 0 0
 
-  lookup-metric : (i : Γ ∋ Y) → (E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → Wkn Γ E → (List (ℕ × ℕ) → TermMetric Y)
-  lookup-metric Cx.h ((Y , e) ∷ ne) (wkn-cong ϖ) = e
-  lookup-metric (Cx.t i) ((X , e) ∷ ne) (wkn-cong ϖ) = lookup-metric i ne ϖ
-  lookup-metric {Y = Y} Cx.h [] (wkn-cons ϖ) = λ csn → zero-metric
-  lookup-metric {Y = Y} Cx.h (x ∷ E) (wkn-cons ϖ) = λ csn → zero-metric
-  lookup-metric {Y = Y} (Cx.t i) [] (wkn-cons ϖ) = λ csn → zero-metric
-  lookup-metric (Cx.t i) (x ∷ E) (wkn-cons ϖ) = lookup-metric i (x ∷ E) ϖ
-
   -------------------------------
 
   csn-to-nat₀ : ℕ → List (ℕ × ℕ) → ℕ
@@ -464,6 +456,12 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   ≤ᴹ-p1 : {nm₁ nm₂ : TermMetric (X `⇒ Y)} → (nm₁ ≤ᴹ nm₂) → (p1 nm₁) ≤ (p1 nm₂)
   ≤ᴹ-p1 (≤-⇒ n₁≤n₂ nm₁≤nm₂) = n₁≤n₂
 
+  ≤ᴹ-p2 : {nm₁ nm₂ : TermMetric (X `⇒ Y)} → (nm₁ ≤ᴹ nm₂) → (p2 nm₁) ≡ (p2 nm₂)
+  ≤ᴹ-p2 (≤-⇒ n₁≤n₂ nm₁≤nm₂) = refl
+
+  ≡⇒≤ : n ≡ m → n ≤ m
+  ≡⇒≤ {n = n} {m = m} n≡m rewrite n≡m = ≤-refl
+
   +-p1-incr : (n : ℕ) → (nm : TermMetric (X `⇒ Y)) → p1 (incr n nm) ≡ n + (p1 nm)
   +-p1-incr n (m-⇒ {Y = Y} {X = X} m cnt nm) with incr n (m-⇒ {Y = Y} {X = X} m cnt nm)
   ... | x = refl
@@ -498,45 +496,68 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   --------------------------------------------------------------------
 
+  EElem : Ty → Set
+  EElem X = (Σ[ f ∈ (List (ℕ × ℕ) → TermMetric X) ] ({csn₁ csn₂ : List (ℕ × ℕ)} → csn₁ ≤ᶜˢⁿ csn₂ → f csn₁ ≤ᴹ f csn₂))
+
+  EMetric = List (Σ[ X ∈ Ty ] (EElem X))
+
+  data WkN : (Γ : Ctx) → (E : EMetric) → Set where
+    wkn-nil  : WkN ε []
+    wkn-cong :   {Γ : Ctx} → {ne : EMetric} → {Y : Ty}
+               → {e : EElem Y} → (ϖ : WkN Γ ne) → WkN (Γ ∙ Y) ((Y , e) ∷ ne)
+    wkn-cons :   {Γ : Ctx} → {ne : EMetric}
+               → {Y : Ty} → (ϖ : WkN Γ ne) → WkN (Γ ∙ Y) ne
+
+  lookup-mono-metric : (i : Γ ∋ Y) → (E : EMetric) → WkN Γ E → EElem Y
+  lookup-mono-metric Cx.h ((Y , e) ∷ ne) (wkn-cong ϖ) = e
+  lookup-mono-metric (Cx.t i) ((X , e) ∷ ne) (wkn-cong ϖ) = lookup-mono-metric i ne ϖ
+  lookup-mono-metric {Y = Y} Cx.h [] (wkn-cons ϖ) = (λ _ → zero-metric) , λ _ → ≤ᴹ-refl
+  lookup-mono-metric {Y = Y} Cx.h (x ∷ E) (wkn-cons ϖ) = (λ _ → zero-metric) , λ _ → ≤ᴹ-refl
+  lookup-mono-metric {Y = Y} (Cx.t i) [] (wkn-cons ϖ) = (λ _ → zero-metric) , λ _ → ≤ᴹ-refl
+  lookup-mono-metric (Cx.t i) (x ∷ E) (wkn-cons ϖ) = lookup-mono-metric i (x ∷ E) ϖ
+
   mutual
 
-    mono-val-count : (i : Γ ∋ X) → (M : Val Γ Z) → (E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → Wkn Γ E
-                             → Σ[ f ∈ (List (ℕ × ℕ) → ℕ) ] ({csn₁ csn₂ : List (ℕ × ℕ)} → csn₁ ≤ᶜˢⁿ csn₂ → f csn₁ ≤ f csn₂)
+    mono-val-count : (i : Γ ∋ X) → (M : Val Γ Z) → (E : EMetric) → WkN Γ E
+                             → Σ[ f ∈ (List (ℕ × ℕ) → ℕ) ] ({csn₁ csn₂ : List (ℕ × ℕ)} → csn₁ ≤ᶜˢⁿ csn₂ → f csn₁ ≡ f csn₂)
 
-    mono-val-count Cx.h (var Cx.h) E ϖ = (λ _ → 1) , λ _ → s≤s z≤n
-    mono-val-count Cx.h (var (Cx.t i)) E ϖ = (λ _ → 0) , λ _ → z≤n
-    mono-val-count (Cx.t i) (var Cx.h) E ϖ = (λ _ → 0) , λ _ → z≤n
+    mono-val-count Cx.h (var Cx.h) E ϖ = (λ _ → 1) , λ _ → refl --λ _ → s≤s z≤n
+    mono-val-count Cx.h (var (Cx.t i)) E ϖ = (λ _ → 0) , λ _ → refl --λ _ → z≤n
+    mono-val-count (Cx.t i) (var Cx.h) E ϖ = (λ _ → 0) , λ _ → refl --λ _ → z≤n
     mono-val-count (Cx.t i₁) (var (Cx.t i₂)) ((B , e) ∷ E) (wkn-cong ϖ) =
       let
         IH = mono-val-count i₁ (var i₂) E ϖ
       in
-      (proj₁ IH) , proj₂ IH
+      (proj₁ IH) , proj₂ IH --proj₂ IH
     mono-val-count (Cx.t i₁) (var (Cx.t i₂)) [] (wkn-cons ϖ) =
       let
         IH = mono-val-count i₁ (var i₂) [] ϖ
       in
-      (proj₁ IH) , proj₂ IH
+      (proj₁ IH) , proj₂ IH --proj₂ IH
     mono-val-count (Cx.t i₁) (var (Cx.t i₂)) (x ∷ E) (wkn-cons ϖ) =
       let
         IH = mono-val-count i₁ (var i₂) (x ∷ E) ϖ
       in
-      (proj₁ IH) , proj₂ IH
+      (proj₁ IH) ,
+      proj₂ IH --proj₂ IH
 
-    mono-val-count Cx.h (lam W) E ϖ = {!!} --count-in-comp (t h) W E (wkn-cons ϖ) csn
-    mono-val-count (Cx.t i) (lam W) E ϖ = {!!} --count-in-comp (t (t i)) W E (wkn-cons ϖ) csn
+    mono-val-count Cx.h (lam W) E ϖ = mono-comp-count (t h) W E (wkn-cons ϖ)
+    mono-val-count (Cx.t i) (lam W) E ϖ = mono-comp-count (t (t i)) W E (wkn-cons ϖ)
 
     mono-val-count Cx.h (pair M N) E ϖ =
       let
         IH1 = mono-val-count h M E ϖ
         IH2 = mono-val-count h N E ϖ
       in
-      (λ csn → (proj₁ IH1) csn + (proj₁ IH2) csn) , λ c≤c' → +-≤-cong ((proj₂ IH1) c≤c') ((proj₂ IH2) c≤c')
+      (λ csn → (proj₁ IH1) csn + (proj₁ IH2) csn) ,
+      λ c≡c' → cong₂ _+_ ((proj₂ IH1) c≡c') ((proj₂ IH2) c≡c') --λ c≤c' → +-≤-cong ((proj₂ IH1) c≤c') ((proj₂ IH2) c≤c')
     mono-val-count (Cx.t i) (pair M N) E ϖ =
       let
         IH1 = mono-val-count (t i) M E ϖ
         IH2 = mono-val-count (t i) N E ϖ
       in
-      (λ csn → (proj₁ IH1) csn + (proj₁ IH2) csn) , λ c≤c' → +-≤-cong ((proj₂ IH1) c≤c') ((proj₂ IH2) c≤c')
+      (λ csn → (proj₁ IH1) csn + (proj₁ IH2) csn) ,
+      λ c≡c' → cong₂ _+_ ((proj₂ IH1) c≡c') ((proj₂ IH2) c≡c') --λ c≤c' → +-≤-cong ((proj₂ IH1) c≤c') ((proj₂ IH2) c≤c')
 
     mono-val-count Cx.h (pm M N) E ϖ =
       let
@@ -546,7 +567,8 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
         IH4 = mono-val-count (t (t h)) N E (wkn-cons (wkn-cons ϖ))
       in
       (λ csn → (proj₁ IH1 ) csn * (suc ((proj₁ IH2) csn + (proj₁ IH3) csn)) + (proj₁ IH4) csn) ,
-      λ c≤c' → +-≤-cong (*-≤-cong ((proj₂ IH1) c≤c') (s≤s (+-≤-cong ((proj₂ IH2) c≤c') ((proj₂ IH3) c≤c')))) ((proj₂ IH4) c≤c')
+      λ c≡c' → cong₂ _+_ (cong₂ _*_ ((proj₂ IH1) c≡c') (cong suc (cong₂ _+_ ((proj₂ IH2) c≡c') ((proj₂ IH3) c≡c')))) ((proj₂ IH4) c≡c')
+      --λ c≤c' → +-≤-cong (*-≤-cong ((proj₂ IH1) c≤c') (s≤s (+-≤-cong ((proj₂ IH2) c≤c') ((proj₂ IH3) c≤c')))) ((proj₂ IH4) c≤c')
     mono-val-count (Cx.t i) (pm M N) E ϖ =
       let
         IH1 = mono-val-count (t i) M E ϖ
@@ -554,48 +576,160 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
         IH3 = mono-val-count (t h) N E (wkn-cons (wkn-cons ϖ))
         IH4 = mono-val-count (t (t (t i))) N E (wkn-cons (wkn-cons ϖ))
       in
-      --(λ csn → (proj₁ $ mono-val-count (t i) M E ϖ) csn * (suc ((proj₁ $ mono-val-count h N E (wkn-cons (wkn-cons ϖ))) csn + (proj₁ $ mono-val-count (t h) N E (wkn-cons (wkn-cons ϖ))) csn)) + (proj₁ $ mono-val-count (t (t (t i))) N E (wkn-cons (wkn-cons ϖ))) csn) , {!!}
       (λ csn → (proj₁ IH1 ) csn * (suc ((proj₁ IH2) csn + (proj₁ IH3) csn)) + (proj₁ IH4) csn) ,
-      λ c≤c' → +-≤-cong (*-≤-cong ((proj₂ IH1) c≤c') (s≤s (+-≤-cong ((proj₂ IH2) c≤c') ((proj₂ IH3) c≤c')))) ((proj₂ IH4) c≤c')
+      (λ c≡c' → cong₂ _+_ (cong₂ _*_ ((proj₂ IH1) c≡c') (cong suc (cong₂ _+_ ((proj₂ IH2) c≡c') ((proj₂ IH3) c≡c')))) ((proj₂ IH4) c≡c'))
+      --(λ c≤c' → +-≤-cong (*-≤-cong ((proj₂ IH1) c≤c') (s≤s (+-≤-cong ((proj₂ IH2) c≤c') ((proj₂ IH3) c≤c')))) ((proj₂ IH4) c≤c'))
 
-    mono-val-count Cx.h unit E ϖ = (λ _ → 0) , λ _ → z≤n
-    mono-val-count (Cx.t i) unit E ϖ = (λ _ → 0) , λ _ → z≤n
+    mono-val-count Cx.h unit E ϖ = (λ _ → 0) , (λ _ → refl) --λ _ → z≤n
+    mono-val-count (Cx.t i) unit E ϖ = (λ _ → 0) , (λ _ → refl) --λ _ → z≤n
+
+    mono-comp-count : (i : Γ ∋ X) → (M : Comp Γ Z) → (E : EMetric) → WkN Γ E
+                             → Σ[ f ∈ (List (ℕ × ℕ) → ℕ) ] ({csn₁ csn₂ : List (ℕ × ℕ)} → csn₁ ≤ᶜˢⁿ csn₂ → f csn₁ ≡ f csn₂)
+    mono-comp-count i (return M) E ϖ = mono-val-count i M E ϖ
+    mono-comp-count i (pm M W) E ϖ =
+      let
+        IH1 = mono-val-count i M E ϖ
+        IH2 = mono-comp-count h W E (wkn-cons (wkn-cons ϖ))
+        IH3 = mono-comp-count (t h) W E (wkn-cons (wkn-cons ϖ))
+        IH4 = mono-comp-count (t (t i)) W E (wkn-cons (wkn-cons ϖ))
+      in
+      (λ csn → (proj₁ IH1 ) csn * (suc ((proj₁ IH2) csn + (proj₁ IH3) csn)) + (proj₁ IH4) csn) ,
+      {!!} --λ c≤c' → +-≤-cong (*-≤-cong ((proj₂ IH1) c≤c') (s≤s (+-≤-cong ((proj₂ IH2) c≤c') ((proj₂ IH3) c≤c')))) ((proj₂ IH4) c≤c')
+    mono-comp-count i (push W₁ W₂) E ϖ =
+      let
+        IH1 = mono-comp-count i W₁ E ϖ
+        IH2 = mono-comp-count h W₂ E (wkn-cons ϖ)
+        IH3 = mono-comp-count (t i) W₂ E (wkn-cons ϖ)
+      in
+      (λ csn → (proj₁ IH1) csn * (suc ((proj₁ IH2) csn)) + (proj₁ IH3) csn) ,
+      (λ c≡c' → cong₂ _+_ (cong₂ _*_ ((proj₂ IH1) c≡c') (cong suc ((proj₂ IH2) c≡c'))) ((proj₂ IH3) c≡c'))
+      --(λ c≤c' → +-≤-cong (*-≤-cong ((proj₂ IH1) c≤c') (s≤s ((proj₂ IH2) c≤c'))) ((proj₂ IH3) c≤c'))
+    mono-comp-count i (app M N) E ϖ =
+      let
+        IH1 = mono-val-count i M E ϖ
+        IH2 = mono-val-count i N E ϖ
+        IH3 = val-mono-metric M E ϖ
+      in
+      (λ csn → (proj₁ IH1) csn + (proj₁ IH2) csn * (suc (p2 ((proj₁ IH3) csn)))) ,
+      λ c≡c' → cong₂ _+_ ((proj₂ IH1) c≡c') (cong₂ _*_ ((proj₂ IH2) c≡c') (cong suc (≤ᴹ-p2 ((proj₂ IH3) c≡c'))))
+      --λ c≤c' → +-≤-cong ((proj₂ IH1) c≤c') (*-≤-cong ((proj₂ IH2) c≤c') (s≤s (≡⇒≤ (≤ᴹ-p2 ((proj₂ IH3) c≤c')))))
+    mono-comp-count i (var M) E ϖ = mono-val-count i M E ϖ
+    mono-comp-count i (sub W₁ W₂) E ϖ =
+      let
+        IH1 = mono-comp-count (t i) W₁ E (wkn-cons ϖ)
+        IH2 = mono-comp-count i W₂ E ϖ
+        IH3 = mono-comp-count h W₁ E (wkn-cons ϖ)
+      in
+      (λ csn → (proj₁ IH1) csn + (proj₁ IH2) csn * (suc ((proj₁ IH3) csn))) ,
+      (λ c≡c' → cong₂ _+_ ((proj₂ IH1) c≡c') (cong₂ _*_ ((proj₂ IH2) c≡c') (cong suc ((proj₂ IH3) c≡c'))))
+      --(λ c≤c' → +-≤-cong ((proj₂ IH1) c≤c') (*-≤-cong ((proj₂ IH2) c≤c') (s≤s ((proj₂ IH3) c≤c'))))
+
+    val-mono-metric : (M : Val Γ Y) → (E : EMetric) → WkN Γ E → EElem Y
+    val-mono-metric (var i) E ϖ =
+      let
+        IH = lookup-mono-metric i E ϖ
+      in
+      (λ csn → incr 2 ((proj₁ IH) csn)) , λ c≤c' → ≤ᴹ-incr-cong (≤-refl {n = 2}) ((proj₂ IH) c≤c')
+    val-mono-metric (lam W) E ϖ =
+      let
+        IH1 = mono-comp-count h W E (wkn-cons ϖ)
+        IH2 = comp-mono-metric W E (wkn-cons ϖ)
+      in
+      (λ csn → incr 2 (m-⇒ 0 ((proj₁ IH1) csn) ((proj₁ IH2) csn))) ,
+      λ {csn₁ = csn₁} {csn₂ = csn₂} c≤c' →
+         let
+           cnt-eq = (proj₂ IH1) c≤c'
+         in
+         subst (λ x → m-⇒ 2 (proj₁ IH1 csn₁) (proj₁ IH2 csn₁) ≤ᴹ m-⇒ 2 x (proj₁ IH2 csn₂))
+               cnt-eq
+               (≤-⇒ (s≤s (s≤s z≤n)) ((proj₂ IH2) c≤c'))
+    val-mono-metric (pair M₁ M₂) E ϖ =
+      let
+        IH1 = val-mono-metric M₁ E ϖ
+        IH2 = val-mono-metric M₂ E ϖ
+      in
+      (λ csn → incr 2 (m-× 0 ((proj₁ IH1) csn) ((proj₁ IH2) csn))) ,
+      λ c≤c' → ≤-× ≤-refl ((proj₂ IH1) c≤c') ((proj₂ IH2) c≤c')
+    val-mono-metric (pm {A = X} {B = Y} M N) E ϖ =
+      let
+        IH1 = val-mono-metric M E ϖ
+        IH2 = val-mono-metric N E (wkn-cons (wkn-cons ϖ))
+        r1 = λ c → rhs ((proj₁ IH1) c)
+        l1 = λ c → lhs ((proj₁ IH1) c)
+        IH3 = val-mono-metric N ((Y , r1 , λ c≤c' → ≤ᴹ-rhs ((proj₂ IH1) c≤c')) ∷ (X , l1 , λ c≤c' → ≤ᴹ-lhs ((proj₂ IH1) c≤c')) ∷ E) (wkn-cong (wkn-cong ϖ))
+      in
+      (λ csn → incr (suc (vx ((proj₁ IH1) csn) + ⟪ (proj₁ IH2) csn ⟫)) ((proj₁ IH3) csn)) ,
+      λ c≤c' → ≤ᴹ-incr-cong (+-≤-cong (s≤s (≤ᴹ-vx ((proj₂ IH1) c≤c'))) (≤ᴹ⇒≤ ((proj₂ IH2) c≤c'))) ((proj₂ IH3) c≤c')
+    val-mono-metric unit E ϖ = (λ _ → m-Unit 2) , (λ {csn₁} {csn₂} z → ≤-Unit (s≤s (s≤s z≤n)))
+
+    comp-mono-metric : (W : Comp Γ Y) → (E : EMetric) → WkN Γ E → EElem Y
+    comp-mono-metric (return M) E ϖ =
+      let
+        IH = val-mono-metric M E ϖ
+      in
+      (λ csn → incr 2 ((proj₁ IH) csn)) , λ c≤c' → ≤ᴹ-incr-cong (≤-refl {n = 2}) ((proj₂ IH) c≤c')
+    comp-mono-metric (pm {A = X} {B = Y} M W) E ϖ =
+      let
+        IH1 = val-mono-metric M E ϖ
+        IH2 = comp-mono-metric W E (wkn-cons (wkn-cons ϖ))
+        r1 = λ c → rhs ((proj₁ IH1) c)
+        l1 = λ c → lhs ((proj₁ IH1) c)
+        IH3 = comp-mono-metric W ((Y , r1 , λ c≤c' → ≤ᴹ-rhs ((proj₂ IH1) c≤c')) ∷ (X , l1 , λ c≤c' → ≤ᴹ-lhs ((proj₂ IH1) c≤c')) ∷ E) (wkn-cong (wkn-cong ϖ))
+      in
+      (λ csn → incr (suc (vx ((proj₁ IH1) csn) + ⟪ (proj₁ IH2) csn ⟫)) ((proj₁ IH3) csn)) ,
+      λ c≤c' → ≤ᴹ-incr-cong (+-≤-cong (s≤s (≤ᴹ-vx ((proj₂ IH1) c≤c'))) (≤ᴹ⇒≤ ((proj₂ IH2) c≤c'))) ((proj₂ IH3) c≤c')
+    comp-mono-metric (push {A = X} W₁ W₂) E ϖ =
+      let
+        IH1 = comp-mono-metric W₂ E (wkn-cons ϖ)
+        IH2 = mono-comp-count h W₂ E (wkn-cons ϖ)
+        IH3 = comp-mono-metric W₁ E ϖ
+        cs' = λ csn → (((proj₁ IH2) csn , ⟪ (proj₁ IH1) csn ⟫) ∷ csn)
+        IH3' = λ csn → ⟪ (proj₁ IH3) (cs' csn) ⟫
+        IH4 = mono-comp-count h W₂ E (wkn-cons ϖ)
+      in
+         (λ csn → incr (suc ((2+ ((proj₁ IH4) csn)) * (IH3' csn))) ((proj₁ IH1) csn)) ,
+         λ {csn₁ = csn₁} {csn₂ = csn₂} c≤c' →
+           let
+             le  = (proj₂ IH2) c≤c'
+             le1 = ≤ᴹ⇒≤ ((proj₂ IH3) ([s≤s] {cnt = (proj₁ IH2) csn₁} ((≤ᴹ⇒≤ ((proj₂ IH1) c≤c'))) c≤c'))
+             le2 = subst
+              (λ x →   ⟪ comp-mono-metric W₁ E ϖ .proj₁ ((proj₁ IH2 csn₁ , ⟪ comp-mono-metric W₂ E (wkn-cons ϖ) .proj₁ csn₁ ⟫) ∷ csn₁) ⟫
+                     ≤ ⟪ comp-mono-metric W₁ E ϖ .proj₁ ((x , ⟪ comp-mono-metric W₂ E (wkn-cons ϖ) .proj₁ csn₂ ⟫) ∷ csn₂) ⟫)
+              le
+              le1
+             le4 = +-≤-cong le2 (+-≤-cong le2 (*-≤-cong ((≡⇒≤ ((proj₂ IH2) c≤c'))) le2))
+           in
+           ≤ᴹ-incr-cong (s≤s le4) ((proj₂ IH1) c≤c')
+
+    comp-mono-metric (app M N) E ϖ =
+      let
+        IH1 = val-mono-metric M E ϖ
+        IH2 = val-mono-metric N E ϖ
+      in
+      (λ csn → incr (2 + ((p1 (proj₁ IH1 csn)) + ((suc (p2 (proj₁ IH1 csn))) * ⟪ proj₁ IH2 csn ⟫))) (p3 (proj₁ IH1 csn))) ,
+      λ c≤c' → 
+        let
+          le1 = +-≤-cong (≤ᴹ-p1 (proj₂ IH1 c≤c')) (+-≤-cong (≤ᴹ⇒≤ (proj₂ IH2 c≤c')) (*-≤-cong (≡⇒≤ (≤ᴹ-p2 (proj₂ IH1 c≤c'))) (≤ᴹ⇒≤ (proj₂ IH2 c≤c'))))
+        in
+        ≤ᴹ-incr-cong (s≤s (s≤s le1)) (≤ᴹ-p3 (proj₂ IH1 c≤c'))
+    comp-mono-metric (var M) E ϖ =
+      let
+        IH = val-mono-metric M E ϖ
+      in
+      (λ csn → incr (suc ⟪ (proj₁ IH) csn ⟫) zero-metric) , λ c≤c' → ≤ᴹ-incr-cong (s≤s (≤ᴹ⇒≤ ((proj₂ IH) c≤c'))) (≤ᴹ-refl {nm = zero-metric})
+    comp-mono-metric (sub W₁ W₂) E ϖ =
+      let
+        IH = comp-mono-metric W₂ E ϖ
+        --IH2 = comp-mono-metric W₁ (((`V , λ _ → m-V 0 (w + csn-to-nat₀ w csn))) , ? ∷ E) (wkn-cong ϖ)
+      in
+      (λ csn → proj₁ (comp-mono-metric W₁ ((`V , (λ _ → m-V 0 (⟪ proj₁ IH csn ⟫ + csn-to-nat₀ ⟪ proj₁ IH csn ⟫ csn)) , λ c≤c' → ≤ᴹ-refl) ∷ E) (wkn-cong ϖ)) csn) ,
+      λ c≤c' → {!!}
+
+    --comp-metric (sub W₁ W₂) E ϖ csn =
+    --let w = ⟪ comp-metric W₂ E ϖ csn ⟫ in
+    --incr (suc ⟪ comp-metric W₂ E ϖ csn ⟫) (comp-metric W₁ (((`V , λ _ → m-V 0 (w + csn-to-nat₀ w csn))) ∷ E) (wkn-cong ϖ) csn)
+
 {-
-    count-in-val Cx.h (var Cx.h) E ϖ csn = 1
-    count-in-val Cx.h (var (Cx.t i)) E ϖ csn = 0
-    count-in-val (Cx.t i) (var Cx.h) E ϖ csn = 0
-    count-in-val (Cx.t i₁) (var (Cx.t i₂)) ((B , e) ∷ E) (wkn-cong ϖ) csn = count-in-val i₁ (var i₂) E ϖ csn
-    count-in-val (Cx.t i₁) (var (Cx.t i₂)) [] (wkn-cons ϖ) csn =  count-in-val i₁ (var i₂) [] ϖ csn
-    count-in-val (Cx.t i₁) (var (Cx.t i₂)) (x ∷ E) (wkn-cons ϖ) csn = count-in-val i₁ (var i₂) (x ∷ E) ϖ csn
-
-    count-in-val Cx.h (lam W) E ϖ csn = count-in-comp (t h) W E (wkn-cons ϖ) csn
-    count-in-val (Cx.t i) (lam W) E ϖ csn = count-in-comp (t (t i)) W E (wkn-cons ϖ) csn
-
-    count-in-val Cx.h (pair M N) E ϖ csn = count-in-val h M E ϖ csn + count-in-val h N E ϖ csn
-    count-in-val (Cx.t i) (pair M N) E ϖ csn = count-in-val (t i) M E ϖ csn + count-in-val (t i) N E ϖ csn
-
-    count-in-val Cx.h (pm M N) E ϖ csn = count-in-val h M E ϖ csn * (suc (count-in-val h N E (wkn-cons (wkn-cons ϖ)) csn + count-in-val (t h) N E (wkn-cons (wkn-cons ϖ)) csn)) + count-in-val (t (t h)) N E (wkn-cons (wkn-cons ϖ)) csn
-    count-in-val (Cx.t i) (pm M N) E ϖ csn = count-in-val (t i) M E ϖ csn * (suc (count-in-val h N E (wkn-cons (wkn-cons ϖ)) csn + count-in-val (t h) N E (wkn-cons (wkn-cons ϖ)) csn)) + count-in-val (t (t (t i))) N E (wkn-cons (wkn-cons ϖ)) csn
-
-    count-in-val Cx.h unit E ϖ csn = 0
-    count-in-val (Cx.t i) unit E ϖ csn = 0
-
-    count-in-comp : (i : Γ ∋ X) → (W : Comp Γ Z) → (E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → Wkn Γ E → (csn : List (ℕ × ℕ)) → ℕ
-    count-in-comp i (return M) E ϖ csn = count-in-val i M E ϖ csn
-    count-in-comp i (pm M W) E ϖ csn = count-in-val i M E ϖ csn * (suc (count-in-comp h W E (wkn-cons (wkn-cons ϖ)) csn + count-in-comp (t h) W E (wkn-cons (wkn-cons ϖ)) csn)) + count-in-comp (t (t i)) W E (wkn-cons (wkn-cons ϖ)) csn
-
-    count-in-comp i (push W₁ W₂) E ϖ csn = count-in-comp i W₁ E ϖ csn * (suc (count-in-comp h W₂ E (wkn-cons ϖ) csn)) + count-in-comp (t i) W₂ E (wkn-cons ϖ) csn
-    count-in-comp i (app M N) E ϖ csn = count-in-val i M E ϖ csn + count-in-val i N E ϖ csn * (suc (p2 (val-metric M E ϖ csn)))
-    count-in-comp i (var M) E ϖ csn = count-in-val i M E ϖ csn
-    count-in-comp i (sub W₁ W₂) E ϖ csn = count-in-comp (t i) W₁ E (wkn-cons ϖ) csn + count-in-comp i W₂ E ϖ csn * (suc (count-in-comp h W₁ E (wkn-cons ϖ) csn))
-
-    val-metric : (M : Val Γ Y) → (E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → Wkn Γ E → (csn : List (ℕ × ℕ)) → TermMetric Y
-    val-metric (var i) E ϖ csn = incr 2 (lookup-metric i E ϖ csn)
-    val-metric (lam W) E ϖ csn = incr 2 (m-⇒ 0 (count-in-comp h W E (wkn-cons ϖ) csn) (comp-metric W E (wkn-cons ϖ) csn))
-    val-metric (pair M N) E ϖ csn = incr 2 (m-× 0 (val-metric M E ϖ csn) (val-metric N E ϖ csn))
-    val-metric (pm {A = X} {B = Y} M N) E ϖ csn = let IH = val-metric M E ϖ in incr (suc (vx (IH csn) + ⟪ val-metric N E (wkn-cons (wkn-cons ϖ)) csn ⟫)) (val-metric N ((Y , λ c → rhs (IH c)) ∷ (X , λ c → lhs (IH c)) ∷ E) (wkn-cong (wkn-cong ϖ)) csn)
-    val-metric unit E ϖ csn = m-Unit 2
-
     comp-metric : (W : Comp Γ Y) → (E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → Wkn Γ E → (csn : List (ℕ × ℕ)) → TermMetric Y
     comp-metric (return M) E ϖ csn = incr 2 (val-metric M E ϖ csn)
     comp-metric (pm {A = X} {B = Y} M W) E ϖ csn =
@@ -630,6 +764,13 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
 
 
+  lookup-metric : (i : Γ ∋ Y) → (E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → Wkn Γ E → (List (ℕ × ℕ) → TermMetric Y)
+  lookup-metric Cx.h ((Y , e) ∷ ne) (wkn-cong ϖ) = e
+  lookup-metric (Cx.t i) ((X , e) ∷ ne) (wkn-cong ϖ) = lookup-metric i ne ϖ
+  lookup-metric {Y = Y} Cx.h [] (wkn-cons ϖ) = λ csn → zero-metric
+  lookup-metric {Y = Y} Cx.h (x ∷ E) (wkn-cons ϖ) = λ csn → zero-metric
+  lookup-metric {Y = Y} (Cx.t i) [] (wkn-cons ϖ) = λ csn → zero-metric
+  lookup-metric (Cx.t i) (x ∷ E) (wkn-cons ϖ) = lookup-metric i (x ∷ E) ϖ
 
 
   --------------------------------------------------------------------
