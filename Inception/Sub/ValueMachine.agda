@@ -1195,13 +1195,19 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   -------------------------------
 
-{- ZZZ
-  partial-term-metric : PartialTerm Γ X → (E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → Wkn Γ E → List (ℕ × ℕ) → TermMetric X
-  partial-term-metric (⭭ M) E ϖ csn = v̲a̲l̲-metric M E ϖ csn
-  partial-term-metric (⇡ M) E ϖ csn = val-metric M E ϖ csn
-  partial-term-metric (⇡ᴹ M N) E ϖ csn = val-metric (pm M N) E ϖ csn
-  partial-term-metric (⇡ᴸ LHS RHS) E ϖ csn = val-metric (pair LHS RHS) E ϖ csn
-  partial-term-metric (⇡ᴿ LHS RHS) E ϖ csn = val-metric (pair (toVal LHS) RHS) E ϖ csn
+  partial-term-metric : PartialTerm Γ X → (E : EMetric) → WkN Γ E → EElem X
+  partial-term-metric (⭭ M) E ϖ = v̲a̲l̲-mono-metric M E ϖ
+  partial-term-metric (⇡ M) E ϖ = val-mono-metric M E ϖ
+  partial-term-metric (⇡ᴹ M N) E ϖ = val-mono-metric (pm M N) E ϖ
+  partial-term-metric (⇡ᴸ LHS RHS) E ϖ = val-mono-metric (pair LHS RHS) E ϖ
+  partial-term-metric (⇡ᴿ LHS RHS) E ϖ = val-mono-metric (pair (toVal LHS) RHS) E ϖ
+
+  -- partial-term-metric : PartialTerm Γ X → (E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → Wkn Γ E → List (ℕ × ℕ) → TermMetric X
+  -- partial-term-metric (⭭ M) E ϖ csn = v̲a̲l̲-metric M E ϖ csn
+  -- partial-term-metric (⇡ M) E ϖ csn = val-metric M E ϖ csn
+  -- partial-term-metric (⇡ᴹ M N) E ϖ csn = val-metric (pm M N) E ϖ csn
+  -- partial-term-metric (⇡ᴸ LHS RHS) E ϖ csn = val-metric (pair LHS RHS) E ϖ csn
+  -- partial-term-metric (⇡ᴿ LHS RHS) E ϖ csn = val-metric (pair (toVal LHS) RHS) E ϖ csn
 
   botStackCtx : ValStack non-empty T◾ → Ctx
   botStackCtx ((_⊲_∷_) {Γ = Γ} _ _ □) = Γ
@@ -1223,17 +1229,29 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   botStackTerm ((_⊲_∷_) {Γ = Γ} M γ □ {↥ = 🗆}) = M
   botStackTerm ((x ⊲ γ ∷ ((x₁ ⊲ γ₁ ∷ xs) {↥ = ↥'})) {↥ = ↥}) = botStackTerm ((x₁ ⊲ γ₁ ∷ xs) {↥ = ↥'})
 
-  valstate-metric : (S : ValState X) → List (ℕ × ℕ) → TermMetric X
-  valstate-metric (∘ S) csn =
+  valstate-metric : (S : ValState X) → EElem X
+  valstate-metric (∘ S) =
     let
-      e = env-metric (botStackEnv S)
+      e = env-mono-metric (botStackEnv S)
     in
-      partial-term-metric (botStackTerm S) (proj₁ e) (proj₂ e) csn
-  valstate-metric (∙ S) csn =
+      partial-term-metric (botStackTerm S) (proj₁ e) (proj₂ e)
+  valstate-metric (∙ S) =
     let
-      e = env-metric (botStackEnv S)
+      e = env-mono-metric (botStackEnv S)
     in
-       partial-term-metric (botStackTerm S) (proj₁ e) (proj₂ e) csn
+       partial-term-metric (botStackTerm S) (proj₁ e) (proj₂ e)
+
+  --valstate-metric : (S : ValState X) → List (ℕ × ℕ) → TermMetric X
+  --valstate-metric (∘ S) csn =
+  --  let
+  --    e = env-metric (botStackEnv S)
+  --  in
+  --    partial-term-metric (botStackTerm S) (proj₁ e) (proj₂ e) csn
+  --valstate-metric (∙ S) csn =
+  --  let
+  --    e = env-metric (botStackEnv S)
+  --  in
+  --     partial-term-metric (botStackTerm S) (proj₁ e) (proj₂ e) csn
 
 {-
   topStackType : (S : ValStack non-empty T◾) → Ty
@@ -1270,16 +1288,19 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   data ValSteps : ValState T◾ → Set where
 
-    -- steps : {S T : ValState T◾} → S ↠ᵛ T → ValStartingState S → ValHaltingState T → ⟦ S ⟧ᵛꟴ ≡ ⟦ T ⟧ᵛꟴ → (π : Wk (topCtx T) (topCtx S)) → (⟦ π ⟧ʷ ⟦ topEnv T ⟧ᴱ ≡ ⟦ topEnv S ⟧ᴱ)
-    --         → (∀ (csn : List (ℕ × ℕ)) → valstate-metric T csn ≤ᴹ valstate-metric S csn)
-    --         --→ (∀ (csn : List (ℕ × ℕ)) → ⟪ valstate-metric T csn ⟫ ≤ ⟪ valstate-metric S csn ⟫) -- not sure whether this is strong enough
-    --         → (θ : Wke π (proj₂ (env-metric (topEnv T))) (proj₂ (env-metric (topEnv S))))
-    --         → ValSteps S
     steps : {S T : ValState T◾} → S ↠ᵛ T → ValHaltingState T → ⟦ S ⟧ᵛꟴ ≡ ⟦ T ⟧ᵛꟴ → (π : Wk (botCtx T) (botCtx S)) → (⟦ π ⟧ʷ ⟦ botEnv T ⟧ᴱ ≡ ⟦ botEnv S ⟧ᴱ)
-            → (∀ (csn : List (ℕ × ℕ)) → valstate-metric T csn ≤ᴹ valstate-metric S csn)
-            → (θ : Wke π (proj₂ (env-metric (botEnv T))) (proj₂ (env-metric (botEnv S))))
+            → (∀ (csn : List (ℕ × ℕ)) → (proj₁ (valstate-metric T)) csn ≤ᴹ (proj₁ (valstate-metric S)) csn)
+            → (θ : WkE π (proj₂ (env-mono-metric (botEnv T))) (proj₂ (env-mono-metric (botEnv S))))
             → ValSteps S
 
+  -- data ValSteps : ValState T◾ → Set where
+
+  --   steps : {S T : ValState T◾} → S ↠ᵛ T → ValHaltingState T → ⟦ S ⟧ᵛꟴ ≡ ⟦ T ⟧ᵛꟴ → (π : Wk (botCtx T) (botCtx S)) → (⟦ π ⟧ʷ ⟦ botEnv T ⟧ᴱ ≡ ⟦ botEnv S ⟧ᴱ)
+  --           → (∀ (csn : List (ℕ × ℕ)) → valstate-metric T csn ≤ᴹ valstate-metric S csn)
+  --           → (θ : Wke π (proj₂ (env-metric (botEnv T))) (proj₂ (env-metric (botEnv S))))
+  --           → ValSteps S
+
+  {- TODO
   wke-trans : {E E' E'' : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))}
                         → {π₁ : Wk Γ Γ'} → {π₂ : Wk Γ' Γ''} → {ϖ₁ : Wkn Γ E} → {ϖ : Wkn Γ' E'} → {ϖ₂ : Wkn Γ'' E''}
                         → (θ₁ : Wke π₁ ϖ₁ ϖ) (θ₂ : Wke π₂ ϖ ϖ₂)
@@ -1299,8 +1320,10 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   wke-trans {E = E} {E' = E'} {E'' = E''} {π₁ = π₁} {π₂ = π₂} {ϖ₁ = ϖ₁} {ϖ = ϖ} {ϖ₂ = ϖ₂} (wke-ww- π ϖ₃ ϖ' θ₁) (wke-cww π₃ ϖ₄ ϖ'' θ₂) = wke-ww- (wk-trans π (wk-cong π₃)) ϖ₃ (wkn-cons ϖ'') (wke-trans θ₁ (wke-cww π₃ ϖ₄ ϖ'' θ₂))
   wke-trans {E = E} {E' = E'} {E'' = E''} {π₁ = π₁} {π₂ = π₂} {ϖ₁ = ϖ₁} {ϖ = ϖ} {ϖ₂ = ϖ₂} (wke-cww π ϖ₃ ϖ' θ₁) (wke-ww- π₃ ϖ₄ ϖ'' θ₂) = wke-ww- (wk-trans π π₃) ϖ₃ ϖ₂ (wke-trans θ₁ θ₂)
   wke-trans {E = E} {E' = E'} {E'' = E''} {π₁ = π₁} {π₂ = π₂} {ϖ₁ = ϖ₁} {ϖ = ϖ} {ϖ₂ = ϖ₂} (wke-cww π ϖ₃ ϖ' θ₁) (wke-cww π₃ ϖ₄ ϖ'' θ₂) = wke-cww (wk-trans π π₃) ϖ₃ ϖ'' (wke-trans θ₁ θ₂)
+  -}
 
 
+{- ZZZ
   val-eval-rec : (M : Γ' ⊢ᵛ X) → (γ : Env Γ) → (π : Wk Γ Γ') → ValSteps {T◾ = X} (∘ ((⇡ (wk-val π M) ⊲ γ ∷ □) {↥ = 🗆}))
 
   val-eval-rec {X = `V} (var {A = .`V} i) γ π = steps (_ →ᵛ⟨ ∘var-c ⟩．) (∙ v̲a̲r̲ (wk-mem π i) ⊲ γ ■) refl wk-id refl (λ csn → ≤ᴹ-incr-cong (s≤s (z≤n {n = 1})) (≤ᴹ-refl {nm = (lookup-metric (wk-mem π i) (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) csn)})) wke-id
