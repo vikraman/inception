@@ -1319,13 +1319,205 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   -----------------------------
 
   ---------------------------------------------------------------------------------------
-  -- comp-count-mult : (W : Comp (Γ ∙ X) Y) → (nm : EElem X) → (E : EMetric) → (ϖ : WkN Γ E) → (csn : List (ℕ × ℕ)) →
-  --            ⟪ comp-mono-metric W ((X , nm) ∷ E) (wkn-cong ϖ) ⟫ ≤ (mono-comp-count h W E (wkn-cons ϖ)) * ⟪ proj₁ nm csn ⟫ + comp-mono-metric W E (wkn-cons ϖ)
-  -- comp-count-mult W nm E ϖ csn = ?
+  data Missing-i : {E : EMetric} → (i : Γ ∋ X) → (ϖ : WkN Γ E) → Set where
+    missing-h : {E : EMetric} → (ϖ : WkN Γ E) → Missing-i {X = X} h (wkn-cons ϖ)
+    missing-t-cong : {E : EMetric} → {e : EElem B} → (i : Γ ∋ X) → (ϖ : WkN Γ E) → (μ : Missing-i i ϖ) → Missing-i (t {B = B} i) (wkn-cong {e = e} ϖ)
+    missing-t-cons : {E : EMetric} → (i : Γ ∋ X) → (ϖ : WkN Γ E) → (μ : Missing-i i ϖ) → Missing-i (t {B = B} i) (wkn-cons ϖ)
+
+  with-i :  {E : EMetric} → (i : Γ ∋ X) → (ϖ : WkN Γ E) → (μ : Missing-i i ϖ) → (e : EElem X)
+           → Σ[ E' ∈ EMetric ] (WkN Γ E')
+  with-i i (wkn-cons ϖ) (missing-h ϖ) e = _ , wkn-cong {e = e} ϖ
+  with-i (t i) (wkn-cong ϖ) (missing-t-cong {e = e'} i ϖ μ) e =
+    let
+      a1 = with-i i ϖ μ e
+    in
+    _ , wkn-cong {e = e'} (proj₂ a1)
+  with-i (t i) (wkn-cons ϖ) (missing-t-cons i ϖ μ) e =
+    let
+      a1 = with-i i ϖ μ e
+    in
+      _ , wkn-cons (proj₂ a1)
+
+  lookup-h-cons : (E : EMetric) → (ϖ : WkN Γ E) → (csn : List (ℕ × ℕ)) → ⟪ (proj₁ (lookup-mono-metric (h {A = Y}) E (wkn-cons ϖ))) csn ⟫ ≡ 0
+  lookup-h-cons [] wkn-nil csn = refl
+  lookup-h-cons [] (wkn-cons ϖ) csn = refl
+  lookup-h-cons (x ∷ E) (wkn-cong ϖ) csn = refl
+  lookup-h-cons (x ∷ E) (wkn-cons ϖ) csn = refl
+
+  wk-e : (π : Wk Γ Δ) → {E : EMetric} → (ϖ : WkN Δ E) → WkN Γ E
+  wk-e wk-ε ϖ = ϖ
+  wk-e (wk-cong π) (wkn-cong ϖ) = wkn-cong (wk-e π ϖ)
+  wk-e (wk-cong π) (wkn-cons ϖ) = wkn-cons (wk-e π ϖ)
+  wk-e (wk-wk π) ϖ = wkn-cons (wk-e π ϖ)
+
+  wk-e-id : {E : EMetric} → (ϖ : WkN Γ E) → wk-e wk-id ϖ ≡ ϖ
+  wk-e-id {Γ = Cx.ε} ϖ = refl
+  wk-e-id {Γ = Γ Cx.∙ x} (wkn-cong ϖ) = cong wkn-cong (wk-e-id ϖ)
+  wk-e-id {Γ = Γ Cx.∙ x} (wkn-cons ϖ) = cong wkn-cons (wk-e-id ϖ)
+
+  wk-mem-t : (i : Γ ∋ X) → wk-mem (wk-wk {A = A} wk-id) i ≡ t i
+  wk-mem-t Cx.h = refl
+  wk-mem-t (Cx.t i) rewrite wk-mem-id {i = i} = refl
+
+
+  lookup-z : (i : Γ ∋ X) → (ϖ : WkN Γ []) → (csn : List (ℕ × ℕ)) → ⟪ proj₁ (lookup-mono-metric i [] ϖ) csn ⟫ ≡ 0
+  lookup-z Cx.h (wkn-cons ϖ) csn = refl
+  lookup-z (Cx.t i) (wkn-cons ϖ) csn = refl
+
+  lookup-wk-h-cons : (E : EMetric) → (π : Wk Δ (Γ ∙ Y)) → (ϖ : WkN Γ E) → (csn : List (ℕ × ℕ)) → ⟪ (proj₁ (lookup-mono-metric (wk-mem π (h {A = Y})) E (wk-e π (wkn-cons ϖ)))) csn ⟫ ≡ 0
+  lookup-wk-h-cons [] (wk-cong π) wkn-nil csn = refl
+  lookup-wk-h-cons [] (wk-cong π) (wkn-cons ϖ) csn = refl
+  lookup-wk-h-cons [] (wk-wk π) wkn-nil csn = refl
+  lookup-wk-h-cons [] (wk-wk π) (wkn-cons ϖ) csn = refl
+  lookup-wk-h-cons (x ∷ E) (wk-cong π) (wkn-cong ϖ) csn = refl
+  lookup-wk-h-cons (x ∷ E) (wk-cong π) (wkn-cons ϖ) csn = refl
+  lookup-wk-h-cons (x ∷ E) (wk-wk π) (wkn-cong ϖ) csn = lookup-wk-h-cons ((_ , _) ∷ E) π (wkn-cong ϖ) csn
+  lookup-wk-h-cons (x ∷ E) (wk-wk π) (wkn-cons ϖ) csn = lookup-wk-h-cons (x ∷ E) π (wkn-cons ϖ) csn
+
+  lookup-wk-t-cons : (E : EMetric) → (i : Γ ∋ X) → (π : Wk Δ Γ) → (ϖ : WkN Γ E) → (csn : List (ℕ × ℕ))
+                  → ⟪ (proj₁ (lookup-mono-metric (wk-mem π i) E (wk-e π ϖ))) csn ⟫ ≡ ⟪ (proj₁ (lookup-mono-metric i E ϖ)) csn ⟫
+  lookup-wk-t-cons E Cx.h (wk-cong π) (wkn-cong ϖ) csn = refl
+  lookup-wk-t-cons E (Cx.h {A = Y}) (wk-cong π) (wkn-cons ϖ) csn rewrite lookup-h-cons {Y = Y} E ϖ csn | lookup-h-cons {Y = Y} E (wk-e π ϖ) csn = refl
+  lookup-wk-t-cons E Cx.h (wk-wk (wk-cong π)) (wkn-cong ϖ) csn = refl
+  lookup-wk-t-cons E Cx.h (wk-wk (wk-wk π)) (wkn-cong ϖ) csn = lookup-wk-t-cons ((_ , _) ∷ _) h π (wkn-cong ϖ) csn
+  lookup-wk-t-cons E (Cx.h {A = Y}) ((wk-wk {A = A}) (wk-cong π)) (wkn-cons ϖ) csn =
+    let
+      a0 = lookup-wk-h-cons {Y = Y} E (wk-cong wk-id) ϖ csn
+      a1 = lookup-wk-h-cons {Y = Y} E (wk-wk {A = A} (wk-cong π)) ϖ csn
+      a2 = subst (λ x → ⟪ proj₁ (lookup-mono-metric h E (wkn-cons x)) csn ⟫ ≡ 0) (wk-e-id ϖ) a0
+    in
+    trans a1 (sym a2)
+  lookup-wk-t-cons E (Cx.h {A = Y}) (wk-wk (wk-wk π)) (wkn-cons ϖ) csn =
+    let
+      a0 = lookup-wk-h-cons {Y = Y} E wk-id ϖ csn
+      a1 = lookup-wk-h-cons {Y = Y} E (wk-wk (wk-wk π)) ϖ csn
+      a2 = subst (λ x → ⟪ proj₁ (lookup-mono-metric h E (wkn-cons x)) csn ⟫ ≡ 0) (wk-e-id ϖ) a0
+    in
+    trans a1 (sym a2)
+  lookup-wk-t-cons E (Cx.t i) (wk-cong π) (wkn-cong ϖ) csn = lookup-wk-t-cons _ i π ϖ csn
+  lookup-wk-t-cons [] (Cx.t i) (wk-cong π) (wkn-cons ϖ) csn = refl
+  lookup-wk-t-cons (x ∷ E) (Cx.t i) (wk-cong π) (wkn-cons ϖ) csn = lookup-wk-t-cons (x ∷ E) i π ϖ csn
+  lookup-wk-t-cons E (Cx.t i) (wk-wk π) (wkn-cong ϖ) csn = lookup-wk-t-cons ((_ , _) ∷ _) (t i) π (wkn-cong ϖ) csn
+  lookup-wk-t-cons [] (Cx.t i) (wk-wk π) (wkn-cons ϖ) csn = refl
+  lookup-wk-t-cons (x ∷ E) (Cx.t i) (wk-wk π) (wkn-cons ϖ) csn = lookup-wk-t-cons (x ∷ E) (t i) π (wkn-cons ϖ) csn
+
+
+  lookup-count-ineq : (nm : EElem X) → (E : EMetric) → (ϖ : WkN (Γ ∙ Y) E) → (i : Γ ∋ X) → (μ : Missing-i (t i) ϖ) → (csn : List (ℕ × ℕ)) →
+                        ⟪ proj₁ (lookup-mono-metric h (proj₁ (with-i (t i) ϖ μ nm)) (proj₂ (with-i (t i) ϖ μ nm))) csn ⟫
+                      ≤ ⟪ proj₁ (lookup-mono-metric (h {A = Y}) E ϖ) csn ⟫
+  lookup-count-ineq nm E ϖ Cx.h (missing-t-cong i ϖ₁ μ₁) csn = ≤-refl
+  lookup-count-ineq nm [] ϖ Cx.h (missing-t-cons .h (wkn-cons ϖ₁) (missing-h ϖ₂)) csn = ≤-refl
+  lookup-count-ineq nm (x ∷ E) ϖ Cx.h (missing-t-cons .h (wkn-cons ϖ₁) (missing-h ϖ₂)) csn = ≤-refl
+  lookup-count-ineq nm E ϖ (Cx.t i) (missing-t-cong i₁ ϖ₁ μ₁) csn = ≤-refl
+  lookup-count-ineq nm E ϖ (Cx.t i) (missing-t-cons .(t i) (wkn-cong ϖ₁) (missing-t-cong i₁ ϖ₂ μ₁)) csn = ≤-refl
+  lookup-count-ineq {Y = Y} nm E ϖ (Cx.t i) (missing-t-cons .(t i) (wkn-cons {Y = Z} ϖ₁) (missing-t-cons i₁ ϖ₂ μ₁)) csn
+    rewrite lookup-h-cons {Y = Y} (with-i i ϖ₁ μ₁ nm .proj₁) (wkn-cons {Y = Z} (proj₂ (with-i i ϖ₁ μ₁ nm))) csn = z≤n
+
+  mutual
+
+    val-count-mult : (M : Val Γ Y) → (nm : EElem X) → (E : EMetric) → (ϖ : WkN Γ E) → (csn : List (ℕ × ℕ)) → (i : Γ ∋ X) → (μ : Missing-i i ϖ) →
+              (⟪ (proj₁ (val-mono-metric M (proj₁ (with-i i ϖ μ nm)) (proj₂ (with-i i ϖ μ nm)))) csn ⟫) ≤ (((proj₁ (mono-val-count i M E ϖ)) csn) * ⟪ proj₁ nm csn ⟫ + ⟪ (proj₁ (val-mono-metric M E ϖ)) csn ⟫)
+
+    val-count-mult (var Cx.h) nm E ϖ csn Cx.h (missing-h ϖ₁) =
+      let
+        a0 : 2+ ⟪ proj₁ nm csn ⟫ ≤ (2+ ⟪ proj₁ nm csn ⟫) + zero
+        a0 = subst (λ x → 2+ ⟪ proj₁ nm csn ⟫ ≤ x) (sym (n+z (2+ ⟪ proj₁ nm csn ⟫))) (≤-refl)
+        a1 : (2+ ⟪ proj₁ nm csn ⟫) + zero ≤ 2+ (⟪ proj₁ nm csn ⟫ + zero)
+        a1 = subst (λ x → (2+ ⟪ proj₁ nm csn ⟫) + zero ≤ x) (+-assoc {2} {⟪ proj₁ nm csn ⟫} {zero}) (≤-refl {n = (2+ ⟪ proj₁ nm csn ⟫) + zero})
+        a2 : 2+ (⟪ proj₁ nm csn ⟫ + zero) ≤ (⟪ proj₁ nm csn ⟫ + zero) + 2
+        a2 = subst (λ x → 2+ (⟪ proj₁ nm csn ⟫ + zero) ≤ x) (+-comm {n = 2} {m = (⟪ proj₁ nm csn ⟫ + zero)}) (≤-refl)
+      in
+      ≤-trans a0 (≤-trans a1 (≤-trans a2 (+-≤-cong (≤-refl {n = (⟪ proj₁ nm csn ⟫ + zero)}) (s≤s (s≤s (z≤n {n = ⟪ proj₁ (lookup-mono-metric h E (wkn-cons ϖ₁)) csn ⟫})))))) --EASY
+    val-count-mult (var Cx.h) nm E ϖ csn (Cx.t i) μ = s≤s (s≤s (lookup-count-ineq nm E ϖ i μ csn))
+    val-count-mult (var (Cx.t i₁)) nm [] (wkn-cons ϖ) csn Cx.h (missing-h ϖ₁) = subst (λ x → 2 + x ≤ 2) (sym (lookup-z i₁ ϖ csn)) ≤-refl
+    val-count-mult (var (Cx.t i₁)) nm (x ∷ E) (wkn-cons ϖ) csn Cx.h (missing-h ϖ₁) = ≤-refl
+    val-count-mult (var (Cx.t i₁)) nm (_ ∷ E) (wkn-cong ϖ) csn (Cx.t i) (missing-t-cong i₂ ϖ₁ μ₁) = val-count-mult (var i₁) nm E ϖ csn i μ₁
+    val-count-mult (var (Cx.t {B = A} i₁)) nm [] (wkn-cons ϖ) csn (Cx.t i) (missing-t-cons i₂ ϖ₁ μ₁)
+      rewrite
+          sym (wk-mem-t {A = A} i₁)
+        | sym (wk-e-id (proj₂ (with-i i ϖ μ₁ nm)))
+      =
+      let
+        a0 = val-count-mult (var i₁) nm [] ϖ csn i μ₁
+        a1 = sym (lookup-wk-t-cons (with-i i ϖ μ₁ nm .proj₁) i₁ (wk-wk {A = A} wk-id) (proj₂ (with-i i ϖ μ₁ nm)) csn)
+        a2 = subst
+                (λ x → 2+ x ≤ proj₁ (mono-val-count i (var i₁) [] ϖ) csn * ⟪ proj₁ nm csn ⟫ + 2+ ⟪ proj₁ (lookup-mono-metric i₁ [] ϖ) csn ⟫)
+                a1
+                a0
+        a3 = subst
+                (λ x → 2+ ⟪ proj₁ (lookup-mono-metric (wk-mem (wk-wk wk-id) i₁) (with-i i ϖ μ₁ nm .proj₁) (wkn-cons (wk-e wk-id (proj₂ (with-i i ϖ μ₁ nm))))) csn ⟫
+                        ≤   proj₁ (mono-val-count i (var i₁) [] ϖ) csn * ⟪ proj₁ nm csn ⟫ + 2+ x)
+                (lookup-z i₁ ϖ csn)
+                a2
+      in
+      a3
+
+    val-count-mult (var (Cx.t {B = A} i₁)) nm (y ∷ E) (wkn-cons ϖ) csn (Cx.t i) (missing-t-cons i₂ ϖ₁ μ₁)
+      rewrite
+          sym (wk-mem-t {A = A} i₁)
+        | sym (wk-e-id (proj₂ (with-i i ϖ μ₁ nm)))
+      =
+      let
+        a0 = val-count-mult (var i₁) nm (y ∷ E) ϖ csn i μ₁
+        a1 = sym (lookup-wk-t-cons (with-i i ϖ μ₁ nm .proj₁) i₁ (wk-wk {A = A} wk-id) (proj₂ (with-i i ϖ μ₁ nm)) csn)
+      in
+      subst
+                (λ x → 2+ x ≤ proj₁ (mono-val-count i (var i₁) (y ∷ E) ϖ) csn * ⟪ proj₁ nm csn ⟫ + 2+ ⟪ proj₁ (lookup-mono-metric i₁ (y ∷ E) ϖ) csn ⟫)
+                a1
+                a0
+
+
+    val-count-mult (lam W) nm E ϖ csn Cx.h μ =
+      let
+        a0 = comp-count-mult W nm E (wkn-cons ϖ) csn (t h) (missing-t-cons h ϖ μ)
+      in
+      {!!}
+    val-count-mult (lam W) nm E ϖ csn (Cx.t i) μ = {!!}
+
+    val-count-mult (pair M M₁) nm E ϖ csn i μ = {!!}
+    val-count-mult (pm M M₁) nm E ϖ csn i μ = {!!}
+    val-count-mult unit nm E ϖ csn i μ = {!!} -- EASY
+
+    comp-count-mult : (W : Comp Γ Y) → (nm : EElem X) → (E : EMetric) → (ϖ : WkN Γ E) → (csn : List (ℕ × ℕ)) → (i : Γ ∋ X) → (μ : Missing-i i ϖ) →
+              (⟪ (proj₁ (comp-mono-metric W (proj₁ (with-i i ϖ μ nm)) (proj₂ (with-i i ϖ μ nm)))) csn ⟫) ≤ (((proj₁ (mono-comp-count i W E ϖ)) csn) * ⟪ proj₁ nm csn ⟫ + ⟪ (proj₁ (comp-mono-metric W E ϖ)) csn ⟫)
+    comp-count-mult (return M) nm E ϖ csn i μ = {!!}
+    comp-count-mult (pm M W) nm E ϖ csn i μ = {!!}
+    comp-count-mult (push W₁ W₂) nm E ϖ csn i μ = {!!}
+    comp-count-mult (app x x₁) nm E ϖ csn i μ = {!!}
+    comp-count-mult (var x) nm E ϖ csn i μ = {!!}
+    comp-count-mult (sub W W₁) nm E ϖ csn i μ = {!!}
+
+    {-
+    val-count-mult : (M : Val (Γ ∙ X) Y) → (nm : EElem X) → (E : EMetric) → (ϖ : WkN Γ E) → (csn : List (ℕ × ℕ)) →
+              ⟪ (proj₁ (val-mono-metric M ((X , nm) ∷ E) (wkn-cong ϖ))) csn ⟫ ≤ ((proj₁ (mono-val-count h M E (wkn-cons ϖ))) csn) * ⟪ proj₁ nm csn ⟫ + ⟪ (proj₁ (val-mono-metric M E (wkn-cons ϖ))) csn ⟫
+    val-count-mult (var i) nm E ϖ csn = {!!}
+    val-count-mult (lam W) nm E ϖ csn =
+      let
+        a0 = {!!} --comp-count-mult W nm E (wkn-cong ϖ) csn
+      in
+      {!!}
+    val-count-mult (pair M₁ M₂) nm E ϖ csn = {!!}
+    val-count-mult (pm M N) nm E ϖ csn = {!!}
+    val-count-mult unit nm E ϖ csn = {!!}
+
+    comp-count-mult : (W : Comp (Γ ∙ X) Y) → (nm : EElem X) → (E : EMetric) → (ϖ : WkN Γ E) → (csn : List (ℕ × ℕ)) →
+              ⟪ (proj₁ (comp-mono-metric W ((X , nm) ∷ E) (wkn-cong ϖ))) csn ⟫ ≤ ((proj₁ (mono-comp-count h W E (wkn-cons ϖ))) csn) * ⟪ proj₁ nm csn ⟫ + ⟪ (proj₁ (comp-mono-metric W E (wkn-cons ϖ))) csn ⟫
+    comp-count-mult (return M) nm E ϖ csn =
+      let
+        a0 = val-count-mult M nm E ϖ csn
+      in
+      {!!}
+    comp-count-mult (pm M W) nm E ϖ csn = {!!}
+    comp-count-mult (push W₁ W₂) nm E ϖ csn = {!!}
+    comp-count-mult (app M N) nm E ϖ csn = {!!}
+    comp-count-mult (var M) nm E ϖ csn = {!!}
+    comp-count-mult (sub W₁ W₂) nm E ϖ csn = {!!}
+    -}
 
 
 
   ---------------------------------------------------------------------------------------
+  {-AA
 
   data ValSteps : ValState T◾ → Set where
 
@@ -1616,3 +1808,4 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   sub-cps' M N γ cs πₓ wk≡ = refl
 -}
 
+  AA-}

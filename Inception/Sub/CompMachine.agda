@@ -237,12 +237,6 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
 -------------------------------------------------------------------------------------------------
 
-  -- wk-e : (π : Wk Γ Δ) → {E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))} → (ϖ : Wkn Δ E) → Wkn Γ E
-  -- wk-e wk-ε ϖ = ϖ
-  -- wk-e (wk-cong π) (wkn-cong ϖ) = wkn-cong (wk-e π ϖ)
-  -- wk-e (wk-cong π) (wkn-cons ϖ) = wkn-cons (wk-e π ϖ)
-  -- wk-e (wk-wk π) ϖ = wkn-cons (wk-e π ϖ)
-
   -- wk-e-id : {E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))} → (ϖ : Wkn Γ E) → wk-e wk-id ϖ ≡ ϖ
   -- wk-e-id {Γ = Cx.ε} ϖ = refl
   -- wk-e-id {Γ = Γ Cx.∙ x} (wkn-cong ϖ) = cong wkn-cong (wk-e-id ϖ)
@@ -415,6 +409,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
 -------------------------------------------------------------------------------------------------
 
+{-
   data Missing-i : {E : List (Σ[ Z ∈ Ty ] (List (ℕ × ℕ) → TermMetric Z))} → (i : Γ ∋ X) → (ϖ : Wkn Γ E) → Set where
     missing-h : {E : List (Σ[ Z ∈ Ty ] (List (ℕ × ℕ) → TermMetric Z))} → (ϖ : Wkn Γ E) → Missing-i {X = X} h (wkn-cons ϖ)
     missing-t-cong : {E : List (Σ[ Z ∈ Ty ] (List (ℕ × ℕ) → TermMetric Z))} → {e : (List (ℕ × ℕ) → TermMetric B)}
@@ -435,6 +430,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       a1 = with-i i ϖ μ e
     in
       _ , wkn-cons (proj₂ a1)
+-}
 
   {-
   mutual
