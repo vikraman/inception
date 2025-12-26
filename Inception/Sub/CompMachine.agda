@@ -54,6 +54,8 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
         ∘return  :    {M : Γ ⊢ᵛ X} → {γ : Env Γ'} → {π : Wk Γ' Γ} → {M' : V̲a̲l̲ Γ'' X} → {γ' : Env Γ''}
                       → {cs : CompStack Δ X} → {πₓ : Wk Γ' Δ} → {πₓ' : Wk Γ'' Δ}
                       → {wk≡ₓ : ⟦ πₓ ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ} → {wk≡ₓ' : ⟦ πₓ' ⟧ʷ ⟦ γ' ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ}
+                      → {VS>VT : (csn : List (ℕ × ℕ)) → proj₁ (v̲a̲l̲-mono-metric M' (proj₁ (env-mono-metric γ')) (proj₂ (env-mono-metric γ'))) csn
+                                ≤ᴹ proj₁ (val-mono-metric (wk-val π M) (proj₁ (env-mono-metric γ)) (proj₂ (env-mono-metric γ))) csn} -- for termination
                       → ((∘ ((⇡ wk-val π M ⊲ γ ∷ □) {↥ = 🗆})) ↠ᵛ (∙ ((⭭ M' ⊲ γ' ∷ □) {↥ = 🗆})))
                      ----------------------------------------------------------------
                       →     ((∘⟨ wk-comp π (return M) ⊰ γ ╎ cs ⟩) {π = πₓ} {wk≡ = wk≡ₓ} )
@@ -553,44 +555,42 @@ Goal:   suc (vx (val-metric M ((X , nm) ∷ E) (Wkn.wkn-cong ϖ) csn) + ⟪ comp
 --  val-metric-decreasing : {Q₁ : ValState X} → {Q₂ : ValState X} → (Q₁→ᶜQ₂ : Q₁ ↠ᵛ Q₂) → (csn : List (ℕ × ℕ)) → suc ⟪ valstate-metric Q₂ csn ⟫ ≤ ⟪ valstate-metric Q₁ csn ⟫
 --  val-metric-decreasing = {!!}
 
-{- ZZZ
   comp-metric-decreasing : {Q₁ : CompState} → {Q₂ : CompState} → (Q₁→ᶜQ₂ : Q₁ →ᶜ Q₂) → (suc (compstate-metric Q₂) ≤ (compstate-metric Q₁))
-  comp-metric-decreasing (∘return {M = M} {γ = γ} {π = π} {M' = M'} {γ' = γ'} {cs = cs} M→M') with val-metric-decreasing M→M' (cs-to-csn cs)
-  ... | x =
+  comp-metric-decreasing (∘return {M = M} {γ = γ} {π = π} {M' = M'} {γ' = γ'} {cs = cs} {VS>VT = VS>VT} M→M') =
     let
-      a0 = +-≤-cong (z≤n {n = 1}) (≤-refl {n = ⟪ v̲a̲l̲-metric M' (proj₁ (env-metric γ')) (proj₂ (env-metric γ')) (cs-to-csn cs) ⟫})
-      a1 = ≤-trans x (+-≤-cong (z≤n {n = 2}) (≤-refl {n = ⟪ val-metric (wk-val π M) (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) (cs-to-csn cs) ⟫}))
+      a1 = ≤-trans (s≤s (≤ᴹ⇒≤ (VS>VT (cs-to-csn cs)))) (+-≤-cong (s≤s (z≤n {n = 1})) (≤-refl {n = ⟪ proj₁ (val-mono-metric (wk-val π M) (proj₁ (env-mono-metric γ)) (proj₂ (env-mono-metric γ))) (cs-to-csn cs) ⟫}))
       a2 = csn-decr a1 (cs-to-csn cs)
-      a3 = ≤-trans a0 x
+      a3 = ≤ᴹ⇒≤ (VS>VT (cs-to-csn cs))
     in
-      s≤s (s≤s (+-≤-cong a3 a2))
+    s≤s (s≤s (+-≤-cong a3 a2))
 
   comp-metric-decreasing (∙return {Γ = Γ} {X = X} {Γ' = Γ'} {Y = Y} {M = M} {γ = γ} {N = N} {γ' = γ'} {π = π} {cs = cs}) =
-    let
-      EW  = (env-metric γ)
-      EW' = (env-metric γ')
-      E = proj₁ EW
-      E' = proj₁ EW'
-      ϖ = proj₂ EW
-      ϖ' = proj₂ EW'
-      csn = cs-to-csn cs
-      ----------------------------------------------------------------
-      a0 = ⟪ comp-metric N E' (Wkn.wkn-cons ϖ') csn ⟫
-      a1 = ⟪ comp-metric (wk-comp (wk-cong π) N) ((X , v̲a̲l̲-metric M E ϖ) ∷ E) (Wkn.wkn-cong ϖ) csn ⟫
-      b1 = ⟪ v̲a̲l̲-metric M E ϖ ((count-in-comp h N E' (Wkn.wkn-cons ϖ') csn , a0) ∷ csn) ⟫
-      ----------------------------------------------------------------
-      postulate l1 : a1 ≤ a0
-      ----------------------------------------------------------------
-      l2 : a1 ≤ a0 + suc (count-in-comp h N E' (Wkn.wkn-cons ϖ') csn + b1 * suc (count-in-comp h N E' (Wkn.wkn-cons ϖ') csn))
-      l2 = ≤-trans l1 (n≤n+m {n = a0} {m = (suc (count-in-comp h N E' (Wkn.wkn-cons ϖ') csn + b1 * suc (count-in-comp h N E' (Wkn.wkn-cons ϖ') csn)))})
-      l3 : csn-to-nat₀ a1 csn ≤ csn-to-nat₀ (a0 + suc (count-in-comp h N E' (Wkn.wkn-cons ϖ') csn + b1 * suc (count-in-comp h N E' (Wkn.wkn-cons ϖ') csn))) csn
-      l3 = csn-decr l2 csn
-      l4 :        a1 + (csn-to-nat₀ a1 csn)
-           ≤      b1 + ((a0 + suc (count-in-comp h N E' (Wkn.wkn-cons ϖ') csn + b1 * suc (count-in-comp h N E' (Wkn.wkn-cons ϖ') csn)))
-               + (csn-to-nat₀ (a0 + suc (count-in-comp h N E' (Wkn.wkn-cons ϖ') csn + b1 * suc (count-in-comp h N E' (Wkn.wkn-cons ϖ') csn))) csn))
-      l4 = +-≤-cong (z≤n {n = b1}) (+-≤-cong l2 l3)
-    in
-      s≤s l4
+    --let
+    --  EW  = (env-metric γ)
+    --  EW' = (env-metric γ')
+    --  E = proj₁ EW
+    --  E' = proj₁ EW'
+    --  ϖ = proj₂ EW
+    --  ϖ' = proj₂ EW'
+    --  csn = cs-to-csn cs
+    --  ----------------------------------------------------------------
+    --  a0 = ⟪ comp-metric N E' (Wkn.wkn-cons ϖ') csn ⟫
+    --  a1 = ⟪ comp-metric (wk-comp (wk-cong π) N) ((X , v̲a̲l̲-metric M E ϖ) ∷ E) (Wkn.wkn-cong ϖ) csn ⟫
+    --  b1 = ⟪ v̲a̲l̲-metric M E ϖ ((count-in-comp h N E' (Wkn.wkn-cons ϖ') csn , a0) ∷ csn) ⟫
+    --  ----------------------------------------------------------------
+    --  postulate l1 : a1 ≤ a0
+    --  ----------------------------------------------------------------
+    --  l2 : a1 ≤ a0 + suc (count-in-comp h N E' (Wkn.wkn-cons ϖ') csn + b1 * suc (count-in-comp h N E' (Wkn.wkn-cons ϖ') csn))
+    --  l2 = ≤-trans l1 (n≤n+m {n = a0} {m = (suc (count-in-comp h N E' (Wkn.wkn-cons ϖ') csn + b1 * suc (count-in-comp h N E' (Wkn.wkn-cons ϖ') csn)))})
+    --  l3 : csn-to-nat₀ a1 csn ≤ csn-to-nat₀ (a0 + suc (count-in-comp h N E' (Wkn.wkn-cons ϖ') csn + b1 * suc (count-in-comp h N E' (Wkn.wkn-cons ϖ') csn))) csn
+    --  l3 = csn-decr l2 csn
+    --  l4 :        a1 + (csn-to-nat₀ a1 csn)
+    --       ≤      b1 + ((a0 + suc (count-in-comp h N E' (Wkn.wkn-cons ϖ') csn + b1 * suc (count-in-comp h N E' (Wkn.wkn-cons ϖ') csn)))
+    --           + (csn-to-nat₀ (a0 + suc (count-in-comp h N E' (Wkn.wkn-cons ϖ') csn + b1 * suc (count-in-comp h N E' (Wkn.wkn-cons ϖ') csn))) csn))
+    --  l4 = +-≤-cong (z≤n {n = b1}) (+-≤-cong l2 l3)
+    --in
+    --  s≤s l4
+    {!!}
 {-
 a0 = ⟪ comp-metric N E' (Wkn.wkn-cons ϖ') csn ⟫
 a1 = ⟪ comp-metric (wk-comp (wk-cong π) N) ((X , v̲a̲l̲-metric M E ϖ) ∷ E) (Wkn.wkn-cong ϖ) csn ⟫
@@ -603,53 +603,54 @@ Goal:     suc (a1 + csn-to-nat₀ a1 csn)
 -}
 
   comp-metric-decreasing (∘push {X = X} {M = M} {N = N} {γ = γ} {cs = cs} {πₓ = πₓ} {wk≡ₓ = wk≡ₓ} {wk≡ = wk≡}) =
-    let
-      EW  = (env-metric γ)
-      E = proj₁ EW
-      ϖ = proj₂ EW
-      csn = cs-to-csn cs
-      ----------------------------------------------------------------
-      a1 = comp-metric N E (Wkn.wkn-cons ϖ) csn
-      a2 = comp-metric M E ϖ ((count-in-comp h N E (wkn-cons ϖ) csn , ⟪ a1 ⟫) ∷ csn)
-      ----------------------------------------------------------------
-      l1  : ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn) ≤ ⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫
-      l1  = subst (λ x → _≤_ x (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫)) (sym (n*sm≡n+m*n ⟪ a2 ⟫ (count-in-comp h N E (wkn-cons ϖ) csn))) ≤-refl
-      l1a :   ⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)
-           ≤ (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫) + ⟪ a1 ⟫
-      l1a = subst
-               (_≤_ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)))
-               (+-comm {n = ⟪ a1 ⟫} {m = (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫)})
-               (+-≤-cong (≤-refl {n = ⟪ a1 ⟫}) l1)
-      l2  :  (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn))
-           ≤ ⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫) + ⟪ a1 ⟫
-      l2  = subst
-               (_≤_ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)))
-               (sym $ +-assoc {n₁ = ⟪ a2 ⟫} {n₂ = (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫)} {n₃ = ⟪ a1 ⟫})
-               (+-≤-cong (z≤n {n = ⟪ a2 ⟫}) l1a)
-      l3  :        ⟪ a1 ⟫ +  ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)
-            ≤ suc (⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫) + ⟪ a1 ⟫)
-      l3  = +-≤-cong (z≤n {n = 1}) l2
-      l4  :   csn-to-nat₀ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)) csn
-            ≤ csn-to-nat₀ (suc (⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫) + ⟪ a1 ⟫)) csn
-      l4  = csn-decr l3 csn
-      l5  :   (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)      + csn-to-nat₀ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)) csn)
-            ≤ ((⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫) + ⟪ a1 ⟫ + csn-to-nat₀ (suc (⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫) + ⟪ a1 ⟫)) csn)
-      l5  = +-≤-cong l1a l4
-      l6  :   ⟪ a2 ⟫ + ((⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)  + csn-to-nat₀ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)) csn))
-            ≤ ⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫) + ⟪ a1 ⟫       + csn-to-nat₀ (suc (⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫) + ⟪ a1 ⟫)) csn
-      l6 = subst
-                (_≤_ (⟪ a2 ⟫ + ((⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)  + csn-to-nat₀ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)) csn))))
-                (sym $ +-assoc {n₁ = ⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫)} {n₂ = ⟪ a1 ⟫} {n₃ = csn-to-nat₀ (suc (⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫) + ⟪ a1 ⟫)) csn})
-                ( (subst
-                      (_≤_ (⟪ a2 ⟫ + ((⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)  + csn-to-nat₀ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)) csn))))
-                      (sym $ +-assoc {n₁ = ⟪ a2 ⟫} {n₂ = (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫)} {n₃ = ⟪ a1 ⟫ + csn-to-nat₀ (suc (⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫) + ⟪ a1 ⟫)) csn})
-                       (+-≤-cong (≤-refl {n = ⟪ a2 ⟫})
-                         (subst
-                              (_≤_ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn) + csn-to-nat₀ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)) csn))
-                              (+-assoc {n₁ = ⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫} {n₂ = ⟪ a1 ⟫} {n₃ = csn-to-nat₀ (suc (⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫) + ⟪ a1 ⟫)) csn})
-                              l5 ))))
-    in
-      s≤s l6
+    --let
+    --  EW  = (env-metric γ)
+    --  E = proj₁ EW
+    --  ϖ = proj₂ EW
+    --  csn = cs-to-csn cs
+    --  ----------------------------------------------------------------
+    --  a1 = comp-metric N E (Wkn.wkn-cons ϖ) csn
+    --  a2 = comp-metric M E ϖ ((count-in-comp h N E (wkn-cons ϖ) csn , ⟪ a1 ⟫) ∷ csn)
+    --  ----------------------------------------------------------------
+    --  l1  : ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn) ≤ ⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫
+    --  l1  = subst (λ x → _≤_ x (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫)) (sym (n*sm≡n+m*n ⟪ a2 ⟫ (count-in-comp h N E (wkn-cons ϖ) csn))) ≤-refl
+    --  l1a :   ⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)
+    --       ≤ (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫) + ⟪ a1 ⟫
+    --  l1a = subst
+    --           (_≤_ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)))
+    --           (+-comm {n = ⟪ a1 ⟫} {m = (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫)})
+    --           (+-≤-cong (≤-refl {n = ⟪ a1 ⟫}) l1)
+    --  l2  :  (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn))
+    --       ≤ ⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫) + ⟪ a1 ⟫
+    --  l2  = subst
+    --           (_≤_ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)))
+    --           (sym $ +-assoc {n₁ = ⟪ a2 ⟫} {n₂ = (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫)} {n₃ = ⟪ a1 ⟫})
+    --           (+-≤-cong (z≤n {n = ⟪ a2 ⟫}) l1a)
+    --  l3  :        ⟪ a1 ⟫ +  ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)
+    --        ≤ suc (⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫) + ⟪ a1 ⟫)
+    --  l3  = +-≤-cong (z≤n {n = 1}) l2
+    --  l4  :   csn-to-nat₀ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)) csn
+    --        ≤ csn-to-nat₀ (suc (⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫) + ⟪ a1 ⟫)) csn
+    --  l4  = csn-decr l3 csn
+    --  l5  :   (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)      + csn-to-nat₀ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)) csn)
+    --        ≤ ((⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫) + ⟪ a1 ⟫ + csn-to-nat₀ (suc (⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫) + ⟪ a1 ⟫)) csn)
+    --  l5  = +-≤-cong l1a l4
+    --  l6  :   ⟪ a2 ⟫ + ((⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)  + csn-to-nat₀ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)) csn))
+    --        ≤ ⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫) + ⟪ a1 ⟫       + csn-to-nat₀ (suc (⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫) + ⟪ a1 ⟫)) csn
+    --  l6 = subst
+    --            (_≤_ (⟪ a2 ⟫ + ((⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)  + csn-to-nat₀ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)) csn))))
+    --            (sym $ +-assoc {n₁ = ⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫)} {n₂ = ⟪ a1 ⟫} {n₃ = csn-to-nat₀ (suc (⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫) + ⟪ a1 ⟫)) csn})
+    --            ( (subst
+    --                  (_≤_ (⟪ a2 ⟫ + ((⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)  + csn-to-nat₀ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)) csn))))
+    --                  (sym $ +-assoc {n₁ = ⟪ a2 ⟫} {n₂ = (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫)} {n₃ = ⟪ a1 ⟫ + csn-to-nat₀ (suc (⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫) + ⟪ a1 ⟫)) csn})
+    --                   (+-≤-cong (≤-refl {n = ⟪ a2 ⟫})
+    --                     (subst
+    --                          (_≤_ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn) + csn-to-nat₀ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N E (wkn-cons ϖ) csn)) csn))
+    --                          (+-assoc {n₁ = ⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫} {n₂ = ⟪ a1 ⟫} {n₃ = csn-to-nat₀ (suc (⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N E (wkn-cons ϖ) csn * ⟪ a2 ⟫) + ⟪ a1 ⟫)) csn})
+    --                          l5 ))))
+    --in
+    --  s≤s l6
+    {!!}
 
 {-
 
@@ -665,21 +666,22 @@ Goal:   suc (                      ⟪ a2 ⟫ + (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (
 -}
 
   comp-metric-decreasing (∘sub {M = M} {N = N} {γ = γ} {cs = cs} {πₓ = πₓ} {wk≡ₓ = wk≡ₓ}) =
-    let
-      EW  = (env-metric γ)
-      E = proj₁ EW
-      ϖ = proj₂ EW
-      csn = cs-to-csn cs
-      ----------------------------------------------------------------
-      a1 = comp-metric N E ϖ csn
-      a2 = comp-metric M ((`V , (λ _ → TermMetric.m-V 0 (⟪ a1 ⟫ + csn-to-nat₀ ⟪ a1 ⟫ csn))) ∷ E) (Wkn.wkn-cong ϖ) csn
-      ----------------------------------------------------------------
-      l1 : ⟪ a2 ⟫ ≤ suc (⟪ a1 ⟫ + ⟪ a2 ⟫)
-      l1 = ≤-trans (+-≤-cong (z≤n {n = ⟪ a1 ⟫}) (≤-refl {n = ⟪ a2 ⟫})) (n≤sn {n = ⟪ a1 ⟫ + ⟪ a2 ⟫})
-      l2 : csn-to-nat₀ ⟪ a2 ⟫ csn ≤ csn-to-nat₀ (suc (⟪ a1 ⟫ + ⟪ a2 ⟫)) csn
-      l2 = csn-decr l1 csn
-    in
-      s≤s (+-≤-cong (+-≤-cong (z≤n {n = ⟪ a1 ⟫}) (≤-refl {n = ⟪ a2 ⟫})) l2)
+    -- let
+    --   EW  = (env-metric γ)
+    --   E = proj₁ EW
+    --   ϖ = proj₂ EW
+    --   csn = cs-to-csn cs
+    --   ----------------------------------------------------------------
+    --   a1 = comp-metric N E ϖ csn
+    --   a2 = comp-metric M ((`V , (λ _ → TermMetric.m-V 0 (⟪ a1 ⟫ + csn-to-nat₀ ⟪ a1 ⟫ csn))) ∷ E) (Wkn.wkn-cong ϖ) csn
+    --   ----------------------------------------------------------------
+    --   l1 : ⟪ a2 ⟫ ≤ suc (⟪ a1 ⟫ + ⟪ a2 ⟫)
+    --   l1 = ≤-trans (+-≤-cong (z≤n {n = ⟪ a1 ⟫}) (≤-refl {n = ⟪ a2 ⟫})) (n≤sn {n = ⟪ a1 ⟫ + ⟪ a2 ⟫})
+    --   l2 : csn-to-nat₀ ⟪ a2 ⟫ csn ≤ csn-to-nat₀ (suc (⟪ a1 ⟫ + ⟪ a2 ⟫)) csn
+    --   l2 = csn-decr l1 csn
+    -- in
+    --   s≤s (+-≤-cong (+-≤-cong (z≤n {n = ⟪ a1 ⟫}) (≤-refl {n = ⟪ a2 ⟫})) l2)
+    {!!}
 
 {-
 
@@ -693,15 +695,15 @@ Goal: suc (⟪ a2 ⟫ + csn-to-nat₀ ⟪ a2 ⟫ csn)
 -}
 
   comp-metric-decreasing (∘pm {X = X} {Y = Y} {M = M} {γ = γ} {W = W} {cs = cs} {πₓ = πₓ} {πₓ' = πₓ'} {γ'' = γ''} {wk≡ₓ = wk≡ₓ} {wk≡ₓ' = wk≡ₓ'} {LHS = LHS } {RHS = RHS} π M→M' π') =
-    let
-      EW  = (env-metric γ)
-      E = proj₁ EW
-      ϖ = proj₂ EW
-      EW''  = (env-metric γ'')
-      E'' = proj₁ EW''
-      ϖ'' = proj₂ EW''
-      csn = cs-to-csn cs
-    in
+    -- let
+    --   EW  = (env-metric γ)
+    --   E = proj₁ EW
+    --   ϖ = proj₂ EW
+    --   EW''  = (env-metric γ'')
+    --   E'' = proj₁ EW''
+    --   ϖ'' = proj₂ EW''
+    --   csn = cs-to-csn cs
+    -- in
      {!!}
 
 {-
@@ -722,15 +724,15 @@ Goal:   suc (         ⟪ a0 ⟫
 
   comp-metric-decreasing (∙app-var {Z' = Z'} {Z = Z} {i = i} {N = N} {γ = γ} {cs = cs} {πₓ = πₓ} {wk≡ₓ = wk≡ₓ} {W = W} {γ' = γ'} i→λW πᵥ T≤S θ)
     =
-    let
-      EW  = (env-metric γ)
-      E = proj₁ EW
-      ϖ = proj₂ EW
-      EW'  = (env-metric γ')
-      E' = proj₁ EW'
-      ϖ' = proj₂ EW'
-      csn = cs-to-csn cs
-    in
+    -- let
+    --   EW  = (env-metric γ)
+    --   E = proj₁ EW
+    --   ϖ = proj₂ EW
+    --   EW'  = (env-metric γ')
+    --   E' = proj₁ EW'
+    --   ϖ' = proj₂ EW'
+    --   csn = cs-to-csn cs
+    -- in
       {!!}
 {-
 
@@ -747,15 +749,15 @@ Goal:    suc (               ⟪ a2 ⟫
 -}
 
   comp-metric-decreasing (∙app-pm {Γ = Γ} {X = X} {Y = Y} {Z' = Z'} {Z = Z} {Δ = Δ} {M = M} {N₁ = N₁} {N = N} {γ = γ} {cs = cs} {πₓ = πₓ} {πₓ' = πₓ'} {LHS = LHS} {RHS = RHS} {γ' = γ'} {wk≡ₓ = wk≡ₓ} {wk≡ₓ' = wk≡ₓ'} M→M' π) =
-    let
-      EW  = (env-metric γ)
-      E = proj₁ EW
-      ϖ = proj₂ EW
-      EW'  = (env-metric γ')
-      E' = proj₁ EW'
-      ϖ' = proj₂ EW'
-      csn = cs-to-csn cs
-    in
+    -- let
+    --   EW  = (env-metric γ)
+    --   E = proj₁ EW
+    --   ϖ = proj₂ EW
+    --   EW'  = (env-metric γ')
+    --   E' = proj₁ EW'
+    --   ϖ' = proj₂ EW'
+    --   csn = cs-to-csn cs
+    -- in
       {!!}
 
 {-
@@ -778,7 +780,7 @@ Goal:         2+                 (p1 (a3) + (⟪ a4 ⟫ + p2 (a3) * ⟪ a4 ⟫) 
 
   comp-metric-decreasing (∙app-lam {X = X} {Y = Y} {W = W} {N = N} {γ = γ} {cs = cs} {πₓ = πₓ} {wk≡ₓ = wk≡ₓ}) =
     let
-      EW  = (env-metric γ)
+      EW  = (env-mono-metric γ)
       E = proj₁ EW
       ϖ = proj₂ EW
       csn = cs-to-csn cs
@@ -786,7 +788,24 @@ Goal:         2+                 (p1 (a3) + (⟪ a4 ⟫ + p2 (a3) * ⟪ a4 ⟫) 
       {!!}
 
 {-
+NEW:
 
+a1 = v̲a̲l̲-mono-metric N E ϖ
+a2 = comp-mono-metric W ((X , a1) ∷ E) (WkN.wkn-cong ϖ)
+a3 = mono-comp-count h W E (WkN.wkn-cons ϖ)
+a4 = comp-mono-metric W E (WkN.wkn-cons ϖ)
+
+Goal:                suc (⟪ proj₁ (a2) csn ⟫
+            + csn-to-nat₀ ⟪ proj₁ (a2) csn ⟫ csn)
+      ≤
+                     2+ (suc (⟪ proj₁ (a1) csn ⟫ + proj₁ (a3) csn * ⟪ proj₁ (a1) csn ⟫ + ⟪ (proj₁ (a4) csn) ⟫
+      + csn-to-nat₀ (2+ (suc (⟪ proj₁ (a1) csn ⟫ + proj₁ (a3) csn * ⟪ proj₁ (a1) csn ⟫ + ⟪ (proj₁ (a4) csn) ⟫ ))) csn))
+
+TP: suc ⟪ proj₁ (a2) csn ⟫ ≤ 3 + ⟪ proj₁ (a1) csn ⟫ + proj₁ (a3) csn * ⟪ proj₁ (a1) csn ⟫ + ⟪ (proj₁ (a4) csn) ⟫
+
+STP: comp-mono-metric W ((X , a1) ∷ E) (wkn-cong ϖ) ≤ (mono-comp-count h W E (wkn-cons ϖ)) * ⟪ proj₁ a1 csn ⟫ + comp-mono-metric W E (wkn-cons ϖ)
+
+OLD:
 a1 = v̲a̲l̲-metric N E ϖ
 a2 = comp-metric W ((X , a1) ∷ E) (Wkn.wkn-cong ϖ) csn
 b1 = comp-metric W E (Wkn.wkn-cons ϖ) csn
@@ -799,18 +818,18 @@ Goal:        suc (               ⟪ a2 ⟫
 -}
 
   comp-metric-decreasing (∘app {M = M} {N = N} {γ = γ} {cs = cs} {πₓ = πₓ} {πₓ' = πₓ'} {N' = N'} {γ' = γ'} {wk≡ₓ = wk≡ₓ} {wk≡ₓ' = wk≡ₓ'} N→N' π) =
-    let
-      EW  = (env-metric γ)
-      E = proj₁ EW
-      ϖ = proj₂ EW
-      EW'  = (env-metric γ')
-      E' = proj₁ EW'
-      ϖ' = proj₂ EW'
-      csn = cs-to-csn cs
-      ----------------------------------------------------------------------
-      -- need θ to apply lemmas
-      ----------------------------------------------------------------------
-    in
+    -- let
+    --   EW  = (env-metric γ)
+    --   E = proj₁ EW
+    --   ϖ = proj₂ EW
+    --   EW'  = (env-metric γ')
+    --   E' = proj₁ EW'
+    --   ϖ' = proj₂ EW'
+    --   csn = cs-to-csn cs
+    --   ----------------------------------------------------------------------
+    --   -- need θ to apply lemmas
+    --   ----------------------------------------------------------------------
+    -- in
       {!!}
 
 {-
@@ -828,22 +847,21 @@ Goal:    2+ (                 p1 (a1) + (⟪ a2 ⟫ + p2 (a1) * ⟪ a2 ⟫) + �
 -}
 
   comp-metric-decreasing (∘var {M = M} {γ = γ} {i = i} {γ' = γ'} {W = W} {γ'' = γ''} {cs = cs} {cs' = cs'} {πₓ = πₓ} {πₓ'' = πₓ''} {wk≡ₓ = wk≡ₓ} {wk≡ₓ'' = wk≡ₓ''} M→i π' x₁ πᵥ) =
-    let
-      EW  = (env-metric γ)
-      E = proj₁ EW
-      ϖ = proj₂ EW
-      EW'  = (env-metric γ')
-      E' = proj₁ EW'
-      ϖ' = proj₂ EW'
-      EW''  = (env-metric γ'')
-      E'' = proj₁ EW''
-      ϖ'' = proj₂ EW''
-      csn = cs-to-csn cs
-      csn' = cs-to-csn cs'
-    in
+    -- let
+    --   EW  = (env-metric γ)
+    --   E = proj₁ EW
+    --   ϖ = proj₂ EW
+    --   EW'  = (env-metric γ')
+    --   E' = proj₁ EW'
+    --   ϖ' = proj₂ EW'
+    --   EW''  = (env-metric γ'')
+    --   E'' = proj₁ EW''
+    --   ϖ'' = proj₂ EW''
+    --   csn = cs-to-csn cs
+    --   csn' = cs-to-csn cs'
+    -- in
       {!!}
 
-ZZZ -}
 
 {-
 
@@ -859,6 +877,7 @@ Goal: suc (⟪ a1 ⟫ + csn-to-nat₀ ⟪ a1 ⟫ csn')
 -------------------------------------------------------
 -------------------------------------------------------
 -------------------------------------------------------
+{-AA
 -------------------------------------------------------
   postulate debuglemma : m ≤ n
   -- debuglemma = ≤-refl
@@ -1002,11 +1021,11 @@ Goal: suc (⟪ a1 ⟫ + csn-to-nat₀ ⟪ a1 ⟫ csn')
                   → CompSteps ((∘⟨ wk-comp π W ⊰ γ ╎ cs ⟩) {π = πₓ} {wk≡ = wk≡₀})
 
     comp-eval-rec (return {A = X} M) γ π ◻ πₓ wk≡₀ n m≤n with val-eval-rec {X = X} M γ π
-    ... | steps {T = ∙ ((⭭ M₁ ⊲ γ₁ ∷ □) {↥ = 🗆})} M>T ∙T M≡T π' wk≡ _ _ =
+    ... | steps {T = ∙ ((⭭ M₁ ⊲ γ₁ ∷ □) {↥ = 🗆})} M>T ∙T M≡T π' wk≡ VS>VT θ =
 
                  steps
 
-                    (∘⟨ wk-comp π (return M) ⊰ γ ╎ ◻ ⟩ →ᶜ⟨ ∘return M>T ⟩ (∙⟨ r̲e̲t̲u̲r̲n̲ M₁ ⊰ γ₁ ╎ ◻ ⟩ ◼))
+                    (∘⟨ wk-comp π (return M) ⊰ γ ╎ ◻ ⟩ →ᶜ⟨ ∘return {VS>VT = VS>VT} M>T ⟩ (∙⟨ r̲e̲t̲u̲r̲n̲ M₁ ⊰ γ₁ ╎ ◻ ⟩ ◼))
 
                     ret
 
@@ -1018,7 +1037,7 @@ Goal: suc (⟪ a1 ⟫ + csn-to-nat₀ ⟪ a1 ⟫ csn')
     ... | ()
     comp-eval-rec (return {A = X} M) γ π ((M' ⊲ γ' ⦂⦂ cs) {π = π₁} {wk≡ = wk≡₁}) πₓ wk≡₀ (suc n) m≤n with val-eval-rec {X = X} M γ π
     -- comp-eval-rec (return {A = X} M) γ π ((M' ⊲ γ' ⦂⦂ cs) {π = π₁} {wk≡ = wk≡₁}) πₓ wk≡₀ n m≤n with val-eval-rec {X = X} M γ π
-    ... | steps {T = ∙ ((⭭ M₁ ⊲ γ₁ ∷ □) {↥ = 🗆})} M>T ∙T M≡T π' wk≡ _ _ with
+    ... | steps {T = ∙ ((⭭ M₁ ⊲ γ₁ ∷ □) {↥ = 🗆})} M>T ∙T M≡T π' wk≡ VS>VT θ with
                  comp-eval-rec
                    M'
                    (γ₁ ﹐ M₁)
@@ -1042,7 +1061,7 @@ Goal: suc (⟪ a1 ⟫ + csn-to-nat₀ ⟪ a1 ⟫ csn')
                     →ᶜ⟨ ∘return {wk≡ₓ' = ⟦ wk-trans π' πₓ ⟧ʷ ⟦ γ₁ ⟧ᴱ
                                          ≡⟨ sym (wk-sem-trans π' πₓ ⟦ γ₁ ⟧ᴱ) ⟩ ⟦ πₓ ⟧ʷ (⟦ π' ⟧ʷ ⟦ γ₁ ⟧ᴱ)
                                          ≡⟨ cong ⟦ πₓ ⟧ʷ wk≡ ⟩ ⟦ πₓ ⟧ʷ ⟦ γ ⟧ᴱ
-                                         ≡⟨ wk≡₀ ⟩ ⟦ γ' ⟧ᴱ ∎} M>T ⟩ ((∙⟨ r̲e̲t̲u̲r̲n̲ M₁ ⊰ γ₁ ╎ M' ⊲ γ' ⦂⦂ cs ⟩) {wk≡ = ≡-syntax.step-≡-⟩ _≡_ trans (⟦ wk-trans π' πₓ ⟧ʷ ⟦ γ₁ ⟧ᴱ)
+                                         ≡⟨ wk≡₀ ⟩ ⟦ γ' ⟧ᴱ ∎} {VS>VT = VS>VT} M>T ⟩ ((∙⟨ r̲e̲t̲u̲r̲n̲ M₁ ⊰ γ₁ ╎ M' ⊲ γ' ⦂⦂ cs ⟩) {wk≡ = ≡-syntax.step-≡-⟩ _≡_ trans (⟦ wk-trans π' πₓ ⟧ʷ ⟦ γ₁ ⟧ᴱ)
                                                                                                                    (≡-syntax.step-≡-⟩ _≡_ trans (⟦ πₓ ⟧ʷ (⟦ π' ⟧ʷ ⟦ γ₁ ⟧ᴱ))
                                                                                                                     (≡-syntax.step-≡-⟩ _≡_ trans (⟦ πₓ ⟧ʷ ⟦ γ ⟧ᴱ)
                                                                                                                      ((_≡_ end-syntax.∎) refl ⟦ γ' ⟧ᴱ) wk≡₀)
@@ -1459,3 +1478,4 @@ _ = refl
 -- Goal: csn-to-nat₀       9    [] ≤ suc (  9 + n₁ * zero + csn-to-nat₀ (suc (fst + n₁ * zero)) csn₁)
 -}
 
+AA-}

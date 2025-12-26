@@ -1318,6 +1318,15 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 -}
   -----------------------------
 
+  ---------------------------------------------------------------------------------------
+  -- comp-count-mult : (W : Comp (Γ ∙ X) Y) → (nm : EElem X) → (E : EMetric) → (ϖ : WkN Γ E) → (csn : List (ℕ × ℕ)) →
+  --            ⟪ comp-mono-metric W ((X , nm) ∷ E) (wkn-cong ϖ) ⟫ ≤ (mono-comp-count h W E (wkn-cons ϖ)) * ⟪ proj₁ nm csn ⟫ + comp-mono-metric W E (wkn-cons ϖ)
+  -- comp-count-mult W nm E ϖ csn = ?
+
+
+
+  ---------------------------------------------------------------------------------------
+
   data ValSteps : ValState T◾ → Set where
 
     steps : {S T : ValState T◾} → S ↠ᵛ T → ValHaltingState T → ⟦ S ⟧ᵛꟴ ≡ ⟦ T ⟧ᵛꟴ → (π : Wk (botCtx T) (botCtx S)) → (⟦ π ⟧ʷ ⟦ botEnv T ⟧ᴱ ≡ ⟦ botEnv S ⟧ᴱ)
