@@ -1009,62 +1009,30 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
             → (θ : WkE π (proj₂ (env-mono-metric (lEnv S))) (proj₂ (env-mono-metric (lTEnv T))))
             → LookupSteps S
 
-{- ZZZ
-
-  --------------------------------------------------------------------
-
-  -- COPIED AND ADAPTED
-  -- lstate-metric : LookupState X → List (ℕ × ℕ) → TermMetric X
-  -- lstate-metric ⟨ i ∥ γ ⟩ csn =
-  --   let
-  --     EP = (env-metric γ)
-  --   in
-  --     lookup-metric i (proj₁ EP) (proj₂ EP) csn
-
-  -- COPIED AND ADAPTED
-  -- lhstate-metric : {T : LookupState X} → LookupHaltingState T → List (ℕ × ℕ) → TermMetric X
-  -- lhstate-metric (found-unit {γ = γ}) csn = m-Unit 1
-  -- lhstate-metric (found-pair {LHS = LHS} {RHS = RHS} {γ = γ}) csn = let EP = (env-metric γ) in v̲a̲l̲-metric (pa̲i̲r̲ LHS RHS) (proj₁ EP) (proj₂ EP) csn
-  -- lhstate-metric (found-lam {W = W} {γ = γ}) csn = let EP = (env-metric γ) in v̲a̲l̲-metric (l̲a̲m̲ W) (proj₁ EP) (proj₂ EP) csn
-  -- lhstate-metric (found-comp {W = W} {γ = γ} {cs = cs}) csn =
-  --   let
-  --     EP = (env-metric γ)
-  --     w = ⟪ comp-metric W (proj₁ EP) (proj₂ EP) (cs-to-csn cs) ⟫
-  --   in
-  --     m-V 0 (w + csn-to-nat₀ w (cs-to-csn cs))
-
-
- --AA
-  --------------------------------------------------------------------
-  -- COPIED AND ADAPTED
-  -- data LookupSteps : LookupState X → Set where
-
-  --   steps : {S T : LookupState X} → S →ᴸ* T → (H : LookupHaltingState T) → ⟦ S ⟧ᴸ ≡ ⟦ T ⟧ᴸ → (π : Wk (lCtx S) (lTCtx T)) → (⟦ π ⟧ʷ ⟦ lEnv S ⟧ᴱ ≡ ⟦ lTEnv T ⟧ᴱ)
-  --           → (∀ (csn : List (ℕ × ℕ)) → lhstate-metric H csn ≤ᴹ lstate-metric S csn)
-  --           → (θ : Wke π (proj₂ (env-metric (lEnv S))) (proj₂ (env-metric (lTEnv T))))
-  --           → LookupSteps S
-
   lookup : (i : Γ ∋ X) → (γ : Env Γ) → LookupSteps {X = X} ⟨ i ∥ γ ⟩
-  lookup h (γ ﹐ l̲a̲m̲ W) = steps (⟨ h ∥ _﹐_ γ (l̲a̲m̲ W) ⟩ ◼) found-lam refl (wk-wk wk-id) refl (λ csn → ≤ᴹ-refl) (wke-wc- wk-id (proj₂ (env-metric γ)) (proj₂ (env-metric γ)) (v̲a̲l̲-metric (l̲a̲m̲ W) (proj₁ (env-metric γ)) (proj₂ (env-metric γ))) wke-id)
-  lookup h (γ ﹐ pa̲i̲r̲ LHS RHS) = steps (⟨ h ∥ _﹐_ γ (pa̲i̲r̲ LHS RHS) ⟩ ◼) found-pair refl (wk-wk wk-id) refl (λ csn → ≤ᴹ-refl) (wke-wc- wk-id (proj₂ (env-metric γ)) (proj₂ (env-metric γ)) (v̲a̲l̲-metric (pa̲i̲r̲ LHS RHS) (proj₁ (env-metric γ)) (proj₂ (env-metric γ))) wke-id)
-  lookup h (γ ﹐ u̲n̲i̲t̲) = steps (⟨ h ∥ _﹐_ γ (u̲n̲i̲t̲) ⟩ ◼) found-unit refl (wk-wk wk-id) refl (λ csn → ≤ᴹ-refl) (wke-wc- wk-id (proj₂ (env-metric γ)) (proj₂ (env-metric γ)) (v̲a̲l̲-metric u̲n̲i̲t̲ (proj₁ (env-metric γ)) (proj₂ (env-metric γ))) wke-id)
+  lookup h (γ ﹐ l̲a̲m̲ W) = steps (⟨ h ∥ _﹐_ γ (l̲a̲m̲ W) ⟩ ◼) found-lam refl (wk-wk wk-id) refl ((λ csn → ≤ᴹ-refl)) (wke-wc- wk-id (proj₂ (env-mono-metric γ)) (proj₂ (env-mono-metric (lTEnv ⟨ h ∥ γ ﹐ l̲a̲m̲ W ⟩))) (v̲a̲l̲-mono-metric (l̲a̲m̲ W) (proj₁ (env-mono-metric γ)) (proj₂ (env-mono-metric γ))) wke-id)
+  lookup h (γ ﹐ pa̲i̲r̲ LHS RHS) = steps (⟨ h ∥ _﹐_ γ (pa̲i̲r̲ LHS RHS) ⟩ ◼) found-pair refl (wk-wk wk-id) refl ((λ csn → ≤ᴹ-refl)) (wke-wc- wk-id (proj₂ (env-mono-metric γ)) (proj₂ (env-mono-metric (lTEnv ⟨ h ∥ γ ﹐ pa̲i̲r̲ LHS RHS ⟩))) (v̲a̲l̲-mono-metric (pa̲i̲r̲ LHS RHS) (proj₁ (env-mono-metric γ)) (proj₂ (env-mono-metric γ))) wke-id)
+  lookup h (γ ﹐ u̲n̲i̲t̲) = steps (⟨ h ∥ _﹐_ γ (u̲n̲i̲t̲) ⟩ ◼) found-unit refl (wk-wk wk-id) refl ((λ csn → ≤ᴹ-refl)) (wke-wc- wk-id (proj₂ (env-mono-metric γ)) (proj₂ (env-mono-metric (lTEnv ⟨ h ∥ γ ﹐ u̲n̲i̲t̲ ⟩))) (v̲a̲l̲-mono-metric u̲n̲i̲t̲ (proj₁ (env-mono-metric γ)) (proj₂ (env-mono-metric γ))) wke-id)
   lookup h (γ ﹐ v̲a̲r̲ i) with lookup i γ
-  ... | steps {T = T} i>>T HT i≡T WK w≡γ T≤S θ = steps (_ →ᴸ⟨ val-h-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ (λ csn → ≤ᴹ-incr-cong (z≤n {n = 1}) (T≤S csn)) (wke-wc- WK (proj₂ (env-metric γ)) (proj₂ (env-metric (lTEnv T))) (v̲a̲l̲-metric (v̲a̲r̲ i) (proj₁ (env-metric γ)) (proj₂ (env-metric γ))) θ)
-  lookup h (γ ﹐﹝ W ╎ cs ﹞ ) =
+  ... | steps {T = T} i>>T HT i≡T WK w≡γ T≤S θ = steps (_ →ᴸ⟨ val-h-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ ((λ csn → ≤ᴹ-incr-cong (z≤n {n = 1}) (T≤S csn))) (wke-wc- WK (proj₂ (env-mono-metric γ)) (proj₂ (env-mono-metric (lTEnv T))) (v̲a̲l̲-mono-metric (v̲a̲r̲ i) (proj₁ (env-mono-metric γ)) (proj₂ (env-mono-metric γ))) θ)
+  lookup h ((γ ﹐﹝ W ╎ cs ﹞ ) {π = π} {wk≡ = wk≡}) =
     let
-      w = ⟪ comp-metric W (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) (cs-to-csn cs) ⟫
+      w = comp-mono-metric W (proj₁ (env-mono-metric γ)) (proj₂ (env-mono-metric γ))
+      csn = (cs-to-csn cs)
     in
-      steps (⟨ h ∥ γ ﹐﹝ W ╎ cs ﹞ ⟩ ◼) found-comp refl (wk-wk wk-id) refl (λ csn → ≤ᴹ-refl) (wke-wc- wk-id (proj₂ (env-metric γ)) (proj₂ (env-metric γ)) (λ _ → m-V 0 (w + csn-to-nat₀ w (cs-to-csn cs))) wke-id)
+      steps (⟨ h ∥ γ ﹐﹝ W ╎ cs ﹞ ⟩ ◼) found-comp refl (wk-wk wk-id) refl ((λ csn → ≤ᴹ-refl)) (wke-wc- wk-id (proj₂ (env-mono-metric γ)) (proj₂ (env-mono-metric (lTEnv ⟨ h ∥ ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡} ) ⟩))) ((λ _ → m-V 0 (⟪ proj₁ w csn ⟫ + csn-to-nat₀ ⟪ proj₁ w csn ⟫ csn)) , (λ _ → ≤ᴹ-refl)) wke-id)
   lookup (t i) (γ ﹐ M) with lookup i γ
-  ... | steps {T = T} i>>T HT i≡T WK w≡γ T≤S θ = steps (_ →ᴸ⟨ val-t-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ T≤S (wke-wc- WK (proj₂ (env-metric γ)) (proj₂ (env-metric (lTEnv T))) (v̲a̲l̲-metric M (proj₁ (env-metric γ)) (proj₂ (env-metric γ))) θ)
+  ... | steps {T = T} i>>T HT i≡T WK w≡γ T≤S θ = steps (_ →ᴸ⟨ val-t-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ T≤S (wke-wc- WK (proj₂ (env-mono-metric γ)) (proj₂ (env-mono-metric (lTEnv T))) (v̲a̲l̲-mono-metric M (proj₁ (env-mono-metric γ)) (proj₂ (env-mono-metric γ))) θ)
   lookup (t i) (γ ﹐﹝ W ╎ cs ﹞) with lookup i γ
   ... | steps {T = T} i>>T HT i≡T WK w≡γ T≤S θ =
     let
-      w = ⟪ comp-metric W (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) (cs-to-csn cs) ⟫
+      w = comp-mono-metric W (proj₁ (env-mono-metric γ)) (proj₂ (env-mono-metric γ))
+      csn = (cs-to-csn cs)
     in
-      steps (_ →ᴸ⟨ comp-t-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ T≤S (wke-wc- WK (proj₂ (env-metric γ)) (proj₂ (env-metric (lTEnv T))) (λ _ → m-V 0 (w + csn-to-nat₀ w (cs-to-csn cs))) θ)
+      steps (_ →ᴸ⟨ comp-t-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ T≤S (wke-wc- WK (proj₂ (env-mono-metric γ)) (proj₂ (env-mono-metric (lTEnv T))) ((λ _ → m-V 0 (⟪ proj₁ w csn ⟫ + csn-to-nat₀ ⟪ proj₁ w csn ⟫ csn)) , (λ _ → ≤ᴹ-refl)) θ)
 
 
+ --AA
   -- Value Machine
   ------------------------------------------------------------------------------
 
@@ -1227,6 +1195,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   -------------------------------
 
+{- ZZZ
   partial-term-metric : PartialTerm Γ X → (E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → Wkn Γ E → List (ℕ × ℕ) → TermMetric X
   partial-term-metric (⭭ M) E ϖ csn = v̲a̲l̲-metric M E ϖ csn
   partial-term-metric (⇡ M) E ϖ csn = val-metric M E ϖ csn
