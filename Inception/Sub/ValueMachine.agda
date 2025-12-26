@@ -976,44 +976,74 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       in
       ((proj₁ (mono-comp-count h W (proj₁ IH) (wkn-cons (proj₂ IH))) csn) , ⟪ proj₁ (comp-mono-metric W (proj₁ IH) (wkn-cons (proj₂ IH))) csn ⟫) ∷ csn
 
-
-{- ZZZ
-
-  --------------------------------------------------------------------
-
   getIndex : LookupState X → Σ[ Γ ∈ Ctx ] Γ ∋ X
   getIndex ⟨ i ∥ _ ⟩ = _ , i
 
   getLookupEnv : (S : LookupState X) → Env (proj₁ (getIndex S))
   getLookupEnv ⟨ _ ∥ γ ⟩ = γ
 
-  lstate-metric : LookupState X → List (ℕ × ℕ) → TermMetric X
-  lstate-metric ⟨ i ∥ γ ⟩ csn =
-    let
-      EP = (env-metric γ)
-    in
-      lookup-metric i (proj₁ EP) (proj₂ EP) csn
 
-  lhstate-metric : {T : LookupState X} → LookupHaltingState T → List (ℕ × ℕ) → TermMetric X
-  lhstate-metric (found-unit {γ = γ}) csn = m-Unit 1
-  lhstate-metric (found-pair {LHS = LHS} {RHS = RHS} {γ = γ}) csn = let EP = (env-metric γ) in v̲a̲l̲-metric (pa̲i̲r̲ LHS RHS) (proj₁ EP) (proj₂ EP) csn
-  lhstate-metric (found-lam {W = W} {γ = γ}) csn = let EP = (env-metric γ) in v̲a̲l̲-metric (l̲a̲m̲ W) (proj₁ EP) (proj₂ EP) csn
-  lhstate-metric (found-comp {W = W} {γ = γ} {cs = cs}) csn =
+  lstate-metric : LookupState X → EElem X
+  lstate-metric ⟨ i ∥ γ ⟩ =
     let
-      EP = (env-metric γ)
-      w = ⟪ comp-metric W (proj₁ EP) (proj₂ EP) (cs-to-csn cs) ⟫
+      EP = (env-mono-metric γ)
     in
-      m-V 0 (w + csn-to-nat₀ w (cs-to-csn cs))
+      lookup-mono-metric i (proj₁ EP) (proj₂ EP)
+
+  lhstate-metric : {T : LookupState X} → LookupHaltingState T → EElem X
+  lhstate-metric (found-unit {γ = γ}) = (λ _ → m-Unit 1) , λ _ → ≤ᴹ-refl
+  lhstate-metric (found-pair {LHS = LHS} {RHS = RHS} {γ = γ}) = let EP = (env-mono-metric γ) in v̲a̲l̲-mono-metric (pa̲i̲r̲ LHS RHS) (proj₁ EP) (proj₂ EP)
+  lhstate-metric (found-lam {W = W} {γ = γ}) = let EP = (env-mono-metric γ) in v̲a̲l̲-mono-metric (l̲a̲m̲ W) (proj₁ EP) (proj₂ EP)
+  lhstate-metric (found-comp {W = W} {γ = γ} {cs = cs}) =
+    let
+      EP = (env-mono-metric γ)
+      w = comp-mono-metric W (proj₁ EP) (proj₂ EP)
+      csn = (cs-to-csn cs)
+    in
+      (λ _ → m-V 0 (⟪ proj₁ w csn ⟫ + csn-to-nat₀ ⟪ proj₁ w csn ⟫ csn)) , λ _ → ≤ᴹ-refl
+
+  data LookupSteps : LookupState X → Set where
+
+    steps : {S T : LookupState X} → S →ᴸ* T → (H : LookupHaltingState T) → ⟦ S ⟧ᴸ ≡ ⟦ T ⟧ᴸ → (π : Wk (lCtx S) (lTCtx T)) → (⟦ π ⟧ʷ ⟦ lEnv S ⟧ᴱ ≡ ⟦ lTEnv T ⟧ᴱ)
+            → (∀ (csn : List (ℕ × ℕ)) → (proj₁ (lhstate-metric H)) csn ≤ᴹ (proj₁ (lstate-metric S)) csn)
+            → (θ : WkE π (proj₂ (env-mono-metric (lEnv S))) (proj₂ (env-mono-metric (lTEnv T))))
+            → LookupSteps S
+
+{- ZZZ
+
+  --------------------------------------------------------------------
+
+  -- COPIED AND ADAPTED
+  -- lstate-metric : LookupState X → List (ℕ × ℕ) → TermMetric X
+  -- lstate-metric ⟨ i ∥ γ ⟩ csn =
+  --   let
+  --     EP = (env-metric γ)
+  --   in
+  --     lookup-metric i (proj₁ EP) (proj₂ EP) csn
+
+  -- COPIED AND ADAPTED
+  -- lhstate-metric : {T : LookupState X} → LookupHaltingState T → List (ℕ × ℕ) → TermMetric X
+  -- lhstate-metric (found-unit {γ = γ}) csn = m-Unit 1
+  -- lhstate-metric (found-pair {LHS = LHS} {RHS = RHS} {γ = γ}) csn = let EP = (env-metric γ) in v̲a̲l̲-metric (pa̲i̲r̲ LHS RHS) (proj₁ EP) (proj₂ EP) csn
+  -- lhstate-metric (found-lam {W = W} {γ = γ}) csn = let EP = (env-metric γ) in v̲a̲l̲-metric (l̲a̲m̲ W) (proj₁ EP) (proj₂ EP) csn
+  -- lhstate-metric (found-comp {W = W} {γ = γ} {cs = cs}) csn =
+  --   let
+  --     EP = (env-metric γ)
+  --     w = ⟪ comp-metric W (proj₁ EP) (proj₂ EP) (cs-to-csn cs) ⟫
+  --   in
+  --     m-V 0 (w + csn-to-nat₀ w (cs-to-csn cs))
 
 
  --AA
   --------------------------------------------------------------------
-  data LookupSteps : LookupState X → Set where
+  -- COPIED AND ADAPTED
+  -- data LookupSteps : LookupState X → Set where
 
-    steps : {S T : LookupState X} → S →ᴸ* T → (H : LookupHaltingState T) → ⟦ S ⟧ᴸ ≡ ⟦ T ⟧ᴸ → (π : Wk (lCtx S) (lTCtx T)) → (⟦ π ⟧ʷ ⟦ lEnv S ⟧ᴱ ≡ ⟦ lTEnv T ⟧ᴱ)
-            → (∀ (csn : List (ℕ × ℕ)) → lhstate-metric H csn ≤ᴹ lstate-metric S csn)
-            → (θ : Wke π (proj₂ (env-metric (lEnv S))) (proj₂ (env-metric (lTEnv T))))
-            → LookupSteps S
+  --   steps : {S T : LookupState X} → S →ᴸ* T → (H : LookupHaltingState T) → ⟦ S ⟧ᴸ ≡ ⟦ T ⟧ᴸ → (π : Wk (lCtx S) (lTCtx T)) → (⟦ π ⟧ʷ ⟦ lEnv S ⟧ᴱ ≡ ⟦ lTEnv T ⟧ᴱ)
+  --           → (∀ (csn : List (ℕ × ℕ)) → lhstate-metric H csn ≤ᴹ lstate-metric S csn)
+  --           → (θ : Wke π (proj₂ (env-metric (lEnv S))) (proj₂ (env-metric (lTEnv T))))
+  --           → LookupSteps S
+
   lookup : (i : Γ ∋ X) → (γ : Env Γ) → LookupSteps {X = X} ⟨ i ∥ γ ⟩
   lookup h (γ ﹐ l̲a̲m̲ W) = steps (⟨ h ∥ _﹐_ γ (l̲a̲m̲ W) ⟩ ◼) found-lam refl (wk-wk wk-id) refl (λ csn → ≤ᴹ-refl) (wke-wc- wk-id (proj₂ (env-metric γ)) (proj₂ (env-metric γ)) (v̲a̲l̲-metric (l̲a̲m̲ W) (proj₁ (env-metric γ)) (proj₂ (env-metric γ))) wke-id)
   lookup h (γ ﹐ pa̲i̲r̲ LHS RHS) = steps (⟨ h ∥ _﹐_ γ (pa̲i̲r̲ LHS RHS) ⟩ ◼) found-pair refl (wk-wk wk-id) refl (λ csn → ≤ᴹ-refl) (wke-wc- wk-id (proj₂ (env-metric γ)) (proj₂ (env-metric γ)) (v̲a̲l̲-metric (pa̲i̲r̲ LHS RHS) (proj₁ (env-metric γ)) (proj₂ (env-metric γ))) wke-id)
