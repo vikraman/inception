@@ -835,6 +835,26 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
         in
         ≤ᴹ-trans a0 a1
 
+    postulate wke-val-count-lemma : (i : Γ' ∋ Y) → (M : Val Γ' X) → (E E' : EMetric)
+                → (π : Wk Γ Γ') → (ϖ : WkN Γ E) → (ϖ' : WkN Γ' E') → (θ : WkE π ϖ ϖ') → (csn : List (ℕ × ℕ))
+                → ((proj₁ (mono-val-count i M E' ϖ')) csn) ≡ ((proj₁ (mono-val-count (wk-mem π i) (wk-val π M) E ϖ)) csn)
+
+    postulate wke-comp-count-lemma : (i : Γ' ∋ Y) → (W : Comp Γ' X) → (E E' : EMetric)
+                → (π : Wk Γ Γ') → (ϖ : WkN Γ E) → (ϖ' : WkN Γ' E') → (θ : WkE π ϖ ϖ') → (csn : List (ℕ × ℕ))
+                → ((proj₁ (mono-comp-count i W E' ϖ')) csn) ≡ ((proj₁ (mono-comp-count (wk-mem π i) (wk-comp π W) E ϖ)) csn)
+
+    postulate val-wke-lemma : (M : Val Γ' X) → (E E' : EMetric)
+                → (π : Wk Γ Γ') → (ϖ : WkN Γ E) → (ϖ' : WkN Γ' E') → (θ : WkE π ϖ ϖ') → (csn : List (ℕ × ℕ))
+                → ((proj₁ (val-mono-metric M E' ϖ')) csn) ≡ ((proj₁ (val-mono-metric (wk-val π M) E ϖ)) csn)
+
+    postulate comp-wke-lemma : (W : Comp Γ' X) → (E E' : EMetric)
+                → (π : Wk Γ Γ') → (ϖ : WkN Γ E) → (ϖ' : WkN Γ' E') → (θ : WkE π ϖ ϖ') → (csn : List (ℕ × ℕ))
+                → ((proj₁ (comp-mono-metric W E' ϖ')) csn) ≡ ((proj₁ (comp-mono-metric (wk-comp π W) E ϖ)) csn)
+
+    postulate val-count-wkx-lemma : (i : Γ ∋ Y) → (W : Val Γ X) → (E E' : EMetric)
+                → (π : Wk Γ Γ) → (ϖ : WkN Γ E) → (ϖ' : WkN Γ E') → (ϕ : WkX π ϖ ϖ') → (csn : List (ℕ × ℕ))
+                → (proj₁ (mono-val-count i W E' ϖ') csn) ≡ (proj₁ (mono-val-count i W E ϖ) csn)
+
     postulate comp-count-wkx-lemma : (i : Γ ∋ Y) → (W : Comp Γ X) → (E E' : EMetric)
                 → (π : Wk Γ Γ) → (ϖ : WkN Γ E) → (ϖ' : WkN Γ E') → (ϕ : WkX π ϖ ϖ') → (csn : List (ℕ × ℕ))
                 → (proj₁ (mono-comp-count i W E' ϖ') csn) ≡ (proj₁ (mono-comp-count i W E ϖ) csn)
