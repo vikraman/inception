@@ -448,13 +448,17 @@ To prove termination of the computation machine, we associate a natural number w
 We compute this number inductively for computation terms and value terms. In order to do so we need a type-index data structure that holds intermediate results for previously computed sub-terms.
 We call this data structure a \emph{metric}.
 \newcommand{\TermMetric}{\ensuremath{\mathop{\textsf{TermMetric}}}}
+\newcommand{\EMetric}{\ensuremath{\mathop{\textsf{EMetric}}}}
+\newcommand{\EElem}{\ensuremath{\mathop{\textsf{EElem}}}}
 \newcommand{\mU}{\ensuremath{\mathop{\textsf{m-1}}}}
 \newcommand{\mV}{\ensuremath{\mathop{\textsf{m-V}}}}
 \newcommand{\mF}{\ensuremath{\mathop{\textsf{m-$\Rightarrow$}}}}
 \newcommand{\mP}{\ensuremath{\mathop{\textsf{m-$\times$}}}}
 \newcommand{\bN}{\mathbb{N}}
-\newcommand{\csn}[1]{\ensuremath{\llparenthesis #1 \rrparenthesis}}
+\newcommand{\evl}[1]{\ensuremath{\llparenthesis #1 \rrparenthesis}}
 \newcommand{\List}{\ensuremath{\mathop{\textsf{List}}}}
+\newcommand{\Ctx}{\ensuremath{\mathop{\textsf{Ctx}}}}
+\newcommand{\Type}{\ensuremath{\mathop{\textsf{Type}}}}
 
 \begin{definition}
 $\TermMetric X$ is an inductively defined type with the following constructors:
@@ -474,14 +478,14 @@ The parameter $c$ is a counter, giving an upper bound to the number of occurrenc
 Every term exists in the context of an environment and a computation stack, the latter of which is (see Section~\ref{sec:env}) a list of computation terms with a free variable.
 
 \begin{definition}
-The function $\csn{\_} : \CStack \Delta X \to \List (\bN \times \bN)$ associates to each computation stack a list of natural numbers (called \emph{c-lists}), where:
+The function $\evl{\_} : \CStack \Delta X \to \List (\bN \times \bN)$ associates to each computation stack a list of natural numbers (called \emph{c-lists}), where:
 \begin{itemize}
 	\item The first component is an upper bound to the number of occurrences of the free variable after evaluation of the computation term.
   \item The second component is the number associated with the computation term.
 \end{itemize}
 \end{definition}
 
-Once we have associated a number $n$ to a term in an environment, we can calculate the number ${\| n \|}(l)$ associated the term in the environment on a stack $C$ with $\csn{C} = l$.
+Once we have associated a number $n$ to a term $W$ in an environment on a stack $C$, we can calculate the number ${\| n \|}(l)$ associated to $C$ (where $l = \evl{C}$) with $W$ on the top.
 We do this inductively as follows:
 \begin{itemize}
 	\item $\| n \| ([]) = 0$
@@ -508,6 +512,64 @@ We define the relation $\leq^c \,\subseteq (\List (\bN \times \bN) \times \List 
 	l &\leq^c l && \quad\quad\textsf{if $n_1 \leq n_2$}\\
 	(c , w_1) \CAT l_1 &\leq^c (c , w_2) \CAT l_2 && \quad\quad\textsf{if $w_1 \leq w_2$ and $l_1 \leq^c l_2$}
 \end{aligned}
+\end{definition}
+
+\clearpage
+%To calculate the metric for a term in an environment $\gamma$ , we first need to calculate the metrics for each term in $\gamma$ (which is a list of terms).
+
+Since metrics are calculated for terms in an environment on a stack, the metric for a term for type $X$ in an environment is a function from c-lists to $\TermMetric X$.
+Importantly, this function is monotonous with respect to $\leq^c$ and $\leq^M$.
+
+Because environments are lists of terms in an environment, we associate environments with lists of monotonous functions from c-lists to metrics.
+
+\begin{definition}
+$\evl{\_} : \Env{\Gamma} \to \List (\Sigma_{X : \textsf{Type}} (\List (\bN \times \bN) \xrightarrow{\leq} \TermMetric X))$ associates to each term-environment pair in an environment a monotone function from c-lists to metrics.
+To simplify notation we will write $\EElem X$ for $(\List (\bN \times \bN) \xrightarrow{\leq} \TermMetric X)$ and $\EMetric$ for $\List (\Sigma_{X : \textsf{Type}} \EElem X)$ from now on.
+Since the definition of this function depends on the functions calculating the metrics for terms (in an environment on a stack), it will be fully defined further below. %TODO
+\end{definition}
+
+Before we can calculate a metric for a term, we need to relate $\EMetric$ to contexts, so ensure that an $\EMetric$ indeed corresponds to a given environment in that context.
+The idea is that if a type appears in a context at a given position, then we need to know if there is a corresponding entry in the $\EMetric$ list and if so, which one.
+This means, that a context $\Gamma : \Ctx$ is ``weaker'' than a corresponding $E : \EMetric$.
+
+\newcommand{\Wkn}{\ensuremath{\mathop{\textsf{Wkn}}}}
+\newcommand{\wknnil}{\ensuremath{\mathop{\textsf{wkn-nil}}}}
+\newcommand{\wkncong}{\ensuremath{\mathop{\textsf{wkn-cong}}}}
+\newcommand{\wknwk}{\ensuremath{\mathop{\textsf{wkn-wk}}}}
+
+\begin{definition}
+We define the relation $\Wkn \subseteq \Ctx \times \EMetric$ inductively as follows:
+
+\hspace{20pt}\begin{aligned}
+	\wknnil &: \Wkn\, \varepsilon\, []\\
+	\wkncong &: (e : \EElem\, X) \to (\varpi : \Wkn\, \Gamma\, E) \to \Wkn\, (\Gamma , X)\, ((X , e) \CAT E)\\
+	\wknwk &: (\varpi : \Wkn\, \Gamma\, E) \to \Wkn\, (\Gamma , X)\, E\\
+\end{aligned}
+\end{definition}
+
+\newcommand{\lookupeelem}{\ensuremath{\mathop{\textsf{lookup-eelem}}}}
+\newcommand{\zm}{\ensuremath{\mathop{\textsf{zero-metric}}}}
+\newcommand{\ze}{\ensuremath{\mathop{\textsf{zero-eelem}}}}
+
+Furthermore, for every type $X$, there exists a $\zm : \TermMetric X$, constructed with zeros as parameters to all its constructors.
+We also define a corresponding $\ze : \EElem X$ in the obvious way.
+We can now define a function to lookup the $\EElem X$ for a variable of type $X$ in an $\EMetric$.
+
+
+\begin{definition}
+The function
+\[\lookupeelem : (i : \Gamma \ni X) \to (E : \EMetric) \to (\varpi : \Wkn\, \Gamma\, E) \to \EElem X\]
+is inductively defined as follows:
+
+\hspace{20pt}\begin{aligned}
+	\lookupeelem\, h\, ((X , e) \CAT E)\, (\wkncong\, e\, \varpi)\,       &= e\\
+	\lookupeelem\, (t i)\, ((X , e) \CAT E)\, (\wkncong\, e\, \varpi)\,   &= \lookupeelem \,i \,E \,\varpi\\
+	\lookupeelem\, h\, []\, (\wknwk \,\varpi)\,       &= \ze\\
+	\lookupeelem\, h\, ((X , e) \CAT E)\, (\wknwk \varpi)\,       &= \ze\\
+	\lookupeelem\, (t i)\, []\, (\wknwk \varpi)\,       &= \ze\\
+	\lookupeelem\, (t i)\, ((X , e) \CAT E)\, (\wknwk \varpi)\,       &= \lookupeelem \,i \,((X , e) \CAT E) \,\varpi\\
+\end{aligned}
+
 \end{definition}
 
 
