@@ -475,6 +475,8 @@ The parameter $n$ of each of the constructors is used to hold the number that a 
 The parameter $w$ is the number associated with the computation that a label variable is pointing to.
 The parameter $c$ is a counter, giving an upper bound to the number of occurrences of the bound variable in a term of function type after its evaluation.
 
+To add a natural number $n_1$ to the $n$ part of a metric $m : \TermMetric X$, we write $n_1 + m$, which is defined in the obvious way.
+
 Every term exists in the context of an environment and a computation stack, the latter of which is (see Section~\ref{sec:env}) a list of computation terms with a free variable.
 
 \begin{definition}
@@ -551,8 +553,25 @@ We define the relation $\Wkn \subseteq \Ctx \times \EMetric$ inductively as foll
 \newcommand{\zm}{\ensuremath{\mathop{\textsf{zero-metric}}}}
 \newcommand{\ze}{\ensuremath{\mathop{\textsf{zero-eelem}}}}
 
-Furthermore, for every type $X$, there exists a $\zm : \TermMetric X$, constructed with zeros as parameters to all its constructors.
+For every type $X$, there exists a $\zm : \TermMetric X$, constructed with zeros as parameters to all its constructors.
 We also define a corresponding $\ze : \EElem X$ in the obvious way.
+From a given metric $m : \TermMetric X$ we can calculate the corresponding natural number with the following function.
+
+\newcommand{\mton}[1]{\ensuremath{\langle\!\langle #1 \rangle\!\rangle}}
+
+\begin{definition}
+$\mton{\_} : \TermMetric X \to \bN$ is inductively defined as follows:
+
+\hspace{20pt}\begin{aligned}
+	\mton{\mU\, n}       &= n\\
+	\mton{\mV\, n\, w}       &= n + w\\
+	\mton{\mF\, n\, c\, m}       &= n + \mton{m}\\
+	\mton{\mP\, n\, m_1\, m_2}       &= n + \mton{m_1} + \mton{m_2}\\
+\end{aligned}
+
+\end{definition}
+
+
 We can now define a function to lookup the $\EElem X$ for a variable of type $X$ in an $\EMetric$.
 
 
@@ -628,6 +647,21 @@ These functions are inductively defined as follows:
 	&\ccount\, i\, \SUB(W_1,W_2)\, E\, \varpi\,      &&= x \mapsto (\ccount\, (t\, i)\, W_1 \, E\, (\wknwk\, \varpi))\, x\\
                                                       &&& \quad\quad\quad + (\ccount\, i\, W_2 \, E\, \varpi)\, x)\\
                                                       &&& \quad\quad\quad \cdot (1 + (\ccount\, (h \, i)\, W_1 \, E\, (\wknwk\, \varpi))\, x)\\\\
+\end{aligned}
+
+\clearpage
+
+\hspace{0pt}\begin{aligned}
+	&\veelem\, i\, E\, \varpi\,      &&= \lookupeelem\, i\, E\, \varpi\\
+	&\veelem\, (\lambda W)\, E\, \varpi\,      &&= x \mapsto \mF\,2\,((\ccount\, h\, W\, (\wknwk\,\varpi))\, x)\;((\ceelem\, W\, E\, (\wknwk\,\varpi))\, x)\\
+	&\veelem\, (M_1,M_2)\, E\, \varpi\,      &&= x \mapsto \mP\,2\,((\veelem\, M_1\, E\, \varpi)\, x)\; ((\veelem\, M_1\, E\, \varpi)\, x)\\
+	&\veelem\, \PMV(M,N)\, E\, \varpi\,      &&= ?\\
+	&\veelem\, 1\, E\, \varpi\,      &&= ?\\
+	&\ceelem\, W\, E\, \varpi\,      &&= ?\\
+	&\ceelem\, W\, E\, \varpi\,      &&= ?\\
+	&\ceelem\, W\, E\, \varpi\,      &&= ?\\
+	&\ceelem\, W\, E\, \varpi\,      &&= ?\\
+	&\ceelem\, W\, E\, \varpi\,      &&= ?\\
 \end{aligned}
 
 
