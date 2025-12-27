@@ -780,6 +780,9 @@ Goal:         2+                 (p1 (a3) + (⟪ a4 ⟫ + p2 (a3) * ⟪ a4 ⟫) 
       E = proj₁ EW
       ϖ = proj₂ EW
       csn = cs-to-csn cs
+      z1 = c̲o̲m̲p-mono-metric (a̲pp (lam W) N) E ϖ
+      x1 = v̲a̲l̲-mono-metric N E ϖ
+      x2 = val-mono-metric (lam W) E ϖ
     in
       {!!}
 
@@ -873,7 +876,7 @@ Goal: suc (⟪ a1 ⟫ + csn-to-nat₀ ⟪ a1 ⟫ csn')
 -------------------------------------------------------
 -------------------------------------------------------
 -------------------------------------------------------
-{-AA
+
 -------------------------------------------------------
   postulate debuglemma : m ≤ n
   -- debuglemma = ≤-refl
@@ -1473,5 +1476,3 @@ _ = refl
 -- Goal: csn-to-nat₀ (suc n₂) csn₂ ≤ suc (fst + n₁ * zero + csn-to-nat₀ (suc (fst + n₁ * zero)) csn₁)
 -- Goal: csn-to-nat₀       9    [] ≤ suc (  9 + n₁ * zero + csn-to-nat₀ (suc (fst + n₁ * zero)) csn₁)
 -}
-
-AA-}
