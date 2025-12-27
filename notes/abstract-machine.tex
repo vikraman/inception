@@ -242,7 +242,7 @@ Computation terms $\Gamma \CTS W : X$ are interpreted by $\llbracket \_ \rrbrack
 
 
 \clearpage
-\subsection{Environments}
+\subsection{Environments}\label{sec:env}
 
 \subsubsection{Grammar}
 
@@ -442,6 +442,73 @@ To evaluate a computation $\emptyctx \CTS W : R_0$ we start the machine in state
 
 \clearpage
 \subsection{Termination of the Machine}
+
+To prove termination of the computation machine, we associate a natural number with each state and then show that this number strictly decreases when taking a transition.
+
+We compute this number inductively for computation terms and value terms. In order to do so we need a type-index data structure that holds intermediate results for previously computed sub-terms.
+We call this data structure a \emph{metric}.
+\newcommand{\TermMetric}{\ensuremath{\mathop{\textsf{TermMetric}}}}
+\newcommand{\mU}{\ensuremath{\mathop{\textsf{m-1}}}}
+\newcommand{\mV}{\ensuremath{\mathop{\textsf{m-V}}}}
+\newcommand{\mF}{\ensuremath{\mathop{\textsf{m-$\Rightarrow$}}}}
+\newcommand{\mP}{\ensuremath{\mathop{\textsf{m-$\times$}}}}
+\newcommand{\bN}{\mathbb{N}}
+\newcommand{\csn}[1]{\ensuremath{\llparenthesis #1 \rrparenthesis}}
+\newcommand{\List}{\ensuremath{\mathop{\textsf{List}}}}
+
+\begin{definition}
+$\TermMetric X$ is an inductively defined type with the following constructors:
+
+\hspace{20pt}\begin{aligned}
+	\mU &: (n : \bN) \to \TermMetric 1\\
+	\mV &: (n : \bN) \to (w : \bN) \to \TermMetric V\\
+	\mF &: (n : \bN) \to (c : \bN) \to (m : \TermMetric Y) \to \TermMetric (X \Rightarrow Y)\\
+	\mP &: (n : \bN) \to (m_1 : \TermMetric X) \to (m_2 : \TermMetric Y) \to \TermMetric (X \times Y)\\
+\end{aligned}
+\end{definition}
+
+The parameter $n$ of each of the constructors is used to hold the number that a term adds to the metrics of its sub-terms.
+The parameter $w$ is the number associated with the computation that a label variable is pointing to.
+The parameter $c$ is a counter, giving an upper bound to the number of occurrences of the bound variable in a term of function type after its evaluation.
+
+Every term exists in the context of an environment and a computation stack, the latter of which is (see Section~\ref{sec:env}) a list of computation terms with a free variable.
+
+\begin{definition}
+The function $\csn{\_} : \CStack \Delta X \to \List (\bN \times \bN)$ associates to each computation stack a list of natural numbers (called \emph{c-lists}), where:
+\begin{itemize}
+	\item The first component is an upper bound to the number of occurrences of the free variable after evaluation of the computation term.
+  \item The second component is the number associated with the computation term.
+\end{itemize}
+\end{definition}
+
+Once we have associated a number $n$ to a term in an environment, we can calculate the number ${\| n \|}(l)$ associated the term in the environment on a stack $C$ with $\csn{C} = l$.
+We do this inductively as follows:
+\begin{itemize}
+	\item $\| n \| ([]) = 0$
+	\item $\| n \| ((c , w) \CAT l) = w + n \cdot (1 + c) + \| w + n \cdot (1 + c) \| (l)$
+\end{itemize}
+
+We define partial orders on metrics and on metrics and on c-lists.
+
+\begin{definition}
+We define the relation $\leq^M_X \,\subseteq \TermMetric X \times \TermMetric X$ inductively as follows (we will usually omit the subscript):
+
+\hspace{10pt}\begin{aligned}
+	(\mU \, n_1) &\leq^M (\mU \, n_2) && \quad\quad\textsf{if $n_1 \leq n_2$}\\
+	(\mV \, n_1 \, w_1) &\leq^M (\mV \, n_2 \, w_2) && \quad\quad\textsf{if $n_1 \leq n_2$ and $w_1 \leq w_2$}\\
+	(\mF \, n_1 \, c \, m_1) &\leq^M (\mF \, n_2 \, c \, m_2) && \quad\quad\textsf{if $n_1 \leq n_2$ and $m_1 \leq^M m_2$}\\
+	(\mP \, n_1 \, m_{1,1} \, m_{2,1}) &\leq^M (\mF \, n_2 \, m_{1,2} \, m_{2,2}) && \quad\quad\textsf{if $n_1 \leq n_2$ and $m_{1,1} \leq^M m_{1,2}$ and $m_{2,1} \leq^M m_{2,2}$}
+\end{aligned}
+\end{definition}
+
+\begin{definition}
+We define the relation $\leq^c \,\subseteq (\List (\bN \times \bN) \times \List (\bN \times \bN))$ inductively as follows:
+
+\hspace{10pt}\begin{aligned}
+	l &\leq^c l && \quad\quad\textsf{if $n_1 \leq n_2$}\\
+	(c , w_1) \CAT l_1 &\leq^c (c , w_2) \CAT l_2 && \quad\quad\textsf{if $w_1 \leq w_2$ and $l_1 \leq^c l_2$}
+\end{aligned}
+\end{definition}
 
 
 %\bibliographystyle{alpha}
