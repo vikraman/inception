@@ -572,6 +572,67 @@ is inductively defined as follows:
 
 \end{definition}
 
+\clearpage
+
+\newcommand{\vcount}{\ensuremath{\mathop{\textsf{v-count}}}}
+\newcommand{\ccount}{\ensuremath{\mathop{\textsf{c-count}}}}
+\newcommand{\veelem}{\ensuremath{\mathop{\textsf{v-eelem}}}}
+\newcommand{\ceelem}{\ensuremath{\mathop{\textsf{c-eelem}}}}
+
+\begin{definition}
+We calculate the metrics (or rather the $\EElem$'s) for terms by four mutually inductive functions:
+
+\hspace{5pt}\begin{aligned}
+  \vcount &: (i : \Gamma \ni X) \to (M : \Gamma \VTS Z) \to (E : \EMetric) \to (\varpi : \Wkn\, \Gamma\, E) \to (\List (\bN \times \bN) \xrightarrow{\equiv} \bN)\\
+  \ccount &: (i : \Gamma \ni X) \to (W : \Gamma \CTS Z) \to (E : \EMetric) \to (\varpi : \Wkn\, \Gamma\, E) \to (\List (\bN \times \bN) \xrightarrow{\equiv} \bN)\\
+  \veelem &: (M : \Gamma \VTS X) \to (E : \EMetric) \to (\varpi : \Wkn\, \Gamma\, E) \to \EElem X\\
+  \ceelem &: (W : \Gamma \CTS X) \to (E : \EMetric) \to (\varpi : \Wkn\, \Gamma\, E) \to \EElem X\\
+\end{aligned}
+
+The first two functions calculate an upper bound on the number of occurrences of a variable $i$ in a value (respectively computation) term.
+This calculation is independent from the computation stack (or c-list) provided, so that $\vcount$ and $\ccount$ return a constant function from c-lists to $\bN$.
+The second two functions calculate the actual metrics or rather $\EElem X$, which are functions from c-lists to $\TermMetric X$.
+We also define the helper function $\# : \TermMetric (X \Rightarrow Y) \to \bN$, extracting the counter of a function metric.
+
+These functions are inductively defined as follows:
+
+\hspace{0pt}\begin{aligned}
+	&\vcount\, h\, h\, E\, \varpi\,      &&= x \mapsto 1\\
+	&\vcount\, h\, (t\, i)\, E\, \varpi\,  &&= x \mapsto 0\\
+	&\vcount\, (t\,i) \, h\, E\, \varpi\,      &&= x \mapsto 0\\
+	&\vcount\, (t\,i_1)\, (t\,i_2)\, (X,\,e \CAT E)\, (\wkncong\, e\, \varpi)\,      &&= \vcount\, i_1\, i_2\, E\, \varpi\\
+	&\vcount\, i\, (\lambda W) \, E\, \varpi\,      &&= \ccount\, (t\, i)\, W \, E\, (\wknwk \, \varpi)\\
+	&\vcount\, i\, (M_1, M_2) \, E\, \varpi\,      &&= x \mapsto (\vcount\, i\, M_1 \, E\, \varpi)\, x\\
+                                                      &&& \quad\quad\quad + (\vcount\, i\, M_2 \, E\, \varpi)\, x \\
+	&\vcount\, i\, \PMV(M,N)\, E\, \varpi\,      &&= x \mapsto (\vcount\, i\, M \, E\, \varpi)\, x\\
+                                                      &&& \quad\quad\quad \cdot (1 + (\vcount\, h\, N \, E\, (\wknwk\, (\wknwk\, \varpi)))\, x \\
+                                                      &&& \quad\quad\quad\quad     + (\vcount\, (t\, h)\, N \, E\, (\wknwk\, (\wknwk\, \varpi)))\, x) \\
+                                                      &&& \quad\quad\quad + (\vcount\, (t\, (t\, i))\, N \, E\, (\wknwk\, (\wknwk\, \varpi)))\, x \\
+	&\vcount\, i\, 1\, E\, \varpi\,      &&= x \mapsto 0\\
+%\end{aligned}
+%
+%
+%\hspace{20pt}\begin{aligned}
+	&\ccount\, i\, \RET(M)\, E\, \varpi\,          &&= \vcount\, i\, M\, E\, \varpi\\
+	&\ccount\, i\, \PMC(M,W)\, E\, \varpi\,        &&= x \mapsto (\vcount\, i\, M \, E\, \varpi)\, x\\
+                                                      &&& \quad\quad\quad \cdot (1 + (\ccount\, h\, W \, E\, (\wknwk\, (\wknwk\, \varpi)))\, x \\
+                                                      &&& \quad\quad\quad\quad     + (\ccount\, (t\, h)\, W \, E\, (\wknwk\, (\wknwk\, \varpi)))\, x) \\
+                                                      &&& \quad\quad\quad + (\ccount\, (t\, (t\, i))\, W \, E\, (\wknwk\, (\wknwk\, \varpi)))\, x \\
+	&\ccount\, i\, (\PUSH(W_1,W_2)\, E\, \varpi\,  &&= x \mapsto (\ccount\, i\, W_1 \, E\, \varpi)\, x\\
+                                                      &&& \quad\quad\quad \cdot (1 + (\ccount\, h\, W_2 \, E\, (\wknwk\, \varpi))\, x)\\
+                                                      &&& \quad\quad\quad + (\ccount\, (t \, i)\, W_2 \, E\, (\wknwk\, \varpi))\, x\\
+	&\ccount\, i\, (\APP(M,N)\, E\, \varpi\,  &&= x \mapsto (\vcount\, i\, M \, E\, \varpi)\, x\\
+                                                      &&& \quad\quad\quad + (\vcount\, i\, N \, E\, \varpi)\, x\\
+                                                      &&& \quad\quad\quad \cdot (1 + \#(\veelem\, h\, N \, E\, \varpi)\, x)\\
+	&\ccount\, i\, \VAR(M)\, E\, \varpi\,      &&= \vcount\, i\, M\, E\, \varpi\\
+	&\ccount\, i\, \SUB(W_1,W_2)\, E\, \varpi\,      &&= x \mapsto (\ccount\, (t\, i)\, W_1 \, E\, (\wknwk\, \varpi))\, x\\
+                                                      &&& \quad\quad\quad + (\ccount\, i\, W_2 \, E\, \varpi)\, x)\\
+                                                      &&& \quad\quad\quad \cdot (1 + (\ccount\, (h \, i)\, W_1 \, E\, (\wknwk\, \varpi))\, x)\\\\
+\end{aligned}
+
+
+\end{definition}
+
 
 %\bibliographystyle{alpha}
 %\bibliography{references.bib}
