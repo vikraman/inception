@@ -459,6 +459,10 @@ We call this data structure a \emph{metric}.
 \newcommand{\List}{\ensuremath{\mathop{\textsf{List}}}}
 \newcommand{\Ctx}{\ensuremath{\mathop{\textsf{Ctx}}}}
 \newcommand{\Type}{\ensuremath{\mathop{\textsf{Type}}}}
+\newcommand{\lhs}{\ensuremath{\mathop{\textsf{lhs}}}}
+\newcommand{\rhs}{\ensuremath{\mathop{\textsf{rhs}}}}
+\newcommand{\val}{\ensuremath{\mathop{\textsf{val}}}}
+\newcommand{\wpart}{\ensuremath{\mathop{\textsf{wpart}}}}
 
 \begin{definition}
 $\TermMetric X$ is an inductively defined type with the following constructors:
@@ -474,7 +478,8 @@ $\TermMetric X$ is an inductively defined type with the following constructors:
 The parameter $n$ of each of the constructors is used to hold the number that a term adds to the metrics of its sub-terms.
 The parameter $w$ is the number associated with the computation that a label variable is pointing to.
 The parameter $c$ is a counter, giving an upper bound to the number of occurrences of the bound variable in a term of function type after its evaluation.
-
+We also define the following `projection' functions $\# : \TermMetric (X \Rightarrow Y) \to \bN$ (extracting the counter of a function metric), $\wpart : \TermMetric (X \Rightarrow Y) \to \TermMetric Y$ (extracting the $w$ part of a function metric), $\lhs : \TermMetric (X \Rightarrow Y) \to \TermMetric X$ (extracting the left-hand side metric), $\rhs : \TermMetric (X \Rightarrow Y) \to \TermMetric X$ (extracting the right-hand side metric), $\val : \TermMetric X \to \bN$ (extracting the $n$ part).
+%
 To add a natural number $n_1$ to the $n$ part of a metric $m : \TermMetric X$, we write $n_1 + m$, which is defined in the obvious way.
 
 Every term exists in the context of an environment and a computation stack, the latter of which is (see Section~\ref{sec:env}) a list of computation terms with a free variable.
@@ -611,7 +616,6 @@ We calculate the metrics (or rather the $\EElem$'s) for terms by four mutually i
 The first two functions calculate an upper bound on the number of occurrences of a variable $i$ in a value (respectively computation) term.
 This calculation is independent from the computation stack (or c-list) provided, so that $\vcount$ and $\ccount$ return a constant function from c-lists to $\bN$.
 The second two functions calculate the actual metrics or rather $\EElem X$, which are functions from c-lists to $\TermMetric X$.
-We also define the helper function $\# : \TermMetric (X \Rightarrow Y) \to \bN$, extracting the counter of a function metric.
 
 These functions are inductively defined as follows:
 
@@ -619,7 +623,8 @@ These functions are inductively defined as follows:
 	&\vcount\, h\, h\, E\, \varpi\,      &&= x \mapsto 1\\
 	&\vcount\, h\, (t\, i)\, E\, \varpi\,  &&= x \mapsto 0\\
 	&\vcount\, (t\,i) \, h\, E\, \varpi\,      &&= x \mapsto 0\\
-	&\vcount\, (t\,i_1)\, (t\,i_2)\, (X,\,e \CAT E)\, (\wkncong\, e\, \varpi)\,      &&= \vcount\, i_1\, i_2\, E\, \varpi\\
+	&\vcount\, (t\,i_1)\, (t\,i_2)\, (X,\,e \CAT E)\, \\
+  &\quad\quad\quad\quad\quad\quad\quad\quad(\wkncong\, e\, \varpi)\,      &&= \vcount\, i_1\, i_2\, E\, \varpi\\
 	&\vcount\, i\, (\lambda W) \, E\, \varpi\,      &&= \ccount\, (t\, i)\, W \, E\, (\wknwk \, \varpi)\\
 	&\vcount\, i\, (M_1, M_2) \, E\, \varpi\,      &&= x \mapsto (\vcount\, i\, M_1 \, E\, \varpi)\, x\\
                                                       &&& \quad\quad\quad + (\vcount\, i\, M_2 \, E\, \varpi)\, x \\
@@ -653,15 +658,37 @@ These functions are inductively defined as follows:
 
 \hspace{0pt}\begin{aligned}
 	&\veelem\, i\, E\, \varpi\,      &&= \lookupeelem\, i\, E\, \varpi\\
-	&\veelem\, (\lambda W)\, E\, \varpi\,      &&= x \mapsto \mF\,2\,((\ccount\, h\, W\, (\wknwk\,\varpi))\, x)\;((\ceelem\, W\, E\, (\wknwk\,\varpi))\, x)\\
+	&\veelem\, (\lambda W)\, E\, \varpi\,      &&= x \mapsto \mF\,2\,((\ccount\, h\, W\, (\wknwk\,\varpi))\, x)\\
+                                             &&& \quad\quad\quad\quad\quad\quad\quad\;((\ceelem\, W\, E\, (\wknwk\,\varpi))\, x)\\
 	&\veelem\, (M_1,M_2)\, E\, \varpi\,      &&= x \mapsto \mP\,2\,((\veelem\, M_1\, E\, \varpi)\, x)\; ((\veelem\, M_1\, E\, \varpi)\, x)\\
-	&\veelem\, \PMV(M,N)\, E\, \varpi\,      &&= ?\\
-	&\veelem\, 1\, E\, \varpi\,      &&= ?\\
-	&\ceelem\, W\, E\, \varpi\,      &&= ?\\
-	&\ceelem\, W\, E\, \varpi\,      &&= ?\\
-	&\ceelem\, W\, E\, \varpi\,      &&= ?\\
-	&\ceelem\, W\, E\, \varpi\,      &&= ?\\
-	&\ceelem\, W\, E\, \varpi\,      &&= ?\\
+	&\veelem\, \PMV(M,N)\, E\, \varpi\,      &&= x \mapsto (1 + \vx ((\veelem\, M\, E\, \varpi)\, x)\\
+                                           &&&  \quad\quad\quad\quad + \mton{((\veelem\, N\, E\, (\wknwk (\wknwk \varpi)))\, x)} )\\
+                                           &&&  \quad\quad\quad + (((\veelem\, N\, ((\_ , y \mapsto \rhs (((\veelem\, M\, E\, \varpi)\, y))) \\
+                                           &&&  \quad\quad\quad \quad\quad  \CAT (\_ , y \mapsto \lhs (((\veelem\, M\, E\, \varpi)\, y)))\\
+                                           &&&  \quad\quad\quad \quad\quad  \CAT E)\, (\wkncong (\wkncong \varpi)))\, x))\\
+	&\veelem\, 1\, E\, \varpi\,      &&= x \mapsto \mU 2\\
+	&\ceelem\, \RET(M)\, E\, \varpi\,      &&= \veelem\, i\, E\, \varpi\\
+	&\ceelem\, \PMC(M,W)\, E\, \varpi\,      &&= x \mapsto (1 + \vx ((\veelem\, M\, E\, \varpi)\, x)\\
+                                           &&&  \quad\quad\quad\quad + \mton{((\ceelem\, W\, E\, (\wknwk (\wknwk \varpi)))\, x)} )\\
+                                           &&&  \quad\quad\quad + (((\ceelem\, W\, ((\_ , y \mapsto \rhs (((\veelem\, M\, E\, \varpi)\, y))) \\
+                                           &&&  \quad\quad\quad \quad\quad  \CAT (\_ , y \mapsto \lhs (((\veelem\, M\, E\, \varpi)\, y)))\\
+                                           &&&  \quad\quad\quad \quad\quad  \CAT E)\, (\wkncong (\wkncong \varpi)))\, x))\\
+	&\ceelem\, \PUSH(W_1,W_2)\, E\, \varpi\,      &&= x \mapsto (1\\
+                                             &&& \quad\quad\quad                   + (2 + (\ccount\, h\, W_2\, E\, (\wknwk \varpi)))\\
+                                             &&&  \quad\quad\quad                  \cdot ((\ceelem\, W_1\, E\, \varpi)\\
+                                             &&&  \quad\quad\quad\quad                  (((\ccount\, h\, W_2\, E\, (\wknwk \varpi))\, x ,\\
+                                             &&&  \quad\quad\quad\quad\quad \mton{(\ceelem\, W_2\, E\, (\wknwk \varpi)) x}) \CAT x)))\\
+                                             &&&  \quad\quad    + (\ceelem\, W_2\, E\, (\wknwk \varpi))\, x   \\
+	&\ceelem\, \APP(M,N)\, E\, \varpi\,      &&= x \mapsto (2 \\
+                                           &&& \quad\quad\quad\quad + \val ((\veelem\, M\, E\, \varpi)\, x)\\
+                                           &&& \quad\quad\quad\quad + (1 + \# ((\veelem\, M\, E\, \varpi)\,x))\\
+                                           &&& \quad\quad\quad\quad \cdot \mton{\veelem\, N\, E\, \varpi})\\
+                                           &&& \quad\quad + \wpart ((\veelem\, M\, E\, \varpi)\, x)\\
+	&\ceelem\, \VAR(M)\, E\, \varpi\,        &&= x \mapsto (1 + (\veelem\, M\, E\, \varpi)\, x) + \zm\\
+	&\ceelem\, \SUB(W_1,W_2)\, E\, \varpi\,  &&= x \mapsto (1 + (\ceelem\, W_2\, E\, \varpi)\, x)\\
+	                                         &&& \quad\quad\quad + (\ceelem\, W_1\, \\
+                                           &&& \quad\quad\quad\quad\quad(\_ , (y \mapsto \mV 0 (\mton{(\ceelem\, W_2\, E\, \varpi)\, y})\\
+                                           &&& \quad\quad\quad\quad\quad\quad + \|\mton{(\ceelem\, W_2\, E\, \varpi)\, y}\|(y)) \CAT E)\, (\wkncong \varpi))\, x
 \end{aligned}
 
 
