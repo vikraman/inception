@@ -65,6 +65,7 @@
 \newcommand{\flag}[1]{{}^{\bullet}{#1}}
 
 %\usepackage{showframe}
+%\usepackage{cleveref}
 
 \begin{document}
 \title{Abstract Machine}
@@ -455,7 +456,7 @@ We call this data structure a \emph{metric}.
 \newcommand{\mF}{\ensuremath{\mathop{\textsf{m-$\Rightarrow$}}}}
 \newcommand{\mP}{\ensuremath{\mathop{\textsf{m-$\times$}}}}
 \newcommand{\bN}{\mathbb{N}}
-\newcommand{\evl}[1]{\ensuremath{\llparenthesis #1 \rrparenthesis}}
+\newcommand{\evl}[1]{\ensuremath{\llparenthesis \,#1\, \rrparenthesis}}
 \newcommand{\List}{\ensuremath{\mathop{\textsf{List}}}}
 \newcommand{\Ctx}{\ensuremath{\mathop{\textsf{Ctx}}}}
 \newcommand{\Type}{\ensuremath{\mathop{\textsf{Type}}}}
@@ -484,8 +485,9 @@ To add a natural number $n_1$ to the $n$ part of a metric $m : \TermMetric X$, w
 
 Every term exists in the context of an environment and a computation stack, the latter of which is (see Section~\ref{sec:env}) a list of computation terms with a free variable.
 
-\begin{definition}
-The function $\evl{\_} : \CStack \Delta X \to \List (\bN \times \bN)$ associates to each computation stack a list of natural numbers (called \emph{c-lists}), where:
+
+\begin{definition}\label{def:evl}
+The function $\evl{\_} : \CStack \Delta X \to \List (\bN \times \bN)$ associates with each computation stack a list of natural numbers (called \emph{c-lists}), where:
 \begin{itemize}
 	\item The first component is an upper bound to the number of occurrences of the free variable after evaluation of the computation term.
   \item The second component is the number associated with the computation term.
@@ -529,10 +531,16 @@ Importantly, this function is monotonous with respect to $\leq^c$ and $\leq^M$.
 
 Because environments are lists of terms in an environment, we associate environments with lists of monotonous functions from c-lists to metrics.
 
+%\begin{definition}\label{def:env}
+%$\evl{\_} : \Env{\Gamma} \to \List (\Sigma_{X : \textsf{Type}} (\List (\bN \times \bN) \xrightarrow{\leq} \TermMetric X))$ associates with each term-environment pair in an environment a monotone function from c-lists to metrics.
+%To simplify notation we will write $\EElem X$ for $(\List (\bN \times \bN) \xrightarrow{\leq} \TermMetric X)$ and $\EMetric$ for $\List (\Sigma_{X : \textsf{Type}} \EElem X)$ from now on.
+%Since the definition of this function depends on the functions calculating the metrics for terms (in an environment on a stack), it will be fully defined further below. %TODO
+%\end{definition}
+
 \begin{definition}
-$\evl{\_} : \Env{\Gamma} \to \List (\Sigma_{X : \textsf{Type}} (\List (\bN \times \bN) \xrightarrow{\leq} \TermMetric X))$ associates to each term-environment pair in an environment a monotone function from c-lists to metrics.
+Every term-environment pair in an environment is associated with a monotone function from c-lists to metrics $\List (\Sigma_{X : \textsf{Type}} (\List (\bN \times \bN) \xrightarrow{\leq} \TermMetric X))$.
 To simplify notation we will write $\EElem X$ for $(\List (\bN \times \bN) \xrightarrow{\leq} \TermMetric X)$ and $\EMetric$ for $\List (\Sigma_{X : \textsf{Type}} \EElem X)$ from now on.
-Since the definition of this function depends on the functions calculating the metrics for terms (in an environment on a stack), it will be fully defined further below. %TODO
+%Since the definition of this function depends on the functions calculating the metrics for terms (in an environment on a stack), it will be fully defined further below. %TODO
 \end{definition}
 
 Before we can calculate a metric for a term, we need to relate $\EMetric$ to contexts, so ensure that an $\EMetric$ indeed corresponds to a given environment in that context.
@@ -691,8 +699,50 @@ These functions are inductively defined as follows:
                                            &&& \quad\quad\quad\quad\quad\quad + \|\mton{(\ceelem\, W_2\, E\, \varpi)\, y}\|(y)) \CAT E)\, (\wkncong \varpi))\, x
 \end{aligned}
 
+\vspace{20pt}
+The functions $\underline{\veelem}$ and $\underline{\ceelem}$ for evaluated values and computations are defined similarly.
 
 \end{definition}
+
+\clearpage
+
+We can now give a precise definition for the function
+\[ \evl{\_} &: \CStack \Delta X \to \List (\bN \times \bN) \]
+introduced in Definition \ref{def:evl} and also define a function to calculate an $\EMetric$ along with its correctness property from an environment.
+
+\begin{definition}\label{def:env}
+$\evl{\_} : \Env{\Gamma} \to \Sigma_{E : \EMetric} \Wkn\, \Gamma\, E$, calculating from an environment $\gamma : \Env{\Gamma}$ a corresponding pair $(E , \Wkn\, \Gamma\, E)$, is defined by mutual induction with the function
+\[ \evl{\_} &: \CStack \Delta X \to \List (\bN \times \bN) \]
+from Definition \ref{def:evl}:
+
+\hspace{20pt}\begin{aligned}
+ \evl{ \emptycs } & = [] \\
+ \evl{ \cstack{W}{\gamma}{C} } & = ((\ccount\, h\, W\, (\pi_1\evl{\gamma})\, (\pi_2\evl{\gamma}))\, \evl{C} ,\,\\
+                               &\quad\quad\quad \mton{(\ceelem\, W\, (\pi_1\evl{\gamma})\, (\wknwk \pi_2\evl{\gamma}))\, \evl{C}} )\CAT \evl{C} \\
+ \evl{ \emptyenv } &= ([] , \wknnil)\\
+ \evl{ \gamma , M } &= ((\_, \underline{\veelem}\, M\, (\pi_1\evl{\gamma})\, (\pi_2\evl{\gamma}) ) \CAT (\pi_1\evl{\gamma}) , (\wkncong \, \_ \, (\pi_2\evl{\gamma})) )\\
+ \evl{ \gamma , \cspair{W}{C} } &= ((\_, y \mapsto \mV 0 (\mton{(\ceelem\, M\, (\pi_1\evl{\gamma})\, (\pi_2\evl{\gamma}))\, \evl{C}} \\
+                                & \quad\quad\quad\quad           + \|\underline{\veelem}\, M\, (\pi_1\evl{\gamma})\, (\pi_2\evl{\gamma}) )\|(\evl{C})    ) ) \CAT (\pi_1\evl{\gamma}) ,\\
+                                & \quad\quad\quad (\wkncong \, \_ \, (\pi_2\evl{\gamma})) )\\
+\end{aligned}
+
+\end{definition}
+
+We can now calculate $\EElem$s (functions from c-lists to metrics) for the states of the lookup machine and the value machine as follows:
+
+\hspace{20pt}\begin{aligned}
+|\LS{x}{\gamma}| \;&= \; \lookupeelem\, x\, (\pi_1\, \evl{\gamma})\, (\pi_2\, \evl{\gamma})\\
+|\VS{\dots \CAT \vstack{M}{\gamma}{\emptyvs}}| \;&=\; \veelem\, M\, (\pi_1\, \evl{\gamma})\, (\pi_2\, \evl{\gamma})\\
+|\VS{\dots \CAT \vstack{\underline{M}}{\gamma}{\emptyvs}}| \;&=\; \underline{\veelem}\, \underline{M}\, (\pi_1\, \evl{\gamma})\, (\pi_2\, \evl{\gamma})\\
+\end{aligned}
+
+For computation states we can calculate the associated natural number as follows:
+
+\hspace{20pt}\begin{aligned}
+|\CSA{W}{\gamma}{C}| \;&=\; \mton{(\ceelem\, W\, (\pi_1\, \evl{\gamma})\, (\pi_2\, \evl{\gamma}))\,\evl{C}}\\
+|\CSB{\underline{W}}{\gamma}{C}| \;&=\; \mton{(\underline{\ceelem}\, \underline{W}\, (\pi_1\, \evl{\gamma})\, (\pi_2\, \evl{\gamma}))\,\evl{C}}
+\end{aligned}
+
 
 
 %\bibliographystyle{alpha}
