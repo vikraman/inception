@@ -468,12 +468,12 @@ We call this data structure a \emph{metric}.
 \begin{definition}
 $\TermMetric X$ is an inductively defined type with the following constructors:
 
-\hspace{20pt}\begin{aligned}
+\hspace{20pt}$\begin{aligned}
 	\mU &: (n : \bN) \to \TermMetric 1\\
 	\mV &: (n : \bN) \to (w : \bN) \to \TermMetric V\\
 	\mF &: (n : \bN) \to (c : \bN) \to (m : \TermMetric Y) \to \TermMetric (X \Rightarrow Y)\\
 	\mP &: (n : \bN) \to (m_1 : \TermMetric X) \to (m_2 : \TermMetric Y) \to \TermMetric (X \times Y)\\
-\end{aligned}
+\end{aligned}$
 \end{definition}
 
 The parameter $n$ of each of the constructors is used to hold the number that a term adds to the metrics of its sub-terms.
@@ -506,21 +506,21 @@ We define partial orders on metrics and on metrics and on c-lists.
 \begin{definition}
 We define the relation $\leq^M_X \,\subseteq \TermMetric X \times \TermMetric X$ inductively as follows (we will usually omit the subscript):
 
-\hspace{10pt}\begin{aligned}
+\hspace{10pt}$\begin{aligned}
 	(\mU \, n_1) &\leq^M (\mU \, n_2) && \quad\quad\textsf{if $n_1 \leq n_2$}\\
 	(\mV \, n_1 \, w_1) &\leq^M (\mV \, n_2 \, w_2) && \quad\quad\textsf{if $n_1 \leq n_2$ and $w_1 \leq w_2$}\\
 	(\mF \, n_1 \, c \, m_1) &\leq^M (\mF \, n_2 \, c \, m_2) && \quad\quad\textsf{if $n_1 \leq n_2$ and $m_1 \leq^M m_2$}\\
 	(\mP \, n_1 \, m_{1,1} \, m_{2,1}) &\leq^M (\mF \, n_2 \, m_{1,2} \, m_{2,2}) && \quad\quad\textsf{if $n_1 \leq n_2$ and $m_{1,1} \leq^M m_{1,2}$ and $m_{2,1} \leq^M m_{2,2}$}
-\end{aligned}
+\end{aligned}$
 \end{definition}
 
 \begin{definition}
 We define the relation $\leq^c \,\subseteq (\List (\bN \times \bN) \times \List (\bN \times \bN))$ inductively as follows:
 
-\hspace{10pt}\begin{aligned}
+\hspace{10pt}$\begin{aligned}
 	l &\leq^c l && \quad\quad\textsf{if $n_1 \leq n_2$}\\
 	(c , w_1) \CAT l_1 &\leq^c (c , w_2) \CAT l_2 && \quad\quad\textsf{if $w_1 \leq w_2$ and $l_1 \leq^c l_2$}
-\end{aligned}
+\end{aligned}$
 \end{definition}
 
 \clearpage
@@ -555,11 +555,11 @@ This means, that a context $\Gamma : \Ctx$ is ``weaker'' than a corresponding $E
 \begin{definition}
 We define the relation $\Wkn \subseteq \Ctx \times \EMetric$ inductively as follows:
 
-\hspace{20pt}\begin{aligned}
+\hspace{20pt}$\begin{aligned}
 	\wknnil &: \Wkn\, \varepsilon\, []\\
 	\wkncong &: (e : \EElem\, X) \to (\varpi : \Wkn\, \Gamma\, E) \to \Wkn\, (\Gamma , X)\, ((X , e) \CAT E)\\
 	\wknwk &: (\varpi : \Wkn\, \Gamma\, E) \to \Wkn\, (\Gamma , X)\, E\\
-\end{aligned}
+\end{aligned}$
 \end{definition}
 
 \newcommand{\lookupeelem}{\ensuremath{\mathop{\textsf{lookup-eelem}}}}
@@ -570,17 +570,17 @@ For every type $X$, there exists a $\zm : \TermMetric X$, constructed with zeros
 We also define a corresponding $\ze : \EElem X$ in the obvious way.
 From a given metric $m : \TermMetric X$ we can calculate the corresponding natural number with the following function.
 
-\newcommand{\mton}[1]{\ensuremath{\langle\!\langle #1 \rangle\!\rangle}}
+\newcommand{\mton}[1]{\ensuremath{\langle\!\langle \,#1\, \rangle\!\rangle}}
 
 \begin{definition}
 $\mton{\_} : \TermMetric X \to \bN$ is inductively defined as follows:
 
-\hspace{20pt}\begin{aligned}
+\hspace{20pt}$\begin{aligned}
 	\mton{\mU\, n}       &= n\\
 	\mton{\mV\, n\, w}       &= n + w\\
 	\mton{\mF\, n\, c\, m}       &= n + \mton{m}\\
 	\mton{\mP\, n\, m_1\, m_2}       &= n + \mton{m_1} + \mton{m_2}\\
-\end{aligned}
+\end{aligned}$
 
 \end{definition}
 
@@ -593,14 +593,14 @@ The function
 \[\lookupeelem : (i : \Gamma \ni X) \to (E : \EMetric) \to (\varpi : \Wkn\, \Gamma\, E) \to \EElem X\]
 is inductively defined as follows:
 
-\hspace{20pt}\begin{aligned}
+\hspace{20pt}$\begin{aligned}
 	\lookupeelem\, h\, ((X , e) \CAT E)\, (\wkncong\, e\, \varpi)\,       &= e\\
 	\lookupeelem\, (t i)\, ((X , e) \CAT E)\, (\wkncong\, e\, \varpi)\,   &= \lookupeelem \,i \,E \,\varpi\\
 	\lookupeelem\, h\, []\, (\wknwk \,\varpi)\,       &= \ze\\
 	\lookupeelem\, h\, ((X , e) \CAT E)\, (\wknwk \varpi)\,       &= \ze\\
 	\lookupeelem\, (t i)\, []\, (\wknwk \varpi)\,       &= \ze\\
 	\lookupeelem\, (t i)\, ((X , e) \CAT E)\, (\wknwk \varpi)\,       &= \lookupeelem \,i \,((X , e) \CAT E) \,\varpi\\
-\end{aligned}
+\end{aligned}$
 
 \end{definition}
 
@@ -614,12 +614,12 @@ is inductively defined as follows:
 \begin{definition}
 We calculate the metrics (or rather the $\EElem$'s) for terms by four mutually inductive functions:
 
-\hspace{5pt}\begin{aligned}
+\hspace{5pt}$\begin{aligned}
   \vcount &: (i : \Gamma \ni X) \to (M : \Gamma \VTS Z) \to (E : \EMetric) \to (\varpi : \Wkn\, \Gamma\, E) \to (\List (\bN \times \bN) \xrightarrow{\equiv} \bN)\\
   \ccount &: (i : \Gamma \ni X) \to (W : \Gamma \CTS Z) \to (E : \EMetric) \to (\varpi : \Wkn\, \Gamma\, E) \to (\List (\bN \times \bN) \xrightarrow{\equiv} \bN)\\
   \veelem &: (M : \Gamma \VTS X) \to (E : \EMetric) \to (\varpi : \Wkn\, \Gamma\, E) \to \EElem X\\
   \ceelem &: (W : \Gamma \CTS X) \to (E : \EMetric) \to (\varpi : \Wkn\, \Gamma\, E) \to \EElem X\\
-\end{aligned}
+\end{aligned}$
 
 The first two functions calculate an upper bound on the number of occurrences of a variable $i$ in a value (respectively computation) term.
 This calculation is independent from the computation stack (or c-list) provided, so that $\vcount$ and $\ccount$ return a constant function from c-lists to $\bN$.
@@ -627,7 +627,7 @@ The second two functions calculate the actual metrics or rather $\EElem X$, whic
 
 These functions are inductively defined as follows:
 
-\hspace{0pt}\begin{aligned}
+\hspace{0pt}$\begin{aligned}
 	&\vcount\, h\, h\, E\, \varpi\,      &&= x \mapsto 1\\
 	&\vcount\, h\, (t\, i)\, E\, \varpi\,  &&= x \mapsto 0\\
 	&\vcount\, (t\,i) \, h\, E\, \varpi\,      &&= x \mapsto 0\\
@@ -660,23 +660,23 @@ These functions are inductively defined as follows:
 	&\ccount\, i\, \SUB(W_1,W_2)\, E\, \varpi\,      &&= x \mapsto (\ccount\, (t\, i)\, W_1 \, E\, (\wknwk\, \varpi))\, x\\
                                                       &&& \quad\quad\quad + (\ccount\, i\, W_2 \, E\, \varpi)\, x)\\
                                                       &&& \quad\quad\quad \cdot (1 + (\ccount\, (h \, i)\, W_1 \, E\, (\wknwk\, \varpi))\, x)\\\\
-\end{aligned}
+\end{aligned}$
 
 \clearpage
 
-\hspace{0pt}\begin{aligned}
+\hspace{0pt}$\begin{aligned}
 	&\veelem\, i\, E\, \varpi\,      &&= \lookupeelem\, i\, E\, \varpi\\
 	&\veelem\, (\lambda W)\, E\, \varpi\,      &&= x \mapsto \mF\,2\,((\ccount\, h\, W\, (\wknwk\,\varpi))\, x)\\
                                              &&& \quad\quad\quad\quad\quad\quad\quad\;((\ceelem\, W\, E\, (\wknwk\,\varpi))\, x)\\
 	&\veelem\, (M_1,M_2)\, E\, \varpi\,      &&= x \mapsto \mP\,2\,((\veelem\, M_1\, E\, \varpi)\, x)\; ((\veelem\, M_1\, E\, \varpi)\, x)\\
-	&\veelem\, \PMV(M,N)\, E\, \varpi\,      &&= x \mapsto (1 + \vx ((\veelem\, M\, E\, \varpi)\, x)\\
+	&\veelem\, \PMV(M,N)\, E\, \varpi\,      &&= x \mapsto (1 + \val ((\veelem\, M\, E\, \varpi)\, x)\\
                                            &&&  \quad\quad\quad\quad + \mton{((\veelem\, N\, E\, (\wknwk (\wknwk \varpi)))\, x)} )\\
                                            &&&  \quad\quad\quad + (((\veelem\, N\, ((\_ , y \mapsto \rhs (((\veelem\, M\, E\, \varpi)\, y))) \\
                                            &&&  \quad\quad\quad \quad\quad  \CAT (\_ , y \mapsto \lhs (((\veelem\, M\, E\, \varpi)\, y)))\\
                                            &&&  \quad\quad\quad \quad\quad  \CAT E)\, (\wkncong (\wkncong \varpi)))\, x))\\
 	&\veelem\, 1\, E\, \varpi\,      &&= x \mapsto \mU 2\\
 	&\ceelem\, \RET(M)\, E\, \varpi\,      &&= \veelem\, i\, E\, \varpi\\
-	&\ceelem\, \PMC(M,W)\, E\, \varpi\,      &&= x \mapsto (1 + \vx ((\veelem\, M\, E\, \varpi)\, x)\\
+	&\ceelem\, \PMC(M,W)\, E\, \varpi\,      &&= x \mapsto (1 + \val ((\veelem\, M\, E\, \varpi)\, x)\\
                                            &&&  \quad\quad\quad\quad + \mton{((\ceelem\, W\, E\, (\wknwk (\wknwk \varpi)))\, x)} )\\
                                            &&&  \quad\quad\quad + (((\ceelem\, W\, ((\_ , y \mapsto \rhs (((\veelem\, M\, E\, \varpi)\, y))) \\
                                            &&&  \quad\quad\quad \quad\quad  \CAT (\_ , y \mapsto \lhs (((\veelem\, M\, E\, \varpi)\, y)))\\
@@ -697,7 +697,7 @@ These functions are inductively defined as follows:
 	                                         &&& \quad\quad\quad + (\ceelem\, W_1\, \\
                                            &&& \quad\quad\quad\quad\quad(\_ , (y \mapsto \mV 0 (\mton{(\ceelem\, W_2\, E\, \varpi)\, y})\\
                                            &&& \quad\quad\quad\quad\quad\quad + \|\mton{(\ceelem\, W_2\, E\, \varpi)\, y}\|(y)) \CAT E)\, (\wkncong \varpi))\, x
-\end{aligned}
+\end{aligned}$
 
 \vspace{20pt}
 The functions $\underline{\veelem}$ and $\underline{\ceelem}$ for evaluated values and computations are defined similarly.
@@ -707,15 +707,15 @@ The functions $\underline{\veelem}$ and $\underline{\ceelem}$ for evaluated valu
 \clearpage
 
 We can now give a precise definition for the function
-\[ \evl{\_} &: \CStack \Delta X \to \List (\bN \times \bN) \]
+\[ \evl{\_} : \CStack \Delta X \to \List (\bN \times \bN) \]
 introduced in Definition \ref{def:evl} and also define a function to calculate an $\EMetric$ along with its correctness property from an environment.
 
 \begin{definition}\label{def:env}
 $\evl{\_} : \Env{\Gamma} \to \Sigma_{E : \EMetric} \Wkn\, \Gamma\, E$, calculating from an environment $\gamma : \Env{\Gamma}$ a corresponding pair $(E , \Wkn\, \Gamma\, E)$, is defined by mutual induction with the function
-\[ \evl{\_} &: \CStack \Delta X \to \List (\bN \times \bN) \]
+\[ \evl{\_} : \CStack \Delta X \to \List (\bN \times \bN) \]
 from Definition \ref{def:evl}:
 
-\hspace{20pt}\begin{aligned}
+\hspace{20pt}$\begin{aligned}
  \evl{ \emptycs } & = [] \\
  \evl{ \cstack{W}{\gamma}{C} } & = ((\ccount\, h\, W\, (\pi_1\evl{\gamma})\, (\pi_2\evl{\gamma}))\, \evl{C} ,\,\\
                                &\quad\quad\quad \mton{(\ceelem\, W\, (\pi_1\evl{\gamma})\, (\wknwk \pi_2\evl{\gamma}))\, \evl{C}} )\CAT \evl{C} \\
@@ -724,25 +724,44 @@ from Definition \ref{def:evl}:
  \evl{ \gamma , \cspair{W}{C} } &= ((\_, y \mapsto \mV 0 (\mton{(\ceelem\, M\, (\pi_1\evl{\gamma})\, (\pi_2\evl{\gamma}))\, \evl{C}} \\
                                 & \quad\quad\quad\quad           + \|\underline{\veelem}\, M\, (\pi_1\evl{\gamma})\, (\pi_2\evl{\gamma}) )\|(\evl{C})    ) ) \CAT (\pi_1\evl{\gamma}) ,\\
                                 & \quad\quad\quad (\wkncong \, \_ \, (\pi_2\evl{\gamma})) )\\
-\end{aligned}
+\end{aligned}$
 
 \end{definition}
 
 We can now calculate $\EElem$s (functions from c-lists to metrics) for the states of the lookup machine and the value machine as follows:
 
-\hspace{20pt}\begin{aligned}
+\hspace{20pt}$\begin{aligned}
 |\LS{x}{\gamma}| \;&= \; \lookupeelem\, x\, (\pi_1\, \evl{\gamma})\, (\pi_2\, \evl{\gamma})\\
 |\VS{\dots \CAT \vstack{M}{\gamma}{\emptyvs}}| \;&=\; \veelem\, M\, (\pi_1\, \evl{\gamma})\, (\pi_2\, \evl{\gamma})\\
 |\VS{\dots \CAT \vstack{\underline{M}}{\gamma}{\emptyvs}}| \;&=\; \underline{\veelem}\, \underline{M}\, (\pi_1\, \evl{\gamma})\, (\pi_2\, \evl{\gamma})\\
-\end{aligned}
+\end{aligned}$
 
 For computation states we can calculate the associated natural number as follows:
 
-\hspace{20pt}\begin{aligned}
+\hspace{20pt}$\begin{aligned}
 |\CSA{W}{\gamma}{C}| \;&=\; \mton{(\ceelem\, W\, (\pi_1\, \evl{\gamma})\, (\pi_2\, \evl{\gamma}))\,\evl{C}}\\
 |\CSB{\underline{W}}{\gamma}{C}| \;&=\; \mton{(\underline{\ceelem}\, \underline{W}\, (\pi_1\, \evl{\gamma})\, (\pi_2\, \evl{\gamma}))\,\evl{C}}
-\end{aligned}
+\end{aligned}$
 
+\vspace{20pt}
+I have proven the following theorems:
+
+\begin{theorem}\label{thm:ldecr}
+For all c-lists $l : \List\, (\bN \times \bN)$, and all lookup states $\LS{x}{\gamma}$, if there exists a sequence of transitions $\LS{x}{\gamma} \leadsto^{L*} L_H$, where $L_H$ is a halting lookup state, then:
+\[ \mton{|\LS{x}{\gamma}| \, l} \leq \mton{|L_T| \, l} \]
+\end{theorem}\label{thm:vdecr}
+
+\begin{theorem}
+For all c-lists $l : \List\, (\bN \times \bN)$, and all value states $\VS{\vstack{M}{\gamma}{\emptyvs}}$, if there exists a sequence of transitions $\VS{\vstack{M}{\gamma}{\emptyvs}} \leadsto^{V*} V_H$, where $V_H$ is a halting value state, then:
+\[ \mton{|\VS{\vstack{M}{\gamma}{\emptyvs}}| \, l} \leq \mton{|V_T| \, l} \]
+\end{theorem}
+
+\vspace{20pt}
+The proofs of these theorems depends on a multitude of further definitions and lemmas, relating `weakenings' $\Wkn\, \Gamma\, E$ and $\Wkn\, \Gamma'\, E'$, when $\Gamma$ is a weaker context than $\Gamma'$ in the usual sense.
+
+However, with the definitions as given above, the metric does \emph{not} decrease for computation states.
+The issue lies in how the upper bound for occurrences of variables in a term is calculated.
+I believe that this can be fixed easily by adjusting the $\APP$ case in the definition of $\ceelem$, but this will require reproving all lemmas on which the proofs of Theorems~\ref{thm:ldecr} and \ref{thm:vdecr} depend.
 
 
 %\bibliographystyle{alpha}
