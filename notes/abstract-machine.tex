@@ -256,7 +256,7 @@ Computation terms $\Gamma \CTS W : X$ are interpreted by $\llbracket \_ \rrbrack
 
 \begin{align*}
   \frac{}{\emptycs : \CStack{\emptyctx}{R_0}}
-  && \frac{\Gamma , Z \CTS M : X \quad \gamma : \Env{\Gamma} \quad C : \CStack{\Delta}{X} \quad \Gamma = \Delta , \Delta'}{\cstack{M}{\gamma}{C} : \CStack{\Gamma}{Z}}
+  && \frac{\Gamma , Z \CTS W : X \quad \gamma : \Env{\Gamma} \quad C : \CStack{\Delta}{X} \quad \Gamma = \Delta , \Delta'}{\cstack{W}{\gamma}{C} : \CStack{\Gamma}{Z}}
 \end{align*}
 
 \subsubsection{Typing rules for environments}
@@ -446,7 +446,7 @@ To evaluate a computation $\emptyctx \CTS W : R_0$ we start the machine in state
 
 To prove termination of the computation machine, we associate a natural number with each state and then show that this number strictly decreases when taking a transition.
 
-We compute this number inductively for computation terms and value terms. In order to do so we need a type-index data structure that holds intermediate results for previously computed sub-terms.
+We compute this number inductively for computation terms and value terms. In order to do so we need a type-indexed data structure that holds intermediate results for previously computed sub-terms.
 We call this data structure a \emph{metric}.
 \newcommand{\TermMetric}{\ensuremath{\mathop{\textsf{TermMetric}}}}
 \newcommand{\EMetric}{\ensuremath{\mathop{\textsf{EMetric}}}}
@@ -478,18 +478,18 @@ $\TermMetric X$ is an inductively defined type with the following constructors:
 
 The parameter $n$ of each of the constructors is used to hold the number that a term adds to the metrics of its sub-terms.
 The parameter $w$ is the number associated with the computation that a label variable is pointing to.
-The parameter $c$ is a counter, giving an upper bound to the number of occurrences of the bound variable in a term of function type after its evaluation.
+The parameter $c$ is a counter, giving an upper bound to the number of occurrences of the bound variable in a term of function type \emph{after} its evaluation.
 We also define the following `projection' functions $\# : \TermMetric (X \Rightarrow Y) \to \bN$ (extracting the counter of a function metric), $\wpart : \TermMetric (X \Rightarrow Y) \to \TermMetric Y$ (extracting the $w$ part of a function metric), $\lhs : \TermMetric (X \Rightarrow Y) \to \TermMetric X$ (extracting the left-hand side metric), $\rhs : \TermMetric (X \Rightarrow Y) \to \TermMetric X$ (extracting the right-hand side metric), $\val : \TermMetric X \to \bN$ (extracting the $n$ part).
 %
 To add a natural number $n_1$ to the $n$ part of a metric $m : \TermMetric X$, we write $n_1 + m$, which is defined in the obvious way.
 
-Every term exists in the context of an environment and a computation stack, the latter of which is (see Section~\ref{sec:env}) a list of computation terms with a free variable.
+Every term exists in the context of an environment and a computation stack, the latter of which is (see Section~\ref{sec:env}) a list of computation terms (in an environment) with a free variable.
 
 
 \begin{definition}\label{def:evl}
 The function $\evl{\_} : \CStack \Delta X \to \List (\bN \times \bN)$ associates with each computation stack a list of natural numbers (called \emph{c-lists}), where:
 \begin{itemize}
-	\item The first component is an upper bound to the number of occurrences of the free variable after evaluation of the computation term.
+	\item The first component is an upper bound to the number of occurrences of the free variable (after evaluation) of the computation term.
   \item The second component is the number associated with the computation term.
 \end{itemize}
 \end{definition}
@@ -501,7 +501,7 @@ We do this inductively as follows:
 	\item $\| n \| ((c , w) \CAT l) = w + n \cdot (1 + c) + \| w + n \cdot (1 + c) \| (l)$
 \end{itemize}
 
-We define partial orders on metrics and on metrics and on c-lists.
+We define partial orders on metrics and on c-lists.
 
 \begin{definition}
 We define the relation $\leq^M_X \,\subseteq \TermMetric X \times \TermMetric X$ inductively as follows (we will usually omit the subscript):
@@ -526,7 +526,7 @@ We define the relation $\leq^c \,\subseteq (\List (\bN \times \bN) \times \List 
 \clearpage
 %To calculate the metric for a term in an environment $\gamma$ , we first need to calculate the metrics for each term in $\gamma$ (which is a list of terms).
 
-Since metrics are calculated for terms in an environment on a stack, the metric for a term for type $X$ in an environment is a function from c-lists to $\TermMetric X$.
+Since metrics are calculated for terms in an environment on a stack, the metric for a term of type $X$ in an environment (not in the context of a particular computation stack) is a function from c-lists to $\TermMetric X$.
 Importantly, this function is monotonous with respect to $\leq^c$ and $\leq^M$.
 
 Because environments are lists of terms in an environment, we associate environments with lists of monotonous functions from c-lists to metrics.
@@ -543,8 +543,8 @@ To simplify notation we will write $\EElem X$ for $(\List (\bN \times \bN) \xrig
 %Since the definition of this function depends on the functions calculating the metrics for terms (in an environment on a stack), it will be fully defined further below. %TODO
 \end{definition}
 
-Before we can calculate a metric for a term, we need to relate $\EMetric$ to contexts, so ensure that an $\EMetric$ indeed corresponds to a given environment in that context.
-The idea is that if a type appears in a context at a given position, then we need to know if there is a corresponding entry in the $\EMetric$ list and if so, which one.
+Before we can calculate a metric for a term, we need to relate $\EMetric$'s to contexts, so ensure that an $\EMetric$ indeed corresponds to a given environment in that context.
+The idea is that if a type appears in a context at a given position, then we need to know if there is a corresponding entry in the $\EMetric$ (which is a list) and if so, which one.
 This means, that a context $\Gamma : \Ctx$ is ``weaker'' than a corresponding $E : \EMetric$.
 
 \newcommand{\Wkn}{\ensuremath{\mathop{\textsf{Wkn}}}}
@@ -567,7 +567,7 @@ We define the relation $\Wkn \subseteq \Ctx \times \EMetric$ inductively as foll
 \newcommand{\ze}{\ensuremath{\mathop{\textsf{zero-eelem}}}}
 
 For every type $X$, there exists a $\zm : \TermMetric X$, constructed with zeros as parameters to all its constructors.
-We also define a corresponding $\ze : \EElem X$ in the obvious way.
+We also define a corresponding $\ze : \EElem X$ as the constant function to the $\zm$.
 From a given metric $m : \TermMetric X$ we can calculate the corresponding natural number with the following function.
 
 \newcommand{\mton}[1]{\ensuremath{\langle\!\langle \,#1\, \rangle\!\rangle}}
@@ -595,11 +595,11 @@ is inductively defined as follows:
 
 \hspace{20pt}$\begin{aligned}
 	\lookupeelem\, h\, ((X , e) \CAT E)\, (\wkncong\, e\, \varpi)\,       &= e\\
-	\lookupeelem\, (t i)\, ((X , e) \CAT E)\, (\wkncong\, e\, \varpi)\,   &= \lookupeelem \,i \,E \,\varpi\\
+	\lookupeelem\, (t\, i)\, ((X , e) \CAT E)\, (\wkncong\, e\, \varpi)\,   &= \lookupeelem \,i \,E \,\varpi\\
 	\lookupeelem\, h\, []\, (\wknwk \,\varpi)\,       &= \ze\\
 	\lookupeelem\, h\, ((X , e) \CAT E)\, (\wknwk \varpi)\,       &= \ze\\
-	\lookupeelem\, (t i)\, []\, (\wknwk \varpi)\,       &= \ze\\
-	\lookupeelem\, (t i)\, ((X , e) \CAT E)\, (\wknwk \varpi)\,       &= \lookupeelem \,i \,((X , e) \CAT E) \,\varpi\\
+	\lookupeelem\, (t\, i)\, []\, (\wknwk \varpi)\,       &= \ze\\
+	\lookupeelem\, (t\, i)\, ((X , e) \CAT E)\, (\wknwk \varpi)\,       &= \lookupeelem \,i \,((X , e) \CAT E) \,\varpi\\
 \end{aligned}$
 
 \end{definition}
@@ -623,7 +623,9 @@ We calculate the metrics (or rather the $\EElem$'s) for terms by four mutually i
 
 The first two functions calculate an upper bound on the number of occurrences of a variable $i$ in a value (respectively computation) term.
 This calculation is independent from the computation stack (or c-list) provided, so that $\vcount$ and $\ccount$ return a constant function from c-lists to $\bN$.
-The second two functions calculate the actual metrics or rather $\EElem X$, which are functions from c-lists to $\TermMetric X$.
+The second two functions calculate
+%the actual metrics or rather $\EElem X$, which are
+functions from c-lists to $\TermMetric X$ for each term of type $X$.
 
 These functions are inductively defined as follows:
 
@@ -708,10 +710,10 @@ The functions $\underline{\veelem}$ and $\underline{\ceelem}$ for evaluated valu
 
 We can now give a precise definition for the function
 \[ \evl{\_} : \CStack \Delta X \to \List (\bN \times \bN) \]
-introduced in Definition \ref{def:evl} and also define a function to calculate an $\EMetric$ along with its correctness property from an environment.
+introduced in Definition \ref{def:evl} and also define a function to calculate an $\EMetric$ together with its correctness property from an environment.
 
 \begin{definition}\label{def:env}
-$\evl{\_} : \Env{\Gamma} \to \Sigma_{E : \EMetric} \Wkn\, \Gamma\, E$, calculating from an environment $\gamma : \Env{\Gamma}$ a corresponding pair $(E , \Wkn\, \Gamma\, E)$, is defined by mutual induction with the function
+$\evl{\_} : \Env{\Gamma} \to \Sigma_{E : \EMetric} \Wkn\, \Gamma\, E$ calculates from an environment $\gamma : \Env{\Gamma}$ a corresponding pair $(E , \Wkn\, \Gamma\, E)$ and is defined by mutual induction with the function
 \[ \evl{\_} : \CStack \Delta X \to \List (\bN \times \bN) \]
 from Definition \ref{def:evl}:
 
@@ -728,7 +730,7 @@ from Definition \ref{def:evl}:
 
 \end{definition}
 
-We can now calculate $\EElem$s (functions from c-lists to metrics) for the states of the lookup machine and the value machine as follows:
+We can now calculate $\EElem$'s (functions from c-lists to metrics) for the states of the lookup machine and the value machine as follows:
 
 \hspace{20pt}$\begin{aligned}
 |\LS{x}{\gamma}| \;&= \; \lookupeelem\, x\, (\pi_1\, \evl{\gamma})\, (\pi_2\, \evl{\gamma})\\
