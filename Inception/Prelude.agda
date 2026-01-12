@@ -40,5 +40,8 @@ happly-funext {f = f} {g = g} H x = let open ≡-Reasoning in
 -- functions
 infixr 20 _^_
 
-_^_ : ∀ {b a} (B : Set b) (A : Set a) -> Set (b ⊔ a)
-B ^ A = A -> B
+_^_ : ∀ {r a} (R : Set r) (A : Set a) -> Set (r ⊔ a)
+R ^ A = A -> R
+
+[_]^_ : ∀ {r a b} (R : Set r) {A : Set a} {B : Set b} -> (A -> B) -> (R ^ B) -> (R ^ A)
+[ R ]^ f = \k a -> k (f a)

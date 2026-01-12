@@ -16,7 +16,7 @@ open import Inception.Monad.Base
 
 K[_]-Monad : ∀ {v x} -> (V : Set v) -> Monad {x = x} {y = v ⊔ x} K[ V ]
 K[ V ]-Monad .η a k = k a
-K[ V ]-Monad ._* f m k = m λ a -> f a k
+K[ V ]-Monad ._* f m k = m \a -> f a k
 K[ V ]-Monad .unitl a = refl
 K[ V ]-Monad .unitr f = refl
 K[ V ]-Monad .assoc f g = refl

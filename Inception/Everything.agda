@@ -14,3 +14,7 @@ import Inception.Sub.Examples
 -- inception calculus
 import Inception.Inc.Syntax
 import Inception.Inc.CPS
+
+-- fine-grained CBV λƛμμ̃ calculus
+import Inception.LamBarMuMuTilde.Syntax
+import Inception.LamBarMuMuTilde.CBV
