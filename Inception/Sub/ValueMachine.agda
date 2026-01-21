@@ -1318,7 +1318,8 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 -}
   -----------------------------
 
-{- BEGIN LEMMAS FOR COMP MACHINE
+{-
+-- BEGIN LEMMAS FOR COMP MACHINE
 
   ---------------------------------------------------------------------------------------
   data Missing-i : {E : EMetric} → (i : Γ ∋ X) → (ϖ : WkN Γ E) → Set where
@@ -1515,57 +1516,6 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     in
     b2
 
-{- OLD
-  lookup-mi-lemma : (i₁ : Γ ∋ (X `⇒ Y)) → (E : EMetric) → (ϖ : WkN Γ E) → (nm : EElem X) → (i : Γ ∋ X) → (μ : Missing-i i ϖ) → (csn : List (ℕ × ℕ))
-              → p2 ((proj₁ (lookup-mono-metric i₁ (proj₁ (with-i i ϖ μ nm)) (proj₂ (with-i i ϖ μ nm)))) csn) ≡ p2 ((proj₁ (lookup-mono-metric i₁ E ϖ)) csn)
-  lookup-mi-lemma Cx.h E ϖ nm (Cx.t i) (missing-t-cong i₁ ϖ₁ μ₁) csn = refl
-  lookup-mi-lemma Cx.h [] ϖ nm (Cx.t i) (missing-t-cons i₁ ϖ₁ μ₁) csn =
-    let
-      a0 = (lookup-hm-cons ((with-i i ϖ₁ μ₁ nm .proj₁)) (proj₂ (with-i i ϖ₁ μ₁ nm)) csn)
-    in
-    subst (λ x → p2 x ≡ 0) (sym a0) refl
-  lookup-mi-lemma Cx.h (x ∷ E) ϖ nm (Cx.t i) (missing-t-cons i₁ ϖ₁ μ₁) csn =
-    let
-      a0 = (lookup-hm-cons ((with-i i ϖ₁ μ₁ nm .proj₁)) (proj₂ (with-i i ϖ₁ μ₁ nm)) csn)
-    in
-    subst (λ x → p2 x ≡ 0) (sym a0) refl
-  lookup-mi-lemma (Cx.t i₁) [] ϖ nm Cx.h (missing-h ϖ₁) csn = cong p2 (lookup-z-m i₁ ϖ₁ csn)
-  lookup-mi-lemma (Cx.t i₁) [] (wkn-cons ϖ) nm (Cx.t i) (missing-t-cons i₂ ϖ₁ μ₁) csn =
-    let
-      a0 = lookup-wk-t-m (with-i i ϖ μ₁ nm .proj₁) i₁ (wk-wk wk-id) ((with-i i ϖ μ₁ nm .proj₂)) csn
-      a1 = subst
-              (λ x → proj₁ (lookup-mono-metric x (with-i i ϖ μ₁ nm .proj₁) (wkn-cons (wk-e wk-id (with-i i ϖ μ₁ nm .proj₂)))) csn ≡ proj₁ (lookup-mono-metric i₁ (with-i i ϖ μ₁ nm .proj₁) (with-i i ϖ μ₁ nm .proj₂)) csn)
-              (wk-mem-t i₁)
-              a0
-      a2 = subst
-              (λ x → proj₁ (lookup-mono-metric (t i₁) (with-i i ϖ μ₁ nm .proj₁) (wkn-cons x)) csn ≡ proj₁ (lookup-mono-metric i₁ (with-i i ϖ μ₁ nm .proj₁) (with-i i ϖ μ₁ nm .proj₂)) csn)
-              (wk-e-id (with-i i ϖ μ₁ nm .proj₂))
-              a1
-      b1 = lookup-mi-lemma i₁ [] ϖ nm i μ₁ csn
-      b2 = trans (cong p2 a2) b1
-      b3 = lookup-z-m i₁ ϖ csn
-      b4 = trans b2 (cong p2 b3)
-    in
-    b4
-  lookup-mi-lemma (Cx.t i₁) (x ∷ E) ϖ nm Cx.h (missing-h ϖ₁) csn = refl
-  lookup-mi-lemma (Cx.t i₁) (x ∷ E) ϖ nm (Cx.t i) (missing-t-cong i₂ ϖ₁ μ₁) csn = lookup-mi-lemma i₁ E ϖ₁ nm i μ₁ csn
-  lookup-mi-lemma (Cx.t i₁) (x ∷ E) (wkn-cons ϖ) nm (Cx.t i) (missing-t-cons i₂ ϖ₁ μ₁) csn =
-    let
-      a0 = lookup-wk-t-m (with-i i ϖ μ₁ nm .proj₁) i₁ (wk-wk wk-id) ((with-i i ϖ μ₁ nm .proj₂)) csn
-      a1 = subst
-              (λ x → proj₁ (lookup-mono-metric x (with-i i ϖ μ₁ nm .proj₁) (wkn-cons (wk-e wk-id (with-i i ϖ μ₁ nm .proj₂)))) csn ≡ proj₁ (lookup-mono-metric i₁ (with-i i ϖ μ₁ nm .proj₁) (with-i i ϖ μ₁ nm .proj₂)) csn)
-              (wk-mem-t i₁)
-              a0
-      a2 = subst
-              (λ x → proj₁ (lookup-mono-metric (t i₁) (with-i i ϖ μ₁ nm .proj₁) (wkn-cons x)) csn ≡ proj₁ (lookup-mono-metric i₁ (with-i i ϖ μ₁ nm .proj₁) (with-i i ϖ μ₁ nm .proj₂)) csn)
-              (wk-e-id (with-i i ϖ μ₁ nm .proj₂))
-              a1
-      b1 = lookup-mi-lemma i₁ (x ∷ E) ϖ nm i μ₁ csn
-      b2 = trans (cong p2 a2) b1
-    in
-    b2
-    OLD -}
-
   postulate val-mi-lemma2 : (M : Val Γ (X `⇒ Y)) → (E : EMetric) → (ϖ : WkN Γ E) → (nm : EElem Z) → (i : Γ ∋ Z) → (μ : Missing-i i ϖ) → ((X `⇒ Y) ≡ Z → ⊥) → (csn : List (ℕ × ℕ))
               → p2 ((proj₁ (val-mono-metric M (proj₁ (with-i i ϖ μ nm)) (proj₂ (with-i i ϖ μ nm)))) csn) ≡ p2 ((proj₁ (val-mono-metric M E ϖ)) csn)
 
@@ -1694,6 +1644,11 @@ a0  : p2 (proj₁ (val-mono-metric N ((B , (λ c → rhs (proj₁ (val-mono-metr
     --comp-count-mult : (W : Comp Γ Y) → (nm : EElem X) → (E : EMetric) → (ϖ : WkN Γ E) → (csn : List (ℕ × ℕ)) → (i : Γ ∋ X) → (μ : Missing-i i ϖ) →
     --          (⟪ (proj₁ (comp-mono-metric W (proj₁ (with-i i ϖ μ nm)) (proj₂ (with-i i ϖ μ nm)))) csn ⟫) ≤ (((proj₁ (mono-comp-count i W E ϖ)) csn) * ⟪ proj₁ nm csn ⟫ + ⟪ (proj₁ (comp-mono-metric W E ϖ)) csn ⟫)
 
+    -- need something along these lines - this formulation is wrong though:
+    -- p2-eq-cnt : (i : Γ ∋ Z) → (M : Val Γ (X `⇒ Y)) → (E : EMetric) → (ϖ : WkN Γ E) → (csn : List (ℕ × ℕ)) →
+    --             (proj₁ (mono-val-count i M E ϖ) csn) ≡ p2 (proj₁ (val-mono-metric M E ϖ) csn)
+    -- p2-eq-cnt = {!!}
+
     comp-count-mult : (W : Comp Γ Y) → (nm : EElem X) → (E : EMetric) → (ϖ : WkN Γ E) → (csn : List (ℕ × ℕ)) → (i : Γ ∋ X) → (μ : Missing-i i ϖ) →
                 (⟪ (proj₁ (comp-mono-metric W (proj₁ (with-i i ϖ μ nm)) (proj₂ (with-i i ϖ μ nm)))) csn ⟫)
               ≤  ⟪ (proj₁ (comp-mono-metric W E ϖ)) csn ⟫ + (((proj₁ (mono-comp-count i W E ϖ)) csn) * ⟪ proj₁ nm csn ⟫)
@@ -1707,21 +1662,60 @@ a0  : p2 (proj₁ (val-mono-metric N ((B , (λ c → rhs (proj₁ (val-mono-metr
 
     comp-count-mult (app M N) nm E ϖ csn i μ =
       let
+        b1 = val-mono-metric M (proj₁ (with-i i ϖ μ nm)) (proj₂ (with-i i ϖ μ nm))
+        b2 = val-mono-metric N (proj₁ (with-i i ϖ μ nm)) (proj₂ (with-i i ϖ μ nm))
+        c1 = mono-val-count i M E ϖ
+        c2 = mono-val-count i N E ϖ
+        d1 = val-mono-metric M E ϖ
+        d2 = val-mono-metric N E ϖ
+        ---------------------------------------
         a0 = val-count-mult M nm E ϖ csn i μ
         a1 = val-count-mult N nm E ϖ csn i μ
         z1 = val-mi-lemma2 M E ϖ nm i μ {!!} csn
   --val-mi-lemma : (M : Val Γ (X `⇒ Y)) → (E : EMetric) → (ϖ : WkN Γ E) → (nm : EElem X) → (i : Γ ∋ X) → (μ : Missing-i i ϖ) → (csn : List (ℕ × ℕ))
   --            → p2 ((proj₁ (val-mono-metric M (proj₁ (with-i i ϖ μ nm)) (proj₂ (with-i i ϖ μ nm)))) csn) ≡ p2 ((proj₁ (val-mono-metric M E ϖ)) csn)
+  -- postulate val-mi-lemma2 : (M : Val Γ (X `⇒ Y)) → (E : EMetric) → (ϖ : WkN Γ E) → (nm : EElem Z) → (i : Γ ∋ Z) → (μ : Missing-i i ϖ) → ((X `⇒ Y) ≡ Z → ⊥) → (csn : List (ℕ × ℕ))
+  --             → p2 ((proj₁ (val-mono-metric M (proj₁ (with-i i ϖ μ nm)) (proj₂ (with-i i ϖ μ nm)))) csn) ≡ p2 ((proj₁ (val-mono-metric M E ϖ)) csn)
       in
       {!!}
-{-
+-----------------------------------------------------
+{- 2026
 
-b1 = val-mono-metric M (proj₁ (with-i i ϖ μ nm)) (proj₂ (with-i i ϖ μ nm))
-b2 = val-mono-metric N (proj₁ (with-i i ϖ μ nm)) (proj₂ (with-i i ϖ μ nm))
-c1 = mono-val-count i M E ϖ
-c2 = mono-val-count i N E ϖ
-d1 = val-mono-metric M E ϖ
-d2 = val-mono-metric N E ϖ
+Goal: 2+ (p1 (proj₁ b1 csn) + (⟪ proj₁ b2 csn ⟫ + p2 (proj₁ b1 csn) * ⟪ proj₁ b2 csn ⟫) + ⟪ p3 (proj₁ b1 csn) ⟫)
+      ≤
+      2+ (p1 (proj₁ d1 csn) + (⟪ proj₁ d2 csn ⟫ + p2 (proj₁ d1 csn) * ⟪ proj₁ d2 csn ⟫) + ⟪ p3 (proj₁ d1 csn) ⟫
+       + (proj₁ c1 csn + proj₁ c2 csn * suc (p2 (proj₁ d1 csn))) * ⟪ proj₁ nm csn ⟫)
+
+a0  : ⟪ proj₁ b1 csn ⟫ ≤ proj₁ c1 csn * ⟪ proj₁ nm csn ⟫ + ⟪ proj₁ d1 csn ⟫
+a1  : ⟪ proj₁ b2 csn ⟫ ≤ proj₁ c2 csn * ⟪ proj₁ nm csn ⟫ + ⟪ proj₁ d2 csn ⟫
+
+STP:  p1 (proj₁ b1 csn) + ⟪ proj₁ b2 csn ⟫ + p2 (proj₁ b1 csn) * ⟪ proj₁ b2 csn ⟫ + ⟪ p3 (proj₁ b1 csn) ⟫
+      ≤
+      p1 (proj₁ d1 csn) + ⟪ proj₁ d2 csn ⟫ + p2 (proj₁ d1 csn) * ⟪ proj₁ d2 csn ⟫ + ⟪ p3 (proj₁ d1 csn) ⟫
+       + (proj₁ c1 csn + proj₁ c2 csn * suc (p2 (proj₁ d1 csn))) * ⟪ proj₁ nm csn ⟫
+
+We know:
+
+- Since a0 : ⟪ proj₁ b1 csn ⟫ ≤ proj₁ c1 csn * ⟪ proj₁ nm csn ⟫ + ⟪ proj₁ d1 csn ⟫, we have:
+             p1 (proj₁ b1 csn) + ⟪ p3 (proj₁ b1 csn) ⟫ ≤ proj₁ c1 csn * ⟪ proj₁ nm csn ⟫ + p1 (proj₁ d1 csn) + ⟪ p3 (proj₁ d1 csn) ⟫
+
+Hence it's
+STP:  ⟪ proj₁ b2 csn ⟫ + p2 (proj₁ b1 csn) * ⟪ proj₁ b2 csn ⟫
+      ≤
+      ⟪ proj₁ d2 csn ⟫ + p2 (proj₁ d1 csn) * ⟪ proj₁ d2 csn ⟫ + (proj₁ c2 csn * suc (p2 (proj₁ d1 csn))) * ⟪ proj₁ nm csn ⟫
+
+Since a1 : ⟪ proj₁ b2 csn ⟫ ≤ proj₁ c2 csn * ⟪ proj₁ nm csn ⟫ + ⟪ proj₁ d2 csn ⟫, it's
+STP:  p2 (proj₁ b1 csn) * ⟪ proj₁ b2 csn ⟫
+      ≤
+      p2 (proj₁ d1 csn) * ⟪ proj₁ d2 csn ⟫ + (proj₁ c2 csn * (p2 (proj₁ d1 csn))) * ⟪ proj₁ nm csn ⟫
+      = p2 (proj₁ d1 csn) * (⟪ proj₁ d2 csn ⟫ + proj₁ c2 csn * ⟪ proj₁ nm csn ⟫)
+
+Since a1 : ⟪ proj₁ b2 csn ⟫ ≤ proj₁ c2 csn * ⟪ proj₁ nm csn ⟫ + ⟪ proj₁ d2 csn ⟫, it's
+STP:  p2 (proj₁ b1 csn) ≤ p2 (proj₁ d1 csn)
+
+-}
+-----------------------------------------------------
+{-
 
 Goal: 2+ (p1 (proj₁ (b1) csn) + (⟪proj₁ (b2) csn ⟫ + p2 (proj₁ (b1) csn) * ⟪ proj₁ (b2) csn ⟫) + ⟪ p3 (proj₁ (b1) csn) ⟫)
       ≤
@@ -1843,7 +1837,9 @@ yGoal:   ⟪ proj₁ (b1) csn ⟫
     comp-count-mult (var M) nm E ϖ csn = {!!}
     comp-count-mult (sub W₁ W₂) nm E ϖ csn = {!!}
     -}
-END LEMMAS FOR COMP MACHINE -}
+
+-- END LEMMAS FOR COMP MACHINE
+-}
 ------------------------------------------------------------------------------
 
   ---------------------------------------------------------------------------------------

@@ -561,6 +561,7 @@ Goal:   suc (vx (val-metric M ((X , nm) ∷ E) (Wkn.wkn-cong ϖ) csn) + ⟪ comp
     s≤s (s≤s (+-≤-cong a3 a2))
 
   comp-metric-decreasing (∙return {Γ = Γ} {X = X} {Γ' = Γ'} {Y = Y} {M = M} {γ = γ} {N = N} {γ' = γ'} {π = π} {cs = cs}) =
+    --OLD:
     --let
     --  EW  = (env-metric γ)
     --  EW' = (env-metric γ')
@@ -586,19 +587,39 @@ Goal:   suc (vx (val-metric M ((X , nm) ∷ E) (Wkn.wkn-cong ϖ) csn) + ⟪ comp
     --  l4 = +-≤-cong (z≤n {n = b1}) (+-≤-cong l2 l3)
     --in
     --  s≤s l4
+    let
+      EW  = env-mono-metric γ
+      EW' = env-mono-metric γ'
+      E = proj₁ EW
+      E' = proj₁ EW'
+      ϖ = proj₂ EW
+      ϖ' = proj₂ EW'
+      csn = cs-to-csn cs
+    in
     {!!}
 {-
-a0 = ⟪ comp-metric N E' (Wkn.wkn-cons ϖ') csn ⟫
-a1 = ⟪ comp-metric (wk-comp (wk-cong π) N) ((X , v̲a̲l̲-metric M E ϖ) ∷ E) (Wkn.wkn-cong ϖ) csn ⟫
-b1 = ⟪ v̲a̲l̲-metric M E ϖ ((count-in-comp h N , a0) ∷ csn) ⟫
 
-Goal:     suc (a1 + csn-to-nat₀ a1 csn)
-      ≤
-          suc (b1 + (a0 + suc (count-in-comp h N + b1 * suc (count-in-comp h N))
-      + csn-to-nat₀ (a0 + suc (count-in-comp h N + b1 * suc (count-in-comp h N))) csn))
+a0 = comp-mono-metric N E' (WkN.wkn-cons ϖ')
+a1 = comp-mono-metric (wk-comp (wk-cong π) N) ((X , v̲a̲l̲-mono-metric M E ϖ) ∷ E) (WkN.wkn-cong ϖ)
+b1 = v̲a̲l̲-mono-metric M E ϖ
+c1 = mono-comp-count h N E' (WkN.wkn-cons ϖ')
+
+Goal:      suc (⟪ proj₁ (a1) csn ⟫ + csn-to-nat₀ ⟪ proj₁ (a1) csn ⟫ csn)
+      ≤    suc (⟪ proj₁ (b1) ((proj₁ (c1) csn , ⟪ proj₁ (a0) csn ⟫) ∷ csn) ⟫ + (⟪ proj₁ (a0) csn ⟫ + suc (proj₁ (c1) csn + ⟪ proj₁ (b1) ((proj₁ (c1) csn , ⟪ proj₁ (a0) csn ⟫) ∷ csn) ⟫ * suc (proj₁ (c1) csn)) + csn-to-nat₀ (⟪ proj₁ (a0) csn ⟫ + suc (proj₁ (c1) csn + ⟪ proj₁ (b1) ((proj₁ (c1) csn , ⟪ proj₁ (a0) csn ⟫) ∷ csn) ⟫ * suc (proj₁ (c1) csn))) csn))
+
+Rewritten
+Goal:      suc (         ⟪ proj₁ (a1) csn ⟫
+           + csn-to-nat₀ ⟪ proj₁ (a1) csn ⟫ csn)
+      ≤    suc (⟪ proj₁ (b1) ((proj₁ (c1) csn , ⟪ proj₁ (a0) csn ⟫) ∷ csn) ⟫)
+           +             (⟪ proj₁ (a0) csn ⟫ + suc (proj₁ (c1) csn + ⟪ proj₁ (b1) ((proj₁ (c1) csn , ⟪ proj₁ (a0) csn ⟫) ∷ csn) ⟫ * suc (proj₁ (c1) csn)))
+           + csn-to-nat₀ (⟪ proj₁ (a0) csn ⟫ + suc (proj₁ (c1) csn + ⟪ proj₁ (b1) ((proj₁ (c1) csn , ⟪ proj₁ (a0) csn ⟫) ∷ csn) ⟫ * suc (proj₁ (c1) csn))) csn
+
+EASY: follows from a1 ≤ a0
+
 -}
 
   comp-metric-decreasing (∘push {X = X} {M = M} {N = N} {γ = γ} {cs = cs} {πₓ = πₓ} {wk≡ₓ = wk≡ₓ} {wk≡ = wk≡}) =
+    --OLD:
     --let
     --  EW  = (env-metric γ)
     --  E = proj₁ EW
@@ -646,22 +667,47 @@ Goal:     suc (a1 + csn-to-nat₀ a1 csn)
     --                          l5 ))))
     --in
     --  s≤s l6
+    let
+      EW  = (env-mono-metric γ)
+      E = proj₁ EW
+      ϖ = proj₂ EW
+      csn = cs-to-csn cs
+    in
     {!!}
 
 {-
 
-a1 = comp-metric N E (Wkn.wkn-cons ϖ) csn
-a2 = comp-metric M E ϖ ((count-in-comp h N , ⟪ a1 ⟫) ∷ csn)
+a1 = comp-mono-metric N E (WkN.wkn-cons ϖ)
+a2 = comp-mono-metric M E ϖ
+c1 = mono-comp-count h N E (WkN.wkn-cons ϖ)
 
-Goal:   suc (                      ⟪ a2 ⟫ + (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N)
-      +   csn-to-nat₀ (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (count-in-comp h N)) csn))
-      ≤
-                     suc (⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫) + ⟪ a1 ⟫
-      + csn-to-nat₀ (suc (⟪ a2 ⟫ + (⟪ a2 ⟫ + count-in-comp h N * ⟪ a2 ⟫) + ⟪ a1 ⟫)) csn)
+Goal: suc (⟪ proj₁ (a2) ((proj₁ (c1) csn , ⟪ proj₁ (a1) csn ⟫) ∷ csn) ⟫ + (⟪ proj₁ (a1) csn ⟫ + ⟪ proj₁ (a2) ((proj₁ (c1) csn , ⟪ proj₁ (a1) csn ⟫) ∷ csn) ⟫ * suc (proj₁ (c1) csn) + csn-to-nat₀ (⟪ proj₁ (a1) csn ⟫ + ⟪ proj₁ (a2) ((proj₁ (c1) csn , ⟪ proj₁ (a1) csn ⟫) ∷ csn) ⟫ * suc (proj₁ (c1) csn)) csn))
+≤ suc (⟪ proj₁ (a2) ((proj₁ (c1) csn , ⟪ proj₁ (a1) csn ⟫) ∷ csn) ⟫ + (⟪ proj₁ (a2) ((proj₁ (c1) csn , ⟪ proj₁ (a1) csn ⟫) ∷ csn) ⟫ + proj₁ (c1) csn * ⟪ proj₁ (a2) ((proj₁ (c1) csn , ⟪ proj₁ (a1) csn ⟫) ∷ csn) ⟫) + VMain.⟪ (λ z → k₀ z) ⟫ (proj₁ (a1) csn) + csn-to-nat₀ (suc (⟪ proj₁ (a2) ((proj₁ (c1) csn , ⟪ proj₁ (a1) csn ⟫) ∷ csn) ⟫ + (⟪ proj₁ (a2) ((proj₁ (c1) csn , ⟪ proj₁ (a1) csn ⟫) ∷ csn) ⟫ + proj₁ (c1) csn * ⟪ proj₁ (a2) ((proj₁ (c1) csn , ⟪ proj₁ (a1) csn ⟫) ∷ csn) ⟫) + VMain.⟪ (λ z → k₀ z) ⟫ (proj₁ (a1) csn))) csn )
+
+Rewritten
+Goal: suc (                               ⟪ proj₁ (a2) ((proj₁ (c1) csn , ⟪ proj₁ (a1) csn ⟫) ∷ csn) ⟫
+                  + (⟪ proj₁ (a1) csn ⟫ + ⟪ proj₁ (a2) ((proj₁ (c1) csn , ⟪ proj₁ (a1) csn ⟫) ∷ csn) ⟫ * suc (proj₁ (c1) csn)
+      + csn-to-nat₀ (⟪ proj₁ (a1) csn ⟫ + ⟪ proj₁ (a2) ((proj₁ (c1) csn , ⟪ proj₁ (a1) csn ⟫) ∷ csn) ⟫ * suc (proj₁ (c1) csn)) csn))
+≤                    suc (⟪ proj₁ (a2) ((proj₁ (c1) csn , ⟪ proj₁ (a1) csn ⟫) ∷ csn) ⟫ + (⟪ proj₁ (a2) ((proj₁ (c1) csn , ⟪ proj₁ (a1) csn ⟫) ∷ csn) ⟫ + proj₁ (c1) csn * ⟪ proj₁ (a2) ((proj₁ (c1) csn , ⟪ proj₁ (a1) csn ⟫) ∷ csn) ⟫) + VMain.⟪ (λ z → k₀ z) ⟫ (proj₁ (a1) csn)
+      + csn-to-nat₀ (suc (⟪ proj₁ (a2) ((proj₁ (c1) csn , ⟪ proj₁ (a1) csn ⟫) ∷ csn) ⟫ + (⟪ proj₁ (a2) ((proj₁ (c1) csn , ⟪ proj₁ (a1) csn ⟫) ∷ csn) ⟫ + proj₁ (c1) csn * ⟪ proj₁ (a2) ((proj₁ (c1) csn , ⟪ proj₁ (a1) csn ⟫) ∷ csn) ⟫) + VMain.⟪ (λ z → k₀ z) ⟫ (proj₁ (a1) csn))) csn )
+=                    suc (⟪ proj₁ (a2) ((proj₁ (c1) csn , ⟪ proj₁ (a1) csn ⟫) ∷ csn) ⟫ + ((suc (proj₁ (c1) csn)) * ⟪ proj₁ (a2) ((proj₁ (c1) csn , ⟪ proj₁ (a1) csn ⟫) ∷ csn) ⟫) + ⟪ proj₁ (a1) csn ⟫
+      + csn-to-nat₀ (suc (⟪ proj₁ (a2) ((proj₁ (c1) csn , ⟪ proj₁ (a1) csn ⟫) ∷ csn) ⟫ + ((suc (proj₁ (c1) csn)) * ⟪ proj₁ (a2) ((proj₁ (c1) csn , ⟪ proj₁ (a1) csn ⟫) ∷ csn) ⟫) + ⟪ proj₁ (a1) csn ⟫)) csn )
+
+STP:
+   ⟪ proj₁ (a2) ((proj₁ (c1) csn , ⟪ proj₁ (a1) csn ⟫) ∷ csn) ⟫
+                  + (⟪ proj₁ (a1) csn ⟫                         +  suc (proj₁ (c1) csn) * ⟪ proj₁ (a2) ((proj₁ (c1) csn , ⟪ proj₁ (a1) csn ⟫) ∷ csn) ⟫
+≤? ⟪ proj₁ (a2) ((proj₁ (c1) csn , ⟪ proj₁ (a1) csn ⟫) ∷ csn) ⟫ + (suc (proj₁ (c1) csn) * ⟪ proj₁ (a2) ((proj₁ (c1) csn , ⟪ proj₁ (a1) csn ⟫) ∷ csn) ⟫) + ⟪ proj₁ (a1) csn ⟫
+
+STP:
+   ⟪ proj₁ (a2) ((proj₁ (c1) csn , ⟪ proj₁ (a1) csn ⟫) ∷ csn) ⟫ + ⟪ proj₁ (a1) csn ⟫
+≤? ⟪ proj₁ (a2) ((proj₁ (c1) csn , ⟪ proj₁ (a1) csn ⟫) ∷ csn) ⟫ + ⟪ proj₁ (a1) csn ⟫
+
+EASY: refl
 
 -}
 
   comp-metric-decreasing (∘sub {M = M} {N = N} {γ = γ} {cs = cs} {πₓ = πₓ} {wk≡ₓ = wk≡ₓ}) =
+    -- OLD:
     -- let
     --   EW  = (env-metric γ)
     --   E = proj₁ EW
@@ -677,20 +723,32 @@ Goal:   suc (                      ⟪ a2 ⟫ + (⟪ a1 ⟫ + ⟪ a2 ⟫ * suc (
     --   l2 = csn-decr l1 csn
     -- in
     --   s≤s (+-≤-cong (+-≤-cong (z≤n {n = ⟪ a1 ⟫}) (≤-refl {n = ⟪ a2 ⟫})) l2)
+    let
+      EW = env-mono-metric γ
+      E = proj₁ EW
+      ϖ = proj₂ EW
+      csn = cs-to-csn cs
+    in
     {!!}
 
 {-
 
-a1 = comp-metric N E ϖ csn
-a2 = comp-metric M ((`V , (λ _ → TermMetric.m-V 0 (⟪ a1 ⟫ + csn-to-nat₀ ⟪ a1 ⟫ csn))) ∷ E) (Wkn.wkn-cong ϖ) csn
+a1 = comp-mono-metric N E ϖ
+a2 = comp-mono-metric M ((`V , (λ _ → TermMetric.m-V 0 (⟪ proj₁ (a1) csn ⟫ + csn-to-nat₀ ⟪ proj₁ (a1) csn ⟫ csn)) , (λ _ → _≤ᴹ_.≤-V z≤n ≤-refl)) ∷ E) (WkN.wkn-cong ϖ)
 
-Goal: suc (⟪ a2 ⟫ + csn-to-nat₀ ⟪ a2 ⟫ csn)
+Goal: suc (         ⟪ proj₁ (a2) csn ⟫
+      + csn-to-nat₀ ⟪ proj₁ (a2) csn ⟫ csn)
       ≤
-      suc (⟪ a1 ⟫ + ⟪ a2 ⟫ + csn-to-nat₀ (suc (⟪ a1 ⟫ + ⟪ a2 ⟫)) csn)
+                     suc (⟪ proj₁ (a1) csn ⟫ + ⟪ proj₁ (a2) csn ⟫
+      + csn-to-nat₀ (suc (⟪ proj₁ (a1) csn ⟫ + ⟪ proj₁ (a2) csn ⟫)) csn)
+
+EASY: follows from
+         suc (⟪ proj₁ (a2) csn ⟫) ≤ suc (⟪ proj₁ (a1) csn ⟫ + ⟪ proj₁ (a2) csn ⟫)
 
 -}
 
   comp-metric-decreasing (∘pm {X = X} {Y = Y} {M = M} {γ = γ} {W = W} {cs = cs} {πₓ = πₓ} {πₓ' = πₓ'} {γ'' = γ''} {wk≡ₓ = wk≡ₓ} {wk≡ₓ' = wk≡ₓ'} {LHS = LHS } {RHS = RHS} π M→M' π') =
+    -- OLD:
     -- let
     --   EW  = (env-metric γ)
     --   E = proj₁ EW
@@ -700,26 +758,42 @@ Goal: suc (⟪ a2 ⟫ + csn-to-nat₀ ⟪ a2 ⟫ csn)
     --   ϖ'' = proj₂ EW''
     --   csn = cs-to-csn cs
     -- in
+    let
+      EW = env-mono-metric γ
+      E = proj₁ EW
+      ϖ = proj₂ EW
+      EW'' = env-mono-metric γ''
+      E'' = proj₁ EW''
+      ϖ'' = proj₂ EW''
+      csn = cs-to-csn cs
+    in
      {!!}
 
 {-
 
-aLHS = v̲a̲l̲-metric LHS E'' ϖ''
-aRHS = v̲a̲l̲-metric (wk-v̲a̲l̲ (wk-wk wk-id) RHS) ((X , aLHS) ∷ E'') (Wkn.wkn-cong ϖ'')
-a0 = comp-metric (wk-comp (wk-cong (wk-cong π')) (wk-comp (wk-cong (wk-cong π)) W)) ((Y , aRHS) ∷ (X , aLHS) ∷ E'') (Wkn.wkn-cong (Wkn.wkn-cong ϖ'')) csn
-a1 = val-metric (wk-val π M) E ϖ
-b1 = comp-metric (wk-comp (wk-cong (wk-cong π)) W) E (Wkn.wkn-cons (Wkn.wkn-cons ϖ)) csn
-c1 = comp-metric (wk-comp (wk-cong (wk-cong π)) W) ((Y , (λ c → rhs (a1 c))) ∷ (X , (λ c → lhs (a1 c))) ∷ E) (Wkn.wkn-cong (Wkn.wkn-cong ϖ)) csn
+aLHS = v̲a̲l̲-mono-metric LHS E'' ϖ''
+aRHS = v̲a̲l̲-mono-metric (wk-v̲a̲l̲ (wk-wk wk-id) RHS) ((X , v̲a̲l̲-mono-metric LHS E'' ϖ'') ∷ E'') (WkN.wkn-cong ϖ'')
+a0 = comp-mono-metric (wk-comp (wk-cong (wk-cong π')) (wk-comp (wk-cong (wk-cong π)) W)) ((Y , aRHS) ∷ (X , aLHS) ∷ E'') (WkN.wkn-cong (WkN.wkn-cong ϖ''))
+a1 = val-mono-metric (wk-val π M) E ϖ
+b1 = comp-mono-metric (wk-comp (wk-cong (wk-cong π)) W) E (WkN.wkn-cons (WkN.wkn-cons ϖ))
+c1 = proj₁ (comp-mono-metric (wk-comp (wk-cong (wk-cong π)) W) ((Y , (λ c → rhs (proj₁ (a1) c)) , (λ c≤c' → ≤ᴹ-rhs (proj₂ (a1) c≤c'))) ∷ (X , (λ c → lhs (proj₁ (a1) c)) , (λ c≤c' → ≤ᴹ-lhs (proj₂ (a1) c≤c'))) ∷ E) (WkN.wkn-cong (WkN.wkn-cong ϖ))) csn
 
-Goal:   suc (         ⟪ a0 ⟫
-        + csn-to-nat₀ ⟪ a0 ⟫ csn)
-      ≤                suc (vx (a1 csn) + ⟪ b1 ⟫ + ⟪ c1 ⟫
-        + csn-to-nat₀ (suc (vx (a1 csn) + ⟪ b1 ⟫ + ⟪ c1 ⟫)) csn)
+Goal:   suc (         ⟪ proj₁ (a0) csn ⟫
+        + csn-to-nat₀ ⟪ proj₁ (a0) csn ⟫ csn)
+      ≤                suc (vx (proj₁ (a1) csn) + ⟪ proj₁ (b1) csn ⟫ + ⟪ c1 ⟫
+        + csn-to-nat₀ (suc (vx (proj₁ (a1) csn) + ⟪ proj₁ (b1) csn ⟫ + ⟪ c1 ⟫)) csn)
+
+STP: ⟪ proj₁ (a0) csn ⟫ ≤ ⟪ c1 ⟫
+
+proof outline:
+- prove that aLHS ≤ (λ c → lhs (proj₁ (a1) c)) and aRHS ≤ (λ c → rhs (proj₁ (a1) c))
+- then use comp-wkx-lemma to show that ⟪ proj₁ (a0) csn ⟫ ≤ ⟪ c1 ⟫
 
 -}
 
   comp-metric-decreasing (∙app-var {Z' = Z'} {Z = Z} {i = i} {N = N} {γ = γ} {cs = cs} {πₓ = πₓ} {wk≡ₓ = wk≡ₓ} {W = W} {γ' = γ'} i→λW πᵥ T≤S θ)
     =
+    -- OLD:
     -- let
     --   EW  = (env-metric γ)
     --   E = proj₁ EW
@@ -729,18 +803,29 @@ Goal:   suc (         ⟪ a0 ⟫
     --   ϖ' = proj₂ EW'
     --   csn = cs-to-csn cs
     -- in
+    let
+      EW = env-mono-metric γ
+      E = proj₁ EW
+      ϖ = proj₂ EW
+      EW' = env-mono-metric γ'
+      E' = proj₁ EW'
+      ϖ' = proj₂ EW'
+      csn = cs-to-csn cs
+    in
       {!!}
 {-
 
-a1 = v̲a̲l̲-metric N E ϖ
-a2 = comp-metric (wk-comp (wk-cong πᵥ) W) ((Z' , a1) ∷ E) (Wkn.wkn-cong ϖ) csn
-b1 = lookup-metric i E ϖ csn
+a1 = v̲a̲l̲-mono-metric N E ϖ
+a2 = comp-mono-metric (wk-comp (wk-cong πᵥ) W) ((Z' , a1) ∷ E) (WkN.wkn-cong ϖ)
+b1 = lookup-mono-metric i E ϖ
 
-Goal:    suc (               ⟪ a2 ⟫
-               + csn-to-nat₀ ⟪ a2 ⟫ csn)
+Goal:  suc (        ⟪ proj₁ (a2) csn ⟫
+      + csn-to-nat₀ ⟪ proj₁ (a2) csn ⟫ csn)
       ≤
-                       suc (p1 (incr 2 (b1)) + (⟪ a1 csn ⟫ + p2 (b1) * ⟪ a1 csn ⟫) + ⟪ p3 (incr 2 (b1)) ⟫
-        + csn-to-nat₀ (suc (p1 (incr 2 (b1)) + (⟪ a1 csn ⟫ + p2 (b1) * ⟪ a1 csn ⟫) + ⟪ p3 (incr 2 (b1))) ⟫) csn)
+                     suc (p1 (incr 2 (proj₁ (b1) csn)) + (⟪ proj₁ (a1) csn ⟫ + p2 (proj₁ (b1) csn) * ⟪ proj₁ (a1) csn ⟫) + ⟪ p3 (incr 2 (proj₁ (b1) csn)) ⟫
+      + csn-to-nat₀ (suc (p1 (incr 2 (proj₁ (b1) csn)) + (⟪ proj₁ (a1) csn ⟫ + p2 (proj₁ (b1) csn) * ⟪ proj₁ (a1) csn ⟫) + ⟪ p3 (incr 2 (proj₁ (b1) csn)) ⟫)) csn)
+
+Will be similar to app-lam case.
 
 -}
 
@@ -754,23 +839,46 @@ Goal:    suc (               ⟪ a2 ⟫
     --   ϖ' = proj₂ EW'
     --   csn = cs-to-csn cs
     -- in
+    let
+      EW  = env-mono-metric γ
+      E = proj₁ EW
+      ϖ = proj₂ EW
+      EW'  = env-mono-metric γ'
+      E' = proj₁ EW'
+      ϖ' = proj₂ EW'
+      csn = cs-to-csn cs
+    in
       {!!}
 
 {-
 
-a1 = v̲a̲l̲-metric LHS E' ϖ'
-a2 = v̲a̲l̲-metric (wk-v̲a̲l̲ (wk-wk wk-id) RHS) ((X , a1) ∷ E') (Wkn.wkn-cong ϖ')
-a3 = val-metric (wk-val (wk-cong (wk-cong π)) N₁) ((Y , a2) ∷ (X , a1) ∷ E') (Wkn.wkn-cong (Wkn.wkn-cong ϖ')) csn
-a4 = v̲a̲l̲-metric (wk-v̲a̲l̲ (wk-wk (wk-wk π)) N) ((Y , a2) ∷ (X , a1) ∷ E') (Wkn.wkn-cong (Wkn.wkn-cong ϖ')) csn
-b1 = val-metric M E ϖ
-b2 = val-metric N₁ ((Y , (λ c → rhs (b1 c))) ∷ (X , (λ c → lhs (b1 c))) ∷ E) (Wkn.wkn-cong (Wkn.wkn-cong ϖ)) csn
-b3 = val-metric N₁ E (Wkn.wkn-cons (Wkn.wkn-cons ϖ)) csn
-b4 = v̲a̲l̲-metric N E ϖ csn
+a1 = v̲a̲l̲-mono-metric LHS E' ϖ'
+a2 = v̲a̲l̲-mono-metric (wk-v̲a̲l̲ (wk-wk wk-id) RHS) ((X , a1) ∷ E') (WkN.wkn-cong ϖ')
+a3 = val-mono-metric (wk-val (wk-cong (wk-cong π)) N₁) ((Y , a2) ∷ (X , a1) ∷ E') (WkN.wkn-cong (WkN.wkn-cong ϖ'))
+a4 = v̲a̲l̲-mono-metric (wk-v̲a̲l̲ (wk-wk (wk-wk π)) N) ((Y , a2) ∷ (X , a1) ∷ E') (WkN.wkn-cong (WkN.wkn-cong ϖ'))
+b1 = val-mono-metric M E ϖ
+b2 = val-mono-metric N₁ ((Y , (λ c → rhs (proj₁ (b1) c)) , (λ c≤c' → ≤ᴹ-rhs (proj₂ (b1) c≤c'))) ∷ (X , (λ c → lhs (proj₁ (b1) c)) , (λ c≤c' → ≤ᴹ-lhs (proj₂ (b1) c≤c'))) ∷ E) (WkN.wkn-cong (WkN.wkn-cong ϖ))
+b3 = val-mono-metric N₁ E (WkN.wkn-cons (WkN.wkn-cons ϖ))
+b4 = v̲a̲l̲-mono-metric N E ϖ
 
-Goal:         2+                 (p1 (a3) + (⟪ a4 ⟫ + p2 (a3) * ⟪ a4 ⟫) + ⟪ (p3 (a3)) ⟫
-              + csn-to-nat₀ (suc (p1 (a3) + (⟪ a4 ⟫ + p2 (a3) * ⟪ a4 ⟫) + ⟪ (p3 (a3)) ⟫ )) csn)
-       ≤                     suc (p1 (incr (suc (vx (b1 csn) + ⟪ b3 ⟫)) (b2)) + (⟪ b4 ⟫ + p2 (b2) * ⟪ b4 ⟫) + ⟪ (p3 (incr (suc (vx (b1 csn) + ⟪ b3 ⟫)) (b2))) ⟫
-              + csn-to-nat₀ (suc (p1 (incr (suc (vx (b1 csn) + ⟪ b3 ⟫)) (b2)) + (⟪ b4 ⟫ + p2 (b2) * ⟪ b4 ⟫) + ⟪ (p3 (incr (suc (vx (b1 csn) + ⟪ b3 ⟫)) (b2))) ⟫ )) csn)
+Goal:
+               2+      (p1 (proj₁ (a3) csn) + (⟪ proj₁ (a4) csn ⟫ + p2 (proj₁ (a3) csn) * ⟪ proj₁ (a4) csn ⟫) + ⟪ p3 (proj₁ (a3) csn) ⟫
+    + csn-to-nat₀ (suc (p1 (proj₁ (a3) csn) + (⟪ proj₁ (a4) csn ⟫ + p2 (proj₁ (a3) csn) * ⟪ proj₁ (a4) csn ⟫) + ⟪ p3 (proj₁ (a3) csn) ⟫)) csn)
+      ≤
+                   suc (p1 (incr (suc (vx (proj₁ (b1) csn) + ⟪ proj₁ (b3) csn ⟫)) (proj₁ (b2) csn)) + (⟪ proj₁ (b4) csn ⟫ + p2 (proj₁ (b2) csn) * ⟪ proj₁ (b4) csn ⟫) + ⟪ p3 (incr (suc (vx (proj₁ (b1) csn) + ⟪ proj₁ (b3) csn ⟫)) (proj₁ (b2) csn)) ⟫
+    + csn-to-nat₀ (suc (p1 (incr (suc (vx (proj₁ (b1) csn) + ⟪ proj₁ (b3) csn ⟫)) (proj₁ (b2) csn)) + (⟪ proj₁ (b4) csn ⟫ + p2 (proj₁ (b2) csn) * ⟪ proj₁ (b4) csn ⟫) + ⟪ p3 (incr (suc (vx (proj₁ (b1) csn) + ⟪ proj₁ (b3) csn ⟫)) (proj₁ (b2) csn)) ⟫)) csn)
+
+STP:
+      2+      (p1 (proj₁ (a3) csn) + (⟪ proj₁ (a4) csn ⟫ + p2 (proj₁ (a3) csn) * ⟪ proj₁ (a4) csn ⟫) + ⟪ p3 (proj₁ (a3) csn) ⟫
+  ≤   suc     (p1 (incr (suc (vx (proj₁ (b1) csn) + ⟪ proj₁ (b3) csn ⟫)) (proj₁ (b2) csn)) + (⟪ proj₁ (b4) csn ⟫ + p2 (proj₁ (b2) csn) * ⟪ proj₁ (b4) csn ⟫) + ⟪ p3 (incr (suc (vx (proj₁ (b1) csn) + ⟪ proj₁ (b3) csn ⟫)) (proj₁ (b2) csn)) ⟫
+  =   suc     (p1 (incr (suc (vx (proj₁ (b1) csn) + ⟪ proj₁ (b3) csn ⟫)) (proj₁ (b2) csn)) + (⟪ proj₁ (b4) csn ⟫ + p2 (proj₁ (b2) csn) * ⟪ proj₁ (b4) csn ⟫) + ⟪ p3 (proj₁ (b2) csn) ⟫
+
+We should have a3 ≤ b2. Then it is
+STP:
+      (⟪ proj₁ (a4) csn ⟫ + p2 (proj₁ (a3) csn) * ⟪ proj₁ (a4) csn ⟫)
+  ≤   (⟪ proj₁ (b4) csn ⟫ + p2 (proj₁ (b2) csn) * ⟪ proj₁ (b4) csn ⟫)
+
+We should also have a4 ≤ b4. The proof then follows.
 
 -}
 
@@ -787,7 +895,6 @@ Goal:         2+                 (p1 (a3) + (⟪ a4 ⟫ + p2 (a3) * ⟪ a4 ⟫) 
       {!!}
 
 {-
-NEW:
 
 a1 = v̲a̲l̲-mono-metric N E ϖ
 a2 = comp-mono-metric W ((X , a1) ∷ E) (WkN.wkn-cong ϖ)
@@ -800,19 +907,10 @@ Goal:                suc (⟪ proj₁ (a2) csn ⟫
                      2+ (suc (⟪ proj₁ (a1) csn ⟫ + proj₁ (a3) csn * ⟪ proj₁ (a1) csn ⟫ + ⟪ (proj₁ (a4) csn) ⟫
       + csn-to-nat₀ (2+ (suc (⟪ proj₁ (a1) csn ⟫ + proj₁ (a3) csn * ⟪ proj₁ (a1) csn ⟫ + ⟪ (proj₁ (a4) csn) ⟫ ))) csn))
 
-TP: suc ⟪ proj₁ (a2) csn ⟫ ≤ 3 + ⟪ proj₁ (a1) csn ⟫ + proj₁ (a3) csn * ⟪ proj₁ (a1) csn ⟫ + ⟪ (proj₁ (a4) csn) ⟫
+STP: suc ⟪ proj₁ (a2) csn ⟫ ≤ 3 + ⟪ proj₁ (a1) csn ⟫ + proj₁ (a3) csn * ⟪ proj₁ (a1) csn ⟫ + ⟪ (proj₁ (a4) csn) ⟫
 
+SCRATCH:
 STP: comp-mono-metric W ((X , a1) ∷ E) (wkn-cong ϖ) ≤ (mono-comp-count h W E (wkn-cons ϖ)) * ⟪ proj₁ a1 csn ⟫ + comp-mono-metric W E (wkn-cons ϖ)
-
-OLD:
-a1 = v̲a̲l̲-metric N E ϖ
-a2 = comp-metric W ((X , a1) ∷ E) (Wkn.wkn-cong ϖ) csn
-b1 = comp-metric W E (Wkn.wkn-cons ϖ) csn
-
-Goal:        suc (               ⟪ a2 ⟫
-                   + csn-to-nat₀ ⟪ a2 ⟫ csn)
-          ≤                2+ (suc (⟪ a1 csn ⟫ + count-in-comp h W E (Wkn.wkn-cons ϖ) csn * ⟪ a1 csn ⟫ + ⟪ b1 ⟫
-            + csn-to-nat₀ (2+ (suc (⟪ a1 csn ⟫ + count-in-comp h W E (Wkn.wkn-cons ϖ) csn * ⟪ a1 csn ⟫ + ⟪ b1 ⟫))) csn))
 
 -}
 
