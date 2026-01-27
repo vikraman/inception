@@ -915,59 +915,74 @@ STP: comp-mono-metric W ((X , a1) ∷ E) (wkn-cong ϖ) ≤ (mono-comp-count h W 
 -}
 
   comp-metric-decreasing (∘app {M = M} {N = N} {γ = γ} {cs = cs} {πₓ = πₓ} {πₓ' = πₓ'} {N' = N'} {γ' = γ'} {wk≡ₓ = wk≡ₓ} {wk≡ₓ' = wk≡ₓ'} N→N' π) =
-    -- let
-    --   EW  = (env-metric γ)
-    --   E = proj₁ EW
-    --   ϖ = proj₂ EW
-    --   EW'  = (env-metric γ')
-    --   E' = proj₁ EW'
-    --   ϖ' = proj₂ EW'
-    --   csn = cs-to-csn cs
-    --   ----------------------------------------------------------------------
-    --   -- need θ to apply lemmas
-    --   ----------------------------------------------------------------------
-    -- in
+    let
+      EW  = (env-mono-metric γ)
+      E = proj₁ EW
+      ϖ = proj₂ EW
+      EW'  = (env-mono-metric γ')
+      E' = proj₁ EW'
+      ϖ' = proj₂ EW'
+      csn = cs-to-csn cs
+      ----------------------------------------------------------------------
+      -- need θ to apply lemmas
+      ----------------------------------------------------------------------
+    in
       {!!}
 
 {-
 
-a1 = val-metric (wk-val π M) E' ϖ' csn
-a2 = v̲a̲l̲-metric N' E' ϖ' csn
-b1 = val-metric M E ϖ csn
-b2 = val-metric N E ϖ csn
+a1 = val-mono-metric (wk-val π M) E' ϖ'
+a2 = v̲a̲l̲-mono-metric N' E' ϖ'
+b1 = val-mono-metric M E ϖ
+b2 = val-mono-metric N E ϖ
 
-Goal:    2+ (                 p1 (a1) + (⟪ a2 ⟫ + p2 (a1) * ⟪ a2 ⟫) + ⟪ p3 a1 ⟫
-       +    csn-to-nat₀ (suc (p1 (a1) + (⟪ a2 ⟫ + p2 (a1) * ⟪ a2 ⟫) + ⟪ p3 a1 ⟫ )) csn)
-    ≤    2+                  (p1 (b1) + (⟪ b2 ⟫ + p2 (b1) * ⟪ b2 ⟫) + ⟪ p3 b1 ⟫
-       +    csn-to-nat₀ (2+  (p1 (b1) + (⟪ b2 ⟫ + p2 (b1) * ⟪ b2 ⟫) + ⟪ p3 b1 ⟫ )) csn)
+Goal:                  2+ (p1 (proj₁ (a1) csn) + (⟪ proj₁ (a2) csn ⟫ + p2 (proj₁ (a1) csn) * ⟪ proj₁ (a2) csn ⟫) + ⟪ p3 (proj₁ (a1) csn) ⟫
+       + csn-to-nat₀ (suc (p1 (proj₁ (a1) csn) + (⟪ proj₁ (a2) csn ⟫ + p2 (proj₁ (a1) csn) * ⟪ proj₁ (a2) csn ⟫) + ⟪ p3 (proj₁ (a1) csn) ⟫)) csn)
+      ≤
+                       2+ (p1 (proj₁ (b1) csn) + (⟪ proj₁ (b2) csn ⟫ + p2 (proj₁ (b1) csn) * ⟪ proj₁ (b2) csn ⟫) + ⟪ p3 (proj₁ (b1) csn) ⟫
+        + csn-to-nat₀ (2+ (p1 (proj₁ (b1) csn) + (⟪ proj₁ (b2) csn ⟫ + p2 (proj₁ (b1) csn) * ⟪ proj₁ (b2) csn ⟫) + ⟪ p3 (proj₁ (b1) csn) ⟫)) csn)
+
+STP:   2+ p1 (proj₁ (a1) csn) + (⟪ proj₁ (a2) csn ⟫ + p2 (proj₁ (a1) csn) * ⟪ proj₁ (a2) csn ⟫) + ⟪ p3 (proj₁ (a1) csn) ⟫
+     ≤ 2+ p1 (proj₁ (b1) csn) + (⟪ proj₁ (b2) csn ⟫ + p2 (proj₁ (b1) csn) * ⟪ proj₁ (b2) csn ⟫) + ⟪ p3 (proj₁ (b1) csn) ⟫
+
+STP:   ⟪ proj₁ (a2) csn ⟫ + p2 (proj₁ (a1) csn) * ⟪ proj₁ (a2) csn ⟫ + ⟪ proj₁ (a1) csn ⟫
+     ≤ ⟪ proj₁ (b2) csn ⟫ + p2 (proj₁ (b1) csn) * ⟪ proj₁ (b2) csn ⟫ + ⟪ proj₁ (b1) csn ⟫
 
 -}
 
   comp-metric-decreasing (∘var {M = M} {γ = γ} {i = i} {γ' = γ'} {W = W} {γ'' = γ''} {cs = cs} {cs' = cs'} {πₓ = πₓ} {πₓ'' = πₓ''} {wk≡ₓ = wk≡ₓ} {wk≡ₓ'' = wk≡ₓ''} M→i π' x₁ πᵥ) =
-    -- let
-    --   EW  = (env-metric γ)
-    --   E = proj₁ EW
-    --   ϖ = proj₂ EW
-    --   EW'  = (env-metric γ')
-    --   E' = proj₁ EW'
-    --   ϖ' = proj₂ EW'
-    --   EW''  = (env-metric γ'')
-    --   E'' = proj₁ EW''
-    --   ϖ'' = proj₂ EW''
-    --   csn = cs-to-csn cs
-    --   csn' = cs-to-csn cs'
-    -- in
+    let
+      EW = (env-mono-metric γ)
+      E = proj₁ EW
+      ϖ = proj₂ EW
+      EW' = (env-mono-metric γ')
+      E' = proj₁ EW'
+      ϖ' = proj₂ EW'
+      EW''  = (env-mono-metric γ'')
+      E'' = proj₁ EW''
+      ϖ'' = proj₂ EW''
+      csn = cs-to-csn cs
+      csn' = cs-to-csn cs'
+    in
       {!!}
 
 
 {-
 
-a1 = comp-metric W E'' ϖ'' csn'
-a2 = val-metric M E ϖ csn
+a1 = comp-mono-metric W E'' ϖ''
+a2 = val-mono-metric M E ϖ
 
-Goal: suc (⟪ a1 ⟫ + csn-to-nat₀ ⟪ a1 ⟫ csn')
+Goal: suc (⟪ proj₁ (a1) csn' ⟫ + csn-to-nat₀ ⟪ proj₁ (a1) csn' ⟫ csn')
       ≤
-      suc (⟪ a2 ⟫ + 0 + csn-to-nat₀ (suc (⟪ a2 ⟫ + 0)) csn)
+      suc (⟪ proj₁ (a2) csn ⟫ + 0 + csn-to-nat₀ (suc (⟪ proj₁ (a2) csn ⟫ + 0)) csn)
+
+STP:            suc (⟪ proj₁ (a1) csn' ⟫
+       + csn-to-nat₀ ⟪ proj₁ (a1) csn' ⟫ csn')
+      ≤
+                      suc (⟪ proj₁ (a2) csn ⟫
+       + csn-to-nat₀ (suc (⟪ proj₁ (a2) csn ⟫)) csn)
+
+STP: ⟪ proj₁ (a1) csn' ⟫ ≤ ⟪ proj₁ (a2) csn ⟫
 
 -}
 
