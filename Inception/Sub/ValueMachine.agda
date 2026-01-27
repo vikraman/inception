@@ -589,6 +589,36 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   wkx-z-l (wkx-bc θ) = wke-z-l θ
   wkx-z-l (wkx-wk ϕ) = wkx-z-l ϕ
 
+--------------
+  metr-type : Ty → Set
+  metr-type `Unit = ℕ
+  metr-type (T₁ `× T₂) = (metr-type T₁) × (metr-type T₂)
+  metr-type (T₁ `⇒ T₂) = (metr-type T₁) → (metr-type T₂)
+  metr-type `V = ℕ
+
+  data _≤ᴺ_ : {T : Ty} → (metr-type T) → (metr-type T) → Set where
+    ≤ᴺ-unit : {n m : ℕ} → (n≤m : n ≤ m) → _≤ᴺ_ {T = `Unit} n m
+    ≤ᴺ-pair : {T₁ T₂ : Ty} → {f₁ f₂ : metr-type T₁} → {g₁ g₂ : metr-type T₂} → (f₁ ≤ᴺ f₂) → (g₁ ≤ᴺ g₂) → (f₁ , g₁) ≤ᴺ (f₂ , g₂)
+    ≤ᴺ-func : {T T₁ : Ty} → {h : metr-type T} → {f₁ f₂ : metr-type (T `⇒ T₁)} → (f₁ h) ≤ᴺ (f₂ h) → f₁ ≤ᴺ f₂
+    ≤ᴺ-V : {n m : ℕ} → (n≤m : n ≤ m) → _≤ᴺ_ {T = `V} n m
+
+  _*ᴺ_ : {T : Ty} → (metr-type T) → (metr-type T) → (metr-type T)
+  _*ᴺ_ {T = `Unit} n₁ n₂ = n₁ * n₂
+  _*ᴺ_ {T = T₁ `× T₂} (f₁ , f₂) (g₁ , g₂) = f₁ *ᴺ g₁ , f₂ *ᴺ g₂
+  _*ᴺ_ {T = T `⇒ T₁} f₁ f₂ = λ h → (f₁ h) *ᴺ (f₂ h)
+  _*ᴺ_ {T = `V} n₁ n₂ = n₁ * n₂
+
+  _+ᴺ_ : {T : Ty} → (metr-type T) → (metr-type T) → (metr-type T)
+  _+ᴺ_ {T = `Unit} n₁ n₂ = n₁ + n₂
+  _+ᴺ_ {T = T₁ `× T₂} (f₁ , f₂) (g₁ , g₂) = f₁ +ᴺ g₁ , f₂ +ᴺ g₂
+  _+ᴺ_ {T = T `⇒ T₁} f₁ f₂ = λ h → (f₁ h) +ᴺ (f₂ h)
+  _+ᴺ_ {T = `V} n₁ n₂ = n₁ + n₂
+
+  --const-zero : (T : Ty) → metr-type T
+  --const-zero T = {!!}
+--------------
+
+
   lookup-mono-metric : (i : Γ ∋ Y) → (E : EMetric) → WkN Γ E → EElem Y
   lookup-mono-metric Cx.h ((Y , e) ∷ ne) (wkn-cong ϖ) = e
   lookup-mono-metric (Cx.t i) ((X , e) ∷ ne) (wkn-cong ϖ) = lookup-mono-metric i ne ϖ
