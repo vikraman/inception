@@ -268,12 +268,48 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
         found-comp : {W : Γ ⊢ᶜ X} → {γ : Env Γ} → {cs : CompStack Δ X} → {π : Wk Γ Δ} → {wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ} → LookupHaltingState ⟨ h ∥ (_﹐﹝_╎_﹞ γ W cs {π = π} {wk≡ = wk≡}) ⟩
 
   --------------------------------------------------------------------
+  cnt-type : Ty → Set
+  cnt-type `Unit = ℕ
+  cnt-type (T₁ `× T₂) = (cnt-type T₁) × (cnt-type T₂)
+  cnt-type (T₁ `⇒ T₂) = (cnt-type T₁) → (cnt-type T₂)
+  cnt-type `V = ℕ
+
+  data _≤ᴺ_ : {T : Ty} → (cnt-type T) → (cnt-type T) → Set where
+    ≤ᴺ-unit : {n m : ℕ} → (n≤m : n ≤ m) → _≤ᴺ_ {T = `Unit} n m
+    ≤ᴺ-pair : {T₁ T₂ : Ty} → {f₁ f₂ : cnt-type T₁} → {g₁ g₂ : cnt-type T₂} → (f₁ ≤ᴺ f₂) → (g₁ ≤ᴺ g₂) → (f₁ , g₁) ≤ᴺ (f₂ , g₂)
+    ≤ᴺ-func : {T T₁ : Ty} → {h : cnt-type T} → {f₁ f₂ : cnt-type (T `⇒ T₁)} → (f₁ h) ≤ᴺ (f₂ h) → f₁ ≤ᴺ f₂
+    ≤ᴺ-V : {n m : ℕ} → (n≤m : n ≤ m) → _≤ᴺ_ {T = `V} n m
+
+  _*ᴺ_ : {T : Ty} → (cnt-type T) → (cnt-type T) → (cnt-type T)
+  _*ᴺ_ {T = `Unit} n₁ n₂ = n₁ * n₂
+  _*ᴺ_ {T = T₁ `× T₂} (f₁ , f₂) (g₁ , g₂) = f₁ *ᴺ g₁ , f₂ *ᴺ g₂
+  _*ᴺ_ {T = T `⇒ T₁} f₁ f₂ = λ h → (f₁ h) *ᴺ (f₂ h)
+  _*ᴺ_ {T = `V} n₁ n₂ = n₁ * n₂
+
+  _+ᴺ_ : {T : Ty} → (cnt-type T) → (cnt-type T) → (cnt-type T)
+  _+ᴺ_ {T = `Unit} n₁ n₂ = n₁ + n₂
+  _+ᴺ_ {T = T₁ `× T₂} (f₁ , f₂) (g₁ , g₂) = f₁ +ᴺ g₁ , f₂ +ᴺ g₂
+  _+ᴺ_ {T = T `⇒ T₁} f₁ f₂ = λ h → (f₁ h) +ᴺ (f₂ h)
+  _+ᴺ_ {T = `V} n₁ n₂ = n₁ + n₂
+
+  const-zero : (T : Ty) → cnt-type T
+  const-zero `Unit = 0
+  const-zero (T₁ `× T₂) = (const-zero T₁) , (const-zero T₂)
+  const-zero (T `⇒ T₁) = λ _ → const-zero T₁
+  const-zero `V = 0
+
+  const-one : (T : Ty) → cnt-type T
+  const-one `Unit = 1
+  const-one (T₁ `× T₂) = (const-zero T₁) , (const-zero T₂)
+  const-one (T `⇒ T₁) = λ _ → const-zero T₁
+  const-one `V = 1
+  --------------------------------------------------------------------
 
   data TermMetric : Ty → Set where
     m-Unit : (m : ℕ) → TermMetric `Unit
-    --m-V : (m : ℕ) → (w : ℕ) → (csn : List (ℕ × ℕ)) → TermMetric (`V)
     m-V : (m : ℕ) → (w : ℕ) → TermMetric (`V)
-    m-⇒ : (m : ℕ) → (cnt : ℕ) → (nm : TermMetric Y) → TermMetric (X `⇒ Y)
+    --m-⇒ : (m : ℕ) → (cnt : ℕ) → (nm : TermMetric Y) → TermMetric (X `⇒ Y)
+    m-⇒ : (m : ℕ) → (cnt : cnt-type X) → (nm : TermMetric Y) → TermMetric (X `⇒ Y)
     m-×   : (m : ℕ) → (nm₁ : TermMetric X) → (nm₂ : TermMetric Y) → TermMetric (X `× Y)
 
   data Wkn : (Γ : Ctx) → (E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → Set where
@@ -295,21 +331,18 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   data _≤ᴹ_ : TermMetric X → TermMetric X → Set where
     ≤-Unit : (n₁ ≤ n₂) → (m-Unit n₁) ≤ᴹ (m-Unit n₂)
-    --≤-V    : {w₁ w₂ : ℕ} {csn₁ csn₂ : List (ℕ × ℕ)} → (m₁ ≤ m₂) → (w₁ ≤ w₂) → (csn₁ ≤ᶜˢⁿ csn₂) → (m-V m₁ w₁ csn₁) ≤ᴹ (m-V m₂ w₂ csn₂)
     ≤-V    : {w₁ w₂ : ℕ} → (m₁ ≤ m₂) → (w₁ ≤ w₂) → (m-V m₁ w₁) ≤ᴹ (m-V m₂ w₂)
-    ≤-⇒    : {cnt : ℕ} {nm₁ nm₂ : TermMetric Y} → (m₁ ≤ m₂) → (nm₁ ≤ᴹ nm₂) → (m-⇒ {X = X} m₁ cnt nm₁) ≤ᴹ (m-⇒ m₂ cnt nm₂)
+    ≤-⇒    : {X : Ty} {cnt : cnt-type X} {nm₁ nm₂ : TermMetric Y} → (m₁ ≤ m₂) → (nm₁ ≤ᴹ nm₂) → (m-⇒ {X = X} m₁ cnt nm₁) ≤ᴹ (m-⇒ m₂ cnt nm₂)
     ≤-×    : {lhs₁ lhs₂ : TermMetric X} → {rhs₁ rhs₂ : TermMetric Y} → (n₁ ≤ n₂) → (lhs₁ ≤ᴹ lhs₂) → (rhs₁ ≤ᴹ rhs₂) → (m-× n₁ lhs₁ rhs₁) ≤ᴹ (m-× n₂ lhs₂ rhs₂)
 
   ≤ᴹ-refl : {nm : TermMetric X} → nm ≤ᴹ nm
   ≤ᴹ-refl {nm = m-Unit m} = ≤-Unit ≤-refl
-  --≤ᴹ-refl {nm = m-V m n csn} = ≤-V  ≤-refl ≤-refl [c≤c]
   ≤ᴹ-refl {nm = m-V m w} = ≤-V  ≤-refl ≤-refl
   ≤ᴹ-refl {nm = m-⇒ m cnt nm} = ≤-⇒ ≤-refl ≤ᴹ-refl
   ≤ᴹ-refl {nm = m-× m nm nm₁} = ≤-× ≤-refl ≤ᴹ-refl ≤ᴹ-refl
 
   ≤ᴹ-trans : {nm₁ nm₂ nm₃ : TermMetric X} → nm₁ ≤ᴹ nm₂ → nm₂ ≤ᴹ nm₃ → nm₁ ≤ᴹ nm₃
   ≤ᴹ-trans (≤-Unit x) (≤-Unit x₁) = ≤-Unit (≤-trans x x₁)
-  --≤ᴹ-trans (≤-V x x₁ x₂) (≤-V x₃ x₄ x₅) = ≤-V (≤-trans x x₃) (≤-trans x₁ x₄) (≤ᶜˢⁿ-trans x₂ x₅)
   ≤ᴹ-trans (≤-V x x₁) (≤-V x₃ x₄) = ≤-V (≤-trans x x₃) (≤-trans x₁ x₄)
   ≤ᴹ-trans (≤-⇒ x nm₁≤nm₂) (≤-⇒ x₁ nm₂≤nm₃) = ≤-⇒ (≤-trans x x₁) (≤ᴹ-trans nm₁≤nm₂ nm₂≤nm₃)
   ≤ᴹ-trans (≤-× x nm₁≤nm₂ nm₁≤nm₃) (≤-× x₁ nm₂≤nm₃ nm₂≤nm₄) = ≤-× (≤-trans x x₁) (≤ᴹ-trans nm₁≤nm₂ nm₂≤nm₃) (≤ᴹ-trans nm₁≤nm₃ nm₂≤nm₄)
@@ -317,8 +350,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   zero-metric : TermMetric X
   zero-metric {X = `Unit} = m-Unit 0
   zero-metric {X = X `× Y} = m-× 0 (zero-metric {X = X}) (zero-metric {X = Y})
-  zero-metric {X = X `⇒ Y} = m-⇒ 0 0 (zero-metric {X = Y})
-  --zero-metric {X = `V} = m-V 0 0 []
+  zero-metric {X = X `⇒ Y} = m-⇒ 0 (const-zero X) (zero-metric {X = Y})
   zero-metric {X = `V} = m-V 0 0
 
   -------------------------------
@@ -365,14 +397,12 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   ⟪_⟫ : TermMetric X → ℕ
   ⟪ m-Unit m ⟫ = m
-  --⟪ m-V m w csn ⟫ = m + w + csn-to-nat₀ w csn
   ⟪ m-V m w ⟫ = m + w
   ⟪ m-⇒ m cnt nm ⟫ = m + ⟪ nm ⟫
   ⟪ m-× m nm₁ nm₂ ⟫ = m + ⟪ nm₁ ⟫ + ⟪ nm₂ ⟫
 
   incr : ℕ → TermMetric X → TermMetric X
   incr n (m-Unit m) = m-Unit (n + m)
-  --incr n (m-V m w csn) = m-V (n + m) w csn
   incr n (m-V m w) = m-V (n + m) w
   incr n (m-⇒ m cnt nm) = m-⇒ (n + m) cnt nm
   incr n (m-× m nm₁ nm₂) = m-× (n + m) nm₁ nm₂
@@ -381,12 +411,10 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   incr-coh zero `Unit (m-Unit m) = refl
   incr-coh zero (X `× X₁) (m-× m nm nm₁) = refl
   incr-coh zero (X `⇒ X₁) (m-⇒ m cnt nm) = refl
-  --incr-coh zero `V (m-V m w csn) = refl
   incr-coh zero `V (m-V m w) = refl
   incr-coh (suc n) `Unit (m-Unit m) = refl
   incr-coh (suc n) (X `× X₁) (m-× m nm nm₁) rewrite +-assoc {n} {m} {⟪ nm ⟫} | +-assoc {n} {m + ⟪ nm ⟫} {⟪ nm₁ ⟫} = refl
   incr-coh (suc n) (X `⇒ X₁) (m-⇒ m cnt nm) rewrite +-assoc {n} {m} {⟪ nm ⟫} = refl
-  --incr-coh (suc n) `V (m-V m w csn) rewrite +-assoc {n} {m} {w} | +-assoc {n} {m + w} {csn-to-nat₀ w csn} = refl
   incr-coh (suc n) `V (m-V m w) rewrite +-assoc {n} {m} {w} = refl
 
   {-# REWRITE incr-coh #-}
@@ -395,7 +423,6 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   incr-zero-coh `Unit (m-Unit m) = refl
   incr-zero-coh (X `× X₁) (m-× m nm₁ nm₂) = refl
   incr-zero-coh (X `⇒ X₁) (m-⇒ m cnt nm) = refl
-  --incr-zero-coh `V (m-V m w csn) = refl
   incr-zero-coh `V (m-V m w) = refl
 
   {-# REWRITE incr-zero-coh #-}
@@ -403,7 +430,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   p1 : TermMetric (X `⇒ Y) → ℕ
   p1 (m-⇒ m cnt nm) = m
 
-  p2 : TermMetric (X `⇒ Y) → ℕ
+  p2 : TermMetric (X `⇒ Y) → (cnt-type X)
   p2 (m-⇒ m cnt nm) = cnt
 
   p3 : TermMetric (X `⇒ Y) → TermMetric Y
@@ -441,12 +468,10 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   ≤ᴹ-incr-drop {X = `Unit} n (m-Unit m₁) (m-Unit m₂) (≤-Unit n+m₁≤n+m₂) = ≤-Unit (+-≤-cong-rev-left n+m₁≤n+m₂)
   ≤ᴹ-incr-drop {X = X `× Y} n (m-× m₁ nm₁ nm₂) (m-× m₂ nm₃ nm₄) (≤-× n+m₁≤n+m₂ nm₁≤nm₃ nm₂≤nm₄) = ≤-× (+-≤-cong-rev-left n+m₁≤n+m₂) nm₁≤nm₃ nm₂≤nm₄
   ≤ᴹ-incr-drop {X = X `⇒ Y} n (m-⇒ m₁ cnt nm₁) (m-⇒ m₂ cnt nm₂) (≤-⇒ n+m₁≤n+m₂ nm₁≤nm₂) = ≤-⇒ (+-≤-cong-rev-left n+m₁≤n+m₂) nm₁≤nm₂
-  --≤ᴹ-incr-drop {X = `V} n (m-V m₁ w₁ csn₁) (m-V m₂ w₂ csn₂) (≤-V n+m₁≤n+m₂ w₁≤w₂ c₁≤c₂) = ≤-V (+-≤-cong-rev-left n+m₁≤n+m₂) w₁≤w₂ c₁≤c₂
   ≤ᴹ-incr-drop {X = `V} n (m-V m₁ w₁) (m-V m₂ w₂) (≤-V n+m₁≤n+m₂ w₁≤w₂) = ≤-V (+-≤-cong-rev-left n+m₁≤n+m₂) w₁≤w₂
 
   ≤ᴹ-incr-cong : (n₁≤n₂ : n₁ ≤ n₂) → {nm₁ nm₂ : TermMetric X} → (nm₁ ≤ᴹ nm₂) → ((incr n₁ nm₁) ≤ᴹ (incr n₂ nm₂))
   ≤ᴹ-incr-cong n₁≤n₂ (≤-Unit m₁≤m₂) = ≤-Unit (+-≤-cong n₁≤n₂ m₁≤m₂)
-  --≤ᴹ-incr-cong n₁≤n₂ (≤-V m₁≤m₂ w₁≤w₂ c₁≤c₂) = ≤-V (+-≤-cong n₁≤n₂ m₁≤m₂) w₁≤w₂ c₁≤c₂
   ≤ᴹ-incr-cong n₁≤n₂ (≤-V m₁≤m₂ w₁≤w₂) = ≤-V (+-≤-cong n₁≤n₂ m₁≤m₂) w₁≤w₂
   ≤ᴹ-incr-cong n₁≤n₂ (≤-⇒ m₁≤m₂ nm₁≤nm₂) = ≤-⇒ (+-≤-cong n₁≤n₂ m₁≤m₂) nm₁≤nm₂
   ≤ᴹ-incr-cong n₁≤n₂ (≤-× m₁≤m₂ nm₁≤nm₃ nm₂≤nm₄) = ≤-× (+-≤-cong n₁≤n₂ m₁≤m₂) nm₁≤nm₃ nm₂≤nm₄
@@ -463,7 +488,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   ≡⇒≤ {n = n} {m = m} n≡m rewrite n≡m = ≤-refl
 
   +-p1-incr : (n : ℕ) → (nm : TermMetric (X `⇒ Y)) → p1 (incr n nm) ≡ n + (p1 nm)
-  +-p1-incr n (m-⇒ {Y = Y} {X = X} m cnt nm) with incr n (m-⇒ {Y = Y} {X = X} m cnt nm)
+  +-p1-incr n (m-⇒ {X = X} {Y = Y} m cnt nm) with incr n (m-⇒ {X = X} {Y = Y} m cnt nm)
   ... | x = refl
 
   ≡-p2-incr : (n : ℕ) → (nm : TermMetric (X `⇒ Y)) → p2 (incr n nm) ≡ p2 nm
@@ -488,11 +513,9 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   ≤ᴹ⇒≤ : {nm₁ nm₂ : TermMetric X} → (nm₁ ≤ᴹ nm₂) → (⟪ nm₁ ⟫ ≤ ⟪ nm₂ ⟫)
   ≤ᴹ⇒≤ (≤-Unit n₁≤n₂) = n₁≤n₂
-  --≤ᴹ⇒≤ (≤-V n₁≤n₂ w₁≤w₂ c₁≤c₂) = +-≤-cong (+-≤-cong n₁≤n₂ w₁≤w₂) (≤ᶜˢⁿ-decr w₁≤w₂ c₁≤c₂)
   ≤ᴹ⇒≤ (≤-V n₁≤n₂ w₁≤w₂) = +-≤-cong n₁≤n₂ w₁≤w₂
   ≤ᴹ⇒≤ (≤-⇒ n₁≤n₂ nm₁≤nm₂) = +-≤-cong n₁≤n₂ (≤ᴹ⇒≤ nm₁≤nm₂)
   ≤ᴹ⇒≤ (≤-× n₁≤n₂ nm₁≤nm₃ nm₂≤nm₄) = +-≤-cong (+-≤-cong n₁≤n₂ (≤ᴹ⇒≤ nm₁≤nm₃)) (≤ᴹ⇒≤ nm₂≤nm₄)
-
 
   --------------------------------------------------------------------
 
@@ -589,35 +612,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   wkx-z-l (wkx-bc θ) = wke-z-l θ
   wkx-z-l (wkx-wk ϕ) = wkx-z-l ϕ
 
---------------
-  metr-type : Ty → Set
-  metr-type `Unit = ℕ
-  metr-type (T₁ `× T₂) = (metr-type T₁) × (metr-type T₂)
-  metr-type (T₁ `⇒ T₂) = (metr-type T₁) → (metr-type T₂)
-  metr-type `V = ℕ
-
-  data _≤ᴺ_ : {T : Ty} → (metr-type T) → (metr-type T) → Set where
-    ≤ᴺ-unit : {n m : ℕ} → (n≤m : n ≤ m) → _≤ᴺ_ {T = `Unit} n m
-    ≤ᴺ-pair : {T₁ T₂ : Ty} → {f₁ f₂ : metr-type T₁} → {g₁ g₂ : metr-type T₂} → (f₁ ≤ᴺ f₂) → (g₁ ≤ᴺ g₂) → (f₁ , g₁) ≤ᴺ (f₂ , g₂)
-    ≤ᴺ-func : {T T₁ : Ty} → {h : metr-type T} → {f₁ f₂ : metr-type (T `⇒ T₁)} → (f₁ h) ≤ᴺ (f₂ h) → f₁ ≤ᴺ f₂
-    ≤ᴺ-V : {n m : ℕ} → (n≤m : n ≤ m) → _≤ᴺ_ {T = `V} n m
-
-  _*ᴺ_ : {T : Ty} → (metr-type T) → (metr-type T) → (metr-type T)
-  _*ᴺ_ {T = `Unit} n₁ n₂ = n₁ * n₂
-  _*ᴺ_ {T = T₁ `× T₂} (f₁ , f₂) (g₁ , g₂) = f₁ *ᴺ g₁ , f₂ *ᴺ g₂
-  _*ᴺ_ {T = T `⇒ T₁} f₁ f₂ = λ h → (f₁ h) *ᴺ (f₂ h)
-  _*ᴺ_ {T = `V} n₁ n₂ = n₁ * n₂
-
-  _+ᴺ_ : {T : Ty} → (metr-type T) → (metr-type T) → (metr-type T)
-  _+ᴺ_ {T = `Unit} n₁ n₂ = n₁ + n₂
-  _+ᴺ_ {T = T₁ `× T₂} (f₁ , f₂) (g₁ , g₂) = f₁ +ᴺ g₁ , f₂ +ᴺ g₂
-  _+ᴺ_ {T = T `⇒ T₁} f₁ f₂ = λ h → (f₁ h) +ᴺ (f₂ h)
-  _+ᴺ_ {T = `V} n₁ n₂ = n₁ + n₂
-
-  --const-zero : (T : Ty) → metr-type T
-  --const-zero T = {!!}
---------------
-
+{- AAAA
 
   lookup-mono-metric : (i : Γ ∋ Y) → (E : EMetric) → WkN Γ E → EElem Y
   lookup-mono-metric Cx.h ((Y , e) ∷ ne) (wkn-cong ϖ) = e
@@ -2162,3 +2157,5 @@ yGoal:   ⟪ proj₁ (b1) csn ⟫
   sub-cps' : (M : (Γ ∙ `V) ⊢ᶜ X) → (N : Γ ⊢ᶜ X) → (γ : Env Γ) → (cs : CompStack Δ X) → (πₓ : Wk Γ Δ) → (wk≡ : ⟦ πₓ ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → ⟦ sub M N ⟧ᶜ ⟦ γ ⟧ᴱ ⟦ cs ⟧ᴷ ≡ ⟦ M ⟧ᶜ ⟦ (γ ﹐﹝ N ╎ cs ﹞) {π = πₓ} {wk≡ = wk≡} ⟧ᴱ ⟦ cs ⟧ᴷ
   sub-cps' M N γ cs πₓ wk≡ = refl
 -}
+
+AAAA -}
