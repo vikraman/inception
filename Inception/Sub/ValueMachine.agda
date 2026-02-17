@@ -268,6 +268,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
         found-comp : {W : Γ ⊢ᶜ X} → {γ : Env Γ} → {cs : CompStack Δ X} → {π : Wk Γ Δ} → {wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ} → LookupHaltingState ⟨ h ∥ (_﹐﹝_╎_﹞ γ W cs {π = π} {wk≡ = wk≡}) ⟩
 
   --------------------------------------------------------------------
+  {-
   cnt-type : Ty → Set
   cnt-type `Unit = ℕ
   cnt-type (T₁ `× T₂) = (cnt-type T₁) × (cnt-type T₂)
@@ -303,21 +304,76 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   const-one (T₁ `× T₂) = (const-zero T₁) , (const-zero T₂)
   const-one (T `⇒ T₁) = λ _ → const-zero T₁
   const-one `V = 1
+  -}
+
+  {-
+  data TermCounter : Ty → Set where
+    c-Unit : (n : ℕ) → TermCounter `Unit
+    c-V : (n : ℕ) → TermCounter (`V)
+    c-⇒ : (n : ℕ) → (x : ℕ) → (c : TermCounter Y) → TermCounter (X `⇒ Y)
+    c-×   : (n : ℕ) → (c₁ : TermCounter X) → (c₂ : TermCounter Y) → TermCounter (X `× Y)
+
+  _++ᴺ_ : ℕ → TermCounter X → TermCounter X
+  n ++ᴺ c-Unit n₁ = c-Unit (n + n₁)
+  n ++ᴺ c-V n₁ = c-V (n + n₁)
+  n ++ᴺ c-⇒ n₁ x c = c-⇒ (n + n₁) x c
+  n ++ᴺ c-× n₁ c c₁ = c-× (n + n₁) c c₁
+
+  │_│ : TermCounter X → ℕ
+  │ c-Unit n │ = n
+  │ c-V n │ = n
+  │ c-⇒ n x c │ = n + │ c │
+  │ c-× n c₁ c₂ │ = n + │ c₁ │ + │ c₂ │
+
+  _+ᴺ_ : TermCounter X → TermCounter X → TermCounter X
+  c-Unit n +ᴺ c-Unit n' = c-Unit (n + n')
+  c-V n +ᴺ c-V n' = c-V (n + n')
+  c-⇒ n x c +ᴺ c-⇒ n' x' c' = c-⇒ (n + n') (x + x') (c +ᴺ c')
+  c-× n c₁ c₂ +ᴺ c-× n' c₁' c₂' = c-× (n + n') (c₁ +ᴺ c₁') (c₂ +ᴺ c₂')
+
+  zero-counter : TermCounter X
+  zero-counter {X = `Unit} = c-Unit zero
+  zero-counter {X = X `× X₁} = c-× zero zero-counter zero-counter
+  zero-counter {X = X `⇒ X₁} = c-⇒ zero zero zero-counter
+  zero-counter {X = `V} = c-V zero
+
+  one-counter : TermCounter X
+  one-counter {X = `Unit} = c-Unit 1
+  one-counter {X = X `× X₁} = c-× 1 zero-counter zero-counter
+  one-counter {X = X `⇒ X₁} = c-⇒ 1 zero zero-counter
+  one-counter {X = `V} = c-V 1
+
+  data _≤ᴺ_ : {X : Ty} → (TermCounter X) → (TermCounter X) → Set where
+    ≤ᴺ-unit : {n n' : ℕ} → (n≤n' : n ≤ n') → (c-Unit n) ≤ᴺ (c-Unit n')
+    ≤ᴺ-pair : {n n' : ℕ} → {c₁ c₁' : TermCounter X} → {c₂ c₂' : TermCounter Y} → (n≤n' : n ≤ n') → (c₁ ≤ᴺ c₁') → (c₂ ≤ᴺ c₂') → (c-× n c₁ c₂) ≤ᴺ (c-× n' c₁' c₂')
+    ≤ᴺ-func : {X : Ty} → {n n' x : ℕ} → {c c' : TermCounter Y} → (n≤n' : n ≤ n') → (c ≤ᴺ c') → (c-⇒ {X = X} n x c) ≤ᴺ (c-⇒ n' x c')
+    ≤ᴺ-V : {n n' : ℕ} → (n≤n' : n ≤ n') → (c-V n) ≤ᴺ (c-V n')
+  -}
+
   --------------------------------------------------------------------
+
+  {-
+  data TermMetric : Ty → Set where
+    m-Unit : (cnt : ℕ) → (m : ℕ) → TermMetric `Unit
+    m-V : (cnt : ℕ) → (m : ℕ) → (w : ℕ) → TermMetric (`V)
+    m-⇒ : (cnt : ℕ) → (m : ℕ) → (nm : TermMetric Y) → TermMetric (X `⇒ Y)
+    m-×   : (cnt : ℕ) → (m : ℕ) → (nm₁ : TermMetric X) → (nm₂ : TermMetric Y) → TermMetric (X `× Y)
+  -}
 
   data TermMetric : Ty → Set where
     m-Unit : (m : ℕ) → TermMetric `Unit
     m-V : (m : ℕ) → (w : ℕ) → TermMetric (`V)
-    --m-⇒ : (m : ℕ) → (cnt : ℕ) → (nm : TermMetric Y) → TermMetric (X `⇒ Y)
-    m-⇒ : (m : ℕ) → (cnt : cnt-type X) → (nm : TermMetric Y) → TermMetric (X `⇒ Y)
-    m-×   : (m : ℕ) → (nm₁ : TermMetric X) → (nm₂ : TermMetric Y) → TermMetric (X `× Y)
+    m-⇒ : (m : ℕ) → (nm : TermMetric Y) → TermMetric (X `⇒ Y)
+    m-× : (m : ℕ) → (nm₁ : TermMetric X) → (nm₂ : TermMetric Y) → TermMetric (X `× Y)
 
+  {-
   data Wkn : (Γ : Ctx) → (E : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))) → Set where
     wkn-nil  : Wkn ε []
     wkn-cong :   {Γ : Ctx} → {ne : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))} → {Y : Ty}
                → {e : (List (ℕ × ℕ) → TermMetric Y)} → (ϖ : Wkn Γ ne) → Wkn (Γ ∙ Y) ((Y , e) ∷ ne)
     wkn-cons :   {Γ : Ctx} → {ne : List (Σ[ X ∈ Ty ] (List (ℕ × ℕ) → TermMetric X))}
                → {Y : Ty} → (ϖ : Wkn Γ ne) → Wkn (Γ ∙ Y) ne
+  -}
 
   data _≤ᶜˢⁿ_ : List (ℕ × ℕ) → List (ℕ × ℕ) → Set where
    [c≤c] : {csn : List (ℕ × ℕ)} → csn ≤ᶜˢⁿ csn
@@ -329,16 +385,119 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   ≤ᶜˢⁿ-trans ([s≤s] x c₁≤c₂) [c≤c] = [s≤s] x c₁≤c₂
   ≤ᶜˢⁿ-trans ([s≤s] x c₁≤c₂) ([s≤s] x₁ c₂≤c₃) = [s≤s] (≤-trans x x₁) (≤ᶜˢⁿ-trans c₁≤c₂ c₂≤c₃)
 
+  --------------------------------------------------------------------
+
+  data WkC : (Γ : Ctx) → (E : List ℕ) → Set where
+    wkc-nil  : WkC ε []
+    wkc-cong :   {Γ : Ctx} → {E : List ℕ} → {Y : Ty}
+               → {e : ℕ} → (ϖ : WkC Γ E) → WkC (Γ ∙ Y) (e ∷ E)
+    wkc-cons :   {Γ : Ctx} → {E : List ℕ}
+               → {Y : Ty} → (ϖ : WkC Γ E) → WkC (Γ ∙ Y) E
+
+  lcount : (i : Γ ∋ Z) → (E : List ℕ) → WkC Γ E → ℕ
+  lcount Cx.h [] (wkc-cons ç) = 1
+  lcount Cx.h (e ∷ E) (wkc-cong ç) = e
+  lcount Cx.h (e ∷ E) (wkc-cons ç) = e
+  lcount (Cx.t i) [] (wkc-cons ç) = 1
+  lcount (Cx.t i) (e ∷ E) (wkc-cong ç) = lcount i E ç
+  lcount (Cx.t i) (e ∷ E) (wkc-cons ç) = lcount i (e ∷ E) ç
+
+  mutual
+
+    vcount : (M : Val Γ Z) → (E : List ℕ) → WkC Γ E → ℕ
+    vcount (var i) E ç = lcount i E ç
+    vcount (lam W) E ç = ccount W E (wkc-cons ç)
+    vcount (pair M₁ M₂) E ç = (vcount M₁ E ç) + (vcount M₂ E ç)
+    vcount (pm M N) E ç =
+      let
+        a1 = vcount M E ç
+      in
+        vcount N (a1 ∷ a1 ∷ E) (wkc-cong (wkc-cong ç))
+    vcount unit E ç = 0
+
+    ccount : (W : Comp Γ Z) → (E : List ℕ) → WkC Γ E → ℕ
+    ccount (return M) E ç = vcount M E ç
+    ccount (pm M W) E ç =
+      let
+        a1 = vcount M E ç
+      in
+        ccount W (a1 ∷ a1 ∷ E) (wkc-cong (wkc-cong ç))
+    ccount (push W₁ W₂) E ç =
+      let
+        a1 = ccount W₁ E ç
+      in
+        ccount W₂ (a1 ∷ E) (wkc-cong ç)
+    ccount (app M N) E ç = (suc (vcount M E ç)) * (suc (vcount N E ç))
+    ccount (var M) E ç = vcount M E ç
+    ccount (sub W₁ W₂) E ç =
+      let
+        a1 = ccount W₂ E ç
+      in
+        ccount W₁ (a1 ∷ E) (wkc-cong ç)
+
+  -------------------------------------------------------------------
+  {-
+  test-term-1 : Val ε `Unit
+  test-term-1 = unit
+
+  test-term-2 : Comp ε _
+  test-term-2 = app (lam (app (lam (return (pair (lam (app (var h) (var (t h)))) (var h)))) (lam (return (pair (var h) (var h)))))) (unit)
+
+  _ : vcount test-term-1 [] wkc-nil ≡ {!ccount test-term-2 [] wkc-nil!}
+  _ = refl
+  -}
+  -------------------------------------------------------------------
+
+  {-
+  data _≤ᴹ_ : TermMetric X → TermMetric X → Set where
+    ≤-Unit : {cnt₁ cnt₂ : ℕ} → (cnt₁ ≤ cnt₂) → (n₁ ≤ n₂) → (m-Unit cnt₁ n₁) ≤ᴹ (m-Unit cnt₂ n₂)
+    ≤-V    : {cnt₁ cnt₂ : ℕ} → {w₁ w₂ : ℕ} → (cnt₁ ≤ cnt₂) → (m₁ ≤ m₂) → (w₁ ≤ w₂) → (m-V cnt₁ m₁ w₁) ≤ᴹ (m-V cnt₂ m₂ w₂)
+    ≤-⇒    : {cnt₁ cnt₂ : ℕ} → {nm₁ nm₂ : TermMetric Y} → (cnt₁ ≤ cnt₂) → (m₁ ≤ m₂) → (nm₁ ≤ᴹ nm₂) → (m-⇒ {X = X} cnt₁ m₁ nm₁) ≤ᴹ (m-⇒ cnt₂ m₂ nm₂)
+    ≤-×    : {cnt₁ cnt₂ : ℕ} → {lhs₁ lhs₂ : TermMetric X} → {rhs₁ rhs₂ : TermMetric Y} → (cnt₁ ≤ cnt₂) → (n₁ ≤ n₂) → (lhs₁ ≤ᴹ lhs₂) → (rhs₁ ≤ᴹ rhs₂) → (m-× cnt₁ n₁ lhs₁ rhs₁) ≤ᴹ (m-× cnt₂ n₂ lhs₂ rhs₂)
+
+  ≤ᴹ-refl : {nm : TermMetric X} → nm ≤ᴹ nm
+  ≤ᴹ-refl {nm = m-Unit cnt m} = ≤-Unit ≤-refl ≤-refl
+  ≤ᴹ-refl {nm = m-V cnt m w} = ≤-V ≤-refl ≤-refl ≤-refl
+  ≤ᴹ-refl {nm = m-⇒ cnt m nm} = ≤-⇒ ≤-refl ≤-refl ≤ᴹ-refl
+  ≤ᴹ-refl {nm = m-× cnt m nm nm₁} = ≤-× ≤-refl ≤-refl ≤ᴹ-refl ≤ᴹ-refl
+
+  ≤ᴹ-trans : {nm₁ nm₂ nm₃ : TermMetric X} → nm₁ ≤ᴹ nm₂ → nm₂ ≤ᴹ nm₃ → nm₁ ≤ᴹ nm₃
+  ≤ᴹ-trans (≤-Unit cnt₁ x) (≤-Unit cnt₂ x₁) = ≤-Unit (≤-trans cnt₁ cnt₂) (≤-trans x x₁)
+  ≤ᴹ-trans (≤-V cnt₁ x x₁) (≤-V cnt₂ x₃ x₄) = ≤-V (≤-trans cnt₁ cnt₂) (≤-trans x x₃) (≤-trans x₁ x₄)
+  ≤ᴹ-trans (≤-⇒ cnt₁ x nm₁≤nm₂) (≤-⇒ cnt₂ x₁ nm₂≤nm₃) = ≤-⇒ (≤-trans cnt₁ cnt₂) (≤-trans x x₁) (≤ᴹ-trans nm₁≤nm₂ nm₂≤nm₃)
+  ≤ᴹ-trans (≤-× cnt₁ x nm₁≤nm₂ nm₁≤nm₃) (≤-× cnt₂ x₁ nm₂≤nm₃ nm₂≤nm₄) = ≤-× (≤-trans cnt₁ cnt₂) (≤-trans x x₁) (≤ᴹ-trans nm₁≤nm₂ nm₂≤nm₃) (≤ᴹ-trans nm₁≤nm₃ nm₂≤nm₄)
+  -}
+
+  {-
+  data _≤ᴹ_ : TermMetric X → TermMetric X → Set where
+    ≤-Unit : {cnt : ℕ} → (n₁ ≤ n₂) → (m-Unit cnt n₁) ≤ᴹ (m-Unit cnt n₂)
+    ≤-V    : {cnt : ℕ} → {w₁ w₂ : ℕ} → (m₁ ≤ m₂) → (w₁ ≤ w₂) → (m-V cnt m₁ w₁) ≤ᴹ (m-V cnt m₂ w₂)
+    ≤-⇒    : {cnt : ℕ} → {nm₁ nm₂ : TermMetric Y} → (m₁ ≤ m₂) → (nm₁ ≤ᴹ nm₂) → (m-⇒ {X = X} cnt m₁ nm₁) ≤ᴹ (m-⇒ cnt m₂ nm₂)
+    ≤-×    : {cnt : ℕ} → {lhs₁ lhs₂ : TermMetric X} → {rhs₁ rhs₂ : TermMetric Y} → (n₁ ≤ n₂) → (lhs₁ ≤ᴹ lhs₂) → (rhs₁ ≤ᴹ rhs₂) → (m-× cnt n₁ lhs₁ rhs₁) ≤ᴹ (m-× cnt n₂ lhs₂ rhs₂)
+
+  ≤ᴹ-refl : {nm : TermMetric X} → nm ≤ᴹ nm
+  ≤ᴹ-refl {nm = m-Unit cnt m} = ≤-Unit ≤-refl
+  ≤ᴹ-refl {nm = m-V cnt m w} = ≤-V ≤-refl ≤-refl
+  ≤ᴹ-refl {nm = m-⇒ cnt m nm} = ≤-⇒ ≤-refl ≤ᴹ-refl
+  ≤ᴹ-refl {nm = m-× cnt m nm nm₁} = ≤-× ≤-refl ≤ᴹ-refl ≤ᴹ-refl
+
+  ≤ᴹ-trans : {nm₁ nm₂ nm₃ : TermMetric X} → nm₁ ≤ᴹ nm₂ → nm₂ ≤ᴹ nm₃ → nm₁ ≤ᴹ nm₃
+  ≤ᴹ-trans (≤-Unit x) (≤-Unit x₁) = ≤-Unit (≤-trans x x₁)
+  ≤ᴹ-trans (≤-V x x₁) (≤-V x₃ x₄) = ≤-V (≤-trans x x₃) (≤-trans x₁ x₄)
+  ≤ᴹ-trans (≤-⇒ x nm₁≤nm₂) (≤-⇒ x₁ nm₂≤nm₃) = ≤-⇒ (≤-trans x x₁) (≤ᴹ-trans nm₁≤nm₂ nm₂≤nm₃)
+  ≤ᴹ-trans (≤-× x nm₁≤nm₂ nm₁≤nm₃) (≤-× x₁ nm₂≤nm₃ nm₂≤nm₄) = ≤-× (≤-trans x x₁) (≤ᴹ-trans nm₁≤nm₂ nm₂≤nm₃) (≤ᴹ-trans nm₁≤nm₃ nm₂≤nm₄)
+  -}
+
   data _≤ᴹ_ : TermMetric X → TermMetric X → Set where
     ≤-Unit : (n₁ ≤ n₂) → (m-Unit n₁) ≤ᴹ (m-Unit n₂)
     ≤-V    : {w₁ w₂ : ℕ} → (m₁ ≤ m₂) → (w₁ ≤ w₂) → (m-V m₁ w₁) ≤ᴹ (m-V m₂ w₂)
-    ≤-⇒    : {X : Ty} {cnt : cnt-type X} {nm₁ nm₂ : TermMetric Y} → (m₁ ≤ m₂) → (nm₁ ≤ᴹ nm₂) → (m-⇒ {X = X} m₁ cnt nm₁) ≤ᴹ (m-⇒ m₂ cnt nm₂)
+    ≤-⇒    : {nm₁ nm₂ : TermMetric Y} → (m₁ ≤ m₂) → (nm₁ ≤ᴹ nm₂) → (m-⇒ {X = X} m₁ nm₁) ≤ᴹ (m-⇒ m₂ nm₂)
     ≤-×    : {lhs₁ lhs₂ : TermMetric X} → {rhs₁ rhs₂ : TermMetric Y} → (n₁ ≤ n₂) → (lhs₁ ≤ᴹ lhs₂) → (rhs₁ ≤ᴹ rhs₂) → (m-× n₁ lhs₁ rhs₁) ≤ᴹ (m-× n₂ lhs₂ rhs₂)
 
   ≤ᴹ-refl : {nm : TermMetric X} → nm ≤ᴹ nm
   ≤ᴹ-refl {nm = m-Unit m} = ≤-Unit ≤-refl
-  ≤ᴹ-refl {nm = m-V m w} = ≤-V  ≤-refl ≤-refl
-  ≤ᴹ-refl {nm = m-⇒ m cnt nm} = ≤-⇒ ≤-refl ≤ᴹ-refl
+  ≤ᴹ-refl {nm = m-V m w} = ≤-V ≤-refl ≤-refl
+  ≤ᴹ-refl {nm = m-⇒ m nm} = ≤-⇒ ≤-refl ≤ᴹ-refl
   ≤ᴹ-refl {nm = m-× m nm nm₁} = ≤-× ≤-refl ≤ᴹ-refl ≤ᴹ-refl
 
   ≤ᴹ-trans : {nm₁ nm₂ nm₃ : TermMetric X} → nm₁ ≤ᴹ nm₂ → nm₂ ≤ᴹ nm₃ → nm₁ ≤ᴹ nm₃
@@ -347,10 +506,18 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   ≤ᴹ-trans (≤-⇒ x nm₁≤nm₂) (≤-⇒ x₁ nm₂≤nm₃) = ≤-⇒ (≤-trans x x₁) (≤ᴹ-trans nm₁≤nm₂ nm₂≤nm₃)
   ≤ᴹ-trans (≤-× x nm₁≤nm₂ nm₁≤nm₃) (≤-× x₁ nm₂≤nm₃ nm₂≤nm₄) = ≤-× (≤-trans x x₁) (≤ᴹ-trans nm₁≤nm₂ nm₂≤nm₃) (≤ᴹ-trans nm₁≤nm₃ nm₂≤nm₄)
 
+  {-
+  zero-metric : TermMetric X
+  zero-metric {X = `Unit} = m-Unit 0 0
+  zero-metric {X = X `× Y} = m-× 0 0 (zero-metric {X = X}) (zero-metric {X = Y})
+  zero-metric {X = X `⇒ Y} = m-⇒ 0 0 (zero-metric {X = Y})
+  zero-metric {X = `V} = m-V 0 0 0
+  -}
+
   zero-metric : TermMetric X
   zero-metric {X = `Unit} = m-Unit 0
   zero-metric {X = X `× Y} = m-× 0 (zero-metric {X = X}) (zero-metric {X = Y})
-  zero-metric {X = X `⇒ Y} = m-⇒ 0 (const-zero X) (zero-metric {X = Y})
+  zero-metric {X = X `⇒ Y} = m-⇒ 0 (zero-metric {X = Y})
   zero-metric {X = `V} = m-V 0 0
 
   -------------------------------
@@ -395,26 +562,34 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     in
       +-≤-cong m₁≤m₂ (≤ᶜˢⁿ-decr m₁≤m₂ c₁≤c₂)
 
+  {-
+  ⟪_⟫ : TermMetric X → ℕ
+  ⟪ m-Unit _ m ⟫ = m
+  ⟪ m-V _ m w ⟫ = m + w
+  ⟪ m-⇒ _ m nm ⟫ = m + ⟪ nm ⟫
+  ⟪ m-× _ m nm₁ nm₂ ⟫ = m + ⟪ nm₁ ⟫ + ⟪ nm₂ ⟫
+  -}
+
   ⟪_⟫ : TermMetric X → ℕ
   ⟪ m-Unit m ⟫ = m
   ⟪ m-V m w ⟫ = m + w
-  ⟪ m-⇒ m cnt nm ⟫ = m + ⟪ nm ⟫
+  ⟪ m-⇒ m nm ⟫ = m + ⟪ nm ⟫
   ⟪ m-× m nm₁ nm₂ ⟫ = m + ⟪ nm₁ ⟫ + ⟪ nm₂ ⟫
 
   incr : ℕ → TermMetric X → TermMetric X
   incr n (m-Unit m) = m-Unit (n + m)
   incr n (m-V m w) = m-V (n + m) w
-  incr n (m-⇒ m cnt nm) = m-⇒ (n + m) cnt nm
+  incr n (m-⇒ m nm) = m-⇒ (n + m) nm
   incr n (m-× m nm₁ nm₂) = m-× (n + m) nm₁ nm₂
 
   incr-coh : (n : ℕ) → (X : Ty) → (nm : TermMetric X) → ⟪ incr n nm ⟫ ≡ n + ⟪ nm ⟫
   incr-coh zero `Unit (m-Unit m) = refl
   incr-coh zero (X `× X₁) (m-× m nm nm₁) = refl
-  incr-coh zero (X `⇒ X₁) (m-⇒ m cnt nm) = refl
+  incr-coh zero (X `⇒ X₁) (m-⇒ m nm) = refl
   incr-coh zero `V (m-V m w) = refl
   incr-coh (suc n) `Unit (m-Unit m) = refl
   incr-coh (suc n) (X `× X₁) (m-× m nm nm₁) rewrite +-assoc {n} {m} {⟪ nm ⟫} | +-assoc {n} {m + ⟪ nm ⟫} {⟪ nm₁ ⟫} = refl
-  incr-coh (suc n) (X `⇒ X₁) (m-⇒ m cnt nm) rewrite +-assoc {n} {m} {⟪ nm ⟫} = refl
+  incr-coh (suc n) (X `⇒ X₁) (m-⇒ m nm) rewrite +-assoc {n} {m} {⟪ nm ⟫} = refl
   incr-coh (suc n) `V (m-V m w) rewrite +-assoc {n} {m} {w} = refl
 
   {-# REWRITE incr-coh #-}
@@ -422,19 +597,28 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   incr-zero-coh : (X : Ty) → (nm : TermMetric X) → incr zero nm ≡ nm
   incr-zero-coh `Unit (m-Unit m) = refl
   incr-zero-coh (X `× X₁) (m-× m nm₁ nm₂) = refl
-  incr-zero-coh (X `⇒ X₁) (m-⇒ m cnt nm) = refl
+  incr-zero-coh (X `⇒ X₁) (m-⇒ m nm) = refl
   incr-zero-coh `V (m-V m w) = refl
 
   {-# REWRITE incr-zero-coh #-}
 
+  {-
   p1 : TermMetric (X `⇒ Y) → ℕ
   p1 (m-⇒ m cnt nm) = m
 
-  p2 : TermMetric (X `⇒ Y) → (cnt-type X)
+  --p2 : TermMetric (X `⇒ Y) → (TermCounter X)
+  p2 : TermMetric (X `⇒ Y) → ℕ
   p2 (m-⇒ m cnt nm) = cnt
 
   p3 : TermMetric (X `⇒ Y) → TermMetric Y
   p3 (m-⇒ m cnt nm) = nm
+  -}
+
+  p1 : TermMetric (X `⇒ Y) → ℕ
+  p1 (m-⇒ m w) = m
+
+  pw : TermMetric (X `⇒ Y) → TermMetric Y
+  pw (m-⇒ m w) = w
 
   vx : TermMetric (X `× Y) → ℕ
   vx (m-× m l r) = m
@@ -464,10 +648,24 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   {-# REWRITE zm-coh #-}
 
+  {-
+  ≤ᴹ-incr-drop : (n : ℕ) → (nm₁ nm₂ : TermMetric X) → ((incr n nm₁) ≤ᴹ (incr n nm₂)) → (nm₁ ≤ᴹ nm₂)
+  ≤ᴹ-incr-drop {X = `Unit} n (m-Unit _ m₁) (m-Unit _ m₂) (≤-Unit c≤c' n+m₁≤n+m₂) = ≤-Unit c≤c' (+-≤-cong-rev-left n+m₁≤n+m₂)
+  ≤ᴹ-incr-drop {X = X `× Y} n (m-× _ m₁ nm₁ nm₂) (m-× _ m₂ nm₃ nm₄) (≤-× c≤c' n+m₁≤n+m₂ nm₁≤nm₃ nm₂≤nm₄) = ≤-× c≤c' (+-≤-cong-rev-left n+m₁≤n+m₂) nm₁≤nm₃ nm₂≤nm₄
+  ≤ᴹ-incr-drop {X = X `⇒ Y} n (m-⇒ _ m₁ nm₁) (m-⇒ _ m₂ nm₂) (≤-⇒ c≤c' n+m₁≤n+m₂ nm₁≤nm₂) = ≤-⇒ c≤c' (+-≤-cong-rev-left n+m₁≤n+m₂) nm₁≤nm₂
+  ≤ᴹ-incr-drop {X = `V} n (m-V _ m₁ w₁) (m-V _ m₂ w₂) (≤-V c≤c' n+m₁≤n+m₂ w₁≤w₂) = ≤-V c≤c' (+-≤-cong-rev-left n+m₁≤n+m₂) w₁≤w₂
+
+  ≤ᴹ-incr-cong : (n₁≤n₂ : n₁ ≤ n₂) → {nm₁ nm₂ : TermMetric X} → (nm₁ ≤ᴹ nm₂) → ((incr n₁ nm₁) ≤ᴹ (incr n₂ nm₂))
+  ≤ᴹ-incr-cong n₁≤n₂ (≤-Unit c≤c' m₁≤m₂) = ≤-Unit c≤c' (+-≤-cong n₁≤n₂ m₁≤m₂)
+  ≤ᴹ-incr-cong n₁≤n₂ (≤-V c≤c' m₁≤m₂ w₁≤w₂) = ≤-V c≤c' (+-≤-cong n₁≤n₂ m₁≤m₂) w₁≤w₂
+  ≤ᴹ-incr-cong n₁≤n₂ (≤-⇒ c≤c' m₁≤m₂ nm₁≤nm₂) = ≤-⇒ c≤c' (+-≤-cong n₁≤n₂ m₁≤m₂) nm₁≤nm₂
+  ≤ᴹ-incr-cong n₁≤n₂ (≤-× c≤c' m₁≤m₂ nm₁≤nm₃ nm₂≤nm₄) = ≤-× c≤c' (+-≤-cong n₁≤n₂ m₁≤m₂) nm₁≤nm₃ nm₂≤nm₄
+  -}
+
   ≤ᴹ-incr-drop : (n : ℕ) → (nm₁ nm₂ : TermMetric X) → ((incr n nm₁) ≤ᴹ (incr n nm₂)) → (nm₁ ≤ᴹ nm₂)
   ≤ᴹ-incr-drop {X = `Unit} n (m-Unit m₁) (m-Unit m₂) (≤-Unit n+m₁≤n+m₂) = ≤-Unit (+-≤-cong-rev-left n+m₁≤n+m₂)
   ≤ᴹ-incr-drop {X = X `× Y} n (m-× m₁ nm₁ nm₂) (m-× m₂ nm₃ nm₄) (≤-× n+m₁≤n+m₂ nm₁≤nm₃ nm₂≤nm₄) = ≤-× (+-≤-cong-rev-left n+m₁≤n+m₂) nm₁≤nm₃ nm₂≤nm₄
-  ≤ᴹ-incr-drop {X = X `⇒ Y} n (m-⇒ m₁ cnt nm₁) (m-⇒ m₂ cnt nm₂) (≤-⇒ n+m₁≤n+m₂ nm₁≤nm₂) = ≤-⇒ (+-≤-cong-rev-left n+m₁≤n+m₂) nm₁≤nm₂
+  ≤ᴹ-incr-drop {X = X `⇒ Y} n (m-⇒ m₁ nm₁) (m-⇒ m₂ nm₂) (≤-⇒ n+m₁≤n+m₂ nm₁≤nm₂) = ≤-⇒ (+-≤-cong-rev-left n+m₁≤n+m₂) nm₁≤nm₂
   ≤ᴹ-incr-drop {X = `V} n (m-V m₁ w₁) (m-V m₂ w₂) (≤-V n+m₁≤n+m₂ w₁≤w₂) = ≤-V (+-≤-cong-rev-left n+m₁≤n+m₂) w₁≤w₂
 
   ≤ᴹ-incr-cong : (n₁≤n₂ : n₁ ≤ n₂) → {nm₁ nm₂ : TermMetric X} → (nm₁ ≤ᴹ nm₂) → ((incr n₁ nm₁) ≤ᴹ (incr n₂ nm₂))
@@ -481,6 +679,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   ≤ᴹ-p1 : {nm₁ nm₂ : TermMetric (X `⇒ Y)} → (nm₁ ≤ᴹ nm₂) → (p1 nm₁) ≤ (p1 nm₂)
   ≤ᴹ-p1 (≤-⇒ n₁≤n₂ nm₁≤nm₂) = n₁≤n₂
 
+  {-
   ≤ᴹ-p2 : {nm₁ nm₂ : TermMetric (X `⇒ Y)} → (nm₁ ≤ᴹ nm₂) → (p2 nm₁) ≡ (p2 nm₂)
   ≤ᴹ-p2 (≤-⇒ n₁≤n₂ nm₁≤nm₂) = refl
 
@@ -488,7 +687,8 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   ≡⇒≤ {n = n} {m = m} n≡m rewrite n≡m = ≤-refl
 
   +-p1-incr : (n : ℕ) → (nm : TermMetric (X `⇒ Y)) → p1 (incr n nm) ≡ n + (p1 nm)
-  +-p1-incr n (m-⇒ {X = X} {Y = Y} m cnt nm) with incr n (m-⇒ {X = X} {Y = Y} m cnt nm)
+  --+-p1-incr n (m-⇒ {X = X} {Y = Y} m cnt nm) with incr n (m-⇒ {X = X} {Y = Y} m cnt nm)
+  +-p1-incr n (m-⇒ {Y = Y} {X = X} m cnt nm) with incr n (m-⇒ {Y = Y} {X = X} m cnt nm)
   ... | x = refl
 
   ≡-p2-incr : (n : ℕ) → (nm : TermMetric (X `⇒ Y)) → p2 (incr n nm) ≡ p2 nm
@@ -498,9 +698,10 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   ≡-p3-incr n (m-⇒ m cnt nm) = refl
 
   {-# REWRITE ≡-p2-incr #-}
+  -}
 
-  ≤ᴹ-p3 : {nm₁ nm₂ : TermMetric (X `⇒ Y)} → (nm₁ ≤ᴹ nm₂) → (p3 nm₁) ≤ᴹ (p3 nm₂)
-  ≤ᴹ-p3 (≤-⇒ n₁≤n₂ nm₁≤nm₂) = nm₁≤nm₂
+  ≤ᴹ-pw : {nm₁ nm₂ : TermMetric (X `⇒ Y)} → (nm₁ ≤ᴹ nm₂) → (pw nm₁) ≤ᴹ (pw nm₂)
+  ≤ᴹ-pw (≤-⇒ n₁≤n₂ nm₁≤nm₂) = nm₁≤nm₂
 
   ≤ᴹ-lhs : {nm₁ nm₂ : TermMetric (X `× Y)} → (nm₁ ≤ᴹ nm₂) → (lhs nm₁) ≤ᴹ (lhs nm₂)
   ≤ᴹ-lhs (≤-× x nm₁≤nm₃ nm₂≤nm₄) = nm₁≤nm₃
@@ -548,7 +749,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   --------------------------------------------------------------------
 
   EElem : Ty → Set
-  EElem X = (Σ[ f ∈ (List (ℕ × ℕ) → TermMetric X) ] ({csn₁ csn₂ : List (ℕ × ℕ)} → csn₁ ≤ᶜˢⁿ csn₂ → f csn₁ ≤ᴹ f csn₂))
+  EElem X = ℕ × (Σ[ f ∈ (List (ℕ × ℕ) → TermMetric X) ] ({csn₁ csn₂ : List (ℕ × ℕ)} → csn₁ ≤ᶜˢⁿ csn₂ → f csn₁ ≤ᴹ f csn₂))
 
   EMetric = List (Σ[ X ∈ Ty ] (EElem X))
 
@@ -595,7 +796,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     wkx-cong     :   {E E' : EMetric}
                   → {π : Wk Γ Γ'} → {ϖ : WkN Γ E} → {ϖ' : WkN Γ' E'}
                   → {nm₁ nm₂ : EElem X}
-                  → (nm₁≤nm₂ : ((csn : (List (ℕ × ℕ))) → (proj₁ nm₁ csn) ≤ᴹ (proj₁ nm₂ csn)))
+                  → (nm₁≤nm₂ : ((csn : (List (ℕ × ℕ))) → (proj₁ (proj₂ nm₁) csn) ≤ᴹ (proj₁ (proj₂ nm₂) csn)))
                   → (ϖ≤ϖ' : WkX π ϖ ϖ') → WkX (wk-cong π) (wkn-cong {e = nm₁} ϖ) (wkn-cong {e = nm₂} ϖ')
     wkx-wk       :   {E E' : EMetric}
                   → {π : Wk Γ Γ'} → {ϖ : WkN Γ E} → {ϖ' : WkN Γ' E'}
@@ -612,56 +813,121 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   wkx-z-l (wkx-bc θ) = wke-z-l θ
   wkx-z-l (wkx-wk ϕ) = wkx-z-l ϕ
 
-{- AAAA
+  -- TEMP
+  -- data WkC : (Γ : Ctx) → (E : List ℕ) → Set where
+  --   wkc-nil  : WkC ε []
+  --   wkc-cong :   {Γ : Ctx} → {E : List ℕ} → {Y : Ty}
+  --              → {e : ℕ} → (ϖ : WkC Γ E) → WkC (Γ ∙ Y) (e ∷ E)
+  --   wkc-cons :   {Γ : Ctx} → {E : List ℕ}
+  --              → {Y : Ty} → (ϖ : WkC Γ E) → WkC (Γ ∙ Y) E
+
+  elist-to-clist : (E : EMetric) → List ℕ
+  elist-to-clist [] = []
+  elist-to-clist ((X , cnt , e) ∷ E) = cnt ∷ elist-to-clist E
+
+  wkn-to-wkc : {E : EMetric} → (ϖ : WkN Γ E) → (WkC Γ (elist-to-clist E))
+  wkn-to-wkc {E = []} wkn-nil = wkc-nil
+  wkn-to-wkc {E = []} (wkn-cons ϖ) = wkc-cons (wkn-to-wkc {E = []} ϖ)
+  wkn-to-wkc {E = (x ∷ E)} (wkn-cong ϖ) = wkc-cong (wkn-to-wkc {E = E} ϖ)
+  wkn-to-wkc {E = (x ∷ E)} (wkn-cons ϖ) = wkc-cons (wkn-to-wkc {E = (x ∷ E)} ϖ)
 
   lookup-mono-metric : (i : Γ ∋ Y) → (E : EMetric) → WkN Γ E → EElem Y
   lookup-mono-metric Cx.h ((Y , e) ∷ ne) (wkn-cong ϖ) = e
   lookup-mono-metric (Cx.t i) ((X , e) ∷ ne) (wkn-cong ϖ) = lookup-mono-metric i ne ϖ
-  lookup-mono-metric {Y = Y} Cx.h [] (wkn-cons ϖ) = (λ _ → zero-metric) , λ _ → ≤ᴹ-refl
-  lookup-mono-metric {Y = Y} Cx.h (x ∷ E) (wkn-cons ϖ) = (λ _ → zero-metric) , λ _ → ≤ᴹ-refl
-  lookup-mono-metric {Y = Y} (Cx.t i) [] (wkn-cons ϖ) = (λ _ → zero-metric) , λ _ → ≤ᴹ-refl
+  lookup-mono-metric {Y = Y} Cx.h [] (wkn-cons ϖ) = 0 , (λ _ → zero-metric) , λ _ → ≤ᴹ-refl
+  lookup-mono-metric {Y = Y} Cx.h (x ∷ E) (wkn-cons ϖ) = 0 , (λ _ → zero-metric) , λ _ → ≤ᴹ-refl
+  lookup-mono-metric {Y = Y} (Cx.t i) [] (wkn-cons ϖ) = 0 , (λ _ → zero-metric) , λ _ → ≤ᴹ-refl
   lookup-mono-metric (Cx.t i) (x ∷ E) (wkn-cons ϖ) = lookup-mono-metric i (x ∷ E) ϖ
 
-  empty-lookup : (i : Γ ∋ X) → (ϖ : WkN Γ []) → lookup-mono-metric i [] ϖ ≡ ((λ _ → zero-metric) , λ _ → ≤ᴹ-refl)
+  empty-lookup : (i : Γ ∋ X) → (ϖ : WkN Γ []) → lookup-mono-metric i [] ϖ ≡ (0 , ((λ _ → zero-metric) , λ _ → ≤ᴹ-refl))
   empty-lookup Cx.h (wkn-cons ϖ) = refl
   empty-lookup (Cx.t i) (wkn-cons ϖ) = refl
 
+  lookup-wkx-lemma : (i : Γ ∋ X) → (E E' : EMetric) → (π : Wk Γ Γ) → (ϖ : WkN Γ E) → (ϖ' : WkN Γ E') → (ϕ : WkX π ϖ ϖ')
+              → (csn : List (ℕ × ℕ)) → (proj₁ (proj₂ (lookup-mono-metric i E ϖ))) csn ≤ᴹ (proj₁ (proj₂ (lookup-mono-metric i E' ϖ'))) csn
+  lookup-wkx-lemma Cx.h [] [] π ϖ ϖ' (wkx-bc θ) csn rewrite empty-lookup h ϖ | empty-lookup h ϖ' = ≤ᴹ-refl
+  lookup-wkx-lemma Cx.h [] [] π ϖ ϖ' (wkx-wk ϕ) csn = ≤ᴹ-refl
+  lookup-wkx-lemma Cx.h [] (x ∷ E') π ϖ ϖ' (wkx-bc θ) csn = ql (wke-z-l θ)
+                                                             (proj₁ (proj₂ (lookup-mono-metric h [] ϖ)) csn ≤ᴹ
+                                                              proj₁ (proj₂ (lookup-mono-metric h (x ∷ E') ϖ')) csn)
+  lookup-wkx-lemma Cx.h [] (x ∷ E') π ϖ ϖ' (wkx-wk ϕ) csn = ≤ᴹ-refl
+  lookup-wkx-lemma Cx.h (x ∷ E) [] π ϖ ϖ' (wkx-bc θ) csn = ql (wke-z-r θ)
+                                                            (proj₁ (proj₂ (lookup-mono-metric h (x ∷ E) ϖ)) csn ≤ᴹ
+                                                             proj₁ (proj₂ (lookup-mono-metric h [] ϖ')) csn)
+  lookup-wkx-lemma Cx.h (x ∷ E) [] π ϖ ϖ' (wkx-wk ϕ) csn = ≤ᴹ-refl
+  lookup-wkx-lemma Cx.h (x ∷ E) (x₁ ∷ E') π ϖ ϖ' (wkx-bc (wke-ccc π₁ ϖ₁ ϖ'' e θ)) csn = ≤ᴹ-refl
+  lookup-wkx-lemma Cx.h (x ∷ E) (x₁ ∷ E') π ϖ ϖ' (wkx-bc (wke-wc- π₁ ϖ₁ ϖ'' e θ)) csn = ql (wk-absurd (wk-wk π₁) π₁)
+                                                                                         (proj₁ (proj₂ (lookup-mono-metric h ((_ , e) ∷ E) (wkn-cong ϖ₁)))
+                                                                                          csn
+                                                                                          ≤ᴹ proj₁ (proj₂ (lookup-mono-metric h (x₁ ∷ E') ϖ')) csn)
+  lookup-wkx-lemma Cx.h (x ∷ E) (x₁ ∷ E') π ϖ ϖ' (wkx-bc (wke-ww- π₁ ϖ₁ ϖ'' θ)) csn = ql (wk-absurd (wk-wk π₁) π₁)
+                                                                                       (proj₁ (proj₂ (lookup-mono-metric h (x ∷ E) (wkn-cons ϖ₁))) csn ≤ᴹ
+                                                                                        proj₁ (proj₂ (lookup-mono-metric h (x₁ ∷ E') ϖ')) csn)
+  lookup-wkx-lemma Cx.h (x ∷ E) (x₁ ∷ E') π ϖ ϖ' (wkx-bc (wke-cww π₁ ϖ₁ ϖ'' θ)) csn = ≤ᴹ-refl
+  lookup-wkx-lemma Cx.h (x ∷ E) (x₁ ∷ E') π ϖ ϖ' (wkx-cong nm₁≤nm₂ ϕ) csn = nm₁≤nm₂ csn
+  lookup-wkx-lemma Cx.h (x ∷ E) (x₁ ∷ E') π ϖ ϖ' (wkx-wk ϕ) csn = ≤ᴹ-refl
+  lookup-wkx-lemma (Cx.t i) [] [] π ϖ ϖ' (wkx-bc θ) csn rewrite empty-lookup (t i) ϖ | empty-lookup (t i) ϖ' = ≤ᴹ-refl
+  lookup-wkx-lemma (Cx.t i) [] [] π ϖ ϖ' (wkx-wk ϕ) csn = ≤ᴹ-refl
+  lookup-wkx-lemma (Cx.t i) [] (x ∷ E') π ϖ ϖ' (wkx-bc θ) csn = ql (wke-z-l θ)
+                                                                 (proj₁ (proj₂ (lookup-mono-metric (t i) [] ϖ)) csn ≤ᴹ
+                                                                  proj₁ (proj₂ (lookup-mono-metric (t i) (x ∷ E') ϖ')) csn)
+  lookup-wkx-lemma (Cx.t i) [] (x ∷ E') π ϖ ϖ' (wkx-wk ϕ) csn = ql (wkx-z-l ϕ)
+                                                                 (proj₁ (proj₂ (lookup-mono-metric (t {B = R₀} i) [] (wkn-cons (ql (wkx-z-l ϕ) (WkN _ []))))) csn ≤ᴹ
+                                                                  proj₁ (proj₂ (lookup-mono-metric (t {B = R₀} i) (x ∷ E') (wkn-cons _))) csn)
+  lookup-wkx-lemma (Cx.t i) (x ∷ E) [] π ϖ ϖ' (wkx-bc θ) csn = ql (wke-z-r θ)
+                                                                (proj₁ (proj₂ (lookup-mono-metric (t i) (x ∷ E) ϖ)) csn ≤ᴹ
+                                                                 proj₁ (proj₂ (lookup-mono-metric (t i) [] ϖ')) csn)
+  lookup-wkx-lemma (Cx.t i) (x ∷ E) [] π ϖ ϖ' (wkx-wk ϕ) csn = ql (wkx-z-r ϕ)
+                                                                (proj₁ (proj₂ (lookup-mono-metric (t {B = R₀} i) (x ∷ E) (wkn-cons _))) csn
+                                                                 ≤ᴹ proj₁ (proj₂ (lookup-mono-metric (t {B = R₀} i) [] (wkn-cons (ql (wkx-z-r ϕ) (WkN _ []))))) csn)
+  lookup-wkx-lemma (Cx.t i) (x ∷ E) (x₁ ∷ E') π ϖ ϖ' (wkx-bc (wke-ccc π₁ ϖ₁ ϖ'' e θ)) csn = lookup-wkx-lemma i E E' π₁ ϖ₁ ϖ'' (wkx-bc θ) csn
+  lookup-wkx-lemma (Cx.t i) (x ∷ E) (x₁ ∷ E') π ϖ ϖ' (wkx-bc (wke-wc- π₁ ϖ₁ ϖ'' e θ)) csn = ql (wk-absurd (wk-wk π₁) π₁)
+                                                                                             (proj₁
+                                                                                              (proj₂ (lookup-mono-metric (t i) ((_ , e) ∷ E) (wkn-cong ϖ₁))) csn
+                                                                                              ≤ᴹ proj₁ (proj₂ (lookup-mono-metric (t i) (x₁ ∷ E') ϖ')) csn)
+  lookup-wkx-lemma (Cx.t i) (x ∷ E) (x₁ ∷ E') π ϖ ϖ' (wkx-bc (wke-ww- π₁ ϖ₁ ϖ'' θ)) csn = ql (wk-absurd (wk-wk π₁) π₁)
+                                                                                           (proj₁ (proj₂ (lookup-mono-metric (t {B = R₀} i) (x ∷ E) (wkn-cons ϖ₁))) csn
+                                                                                            ≤ᴹ proj₁ (proj₂ (lookup-mono-metric (t i) (x₁ ∷ E') ϖ')) csn)
+  lookup-wkx-lemma (Cx.t i) (x ∷ E) (x₁ ∷ E') π ϖ ϖ' (wkx-bc (wke-cww π₁ ϖ₁ ϖ'' θ)) csn = lookup-wkx-lemma i (x ∷ E) (x₁ ∷ E') π₁ ϖ₁ ϖ'' (wkx-bc θ) csn
+  lookup-wkx-lemma (Cx.t i) (x ∷ E) (x₁ ∷ E') π ϖ ϖ' (wkx-cong {ϖ = ϖ₁} {ϖ' = ϖ₁'} nm₁≤nm₂ ϕ) csn = lookup-wkx-lemma i E E' (wk-prev {X = R₀} (wk-cong _)) ϖ₁ ϖ₁' ϕ csn
+  lookup-wkx-lemma (Cx.t i) (x ∷ E) (x₁ ∷ E') π ϖ ϖ' (wkx-wk {ϖ = ϖ₁} {ϖ' = ϖ₁'} ϕ) csn = lookup-wkx-lemma i (x ∷ E) (x₁ ∷ E') (wk-prev {X = R₀} (wk-cong _)) ϖ₁ ϖ₁' ϕ csn
+
   mutual
 
+    {- DDD
     mono-val-count : (i : Γ ∋ X) → (M : Val Γ Z) → (E : EMetric) → WkN Γ E
                              → Σ[ f ∈ (List (ℕ × ℕ) → ℕ) ] ({csn₁ csn₂ : List (ℕ × ℕ)} → csn₁ ≤ᶜˢⁿ csn₂ → f csn₁ ≡ f csn₂)
 
-    mono-val-count Cx.h (var Cx.h) E ϖ = (λ _ → 1) , λ _ → refl --λ _ → s≤s z≤n
-    mono-val-count Cx.h (var (Cx.t i)) E ϖ = (λ _ → 0) , λ _ → refl --λ _ → z≤n
-    mono-val-count (Cx.t i) (var Cx.h) E ϖ = (λ _ → 0) , λ _ → refl --λ _ → z≤n
+    mono-val-count {X = X} Cx.h (var Cx.h) E ϖ = (λ _ → 1) , λ _ → refl --(λ _ → one-counter) , λ _ → refl --(λ _ → const-one X) , λ _ → refl -- (λ _ → 1) , λ _ → refl
+    mono-val-count {X = X} Cx.h (var (Cx.t i)) E ϖ = (λ _ → 0) , λ _ → refl --(λ _ → zero-counter) , λ _ → refl --(λ _ → const-zero X) , λ _ → refl -- (λ _ → 0) , λ _ → refl
+    mono-val-count {X = X} (Cx.t i) (var Cx.h) E ϖ = (λ _ → 0) , λ _ → refl --(λ _ → zero-counter) , λ _ → refl --(λ _ → const-zero X) , λ _ → refl -- (λ _ → 0) , λ _ → refl
     mono-val-count (Cx.t i₁) (var (Cx.t i₂)) ((B , e) ∷ E) (wkn-cong ϖ) =
       let
         IH = mono-val-count i₁ (var i₂) E ϖ
       in
-      (proj₁ IH) , proj₂ IH --proj₂ IH
+      (proj₁ IH) , proj₂ IH
     mono-val-count (Cx.t i₁) (var (Cx.t i₂)) [] (wkn-cons ϖ) =
       let
         IH = mono-val-count i₁ (var i₂) [] ϖ
       in
-      (proj₁ IH) , proj₂ IH --proj₂ IH
+      (proj₁ IH) , proj₂ IH
     mono-val-count (Cx.t i₁) (var (Cx.t i₂)) (x ∷ E) (wkn-cons ϖ) =
       let
         IH = mono-val-count i₁ (var i₂) (x ∷ E) ϖ
       in
-      (proj₁ IH) ,
-      proj₂ IH --proj₂ IH
+      (proj₁ IH) , proj₂ IH
 
-    mono-val-count Cx.h (lam W) E ϖ = mono-comp-count (t h) W E (wkn-cons ϖ)
-    mono-val-count (Cx.t i) (lam W) E ϖ = mono-comp-count (t (t i)) W E (wkn-cons ϖ)
+    mono-val-count Cx.h (lam W) E ϖ = mono-comp-count (t h) W E (wkn-cons ϖ) --mono-comp-count (t h) W E (wkn-cons ϖ)
+    mono-val-count (Cx.t i) (lam W) E ϖ = mono-comp-count (t (t i)) W E (wkn-cons ϖ) --mono-comp-count (t (t i)) W E (wkn-cons ϖ)
 
-    mono-val-count Cx.h (pair M N) E ϖ =
+    mono-val-count Cx.h (pair M N) E ϖ = --{!!}
       let
         IH1 = mono-val-count h M E ϖ
         IH2 = mono-val-count h N E ϖ
       in
       (λ csn → (proj₁ IH1) csn + (proj₁ IH2) csn) ,
       λ c≡c' → cong₂ _+_ ((proj₂ IH1) c≡c') ((proj₂ IH2) c≡c')
-    mono-val-count (Cx.t i) (pair M N) E ϖ =
+    mono-val-count (Cx.t i) (pair M N) E ϖ = --{!!}
       let
         IH1 = mono-val-count (t i) M E ϖ
         IH2 = mono-val-count (t i) N E ϖ
@@ -669,7 +935,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       (λ csn → (proj₁ IH1) csn + (proj₁ IH2) csn) ,
       λ c≡c' → cong₂ _+_ ((proj₂ IH1) c≡c') ((proj₂ IH2) c≡c')
 
-    mono-val-count Cx.h (pm M N) E ϖ =
+    mono-val-count Cx.h (pm M N) E ϖ = --{!!}
       let
         IH1 = mono-val-count h M E ϖ
         IH2 = mono-val-count h N E (wkn-cons (wkn-cons ϖ))
@@ -688,8 +954,8 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       (λ csn → (proj₁ IH1 ) csn * (suc ((proj₁ IH2) csn + (proj₁ IH3) csn)) + (proj₁ IH4) csn) ,
       (λ c≡c' → cong₂ _+_ (cong₂ _*_ ((proj₂ IH1) c≡c') (cong suc (cong₂ _+_ ((proj₂ IH2) c≡c') ((proj₂ IH3) c≡c')))) ((proj₂ IH4) c≡c'))
 
-    mono-val-count Cx.h unit E ϖ = (λ _ → 0) , (λ _ → refl)
-    mono-val-count (Cx.t i) unit E ϖ = (λ _ → 0) , (λ _ → refl)
+    mono-val-count Cx.h unit E ϖ = (λ _ → 0) , (λ _ → refl) --(λ _ → zero-counter) , (λ _ → refl)
+    mono-val-count (Cx.t i) unit E ϖ = (λ _ → 0) , (λ _ → refl) --(λ _ → zero-counter) , (λ _ → refl)
 
     mono-comp-count : (i : Γ ∋ X) → (M : Comp Γ Z) → (E : EMetric) → WkN Γ E
                              → Σ[ f ∈ (List (ℕ × ℕ) → ℕ) ] ({csn₁ csn₂ : List (ℕ × ℕ)} → csn₁ ≤ᶜˢⁿ csn₂ → f csn₁ ≡ f csn₂)
@@ -728,101 +994,170 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       in
       (λ csn → (proj₁ IH1) csn + (proj₁ IH2) csn * (suc ((proj₁ IH3) csn))) ,
       (λ c≡c' → cong₂ _+_ ((proj₂ IH1) c≡c') (cong₂ _*_ ((proj₂ IH2) c≡c') (cong suc ((proj₂ IH3) c≡c'))))
+    DDD -}
 
     val-mono-metric : (M : Val Γ Y) → (E : EMetric) → WkN Γ E → EElem Y
     val-mono-metric (var i) E ϖ =
       let
         IH = lookup-mono-metric i E ϖ
+        cnt = vcount (var i) (elist-to-clist E) (wkn-to-wkc ϖ)
       in
-      (λ csn → incr 2 ((proj₁ IH) csn)) , λ c≤c' → ≤ᴹ-incr-cong (≤-refl {n = 2}) ((proj₂ IH) c≤c')
+      cnt , (λ csn → incr 2 ((proj₁ $ proj₂ IH) csn)) , λ c≤c' → ≤ᴹ-incr-cong (≤-refl {n = 2}) ((proj₂ $ proj₂ IH) c≤c')
     val-mono-metric (lam W) E ϖ =
       let
-        IH1 = mono-comp-count h W E (wkn-cons ϖ)
         IH2 = comp-mono-metric W E (wkn-cons ϖ)
+        cnt = vcount (lam W) (elist-to-clist E) (wkn-to-wkc ϖ)
       in
-      (λ csn → incr 2 (m-⇒ 0 ((proj₁ IH1) csn) ((proj₁ IH2) csn))) ,
-      λ {csn₁ = csn₁} {csn₂ = csn₂} c≤c' →
-         let
-           cnt-eq = (proj₂ IH1) c≤c'
-         in
-         subst (λ x → m-⇒ 2 (proj₁ IH1 csn₁) (proj₁ IH2 csn₁) ≤ᴹ m-⇒ 2 x (proj₁ IH2 csn₂))
-               cnt-eq
-               (≤-⇒ (s≤s (s≤s z≤n)) ((proj₂ IH2) c≤c'))
+      cnt , ((λ csn → incr 2 (m-⇒ 0 ((proj₁ $ proj₂ IH2) csn)))) , --{!!}
+      λ {csn₁ = csn₁} {csn₂ = csn₂} c≤c' → (≤-⇒ (s≤s (s≤s z≤n)) ((proj₂ $ proj₂ IH2) c≤c'))
+      -- let
+      --   IH1 = mono-comp-count h W E (wkn-cons ϖ)
+      --   IH2 = comp-mono-metric W E (wkn-cons ϖ)
+      -- in
+      -- (λ csn → incr 2 (m-⇒ 0 ((proj₁ IH1) csn) ((proj₁ IH2) csn))) ,
+      -- λ {csn₁ = csn₁} {csn₂ = csn₂} c≤c' →
+      --    let
+      --      cnt-eq = (proj₂ IH1) c≤c'
+      --    in
+      --    subst (λ x → m-⇒ 2 (proj₁ IH1 csn₁) (proj₁ IH2 csn₁) ≤ᴹ m-⇒ 2 x (proj₁ IH2 csn₂))
+      --          cnt-eq
+      --          (≤-⇒ (s≤s (s≤s z≤n)) ((proj₂ IH2) c≤c'))
     val-mono-metric (pair M₁ M₂) E ϖ =
       let
+        cnt = vcount (pair M₁ M₂) (elist-to-clist E) (wkn-to-wkc ϖ)
         IH1 = val-mono-metric M₁ E ϖ
         IH2 = val-mono-metric M₂ E ϖ
       in
-      (λ csn → incr 2 (m-× 0 ((proj₁ IH1) csn) ((proj₁ IH2) csn))) ,
-      λ c≤c' → ≤-× ≤-refl ((proj₂ IH1) c≤c') ((proj₂ IH2) c≤c')
+      cnt , ((λ csn → incr 2 (m-× 0 ((proj₁ $ proj₂ IH1) csn) ((proj₁ $ proj₂ IH2) csn)))) , λ c≤c' → ≤-× ≤-refl ((proj₂ $ proj₂ IH1) c≤c') ((proj₂ $ proj₂ IH2) c≤c')
+      -- let
+      --   IH1 = val-mono-metric M₁ E ϖ
+      --   IH2 = val-mono-metric M₂ E ϖ
+      -- in
+      -- (λ csn → incr 2 (m-× 0 ((proj₁ IH1) csn) ((proj₁ IH2) csn))) ,
+      -- λ c≤c' → ≤-× ≤-refl ((proj₂ IH1) c≤c') ((proj₂ IH2) c≤c')
     val-mono-metric (pm {A = X} {B = Y} M N) E ϖ =
       let
+        cnt = vcount (pm {A = X} {B = Y} M N) (elist-to-clist E) (wkn-to-wkc ϖ)
         IH1 = val-mono-metric M E ϖ
         IH2 = val-mono-metric N E (wkn-cons (wkn-cons ϖ))
-        r1 = λ c → rhs ((proj₁ IH1) c)
-        l1 = λ c → lhs ((proj₁ IH1) c)
-        IH3 = val-mono-metric N ((Y , r1 , λ c≤c' → ≤ᴹ-rhs ((proj₂ IH1) c≤c')) ∷ (X , l1 , λ c≤c' → ≤ᴹ-lhs ((proj₂ IH1) c≤c')) ∷ E) (wkn-cong (wkn-cong ϖ))
+        r1 = λ c → rhs ((proj₁ $ proj₂ IH1) c)
+        l1 = λ c → lhs ((proj₁ $ proj₂ IH1) c)
+        IH3 = val-mono-metric N ((Y , proj₁ IH1 , r1 , λ c≤c' → ≤ᴹ-rhs ((proj₂ $ proj₂ IH1) c≤c')) ∷ (X , proj₁ IH1 , l1 , λ c≤c' → ≤ᴹ-lhs ((proj₂ $ proj₂ IH1) c≤c')) ∷ E) (wkn-cong (wkn-cong ϖ))
       in
-      (λ csn → incr (suc (vx ((proj₁ IH1) csn) + ⟪ (proj₁ IH2) csn ⟫)) ((proj₁ IH3) csn)) ,
-      λ c≤c' → ≤ᴹ-incr-cong (+-≤-cong (s≤s (≤ᴹ-vx ((proj₂ IH1) c≤c'))) (≤ᴹ⇒≤ ((proj₂ IH2) c≤c'))) ((proj₂ IH3) c≤c')
-    val-mono-metric unit E ϖ = (λ _ → m-Unit 2) , (λ {csn₁} {csn₂} z → ≤-Unit (s≤s (s≤s z≤n)))
+      cnt ,
+      ((λ csn → incr (suc (vx ((proj₁ $ proj₂ IH1) csn) + ⟪ (proj₁ $ proj₂ IH2) csn ⟫)) ((proj₁ $ proj₂ IH3) csn))) ,
+      λ c≤c' → ≤ᴹ-incr-cong (+-≤-cong (s≤s (≤ᴹ-vx ((proj₂ $ proj₂ IH1) c≤c'))) (≤ᴹ⇒≤ ((proj₂ $ proj₂ IH2) c≤c'))) ((proj₂ $ proj₂ IH3) c≤c')
+      -- let
+      --   IH1 = val-mono-metric M E ϖ
+      --   IH2 = val-mono-metric N E (wkn-cons (wkn-cons ϖ))
+      --   r1 = λ c → rhs ((proj₁ IH1) c)
+      --   l1 = λ c → lhs ((proj₁ IH1) c)
+      --   IH3 = val-mono-metric N ((Y , r1 , λ c≤c' → ≤ᴹ-rhs ((proj₂ IH1) c≤c')) ∷ (X , l1 , λ c≤c' → ≤ᴹ-lhs ((proj₂ IH1) c≤c')) ∷ E) (wkn-cong (wkn-cong ϖ))
+      -- in
+      -- (λ csn → incr (suc (vx ((proj₁ IH1) csn) + ⟪ (proj₁ IH2) csn ⟫)) ((proj₁ IH3) csn)) ,
+      -- λ c≤c' → ≤ᴹ-incr-cong (+-≤-cong (s≤s (≤ᴹ-vx ((proj₂ IH1) c≤c'))) (≤ᴹ⇒≤ ((proj₂ IH2) c≤c'))) ((proj₂ IH3) c≤c')
+    val-mono-metric unit E ϖ =
+      vcount unit (elist-to-clist E) (wkn-to-wkc ϖ) ,
+      (λ _ → m-Unit 2) ,
+      λ {csn₁} {csn₂} z → ≤-Unit (s≤s (s≤s z≤n)) --(λ _ → m-Unit 2) , (λ {csn₁} {csn₂} z → ≤-Unit (s≤s (s≤s z≤n)))
 
     comp-mono-metric : (W : Comp Γ Y) → (E : EMetric) → WkN Γ E → EElem Y
     comp-mono-metric (return M) E ϖ =
       let
+        cnt = ccount (return M) (elist-to-clist E) (wkn-to-wkc ϖ)
         IH = val-mono-metric M E ϖ
       in
-      (λ csn → incr 2 ((proj₁ IH) csn)) , λ c≤c' → ≤ᴹ-incr-cong (≤-refl {n = 2}) ((proj₂ IH) c≤c')
-    comp-mono-metric (pm {A = X} {B = Y} M W) E ϖ =
+      cnt , (λ csn → incr 2 ((proj₁ $ proj₂ IH) csn)) , λ c≤c' → ≤ᴹ-incr-cong (≤-refl {n = 2}) ((proj₂ $ proj₂ IH) c≤c')
+    comp-mono-metric (pm {A = X} {B = Y} M W) E ϖ = --{!!}
       let
+        cnt = ccount (pm {A = X} {B = Y} M W) (elist-to-clist E) (wkn-to-wkc ϖ)
         IH1 = val-mono-metric M E ϖ
         IH2 = comp-mono-metric W E (wkn-cons (wkn-cons ϖ))
-        r1 = λ c → rhs ((proj₁ IH1) c)
-        l1 = λ c → lhs ((proj₁ IH1) c)
-        IH3 = comp-mono-metric W ((Y , r1 , λ c≤c' → ≤ᴹ-rhs ((proj₂ IH1) c≤c')) ∷ (X , l1 , λ c≤c' → ≤ᴹ-lhs ((proj₂ IH1) c≤c')) ∷ E) (wkn-cong (wkn-cong ϖ))
+        r1 = λ c → rhs ((proj₁ $ proj₂ IH1) c)
+        l1 = λ c → lhs ((proj₁ $ proj₂ IH1) c)
+        IH3 = comp-mono-metric W ((Y , proj₁ IH1 , r1 , λ c≤c' → ≤ᴹ-rhs ((proj₂ $ proj₂ IH1) c≤c')) ∷ (X , proj₁ IH1 , l1 , λ c≤c' → ≤ᴹ-lhs ((proj₂ $ proj₂ IH1) c≤c')) ∷ E) (wkn-cong (wkn-cong ϖ))
       in
-      (λ csn → incr (suc (vx ((proj₁ IH1) csn) + ⟪ (proj₁ IH2) csn ⟫)) ((proj₁ IH3) csn)) ,
-      λ c≤c' → ≤ᴹ-incr-cong (+-≤-cong (s≤s (≤ᴹ-vx ((proj₂ IH1) c≤c'))) (≤ᴹ⇒≤ ((proj₂ IH2) c≤c'))) ((proj₂ IH3) c≤c')
-    comp-mono-metric (push {A = X} W₁ W₂) E ϖ =
+      cnt ,
+      ((λ csn → incr (suc (vx ((proj₁ $ proj₂ IH1) csn) + ⟪ (proj₁ $ proj₂ IH2) csn ⟫)) ((proj₁ $ proj₂ IH3) csn))) ,
+      λ c≤c' → ≤ᴹ-incr-cong (+-≤-cong (s≤s (≤ᴹ-vx ((proj₂ $ proj₂ IH1) c≤c'))) (≤ᴹ⇒≤ ((proj₂ $ proj₂ IH2) c≤c'))) ((proj₂ $ proj₂ IH3) c≤c')
+      -- let
+      --   IH1 = val-mono-metric M E ϖ
+      --   IH2 = comp-mono-metric W E (wkn-cons (wkn-cons ϖ))
+      --   r1 = λ c → rhs ((proj₁ IH1) c)
+      --   l1 = λ c → lhs ((proj₁ IH1) c)
+      --   IH3 = comp-mono-metric W ((Y , r1 , λ c≤c' → ≤ᴹ-rhs ((proj₂ IH1) c≤c')) ∷ (X , l1 , λ c≤c' → ≤ᴹ-lhs ((proj₂ IH1) c≤c')) ∷ E) (wkn-cong (wkn-cong ϖ))
+      -- in
+      -- (λ csn → incr (suc (vx ((proj₁ IH1) csn) + ⟪ (proj₁ IH2) csn ⟫)) ((proj₁ IH3) csn)) ,
+      -- λ c≤c' → ≤ᴹ-incr-cong (+-≤-cong (s≤s (≤ᴹ-vx ((proj₂ IH1) c≤c'))) (≤ᴹ⇒≤ ((proj₂ IH2) c≤c'))) ((proj₂ IH3) c≤c')
+    comp-mono-metric (push {A = X} W₁ W₂) E ϖ = --{!!}
       let
+        cnt = ccount (push {A = X} W₁ W₂) (elist-to-clist E) (wkn-to-wkc ϖ)
         IH1 = comp-mono-metric W₂ E (wkn-cons ϖ)
-        IH2 = mono-comp-count h W₂ E (wkn-cons ϖ)
+        cnt2 = ccount W₂ (elist-to-clist E) (wkn-to-wkc (wkn-cons ϖ))
         IH3 = comp-mono-metric W₁ E ϖ
-        cs' = λ csn → (((proj₁ IH2) csn , ⟪ (proj₁ IH1) csn ⟫) ∷ csn)
-        IH3' = λ csn → ⟪ (proj₁ IH3) (cs' csn) ⟫
-        IH4 = mono-comp-count h W₂ E (wkn-cons ϖ)
+        cs' = λ csn → ((cnt2 , ⟪ (proj₁ $ proj₂ IH1) csn ⟫) ∷ csn)
+        IH3' = λ csn → ⟪ (proj₁ $ proj₂ IH3) (cs' csn) ⟫
       in
-         (λ csn → incr (suc ((2+ ((proj₁ IH4) csn)) * (IH3' csn))) ((proj₁ IH1) csn)) ,
-         λ {csn₁ = csn₁} {csn₂ = csn₂} c≤c' →
-           let
-             le  = (proj₂ IH2) c≤c'
-             le1 = ≤ᴹ⇒≤ ((proj₂ IH3) ([s≤s] {cnt = (proj₁ IH2) csn₁} ((≤ᴹ⇒≤ ((proj₂ IH1) c≤c'))) c≤c'))
-             le2 = subst
-              (λ x →   ⟪ comp-mono-metric W₁ E ϖ .proj₁ ((proj₁ IH2 csn₁ , ⟪ comp-mono-metric W₂ E (wkn-cons ϖ) .proj₁ csn₁ ⟫) ∷ csn₁) ⟫
-                     ≤ ⟪ comp-mono-metric W₁ E ϖ .proj₁ ((x , ⟪ comp-mono-metric W₂ E (wkn-cons ϖ) .proj₁ csn₂ ⟫) ∷ csn₂) ⟫)
-              le
-              le1
-             le4 = +-≤-cong le2 (+-≤-cong le2 (*-≤-cong ((≡⇒≤ ((proj₂ IH2) c≤c'))) le2))
-           in
-           ≤ᴹ-incr-cong (s≤s le4) ((proj₂ IH1) c≤c')
-
-    comp-mono-metric (app M N) E ϖ =
+      cnt ,
+      (λ csn → incr (suc ((2+ cnt2) * (IH3' csn))) ((proj₁ $ proj₂ IH1) csn)) ,
+      λ {csn₁ = csn₁} {csn₂ = csn₂} c≤c' →
+        let
+          le = proj₂ (proj₂ IH1) c≤c'
+          le1 : ⟪ proj₂ IH3 .proj₁ ((cnt2 , ⟪ proj₂ IH1 .proj₁ csn₁ ⟫) ∷ csn₁) ⟫ ≤ ⟪ proj₂ IH3 .proj₁ ((cnt2 , ⟪ proj₂ IH1 .proj₁ csn₂ ⟫) ∷ csn₂) ⟫
+          le1 = ≤ᴹ⇒≤ ((proj₂ $ proj₂ IH3) ([s≤s] {cnt = cnt2} ((≤ᴹ⇒≤ le)) c≤c'))
+          le2 = s≤s (*-≤-cong (≤-refl {n = (2+ cnt2)}) le1)
+        in
+        ≤ᴹ-incr-cong le2 le
+      -- let
+      --   IH1 = comp-mono-metric W₂ E (wkn-cons ϖ)
+      --   IH2 = mono-comp-count h W₂ E (wkn-cons ϖ)
+      --   IH3 = comp-mono-metric W₁ E ϖ
+      --   cs' = λ csn → (((proj₁ IH2) csn , ⟪ (proj₁ IH1) csn ⟫) ∷ csn)
+      --   IH3' = λ csn → ⟪ (proj₁ IH3) (cs' csn) ⟫
+      --   IH4 = mono-comp-count h W₂ E (wkn-cons ϖ)
+      -- in
+      --    (λ csn → incr (suc ((2+ ((proj₁ IH4) csn)) * (IH3' csn))) ((proj₁ IH1) csn)) ,
+      --    λ {csn₁ = csn₁} {csn₂ = csn₂} c≤c' →
+      --      let
+      --        le  = (proj₂ IH2) c≤c'
+      --        le1 = ≤ᴹ⇒≤ ((proj₂ IH3) ([s≤s] {cnt = (proj₁ IH2) csn₁} ((≤ᴹ⇒≤ ((proj₂ IH1) c≤c'))) c≤c'))
+      --        le2 = subst
+      --         (λ x →   ⟪ comp-mono-metric W₁ E ϖ .proj₁ ((proj₁ IH2 csn₁ , ⟪ comp-mono-metric W₂ E (wkn-cons ϖ) .proj₁ csn₁ ⟫) ∷ csn₁) ⟫
+      --                ≤ ⟪ comp-mono-metric W₁ E ϖ .proj₁ ((x , ⟪ comp-mono-metric W₂ E (wkn-cons ϖ) .proj₁ csn₂ ⟫) ∷ csn₂) ⟫)
+      --         le
+      --         le1
+      --        le4 = +-≤-cong le2 (+-≤-cong le2 (*-≤-cong ((≡⇒≤ ((proj₂ IH2) c≤c'))) le2))
+      --      in
+      --      ≤ᴹ-incr-cong (s≤s le4) ((proj₂ IH1) c≤c')
+    comp-mono-metric (app M N) E ϖ = --{!!}
       let
+        cnt = ccount (app M N) (elist-to-clist E) (wkn-to-wkc ϖ)
         IH1 = val-mono-metric M E ϖ
         IH2 = val-mono-metric N E ϖ
       in
-      (λ csn → incr (2 + ((p1 (proj₁ IH1 csn)) + ((suc (p2 (proj₁ IH1 csn))) * ⟪ proj₁ IH2 csn ⟫))) (p3 (proj₁ IH1 csn))) ,
+      cnt ,
+      (λ csn → incr (2 + ((p1 (proj₁ (proj₂ IH1) csn)) + ((suc $ proj₁ IH1) * ⟪ proj₁ (proj₂ IH2) csn ⟫))) (pw (proj₁ (proj₂ IH1) csn))) ,
       λ c≤c' →
         let
-          le1 = +-≤-cong (≤ᴹ-p1 (proj₂ IH1 c≤c')) (+-≤-cong (≤ᴹ⇒≤ (proj₂ IH2 c≤c')) (*-≤-cong (≡⇒≤ (≤ᴹ-p2 (proj₂ IH1 c≤c'))) (≤ᴹ⇒≤ (proj₂ IH2 c≤c'))))
+          le1 = +-≤-cong (≤ᴹ-p1 (proj₂ (proj₂ IH1) c≤c')) (*-≤-cong (≤-refl {n = suc $ proj₁ IH1}) (≤ᴹ⇒≤ (proj₂ (proj₂ IH2) c≤c')))
         in
-        ≤ᴹ-incr-cong (s≤s (s≤s le1)) (≤ᴹ-p3 (proj₂ IH1 c≤c'))
-    comp-mono-metric (var M) E ϖ =
+        ≤ᴹ-incr-cong (s≤s (s≤s le1)) (≤ᴹ-pw (proj₂ (proj₂ IH1) c≤c'))
+      -- let
+      --   IH1 = val-mono-metric M E ϖ
+      --   IH2 = val-mono-metric N E ϖ
+      -- in
+      -- (λ csn → incr (2 + ((p1 (proj₁ IH1 csn)) + ((suc (p2 (proj₁ IH1 csn))) * ⟪ proj₁ IH2 csn ⟫))) (p3 (proj₁ IH1 csn))) ,
+      -- λ c≤c' →
+      --   let
+      --     le1 = +-≤-cong (≤ᴹ-p1 (proj₂ IH1 c≤c')) (+-≤-cong (≤ᴹ⇒≤ (proj₂ IH2 c≤c')) (*-≤-cong (≡⇒≤ (≤ᴹ-p2 (proj₂ IH1 c≤c'))) (≤ᴹ⇒≤ (proj₂ IH2 c≤c'))))
+      --   in
+      --   ≤ᴹ-incr-cong (s≤s (s≤s le1)) (≤ᴹ-p3 (proj₂ IH1 c≤c'))
+    comp-mono-metric (var {A = A} M) E ϖ =
       let
+        cnt = ccount (var {A = A} M) (elist-to-clist E) (wkn-to-wkc ϖ)
         IH = val-mono-metric M E ϖ
       in
-      (λ csn → incr (suc ⟪ (proj₁ IH) csn ⟫) zero-metric) , λ c≤c' → ≤ᴹ-incr-cong (s≤s (≤ᴹ⇒≤ ((proj₂ IH) c≤c'))) (≤ᴹ-refl {nm = zero-metric})
-
+      cnt , (λ csn → incr (suc ⟪ (proj₁ $ proj₂ IH) csn ⟫) zero-metric) , λ c≤c' → ≤ᴹ-incr-cong (s≤s (≤ᴹ⇒≤ ((proj₂ $ proj₂ IH) c≤c'))) (≤ᴹ-refl {nm = zero-metric})
     --comp-metric (sub W₁ W₂) E ϖ csn =
     --        let w = ⟪ comp-metric W₂ E ϖ csn ⟫
     --        in
@@ -830,36 +1165,80 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     --        (comp-metric W₁ (((`V , λ _ → m-V 0 (w + csn-to-nat₀ w csn))) ∷ E) (wkn-cong ϖ) csn)
     comp-mono-metric (sub {Γ = Γ} W₁ W₂) E ϖ =
       let
+        cnt = ccount (sub {Γ = Γ} W₁ W₂) (elist-to-clist E) (wkn-to-wkc ϖ)
+        cnt2 = ccount W₂ (elist-to-clist E) (wkn-to-wkc ϖ)
         IH = comp-mono-metric W₂ E ϖ
-        θ : WkE wk-id ϖ ϖ
-        θ = wke-id
       in
-      (λ csn → incr (suc ⟪ proj₁ IH csn ⟫) (proj₁ (comp-mono-metric W₁ ((`V , (λ _ → m-V 0 (⟪ proj₁ IH csn ⟫ + csn-to-nat₀ ⟪ proj₁ IH csn ⟫ csn)) , λ c≤c' → ≤ᴹ-refl) ∷ E) (wkn-cong ϖ)) csn)) ,
+      cnt ,
+      ((λ csn → incr (suc ⟪ proj₁ (proj₂ IH) csn ⟫) (proj₁ (proj₂ (comp-mono-metric W₁ ((`V , cnt2 , (λ _ → m-V 0 (⟪ proj₁ (proj₂ IH) csn ⟫ + csn-to-nat₀ ⟪ proj₁ (proj₂ IH) csn ⟫ csn)) , λ c≤c' → ≤ᴹ-refl) ∷ E) (wkn-cong ϖ))) csn))) ,
       λ {csn₁ = csn₁} {csn₂ = csn₂} c≤c' →
         let
-          le : csn-to-nat₀ ⟪ proj₁ IH csn₁ ⟫ csn₁ ≤ csn-to-nat₀ ⟪ proj₁ IH csn₂ ⟫ csn₂
-          le = ≤ᶜˢⁿ-decr (≤ᴹ⇒≤ (proj₂ IH c≤c')) c≤c'
-          le1 : (m-V 0 (⟪ proj₁ IH csn₁ ⟫ + csn-to-nat₀ ⟪ proj₁ IH csn₁ ⟫ csn₁)) ≤ᴹ (m-V 0 (⟪ proj₁ IH csn₂ ⟫ + csn-to-nat₀ ⟪ proj₁ IH csn₂ ⟫ csn₂))
-          le1 = ≤-V z≤n (+-≤-cong (≤ᴹ⇒≤ (proj₂ IH c≤c')) le)
-          ϖ₁ : WkN (Γ ∙ `V) ((`V , (λ _ → m-V 0 (⟪ proj₁ IH csn₁ ⟫ + csn-to-nat₀ ⟪ proj₁ IH csn₁ ⟫ csn₁)) , λ c≤c' → ≤ᴹ-refl) ∷ E)
+          le : csn-to-nat₀ ⟪ proj₁ (proj₂ IH) csn₁ ⟫ csn₁ ≤ csn-to-nat₀ ⟪ proj₁ (proj₂ IH) csn₂ ⟫ csn₂
+          le = ≤ᶜˢⁿ-decr (≤ᴹ⇒≤ (proj₂ (proj₂ IH) c≤c')) c≤c'
+          le1 : (m-V 0 (⟪ proj₁ (proj₂ IH) csn₁ ⟫ + csn-to-nat₀ ⟪ proj₁ (proj₂ IH) csn₁ ⟫ csn₁)) ≤ᴹ (m-V 0 (⟪ proj₁ (proj₂ IH) csn₂ ⟫ + csn-to-nat₀ ⟪ proj₁ (proj₂ IH) csn₂ ⟫ csn₂))
+          le1 = ≤-V z≤n (+-≤-cong (≤ᴹ⇒≤ (proj₂ (proj₂ IH) c≤c')) le)
+          ϖ₁ : WkN (Γ ∙ `V) ((`V , cnt2 , (λ _ → m-V 0 (⟪ proj₁ (proj₂ IH) csn₁ ⟫ + csn-to-nat₀ ⟪ proj₁ (proj₂ IH) csn₁ ⟫ csn₁)) , λ c≤c' → ≤ᴹ-refl) ∷ E)
           ϖ₁ = wkn-cong ϖ
-          ϖ₂ : WkN (Γ ∙ `V) ((`V , (λ _ → m-V 0 (⟪ proj₁ IH csn₂ ⟫ + csn-to-nat₀ ⟪ proj₁ IH csn₂ ⟫ csn₂)) , λ c≤c' → ≤ᴹ-refl) ∷ E)
+          ϖ₂ : WkN (Γ ∙ `V) ((`V , cnt2 , (λ _ → m-V 0 (⟪ proj₁ (proj₂ IH) csn₂ ⟫ + csn-to-nat₀ ⟪ proj₁ (proj₂ IH) csn₂ ⟫ csn₂)) , λ c≤c' → ≤ᴹ-refl) ∷ E)
           ϖ₂ = wkn-cong ϖ
           ϕ : WkX wk-id ϖ₁ ϖ₂
           ϕ = wkx-cong (λ csn → le1) wkx-id
-          a0 = comp-wkx-lemma
-                  W₁
-                  ((`V , (λ _ → m-V 0 (⟪ proj₁ IH csn₁ ⟫ + csn-to-nat₀ ⟪ proj₁ IH csn₁ ⟫ csn₁)) , λ c≤c' → ≤ᴹ-refl) ∷ E)
-                  ((`V , (λ _ → m-V 0 (⟪ proj₁ IH csn₂ ⟫ + csn-to-nat₀ ⟪ proj₁ IH csn₂ ⟫ csn₂)) , λ c≤c' → ≤ᴹ-refl) ∷ E)
-                  wk-id
-                  ϖ₁
-                  ϖ₂
-                  ϕ
-                  csn₁
-          a1 = proj₂ (comp-mono-metric W₁ ((`V , (λ _ → m-V 0 (⟪ proj₁ IH csn₂ ⟫ + csn-to-nat₀ ⟪ proj₁ IH csn₂ ⟫ csn₂)) , (λ c≤c'' → ≤-V z≤n ≤-refl)) ∷ E) (wkn-cong ϖ)) c≤c'
         in
-        ≤ᴹ-incr-cong (s≤s (≤ᴹ⇒≤ (proj₂ IH c≤c'))) (≤ᴹ-trans a0 a1)
+        {!!}
+{-
+Goal: incr (suc ⟪ proj₁ (proj₂ IH) csn₁ ⟫) (proj₁ (proj₂ (comp-mono-metric W₁ ((`V , cnt2 , (λ _ → m-V 0 (⟪ proj₁ (proj₂ IH) csn₁ ⟫ + csn-to-nat₀ ⟪ proj₁ (proj₂ IH) csn₁ ⟫ csn₁)) , (λ c≤c'' → ≤-V z≤n ≤-refl)) ∷ E) (wkn-cong ϖ))) csn₁)
+      ≤ᴹ
+      incr (suc ⟪ proj₁ (proj₂ IH) csn₂ ⟫) (proj₁ (proj₂ (comp-mono-metric W₁ ((`V , cnt2 , (λ _ → m-V 0 (⟪ proj₁ (proj₂ IH) csn₂ ⟫ + csn-to-nat₀ ⟪ proj₁ (proj₂ IH) csn₂ ⟫ csn₂)) , (λ c≤c'' → ≤-V z≤n ≤-refl)) ∷ E) (wkn-cong ϖ))) csn₂)
+-}
+      -- let
+      --   IH = comp-mono-metric W₂ E ϖ
+      --   θ : WkE wk-id ϖ ϖ
+      --   θ = wke-id
+      -- in
+      -- (λ csn → incr (suc ⟪ proj₁ IH csn ⟫) (proj₁ (comp-mono-metric W₁ ((`V , (λ _ → m-V 0 (⟪ proj₁ IH csn ⟫ + csn-to-nat₀ ⟪ proj₁ IH csn ⟫ csn)) , λ c≤c' → ≤ᴹ-refl) ∷ E) (wkn-cong ϖ)) csn)) ,
+      -- λ {csn₁ = csn₁} {csn₂ = csn₂} c≤c' →
+      --   let
+      --     le : csn-to-nat₀ ⟪ proj₁ IH csn₁ ⟫ csn₁ ≤ csn-to-nat₀ ⟪ proj₁ IH csn₂ ⟫ csn₂
+      --     le = ≤ᶜˢⁿ-decr (≤ᴹ⇒≤ (proj₂ IH c≤c')) c≤c'
+      --     le1 : (m-V 0 (⟪ proj₁ IH csn₁ ⟫ + csn-to-nat₀ ⟪ proj₁ IH csn₁ ⟫ csn₁)) ≤ᴹ (m-V 0 (⟪ proj₁ IH csn₂ ⟫ + csn-to-nat₀ ⟪ proj₁ IH csn₂ ⟫ csn₂))
+      --     le1 = ≤-V z≤n (+-≤-cong (≤ᴹ⇒≤ (proj₂ IH c≤c')) le)
+      --     ϖ₁ : WkN (Γ ∙ `V) ((`V , (λ _ → m-V 0 (⟪ proj₁ IH csn₁ ⟫ + csn-to-nat₀ ⟪ proj₁ IH csn₁ ⟫ csn₁)) , λ c≤c' → ≤ᴹ-refl) ∷ E)
+      --     ϖ₁ = wkn-cong ϖ
+      --     ϖ₂ : WkN (Γ ∙ `V) ((`V , (λ _ → m-V 0 (⟪ proj₁ IH csn₂ ⟫ + csn-to-nat₀ ⟪ proj₁ IH csn₂ ⟫ csn₂)) , λ c≤c' → ≤ᴹ-refl) ∷ E)
+      --     ϖ₂ = wkn-cong ϖ
+      --     ϕ : WkX wk-id ϖ₁ ϖ₂
+      --     ϕ = wkx-cong (λ csn → le1) wkx-id
+      --     a0 = comp-wkx-lemma
+      --             W₁
+      --             ((`V , (λ _ → m-V 0 (⟪ proj₁ IH csn₁ ⟫ + csn-to-nat₀ ⟪ proj₁ IH csn₁ ⟫ csn₁)) , λ c≤c' → ≤ᴹ-refl) ∷ E)
+      --             ((`V , (λ _ → m-V 0 (⟪ proj₁ IH csn₂ ⟫ + csn-to-nat₀ ⟪ proj₁ IH csn₂ ⟫ csn₂)) , λ c≤c' → ≤ᴹ-refl) ∷ E)
+      --             wk-id
+      --             ϖ₁
+      --             ϖ₂
+      --             ϕ
+      --             csn₁
+      --     a1 = proj₂ (comp-mono-metric W₁ ((`V , (λ _ → m-V 0 (⟪ proj₁ IH csn₂ ⟫ + csn-to-nat₀ ⟪ proj₁ IH csn₂ ⟫ csn₂)) , (λ c≤c'' → ≤-V z≤n ≤-refl)) ∷ E) (wkn-cong ϖ)) c≤c'
+      --   in
+      --   ≤ᴹ-incr-cong (s≤s (≤ᴹ⇒≤ (proj₂ IH c≤c'))) (≤ᴹ-trans a0 a1)
 
+    val-wkx-lemma : (M : Val Γ X) → (E E' : EMetric) → (π : Wk Γ Γ) → (ϖ : WkN Γ E) → (ϖ' : WkN Γ E') → (ϕ : WkX π ϖ ϖ')
+                → (csn : List (ℕ × ℕ)) → (proj₁ (proj₂ (val-mono-metric M E ϖ))) csn ≤ᴹ (proj₁ (proj₂ (val-mono-metric M E' ϖ'))) csn
+    val-wkx-lemma (var i) E E' π ϖ ϖ' ϕ csn = ≤ᴹ-incr-cong (≤-refl {n = 2}) (lookup-wkx-lemma i E E' π ϖ ϖ' ϕ csn)
+    val-wkx-lemma (lam W) E E' π ϖ ϖ' ϕ csn = {!!}
+    val-wkx-lemma (pair M₁ M₂) E E' π ϖ ϖ' ϕ csn = {!!}
+    val-wkx-lemma (pm M N) E E' π ϖ ϖ' ϕ csn = {!!}
+    val-wkx-lemma unit E E' π ϖ ϖ' ϕ csn = {!!}
+
+    comp-wkx-lemma : (W : Comp Γ X) → (E E' : EMetric) → (π : Wk Γ Γ) → (ϖ : WkN Γ E) → (ϖ' : WkN Γ E') → (ϕ : WkX π ϖ ϖ')
+                → (csn : List (ℕ × ℕ)) → (proj₁ $ proj₂ (comp-mono-metric W E ϖ)) csn ≤ᴹ (proj₁ $ proj₂ (comp-mono-metric W E' ϖ')) csn
+    comp-wkx-lemma (return M) E E' π ϖ ϖ' ϕ csn = {!!}
+    comp-wkx-lemma (pm M W) E E' π ϖ ϖ' ϕ csn = {!!}
+    comp-wkx-lemma (push W₁ W₂) E E' π ϖ ϖ' ϕ csn = {!!}
+    comp-wkx-lemma (app M N) E E' π ϖ ϖ' ϕ csn = {!!}
+    comp-wkx-lemma (var M) E E' π ϖ ϖ' ϕ csn = {!!}
+    comp-wkx-lemma (sub W₁ W₂) E E' π ϖ ϖ' ϕ csn = {!!}
+
+{- AAAA
     postulate wke-val-count-lemma : (i : Γ' ∋ Y) → (M : Val Γ' X) → (E E' : EMetric)
                 → (π : Wk Γ Γ') → (ϖ : WkN Γ E) → (ϖ' : WkN Γ' E') → (θ : WkE π ϖ ϖ') → (csn : List (ℕ × ℕ))
                 → ((proj₁ (mono-val-count i M E' ϖ')) csn) ≡ ((proj₁ (mono-val-count (wk-mem π i) (wk-val π M) E ϖ)) csn)
@@ -976,28 +1355,85 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       in
       (λ csn → incr 1 ((proj₁ IH) csn)) , λ c≤c' → ≤ᴹ-incr-cong (≤-refl {n = 1}) ((proj₂ IH) c≤c')
 
+
     c̲o̲m̲p-mono-metric : (W : C̲o̲m̲p Γ Y) → (E : EMetric) → WkN Γ E → EElem Y
     c̲o̲m̲p-mono-metric (r̲e̲t̲u̲r̲n̲ M) E ϖ =
       let
         IH = v̲a̲l̲-mono-metric M E ϖ
       in
       (λ csn → incr 1 ((proj₁ IH) csn)) , λ c≤c' → ≤ᴹ-incr-cong (≤-refl {n = 1}) ((proj₂ IH) c≤c')
-    c̲o̲m̲p-mono-metric (a̲pp M N) E ϖ =
+    c̲o̲m̲p-mono-metric (a̲pp M N) E ϖ = {!!}
+
+    a̲pp-mono-metric : (M : Val Γ (X `⇒ Y)) → (N : EElem X) → (E : EMetric) → WkN Γ E → EElem Y
+    a̲pp-mono-metric (var i) N E ϖ = {!!}
+    a̲pp-mono-metric (lam W) N E ϖ =
       let
-        IH1 = val-mono-metric M E ϖ
-        IH2 = v̲a̲l̲-mono-metric N E ϖ
+        IH1 = comp-mono-metric W ((_ , N) ∷ E) (wkn-cong ϖ)
       in
-      (λ csn → incr (suc ((p1 (proj₁ IH1 csn)) + ((suc (p2 (proj₁ IH1 csn))) * ⟪ proj₁ IH2 csn ⟫))) (p3 (proj₁ IH1 csn))) ,
-      λ c≤c' →
-        let
-          le1 = +-≤-cong (≤ᴹ-p1 (proj₂ IH1 c≤c')) (+-≤-cong (≤ᴹ⇒≤ (proj₂ IH2 c≤c')) (*-≤-cong (≡⇒≤ (≤ᴹ-p2 (proj₂ IH1 c≤c'))) (≤ᴹ⇒≤ (proj₂ IH2 c≤c'))))
-        in
-        ≤ᴹ-incr-cong (s≤s le1) (≤ᴹ-p3 (proj₂ IH1 c≤c'))
+      (λ csn → incr (suc ⟪ proj₁ N csn ⟫) (proj₁ IH1 csn)) ,
+      λ c≤c' → ≤ᴹ-incr-cong (s≤s (≤ᴹ⇒≤ $ proj₂ N c≤c')) (proj₂ IH1 c≤c')
+    a̲pp-mono-metric (pm M₁ M₂) N E ϖ =
+      let
+        IH = val-mono-metric M₁ E ϖ
+      in
+       a̲pp-mono-metric M₂ N ((_ , (λ csn → rhs (proj₁ IH csn)) , λ c≤c' → ≤ᴹ-rhs ((proj₂ IH) c≤c')) ∷ (_ , (λ csn → lhs (proj₁ IH csn)) , λ c≤c' → ≤ᴹ-lhs ((proj₂ IH) c≤c')) ∷ E) (wkn-cong (wkn-cong ϖ))
+
+{-
+    c̲o̲m̲p-mono-metric : (W : C̲o̲m̲p Γ Y) → (E : EMetric) → WkN Γ E → EElem Y
+    c̲o̲m̲p-mono-metric (r̲e̲t̲u̲r̲n̲ M) E ϖ =
+      let
+        IH = v̲a̲l̲-mono-metric M E ϖ
+      in
+      (λ csn → incr 1 ((proj₁ IH) csn)) , λ c≤c' → ≤ᴹ-incr-cong (≤-refl {n = 1}) ((proj₂ IH) c≤c')
+
+    c̲o̲m̲p-mono-metric (a̲pp (var i) N) E ϖ = {!!}
+
+    c̲o̲m̲p-mono-metric (a̲pp (lam W) N) E ϖ = --{!!}
+      let
+        IH2 = v̲a̲l̲-mono-metric N E ϖ
+        IH1 = comp-mono-metric W ((_ , IH2) ∷ E) (wkn-cong ϖ)
+      in
+      (λ csn → incr (suc ⟪ proj₁ IH2 csn ⟫) (proj₁ IH1 csn)) ,
+      λ c≤c' → ≤ᴹ-incr-cong (s≤s (≤ᴹ⇒≤ $ proj₂ IH2 c≤c')) (proj₂ IH1 c≤c')
+      -- (λ csn → incr (suc ((p1 (proj₁ IH1 csn)) + ((suc (p2 (proj₁ IH1 csn))) * ⟪ proj₁ IH2 csn ⟫))) (p3 (proj₁ IH1 csn))) ,
+      -- λ c≤c' →
+      --   let
+      --     le1 = +-≤-cong (≤ᴹ-p1 (proj₂ IH1 c≤c')) (+-≤-cong (≤ᴹ⇒≤ (proj₂ IH2 c≤c')) (*-≤-cong (≡⇒≤ (≤ᴹ-p2 (proj₂ IH1 c≤c'))) (≤ᴹ⇒≤ (proj₂ IH2 c≤c'))))
+      --   in
+      --   ≤ᴹ-incr-cong (s≤s le1) (≤ᴹ-p3 (proj₂ IH1 c≤c'))
+
+  --EElem : Ty → Set
+  --EElem X = (Σ[ f ∈ (List (ℕ × ℕ) → TermMetric X) ] ({csn₁ csn₂ : List (ℕ × ℕ)} → csn₁ ≤ᶜˢⁿ csn₂ → f csn₁ ≤ᴹ f csn₂))
+    c̲o̲m̲p-mono-metric (a̲pp (pm M₁ M₂) N) E ϖ = --{!!}
+      let
+        IH1 = v̲a̲l̲-mono-metric N E ϖ
+        IH2 = val-mono-metric M₁ E ϖ
+        IH3 = val-mono-metric M₂ E ϖ
+        IH4 = val-mono-metric M₂ ((_ , (λ csn → rhs (proj₁ IH2 csn)) , λ c≤c' → ≤ᴹ-rhs ((proj₂ IH2) c≤c')) ∷ (_ , (λ csn → lhs (proj₁ IH2 csn)) , λ c≤c' → ≤ᴹ-lhs ((proj₂ IH2) c≤c')) ∷ E) (wkn-cong (wkn-cong ϖ))
+        IH5 = (λ csn → incr (suc (vx ((proj₁ IH2) csn) + ⟪ (proj₁ IH3) csn ⟫) + ⟪ (proj₁ IH4) csn ⟫) ((proj₁ IH1) csn)
+      in
+      {!!}
+      --(λ csn → incr (suc ⟪ proj₁ IH2 csn ⟫) (proj₁ IH1 csn)) ,
+      --λ c≤c' → ≤ᴹ-incr-cong (s≤s (≤ᴹ⇒≤ $ proj₂ IH2 c≤c')) (proj₂ IH1 c≤c')
+
+    --OLD:
+    --c̲o̲m̲p-mono-metric (a̲pp M N) E ϖ =
+    --  let
+    --    IH1 = val-mono-metric M E ϖ
+    --    IH2 = v̲a̲l̲-mono-metric N E ϖ
+    --  in
+    --  (λ csn → incr (suc ((p1 (proj₁ IH1 csn)) + ((suc (p2 (proj₁ IH1 csn))) * ⟪ proj₁ IH2 csn ⟫))) (p3 (proj₁ IH1 csn))) ,
+    --  λ c≤c' →
+    --    let
+    --      le1 = +-≤-cong (≤ᴹ-p1 (proj₂ IH1 c≤c')) (+-≤-cong (≤ᴹ⇒≤ (proj₂ IH2 c≤c')) (*-≤-cong (≡⇒≤ (≤ᴹ-p2 (proj₂ IH1 c≤c'))) (≤ᴹ⇒≤ (proj₂ IH2 c≤c'))))
+    --    in
+    --    ≤ᴹ-incr-cong (s≤s le1) (≤ᴹ-p3 (proj₂ IH1 c≤c'))
+-}
 
     postulate v̲a̲l̲-wke-lemma : (M : V̲a̲l̲  Γ' X) → (E E' : EMetric)
                 → (π : Wk Γ Γ') → (ϖ : WkN Γ E) → (ϖ' : WkN Γ' E') → (θ : WkE π ϖ ϖ') → (csn : List (ℕ × ℕ))
                 → ((proj₁ (v̲a̲l̲-mono-metric M E' ϖ')) csn) ≡ ((proj₁ (v̲a̲l̲-mono-metric (wk-v̲a̲l̲ π M) E ϖ)) csn)
-
+{- BBBB
   mutual
 
     env-mono-metric : Env Γ → Σ[ E ∈ EMetric ] WkN Γ E
@@ -2158,4 +2594,5 @@ yGoal:   ⟪ proj₁ (b1) csn ⟫
   sub-cps' M N γ cs πₓ wk≡ = refl
 -}
 
+BBBB -}
 AAAA -}
