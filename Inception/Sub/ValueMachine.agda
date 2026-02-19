@@ -1164,10 +1164,13 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
           ϖ₁ = wkn-cong ϖ
           ϖ₂ : WkN (Γ ∙ `V) ((`V , cnt2 , (λ _ → m-V 0 (⟪ proj₁ (proj₂ IH) csn₂ ⟫ + csn-to-nat₀ ⟪ proj₁ (proj₂ IH) csn₂ ⟫ csn₂)) , λ c≤c' → ≤ᴹ-refl) ∷ E)
           ϖ₂ = wkn-cong ϖ
-          ϕ : WkCZ (wkn-to-wkc ϖ₁) (wkn-to-wkc ϖ₂)
-          ϕ = wkcz-cong wkcz-id
+          ϕ : WkZ ϖ₁ ϖ₂
+          ϕ = wkz-cong (λ csn → le1) wkz-id
+          a0 = comp-wkz-lemma W₁ _ _ ϖ₁ ϖ₂ ϕ csn₁
+          a1 = proj₂ (proj₂ (comp-mono-metric W₁ ((`V , cnt2 , (λ _ → m-V 0 (⟪ proj₁ (proj₂ IH) csn₂ ⟫ + csn-to-nat₀ ⟪ proj₁ (proj₂ IH) csn₂ ⟫ csn₂)) , (λ c≤c'' → ≤-V z≤n ≤-refl)) ∷ E) (wkn-cong ϖ))) c≤c'
+          a2 = proj₂ (proj₂ IH) c≤c'
         in
-        {!!}
+        ≤ᴹ-incr-cong (s≤s (≤ᴹ⇒≤ a2)) (≤ᴹ-trans a0 a1)
 
     val-proj₁-lemma :   (M : Val Γ X) → (E E' : EMetric) → (ϖ : WkN Γ E) → (ϖ' : WkN Γ E') → (ϕ : WkCZ (wkn-to-wkc ϖ) (wkn-to-wkc ϖ'))
                       → (proj₁ (val-mono-metric M E ϖ)) ≡ (proj₁ (val-mono-metric M E' ϖ'))
