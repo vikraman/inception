@@ -1382,7 +1382,6 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   --   -- in
   --   --  a̲pp-mono-metric M₂ N ((_ , (λ csn → rhs (proj₁ IH csn)) , λ c≤c' → ≤ᴹ-rhs ((proj₂ IH) c≤c')) ∷ (_ , (λ csn → lhs (proj₁ IH csn)) , λ c≤c' → ≤ᴹ-lhs ((proj₂ IH) c≤c')) ∷ E) (wkn-cong (wkn-cong ϖ))
 
-{- BBBB
   mutual
 
     env-mono-metric : Env Γ → Σ[ E ∈ EMetric ] WkN Γ E
@@ -1398,7 +1397,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
         IH2 = comp-mono-metric W (proj₁ IH) (proj₂ IH)
         csn = cs-to-csn cs
       in
-      (`V , (λ _ → m-V 0 (⟪ proj₁ IH2 csn ⟫ + csn-to-nat₀ ⟪ proj₁ IH2 csn ⟫ csn)) , λ _ → ≤ᴹ-refl) ∷ (proj₁ IH) , wkn-cong (proj₂ IH)
+      (`V , proj₁ IH2 , (λ _ → m-V 0 (⟪ proj₁ (proj₂ IH2) csn ⟫ + csn-to-nat₀ ⟪ proj₁ (proj₂ IH2) csn ⟫ csn)) , λ _ → ≤ᴹ-refl) ∷ (proj₁ IH) , wkn-cong (proj₂ IH)
 
     cs-to-csn : (cs : CompStack Δ Z) → List (ℕ × ℕ)
     cs-to-csn ◻ = []
@@ -1407,8 +1406,10 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
         csn = cs-to-csn cs
         IH = env-mono-metric γ
       in
-      ((proj₁ (mono-comp-count h W (proj₁ IH) (wkn-cons (proj₂ IH))) csn) , ⟪ proj₁ (comp-mono-metric W (proj₁ IH) (wkn-cons (proj₂ IH))) csn ⟫) ∷ csn
+      (ccount W (elist-to-clist (proj₁ IH)) (wkn-to-wkc (wkn-cons (proj₂ IH))) , ⟪ proj₁ (proj₂ (comp-mono-metric W (proj₁ IH) (wkn-cons (proj₂ IH)))) csn ⟫) ∷ csn
+      -- ((proj₁ (mono-comp-count h W (proj₁ IH) (wkn-cons (proj₂ IH))) csn) , ⟪ proj₁ (comp-mono-metric W (proj₁ IH) (wkn-cons (proj₂ IH))) csn ⟫) ∷ csn
 
+{- BBBB
   getIndex : LookupState X → Σ[ Γ ∈ Ctx ] Γ ∋ X
   getIndex ⟨ i ∥ _ ⟩ = _ , i
 
