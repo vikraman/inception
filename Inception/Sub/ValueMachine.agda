@@ -1409,7 +1409,6 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       (ccount W (elist-to-clist (proj₁ IH)) (wkn-to-wkc (wkn-cons (proj₂ IH))) , ⟪ proj₁ (proj₂ (comp-mono-metric W (proj₁ IH) (wkn-cons (proj₂ IH)))) csn ⟫) ∷ csn
       -- ((proj₁ (mono-comp-count h W (proj₁ IH) (wkn-cons (proj₂ IH))) csn) , ⟪ proj₁ (comp-mono-metric W (proj₁ IH) (wkn-cons (proj₂ IH))) csn ⟫) ∷ csn
 
-{- BBBB
   getIndex : LookupState X → Σ[ Γ ∈ Ctx ] Γ ∋ X
   getIndex ⟨ i ∥ _ ⟩ = _ , i
 
@@ -1425,7 +1424,6 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   ×≡vlr : (nm : TermMetric (X `× Y)) → nm ≡ (m-× (vx nm) (lhs nm) (rhs nm))
   ×≡vlr (m-× m l r) = refl
 
-
   lstate-metric : LookupState X → EElem X
   lstate-metric ⟨ i ∥ γ ⟩ =
     let
@@ -1434,17 +1432,18 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       lookup-mono-metric i (proj₁ EP) (proj₂ EP)
 
   lhstate-metric : {T : LookupState X} → LookupHaltingState T → EElem X
-  lhstate-metric (found-unit {γ = γ}) = (λ _ → m-Unit 1) , λ _ → ≤ᴹ-refl
+  lhstate-metric (found-unit {γ = γ}) = let EP = (env-mono-metric γ) in v̲a̲l̲-mono-metric u̲n̲i̲t̲ (proj₁ EP) (proj₂ EP) -- i.e. 0 , (λ _ → m-Unit 1) , λ _ → ≤ᴹ-refl
   lhstate-metric (found-pair {LHS = LHS} {RHS = RHS} {γ = γ}) = let EP = (env-mono-metric γ) in v̲a̲l̲-mono-metric (pa̲i̲r̲ LHS RHS) (proj₁ EP) (proj₂ EP)
   lhstate-metric (found-lam {W = W} {γ = γ}) = let EP = (env-mono-metric γ) in v̲a̲l̲-mono-metric (l̲a̲m̲ W) (proj₁ EP) (proj₂ EP)
-  lhstate-metric (found-comp {W = W} {γ = γ} {cs = cs}) =
+  lhstate-metric (found-comp {W = W} {γ = γ} {cs = cs}) = --{!!}
     let
       EP = (env-mono-metric γ)
       w = comp-mono-metric W (proj₁ EP) (proj₂ EP)
       csn = (cs-to-csn cs)
     in
-      (λ _ → m-V 0 (⟪ proj₁ w csn ⟫ + csn-to-nat₀ ⟪ proj₁ w csn ⟫ csn)) , λ _ → ≤ᴹ-refl
+      proj₁ w , (λ _ → m-V 0 (⟪ proj₁ (proj₂ w) csn ⟫ + csn-to-nat₀ ⟪ proj₁ (proj₂ w) csn ⟫ csn)) , λ _ → ≤ᴹ-refl
 
+{- BBBB
   data LookupSteps : LookupState X → Set where
 
     steps : {S T : LookupState X} → S →ᴸ* T → (H : LookupHaltingState T) → ⟦ S ⟧ᴸ ≡ ⟦ T ⟧ᴸ → (π : Wk (lCtx S) (lTCtx T)) → (⟦ π ⟧ʷ ⟦ lEnv S ⟧ᴱ ≡ ⟦ lTEnv T ⟧ᴱ)
