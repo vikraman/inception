@@ -237,7 +237,7 @@ Computation terms $\Gamma \CTS W : X$ are interpreted by $\llbracket \_ \rrbrack
   \llbracket \Gamma \CTS \PUSH (W_1, x.W_2) : X\rrbracket \;\gamma \; k &= ({\llbracket W_2 \rrbracket}^{\sharp} \circ \STR \circ \langle \gamma , \llbracket W_1 \rrbracket \;\gamma \rangle) \; k\\
   \llbracket \Gamma \CTS \APP(M , N) : X \rrbracket \; \gamma \; k &= (\EVAL \circ \langle \llbracket M \rrbracket , \llbracket N \rrbracket \rangle) \; \gamma \; k\\
   \llbracket \Gamma \CTS \VAR(L) : X \rrbracket \; \gamma \; k &= \llbracket L \rrbracket \; \gamma\\
-  \llbracket \Gamma \CTS \SUB(a.W_1 , W_2) : X \rrbracket &= \llbracket W_1 \rrbracket \; (\gamma , \llbracket W_2 \rrbracket \, \gamma \, k) \; k\\
+  \llbracket \Gamma \CTS \SUB(a.W_1 , W_2) : X \rrbracket \; \gamma \; k &= \llbracket W_1 \rrbracket \; (\gamma , \llbracket W_2 \rrbracket \, \gamma \, k) \; k\\
   \llbracket \Gamma \CTS \PMC(M , (x , y).W) : X \rrbracket \; \gamma \; k &= (\llbracket W \rrbracket \circ \alpha \circ \langle \gamma , \llbracket M \rrbracket \rangle) k
 \end{align*}
 
