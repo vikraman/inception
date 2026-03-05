@@ -986,10 +986,9 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   lookup-mono-metric {Y = Y} (Cx.t i) [] (wkn-cons ϖ) = (lcount (t {B = Y} i) [] (wkn-to-wkc (wkn-cons ϖ))) , (λ _ → zero-metric) , λ _ → ≤ᴹ-refl
   lookup-mono-metric (Cx.t i) (x ∷ E) (wkn-cons ϖ) = lookup-mono-metric i (x ∷ E) ϖ
 
-  -- DEPRECATED:
-  -- empty-lookup : (i : Γ ∋ X) → (ϖ : WkN Γ []) → lookup-mono-metric i [] ϖ ≡ (0 , ((λ _ → zero-metric) , λ _ → ≤ᴹ-refl))
-  -- empty-lookup Cx.h (wkn-cons ϖ) = refl
-  -- empty-lookup (Cx.t i) (wkn-cons ϖ) = refl
+  empty-lookup : (i : Γ ∋ X) → (ϖ : WkN Γ []) → lookup-mono-metric i [] ϖ ≡ (1 , ((λ _ → zero-metric) , λ _ → ≤ᴹ-refl))
+  empty-lookup Cx.h (wkn-cons ϖ) = refl
+  empty-lookup (Cx.t i) (wkn-cons ϖ) = refl
 
   -- DEPRECATED:
   -- lookup-wkx-lemma : (i : Γ ∋ X) → (E E' : EMetric) → (π : Wk Γ Γ) → (ϖ : WkN Γ E) → (ϖ' : WkN Γ E') → (ϕ : WkX π ϖ ϖ')
@@ -1469,6 +1468,55 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   -----------------------------------------------------------------------------------------------
 
+  lookup-wke-lemma : (i : Γ' ∋ X) → (E E' : EMetric)
+              → (π : Wk Γ Γ') → (ϖ : WkN Γ E) → (ϖ' : WkN Γ' E') → (θ : WkE π ϖ ϖ')
+              → (lookup-mono-metric i E' ϖ') ≡ (lookup-mono-metric (wk-mem π i) E ϖ)
+  lookup-wke-lemma Cx.h [] [] (wk-cong π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-cww π₁ ϖ₁ ϖ'' θ) = refl
+  lookup-wke-lemma Cx.h [] [] (wk-wk π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-ww- π₁ ϖ₁ ϖ'' θ) = refl
+  lookup-wke-lemma Cx.h [] (x ∷ E') (wk-cong π) (wkn-cons ϖ) (wkn-cong ϖ') ()
+  lookup-wke-lemma Cx.h [] (x ∷ E') (wk-cong π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-cww π₁ ϖ₁ ϖ'' θ) = refl
+  lookup-wke-lemma Cx.h [] (x ∷ E') (wk-wk π) (wkn-cons ϖ) (wkn-cong ϖ') (wke-ww- π₁ ϖ₁ ϖ'' θ) = ql (wke-z-l θ)
+                                                                                                  (lookup-mono-metric h ((_ , _) ∷ E') (wkn-cong ϖ') ≡
+                                                                                                   lookup-mono-metric (wk-mem (wk-wk {A = R₀} π) h) [] (wkn-cons ϖ))
+  lookup-wke-lemma Cx.h [] (x ∷ E') (wk-wk π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-ww- π₁ ϖ₁ ϖ'' θ) = refl
+  lookup-wke-lemma Cx.h (x ∷ E) [] (wk-cong π) (wkn-cong ϖ) (wkn-cons ϖ') ()
+  lookup-wke-lemma Cx.h (x ∷ E) [] (wk-cong π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-cww π₁ ϖ₁ ϖ'' θ) = refl
+  lookup-wke-lemma Cx.h (x ∷ E) [] (wk-wk π) (wkn-cong ϖ) (wkn-cons ϖ') (wke-wc- π₁ ϖ₁ ϖ'' e θ) = lookup-wke-lemma h E [] π ϖ (wkn-cons ϖ') θ
+  lookup-wke-lemma Cx.h (x ∷ E) [] (wk-wk π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-ww- π₁ ϖ₁ ϖ'' θ) = lookup-wke-lemma h (x ∷ E) [] π ϖ (wkn-cons ϖ') θ
+  lookup-wke-lemma Cx.h (x ∷ E) (x₁ ∷ E') (wk-cong π) (wkn-cong ϖ) (wkn-cong ϖ') (wke-ccc π₁ ϖ₁ ϖ'' e θ) = refl
+  lookup-wke-lemma Cx.h (x ∷ E) (x₁ ∷ E') (wk-cong π) (wkn-cong ϖ) (wkn-cons ϖ') ()
+  lookup-wke-lemma Cx.h (x ∷ E) (x₁ ∷ E') (wk-cong π) (wkn-cons ϖ) (wkn-cong ϖ') ()
+  lookup-wke-lemma Cx.h (x ∷ E) (x₁ ∷ E') (wk-cong π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-cww π₁ ϖ₁ ϖ'' θ) = refl
+  lookup-wke-lemma Cx.h (x ∷ E) (x₁ ∷ E') (wk-wk π) (wkn-cong ϖ) (wkn-cong ϖ') (wke-wc- π₁ ϖ₁ ϖ'' e θ) = lookup-wke-lemma h E ((_ , _) ∷ E') π ϖ (wkn-cong ϖ') θ
+  lookup-wke-lemma Cx.h (x ∷ E) (x₁ ∷ E') (wk-wk π) (wkn-cong ϖ) (wkn-cons ϖ') (wke-wc- π₁ ϖ₁ ϖ'' e θ) = lookup-wke-lemma h E (x₁ ∷ E') π ϖ (wkn-cons ϖ') θ
+  lookup-wke-lemma Cx.h (x ∷ E) (x₁ ∷ E') (wk-wk π) (wkn-cons ϖ) (wkn-cong ϖ') (wke-ww- π₁ ϖ₁ ϖ'' θ) = lookup-wke-lemma h (x ∷ E) ((_ , _) ∷ E') π ϖ (wkn-cong ϖ') θ
+  lookup-wke-lemma Cx.h (x ∷ E) (x₁ ∷ E') (wk-wk π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-ww- π₁ ϖ₁ ϖ'' θ) = lookup-wke-lemma h (x ∷ E) (x₁ ∷ E') π ϖ (wkn-cons ϖ') θ
+  lookup-wke-lemma (Cx.t i) [] [] (wk-cong π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-cww π₁ ϖ₁ ϖ'' θ) = refl
+  lookup-wke-lemma (Cx.t i) [] [] (wk-wk π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-ww- π₁ ϖ₁ ϖ'' θ) = refl
+  lookup-wke-lemma (Cx.t i) [] (x ∷ E') (wk-cong π) (wkn-cons ϖ) (wkn-cong ϖ') ()
+  lookup-wke-lemma (Cx.t i) [] (x ∷ E') (wk-cong π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-cww π₁ ϖ₁ ϖ'' θ) = ql (wke-z-l θ)
+                                                                                                        (lookup-mono-metric (t {B = R₀} i) (x ∷ E') (wkn-cons ϖ') ≡
+                                                                                                         lookup-mono-metric (wk-mem (wk-cong {A = R₀} π) (t i)) [] (wkn-cons ϖ))
+  lookup-wke-lemma (Cx.t i) [] (x ∷ E') (wk-wk π) (wkn-cons ϖ) (wkn-cong ϖ') (wke-ww- π₁ ϖ₁ ϖ'' θ) = ql (wke-z-l θ)
+                                                                                                      (lookup-mono-metric (t i) (x ∷ E') (wkn-cong ϖ') ≡
+                                                                                                       lookup-mono-metric (wk-mem (wk-wk {A = R₀} π) (t i)) [] (wkn-cons ϖ))
+  lookup-wke-lemma (Cx.t i) [] (x ∷ E') (wk-wk π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-ww- π₁ ϖ₁ ϖ'' θ) = ql (wke-z-l θ)
+                                                                                                      (lookup-mono-metric (t {B = R₀} i) (x ∷ E') (wkn-cons ϖ') ≡
+                                                                                                       lookup-mono-metric (wk-mem (wk-wk {A = R₀} π) (t i)) [] (wkn-cons ϖ))
+  lookup-wke-lemma (Cx.t i) (x ∷ E) [] (wk-cong π) (wkn-cong ϖ) (wkn-cons ϖ') ()
+  lookup-wke-lemma (Cx.t i) (x ∷ E) [] (wk-cong π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-cww π ϖ ϖ' θ) rewrite sym (empty-lookup i  ϖ') = lookup-wke-lemma i (x ∷ E) [] π ϖ ϖ' θ
+  lookup-wke-lemma (Cx.t i) (x ∷ E) [] (wk-wk π) (wkn-cong ϖ) (wkn-cons ϖ') (wke-wc- π₁ ϖ₁ ϖ'' e θ) = lookup-wke-lemma (t i) E [] π ϖ (wkn-cons ϖ') θ
+  lookup-wke-lemma (Cx.t i) (x ∷ E) [] (wk-wk π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-ww- π₁ ϖ₁ ϖ'' θ) = lookup-wke-lemma (t i) (x ∷ E) [] π ϖ (wkn-cons ϖ') θ
+  lookup-wke-lemma (Cx.t i) (x ∷ E) (x₁ ∷ E') (wk-cong π) (wkn-cong ϖ) (wkn-cong ϖ') (wke-ccc π₁ ϖ₁ ϖ'' e θ) = lookup-wke-lemma i E E' π ϖ ϖ' θ
+  lookup-wke-lemma (Cx.t i) (x ∷ E) (x₁ ∷ E') (wk-cong π) (wkn-cong ϖ) (wkn-cons ϖ') ()
+  lookup-wke-lemma (Cx.t i) (x ∷ E) (x₁ ∷ E') (wk-cong π) (wkn-cons ϖ) (wkn-cong ϖ') ()
+  lookup-wke-lemma (Cx.t i) (x ∷ E) (x₁ ∷ E') (wk-cong π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-cww π₁ ϖ₁ ϖ'' θ) = lookup-wke-lemma i (x ∷ E) (x₁ ∷ E') π ϖ ϖ' θ
+  lookup-wke-lemma (Cx.t i) (x ∷ E) (x₁ ∷ E') (wk-wk π) (wkn-cong ϖ) (wkn-cong ϖ') (wke-wc- π₁ ϖ₁ ϖ'' e θ) = lookup-wke-lemma (t i) E ((_ , _) ∷ E') π ϖ (wkn-cong ϖ') θ
+  lookup-wke-lemma (Cx.t i) (x ∷ E) (x₁ ∷ E') (wk-wk π) (wkn-cong ϖ) (wkn-cons ϖ') (wke-wc- π₁ ϖ₁ ϖ'' e θ) = lookup-wke-lemma (t i) E (x₁ ∷ E') π ϖ (wkn-cons ϖ') θ
+  lookup-wke-lemma (Cx.t i) (x ∷ E) (x₁ ∷ E') (wk-wk π) (wkn-cons ϖ) (wkn-cong ϖ') (wke-ww- π₁ ϖ₁ ϖ'' θ) = lookup-wke-lemma (t i) (x ∷ E) ((_ , _) ∷ E') π ϖ (wkn-cong ϖ') θ
+  lookup-wke-lemma (Cx.t i) (x ∷ E) (x₁ ∷ E') (wk-wk π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-ww- π₁ ϖ₁ ϖ'' θ) = lookup-wke-lemma (t i) (x ∷ E) (x₁ ∷ E') π ϖ (wkn-cons ϖ') θ
+
+{- AAAAA
   postulate val-wke-lemma : (M : Val Γ' X) → (E E' : EMetric)
               → (π : Wk Γ Γ') → (ϖ : WkN Γ E) → (ϖ' : WkN Γ' E') → (θ : WkE π ϖ ϖ') → (csn : List (ℕ × ℕ))
               → ((proj₁ (proj₂ (val-mono-metric M E' ϖ'))) csn) ≡ ((proj₁ (proj₂ (val-mono-metric (wk-val π M) E ϖ))) csn)
@@ -2298,3 +2346,5 @@ a2-cnt    : proj₁
 -}
 
 BBBB -}
+
+AAAAA -}
