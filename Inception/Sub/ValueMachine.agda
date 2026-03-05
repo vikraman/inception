@@ -886,6 +886,36 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   -}
 
+  --------------------------------------------------------------------------
+
+  data WkCE :   (π : Wk Γ Γ')
+             → {E E' : List ℕ}
+             → (ϖ : WkC Γ E) → (ϖ' : WkC Γ' E') → Set where
+   wkce-ε   :     WkCE wk-ε wkc-nil wkc-nil
+   wkce-ccc :     {E E' : List ℕ} → (π : Wk Γ Γ') → (ϖ : WkC Γ E) → (ϖ' : WkC Γ' E') → (e : ℕ)
+               → (θ : WkCE π ϖ ϖ')
+               → (WkCE (wk-cong {A = X} π) {E = e ∷ E} {E' = e ∷ E'} (wkc-cong ϖ) (wkc-cong ϖ'))
+   wkce-wc- :     {E E' : List ℕ} → (π : Wk Γ Γ') → (ϖ : WkC Γ E) → (ϖ' : WkC Γ' E') → (e : ℕ)
+               → (θ : WkCE π ϖ ϖ')
+               → (WkCE (wk-wk {A = X} π) {E = e ∷ E} {E' = E'} (wkc-cong ϖ) ϖ')
+   wkce-ww- :     {E E' : List ℕ} → (π : Wk Γ Γ') → (ϖ : WkC Γ E) → (ϖ' : WkC Γ' E')
+               → (θ : WkCE π ϖ ϖ')
+               → (WkCE (wk-wk {A = X} π) {E = E} {E' = E'} (wkc-cons ϖ) ϖ')
+   wkce-cww :     {E E' : List ℕ} → (π : Wk Γ Γ') → (ϖ : WkC Γ E) → (ϖ' : WkC Γ' E')
+               → (θ : WkCE π ϖ ϖ')
+               → (WkCE (wk-cong {A = X} π) {E = E} {E' = E'} (wkc-cons ϖ) (wkc-cons ϖ'))
+
+  wkce-z-l : {e : ℕ} {E' : List ℕ} {π : Wk Γ Γ'} {ϖ : WkC Γ []} {ϖ' : WkC Γ' (e ∷ E')} → WkCE π ϖ ϖ' → ⊥
+  wkce-z-l (wkce-ww- π ϖ ϖ' θ) = wkce-z-l θ
+  wkce-z-l (wkce-cww π ϖ ϖ' θ) = wkce-z-l θ
+
+  wkce-z-r : {e : ℕ} {E' : List ℕ} {π : Wk Γ Γ} {ϖ : WkC Γ (e ∷ E')}  {ϖ' : WkC Γ []} → WkCE π ϖ ϖ' → ⊥
+  wkce-z-r (wkce-wc- π ϖ ϖ' e θ) = wk-absurd (wk-wk π) π
+  wkce-z-r (wkce-ww- π ϖ ϖ' θ) = wk-absurd (wk-wk π) π
+  wkce-z-r (wkce-cww π ϖ ϖ' θ) = wkce-z-r θ
+
+  --------------------------------------------------------------------------
+
   data WkZ  : {E E' : EMetric} → (ϖ : WkN Γ E) → (ϖ' : WkN Γ E') → Set where
     wkz-nil       : {E E' : EMetric} → {ϖ : WkN ε E} → {ϖ' : WkN ε E'} → WkZ ϖ ϖ'
     wkz-cong     :   {E E' : EMetric}
@@ -989,6 +1019,10 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   empty-lookup : (i : Γ ∋ X) → (ϖ : WkN Γ []) → lookup-mono-metric i [] ϖ ≡ (1 , ((λ _ → zero-metric) , λ _ → ≤ᴹ-refl))
   empty-lookup Cx.h (wkn-cons ϖ) = refl
   empty-lookup (Cx.t i) (wkn-cons ϖ) = refl
+
+  empty-lcount : (i : Γ ∋ X) → (ϖ : WkC Γ []) → lcount i [] ϖ ≡ 1
+  empty-lcount Cx.h (wkc-cons ϖ) = refl
+  empty-lcount (Cx.t i) (wkc-cons ϖ) = refl
 
   -- DEPRECATED:
   -- lookup-wkx-lemma : (i : Γ ∋ X) → (E E' : EMetric) → (π : Wk Γ Γ) → (ϖ : WkN Γ E) → (ϖ' : WkN Γ E') → (ϕ : WkX π ϖ ϖ')
@@ -1515,6 +1549,131 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   lookup-wke-lemma (Cx.t i) (x ∷ E) (x₁ ∷ E') (wk-wk π) (wkn-cong ϖ) (wkn-cons ϖ') (wke-wc- π₁ ϖ₁ ϖ'' e θ) = lookup-wke-lemma (t i) E (x₁ ∷ E') π ϖ (wkn-cons ϖ') θ
   lookup-wke-lemma (Cx.t i) (x ∷ E) (x₁ ∷ E') (wk-wk π) (wkn-cons ϖ) (wkn-cong ϖ') (wke-ww- π₁ ϖ₁ ϖ'' θ) = lookup-wke-lemma (t i) (x ∷ E) ((_ , _) ∷ E') π ϖ (wkn-cong ϖ') θ
   lookup-wke-lemma (Cx.t i) (x ∷ E) (x₁ ∷ E') (wk-wk π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-ww- π₁ ϖ₁ ϖ'' θ) = lookup-wke-lemma (t i) (x ∷ E) (x₁ ∷ E') π ϖ (wkn-cons ϖ') θ
+
+
+  lcount-wkce-lemma : (i : Γ' ∋ X) → (E E' : List ℕ)
+              → (π : Wk Γ Γ') → (ϖ : WkC Γ E) → (ϖ' : WkC Γ' E') → (θ : WkCE π ϖ ϖ')
+              → (lcount i E' ϖ') ≡ (lcount (wk-mem π i) E ϖ)
+  lcount-wkce-lemma Cx.h [] [] (wk-cong π) (wkc-cons ϖ) (wkc-cons ϖ') (wkce-cww π₁ ϖ₁ ϖ'' θ) = refl
+  lcount-wkce-lemma Cx.h [] [] (wk-wk π) (wkc-cons ϖ) (wkc-cons ϖ') (wkce-ww- π₁ ϖ₁ ϖ'' θ) = refl
+  lcount-wkce-lemma Cx.h [] (x ∷ E') (wk-cong π) (wkc-cons ϖ) (wkc-cong ϖ') ()
+  lcount-wkce-lemma Cx.h [] (x ∷ E') (wk-cong π) (wkc-cons ϖ) (wkc-cons ϖ') (wkce-cww π₁ ϖ₁ ϖ'' θ) = refl
+  lcount-wkce-lemma Cx.h [] (x ∷ E') (wk-wk π) (wkc-cons ϖ) (wkc-cong ϖ') (wkce-ww- π₁ ϖ₁ ϖ'' θ) = ql (wkce-z-l θ)
+                                                                                                    (lcount {Z = R₀} h (x ∷ E') (wkc-cong ϖ') ≡
+                                                                                                     lcount (wk-mem (wk-wk {A = R₀} π) h) [] (wkc-cons ϖ))
+  lcount-wkce-lemma Cx.h [] (x ∷ E') (wk-wk π) (wkc-cons ϖ) (wkc-cons ϖ') (wkce-ww- π₁ ϖ₁ ϖ'' θ) = refl
+  lcount-wkce-lemma Cx.h (x ∷ E) [] (wk-cong π) (wkc-cong ϖ) (wkc-cons ϖ') ()
+  lcount-wkce-lemma Cx.h (x ∷ E) [] (wk-cong π) (wkc-cons ϖ) (wkc-cons ϖ') (wkce-cww π₁ ϖ₁ ϖ'' θ) = refl
+  lcount-wkce-lemma Cx.h (x ∷ E) [] (wk-wk π) (wkc-cong ϖ) (wkc-cons ϖ') (wkce-wc- π₁ ϖ₁ ϖ'' e θ) = lcount-wkce-lemma h E [] π ϖ (wkc-cons ϖ') θ
+  lcount-wkce-lemma Cx.h (x ∷ E) [] (wk-wk π) (wkc-cons ϖ) (wkc-cons ϖ') (wkce-ww- π₁ ϖ₁ ϖ'' θ) = lcount-wkce-lemma h (x ∷ E) [] π ϖ (wkc-cons ϖ') θ
+  lcount-wkce-lemma Cx.h (x ∷ E) (x₁ ∷ E') (wk-cong π) (wkc-cong ϖ) (wkc-cong ϖ') (wkce-ccc π₁ ϖ₁ ϖ'' e θ) = refl
+  lcount-wkce-lemma Cx.h (x ∷ E) (x₁ ∷ E') (wk-cong π) (wkc-cong ϖ) (wkc-cons ϖ') ()
+  lcount-wkce-lemma Cx.h (x ∷ E) (x₁ ∷ E') (wk-cong π) (wkc-cons ϖ) (wkc-cong ϖ') ()
+  lcount-wkce-lemma Cx.h (x ∷ E) (x₁ ∷ E') (wk-cong π) (wkc-cons ϖ) (wkc-cons ϖ') (wkce-cww π₁ ϖ₁ ϖ'' θ) = refl
+  lcount-wkce-lemma Cx.h (x ∷ E) (x₁ ∷ E') (wk-wk π) (wkc-cong ϖ) (wkc-cong ϖ') (wkce-wc- π₁ ϖ₁ ϖ'' e θ) = lcount-wkce-lemma h E (x₁ ∷ E') π ϖ (wkc-cong ϖ') θ
+  lcount-wkce-lemma Cx.h (x ∷ E) (x₁ ∷ E') (wk-wk π) (wkc-cong ϖ) (wkc-cons ϖ') (wkce-wc- π₁ ϖ₁ ϖ'' e θ) = lcount-wkce-lemma h E (x₁ ∷ E') π ϖ (wkc-cons ϖ') θ
+  lcount-wkce-lemma Cx.h (x ∷ E) (x₁ ∷ E') (wk-wk π) (wkc-cons ϖ) (wkc-cong ϖ') (wkce-ww- π₁ ϖ₁ ϖ'' θ) = lcount-wkce-lemma h (x ∷ E) (x₁ ∷ E') π ϖ (wkc-cong ϖ') θ
+  lcount-wkce-lemma Cx.h (x ∷ E) (x₁ ∷ E') (wk-wk π) (wkc-cons ϖ) (wkc-cons ϖ') (wkce-ww- π₁ ϖ₁ ϖ'' θ) = lcount-wkce-lemma h (x ∷ E) (x₁ ∷ E') π ϖ (wkc-cons ϖ') θ
+  lcount-wkce-lemma (Cx.t i) [] [] (wk-cong π) (wkc-cons ϖ) (wkc-cons ϖ') (wkce-cww π₁ ϖ₁ ϖ'' θ) = refl
+  lcount-wkce-lemma (Cx.t i) [] [] (wk-wk π) (wkc-cons ϖ) (wkc-cons ϖ') (wkce-ww- π₁ ϖ₁ ϖ'' θ) = refl
+  lcount-wkce-lemma (Cx.t i) [] (x ∷ E') (wk-cong π) (wkc-cons ϖ) (wkc-cong ϖ') ()
+  lcount-wkce-lemma (Cx.t i) [] (x ∷ E') (wk-cong π) (wkc-cons ϖ) (wkc-cons ϖ') (wkce-cww π₁ ϖ₁ ϖ'' θ) = ql (wkce-z-l θ)
+                                                                                                          (lcount (t {B = R₀} i) (x ∷ E') (wkc-cons ϖ') ≡
+                                                                                                           lcount (wk-mem (wk-cong {A = R₀} π) (t i)) [] (wkc-cons ϖ))
+  lcount-wkce-lemma (Cx.t i) [] (x ∷ E') (wk-wk π) (wkc-cons ϖ) (wkc-cong ϖ') (wkce-ww- π₁ ϖ₁ ϖ'' θ) = ql (wkce-z-l θ)
+                                                                                                        (lcount (t {B = R₀} i) (x ∷ E') (wkc-cong ϖ') ≡
+                                                                                                         lcount (wk-mem (wk-wk {A = R₀} π) (t i)) [] (wkc-cons ϖ))
+  lcount-wkce-lemma (Cx.t i) [] (x ∷ E') (wk-wk π) (wkc-cons ϖ) (wkc-cons ϖ') (wkce-ww- π₁ ϖ₁ ϖ'' θ) = ql (wkce-z-l θ)
+                                                                                                        (lcount (t {B = R₀} i) (x ∷ E') (wkc-cons ϖ') ≡
+                                                                                                         lcount (wk-mem (wk-wk {A = R₀} π) (t i)) [] (wkc-cons ϖ))
+  lcount-wkce-lemma (Cx.t i) (x ∷ E) [] (wk-cong π) (wkc-cong ϖ) (wkc-cons ϖ') ()
+  lcount-wkce-lemma (Cx.t i) (x ∷ E) [] (wk-cong π) (wkc-cons ϖ) (wkc-cons ϖ') (wkce-cww π₁ ϖ₁ ϖ'' θ) rewrite sym (empty-lcount i  ϖ') = lcount-wkce-lemma i (x ∷ E) [] π ϖ ϖ' θ
+  lcount-wkce-lemma (Cx.t i) (x ∷ E) [] (wk-wk π) (wkc-cong ϖ) (wkc-cons ϖ') (wkce-wc- π₁ ϖ₁ ϖ'' e θ) = lcount-wkce-lemma (t i) E [] π ϖ (wkc-cons ϖ') θ
+  lcount-wkce-lemma (Cx.t i) (x ∷ E) [] (wk-wk π) (wkc-cons ϖ) (wkc-cons ϖ') (wkce-ww- π₁ ϖ₁ ϖ'' θ) = lcount-wkce-lemma (t i) (x ∷ E) [] π ϖ (wkc-cons ϖ') θ
+  lcount-wkce-lemma (Cx.t i) (x ∷ E) (x₁ ∷ E') (wk-cong π) (wkc-cong ϖ) (wkc-cong ϖ') (wkce-ccc π₁ ϖ₁ ϖ'' e θ) = lcount-wkce-lemma i E E' π ϖ ϖ' θ
+  lcount-wkce-lemma (Cx.t i) (x ∷ E) (x₁ ∷ E') (wk-cong π) (wkc-cong ϖ) (wkc-cons ϖ') ()
+  lcount-wkce-lemma (Cx.t i) (x ∷ E) (x₁ ∷ E') (wk-cong π) (wkc-cons ϖ) (wkc-cong ϖ') ()
+  lcount-wkce-lemma (Cx.t i) (x ∷ E) (x₁ ∷ E') (wk-cong π) (wkc-cons ϖ) (wkc-cons ϖ') (wkce-cww π₁ ϖ₁ ϖ'' θ) = lcount-wkce-lemma i (x ∷ E) (x₁ ∷ E') π ϖ ϖ' θ
+  lcount-wkce-lemma (Cx.t i) (x ∷ E) (x₁ ∷ E') (wk-wk π) (wkc-cong ϖ) (wkc-cong ϖ') (wkce-wc- π₁ ϖ₁ ϖ'' e θ) = lcount-wkce-lemma (t i) E (x₁ ∷ E') π ϖ (wkc-cong ϖ') θ
+  lcount-wkce-lemma (Cx.t i) (x ∷ E) (x₁ ∷ E') (wk-wk π) (wkc-cong ϖ) (wkc-cons ϖ') (wkce-wc- π₁ ϖ₁ ϖ'' e θ) = lcount-wkce-lemma (t i) E (x₁ ∷ E') π ϖ (wkc-cons ϖ') θ
+  lcount-wkce-lemma (Cx.t i) (x ∷ E) (x₁ ∷ E') (wk-wk π) (wkc-cons ϖ) (wkc-cong ϖ') (wkce-ww- π₁ ϖ₁ ϖ'' θ) = lcount-wkce-lemma (t i) (x ∷ E) (x₁ ∷ E') π ϖ (wkc-cong ϖ') θ
+  lcount-wkce-lemma (Cx.t i) (x ∷ E) (x₁ ∷ E') (wk-wk π) (wkc-cons ϖ) (wkc-cons ϖ') (wkce-ww- π₁ ϖ₁ ϖ'' θ) = lcount-wkce-lemma (t i) (x ∷ E) (x₁ ∷ E') π ϖ (wkc-cons ϖ') θ
+
+  mutual
+    vcount-wkce-lemma : (M : Val Γ' X) → (E E' : List ℕ)
+                → (π : Wk Γ Γ') → (ϖ : WkC Γ E) → (ϖ' : WkC Γ' E') → (θ : WkCE π ϖ ϖ')
+                → (vcount M E' ϖ') ≡ (vcount (wk-val π M) E ϖ)
+    vcount-wkce-lemma (var i) E E' π ϖ ϖ' θ = lcount-wkce-lemma i E E' π ϖ ϖ' θ
+    vcount-wkce-lemma (lam W) E E' π ϖ ϖ' θ = ccount-wkce-lemma W E E' (wk-cong π) (wkc-cons ϖ) (wkc-cons ϖ') (wkce-cww π ϖ ϖ' θ)
+    vcount-wkce-lemma (pair M₁ M₂) E E' π ϖ ϖ' θ = cong₂ _+_ (vcount-wkce-lemma M₁ E E' π ϖ ϖ' θ) (vcount-wkce-lemma M₂ E E' π ϖ ϖ' θ)
+    vcount-wkce-lemma (pm M N) E E' π ϖ ϖ' θ rewrite (vcount-wkce-lemma M E E' π ϖ ϖ' θ) = vcount-wkce-lemma N (vcount (wk-val π M) E ϖ ∷ vcount (wk-val π M) E ϖ ∷ E) (vcount (wk-val π M) E ϖ ∷ vcount (wk-val π M) E ϖ ∷ E') (wk-cong (wk-cong π)) (wkc-cong (wkc-cong ϖ)) (wkc-cong (wkc-cong ϖ')) (wkce-ccc (wk-cong π) (wkc-cong ϖ) (wkc-cong ϖ') (vcount (wk-val π M) E ϖ) (wkce-ccc π ϖ ϖ' (vcount (wk-val π M) E ϖ) θ))
+    vcount-wkce-lemma unit E E' π ϖ ϖ' θ = refl
+
+    ccount-wkce-lemma : (W : Comp Γ' X) → (E E' : List ℕ)
+                → (π : Wk Γ Γ') → (ϖ : WkC Γ E) → (ϖ' : WkC Γ' E') → (θ : WkCE π ϖ ϖ')
+                → (ccount W E' ϖ') ≡ (ccount (wk-comp π W) E ϖ)
+    ccount-wkce-lemma (return M) E E' π ϖ ϖ' θ = vcount-wkce-lemma M E E' π ϖ ϖ' θ
+    ccount-wkce-lemma (pm M W) E E' π ϖ ϖ' θ rewrite vcount-wkce-lemma M E E' π ϖ ϖ' θ = ccount-wkce-lemma W (vcount (wk-val π M) E ϖ ∷ vcount (wk-val π M) E ϖ ∷ E) (vcount (wk-val π M) E ϖ ∷ vcount (wk-val π M) E ϖ ∷ E') (wk-cong (wk-cong π)) (wkc-cong (wkc-cong ϖ)) (wkc-cong (wkc-cong ϖ')) (wkce-ccc (wk-cong π) (wkc-cong ϖ) (wkc-cong ϖ') (vcount (wk-val π M) E ϖ) (wkce-ccc π ϖ ϖ' (vcount (wk-val π M) E ϖ) θ))
+    ccount-wkce-lemma (push W₁ W₂) E E' π ϖ ϖ' θ rewrite ccount-wkce-lemma W₁ E E' π ϖ ϖ' θ = ccount-wkce-lemma W₂ (ccount (wk-comp π W₁) E ϖ ∷ E) (ccount (wk-comp π W₁) E ϖ ∷ E') (wk-cong π) (wkc-cong ϖ) (wkc-cong ϖ') (wkce-ccc π ϖ ϖ' (ccount (wk-comp π W₁) E ϖ) θ)
+    ccount-wkce-lemma (app M N) E E' π ϖ ϖ' θ rewrite vcount-wkce-lemma M E E' π ϖ ϖ' θ | vcount-wkce-lemma N E E' π ϖ ϖ' θ = refl
+    ccount-wkce-lemma (var M) E E' π ϖ ϖ' θ = vcount-wkce-lemma M E E' π ϖ ϖ' θ
+    ccount-wkce-lemma (sub W₁ W₂) E E' π ϖ ϖ' θ rewrite ccount-wkce-lemma W₂ E E' π ϖ ϖ' θ = ccount-wkce-lemma W₁ (ccount (wk-comp π W₂) E ϖ ∷ E) (ccount (wk-comp π W₂) E ϖ ∷ E') (wk-cong π) (wkc-cong ϖ) (wkc-cong ϖ') (wkce-ccc π ϖ ϖ' (ccount (wk-comp π W₂) E ϖ) θ)
+
+
+  val-wke-lemma : (M : Val Γ' X) → (E E' : EMetric)
+              → (π : Wk Γ Γ') → (ϖ : WkN Γ E) → (ϖ' : WkN Γ' E') → (θ : WkE π ϖ ϖ')
+              → (val-mono-metric M E' ϖ') ≡ (val-mono-metric (wk-val π M) E ϖ)
+  val-wke-lemma (var i) E E' π ϖ ϖ' θ rewrite lcount-lm-eq i E' ϖ' | lcount-lm-eq (wk-mem π i) E ϖ =
+      cong
+       (λ x → (proj₁ x ,
+              (λ csn → incr 2 (proj₁ (proj₂ x) csn)) ,
+              (λ {csn₁} {csn₂} c≤c' → ≤ᴹ-incr-cong (s≤s (s≤s {n = 0} z≤n)) (proj₂ (proj₂ x) c≤c')))) ((lookup-wke-lemma i E E' π ϖ ϖ' θ))
+  val-wke-lemma (lam W) E E' π ϖ ϖ' θ = {!!}
+  val-wke-lemma (pair M₁ M₂) E E' π ϖ ϖ' θ =
+      cong₂
+       (λ x y →
+           (proj₁ x + proj₁ y , (λ csn → m-× 2 (proj₁ (proj₂ x) csn) (proj₁ (proj₂ y) csn)) , (λ {csn₁} {csn₂} c≤c' → ≤-× (s≤s (s≤s z≤n)) (proj₂ (proj₂ x) c≤c') (proj₂ (proj₂ y) c≤c'))) )
+       (val-wke-lemma M₁ E E' π ϖ ϖ' θ)
+       (val-wke-lemma M₂ E E' π ϖ ϖ' θ)
+  val-wke-lemma (pm {A = A} {B = B} M N) E E' π ϖ ϖ' θ =
+    -- vcount N (proj₁ (val-mono-metric M E' ϖ') ∷ proj₁ (val-mono-metric M E' ϖ') ∷ elist-to-clist E') (wkc-cong (wkc-cong (wkn-to-wkc ϖ')))
+    -- vcount (wk-val (wk-cong (wk-cong π)) N) (proj₁ (val-mono-metric (wk-val π M) E ϖ) ∷ proj₁ (val-mono-metric (wk-val π M) E ϖ) ∷ elist-to-clist E) (wkc-cong (wkc-cong (wkn-to-wkc ϖ)))
+    -- vcount-eq : (M : Val Γ X) → (E : EMetric) → (ϖ : WkN Γ E) → vcount M (elist-to-clist E) (wkn-to-wkc ϖ) ≡ proj₁ (val-mono-metric M E ϖ)
+    let
+      a0 = λ x y → (vcount N (proj₁ x ∷ proj₁ x ∷ elist-to-clist E') (wkc-cong (wkc-cong (wkn-to-wkc ϖ'))) , (λ csn → incr (suc (vx (proj₁ (proj₂ x) csn) + ⟪ proj₁ (proj₂ y) csn ⟫)) (proj₁ (proj₂ (val-mono-metric N ((B , proj₁ x , (λ c → rhs (proj₁ (proj₂ x) c)) , (λ c≤c' → ≤ᴹ-rhs (proj₂ (proj₂ x) c≤c'))) ∷ (A , proj₁ x , (λ c → lhs (proj₁ (proj₂ x) c)) , (λ c≤c' → ≤ᴹ-lhs (proj₂ (proj₂ x) c≤c'))) ∷ E') (wkn-cong (wkn-cong ϖ')))) csn)) , (λ c≤c' → ≤ᴹ-incr-cong (s≤s (+-≤-cong (≤ᴹ-vx (proj₂ (proj₂ x) c≤c')) (≤ᴹ⇒≤ (proj₂ (proj₂ y) c≤c')))) (proj₂ (proj₂ (val-mono-metric N ((B , proj₁ x , (λ c → rhs (proj₁ (proj₂ x) c)) , (λ {csn₁} {csn₂} c≤c'' → ≤ᴹ-rhs (proj₂ (proj₂ x) c≤c''))) ∷ (A , proj₁ x , (λ c → lhs (proj₁ (proj₂ x) c)) , (λ {csn₁} {csn₂} c≤c'' → ≤ᴹ-lhs (proj₂ (proj₂ x) c≤c''))) ∷ E') (wkn-cong (wkn-cong ϖ')))) c≤c')))
+      -- x -> (val-mono-metric M E' ϖ') ≡ (val-mono-metric (wk-val π M) E ϖ)
+      -- y -> (val-mono-metric N E' (wkn-cons (wkn-cons ϖ'))) ≡ (val-mono-metric (wk-val (wk-cong (wk-cong π)) N) E (wkn-cons (wkn-cons ϖ)))
+      a1 = cong₂ a0 (val-wke-lemma M E E' π ϖ ϖ' θ) (val-wke-lemma N E E' (wk-cong (wk-cong π)) (wkn-cons (wkn-cons ϖ)) (wkn-cons (wkn-cons ϖ')) (wke-cww (wk-cong π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-cww π ϖ ϖ' θ)))
+      a2 =
+       val-wke-lemma
+        N
+        ((B , proj₁ (val-mono-metric (wk-val π M) E ϖ) , (λ c → rhs (proj₁ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) c)) , (λ c≤c' → ≤ᴹ-rhs (proj₂ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) c≤c'))) ∷ (A , proj₁ (val-mono-metric (wk-val π M) E ϖ) , (λ c → lhs (proj₁ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) c)) , (λ c≤c' → ≤ᴹ-lhs (proj₂ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) c≤c'))) ∷ E)
+        ((B , proj₁ (val-mono-metric (wk-val π M) E ϖ) , (λ c → rhs (proj₁ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) c)) , (λ c≤c' → ≤ᴹ-rhs (proj₂ (val-mono-metric (wk-val π M) E ϖ) .proj₂ c≤c')))  ∷ (A , proj₁ (val-mono-metric (wk-val π M) E ϖ) , (λ c → lhs (proj₁ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) c)) , (λ c≤c' → ≤ᴹ-lhs (proj₂ (val-mono-metric (wk-val π M) E ϖ) .proj₂ c≤c'))) ∷ E')
+        (wk-cong (wk-cong π))
+        (wkn-cong (wkn-cong ϖ))
+        (wkn-cong (wkn-cong ϖ'))
+        (wke-ccc (wk-cong π) (wkn-cong ϖ) (wkn-cong ϖ') (proj₁ (val-mono-metric (wk-val π M) E ϖ) , (λ c → rhs (proj₁ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) c)) , (λ c≤c' → ≤ᴹ-rhs (proj₂ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) c≤c'))) (wke-ccc π ϖ ϖ' (proj₁ (val-mono-metric (wk-val π M) E ϖ) , (λ c → lhs (proj₁ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) c)) , (λ c≤c' → ≤ᴹ-lhs (proj₂ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) c≤c'))) θ))
+
+      {-
+      Goal: (vcount N (proj₁ (val-mono-metric M E' ϖ') ∷ proj₁ (val-mono-metric M E' ϖ') ∷ elist-to-clist E') (wkc-cong (wkc-cong (wkn-to-wkc ϖ'))) , (λ csn → incr (suc (vx (proj₁ (proj₂ (val-mono-metric M E' ϖ')) csn) + ⟪ proj₁ (proj₂ (val-mono-metric N E' (wkn-cons (wkn-cons ϖ')))) csn⟫)) (proj₁ (proj₂ (val-mono-metric N ((B , proj₁ (val-mono-metric M E' ϖ') , (λ c → rhs (proj₁ (proj₂ (val-mono-metric M E' ϖ')) c)) , (λ c≤c' → ≤ᴹ-rhs (proj₂ (proj₂ (val-mono-metric M E' ϖ')) c≤c'))) ∷ (A , proj₁ (val-mono-metric M E' ϖ') , (λ c → lhs (proj₁ (proj₂ (val-mono-metric M E' ϖ')) c)) , (λ c≤c' → ≤ᴹ-lhs (proj₂ (proj₂ (val-mono-metric M E' ϖ')) c≤c'))) ∷ E') (wkn-cong (wkn-cong ϖ')))) csn)) , (λ c≤c' → ≤ᴹ-incr-cong (s≤s (+-≤-cong (≤ᴹ-vx (proj₂ (proj₂ (val-mono-metric M E' ϖ')) c≤c')) (≤ᴹ⇒≤ (proj₂ (proj₂ (val-mono-metric N E' (wkn-cons (wkn-cons ϖ')))) c≤c')))) (proj₂ (proj₂ (val-mono-metric N ((B , proj₁ (val-mono-metric M E' ϖ') , (λ c → rhs (proj₁ (proj₂ (val-mono-metric M E' ϖ')) c)) , (λ c≤c'' → ≤ᴹ-rhs (proj₂ (proj₂ (val-mono-metric M E' ϖ')) c≤c''))) ∷ (A , proj₁ (val-mono-metric M E' ϖ') , (λ c → lhs (proj₁ (proj₂ (val-mono-metric M E' ϖ')) c)) , (λ c≤c'' → ≤ᴹ-lhs (proj₂ (proj₂ (val-mono-metric M E' ϖ')) c≤c''))) ∷ E') (wkn-cong (wkn-cong ϖ')))) c≤c')))
+      ≡
+      (vcount (wk-val (wk-cong (wk-cong π)) N) (proj₁ (val-mono-metric (wk-val π M) E ϖ) ∷ proj₁ (val-mono-metric (wk-val π M) E ϖ) ∷ elist-to-clist E) (wkc-cong (wkc-cong (wkn-to-wkc ϖ))) , (λ csn → incr (suc (vx (proj₁ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) csn) + ⟪proj₁ (proj₂ (val-mono-metric (wk-val (wk-cong (wk-cong π)) N) E (wkn-cons (wkn-cons ϖ)))) csn⟫)) (proj₁ (proj₂ (val-mono-metric (wk-val (wk-cong (wk-cong π)) N) ((B , proj₁ (val-mono-metric (wk-val π M) E ϖ) , (λ c → rhs (proj₁ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) c)) , (λ c≤c' → ≤ᴹ-rhs (proj₂ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) c≤c'))) ∷ (A , proj₁ (val-mono-metric (wk-val π M) E ϖ) , (λ c → lhs (proj₁ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) c)) , (λ c≤c' → ≤ᴹ-lhs (proj₂ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) c≤c'))) ∷ E) (wkn-cong (wkn-cong ϖ)))) csn)) , (λ c≤c' → ≤ᴹ-incr-cong (s≤s (+-≤-cong (≤ᴹ-vx (proj₂ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) c≤c')) (≤ᴹ⇒≤ (proj₂ (proj₂ (val-mono-metric (wk-val (wk-cong (wk-cong π)) N) E (wkn-cons (wkn-cons ϖ)))) c≤c')))) (proj₂ (proj₂ (val-mono-metric (wk-val (wk-cong (wk-cong π)) N) ((B , proj₁ (val-mono-metric (wk-val π M) E ϖ) , (λ c → rhs (proj₁ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) c)) , (λ c≤c'' → ≤ᴹ-rhs (proj₂ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) c≤c''))) ∷ (A , proj₁ (val-mono-metric (wk-val π M) E ϖ) , (λ c → lhs (proj₁ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) c)) , (λ c≤c'' → ≤ᴹ-lhs (proj₂ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) c≤c''))) ∷ E) (wkn-cong (wkn-cong ϖ)))) c≤c')))
+
+a1 : (vcount N (proj₁ (val-mono-metric M E' ϖ') ∷ proj₁ (val-mono-metric M E' ϖ') ∷ elist-to-clist E') (wkc-cong (wkc-cong (wkn-to-wkc ϖ'))) , (λ csn → incr (suc (vx (proj₁ (proj₂ (val-mono-metric M E' ϖ')) csn) + ⟪ proj₁ (proj₂ (val-mono-metric N E' (wkn-cons (wkn-cons ϖ')))) csn⟫)) (proj₁ (proj₂ (val-mono-metric N ((B , proj₁ (val-mono-metric M E' ϖ') , (λ c → rhs (proj₁ (proj₂ (val-mono-metric M E' ϖ')) c)) , (λ c≤c' → ≤ᴹ-rhs (proj₂ (val-mono-metric M E' ϖ') .proj₂ c≤c'))) ∷ (A , proj₁ (val-mono-metric M E' ϖ') , (λ c → lhs (proj₁ (proj₂ (val-mono-metric M E' ϖ')) c)) , (λ c≤c' → ≤ᴹ-lhs (proj₂ (val-mono-metric M E' ϖ') .proj₂ c≤c'))) ∷ E') (wkn-cong (wkn-cong ϖ')))) csn)) , (λ c≤c' → ≤ᴹ-incr-cong (s≤s (+-≤-cong (≤ᴹ-vx (proj₂ (val-mono-metric M E' ϖ') .proj₂ c≤c')) (≤ᴹ⇒≤ (proj₂ (val-mono-metric N E' (wkn-cons (wkn-cons ϖ'))) .proj₂ c≤c')))) (proj₂ (proj₂ (val-mono-metric N ((B , proj₁ (val-mono-metric M E' ϖ') , (λ c → rhs (proj₁ (proj₂ (val-mono-metric M E' ϖ')) c)) , (λ {csn₁} {csn₂} c≤c'' → ≤ᴹ-rhs (proj₂ (val-mono-metric M E' ϖ') .proj₂ c≤c''))) ∷ (A , proj₁ (val-mono-metric M E' ϖ') , (λ c → lhs (proj₁ (proj₂ (val-mono-metric M E' ϖ')) c)) , (λ {csn₁} {csn₂} c≤c'' → ≤ᴹ-lhs (proj₂ (val-mono-metric M E' ϖ') .proj₂ c≤c''))) ∷ E') (wkn-cong (wkn-cong ϖ')))) c≤c')))
+     ≡
+     (vcount N (proj₁ (val-mono-metric (wk-val π M) E ϖ) ∷ proj₁ (val-mono-metric (wk-val π M) E ϖ) ∷ elist-to-clist E') (wkc-cong (wkc-cong (wkn-to-wkc ϖ'))) , (λ csn → incr (suc (vx (proj₁ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) csn) + ⟪proj₁ (proj₂ (val-mono-metric (wk-val (wk-cong (wk-cong π)) N) E (wkn-cons (wkn-cons ϖ)))) csn⟫)) (proj₁ (proj₂ (val-mono-metric N ((B , proj₁ (val-mono-metric (wk-val π M) E ϖ) , (λ c → rhs (proj₁ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) c)) , (λ c≤c' → ≤ᴹ-rhs (proj₂ (val-mono-metric (wk-val π M) E ϖ) .proj₂ c≤c'))) ∷ (A , proj₁ (val-mono-metric (wk-val π M) E ϖ) , (λ c → lhs (proj₁ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) c)) , (λ c≤c' → ≤ᴹ-lhs (proj₂ (val-mono-metric (wk-val π M) E ϖ) .proj₂ c≤c'))) ∷ E') (wkn-cong (wkn-cong ϖ')))) csn)) , (λ c≤c' → ≤ᴹ-incr-cong (s≤s (+-≤-cong (≤ᴹ-vx (proj₂ (val-mono-metric (wk-val π M) E ϖ) .proj₂ c≤c')) (≤ᴹ⇒≤ (proj₂ (val-mono-metric (wk-val (wk-cong (wk-cong π)) N) E (wkn-cons (wkn-cons ϖ))) .proj₂ c≤c')))) (proj₂ (proj₂ (val-mono-metric N ((B , proj₁ (val-mono-metric (wk-val π M) E ϖ) , (λ c → rhs (proj₁ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) c)) , (λ {csn₁} {csn₂} c≤c'' → ≤ᴹ-rhs (proj₂ (val-mono-metric (wk-val π M) E ϖ) .proj₂ c≤c''))) ∷ (A , proj₁ (val-mono-metric (wk-val π M) E ϖ) , (λ c → lhs (proj₁ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) c)) , (λ {csn₁} {csn₂} c≤c'' → ≤ᴹ-lhs (proj₂ (val-mono-metric (wk-val π M) E ϖ) .proj₂ c≤c''))) ∷ E') (wkn-cong (wkn-cong ϖ')))) c≤c')))
+
+      (vcount N (proj₁ (val-mono-metric M E' ϖ') ∷ proj₁ (val-mono-metric M E' ϖ') ∷ elist-to-clist E') (wkc-cong (wkc-cong (wkn-to-wkc ϖ'))) , (λ csn → incr (suc (vx (proj₁ (proj₂ (val-mono-metric M E' ϖ')) csn) + ⟪ proj₁ (proj₂ (val-mono-metric N E' (wkn-cons (wkn-cons ϖ')))) csn⟫)) (proj₁ (proj₂ (val-mono-metric N ((B , proj₁ (val-mono-metric M E' ϖ') , (λ c → rhs (proj₁ (proj₂ (val-mono-metric M E' ϖ')) c)) , (λ c≤c' → ≤ᴹ-rhs (proj₂ (proj₂ (val-mono-metric M E' ϖ')) c≤c'))) ∷ (A , proj₁ (val-mono-metric M E' ϖ') , (λ c → lhs (proj₁ (proj₂ (val-mono-metric M E' ϖ')) c)) , (λ c≤c' → ≤ᴹ-lhs (proj₂ (proj₂ (val-mono-metric M E' ϖ')) c≤c'))) ∷ E') (wkn-cong (wkn-cong ϖ')))) csn)) , (λ c≤c' → ≤ᴹ-incr-cong (s≤s (+-≤-cong (≤ᴹ-vx (proj₂ (proj₂ (val-mono-metric M E' ϖ')) c≤c')) (≤ᴹ⇒≤ (proj₂ (proj₂ (val-mono-metric N E' (wkn-cons (wkn-cons ϖ')))) c≤c')))) (proj₂ (proj₂ (val-mono-metric N ((B , proj₁ (val-mono-metric M E' ϖ') , (λ c → rhs (proj₁ (proj₂ (val-mono-metric M E' ϖ')) c)) , (λ c≤c''               → ≤ᴹ-rhs (proj₂ (proj₂ (val-mono-metric M E' ϖ')) c≤c''))) ∷ (A , proj₁ (val-mono-metric M E' ϖ') , (λ c → lhs (proj₁ (proj₂ (val-mono-metric M E' ϖ')) c)) , (λ c≤c''               → ≤ᴹ-lhs (proj₂ (proj₂ (val-mono-metric M E' ϖ')) c≤c''))) ∷ E') (wkn-cong (wkn-cong ϖ')))) c≤c')))
+      (vcount N (proj₁ (val-mono-metric M E' ϖ') ∷ proj₁ (val-mono-metric M E' ϖ') ∷ elist-to-clist E') (wkc-cong (wkc-cong (wkn-to-wkc ϖ'))) , (λ csn → incr (suc (vx (proj₁ (proj₂ (val-mono-metric M E' ϖ')) csn) + ⟪ proj₁ (proj₂ (val-mono-metric N E' (wkn-cons (wkn-cons ϖ')))) csn⟫)) (proj₁ (proj₂ (val-mono-metric N ((B , proj₁ (val-mono-metric M E' ϖ') , (λ c → rhs (proj₁ (proj₂ (val-mono-metric M E' ϖ')) c)) , (λ c≤c' → ≤ᴹ-rhs (proj₂ (val-mono-metric M E' ϖ') .proj₂ c≤c')))  ∷ (A , proj₁ (val-mono-metric M E' ϖ') , (λ c → lhs (proj₁ (proj₂ (val-mono-metric M E' ϖ')) c)) , (λ c≤c' → ≤ᴹ-lhs (proj₂ (val-mono-metric M E' ϖ') .proj₂ c≤c')))  ∷ E') (wkn-cong (wkn-cong ϖ')))) csn)) , (λ c≤c' → ≤ᴹ-incr-cong (s≤s (+-≤-cong (≤ᴹ-vx (proj₂ (val-mono-metric M E' ϖ') .proj₂ c≤c')) (≤ᴹ⇒≤ (proj₂ (val-mono-metric N E' (wkn-cons (wkn-cons ϖ'))) .proj₂ c≤c'))))   (proj₂ (proj₂ (val-mono-metric N ((B , proj₁ (val-mono-metric M E' ϖ') , (λ c → rhs (proj₁ (proj₂ (val-mono-metric M E' ϖ')) c)) , (λ {csn₁} {csn₂} c≤c'' → ≤ᴹ-rhs (proj₂ (val-mono-metric M E' ϖ') .proj₂ c≤c'')))  ∷ (A , proj₁ (val-mono-metric M E' ϖ') , (λ c → lhs (proj₁ (proj₂ (val-mono-metric M E' ϖ')) c)) , (λ {csn₁} {csn₂} c≤c'' → ≤ᴹ-lhs (proj₂ (val-mono-metric M E' ϖ') .proj₂ c≤c''))) ∷ E')  (wkn-cong (wkn-cong ϖ')))) c≤c')))
+
+      (vcount (wk-val (wk-cong (wk-cong π)) N) (proj₁ (val-mono-metric (wk-val π M) E ϖ) ∷ proj₁ (val-mono-metric (wk-val π M) E ϖ) ∷ elist-to-clist E)  (wkc-cong (wkc-cong (wkn-to-wkc ϖ)))  , (λ csn → incr (suc (vx (proj₁ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) csn) + ⟪proj₁ (proj₂ (val-mono-metric (wk-val (wk-cong (wk-cong π)) N) E (wkn-cons (wkn-cons ϖ)))) csn⟫)) (proj₁ (proj₂ (val-mono-metric (wk-val (wk-cong (wk-cong π)) N) ((B , proj₁ (val-mono-metric (wk-val π M) E ϖ) , (λ c → rhs (proj₁ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) c)) , (λ c≤c' → ≤ᴹ-rhs (proj₂ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) c≤c'))) ∷ (A , proj₁ (val-mono-metric (wk-val π M) E ϖ) , (λ c → lhs (proj₁ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) c)) , (λ c≤c' → ≤ᴹ-lhs (proj₂ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) c≤c'))) ∷ E) (wkn-cong (wkn-cong ϖ)))) csn)) , (λ c≤c' → ≤ᴹ-incr-cong (s≤s (+-≤-cong (≤ᴹ-vx (proj₂ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) c≤c')) (≤ᴹ⇒≤ (proj₂ (proj₂ (val-mono-metric (wk-val (wk-cong (wk-cong π)) N) E (wkn-cons (wkn-cons ϖ)))) c≤c')))) (proj₂ (proj₂ (val-mono-metric (wk-val (wk-cong (wk-cong π)) N) ((B , proj₁ (val-mono-metric (wk-val π M) E ϖ) , (λ c → rhs (proj₁ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) c)) , (λ c≤c'' →              ≤ᴹ-rhs (proj₂ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) c≤c''))) ∷ (A , proj₁ (val-mono-metric (wk-val π M) E ϖ) , (λ c → lhs (proj₁ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) c)) , (λ c≤c'' →               ≤ᴹ-lhs (proj₂ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) c≤c''))) ∷ E) (wkn-cong (wkn-cong ϖ)))) c≤c')))
+      (vcount                               N  (proj₁ (val-mono-metric (wk-val π M) E ϖ) ∷ proj₁ (val-mono-metric (wk-val π M) E ϖ) ∷ elist-to-clist E') (wkc-cong (wkc-cong (wkn-to-wkc ϖ'))) , (λ csn → incr (suc (vx (proj₁ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) csn) + ⟪proj₁ (proj₂ (val-mono-metric (wk-val (wk-cong (wk-cong π)) N) E (wkn-cons (wkn-cons ϖ)))) csn⟫)) (proj₁ (proj₂ (val-mono-metric                               N  ((B , proj₁ (val-mono-metric (wk-val π M) E ϖ) , (λ c → rhs (proj₁ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) c)) , (λ c≤c' → ≤ᴹ-rhs (proj₂ (val-mono-metric (wk-val π M) E ϖ) .proj₂ c≤c')))  ∷ (A , proj₁ (val-mono-metric (wk-val π M) E ϖ) , (λ c → lhs (proj₁ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) c)) , (λ c≤c' → ≤ᴹ-lhs (proj₂ (val-mono-metric (wk-val π M) E ϖ) .proj₂ c≤c'))) ∷ E') (wkn-cong (wkn-cong ϖ')))) csn)) , (λ c≤c' → ≤ᴹ-incr-cong (s≤s (+-≤-cong (≤ᴹ-vx (proj₂ (val-mono-metric (wk-val π M) E ϖ) .proj₂ c≤c')) (≤ᴹ⇒≤ (proj₂ (val-mono-metric (wk-val (wk-cong (wk-cong π)) N) E (wkn-cons (wkn-cons ϖ))) .proj₂ c≤c')))) (proj₂ (proj₂ (val-mono-metric                                N ((B , proj₁ (val-mono-metric (wk-val π M) E ϖ) , (λ c → rhs (proj₁ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) c)) , (λ {csn₁} {csn₂} c≤c'' → ≤ᴹ-rhs (proj₂ (val-mono-metric (wk-val π M) E ϖ) .proj₂ c≤c'')))  ∷ (A , proj₁ (val-mono-metric (wk-val π M) E ϖ) , (λ c → lhs (proj₁ (proj₂ (val-mono-metric (wk-val π M) E ϖ)) c)) , (λ {csn₁} {csn₂} c≤c'' → ≤ᴹ-lhs (proj₂ (val-mono-metric (wk-val π M) E ϖ) .proj₂ c≤c''))) ∷ E') (wkn-cong (wkn-cong ϖ')))) c≤c')))
+
+      -}
+    in
+    {!!}
+  val-wke-lemma unit E E' π ϖ ϖ' θ = refl
+
 
 {- AAAAA
   postulate val-wke-lemma : (M : Val Γ' X) → (E E' : EMetric)
