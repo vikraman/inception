@@ -4,7 +4,7 @@ open import Data.Product using (proj₁; proj₂; _,_; <_,_>; curry; _×_; Σ; �
 open import Function.Base using (const; _∘_; _$_)
 
 import Relation.Binary.PropositionalEquality as Eq
-open Eq using (_≡_; refl; cong; cong₂; cong-app; sym; trans; subst; subst₂)
+open Eq using (_≡_; refl; cong; cong₂; cong-app; dcong₂; sym; trans; subst; subst₂)
 open Eq.≡-Reasoning
 
 open import Inception.Sub.Syntax
@@ -531,7 +531,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   ≤-uniq z≤n z≤n = refl
   ≤-uniq (s≤s n₁≤n₂) (s≤s n₁≤n₂') = cong s≤s (≤-uniq n₁≤n₂ n₁≤n₂')
 
-  ≤ᴹ-uniq : {nm₁ nm₂ : TermMetric X} → (nm₁≤ᴹnm₂ : nm₁ ≤ᴹ nm₂) → (nm₁≤ᴹnm₂' : nm₁ ≤ᴹ nm₂) → nm₁≤ᴹnm₂ ≡ nm₁≤ᴹnm₂'
+  ≤ᴹ-uniq : {nm₁ nm₂ : TermMetric X} → (nm₁≤ᴹnm₂ nm₁≤ᴹnm₂' : nm₁ ≤ᴹ nm₂) → nm₁≤ᴹnm₂ ≡ nm₁≤ᴹnm₂'
   ≤ᴹ-uniq (≤-Unit x) (≤-Unit x₁) rewrite ≤-uniq x x₁ = refl
   ≤ᴹ-uniq (≤-V x x₁) (≤-V x₂ x₃) rewrite ≤-uniq x x₂ | ≤-uniq x₁ x₃ = refl
   ≤ᴹ-uniq (≤-⇒ x nm₁≤ᴹnm₂) (≤-⇒ x₁ nm₁≤ᴹnm₂') rewrite ≤-uniq x x₁ | ≤ᴹ-uniq nm₁≤ᴹnm₂ nm₁≤ᴹnm₂' = refl
