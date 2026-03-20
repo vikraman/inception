@@ -1956,31 +1956,48 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       in
       l0
 
-  -- postulate val-wke-lemma-p1p2 : (M : Val Γ' X) → (E E' : EMetric)
-  --             → (π : Wk Γ Γ') → (ϖ : WkN Γ E) → (ϖ' : WkN Γ' E') → (θ : WkE π ϖ ϖ') → (csn : List (ℕ × ℕ))
-  --             → ((proj₁ (proj₂ (val-mono-metric M E' ϖ'))) csn) ≡ ((proj₁ (proj₂ (val-mono-metric (wk-val π M) E ϖ))) csn)
+  v̲a̲l̲-wke-lemma : (M : V̲a̲l̲ Γ' X) → (E E' : EMetric)
+                → (π : Wk Γ Γ') → (ϖ : WkN Γ E) → (ϖ' : WkN Γ' E') → (θ : WkE π ϖ ϖ')
+                → (v̲a̲l̲-mono-metric M E' ϖ') ≡ (v̲a̲l̲-mono-metric (wk-v̲a̲l̲ π M) E ϖ)
+  v̲a̲l̲-wke-lemma (l̲a̲m̲ {X = A} W) E E' π ϖ ϖ' θ rewrite wkc-cons-comm {Y = A} ϖ | wkc-cons-comm {Y = A} ϖ' | (comp-wke-lemma W E E' (wk-cong π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-cww π ϖ ϖ' θ)) =
+                  let
+                    a0 = (comp-wke-lemma W E E' (wk-cong π) (wkn-cons ϖ) (wkn-cons ϖ') (wke-cww π ϖ ϖ' θ))
+                    a2 = λ x → (proj₁ x , (λ csn → m-⇒ 1 (proj₁ (proj₂ (comp-mono-metric (wk-comp (wk-cong π) W) E (wkn-cons ϖ))) csn)) , (λ {csn₁} {csn₂} c≤c' → ≤-⇒ (s≤s z≤n) (proj₂ (proj₂ (comp-mono-metric (wk-comp (wk-cong π) W) E (wkn-cons ϖ))) c≤c')))
+                    a3 = cong a2 a0
+                  in
+                  a3
+  v̲a̲l̲-wke-lemma (pa̲i̲r̲ M₁ M₂) E E' π ϖ ϖ' θ =
+                  cong₂
+                  (λ x y →
+                  (proj₁ x + proj₁ y , (λ csn → m-× 1 (proj₁ (proj₂ x) csn) (proj₁ (proj₂ y) csn)) , (λ {csn₁} {csn₂} c≤c' → ≤-× (s≤s z≤n) (proj₂ (proj₂ x) c≤c') (proj₂ (proj₂ y) c≤c'))) )
+                  (v̲a̲l̲-wke-lemma M₁ E E' π ϖ ϖ' θ)
+                  (v̲a̲l̲-wke-lemma M₂ E E' π ϖ ϖ' θ)
+  v̲a̲l̲-wke-lemma u̲n̲i̲t̲ E E' π ϖ ϖ' θ = refl
+  v̲a̲l̲-wke-lemma (v̲a̲r̲ i) E E' π ϖ ϖ' θ rewrite lcount-lm-eq i E' ϖ' | lcount-lm-eq (wk-mem π i) E ϖ =
+                  cong
+                  (λ x → (proj₁ x ,
+                  (λ csn → incr 1 (proj₁ (proj₂ x) csn)) ,
+                  (λ {csn₁} {csn₂} c≤c' → ≤ᴹ-incr-cong (s≤s {n = 0} z≤n) (proj₂ (proj₂ x) c≤c')))) ((lookup-wke-lemma i E E' π ϖ ϖ' θ))
 
   val-wke-lemma-p1p2 : (M : Val Γ' X) → (E E' : EMetric)
               → (π : Wk Γ Γ') → (ϖ : WkN Γ E) → (ϖ' : WkN Γ' E') → (θ : WkE π ϖ ϖ') → (csn : List (ℕ × ℕ))
               → ((proj₁ (proj₂ (val-mono-metric M E' ϖ'))) csn) ≡ ((proj₁ (proj₂ (val-mono-metric (wk-val π M) E ϖ))) csn)
   val-wke-lemma-p1p2 M E E' π ϖ ϖ' θ csn = cong (λ x → proj₁ x csn) (cong proj₂ (val-wke-lemma M E E' π ϖ ϖ' θ))
 
-  --postulate comp-wke-lemma-p1p2 : (W : Comp Γ' X) → (E E' : EMetric)
-  --            → (π : Wk Γ Γ') → (ϖ : WkN Γ E) → (ϖ' : WkN Γ' E') → (θ : WkE π ϖ ϖ') → (csn : List (ℕ × ℕ))
-  --            → ((proj₁ (proj₂ (comp-mono-metric W E' ϖ'))) csn) ≡ ((proj₁ (proj₂ (comp-mono-metric (wk-comp π W) E ϖ))) csn)
-
   comp-wke-lemma-p1p2 : (W : Comp Γ' X) → (E E' : EMetric)
               → (π : Wk Γ Γ') → (ϖ : WkN Γ E) → (ϖ' : WkN Γ' E') → (θ : WkE π ϖ ϖ') → (csn : List (ℕ × ℕ))
               → ((proj₁ (proj₂ (comp-mono-metric W E' ϖ'))) csn) ≡ ((proj₁ (proj₂ (comp-mono-metric (wk-comp π W) E ϖ))) csn)
   comp-wke-lemma-p1p2 W E E' π ϖ ϖ' θ csn = cong (λ x → proj₁ x csn) (cong proj₂ (comp-wke-lemma W E E' π ϖ ϖ' θ))
 
-  postulate v̲a̲l̲-wke-lemma-p1p2 : (M : V̲a̲l̲ Γ' X) → (E E' : EMetric)
+  v̲a̲l̲-wke-lemma-p1p2 : (M : V̲a̲l̲ Γ' X) → (E E' : EMetric)
               → (π : Wk Γ Γ') → (ϖ : WkN Γ E) → (ϖ' : WkN Γ' E') → (θ : WkE π ϖ ϖ') → (csn : List (ℕ × ℕ))
               → ((proj₁ (proj₂ (v̲a̲l̲-mono-metric M E' ϖ'))) csn) ≡ ((proj₁ (proj₂ (v̲a̲l̲-mono-metric (wk-v̲a̲l̲ π M) E ϖ))) csn)
+  v̲a̲l̲-wke-lemma-p1p2 M E E' π ϖ ϖ' θ csn = cong (λ x → proj₁ x csn) (cong proj₂ (v̲a̲l̲-wke-lemma M E E' π ϖ ϖ' θ))
 
-  postulate v̲a̲l̲-wke-lemma-p1 : (M : V̲a̲l̲  Γ' X) → (E E' : EMetric)
+  v̲a̲l̲-wke-lemma-p1 : (M : V̲a̲l̲  Γ' X) → (E E' : EMetric)
               → (π : Wk Γ Γ') → {ϖ : WkN Γ E} → {ϖ' : WkN Γ' E'} → (θ : WkE π ϖ ϖ')
               → (proj₁ (v̲a̲l̲-mono-metric M E' ϖ')) ≡ (proj₁ (v̲a̲l̲-mono-metric (wk-v̲a̲l̲ π M) E ϖ))
+  v̲a̲l̲-wke-lemma-p1 M E E' π {ϖ = ϖ} {ϖ' = ϖ'} θ = cong proj₁ (v̲a̲l̲-wke-lemma M E E' π ϖ ϖ' θ)
 
   -- these are essentially just the count-wkce-lemmas
   val-wke-lemma-p1 : (M : Val Γ' X) → (E E' : EMetric)
@@ -1992,8 +2009,6 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
               → (π : Wk Γ Γ') → {ϖ : WkN Γ E} → {ϖ' : WkN Γ' E'} → (θ : WkE π ϖ ϖ')
               → (proj₁ (comp-mono-metric W E' ϖ')) ≡ (proj₁ (comp-mono-metric (wk-comp π W) E ϖ))
   comp-wke-lemma-p1 W E E' π {ϖ = ϖ} {ϖ' = ϖ'} θ = cong proj₁ (comp-wke-lemma W E E' π ϖ ϖ' θ)
-
-{- AAAAA
 
   -- DEPRECATED:
   -- postulate wke-val-count-lemma : (i : Γ' ∋ Y) → (M : Val Γ' X) → (E E' : EMetric)
@@ -2800,5 +2815,3 @@ a2-cnt    : proj₁
 -}
 
 BBBB -}
-
-AAAAA -}
