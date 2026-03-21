@@ -551,15 +551,15 @@ Goal:   suc (vx (val-metric M ((X , nm) ∷ E) (Wkn.wkn-cong ϖ) csn) + ⟪ comp
 --  val-metric-decreasing : {Q₁ : ValState X} → {Q₂ : ValState X} → (Q₁→ᶜQ₂ : Q₁ ↠ᵛ Q₂) → (csn : List (ℕ × ℕ)) → suc ⟪ valstate-metric Q₂ csn ⟫ ≤ ⟪ valstate-metric Q₁ csn ⟫
 --  val-metric-decreasing = {!!}
 
-{- AAAAAA
   comp-metric-decreasing : {Q₁ : CompState} → {Q₂ : CompState} → (Q₁→ᶜQ₂ : Q₁ →ᶜ Q₂) → (suc (compstate-metric Q₂) ≤ (compstate-metric Q₁))
-  comp-metric-decreasing (∘return {M = M} {γ = γ} {π = π} {M' = M'} {γ' = γ'} {cs = cs} {VS>VT = VS>VT} M→M') =
-    let
-      a1 = ≤-trans (s≤s (≤ᴹ⇒≤ (VS>VT (cs-to-csn cs)))) (+-≤-cong (s≤s (z≤n {n = 1})) (≤-refl {n = ⟪ proj₁ (val-mono-metric (wk-val π M) (proj₁ (env-mono-metric γ)) (proj₂ (env-mono-metric γ))) (cs-to-csn cs) ⟫}))
-      a2 = csn-decr a1 (cs-to-csn cs)
-      a3 = ≤ᴹ⇒≤ (VS>VT (cs-to-csn cs))
-    in
-    s≤s (s≤s (+-≤-cong a3 a2))
+  comp-metric-decreasing (∘return {M = M} {γ = γ} {π = π} {M' = M'} {γ' = γ'} {cs = cs} {- {VS>VT = VS>VT} -} M→M') =
+    {!!}
+    -- let
+    --   a1 = ≤-trans (s≤s (≤ᴹ⇒≤ (VS>VT (cs-to-csn cs)))) (+-≤-cong (s≤s (z≤n {n = 1})) (≤-refl {n = ⟪ proj₁ (val-mono-metric (wk-val π M) (proj₁ (env-mono-metric γ)) (proj₂ (env-mono-metric γ))) (cs-to-csn cs) ⟫}))
+    --   a2 = csn-decr a1 (cs-to-csn cs)
+    --   a3 = ≤ᴹ⇒≤ (VS>VT (cs-to-csn cs))
+    -- in
+    -- s≤s (s≤s (+-≤-cong a3 a2))
 
   comp-metric-decreasing (∙return {Γ = Γ} {X = X} {Γ' = Γ'} {Y = Y} {M = M} {γ = γ} {N = N} {γ' = γ'} {π = π} {cs = cs}) =
     --OLD:
@@ -986,8 +986,6 @@ STP:            suc (⟪ proj₁ (a1) csn' ⟫
 STP: ⟪ proj₁ (a1) csn' ⟫ ≤ ⟪ proj₁ (a2) csn ⟫
 
 -}
-
-AAAAAA -}
 
 -------------------------------------------------------
 -------------------------------------------------------
