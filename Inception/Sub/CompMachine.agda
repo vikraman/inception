@@ -54,7 +54,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
         ∘return  :    {M : Γ ⊢ᵛ X} → {γ : Env Γ'} → {π : Wk Γ' Γ} → {M' : V̲a̲l̲ Γ'' X} → {γ' : Env Γ''}
                       → {cs : CompStack Δ X} → {πₓ : Wk Γ' Δ} → {πₓ' : Wk Γ'' Δ}
                       → {wk≡ₓ : ⟦ πₓ ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ} → {wk≡ₓ' : ⟦ πₓ' ⟧ʷ ⟦ γ' ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ}
-                      {- → {VS>VT : (csn : List (ℕ × ℕ)) → proj₁ (proj₂ (v̲a̲l̲-mono-metric M' (proj₁ (env-mono-metric γ')) (proj₂ (env-mono-metric γ')))) csn
+                      → {VS>VT : (csn : List (ℕ × ℕ)) → proj₁ (proj₂ (v̲a̲l̲-mono-metric M' (proj₁ (env-mono-metric γ')) (proj₂ (env-mono-metric γ')))) csn
                                 ≤ᴹ proj₁ (proj₂ (val-mono-metric (wk-val π M) (proj₁ (env-mono-metric γ)) (proj₂ (env-mono-metric γ)))) csn} -- for termination -}
                       → ((∘ ((⇡ wk-val π M ⊲ γ ∷ □) {↥ = 🗆})) ↠ᵛ (∙ ((⭭ M' ⊲ γ' ∷ □) {↥ = 🗆})))
                      ----------------------------------------------------------------
@@ -552,8 +552,23 @@ Goal:   suc (vx (val-metric M ((X , nm) ∷ E) (Wkn.wkn-cong ϖ) csn) + ⟪ comp
 --  val-metric-decreasing = {!!}
 
   comp-metric-decreasing : {Q₁ : CompState} → {Q₂ : CompState} → (Q₁→ᶜQ₂ : Q₁ →ᶜ Q₂) → (suc (compstate-metric Q₂) ≤ (compstate-metric Q₁))
-  comp-metric-decreasing (∘return {M = M} {γ = γ} {π = π} {M' = M'} {γ' = γ'} {cs = cs} {- {VS>VT = VS>VT} -} M→M') =
-    {!!}
+  comp-metric-decreasing (∘return {M = M} {γ = γ} {π = π} {M' = M'} {γ' = γ'} {cs = cs} {VS>VT = VS>VT} M→M') =
+    let
+      a1 = ≤-trans (s≤s (≤ᴹ⇒≤ (VS>VT (cs-to-csn cs)))) (+-≤-cong (s≤s (z≤n {n = 1})) (≤-refl {n = ⟪ proj₁ (proj₂ (val-mono-metric (wk-val π M) (proj₁ (env-mono-metric γ)) (proj₂ (env-mono-metric γ)))) (cs-to-csn cs) ⟫}))
+      a2 = csn-decr a1 (cs-to-csn cs)
+      a3 = ≤ᴹ⇒≤ (VS>VT (cs-to-csn cs))
+    in
+    s≤s (s≤s (+-≤-cong a3 a2))
+
+    {-
+    Goal: 2+ (⟪proj₁ (proj₂ (v̲a̲l̲-mono-metric M' (proj₁ (env-mono-metric γ')) (proj₂ (env-mono-metric γ')))) (cs-to-csn cs)⟫
+            + csn-to-nat₀ (suc ⟪proj₁ (proj₂ (v̲a̲l̲-mono-metric M' (proj₁ (env-mono-metric γ')) (proj₂ (env-mono-metric γ')))) (cs-to-csn cs)⟫) (cs-to-csn cs))
+      ≤
+          2+ (⟪proj₁ (proj₂ (val-mono-metric (wk-val π M) (proj₁ (env-mono-metric γ)) (proj₂ (env-mono-metric γ)))) (cs-to-csn cs)⟫
+            + csn-to-nat₀ (2+ ⟪proj₁ (proj₂ (val-mono-metric (wk-val π M) (proj₁ (env-mono-metric γ)) (proj₂ (env-mono-metric γ)))) (cs-to-csn cs)⟫) (cs-to-csn cs))
+    -}
+
+    -- OLDX:
     -- let
     --   a1 = ≤-trans (s≤s (≤ᴹ⇒≤ (VS>VT (cs-to-csn cs)))) (+-≤-cong (s≤s (z≤n {n = 1})) (≤-refl {n = ⟪ proj₁ (val-mono-metric (wk-val π M) (proj₁ (env-mono-metric γ)) (proj₂ (env-mono-metric γ))) (cs-to-csn cs) ⟫}))
     --   a2 = csn-decr a1 (cs-to-csn cs)
@@ -1138,7 +1153,7 @@ STP: ⟪ proj₁ (a1) csn' ⟫ ≤ ⟪ proj₁ (a2) csn ⟫
 
                  steps
 
-                    (∘⟨ wk-comp π (return M) ⊰ γ ╎ ◻ ⟩ →ᶜ⟨ ∘return {- {VS>VT = VS>VT} -} M>T ⟩ (∙⟨ r̲e̲t̲u̲r̲n̲ M₁ ⊰ γ₁ ╎ ◻ ⟩ ◼))
+                    (∘⟨ wk-comp π (return M) ⊰ γ ╎ ◻ ⟩ →ᶜ⟨ ∘return {VS>VT = VS>VT} M>T ⟩ (∙⟨ r̲e̲t̲u̲r̲n̲ M₁ ⊰ γ₁ ╎ ◻ ⟩ ◼))
 
                     ret
 
@@ -1174,7 +1189,7 @@ STP: ⟪ proj₁ (a1) csn' ⟫ ≤ ⟪ proj₁ (a2) csn ⟫
                     →ᶜ⟨ ∘return {wk≡ₓ' = ⟦ wk-trans π' πₓ ⟧ʷ ⟦ γ₁ ⟧ᴱ
                                          ≡⟨ sym (wk-sem-trans π' πₓ ⟦ γ₁ ⟧ᴱ) ⟩ ⟦ πₓ ⟧ʷ (⟦ π' ⟧ʷ ⟦ γ₁ ⟧ᴱ)
                                          ≡⟨ cong ⟦ πₓ ⟧ʷ wk≡ ⟩ ⟦ πₓ ⟧ʷ ⟦ γ ⟧ᴱ
-                                         ≡⟨ wk≡₀ ⟩ ⟦ γ' ⟧ᴱ ∎} {- {VS>VT = VS>VT} -} M>T ⟩ ((∙⟨ r̲e̲t̲u̲r̲n̲ M₁ ⊰ γ₁ ╎ M' ⊲ γ' ⦂⦂ cs ⟩) {wk≡ = ≡-syntax.step-≡-⟩ _≡_ trans (⟦ wk-trans π' πₓ ⟧ʷ ⟦ γ₁ ⟧ᴱ)
+                                         ≡⟨ wk≡₀ ⟩ ⟦ γ' ⟧ᴱ ∎} {VS>VT = VS>VT} M>T ⟩ ((∙⟨ r̲e̲t̲u̲r̲n̲ M₁ ⊰ γ₁ ╎ M' ⊲ γ' ⦂⦂ cs ⟩) {wk≡ = ≡-syntax.step-≡-⟩ _≡_ trans (⟦ wk-trans π' πₓ ⟧ʷ ⟦ γ₁ ⟧ᴱ)
                                                                                                                    (≡-syntax.step-≡-⟩ _≡_ trans (⟦ πₓ ⟧ʷ (⟦ π' ⟧ʷ ⟦ γ₁ ⟧ᴱ))
                                                                                                                     (≡-syntax.step-≡-⟩ _≡_ trans (⟦ πₓ ⟧ʷ ⟦ γ ⟧ᴱ)
                                                                                                                      ((_≡_ end-syntax.∎) refl ⟦ γ' ⟧ᴱ) wk≡₀)
