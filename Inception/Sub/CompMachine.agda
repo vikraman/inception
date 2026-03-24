@@ -696,7 +696,6 @@ Goal:   suc (vx (val-metric M ((X , nm) ∷ E) (Wkn.wkn-cong ϖ) csn) + ⟪ comp
 
 -------------------------------------------------------------------------------------------------
 
-{- BBBB
   data Missing-i : {E : EMetric} → (i : Γ ∋ X) → (ϖ : WkN Γ E) → Set where
     missing-h : {E : EMetric} → (ϖ : WkN Γ E) → Missing-i {X = X} h (wkn-cons ϖ)
     missing-t-cong : {E : EMetric} → {e : EElem B}
@@ -719,12 +718,12 @@ Goal:   suc (vx (val-metric M ((X , nm) ∷ E) (Wkn.wkn-cong ϖ) csn) + ⟪ comp
       _ , wkn-cons (proj₂ a1)
 
   comp-mult-lemma : (W : Comp Γ Y) (e : EElem X) (E : EMetric) (ϖ : WkN Γ E) (csn : List (ℕ × ℕ))
-              → (i : Γ ∋ X) → (μ : Missing-i i ϖ)
+              → (i : Γ ∋ X) → (μ : Missing-i i ϖ) → (NonZeroList (elist-to-clist E))
               →    ⟪ proj₁ (proj₂ (comp-mono-metric W (proj₁ (with-i i ϖ μ e)) (proj₂ (with-i i ϖ μ e)))) csn ⟫
                 ≤ (⟪ proj₁ (proj₂ (comp-mono-metric W E ϖ)) csn ⟫ + ⟪ proj₁ (proj₂ e) csn ⟫ * suc (proj₁ (comp-mono-metric W E ϖ)))
   comp-mult-lemma (return M) e E ϖ csn i μ = {!!}
   comp-mult-lemma (pm M W) e E ϖ csn i μ = {!!}
-  comp-mult-lemma (push {A = A} W₁ W₂) e E ϖ csn i μ =
+  comp-mult-lemma (push {A = A} W₁ W₂) e E ϖ csn i μ nz =
     let
       eq :   proj₁ (proj₂ (comp-mono-metric (push W₁ W₂) (proj₁ (with-i i ϖ μ e)) (proj₂ (with-i i ϖ μ e)))) csn
            ≡ (incr (suc ((2+ (ccount W₂ (elist-to-clist (proj₁ (with-i i ϖ μ e))) (wkn-to-wkc (wkn-cons (proj₂ (with-i i ϖ μ e))))))
@@ -750,15 +749,15 @@ Goal:   suc (vx (val-metric M ((X , nm) ∷ E) (Wkn.wkn-cong ϖ) csn) + ⟪ comp
 
       a0  :   ⟪ proj₁ (proj₂ (comp-mono-metric W₁ (proj₁ (with-i i ϖ μ e)) (proj₂ (with-i i ϖ μ e)))) csn ⟫
             ≤ ⟪ proj₁ (proj₂ (comp-mono-metric W₁ E ϖ)) csn ⟫ + ⟪ proj₁ (proj₂ e) csn ⟫ * suc (proj₁ (comp-mono-metric W₁ E ϖ))
-      a0 = comp-mult-lemma W₁ e E ϖ csn i μ
+      a0 = comp-mult-lemma W₁ e E ϖ csn i μ nz
 
       a1  :   ⟪ proj₁ (proj₂ (comp-mono-metric W₂ (with-i i ϖ μ e .proj₁) (wkn-cons (proj₂ (with-i i ϖ μ e))))) csn ⟫
             ≤ ⟪ proj₁ (proj₂ (comp-mono-metric W₂ E (wkn-cons ϖ))) csn ⟫ + ⟪ proj₁ (proj₂ e) csn ⟫ * suc (proj₁ (comp-mono-metric W₂ E (wkn-cons ϖ)))
-      a1 = comp-mult-lemma W₂ e E (wkn-cons ϖ) csn (t i) (missing-t-cons i ϖ μ)
+      a1 = comp-mult-lemma W₂ e E (wkn-cons ϖ) csn (t i) (missing-t-cons i ϖ μ) nz
 
       a2  :   ⟪ proj₁ (proj₂ (comp-mono-metric W₂ (with-i i ϖ μ e .proj₁) (wkn-cons (proj₂ (with-i i ϖ μ e))))) csn ⟫
             ≤ ⟪ proj₁ (proj₂ (comp-mono-metric W₂ E (wkn-cons ϖ))) csn ⟫ + ⟪ proj₁ (proj₂ e) csn ⟫ * suc (ccount W₂ (elist-to-clist E) (wkn-to-wkc (wkn-cons ϖ)))
-      a2 = comp-mult-lemma W₂ e E (wkn-cons ϖ) csn (t i) (missing-t-cons i ϖ μ)
+      a2 = comp-mult-lemma W₂ e E (wkn-cons ϖ) csn (t i) (missing-t-cons i ϖ μ) nz
 
       b1 : WkCW (wkc-cong {Y = A} {e = (ccount W₁ (elist-to-clist E) (wkn-to-wkc ϖ))} (wkn-to-wkc ϖ)) (wkc-cons (wkn-to-wkc ϖ))
       b1 = wkcw-skip {cnt = (ccount W₁ (elist-to-clist E) (wkn-to-wkc ϖ))} wkcw-id
@@ -766,8 +765,14 @@ Goal:   suc (vx (val-metric M ((X , nm) ∷ E) (Wkn.wkn-cong ϖ) csn) + ⟪ comp
       b2 : WkCW (wkc-cong {Y = A} {e = (ccount W₁ (elist-to-clist E) (wkn-to-wkc ϖ))} (wkn-to-wkc ϖ)) (wkn-to-wkc (wkn-cons ϖ))
       b2 = subst (λ x → WkCW (wkc-cong {Y = A} {e = (ccount W₁ (elist-to-clist E) (wkn-to-wkc ϖ))} (wkn-to-wkc ϖ)) x) (wkc-cons-comm ϖ) b1
 
-      ntp : ccount W₂ (elist-to-clist E) (wkn-to-wkc (wkn-cons ϖ)) ≤ ccount W₂ ((ccount W₁ (elist-to-clist E) (wkn-to-wkc ϖ)) ∷ (elist-to-clist E)) (wkc-cong {Y = A} (wkn-to-wkc ϖ))
-      ntp = {!!}
+      c2 : NonZeroList (suc (pred (ccount W₁ (elist-to-clist E) (wkn-to-wkc ϖ))) ∷ (elist-to-clist E))
+      c2 = suc-nz-list (ccount W₁ (elist-to-clist E) (wkn-to-wkc ϖ) ∸ 1) nz
+      c3 : NonZeroList ((ccount W₁ (elist-to-clist E) (wkn-to-wkc ϖ)) ∷ (elist-to-clist E))
+      c3 = subst (λ x → NonZeroList (x ∷ (elist-to-clist E))) (sym (pred-eq (ccount-non-zero W₁ (elist-to-clist E) nz (wkn-to-wkc ϖ)))) c2
+
+      ntp :   ccount W₂ (elist-to-clist E) (wkn-to-wkc (wkn-cons ϖ))
+            ≤ ccount W₂ ((ccount W₁ (elist-to-clist E) (wkn-to-wkc ϖ)) ∷ (elist-to-clist E)) (wkc-cong {Y = A} (wkn-to-wkc ϖ))
+      ntp = comp-wkcw-lemma W₂ ((ccount W₁ (elist-to-clist E) (wkn-to-wkc ϖ)) ∷ (elist-to-clist E)) (elist-to-clist E) c3 nz (wkc-cong (wkn-to-wkc ϖ)) (wkn-to-wkc (wkn-cons ϖ)) b2
 
     in
     {!!}
@@ -819,6 +824,8 @@ Goal:   suc (vx (val-metric M ((X , nm) ∷ E) (Wkn.wkn-cong ϖ) csn) + ⟪ comp
   comp-mult-lemma (app M N) e E ϖ csn i μ = {!!}
   comp-mult-lemma (var M) e E ϖ csn i μ = {!!}
   comp-mult-lemma (sub W₁ W₂) e E ϖ csn i μ = {!!}
+
+{- BBBB
 
 BBBB -}
 
