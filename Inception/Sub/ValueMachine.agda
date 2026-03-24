@@ -1,3 +1,5 @@
+{-# OPTIONS --no-postfix-projections #-}
+
 module Inception.Sub.ValueMachine (R : Set) where
 
 open import Data.Product using (proj₁; proj₂; _,_; <_,_>; curry; _×_; Σ; ∃; Σ-syntax; ∃-syntax)
@@ -43,6 +45,13 @@ p≤p (s≤s sn≤sm) = sn≤sm
 
 p≤n : suc n ≤ m → n ≤ m
 p≤n {m = suc m} (s≤s sn≤m) = n≤sm sn≤m
+
+--pred' : suc n ≤ m → Σ[ p ∈ ℕ ] ( m ≡ suc p )
+--pred' {n = n} {m = m} sn≤m = {!sn≤m!}
+
+pred-eq : suc n ≤ m → m ≡ suc (pred m)
+pred-eq {n = zero} {m = suc m} sn≤m = refl
+pred-eq {n = suc n} {m = suc m} sn≤m = refl
 
 n+z : (n : ℕ) → n + zero ≡ n
 n+z zero = refl
@@ -426,7 +435,8 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
         a1 = vcount M E ç
       in
         vcount N (a1 ∷ a1 ∷ E) (wkc-cong (wkc-cong ç))
-    vcount unit E ç = 0
+    -- We should overestimate the variable count here to avoid having a smaller count when the variable points to a unit compared to when it's not in the environment.
+    vcount unit E ç = 1 -- 0
 
     ccount : (W : Comp Γ Z) → (E : List ℕ) → WkC Γ E → ℕ
     ccount (return M) E ç = vcount M E ç
@@ -451,7 +461,8 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   v̲c̲o̲u̲n̲t̲ : (M : V̲a̲l̲ Γ Y) → (E : List ℕ) → WkC Γ E → ℕ
   v̲c̲o̲u̲n̲t̲ (l̲a̲m̲ W) E ç = ccount W E (wkc-cons ç)
   v̲c̲o̲u̲n̲t̲ (pa̲i̲r̲ M₁ M₂) E ç = (v̲c̲o̲u̲n̲t̲ M₁ E ç) + (v̲c̲o̲u̲n̲t̲ M₂ E ç)
-  v̲c̲o̲u̲n̲t̲ u̲n̲i̲t̲ E ç = 0
+  -- We should overestimate the variable count here to avoid having a smaller count when the variable points to a unit compared to when it's not in the environment.
+  v̲c̲o̲u̲n̲t̲ u̲n̲i̲t̲ E ç = 1 -- 0
   v̲c̲o̲u̲n̲t̲ (v̲a̲r̲ i) E ç = lcount i E ç
 
   c̲c̲o̲u̲n̲t̲ : (W : C̲o̲m̲p Γ Z) → (E : List ℕ) → WkC Γ E → ℕ
@@ -1289,7 +1300,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
         a0 = val-cnt-lemma M E E' ϖ ϖ' ϕ
       in
       val-cnt-lemma N (vcount M E ϖ ∷ vcount M E ϖ ∷ E) (vcount M E' ϖ' ∷ vcount M E' ϖ' ∷ E') (wkc-cong (wkc-cong ϖ)) (wkc-cong (wkc-cong ϖ')) (wkcz-cong a0 (wkcz-cong a0 ϕ))
-    val-cnt-lemma unit E E' ϖ ϖ' ϕ = z≤n --refl
+    val-cnt-lemma unit E E' ϖ ϖ' ϕ = ≤-refl -- z≤n --refl
 
     {-
     comp-cnt-lemma : (W : Comp Γ X) → (E E' : List ℕ) → (ϖ : WkC Γ E) → (ϖ' : WkC Γ E') → (ϕ : WkCZ ϖ ϖ')
@@ -2080,6 +2091,104 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       (ccount W (elist-to-clist (proj₁ IH)) (wkn-to-wkc (wkn-cons (proj₂ IH))) , ⟪ proj₁ (proj₂ (comp-mono-metric W (proj₁ IH) (wkn-cons (proj₂ IH)))) csn ⟫) ∷ csn
       -- ((proj₁ (mono-comp-count h W (proj₁ IH) (wkn-cons (proj₂ IH))) csn) , ⟪ proj₁ (comp-mono-metric W (proj₁ IH) (wkn-cons (proj₂ IH))) csn ⟫) ∷ csn
 
+-------------------------
+
+  data NonZeroList : List ℕ → Set where
+    empty-list : NonZeroList []
+    suc-nz-list : (n : ℕ) → {l : List ℕ} → (nzl : NonZeroList l) → (NonZeroList (suc n ∷ l))
+
+  lcount-non-zero : (i : Γ ∋ Z) → (E : List ℕ) → (NonZeroList E) → (ç : WkC Γ E) → 1 ≤ lcount i E ç
+  lcount-non-zero Cx.h [] nz (wkc-cons ç) = s≤s z≤n
+  lcount-non-zero Cx.h (x ∷ E) (suc-nz-list n nz) (wkc-cong ç) = s≤s z≤n
+  lcount-non-zero Cx.h (x ∷ E) (suc-nz-list n nz) (wkc-cons ç) = s≤s z≤n
+  lcount-non-zero (Cx.t i) [] nz (wkc-cons ç) = s≤s z≤n
+  lcount-non-zero (Cx.t i) (x ∷ E) (suc-nz-list n nz) (wkc-cong ç) = lcount-non-zero i E nz ç
+  lcount-non-zero (Cx.t i) (x ∷ E) (suc-nz-list n nz) (wkc-cons ç) = lcount-non-zero i (suc n ∷ E) (suc-nz-list n nz) ç
+
+  mutual
+    vcount-non-zero : (M : Val Γ Z) → (E : List ℕ) → (NonZeroList E) → (ç : WkC Γ E) → 1 ≤ vcount M E ç
+    vcount-non-zero (var i) E nz ç = lcount-non-zero i E nz ç
+    vcount-non-zero (lam W) E nz ç = ccount-non-zero W E nz (wkc-cons ç)
+    vcount-non-zero (pair M₁ M₂) E nz ç = ≤-trans (vcount-non-zero M₁ E nz ç) n≤n+m
+    vcount-non-zero (pm M N) E nz ç =
+      let
+        a0 = vcount-non-zero M E nz ç
+        a1 : NonZeroList (suc (pred (vcount M E ç)) ∷ suc (pred (vcount M E ç)) ∷ E)
+        a1 = suc-nz-list (vcount M E ç ∸ 1) (suc-nz-list (vcount M E ç ∸ 1) nz)
+        a2 : NonZeroList ((vcount M E ç) ∷ (vcount M E ç) ∷ E)
+        a2 = subst (λ x → NonZeroList (x ∷ x ∷ E)) (sym (pred-eq a0)) a1
+        a3 = vcount-non-zero N (vcount M E ç ∷ vcount M E ç ∷ E) a2 (wkc-cong (wkc-cong ç))
+      in
+      a3
+    vcount-non-zero unit E nz ç = s≤s z≤n
+
+    ccount-non-zero : (W : Comp Γ Z) → (E : List ℕ) → (NonZeroList E) → (ç : WkC Γ E) → 1 ≤ ccount W E ç
+    ccount-non-zero (return M) E nz ç = vcount-non-zero M E nz ç
+    ccount-non-zero (pm M W) E nz ç =
+      let
+        a0 = vcount-non-zero M E nz ç
+        a1 : NonZeroList (suc (pred (vcount M E ç)) ∷ suc (pred (vcount M E ç)) ∷ E)
+        a1 = suc-nz-list (vcount M E ç ∸ 1) (suc-nz-list (vcount M E ç ∸ 1) nz)
+        a2 : NonZeroList ((vcount M E ç) ∷ (vcount M E ç) ∷ E)
+        a2 = subst (λ x → NonZeroList (x ∷ x ∷ E)) (sym (pred-eq a0)) a1
+        a3 = ccount-non-zero W (vcount M E ç ∷ vcount M E ç ∷ E) a2 (wkc-cong (wkc-cong ç))
+      in
+      a3
+    ccount-non-zero (push W₁ W₂) E nz ç =
+      let
+        a0 = ccount-non-zero W₁ E nz ç
+        a1 : NonZeroList (suc (pred (ccount W₁ E ç)) ∷ E)
+        a1 = suc-nz-list (ccount W₁ E ç ∸ 1) nz
+        a2 : NonZeroList ((ccount W₁ E ç) ∷ E)
+        a2 = subst (λ x → NonZeroList (x ∷ E)) (sym (pred-eq a0)) a1
+        a3 = ccount-non-zero W₂ (ccount W₁ E ç ∷ E) a2 (wkc-cong ç)
+      in
+      a3
+    ccount-non-zero (app M N) E nz ç = s≤s z≤n
+    ccount-non-zero (var M) E nz ç = vcount-non-zero M E nz ç
+    ccount-non-zero (sub W₁ W₂) E nz ç =
+      let
+        a0 = ccount-non-zero W₂ E nz ç
+        a1 : NonZeroList (suc (pred (ccount W₂ E ç)) ∷ E)
+        a1 = suc-nz-list (ccount W₂ E ç ∸ 1) nz
+        a2 : NonZeroList ((ccount W₂ E ç) ∷ E)
+        a2 = subst (λ x → NonZeroList (x ∷ E)) (sym (pred-eq a0)) a1
+        a3 = ccount-non-zero W₁ (ccount W₂ E ç ∷ E) a2 (wkc-cong ç)
+      in
+      a3
+
+  v̲c̲o̲u̲n̲t̲-non-zero : (M : V̲a̲l̲ Γ Z) → (E : List ℕ) → (NonZeroList E) → (ç : WkC Γ E) → 1 ≤ v̲c̲o̲u̲n̲t̲ M E ç
+  v̲c̲o̲u̲n̲t̲-non-zero (l̲a̲m̲ W) E nz ç = ccount-non-zero W E nz (wkc-cons ç)
+  v̲c̲o̲u̲n̲t̲-non-zero (pa̲i̲r̲ M₁ M₂) E nz ç = ≤-trans (v̲c̲o̲u̲n̲t̲-non-zero M₁ E nz ç) n≤n+m
+  v̲c̲o̲u̲n̲t̲-non-zero u̲n̲i̲t̲ E nz ç = s≤s z≤n
+  v̲c̲o̲u̲n̲t̲-non-zero (v̲a̲r̲ i) E nz ç = lcount-non-zero i E nz ç
+
+  elist-is-non-zero : (γ : Env Γ) → NonZeroList (elist-to-clist (proj₁ (env-mono-metric γ)))
+  elist-is-non-zero ∗ = empty-list
+  elist-is-non-zero (γ ﹐ M) =
+    let
+      a0 = elist-is-non-zero γ
+      a1 = v̲c̲o̲u̲n̲t̲-non-zero M (elist-to-clist (proj₁ (env-mono-metric γ))) a0 (wkn-to-wkc (proj₂ (env-mono-metric γ)))
+      a2 : NonZeroList (suc (pred (proj₁ (v̲a̲l̲-mono-metric M (proj₁ (env-mono-metric γ)) (proj₂ (env-mono-metric γ))))) ∷ elist-to-clist (proj₁ (env-mono-metric γ)))
+      a2 = suc-nz-list (proj₁ (v̲a̲l̲-mono-metric M (proj₁ (env-mono-metric γ)) (proj₂ (env-mono-metric γ))) ∸ 1) a0
+      a3 : NonZeroList (proj₁ (v̲a̲l̲-mono-metric M (proj₁ (env-mono-metric γ)) (proj₂ (env-mono-metric γ))) ∷ elist-to-clist (proj₁ (env-mono-metric γ)))
+      a3 = subst (λ x → NonZeroList (x ∷ elist-to-clist (proj₁ (env-mono-metric γ)))) (sym (pred-eq a1)) a2
+    in
+    a3
+  elist-is-non-zero (γ ﹐﹝ W ╎ cs ﹞) =
+    let
+      a0 = elist-is-non-zero γ
+      a1 = ccount-non-zero W (elist-to-clist (proj₁ (env-mono-metric γ))) a0 (wkn-to-wkc (proj₂ (env-mono-metric γ)))
+      a2 : NonZeroList (suc (pred (proj₁ (comp-mono-metric W (proj₁ (env-mono-metric γ)) (proj₂ (env-mono-metric γ))))) ∷ elist-to-clist (proj₁ (env-mono-metric γ)))
+      a2 = suc-nz-list ((proj₁ (comp-mono-metric W (proj₁ (env-mono-metric γ)) (proj₂ (env-mono-metric γ)))) ∸ 1) a0
+      a3 : NonZeroList ((proj₁ (comp-mono-metric W (proj₁ (env-mono-metric γ)) (proj₂ (env-mono-metric γ)))) ∷ elist-to-clist (proj₁ (env-mono-metric γ)))
+      a3 = subst (λ x → NonZeroList (x ∷ elist-to-clist (proj₁ (env-mono-metric γ)))) (sym (pred-eq a1)) a2
+    in
+    a3
+
+---------------------------
+
+
   getIndex : LookupState X → Σ[ Γ ∈ Ctx ] Γ ∋ X
   getIndex ⟨ i ∥ _ ⟩ = _ , i
 
@@ -2420,7 +2529,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   -- OLD: (λ csn → ≤ᴹ-incr-cong (s≤s (z≤n {n = 1})) (≤ᴹ-refl {nm = (lookup-metric (wk-mem π i) (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) csn)})) wke-id
 
   val-eval-rec {X = `Unit} (var {A = .`Unit} i) γ π with lookup (wk-mem π i) γ
-  ... | steps i>>T found-unit i≡T π₁ w≡γ cnt₁≤cnt₂ T≤ᴹS _ = steps (_ →ᵛ⟨ ∘var i>>T π₁ ⟩．) (∙ u̲n̲i̲t̲ ⊲ γ ■) refl wk-id refl n≤n+m ( λ csn → ≤ᴹ-trans (T≤ᴹS csn) (≤ᴹ-incr-cong (z≤n {n = 2}) (≤ᴹ-refl {nm = (proj₁ (proj₂ (lookup-mono-metric (wk-mem π i) (proj₁ (env-mono-metric γ)) (proj₂ (env-mono-metric γ)))) csn)}))) {- (λ csn → ≤ᴹ-trans (T≤ᴹS csn) (≤ᴹ-incr-cong (z≤n {n = 2}) (≤ᴹ-refl {nm = {!!} {- (proj₁ (lookup-mono-metric (wk-mem π i) (proj₁ (env-mono-metric γ)) (proj₂ (env-mono-metric γ))) csn) -} }))) -} wke-id
+  ... | steps i>>T found-unit i≡T π₁ w≡γ cnt₁≤cnt₂ T≤ᴹS _ = steps (_ →ᵛ⟨ ∘var i>>T π₁ ⟩．) (∙ u̲n̲i̲t̲ ⊲ γ ■) refl wk-id refl (lcount-non-zero (wk-mem π i) (elist-to-clist (proj₁ (env-mono-metric γ))) (elist-is-non-zero γ) (wkn-to-wkc (proj₂ (env-mono-metric γ)))) {- n≤n+m -} ( λ csn → ≤ᴹ-trans (T≤ᴹS csn) (≤ᴹ-incr-cong (z≤n {n = 2}) (≤ᴹ-refl {nm = (proj₁ (proj₂ (lookup-mono-metric (wk-mem π i) (proj₁ (env-mono-metric γ)) (proj₂ (env-mono-metric γ)))) csn)}))) {- (λ csn → ≤ᴹ-trans (T≤ᴹS csn) (≤ᴹ-incr-cong (z≤n {n = 2}) (≤ᴹ-refl {nm = {!!} {- (proj₁ (lookup-mono-metric (wk-mem π i) (proj₁ (env-mono-metric γ)) (proj₂ (env-mono-metric γ))) csn) -} }))) -} wke-id
   -- OLD: (λ csn → ≤ᴹ-trans (T≤ᴹS csn) (≤ᴹ-incr-cong (z≤n {n = 2}) (≤ᴹ-refl {nm = (lookup-metric (wk-mem π i) (proj₁ (env-metric γ)) (proj₂ (env-metric γ)) csn)}))) wke-id
 
   val-eval-rec {X = X `× X₁} (var {A = .(X `× X₁)} i) γ π with lookup (wk-mem π i) γ
@@ -2534,7 +2643,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   -- OLD: (λ csn → ≤ᴹ-incr-cong (z≤n {n = 1}) (≤ᴹ-refl {nm = m-⇒ 1 (count-in-comp h (wk-comp (wk-cong π) W) (proj₁ (env-metric γ)) (wkn-cons (proj₂ (env-metric γ))) csn) (comp-metric (wk-comp (wk-cong π) W) (proj₁ (env-metric γ)) (wkn-cons (proj₂ (env-metric γ))) csn)})) wke-id
 
-  val-eval-rec unit γ π = steps (_ →ᵛ⟨ ∘unit ⟩．) (∙ u̲n̲i̲t̲ ⊲ γ ■) refl wk-id refl z≤n (λ csn → ≤ᴹ-incr-cong (z≤n {n = 1}) (≤ᴹ-refl {nm = m-Unit 1})) {- ((λ csn → ≤ᴹ-incr-cong (z≤n {n = 1}) (≤ᴹ-refl {nm = m-Unit 1}))) -} wke-id
+  val-eval-rec unit γ π = steps (_ →ᵛ⟨ ∘unit ⟩．) (∙ u̲n̲i̲t̲ ⊲ γ ■) refl wk-id refl (s≤s z≤n) {- z≤n -} (λ csn → ≤ᴹ-incr-cong (z≤n {n = 1}) (≤ᴹ-refl {nm = m-Unit 1})) {- ((λ csn → ≤ᴹ-incr-cong (z≤n {n = 1}) (≤ᴹ-refl {nm = m-Unit 1}))) -} wke-id
   -- OLD: (λ csn → ≤ᴹ-incr-cong (z≤n {n = 1}) (≤ᴹ-refl {nm = m-Unit 1})) wke-id
 
   val-eval-rec (pair {A = X} {B = Y} LHS RHS) γ π with val-eval-rec {X = X} LHS γ π
