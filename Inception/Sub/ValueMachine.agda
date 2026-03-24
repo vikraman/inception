@@ -450,7 +450,9 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
         a1 = ccount W₁ E ç
       in
         ccount W₂ (a1 ∷ E) (wkc-cong ç)
-    ccount (app M N) E ç = (suc (vcount M E ç)) * (suc (vcount N E ç))
+    --ccount (app M N) E ç = (suc (vcount M E ç)) * (suc (vcount N E ç))
+    -- vcount will always be non-zero, so taking suc is unnecessary
+    ccount (app M N) E ç = (vcount M E ç) * (vcount N E ç)
     ccount (var M) E ç = vcount M E ç
     ccount (sub W₁ W₂) E ç =
       let
@@ -1336,7 +1338,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
         a0 = val-cnt-lemma M E E' ϖ ϖ' ϕ
         a1 = val-cnt-lemma N E E' ϖ ϖ' ϕ
       in
-      s≤s (+-≤-cong a1 (*-≤-cong a0 (s≤s a1))) --cong suc (cong₂ _+_ a1 (cong₂ _*_ a0 (cong suc a1)))
+      *-≤-cong a0 a1 --(+-≤-cong a1 (*-≤-cong a0 (a1))) --s≤s (+-≤-cong a1 (*-≤-cong a0 (s≤s a1))) --cong suc (cong₂ _+_ a1 (cong₂ _*_ a0 (cong suc a1)))
     comp-cnt-lemma (var M) E E' ϖ ϖ' ϕ = val-cnt-lemma M E E' ϖ ϖ' ϕ
     comp-cnt-lemma (sub W₁ W₂) E E' ϖ ϖ' ϕ =
       let
@@ -1790,9 +1792,11 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       a7
     comp-wke-lemma (app M N) E E' π ϖ ϖ' θ =
       let
-        a0 = λ x y → (suc (proj₁ y + proj₁ x * suc (proj₁ y)) , (λ csn → incr (2+ (p1 (proj₁ (proj₂ x) csn) + (⟪ proj₁ (proj₂ y) csn ⟫ + proj₁ x * ⟪ proj₁ (proj₂ y) csn ⟫))) (pw (proj₁ (proj₂ x) csn))) , (λ {csn₁} {csn₂} c≤c' → ≤ᴹ-incr-cong (s≤s (s≤s (+-≤-cong (≤ᴹ-p1 (proj₂ (proj₂ x) c≤c')) (*-≤-cong (s≤s (≤-refl {n = proj₁ x})) (≤ᴹ⇒≤ (proj₂ (proj₂ y) c≤c')))))) (≤ᴹ-pw (proj₂ (proj₂ x) c≤c'))))
+        --a0 = λ x y → (suc (proj₁ y + proj₁ x * suc (proj₁ y)) , (λ csn → incr (2+ (p1 (proj₁ (proj₂ x) csn) + (⟪ proj₁ (proj₂ y) csn ⟫ + proj₁ x * ⟪ proj₁ (proj₂ y) csn ⟫))) (pw (proj₁ (proj₂ x) csn))) , (λ {csn₁} {csn₂} c≤c' → ≤ᴹ-incr-cong (s≤s (s≤s (+-≤-cong (≤ᴹ-p1 (proj₂ (proj₂ x) c≤c')) (*-≤-cong (s≤s (≤-refl {n = proj₁ x})) (≤ᴹ⇒≤ (proj₂ (proj₂ y) c≤c')))))) (≤ᴹ-pw (proj₂ (proj₂ x) c≤c'))))
+
+        a0 = λ x y → ((proj₁ x * proj₁ y) , (λ csn → incr (2+ (p1 (proj₁ (proj₂ x) csn) + (⟪ proj₁ (proj₂ y) csn ⟫ + proj₁ x * ⟪ proj₁ (proj₂ y) csn ⟫))) (pw (proj₁ (proj₂ x) csn))) , (λ {csn₁} {csn₂} c≤c' → ≤ᴹ-incr-cong (s≤s (s≤s (+-≤-cong (≤ᴹ-p1 (proj₂ (proj₂ x) c≤c')) (*-≤-cong (s≤s (≤-refl {n = proj₁ x})) (≤ᴹ⇒≤ (proj₂ (proj₂ y) c≤c')))))) (≤ᴹ-pw (proj₂ (proj₂ x) c≤c'))))
       in
-      cong₂ a0 (val-wke-lemma M E E' π ϖ ϖ' θ) (val-wke-lemma N E E' π ϖ ϖ' θ)
+      cong₂ a0 (val-wke-lemma M E E' π ϖ ϖ' θ) (val-wke-lemma N E E' π ϖ ϖ' θ) -- cong₂ a0 (val-wke-lemma M E E' π ϖ ϖ' θ) (val-wke-lemma N E E' π ϖ ϖ' θ)
     comp-wke-lemma (var M) E E' π ϖ ϖ' θ =
       let
         a0 = λ x → (proj₁ x , (λ csn → incr (suc ⟪ proj₁ (proj₂ x) csn ⟫) zero-metric) , (λ {csn₁} {csn₂} c≤c' → ≤ᴹ-incr-cong (s≤s (≤ᴹ⇒≤ {nm₁ = proj₂ x .proj₁ csn₁} (proj₂ (proj₂ x) c≤c'))) {nm₁ = zero-metric} ≤ᴹ-refl))
@@ -2144,7 +2148,12 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
         a3 = ccount-non-zero W₂ (ccount W₁ E ç ∷ E) a2 (wkc-cong ç)
       in
       a3
-    ccount-non-zero (app M N) E nz ç = s≤s z≤n
+    ccount-non-zero (app M N) E nz ç =
+      let
+        a0 = vcount-non-zero M E nz ç
+        a1 = vcount-non-zero N E nz ç
+      in
+      *-≤-cong a0 a1 --s≤s z≤n
     ccount-non-zero (var M) E nz ç = vcount-non-zero M E nz ç
     ccount-non-zero (sub W₁ W₂) E nz ç =
       let
@@ -2920,3 +2929,4 @@ a2-cnt    : proj₁
   sub-cps' : (M : (Γ ∙ `V) ⊢ᶜ X) → (N : Γ ⊢ᶜ X) → (γ : Env Γ) → (cs : CompStack Δ X) → (πₓ : Wk Γ Δ) → (wk≡ : ⟦ πₓ ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → ⟦ sub M N ⟧ᶜ ⟦ γ ⟧ᴱ ⟦ cs ⟧ᴷ ≡ ⟦ M ⟧ᶜ ⟦ (γ ﹐﹝ N ╎ cs ﹞) {π = πₓ} {wk≡ = wk≡} ⟧ᴱ ⟦ cs ⟧ᴷ
   sub-cps' M N γ cs πₓ wk≡ = refl
 -}
+
