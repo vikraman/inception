@@ -187,6 +187,27 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   {-# REWRITE wk-comm-explicit #-}
 
+  -------------------------------------------------------------------
+
+  data BasicTy : Set where
+    Unit` : BasicTy
+    _×`_ : BasicTy -> BasicTy -> BasicTy
+    V` : BasicTy
+
+  data AnyTy : Set where
+    [_]  : BasicTy → AnyTy
+    _⇒`_ : AnyTy → AnyTy → AnyTy
+
+  bty-to-ty : BasicTy → Ty
+  bty-to-ty Unit` = `Unit
+  bty-to-ty (bty₁ ×` bty₂) = (bty-to-ty bty₁) `× (bty-to-ty bty₂)
+  bty-to-ty V` = `V
+
+  aty-to-ty : AnyTy → Ty
+  aty-to-ty [ bty ] =  bty-to-ty bty
+  aty-to-ty (aty₁ ⇒` aty₂) = (aty-to-ty aty₁) `⇒ (aty-to-ty aty₂)
+
+  -------------------------------------------------------------------
 
   {- BEGIN OLD EVAL
 
