@@ -75,7 +75,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                     → {wk≡ₓ : ⟦ πₓ ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ} → {wk≡ : ⟦ πₓ ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ}
                   ----------------------------------------------------------------
                     →       ((∘⟨ push M N ⊰ γ ╎ cs ⟩) {π = πₓ} {wk≡ = wk≡ₓ})
- 
+
                         →ᶜ ((∘⟨ M ⊰ γ ╎ ((N ⊲ γ ⦂⦂ cs) {π = πₓ}  {wk≡ = wk≡}) ⟩) {π = wk-id} {wk≡ = refl})
 
         ∘sub     :    {M : (Γ ∙ `V) ⊢ᶜ X} → {N : Γ ⊢ᶜ X} → {γ : Env Γ}
@@ -610,89 +610,90 @@ Goal:   suc (vx (val-metric M ((X , nm) ∷ E) (Wkn.wkn-cong ϖ) csn) + ⟪ comp
   lookup-wkcw-lemma (Cx.t i) (x ∷ E) (x₁ ∷ E') nz nz' (wkc-cons ç) (wkc-cong ç') ()
   lookup-wkcw-lemma (Cx.t i) (x ∷ E) (x₁ ∷ E') (suc-nz-list n nz) (suc-nz-list n₁ nz') (wkc-cons ç) (wkc-cons ç') (wkcw-wk ζ) = lookup-wkcw-lemma i (suc n ∷ E) (suc n₁ ∷ E') (NonZeroList.suc-nz-list n nz) (NonZeroList.suc-nz-list n₁ nz') ç ç' ζ
 
-  val-wkcw-lemma : (M : Val Γ X) → (E E' : List ℕ) → (nz : NonZeroList E) → (nz' : NonZeroList E') → (ç : WkC Γ E) → (ç' : WkC Γ E') → (ζ : WkCW ç ç')
-                    → (vcount M E' ç') ≤ (vcount M E ç)
-  val-wkcw-lemma (var i) E E' nz nz' ç ç' ζ = lookup-wkcw-lemma i E E' nz nz' ç ç' ζ
-  val-wkcw-lemma (lam W) E E' nz nz' ç ç' ζ = {!!}
-  val-wkcw-lemma (pair M₁ M₂) E E' nz nz' ç ç' ζ =
-    let
-      a0 = val-wkcw-lemma M₁ E E' nz nz' ç ç' ζ
-      a1 = val-wkcw-lemma M₂ E E' nz nz' ç ç' ζ
-    in
-    +-≤-cong a0 a1
-  val-wkcw-lemma (pm {A = A} {B = B} M N) E E' nz nz' ç ç' ζ =
-    let
-      a0 = val-wkcw-lemma M E E' nz nz' ç ç' ζ
-      a1 = wkcw-cong {Y = B} a0 (wkcw-cong {Y = A} a0 ζ)
-      a2 : NonZeroList (suc (pred (vcount M E ç)) ∷ suc (pred (vcount M E ç)) ∷ E)
-      a2 = suc-nz-list (vcount M E ç ∸ 1) (suc-nz-list (vcount M E ç ∸ 1) nz)
-      a3 : NonZeroList ((vcount M E ç) ∷ (vcount M E ç) ∷ E)
-      a3 = subst (λ x → NonZeroList (x ∷ x ∷ E)) (sym (pred-eq (vcount-non-zero M E nz ç))) a2
-      b2 : NonZeroList (suc (pred (vcount M E' ç')) ∷ suc (pred (vcount M E' ç')) ∷ E')
-      b2 = suc-nz-list (vcount M E' ç' ∸ 1) (suc-nz-list (vcount M E' ç' ∸ 1) nz')
-      b3 : NonZeroList ((vcount M E' ç') ∷ (vcount M E' ç') ∷ E')
-      b3 = subst (λ x → NonZeroList (x ∷ x ∷ E')) (sym (pred-eq (vcount-non-zero M E' nz' ç'))) b2
-      c1 = val-wkcw-lemma N (vcount M E ç ∷ vcount M E ç ∷ E) (vcount M E' ç' ∷ vcount M E' ç' ∷ E') a3 b3 (WkC.wkc-cong (WkC.wkc-cong ç)) (WkC.wkc-cong (WkC.wkc-cong ç')) a1
-    in
-    c1
-  val-wkcw-lemma unit E E' nz nz' ç ç' ζ = s≤s z≤n
+  mutual
+    val-wkcw-lemma : (M : Val Γ X) → (E E' : List ℕ) → (nz : NonZeroList E) → (nz' : NonZeroList E') → (ç : WkC Γ E) → (ç' : WkC Γ E') → (ζ : WkCW ç ç')
+                     → (vcount M E' ç') ≤ (vcount M E ç)
+    val-wkcw-lemma (var i) E E' nz nz' ç ç' ζ = lookup-wkcw-lemma i E E' nz nz' ç ç' ζ
+    val-wkcw-lemma (lam W) E E' nz nz' ç ç' ζ = comp-wkcw-lemma W E E' nz nz' (WkC.wkc-cons ç) (WkC.wkc-cons ç') (wkcw-wk ζ)
+    val-wkcw-lemma (pair M₁ M₂) E E' nz nz' ç ç' ζ =
+      let
+        a0 = val-wkcw-lemma M₁ E E' nz nz' ç ç' ζ
+        a1 = val-wkcw-lemma M₂ E E' nz nz' ç ç' ζ
+      in
+      +-≤-cong a0 a1
+    val-wkcw-lemma (pm {A = A} {B = B} M N) E E' nz nz' ç ç' ζ =
+      let
+        a0 = val-wkcw-lemma M E E' nz nz' ç ç' ζ
+        a1 = wkcw-cong {Y = B} a0 (wkcw-cong {Y = A} a0 ζ)
+        a2 : NonZeroList (suc (pred (vcount M E ç)) ∷ suc (pred (vcount M E ç)) ∷ E)
+        a2 = suc-nz-list (vcount M E ç ∸ 1) (suc-nz-list (vcount M E ç ∸ 1) nz)
+        a3 : NonZeroList ((vcount M E ç) ∷ (vcount M E ç) ∷ E)
+        a3 = subst (λ x → NonZeroList (x ∷ x ∷ E)) (sym (pred-eq (vcount-non-zero M E nz ç))) a2
+        b2 : NonZeroList (suc (pred (vcount M E' ç')) ∷ suc (pred (vcount M E' ç')) ∷ E')
+        b2 = suc-nz-list (vcount M E' ç' ∸ 1) (suc-nz-list (vcount M E' ç' ∸ 1) nz')
+        b3 : NonZeroList ((vcount M E' ç') ∷ (vcount M E' ç') ∷ E')
+        b3 = subst (λ x → NonZeroList (x ∷ x ∷ E')) (sym (pred-eq (vcount-non-zero M E' nz' ç'))) b2
+        c1 = val-wkcw-lemma N (vcount M E ç ∷ vcount M E ç ∷ E) (vcount M E' ç' ∷ vcount M E' ç' ∷ E') a3 b3 (WkC.wkc-cong (WkC.wkc-cong ç)) (WkC.wkc-cong (WkC.wkc-cong ç')) a1
+      in
+      c1
+    val-wkcw-lemma unit E E' nz nz' ç ç' ζ = s≤s z≤n
 
 
-  comp-wkcw-lemma : (W : Comp Γ X) → (E E' : List ℕ) → (nz : NonZeroList E) → (nz' : NonZeroList E') → (ç : WkC Γ E) → (ç' : WkC Γ E') → (ζ : WkCW ç ç')
-                    → (ccount W E' ç') ≤ (ccount W E ç)
-  comp-wkcw-lemma (return M) E E' nz nz' ç ç' ζ = val-wkcw-lemma M E E' nz nz' ç ç' ζ
-  comp-wkcw-lemma (pm {A = A} {B = B} M W) E E' nz nz' ç ç' ζ =
-    let
-      a0 = val-wkcw-lemma M E E' nz nz' ç ç' ζ
-      a1 = wkcw-cong {Y = B} a0 (wkcw-cong {Y = A} a0 ζ)
-      a2 : NonZeroList (suc (pred (vcount M E ç)) ∷ suc (pred (vcount M E ç)) ∷ E)
-      a2 = suc-nz-list (vcount M E ç ∸ 1) (suc-nz-list (vcount M E ç ∸ 1) nz)
-      a3 : NonZeroList ((vcount M E ç) ∷ (vcount M E ç) ∷ E)
-      a3 = subst (λ x → NonZeroList (x ∷ x ∷ E)) (sym (pred-eq (vcount-non-zero M E nz ç))) a2
-      b2 : NonZeroList (suc (pred (vcount M E' ç')) ∷ suc (pred (vcount M E' ç')) ∷ E')
-      b2 = suc-nz-list (vcount M E' ç' ∸ 1) (suc-nz-list (vcount M E' ç' ∸ 1) nz')
-      b3 : NonZeroList ((vcount M E' ç') ∷ (vcount M E' ç') ∷ E')
-      b3 = subst (λ x → NonZeroList (x ∷ x ∷ E')) (sym (pred-eq (vcount-non-zero M E' nz' ç'))) b2
-      c1 = comp-wkcw-lemma W (vcount M E ç ∷ vcount M E ç ∷ E) (vcount M E' ç' ∷ vcount M E' ç' ∷ E') a3 b3 (WkC.wkc-cong (WkC.wkc-cong ç)) (WkC.wkc-cong (WkC.wkc-cong ç')) a1
-    in
-    c1
-  comp-wkcw-lemma (push {A = A} W₁ W₂) E E' nz nz' ç ç' ζ =
-    let
-      a0 = comp-wkcw-lemma W₁ E E' nz nz' ç ç' ζ
-      a1 = (wkcw-cong {Y = A} a0 ζ)
-      a2 : NonZeroList (suc (pred (ccount W₁ E ç)) ∷ E)
-      a2 = suc-nz-list (ccount W₁ E ç ∸ 1) nz
-      a3 : NonZeroList ((ccount W₁ E ç) ∷ E)
-      a3 = subst (λ x → NonZeroList (x ∷ E)) (sym (pred-eq (ccount-non-zero W₁ E nz ç))) a2
-      b2 : NonZeroList (suc (pred (ccount W₁ E' ç')) ∷ E')
-      b2 = suc-nz-list (ccount W₁ E' ç' ∸ 1) nz'
-      b3 : NonZeroList ((ccount W₁ E' ç') ∷ E')
-      b3 = subst (λ x → NonZeroList (x ∷ E')) (sym (pred-eq (ccount-non-zero W₁ E' nz' ç'))) b2
-      c1 = comp-wkcw-lemma W₂ ((ccount W₁ E ç) ∷ E) ((ccount W₁ E' ç') ∷ E') a3 b3 (WkC.wkc-cong ç) (WkC.wkc-cong ç') a1
-    in
-    c1
-  comp-wkcw-lemma (app M N) E E' nz nz' ç ç' ζ =
-    let
-      a0 = val-wkcw-lemma M E E' nz nz' ç ç' ζ
-      a1 = val-wkcw-lemma N E E' nz nz' ç ç' ζ
-    in
-    *-≤-cong a0 a1
-  comp-wkcw-lemma (var M) E E' nz nz' ç ç' ζ = val-wkcw-lemma M E E' nz nz' ç ç' ζ
-  comp-wkcw-lemma (sub {A = A} W₁ W₂) E E' nz nz' ç ç' ζ =
-    let
-      a0 = comp-wkcw-lemma W₂ E E' nz nz' ç ç' ζ
-      a1 = (wkcw-cong {Y = `V} a0 ζ)
-      a2 : NonZeroList (suc (pred (ccount W₂ E ç)) ∷ E)
-      a2 = suc-nz-list (ccount W₂ E ç ∸ 1) nz
-      a3 : NonZeroList ((ccount W₂ E ç) ∷ E)
-      a3 = subst (λ x → NonZeroList (x ∷ E)) (sym (pred-eq (ccount-non-zero W₂ E nz ç))) a2
-      b2 : NonZeroList (suc (pred (ccount W₂ E' ç')) ∷ E')
-      b2 = suc-nz-list (ccount W₂ E' ç' ∸ 1) nz'
-      b3 : NonZeroList ((ccount W₂ E' ç') ∷ E')
-      b3 = subst (λ x → NonZeroList (x ∷ E')) (sym (pred-eq (ccount-non-zero W₂ E' nz' ç'))) b2
-      c1 = comp-wkcw-lemma W₁ ((ccount W₂ E ç) ∷ E) ((ccount W₂ E' ç') ∷ E') a3 b3 (WkC.wkc-cong ç) (WkC.wkc-cong ç') a1
-    in
-    c1
+    comp-wkcw-lemma : (W : Comp Γ X) → (E E' : List ℕ) → (nz : NonZeroList E) → (nz' : NonZeroList E') → (ç : WkC Γ E) → (ç' : WkC Γ E') → (ζ : WkCW ç ç')
+                      → (ccount W E' ç') ≤ (ccount W E ç)
+    comp-wkcw-lemma (return M) E E' nz nz' ç ç' ζ = val-wkcw-lemma M E E' nz nz' ç ç' ζ
+    comp-wkcw-lemma (pm {A = A} {B = B} M W) E E' nz nz' ç ç' ζ =
+      let
+        a0 = val-wkcw-lemma M E E' nz nz' ç ç' ζ
+        a1 = wkcw-cong {Y = B} a0 (wkcw-cong {Y = A} a0 ζ)
+        a2 : NonZeroList (suc (pred (vcount M E ç)) ∷ suc (pred (vcount M E ç)) ∷ E)
+        a2 = suc-nz-list (vcount M E ç ∸ 1) (suc-nz-list (vcount M E ç ∸ 1) nz)
+        a3 : NonZeroList ((vcount M E ç) ∷ (vcount M E ç) ∷ E)
+        a3 = subst (λ x → NonZeroList (x ∷ x ∷ E)) (sym (pred-eq (vcount-non-zero M E nz ç))) a2
+        b2 : NonZeroList (suc (pred (vcount M E' ç')) ∷ suc (pred (vcount M E' ç')) ∷ E')
+        b2 = suc-nz-list (vcount M E' ç' ∸ 1) (suc-nz-list (vcount M E' ç' ∸ 1) nz')
+        b3 : NonZeroList ((vcount M E' ç') ∷ (vcount M E' ç') ∷ E')
+        b3 = subst (λ x → NonZeroList (x ∷ x ∷ E')) (sym (pred-eq (vcount-non-zero M E' nz' ç'))) b2
+        c1 = comp-wkcw-lemma W (vcount M E ç ∷ vcount M E ç ∷ E) (vcount M E' ç' ∷ vcount M E' ç' ∷ E') a3 b3 (WkC.wkc-cong (WkC.wkc-cong ç)) (WkC.wkc-cong (WkC.wkc-cong ç')) a1
+      in
+      c1
+    comp-wkcw-lemma (push {A = A} W₁ W₂) E E' nz nz' ç ç' ζ =
+      let
+        a0 = comp-wkcw-lemma W₁ E E' nz nz' ç ç' ζ
+        a1 = (wkcw-cong {Y = A} a0 ζ)
+        a2 : NonZeroList (suc (pred (ccount W₁ E ç)) ∷ E)
+        a2 = suc-nz-list (ccount W₁ E ç ∸ 1) nz
+        a3 : NonZeroList ((ccount W₁ E ç) ∷ E)
+        a3 = subst (λ x → NonZeroList (x ∷ E)) (sym (pred-eq (ccount-non-zero W₁ E nz ç))) a2
+        b2 : NonZeroList (suc (pred (ccount W₁ E' ç')) ∷ E')
+        b2 = suc-nz-list (ccount W₁ E' ç' ∸ 1) nz'
+        b3 : NonZeroList ((ccount W₁ E' ç') ∷ E')
+        b3 = subst (λ x → NonZeroList (x ∷ E')) (sym (pred-eq (ccount-non-zero W₁ E' nz' ç'))) b2
+        c1 = comp-wkcw-lemma W₂ ((ccount W₁ E ç) ∷ E) ((ccount W₁ E' ç') ∷ E') a3 b3 (WkC.wkc-cong ç) (WkC.wkc-cong ç') a1
+      in
+      c1
+    comp-wkcw-lemma (app M N) E E' nz nz' ç ç' ζ =
+      let
+        a0 = val-wkcw-lemma M E E' nz nz' ç ç' ζ
+        a1 = val-wkcw-lemma N E E' nz nz' ç ç' ζ
+      in
+      *-≤-cong a0 a1
+    comp-wkcw-lemma (var M) E E' nz nz' ç ç' ζ = val-wkcw-lemma M E E' nz nz' ç ç' ζ
+    comp-wkcw-lemma (sub {A = A} W₁ W₂) E E' nz nz' ç ç' ζ =
+      let
+        a0 = comp-wkcw-lemma W₂ E E' nz nz' ç ç' ζ
+        a1 = (wkcw-cong {Y = `V} a0 ζ)
+        a2 : NonZeroList (suc (pred (ccount W₂ E ç)) ∷ E)
+        a2 = suc-nz-list (ccount W₂ E ç ∸ 1) nz
+        a3 : NonZeroList ((ccount W₂ E ç) ∷ E)
+        a3 = subst (λ x → NonZeroList (x ∷ E)) (sym (pred-eq (ccount-non-zero W₂ E nz ç))) a2
+        b2 : NonZeroList (suc (pred (ccount W₂ E' ç')) ∷ E')
+        b2 = suc-nz-list (ccount W₂ E' ç' ∸ 1) nz'
+        b3 : NonZeroList ((ccount W₂ E' ç') ∷ E')
+        b3 = subst (λ x → NonZeroList (x ∷ E')) (sym (pred-eq (ccount-non-zero W₂ E' nz' ç'))) b2
+        c1 = comp-wkcw-lemma W₁ ((ccount W₂ E ç) ∷ E) ((ccount W₂ E' ç') ∷ E') a3 b3 (WkC.wkc-cong ç) (WkC.wkc-cong ç') a1
+      in
+      c1
 
 -------------------------------------------------------------------------------------------------
 
@@ -717,218 +718,74 @@ Goal:   suc (vx (val-metric M ((X , nm) ∷ E) (Wkn.wkn-cong ϖ) csn) + ⟪ comp
     in
       _ , wkn-cons (proj₂ a1)
 
-  comp-mult-lemma : (W : Comp Γ Y) (e : EElem X) (E : EMetric) (ϖ : WkN Γ E) (csn : List (ℕ × ℕ))
-              → (i : Γ ∋ X) → (μ : Missing-i i ϖ) → (NonZeroList (elist-to-clist E))
-              →    ⟪ proj₁ (proj₂ (comp-mono-metric W (proj₁ (with-i i ϖ μ e)) (proj₂ (with-i i ϖ μ e)))) csn ⟫
-                ≤ (⟪ proj₁ (proj₂ (comp-mono-metric W E ϖ)) csn ⟫ + ⟪ proj₁ (proj₂ e) csn ⟫ * suc (proj₁ (comp-mono-metric W E ϖ)))
-  comp-mult-lemma (return M) e E ϖ csn i μ = {!!}
-  comp-mult-lemma (pm M W) e E ϖ csn i μ = {!!}
-  comp-mult-lemma (push {A = A} W₁ W₂) e E ϖ csn i μ nz =
+  vcount-ineq :   (M : Val Γ Y) (e : EElem X) (E : EMetric) (ϖ : WkN Γ E) (csn : List (ℕ × ℕ))
+                    → (i : Γ ∋ X) → (μ : Missing-i i ϖ) → (NonZeroList (elist-to-clist E))
+                    →      (vcount M (elist-to-clist (proj₁ (with-i i ϖ μ e))) (wkn-to-wkc (proj₂ (with-i i ϖ μ e))))
+                         * ⟪ proj₁ (proj₂ (val-mono-metric M (proj₁ (with-i i ϖ μ e)) (proj₂ (with-i i ϖ μ e)))) csn ⟫
+                       ≤   (vcount M (elist-to-clist E) (wkn-to-wkc ϖ)) * (⟪ proj₁ (proj₂ (val-mono-metric M E ϖ)) csn ⟫ + (proj₁ e) * ⟪ proj₁ (proj₂ e) csn ⟫)
+  vcount-ineq M e E ϖ csn i μ nz = {!!}
+
+  ccount-ineq :   (W : Comp Γ Y) (e : EElem X) (E : EMetric) (ϖ : WkN Γ E) (csn : List (ℕ × ℕ))
+                    → (i : Γ ∋ X) → (μ : Missing-i i ϖ) → (NonZeroList (elist-to-clist E))
+                    →      (ccount W (elist-to-clist (proj₁ (with-i i ϖ μ e))) (wkn-to-wkc (proj₂ (with-i i ϖ μ e))))
+                         * ⟪ proj₁ (proj₂ (comp-mono-metric W (proj₁ (with-i i ϖ μ e)) (proj₂ (with-i i ϖ μ e)))) csn ⟫
+                       ≤   (ccount W (elist-to-clist E) (wkn-to-wkc ϖ)) * (⟪ proj₁ (proj₂ (comp-mono-metric W E ϖ)) csn ⟫ + (proj₁ e) * ⟪ proj₁ (proj₂ e) csn ⟫)
+  ccount-ineq (return M) e E ϖ csn i μ nz =
     let
-      eq :   proj₁ (proj₂ (comp-mono-metric (push W₁ W₂) (proj₁ (with-i i ϖ μ e)) (proj₂ (with-i i ϖ μ e)))) csn
-           ≡ (incr (suc ((2+ (ccount W₂ (elist-to-clist (proj₁ (with-i i ϖ μ e))) (wkn-to-wkc (wkn-cons (proj₂ (with-i i ϖ μ e))))))
-                   * (⟪ (proj₁ $ proj₂ (comp-mono-metric W₁ (proj₁ (with-i i ϖ μ e)) (proj₂ (with-i i ϖ μ e)))) (((ccount W₂ (elist-to-clist (proj₁ (with-i i ϖ μ e))) (wkn-to-wkc (wkn-cons (proj₂ (with-i i ϖ μ e))))) ,
-                                                                     ⟪ (proj₁ $ proj₂ (comp-mono-metric W₂ (proj₁ (with-i i ϖ μ e)) (wkn-cons (proj₂ (with-i i ϖ μ e))))) csn ⟫) ∷ csn) ⟫)))
-               ((proj₁ $ proj₂ (comp-mono-metric W₂ (proj₁ (with-i i ϖ μ e)) (wkn-cons (proj₂ (with-i i ϖ μ e))))) csn))
-      eq = refl
-
-      eq2 :  ⟪ proj₁ (proj₂ (comp-mono-metric (push W₁ W₂) (proj₁ (with-i i ϖ μ e)) (proj₂ (with-i i ϖ μ e)))) csn ⟫
-           ≡ (suc ((2+ (ccount W₂ (elist-to-clist (proj₁ (with-i i ϖ μ e))) (wkn-to-wkc (wkn-cons (proj₂ (with-i i ϖ μ e))))))
-                   * (⟪ (proj₁ $ proj₂ (comp-mono-metric W₁ (proj₁ (with-i i ϖ μ e)) (proj₂ (with-i i ϖ μ e))))
-                                            (((ccount W₂ (elist-to-clist (proj₁ (with-i i ϖ μ e))) (wkn-to-wkc (wkn-cons (proj₂ (with-i i ϖ μ e))))) ,
-                                             ⟪ (proj₁ $ proj₂ (comp-mono-metric W₂ (proj₁ (with-i i ϖ μ e)) (wkn-cons (proj₂ (with-i i ϖ μ e))))) csn ⟫) ∷ csn)
-                      ⟫)))
-              + ⟪ (proj₁ $ proj₂ (comp-mono-metric W₂ (proj₁ (with-i i ϖ μ e)) (wkn-cons (proj₂ (with-i i ϖ μ e))))) csn ⟫
-      eq2 = refl
-
-      eq3 : (proj₁ (comp-mono-metric (push W₁ W₂) E ϖ)) ≡ ccount (push W₁ W₂) (elist-to-clist E) (wkn-to-wkc ϖ)
-      eq3 = refl
-
-      eq4 : (proj₁ (comp-mono-metric (push W₁ W₂) E ϖ)) ≡ ccount W₂ ((ccount W₁ (elist-to-clist E) (wkn-to-wkc ϖ)) ∷ (elist-to-clist E)) (wkc-cong {Y = A} (wkn-to-wkc ϖ))
-      eq4 = refl
-
-      a0  :   ⟪ proj₁ (proj₂ (comp-mono-metric W₁ (proj₁ (with-i i ϖ μ e)) (proj₂ (with-i i ϖ μ e)))) csn ⟫
-            ≤ ⟪ proj₁ (proj₂ (comp-mono-metric W₁ E ϖ)) csn ⟫ + ⟪ proj₁ (proj₂ e) csn ⟫ * suc (proj₁ (comp-mono-metric W₁ E ϖ))
-      a0 = comp-mult-lemma W₁ e E ϖ csn i μ nz
-
-      a1  :   ⟪ proj₁ (proj₂ (comp-mono-metric W₂ (with-i i ϖ μ e .proj₁) (wkn-cons (proj₂ (with-i i ϖ μ e))))) csn ⟫
-            ≤ ⟪ proj₁ (proj₂ (comp-mono-metric W₂ E (wkn-cons ϖ))) csn ⟫ + ⟪ proj₁ (proj₂ e) csn ⟫ * suc (proj₁ (comp-mono-metric W₂ E (wkn-cons ϖ)))
-      a1 = comp-mult-lemma W₂ e E (wkn-cons ϖ) csn (t i) (missing-t-cons i ϖ μ) nz
-
-      a2  :   ⟪ proj₁ (proj₂ (comp-mono-metric W₂ (with-i i ϖ μ e .proj₁) (wkn-cons (proj₂ (with-i i ϖ μ e))))) csn ⟫
-            ≤ ⟪ proj₁ (proj₂ (comp-mono-metric W₂ E (wkn-cons ϖ))) csn ⟫ + ⟪ proj₁ (proj₂ e) csn ⟫ * suc (ccount W₂ (elist-to-clist E) (wkn-to-wkc (wkn-cons ϖ)))
-      a2 = comp-mult-lemma W₂ e E (wkn-cons ϖ) csn (t i) (missing-t-cons i ϖ μ) nz
-
-      b1 : WkCW (wkc-cong {Y = A} {e = (ccount W₁ (elist-to-clist E) (wkn-to-wkc ϖ))} (wkn-to-wkc ϖ)) (wkc-cons (wkn-to-wkc ϖ))
-      b1 = wkcw-skip {cnt = (ccount W₁ (elist-to-clist E) (wkn-to-wkc ϖ))} wkcw-id
-
-      b2 : WkCW (wkc-cong {Y = A} {e = (ccount W₁ (elist-to-clist E) (wkn-to-wkc ϖ))} (wkn-to-wkc ϖ)) (wkn-to-wkc (wkn-cons ϖ))
-      b2 = subst (λ x → WkCW (wkc-cong {Y = A} {e = (ccount W₁ (elist-to-clist E) (wkn-to-wkc ϖ))} (wkn-to-wkc ϖ)) x) (wkc-cons-comm ϖ) b1
-
-      c2 : NonZeroList (suc (pred (ccount W₁ (elist-to-clist E) (wkn-to-wkc ϖ))) ∷ (elist-to-clist E))
-      c2 = suc-nz-list (ccount W₁ (elist-to-clist E) (wkn-to-wkc ϖ) ∸ 1) nz
-      c3 : NonZeroList ((ccount W₁ (elist-to-clist E) (wkn-to-wkc ϖ)) ∷ (elist-to-clist E))
-      c3 = subst (λ x → NonZeroList (x ∷ (elist-to-clist E))) (sym (pred-eq (ccount-non-zero W₁ (elist-to-clist E) nz (wkn-to-wkc ϖ)))) c2
-
-      ntp :   ccount W₂ (elist-to-clist E) (wkn-to-wkc (wkn-cons ϖ))
-            ≤ ccount W₂ ((ccount W₁ (elist-to-clist E) (wkn-to-wkc ϖ)) ∷ (elist-to-clist E)) (wkc-cong {Y = A} (wkn-to-wkc ϖ))
-      ntp = comp-wkcw-lemma W₂ ((ccount W₁ (elist-to-clist E) (wkn-to-wkc ϖ)) ∷ (elist-to-clist E)) (elist-to-clist E) c3 nz (wkc-cong (wkn-to-wkc ϖ)) (wkn-to-wkc (wkn-cons ϖ)) b2
-
+      n₁ = vcount M (elist-to-clist (proj₁ (with-i i ϖ μ e))) (wkn-to-wkc (proj₂ (with-i i ϖ μ e)))
+      n₂ = ⟪ proj₁ (proj₂ (val-mono-metric M (proj₁ (with-i i ϖ μ e)) (proj₂ (with-i i ϖ μ e)))) csn ⟫
+      n₃ = vcount M (elist-to-clist E) (wkn-to-wkc ϖ)
+      n₄ = ⟪ proj₁ (proj₂ (val-mono-metric M E ϖ)) csn ⟫
+      n₅ = proj₁ e * ⟪ proj₁ (proj₂ e) csn ⟫
+      a0 : n₁ * n₂ ≤ n₃ * (n₄ + n₅)
+      a0 = vcount-ineq M e E ϖ csn i μ nz
+      postulate b0 : n₁ * n₂ ≤ n₃ * (n₄ + n₅) → n₁ * (2+ n₂) ≤ n₃ * ((2+ n₄) + n₅)
     in
-    {!!}
-  {-
+    b0 a0
+  ccount-ineq (pm M W) e E ϖ csn i μ nz = {!!}
+  ccount-ineq (push W₁ W₂) e E ϖ csn i μ nz = {!!}
+  ccount-ineq (app M N) e E ϖ csn i μ nz = {!!}
+  ccount-ineq (var M) e E ϖ csn i μ nz = {!!}
+  ccount-ineq (sub W₁ W₂) e E ϖ csn i μ nz = {!!}
 
-  b1  = comp-mono-metric W₁ (proj₁ (with-i i ϖ μ e)) (proj₂ (with-i i ϖ μ e))
+{-
+  vcount-ineq :   (M : Val Γ Y) (e : EElem X) (E : EMetric) (ϖ : WkN Γ E) (csn : List (ℕ × ℕ))
+                    → (i : Γ ∋ X) → (μ : Missing-i i ϖ) → (NonZeroList (elist-to-clist E))
+                    →      (vcount M (elist-to-clist (proj₁ (with-i i ϖ μ e))) (wkn-to-wkc (proj₂ (with-i i ϖ μ e))))
+                         * ⟪ proj₁ (proj₂ (val-mono-metric M (proj₁ (with-i i ϖ μ e)) (proj₂ (with-i i ϖ μ e)))) csn ⟫
+                       ≤   (vcount M (elist-to-clist E) (wkn-to-wkc ϖ)) * ⟪ proj₁ (proj₂ (val-mono-metric M E ϖ)) csn ⟫
+                         + (vcount M (elist-to-clist E) (wkn-to-wkc ϖ)) * (proj₁ e) * ⟪ proj₁ (proj₂ e) csn ⟫
+  vcount-ineq M e E ϖ csn i μ nz = {!!}
 
-  Goal: ⟪ proj₁ (proj₂ (comp-mono-metric (push W₁ W₂) (proj₁ (with-i i ϖ μ e)) (proj₂ (with-i i ϖ μ e)))) csn ⟫
-      ≤
-        suc (⟪ proj₁ (proj₂ (comp-mono-metric W₁ E ϖ)) ((proj₁ (comp-mono-metric W₂ E (wkn-cons ϖ)) , ⟪ proj₁ (proj₂ (comp-mono-metric W₂ E (wkn-cons ϖ))) csn ⟫) ∷ csn) ⟫
-       + (⟪ proj₁ (proj₂ (comp-mono-metric W₁ E ϖ)) ((proj₁ (comp-mono-metric W₂ E (wkn-cons ϖ)) , ⟪ proj₁ (proj₂ (comp-mono-metric W₂ E (wkn-cons ϖ))) csn ⟫) ∷ csn) ⟫
-       + proj₁ (comp-mono-metric W₂ E (wkn-cons ϖ)) * ⟪ proj₁ (proj₂ (comp-mono-metric W₁ E ϖ)) ((proj₁ (comp-mono-metric W₂ E (wkn-cons ϖ)) , ⟪ proj₁ (proj₂ (comp-mono-metric W₂ E (wkn-cons ϖ))) csn ⟫) ∷ csn) ⟫)
-       + ⟪ (proj₁ (proj₂ (comp-mono-metric W₂ E (wkn-cons ϖ))) csn) ⟫
-       + ⟪ proj₁ (proj₂ e) csn ⟫ * suc (proj₁ (comp-mono-metric (push W₁ W₂) E ϖ)))
-
-   Rewritten Goal:
-        (suc ((2+ (ccount W₂ (elist-to-clist (proj₁ (with-i i ϖ μ e))) (wkn-to-wkc (wkn-cons (proj₂ (with-i i ϖ μ e))))))
-                   * (⟪ (proj₁ $ proj₂ (comp-mono-metric W₁ (proj₁ (with-i i ϖ μ e)) (proj₂ (with-i i ϖ μ e))))
-                                            (((ccount W₂ (elist-to-clist (proj₁ (with-i i ϖ μ e))) (wkn-to-wkc (wkn-cons (proj₂ (with-i i ϖ μ e))))) ,
-                                             ⟪ (proj₁ $ proj₂ (comp-mono-metric W₂ (proj₁ (with-i i ϖ μ e)) (wkn-cons (proj₂ (with-i i ϖ μ e))))) csn ⟫) ∷ csn)
-                      ⟫)))
-              + ⟪ (proj₁ $ proj₂ (comp-mono-metric W₂ (proj₁ (with-i i ϖ μ e)) (wkn-cons (proj₂ (with-i i ϖ μ e))))) csn ⟫
-
-      ≤
-        suc (⟪ proj₁ (proj₂ (comp-mono-metric W₁ E ϖ)) ((proj₁ (comp-mono-metric W₂ E (wkn-cons ϖ)) , ⟪ proj₁ (proj₂ (comp-mono-metric W₂ E (wkn-cons ϖ))) csn ⟫) ∷ csn) ⟫
-       + (⟪ proj₁ (proj₂ (comp-mono-metric W₁ E ϖ)) ((proj₁ (comp-mono-metric W₂ E (wkn-cons ϖ)) , ⟪ proj₁ (proj₂ (comp-mono-metric W₂ E (wkn-cons ϖ))) csn ⟫) ∷ csn) ⟫
-       + proj₁ (comp-mono-metric W₂ E (wkn-cons ϖ)) * ⟪proj₁ (proj₂ (comp-mono-metric W₁ E ϖ)) ((proj₁ (comp-mono-metric W₂ E (wkn-cons ϖ)) , ⟪ proj₁ (proj₂ (comp-mono-metric W₂ E (wkn-cons ϖ))) csn ⟫) ∷ csn) ⟫)
-       + ⟪ (proj₁ (proj₂ (comp-mono-metric W₂ E (wkn-cons ϖ))) csn) ⟫
-       + ⟪ proj₁ (proj₂ e) csn ⟫ * suc (proj₁ (comp-mono-metric (push W₁ W₂) E ϖ)))
-
-   STP:
-        (2+ (ccount W₂ (elist-to-clist (proj₁ (with-i i ϖ μ e))) (wkn-to-wkc (wkn-cons (proj₂ (with-i i ϖ μ e))))))
-                   * (⟪ (proj₁ $ proj₂ (comp-mono-metric W₁ (proj₁ (with-i i ϖ μ e)) (proj₂ (with-i i ϖ μ e))))
-                                            (((ccount W₂ (elist-to-clist (proj₁ (with-i i ϖ μ e))) (wkn-to-wkc (wkn-cons (proj₂ (with-i i ϖ μ e))))) ,
-                                             ⟪ (proj₁ $ proj₂ (comp-mono-metric W₂ (proj₁ (with-i i ϖ μ e)) (wkn-cons (proj₂ (with-i i ϖ μ e))))) csn ⟫) ∷ csn)
-                      ⟫)
-              + ⟪ (proj₁ $ proj₂ (comp-mono-metric W₂ (proj₁ (with-i i ϖ μ e)) (wkn-cons (proj₂ (with-i i ϖ μ e))))) csn ⟫
-
-      ≤
-        ⟪ proj₁ (proj₂ (comp-mono-metric W₁ E ϖ)) ((proj₁ (comp-mono-metric W₂ E (wkn-cons ϖ)) , ⟪ proj₁ (proj₂ (comp-mono-metric W₂ E (wkn-cons ϖ))) csn ⟫) ∷ csn) ⟫
-       + ⟪ proj₁ (proj₂ (comp-mono-metric W₁ E ϖ)) ((proj₁ (comp-mono-metric W₂ E (wkn-cons ϖ)) , ⟪ proj₁ (proj₂ (comp-mono-metric W₂ E (wkn-cons ϖ))) csn ⟫) ∷ csn) ⟫
-       + proj₁ (comp-mono-metric W₂ E (wkn-cons ϖ)) * ⟪proj₁ (proj₂ (comp-mono-metric W₁ E ϖ)) ((proj₁ (comp-mono-metric W₂ E (wkn-cons ϖ)) , ⟪ proj₁ (proj₂ (comp-mono-metric W₂ E (wkn-cons ϖ))) csn ⟫) ∷ csn) ⟫
-       + ⟪ (proj₁ (proj₂ (comp-mono-metric W₂ E (wkn-cons ϖ))) csn) ⟫
-       + ⟪ proj₁ (proj₂ e) csn ⟫ * suc (proj₁ (comp-mono-metric (push W₁ W₂) E ϖ))
-
-
-
-  -}
-  comp-mult-lemma (app M N) e E ϖ csn i μ = {!!}
-  comp-mult-lemma (var M) e E ϖ csn i μ = {!!}
-  comp-mult-lemma (sub W₁ W₂) e E ϖ csn i μ = {!!}
-
-{- BBBB
-
-BBBB -}
-
-
-  {-
-  comp-mult-lemma : (W : Comp (Γ ∙ X) Y) (e : EElem X) (E : EMetric) (ϖ : WkN Γ E) (csn : List (ℕ × ℕ))
-              →    ⟪ proj₁ (proj₂ (comp-mono-metric W ((X , e) ∷ E) (wkn-cong ϖ))) csn ⟫
-                ≤ (⟪ proj₁ (proj₂ (comp-mono-metric W E (wkn-cons ϖ))) csn ⟫ + ⟪ proj₁ (proj₂ e) csn ⟫ * suc (proj₁ (comp-mono-metric W E (wkn-cons ϖ))))
-  comp-mult-lemma (return M) e E ϖ csn = {!!}
-  comp-mult-lemma (pm M W) e E ϖ csn = {!!}
-  comp-mult-lemma {X = X} (push W₁ W₂) e E ϖ csn =
+  ccount-ineq :   (W : Comp Γ Y) (e : EElem X) (E : EMetric) (ϖ : WkN Γ E) (csn : List (ℕ × ℕ))
+                    → (i : Γ ∋ X) → (μ : Missing-i i ϖ) → (NonZeroList (elist-to-clist E))
+                    →      (ccount W (elist-to-clist (proj₁ (with-i i ϖ μ e))) (wkn-to-wkc (proj₂ (with-i i ϖ μ e))))
+                         * ⟪ proj₁ (proj₂ (comp-mono-metric W (proj₁ (with-i i ϖ μ e)) (proj₂ (with-i i ϖ μ e)))) csn ⟫
+                       ≤   (ccount W (elist-to-clist E) (wkn-to-wkc ϖ)) * ⟪ proj₁ (proj₂ (comp-mono-metric W E ϖ)) csn ⟫
+                         + (ccount W (elist-to-clist E) (wkn-to-wkc ϖ)) * (proj₁ e) * ⟪ proj₁ (proj₂ e) csn ⟫
+  ccount-ineq (return M) e E ϖ csn i μ nz =
     let
-      eq1 :   proj₁ (proj₂ (comp-mono-metric (push W₁ W₂) ((X , e) ∷ E) (wkn-cong ϖ))) csn
-            ≡ (incr (suc ((2+ (ccount W₂ (elist-to-clist ((X , e) ∷ E)) (wkn-to-wkc (wkn-cons (wkn-cong {e = e} ϖ)))))
-                   * (⟪ (proj₁ $ proj₂ (comp-mono-metric W₁ ((X , e) ∷ E) (wkn-cong ϖ))) (((ccount W₂ (elist-to-clist ((X , e) ∷ E)) (wkn-to-wkc (wkn-cons (wkn-cong {e = e} ϖ)))) ,
-                                                                     ⟪ (proj₁ $ proj₂ (comp-mono-metric W₂ ((X , e) ∷ E) (wkn-cons (wkn-cong ϖ)))) csn ⟫) ∷ csn) ⟫)))
-              ((proj₁ $ proj₂ (comp-mono-metric W₂ ((X , e) ∷ E) (wkn-cons (wkn-cong ϖ)))) csn))
-      eq1 = refl
-
-      a0 = comp-mult-lemma W₁ e E ϖ csn
-      --a0 = comp-mult-lemma W₂ e E (wkn-cons ϖ) csn
+      n₁ = vcount M (elist-to-clist (proj₁ (with-i i ϖ μ e))) (wkn-to-wkc (proj₂ (with-i i ϖ μ e)))
+      n₂ = ⟪ proj₁ (proj₂ (val-mono-metric M (proj₁ (with-i i ϖ μ e)) (proj₂ (with-i i ϖ μ e)))) csn ⟫
+      n₃ = vcount M (elist-to-clist E) (wkn-to-wkc ϖ)
+      n₄ = ⟪ proj₁ (proj₂ (val-mono-metric M E ϖ)) csn ⟫
+      n₅ = vcount M (elist-to-clist E) (wkn-to-wkc ϖ) * proj₁ e * ⟪ proj₁ (proj₂ e) csn ⟫
+      a0 : n₁ * n₂ ≤ n₃ * n₄ + n₅
+      a0 = vcount-ineq M e E ϖ csn i μ nz
+      postulate b0 : n₁ * n₂ ≤ n₃ * n₄ + n₅ → n₁ * (2+ n₂) ≤ n₃ * (2+ n₄) + n₅
     in
-    {!!}
-  {-
-  Goal: ⟪ proj₁ (proj₂ (comp-mono-metric (push W₁ W₂) ((X , e) ∷ E) (wkn-cong ϖ))) csn ⟫
-      ≤
-      suc (⟪ proj₁ (proj₂ (comp-mono-metric W₁ E (wkn-cons ϖ))) ((proj₁ (comp-mono-metric W₂ E (WkN.wkn-cons (wkn-cons ϖ))) ,
-         ⟪ proj₁ (proj₂ (comp-mono-metric W₂ E (WkN.wkn-cons (wkn-cons ϖ)))) csn ⟫) ∷ csn) ⟫
-       + (⟪ proj₁ (proj₂ (comp-mono-metric W₁ E (wkn-cons ϖ))) ((proj₁ (comp-mono-metric W₂ E (WkN.wkn-cons (wkn-cons ϖ))) ,
-          ⟪ proj₁ (proj₂ (comp-mono-metric W₂ E (WkN.wkn-cons (wkn-cons ϖ)))) csn ⟫) ∷ csn) ⟫
-        + proj₁ (comp-mono-metric W₂ E (WkN.wkn-cons (wkn-cons ϖ))) * ⟪ proj₁ (proj₂ (comp-mono-metric W₁ E (wkn-cons ϖ))) ((proj₁ (comp-mono-metric W₂ E (WkN.wkn-cons (wkn-cons ϖ))) ,
-          ⟪ proj₁ (proj₂ (comp-mono-metric W₂ E (WkN.wkn-cons (wkn-cons ϖ)))) csn ⟫) ∷ csn)⟫)
-       + ⟪ (proj₁ (proj₂ (comp-mono-metric W₂ E (WkN.wkn-cons (wkn-cons ϖ)))) csn) ⟫
-       + ⟪ proj₁ (proj₂ e) csn ⟫ * suc (proj₁ (comp-mono-metric (push W₁ W₂) E (wkn-cons ϖ))))
-
-   Rewritten Goal: 
-
-      (suc ((2+ (ccount W₂ (elist-to-clist ((X , e) ∷ E)) (wkn-to-wkc (wkn-cons (wkn-cong {e = e} ϖ)))))
-                   * (⟪ (proj₁ $ proj₂ (comp-mono-metric W₁ ((X , e) ∷ E) (wkn-cong ϖ))) (((ccount W₂ (elist-to-clist ((X , e) ∷ E)) (wkn-to-wkc (wkn-cons (wkn-cong {e = e} ϖ)))) ,
-                                                                     ⟪ (proj₁ $ proj₂ (comp-mono-metric W₂ ((X , e) ∷ E) (wkn-cons (wkn-cong ϖ)))) csn ⟫) ∷ csn) ⟫)))
-       ⟪ (proj₁ $ proj₂ (comp-mono-metric W₂ ((X , e) ∷ E) (wkn-cons (wkn-cong ϖ)))) csn)) ⟫
-
-      ≤
-      suc (⟪ proj₁ (proj₂ (comp-mono-metric W₁ E (wkn-cons ϖ))) ((proj₁ (comp-mono-metric W₂ E (WkN.wkn-cons (wkn-cons ϖ))) ,
-         ⟪ proj₁ (proj₂ (comp-mono-metric W₂ E (WkN.wkn-cons (wkn-cons ϖ)))) csn ⟫) ∷ csn) ⟫
-       + (⟪ proj₁ (proj₂ (comp-mono-metric W₁ E (wkn-cons ϖ))) ((proj₁ (comp-mono-metric W₂ E (WkN.wkn-cons (wkn-cons ϖ))) ,
-          ⟪ proj₁ (proj₂ (comp-mono-metric W₂ E (WkN.wkn-cons (wkn-cons ϖ)))) csn ⟫) ∷ csn) ⟫
-        + proj₁ (comp-mono-metric W₂ E (WkN.wkn-cons (wkn-cons ϖ))) * ⟪ proj₁ (proj₂ (comp-mono-metric W₁ E (wkn-cons ϖ))) ((proj₁ (comp-mono-metric W₂ E (WkN.wkn-cons (wkn-cons ϖ))) ,
-          ⟪ proj₁ (proj₂ (comp-mono-metric W₂ E (WkN.wkn-cons (wkn-cons ϖ)))) csn ⟫) ∷ csn)⟫)
-       + ⟪ (proj₁ (proj₂ (comp-mono-metric W₂ E (WkN.wkn-cons (wkn-cons ϖ)))) csn) ⟫
-       + ⟪ proj₁ (proj₂ e) csn ⟫ * suc (proj₁ (comp-mono-metric (push W₁ W₂) E (wkn-cons ϖ))))
-
-  ----------------
-      (incr (suc ((2+ (ccount W₂ (elist-to-clist E) (wkn-to-wkc (wkn-cons ϖ))))
-                   * (⟪ (proj₁ $ proj₂ (comp-mono-metric W₁ E ϖ)) (((ccount W₂ (elist-to-clist E) (wkn-to-wkc (wkn-cons ϖ))) ,
-                                                                     ⟪ (proj₁ $ proj₂ (comp-mono-metric W₂ E (wkn-cons ϖ))) csn ⟫) ∷ csn) ⟫)))
-        ((proj₁ $ proj₂ (comp-mono-metric W₂ E (wkn-cons ϖ))) csn))
-  -}
-  comp-mult-lemma (app M N) e E ϖ csn = {!!}
-  comp-mult-lemma (var M) e E ϖ csn = {!!}
-  comp-mult-lemma (sub W₁ W₂) e E ϖ csn = {!!}
-  -}
-
-  {-
-  val-mult-lemma : (N : Val (Γ' ∙ X) Y) (e : EElem X) (E : EMetric) (E' : EMetric) (π : Wk Γ Γ') (ϖ : WkN Γ E) (ϖ' : WkN Γ' E') (csn : List (ℕ × ℕ))
-              →    ⟪ proj₁ (proj₂ (val-mono-metric (wk-val (wk-cong π) N) ((X , e) ∷ E) (wkn-cong ϖ))) csn ⟫
-                ≤ (⟪ proj₁ (proj₂ (val-mono-metric N E' (wkn-cons ϖ'))) csn ⟫ + ⟪ proj₁ (proj₂ e) csn ⟫ * suc (proj₁ (val-mono-metric N E' (wkn-cons ϖ'))))
-  val-mult-lemma N e E E' π ϖ ϖ' csn = {!!}
-
-  comp-mult-lemma : (W : Comp (Γ' ∙ X) Y) (e : EElem X) (E : EMetric) (E' : EMetric) (π : Wk Γ Γ') (ϖ : WkN Γ E) (ϖ' : WkN Γ' E') (csn : List (ℕ × ℕ))
-              →    ⟪ proj₁ (proj₂ (comp-mono-metric (wk-comp (wk-cong π) W) ((X , e) ∷ E) (wkn-cong ϖ))) csn ⟫
-                ≤ (⟪ proj₁ (proj₂ (comp-mono-metric W E' (wkn-cons ϖ'))) csn ⟫ + ⟪ proj₁ (proj₂ e) csn ⟫ * suc (proj₁ (comp-mono-metric W E' (wkn-cons ϖ'))))
-
-  comp-mult-lemma (return M) e E E' π ϖ ϖ' csn = {!E E' π ϖ ϖ'!}
-
-  comp-mult-lemma (pm M W) e E E' π ϖ ϖ' csn = {!!}
-  comp-mult-lemma (push W₁ W₂) e E E' π ϖ ϖ' csn =
-    let
-      a1 = comp-mult-lemma W₁ e E E' π ϖ ϖ' csn
-      a2 = comp-mult-lemma W₂ {!!} E E' {!!} {!!} {!!} csn
-    in
-    {!!}
-  {-
-
-    Goal: ⟪ proj₁ (proj₂ (comp-mono-metric (push (wk-comp (wk-cong π) W₁) (wk-comp (wk-cong (wk-cong π)) W₂)) ((X , e) ∷ E) (wkn-cong ϖ))) csn ⟫
-          ≤
-          suc (⟪ proj₁ (proj₂ (comp-mono-metric W₁ E' (wkn-cons ϖ'))) ((proj₁ (comp-mono-metric W₂ E' (WkN.wkn-cons (wkn-cons ϖ'))) , ⟪ proj₁ (proj₂ (comp-mono-metric W₂ E' (WkN.wkn-cons (wkn-cons ϖ')))) csn ⟫) ∷ csn) ⟫
-          + (⟪ proj₁ (proj₂ (comp-mono-metric W₁ E' (wkn-cons ϖ'))) ((proj₁ (comp-mono-metric W₂ E' (WkN.wkn-cons (wkn-cons ϖ'))) , ⟪ proj₁ (proj₂ (comp-mono-metric W₂ E' (WkN.wkn-cons (wkn-cons ϖ')))) csn ⟫) ∷ csn) ⟫
-          + proj₁ (comp-mono-metric W₂ E' (WkN.wkn-cons (wkn-cons ϖ'))) * ⟪ proj₁ (proj₂ (comp-mono-metric W₁ E' (wkn-cons ϖ'))) ((proj₁ (comp-mono-metric W₂ E' (WkN.wkn-cons (wkn-cons ϖ'))) , ⟪ proj₁ (proj₂ (comp-mono-metric W₂ E' (WkN.wkn-cons (wkn-cons ϖ')))) csn ⟫) ∷ csn) ⟫)
-          + ⟪ (proj₁ (proj₂ (comp-mono-metric W₂ E' (WkN.wkn-cons (wkn-cons ϖ')))) csn) ⟫
-          + ⟪ proj₁ (proj₂ e) csn ⟫ * suc (proj₁ (comp-mono-metric (push W₁ W₂) E' (wkn-cons ϖ'))))
-
-  -}
-  comp-mult-lemma (app M N) e E E' π ϖ ϖ' csn = {!!}
-  comp-mult-lemma (var M) e E E' π ϖ ϖ' csn = {!!}
-  comp-mult-lemma (sub W₁ W₂) e E E' π ϖ ϖ' csn = {!!}
-  -}
+    b0 a0
+  ccount-ineq (pm M W) e E ϖ csn i μ nz = {!!}
+  ccount-ineq (push W₁ W₂) e E ϖ csn i μ nz = {!!}
+  ccount-ineq (app M N) e E ϖ csn i μ nz = {!!}
+  ccount-ineq (var M) e E ϖ csn i μ nz = {!!}
+  ccount-ineq (sub W₁ W₂) e E ϖ csn i μ nz = {!!}
+-}
 
 -------------------------------------------------------------------------------------------------
 --  val-metric-decreasing : {Q₁ : ValState X} → {Q₂ : ValState X} → (Q₁→ᶜQ₂ : Q₁ ↠ᵛ Q₂) → (csn : List (ℕ × ℕ)) → suc ⟪ valstate-metric Q₂ csn ⟫ ≤ ⟪ valstate-metric Q₁ csn ⟫
 --  val-metric-decreasing = {!!}
 
-{- AAAAAAAA
 
   comp-metric-decreasing : {Q₁ : CompState} → {Q₂ : CompState} → (Q₁→ᶜQ₂ : Q₁ →ᶜ Q₂) → (suc (compstate-metric Q₂) ≤ (compstate-metric Q₁))
   comp-metric-decreasing (∘return {M = M} {γ = γ} {π = π} {M' = M'} {γ' = γ'} {cs = cs} {VS>VT = VS>VT} M→M') =
@@ -1030,6 +887,11 @@ a1 = comp-mono-metric (wk-comp (wk-cong π) N) ((X , v̲a̲l̲-mono-metric M E �
 b1 = v̲a̲l̲-mono-metric M E ϖ
 
            ⟪ proj₁ (proj₂ (comp-mono-metric (wk-comp (wk-cong π) N) ((X , b1) ∷ E) (WkN.wkn-cong ϖ))) csn ⟫
+           ≤ (⟪ proj₁ (proj₂ (comp-mono-metric N E' (WkN.wkn-cons ϖ'))) csn ⟫ + ⟪ proj₁ (proj₂ b1) csn ⟫ * suc (proj₁ (comp-mono-metric N E' (WkN.wkn-cons ϖ'))))
+
+STP:
+
+           ⟪ proj₁ (proj₂ (comp-mono-metric N ((X , b1) ∷ E') (WkN.wkn-cong ϖ'))) csn ⟫
          ≤ (⟪ proj₁ (proj₂ (comp-mono-metric N E' (WkN.wkn-cons ϖ'))) csn ⟫ + ⟪ proj₁ (proj₂ b1) csn ⟫ * suc (proj₁ (comp-mono-metric N E' (WkN.wkn-cons ϖ'))))
 
 
@@ -1902,6 +1764,8 @@ STP: ⟪ proj₁ (a1) csn' ⟫ ≤ ⟪ proj₁ (a2) csn ⟫
     comp-eval-test-metric W with comp-eval W
     ... | steps _ _ _ l = l
 
+{- BB
+
 postulate k₀ : ⟦ `Unit ⟧ → R
 
 open VMain {R₀ = `Unit} k₀
@@ -2068,10 +1932,60 @@ ex15 : ε ⊢ᶜ (`Unit)
 --ex15 = push (push (app (lam {A = `Unit} (return unit)) unit) (return unit)) (app (lam (return unit)) (pair (pair (pair (var h) (var h)) (var h)) (var h)))
 ex15 = push (push (app (lam {A = `Unit} (sub (var (var h)) (return unit))) unit) (return unit)) (return unit)
 
+BB -}
+
+R₀ = (`Unit `× `Unit) `× (`Unit `× `Unit)
+postulate k₀ : ⟦ R₀ ⟧ → R
+
+open VMain {R₀ = R₀} k₀
+open CMain {R₀ = R₀} k₀
+
+csn1 = cs-to-csn ◻
+E  = env-mono-metric ∗
+
+ex161 : ε ⊢ᵛ (`Unit `⇒ `Unit)
+ex161 = (lam {A = `Unit} (return (pm (pair (var h) (var h)) (pm (pair (var h) (var h)) unit))))
+exB : ε ⊢ᵛ (`Unit `⇒ R₀)
+exB = (lam {A = `Unit} (return ((pair (pair (var h) (var h)) (pair (var h) (var h))))))
+exBcnt = {!(proj₁ (val-mono-metric exB (proj₁ E) (proj₂ E)))!}
+exBval = {!⟪ proj₁ (proj₂ (val-mono-metric exB (proj₁ E) (proj₂ E)))  csn1 ⟫!}
+
+exB' : V̲a̲l̲ ε (`Unit `⇒ R₀)
+exB' = (l̲a̲m̲ {X = `Unit} (return ((pair (pair (var h) (var h)) (pair (var h) (var h))))))
+
+E' = env-mono-metric (∗ ﹐ exB')
+
+exM : (ε ∙ (`Unit `⇒ R₀)) ⊢ᵛ (`Unit `⇒ R₀)
+exM = var h
+exMcnt = {!(proj₁ (val-mono-metric exM (proj₁ E) (wkn-cons (proj₂ E))))!}
+exMval = {!⟪ proj₁ (proj₂ (val-mono-metric exM (proj₁ E) (wkn-cons (proj₂ E))))  csn1 ⟫!}
+exMcnt' = {!(proj₁ (val-mono-metric exM (proj₁ E') (proj₂ E')))!}
+exMval' = {!⟪ proj₁ (proj₂ (val-mono-metric exM (proj₁ E') (proj₂ E')))  csn1 ⟫!}
+
+exN : (ε ∙ (`Unit `⇒ R₀)) ⊢ᵛ `Unit
+exN = pm (pair (var h) (var h)) unit
+exNval = {!⟪ proj₁ (proj₂ (val-mono-metric exN (proj₁ E') (proj₂ E')))  csn1 ⟫!}
+exNcnt' = {!(proj₁ (val-mono-metric exN (proj₁ E') (proj₂ E')))!}
+exNval' = {!⟪ proj₁ (proj₂ (val-mono-metric exN (proj₁ E') (proj₂ E')))  csn1 ⟫!}
+
+exMN : (ε ∙ (`Unit `⇒ R₀)) ⊢ᶜ R₀
+exMN = app exM exN -- (var h) (pm (pair (var h) (var h)) unit)
+
+exλMN : ε ⊢ᵛ ((`Unit `⇒ R₀) `⇒ R₀)
+exλMN = lam exMN
+exλMNcnt = {!(proj₁ (val-mono-metric exλMN (proj₁ E) (proj₂ E)))!}
+exλMNval = {!⟪ proj₁ (proj₂ (val-mono-metric exλMN (proj₁ E) (proj₂ E)))  csn1 ⟫!}
+
+exMNcnt = {!(proj₁ (comp-mono-metric exMN (proj₁ E') (proj₂ E')))!}
+exMNval = {!⟪ proj₁ (proj₂ (comp-mono-metric exMN (proj₁ E') (proj₂ E')))  csn1 ⟫!}
+
+ex16 : ε ⊢ᶜ R₀
+ex16 = (app exλMN exB)
+
 --  88 ∷ 347 ∷ 102 ∷ 100 ∷ 96 ∷ 91 ∷ 46 ∷ 44 ∷ 42 ∷ 32 ∷ 26 ∷ 14 ∷ 4 ∷ 2 ∷ []
 -- 304 ∷ 347 ∷ 102 ∷ 100 ∷ 96 ∷ 91 ∷ 46 ∷ 44 ∷ 42 ∷ 32 ∷ 26 ∷ 14 ∷ 4 ∷ 2 ∷ []
 -- 1109 ∷ 1108 ∷ 662 ∷ 648 ∷ 620 ∷ 585 ∷ 74 ∷ 60 ∷ 46 ∷ 34 ∷ 26 ∷ 14 ∷ 4 ∷ 2 ∷ []
-_ : comp-eval-test-metric ex11 ≡ {! comp-eval-test-metric ex15 !}
+_ : comp-eval-test-metric ex16 ≡ {! comp-eval-test-metric ex16 !}
 _ = let
       -- tm = push (push (app (lam {A = `Unit} (sub (var (var h)) (return unit))) unit) (return unit)) (app (lam (return unit)) (pair (pair (pair (var h) (var h)) (var h)) (var h)))
       -- tmR = (app (lam (return unit)) (pair (pair (pair (var h) (var h)) (var h)) (var h)))
@@ -2135,5 +2049,3 @@ _ = refl
 -- Goal: csn-to-nat₀       9    [] ≤ suc (  9 + n₁ * zero + csn-to-nat₀ (suc (fst + n₁ * zero)) csn₁)
 -}
 
-
-AAAAAAAA -}
