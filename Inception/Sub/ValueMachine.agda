@@ -1,10 +1,12 @@
+{-# OPTIONS --no-postfix-projections #-}
+
 module Inception.Sub.ValueMachine (R : Set) where
 
-open import Data.Product using (proj₁; proj₂; _,_; <_,_>; curry)
-open import Function.Base using (const)
+open import Data.Product using (proj₁; proj₂; _,_; <_,_>; curry; _×_; Σ; ∃; Σ-syntax; ∃-syntax)
+open import Function.Base using (const; _∘_; _$_)
 
 import Relation.Binary.PropositionalEquality as Eq
-open Eq using (_≡_; refl; cong; sym; trans)
+open Eq using (_≡_; refl; cong; cong₂; cong-app; dcong₂; sym; trans; subst; subst₂)
 open Eq.≡-Reasoning
 
 open import Inception.Sub.Syntax
@@ -12,10 +14,110 @@ open import Inception.Sub.CPS R
 
 open import Data.Unit
 open import Data.Nat
+open import Data.List using (List; _∷_; []; _++_)
+
+import Relation.Binary.HeterogeneousEquality as H
 
 variable
   X X' Y Y' Z Z' T◾ T◾' : Ty
   Γ' Γ'' Δ' : Ctx
+  n m n₁ n₂ n₃ n₄ m₁ m₂ m₃ m₄ : ℕ
+
+≤-trans : n₁ ≤ n₂ → n₂ ≤ n₃ → n₁ ≤ n₃
+≤-trans {n₁ = zero} {n₂ = n₂} {n₃ = n₃} n₁≤n₂ n₂≤n₃ = z≤n
+≤-trans {n₁ = suc n₁} {n₂ = suc n₂} {n₃ = suc n₃} (s≤s n₁≤n₂) (s≤s n₂≤n₃) = s≤s (≤-trans n₁≤n₂ n₂≤n₃)
+
+≤-refl : n ≤ n
+≤-refl {n = zero} = z≤n
+≤-refl {n = suc n} = s≤s ≤-refl
+
+n≤sn : n ≤ suc n
+n≤sn {n = zero} = z≤n
+n≤sn {n = suc n} = s≤s n≤sn
+
+n≤sm : n ≤ m → n ≤ suc m
+n≤sm {n = zero} {m = zero} n≤m = n≤sn
+n≤sm {n = zero} {m = suc m} n≤m = z≤n
+n≤sm {n = suc n} {m = suc m} (s≤s n≤m) = s≤s (≤-trans n≤sn (s≤s n≤m))
+
+p≤p : suc n ≤ suc m → n ≤ m
+p≤p (s≤s sn≤sm) = sn≤sm
+
+p≤n : suc n ≤ m → n ≤ m
+p≤n {m = suc m} (s≤s sn≤m) = n≤sm sn≤m
+
+--pred' : suc n ≤ m → Σ[ p ∈ ℕ ] ( m ≡ suc p )
+--pred' {n = n} {m = m} sn≤m = {!sn≤m!}
+
+pred-eq : suc n ≤ m → m ≡ suc (pred m)
+pred-eq {n = zero} {m = suc m} sn≤m = refl
+pred-eq {n = suc n} {m = suc m} sn≤m = refl
+
+n+z : (n : ℕ) → n + zero ≡ n
+n+z zero = refl
+n+z (suc n) = cong suc (n+z n)
+
+--{-# REWRITE n+z #-}
+
+-----------------------------------------------------
+
++-assoc : {n₁ n₂ n₃ : ℕ} → n₁ + n₂ + n₃ ≡ n₁ + (n₂ + n₃)
++-assoc {zero} {n₂} {n₃} = refl
++-assoc {suc n₁} {n₂} {n₃} rewrite +-assoc {n₁} {n₂} {n₃} = refl
+
++-comm : n + m ≡ m + n
++-comm {n = zero} {m = zero} = refl
++-comm {n = zero} {m = suc m} = cong suc (+-comm {n = zero} {m = m})
++-comm {n = suc n} {m = zero} = cong suc (+-comm {n = n} {m = zero})
++-comm {n = suc n} {m = suc m} rewrite +-comm {n = n} {m = suc m} | +-comm {n = m} {m = suc n} | +-comm {n = m} {m = n} = refl
+
+*-comm : n * m ≡ m * n
+*-comm {n = zero} {m = zero} = refl
+*-comm {n = zero} {m = suc m} = *-comm {n = zero} {m = m}
+*-comm {n = suc n} {m = zero} = *-comm {n = n} {m = zero}
+*-comm {n = suc n} {m = suc m}
+  rewrite *-comm {n = n} {m = suc m} | *-comm {n = m} {m = suc n}
+    | *-comm {n = n} {m = m}
+    | sym (+-assoc {n₁ = m} {n₂ = n} {n₃ = m * n})
+    | sym (+-assoc {n₁ = n} {n₂ = m} {n₃ = m * n})
+    | +-comm {n = n} {m = m}
+    = refl
+
+-----------------------------------------------------
+
++-≤-cong : (n₁ ≤ n₃) → (n₂ ≤ n₄) → (n₁ + n₂ ≤ n₃ + n₄)
++-≤-cong z≤n z≤n = z≤n
++-≤-cong {n₃ = n₃} z≤n (s≤s {m = m} {n = n} n₂≤n₄) rewrite +-comm {n = n₃} {m = suc n} | +-comm {n = n} {m = n₃} = s≤s (+-≤-cong z≤n n₂≤n₄)
++-≤-cong (s≤s n₁≤n₃) n₂≤n₄ = s≤s (+-≤-cong n₁≤n₃ n₂≤n₄)
+
+snm : suc (n + m) ≡ n + (suc m)
+snm {n = zero} {m = m} = refl
+snm {n = suc n} {m = m} = cong suc snm
+
++-≤-cong-rev-left : (n + m₁ ≤ n + m₂) → (m₁ ≤ m₂)
++-≤-cong-rev-left {n = zero} m₁≤m₂ = m₁≤m₂
++-≤-cong-rev-left {n = suc n} {m₁ = m₁} {m₂ = m₂} m₁≤m₂ rewrite snm {n = n} {m = m₁} | snm {n = n} {m = m₂} = p≤p (+-≤-cong-rev-left m₁≤m₂)
+
+*-≤-cong : (n₁ ≤ n₃) → (n₂ ≤ n₄) → (n₁ * n₂ ≤ n₃ * n₄)
+*-≤-cong z≤n z≤n = z≤n
+*-≤-cong z≤n (s≤s n₂≤n₄) = z≤n
+*-≤-cong (s≤s {m = m} n₁≤n₃) z≤n rewrite *-comm {n = m} {m = zero} = z≤n
+*-≤-cong (s≤s n₁≤n₃) (s≤s n₂≤n₄) = s≤s (+-≤-cong n₂≤n₄ (*-≤-cong n₁≤n₃ (s≤s n₂≤n₄)))
+
+n≤n+m : n ≤ n + m
+n≤n+m {n = zero} {m = m} = z≤n
+n≤n+m {n = suc n} {m = m} = s≤s n≤n+m
+
+n≤m+n : n ≤ m + n
+n≤m+n {n = n} {m = m} rewrite +-comm {n = m} {m = n} = n≤n+m
+
+n*sm≡n+n*m : (n : ℕ) → (m : ℕ) → n * suc m ≡ n + n * m
+n*sm≡n+n*m n m rewrite *-comm {n = n} {m = suc m} | *-comm {n = n} {m = m} = refl
+
+n*sm≡n+m*n : (n : ℕ) → (m : ℕ) → n * suc m ≡ n + m * n
+n*sm≡n+m*n n m rewrite *-comm {n = n} {m = suc m} = refl
+
+-----------------------------------------------------
 
 module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
@@ -119,11 +221,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   ⟦ E ﹐ M ⟧ᴱ = ⟦ E ⟧ᴱ , ⟦ toVal M ⟧ᵛ ⟦ E ⟧ᴱ
   ⟦ E ﹐﹝ W ╎ cs ﹞ ⟧ᴱ = ⟦ E ⟧ᴱ , ⟦ W ⟧ᶜ ⟦ E ⟧ᴱ ⟦ cs ⟧ᴷ
 
-  -- ⟦ ◻ ⟧ᶜˢ W = W
   ⟦ ◻ ⟧ᶜˢ = idf
-  -- ⟦ W₁ ⊲ γ₁ ⦂⦂ tail ⟧ᶜˢ W =  ⟦ tail ⟧ᶜˢ (( ⟦ W₁ ⟧ᶜ ♯)(τ (⟦ γ₁ ⟧ᴱ , W)))
-  -- ⟦ W₁ ⊲ γ₁ ⦂⦂ tail ⟧ᶜˢ =  ⟦ tail ⟧ᶜˢ ∘ (⟦ W₁ ⟧ᶜ ♯) ∘ τ ∘ < ⟦ γ₁ ⟧ᴱ , idf >
-  -- ⟦ W₁ ⊲ γ₁ ⦂⦂ tail ⟧ᶜˢ W = (τ ； (⟦ W₁ ⟧ᶜ ♯) ； ⟦ tail ⟧ᶜˢ) (⟦ γ₁ ⟧ᴱ , W)
   ⟦ W₁ ⊲ γ₁ ⦂⦂ tail ⟧ᶜˢ = < const ⟦ γ₁ ⟧ᴱ , idf > ； τ ； (⟦ W₁ ⟧ᶜ ♯) ； ⟦ tail ⟧ᶜˢ
 
 
@@ -179,23 +277,71 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
         found-comp : {W : Γ ⊢ᶜ X} → {γ : Env Γ} → {cs : CompStack Δ X} → {π : Wk Γ Δ} → {wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ} → LookupHaltingState ⟨ h ∥ (_﹐﹝_╎_﹞ γ W cs {π = π} {wk≡ = wk≡}) ⟩
 
+  postulate
+    extensionality : ∀ {A B : Set} {f g : A → B}
+      → (∀ (x : A) → f x ≡ g x)
+        -----------------------
+      → f ≡ g
+
+  -- https://stackoverflow.com/questions/56304634/is-functional-extensionality-with-dependent-functions-consistent
+  extensionality' : ∀ {A : Set}{B : A → Set}{f g : ∀ a → B a} → (∀ x → f x ≡ g x) → f ≡ g
+  extensionality' {A}{B}{f}{g} e =
+      H.≅-to-≡ (H.cong (λ f x → proj₂ (f x)) (H.≡-to-≅ (extensionality λ a → cong (a ,_) (e a))))
+
+  ≤-uniq : {n₁ n₂ : ℕ} → (n₁≤n₂ : n₁ ≤ n₂) → (n₁≤n₂' : n₁ ≤ n₂) → n₁≤n₂ ≡ n₁≤n₂'
+  ≤-uniq z≤n z≤n = refl
+  ≤-uniq (s≤s n₁≤n₂) (s≤s n₁≤n₂') = cong s≤s (≤-uniq n₁≤n₂ n₁≤n₂')
+
+  data ⊥ : Set where
+
+  ql : ⊥ → (A : Set) → A
+  ql () b
+
+  wk-prev : Wk (Γ ∙ X) (Δ ∙ Y) → Wk Γ Δ
+  wk-prev (wk-cong π) = π
+  wk-prev (wk-wk π) = wk-trans π (wk-wk wk-id)
+
+  wk-absurd : Wk Γ (Δ ∙ A) → Wk Δ Γ → ⊥
+  wk-absurd {Γ = Γ} {Δ = Δ} (wk-cong π) (wk-cong π') = wk-absurd π π'
+  wk-absurd {Γ = Γ} {Δ = Δ} (wk-cong π) (wk-wk π') = wk-absurd (wk-trans π' (wk-wk π)) wk-id
+  wk-absurd {Γ = Γ} {Δ = Δ} (wk-wk π) (wk-cong π') = wk-absurd π (wk-wk π')
+  wk-absurd {Γ = Γ} {Δ = Δ} (wk-wk π) (wk-wk π') = wk-absurd π (wk-wk (wk-prev {X = R₀} (wk-wk π')))
+
+  wk-id-id : {π : Wk Γ Γ} → π ≡ wk-id
+  wk-id-id {π = wk-ε} = refl
+  wk-id-id {π = wk-cong π} rewrite wk-id-id {π = π} = refl
+  wk-id-id {π = wk-wk π} = ql (wk-absurd π wk-id) (wk-wk π ≡ wk-id)
+
+  p-eq-p : suc n ≡ suc m → n ≡ m
+  p-eq-p {n = zero} {m = zero} n≡m = refl
+  p-eq-p {n = suc n} {m = suc m} refl = refl
+
+  eq-to-ineq : n ≡ m → n ≤ m
+  eq-to-ineq {n = zero} {m = zero} refl = z≤n
+  eq-to-ineq {n = zero} {m = suc m} ()
+  eq-to-ineq {n = suc n} {m = zero} ()
+  eq-to-ineq {n = suc n} {m = suc m} refl = s≤s (eq-to-ineq refl)
+
+  --------------------------------------------------------------------
 
   data LookupSteps : LookupState X → Set where
 
-    steps : {S T : LookupState X} → S →ᴸ* T → LookupHaltingState T → ⟦ S ⟧ᴸ ≡ ⟦ T ⟧ᴸ → (π : Wk (lCtx S) (lTCtx T)) → (⟦ π ⟧ʷ ⟦ lEnv S ⟧ᴱ ≡ ⟦ lTEnv T ⟧ᴱ) → LookupSteps S
+    steps : {S T : LookupState X} → S →ᴸ* T → (H : LookupHaltingState T) → ⟦ S ⟧ᴸ ≡ ⟦ T ⟧ᴸ → (π : Wk (lCtx S) (lTCtx T)) → (⟦ π ⟧ʷ ⟦ lEnv S ⟧ᴱ ≡ ⟦ lTEnv T ⟧ᴱ)
+            → LookupSteps S
 
   lookup : (i : Γ ∋ X) → (γ : Env Γ) → LookupSteps {X = X} ⟨ i ∥ γ ⟩
   lookup h (γ ﹐ l̲a̲m̲ W) = steps (⟨ h ∥ _﹐_ γ (l̲a̲m̲ W) ⟩ ◼) found-lam refl (wk-wk wk-id) refl
   lookup h (γ ﹐ pa̲i̲r̲ LHS RHS) = steps (⟨ h ∥ _﹐_ γ (pa̲i̲r̲ LHS RHS) ⟩ ◼) found-pair refl (wk-wk wk-id) refl
   lookup h (γ ﹐ u̲n̲i̲t̲) = steps (⟨ h ∥ _﹐_ γ (u̲n̲i̲t̲) ⟩ ◼) found-unit refl (wk-wk wk-id) refl
   lookup h (γ ﹐ v̲a̲r̲ i) with lookup i γ
-  ... | steps i>>T HT i≡T WK w≡γ = steps (_ →ᴸ⟨ val-h-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ
-  lookup h (γ ﹐﹝ W ╎ cs ﹞ ) = steps (⟨ h ∥ γ ﹐﹝ W ╎ cs ﹞ ⟩ ◼) found-comp refl (wk-wk wk-id) refl
+  ... | steps {T = T} i>>T HT i≡T WK w≡γ = steps (_ →ᴸ⟨ val-h-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ
+  lookup h ((γ ﹐﹝ W ╎ cs ﹞ ) {π = π} {wk≡ = wk≡}) =
+      steps (⟨ h ∥ γ ﹐﹝ W ╎ cs ﹞ ⟩ ◼) found-comp refl (wk-wk wk-id) refl
   lookup (t i) (γ ﹐ M) with lookup i γ
-  ... | steps i>>T HT i≡T WK w≡γ = steps (_ →ᴸ⟨ val-t-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ
+  ... | steps {T = T} i>>T HT i≡T WK w≡γ = steps (_ →ᴸ⟨ val-t-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ
   lookup (t i) (γ ﹐﹝ W ╎ cs ﹞) with lookup i γ
-  ... | steps i>>T HT i≡T WK w≡γ = steps (_ →ᴸ⟨ comp-t-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ
-
+  ... | steps {T = T} i>>T HT i≡T WK w≡γ =
+      steps (_ →ᴸ⟨ comp-t-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ
 
   -- Value Machine
   ------------------------------------------------------------------------------
@@ -339,38 +485,48 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   ⟦ ∘ tail ⟧ᵛꟴ = ⟦ tail ⟧ᵛˢ
   ⟦ ∙ tail ⟧ᵛꟴ = ⟦ tail ⟧ᵛˢ
 
+  topStackCtx : (S : ValStack non-empty T◾) → Ctx
+  topStackCtx (_⊲_∷_ {Γ = Γ} _ _ _) = Γ
+
   topCtx : ValState T◾ → Ctx
-  topCtx (∘ ⭭_ {Γ = Γ} x ⊲ γ ∷ x₁) = Γ
-  topCtx (∘ ⇡_ {Γ = Γ} M ⊲ γ ∷ x₁) = Γ
-  topCtx (∘ ⇡ᴹ {Γ = Γ} M N ⊲ γ ∷ x₁) = Γ
-  topCtx (∘ ⇡ᴸ {Γ = Γ} LHS RHS ⊲ γ ∷ x₁) = Γ
-  topCtx (∘ ⇡ᴿ {Γ = Γ} LHS RHS ⊲ γ ∷ x₁) = Γ
-  topCtx (∙ ⭭_ {Γ = Γ} x ⊲ γ ∷ x₁) = Γ
-  topCtx (∙ ⇡_ {Γ = Γ} M ⊲ γ ∷ x₁) = Γ
-  topCtx (∙ ⇡ᴹ {Γ = Γ} M N ⊲ γ ∷ x₁) = Γ
-  topCtx (∙ ⇡ᴸ {Γ = Γ} LHS RHS ⊲ γ ∷ x₁) = Γ
-  topCtx (∙ ⇡ᴿ {Γ = Γ} LHS RHS ⊲ γ ∷ x₁) = Γ
+  topCtx (∘ S) = topStackCtx S
+  topCtx (∙ S) = topStackCtx S
+
+  topStackEnv : (S : ValStack non-empty T◾) → Env (topStackCtx S)
+  topStackEnv (_⊲_∷_ _ γ _) = γ
 
   topEnv : (S : ValState T◾) → Env (topCtx S)
-  topEnv (∘ ⭭ x ⊲ γ ∷ x₁) = γ
-  topEnv (∘ ⇡ M ⊲ γ ∷ x₁) = γ
-  topEnv (∘ ⇡ᴹ M N ⊲ γ ∷ x₁) = γ
-  topEnv (∘ ⇡ᴸ LHS RHS ⊲ γ ∷ x₁) = γ
-  topEnv (∘ ⇡ᴿ LHS RHS ⊲ γ ∷ x₁) = γ
-  topEnv (∙ ⭭ x ⊲ γ ∷ x₁) = γ
-  topEnv (∙ ⇡ M ⊲ γ ∷ x₁) = γ
-  topEnv (∙ ⇡ᴹ M N ⊲ γ ∷ x₁) = γ
-  topEnv (∙ ⇡ᴸ LHS RHS ⊲ γ ∷ x₁) = γ
-  topEnv (∙ ⇡ᴿ LHS RHS ⊲ γ ∷ x₁) = γ
+  topEnv (∘ S) = topStackEnv S
+  topEnv (∙ S) = topStackEnv S
 
   data ValHaltingState : ValState T◾ → Set where
 
       ∙_⊲_■ : (M : V̲a̲l̲ Γ X) → (γ : Env Γ) → ValHaltingState (∙ ((⭭ M ⊲ γ ∷ □) {↥ = 🗆}))
 
+  botStackCtx : ValStack non-empty T◾ → Ctx
+  botStackCtx ((_⊲_∷_) {Γ = Γ} _ _ □) = Γ
+  botStackCtx ((x ⊲ γ ∷ ((x₁ ⊲ γ₁ ∷ xs) {↥ = ↥'})) {↥ = ↥}) = botStackCtx ((x₁ ⊲ γ₁ ∷ xs) {↥ = ↥'})
+
+  botCtx : ValState T◾ → Ctx
+  botCtx (∘ S) = botStackCtx S
+  botCtx (∙ S) = botStackCtx S
+
+  botStackEnv : (S : ValStack non-empty T◾) → Env (botStackCtx S)
+  botStackEnv ((_⊲_∷_) {Γ = Γ} _ γ □) = γ
+  botStackEnv ((x ⊲ γ ∷ ((x₁ ⊲ γ₁ ∷ xs) {↥ = ↥'})) {↥ = ↥}) = botStackEnv ((x₁ ⊲ γ₁ ∷ xs) {↥ = ↥'})
+
+  botEnv : (S : ValState T◾) → Env (botCtx S)
+  botEnv (∘ S) = botStackEnv S
+  botEnv (∙ S) = botStackEnv S
+
+  botStackTerm : (S : ValStack non-empty T◾) → PartialTerm (botStackCtx S) (T◾)
+  botStackTerm ((_⊲_∷_) {Γ = Γ} M γ □ {↥ = 🗆}) = M
+  botStackTerm ((x ⊲ γ ∷ ((x₁ ⊲ γ₁ ∷ xs) {↥ = ↥'})) {↥ = ↥}) = botStackTerm ((x₁ ⊲ γ₁ ∷ xs) {↥ = ↥'})
 
   data ValSteps : ValState T◾ → Set where
 
-    steps : {S T : ValState T◾} → S ↠ᵛ T → ValHaltingState T → ⟦ S ⟧ᵛꟴ ≡ ⟦ T ⟧ᵛꟴ → (π : Wk (topCtx T) (topCtx S)) → (⟦ π ⟧ʷ ⟦ topEnv T ⟧ᴱ ≡ ⟦ topEnv S ⟧ᴱ) → ValSteps S
+    steps : {S T : ValState T◾} → S ↠ᵛ T → ValHaltingState T → ⟦ S ⟧ᵛꟴ ≡ ⟦ T ⟧ᵛꟴ → (π : Wk (botCtx T) (botCtx S)) → (⟦ π ⟧ʷ ⟦ botEnv T ⟧ᴱ ≡ ⟦ botEnv S ⟧ᴱ)
+            → ValSteps S
 
 
   val-eval-rec : (M : Γ' ⊢ᵛ X) → (γ : Env Γ) → (π : Wk Γ Γ') → ValSteps {T◾ = X} (∘ ((⇡ (wk-val π M) ⊲ γ ∷ □) {↥ = 🗆}))
@@ -406,6 +562,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
             wk-id
 
             refl
+
   val-eval-rec {X = X `⇒ X₁} (var {A = .(X `⇒ X₁)} i) γ π with lookup (wk-mem π i) γ
 
   ... | steps i>>T (found-lam {W = W} {γ = γ₁}) i≡T π₁ w≡γ =
@@ -439,9 +596,9 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
             steps
 
               (
-              ∘ ⇡ (wk-val π (pair LHS RHS)) ⊲ γ ∷ □ →ᵛ⟨ ∘pair ⟩． ⨾ -- (∘ ⇡ wk-val π LHS ⊲ γ ∷ ⇡ᴸ (wk-val π LHS) (wk-val π RHS) ⊲ γ ∷ □)
+              ∘ ⇡ (wk-val π (pair LHS RHS)) ⊲ γ ∷ □ →ᵛ⟨ ∘pair ⟩． ⨾
               (⟪ L>T ⟫⧻ (⇡ᴸ (wk-val π LHS) (wk-val π RHS) ⊲ γ ∷ □)) ⨾
-              (∙ ⭭ LT ⊲ γ₁ ∷ ⇡ᴸ (wk-val π LHS) (wk-val π RHS) ⊲ γ ∷ □) →ᵛ⟨ ∙M∷l ⟩． ⨾ -- (∘ ⇡ wk-val _π'_3203 (wk-val π RHS) ⊲ γ₁ ∷ ⇡ᴿ LT (wk-val _π'_3203 (wk-val π RHS)) ⊲ γ₁ ∷ □)
+              (∙ ⭭ LT ⊲ γ₁ ∷ ⇡ᴸ (wk-val π LHS) (wk-val π RHS) ⊲ γ ∷ □) →ᵛ⟨ ∙M∷l ⟩． ⨾
               (⟪ R>T ⟫⧻ (⇡ᴿ LT (wk-val πᴸ (wk-val π RHS)) ⊲ γ₁ ∷ □)) ⨾
               (∙ ⭭ RT ⊲ γ₂ ∷ ⇡ᴿ LT (wk-val πᴸ (wk-val π RHS)) ⊲ γ₁ ∷ □) →ᵛ⟨ ∙M∷r ⟩．
               )
@@ -482,15 +639,17 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
               ≡⟨ wk≡ᴸ ⟩
                 ⟦ γ ⟧ᴱ ∎)
 
-  val-eval-rec (pm M N) γ π with val-eval-rec M γ π
-  ... | steps M>T ∙ pa̲i̲r̲ LHS RHS ⊲ γ₁ ■ M≡T π₁ wk≡₁ with val-eval-rec N (_﹐_ (_﹐_ γ₁ LHS) (wk-v̲a̲l̲ (wk-wk wk-id) RHS)) ((wk-cong (wk-cong (wk-trans π₁ π)))) | (wk-val-trans N (wk-cong (wk-cong π₁)) (wk-cong (wk-cong π)))
+
+  val-eval-rec {Γ = Γ} (pm {A = A} {B = B} M N) γ π with val-eval-rec M γ π
+  ... | steps {S = S} M>T ∙ pa̲i̲r̲ LHS RHS ⊲ γ₁ ■ M≡T π₁ wk≡₁ with val-eval-rec N (_﹐_ (_﹐_ γ₁ LHS) (wk-v̲a̲l̲ (wk-wk wk-id) RHS)) ((wk-cong (wk-cong (wk-trans π₁ π)))) | (wk-val-trans N (wk-cong (wk-cong π₁)) (wk-cong (wk-cong π)))
   ...    | steps {T = T} N>T ∙T N≡T π₂ wk≡₂ | eq with N>T
   ...      | N>T' rewrite sym eq =
+
         steps
           (
-            (∘ ⇡ pm (wk-val π M) (wk-val (wk-cong (wk-cong π)) N) ⊲ γ ∷ □) →ᵛ⟨ ∘pm ⟩． ⨾ -- (∘ ⇡ wk-val π M ⊲ γ ∷ ⇡ᴹ (wk-val π M) (wk-val (wk-cong (wk-cong π)) N) ⊲ γ ∷ □)
+            (∘ ⇡ pm (wk-val π M) (wk-val (wk-cong (wk-cong π)) N) ⊲ γ ∷ □) →ᵛ⟨ ∘pm ⟩． ⨾
             (⟪ M>T ⟫⧻ (⇡ᴹ (wk-val π M) (wk-val (wk-cong (wk-cong π)) N) ⊲ γ ∷ □)) ⨾
-            (∙ ⭭ pa̲i̲r̲ LHS RHS ⊲ γ₁ ∷ ⇡ᴹ (wk-val π M) (wk-val (wk-cong (wk-cong π)) N) ⊲ γ ∷ □) →ᵛ⟨ ∙pair∷pm ⟩． ⨾ -- (∘ ⇡ wk-val (wk-cong (wk-cong π₁)) (wk-val (wk-cong (wk-cong π)) N) ⊲ _﹐_ (_﹐_ γ₁ LHS) (wk-v̲a̲l̲ (wk-wk wk-id) RHS) ∷ □)
+            (∙ ⭭ pa̲i̲r̲ LHS RHS ⊲ γ₁ ∷ ⇡ᴹ (wk-val π M) (wk-val (wk-cong (wk-cong π)) N) ⊲ γ ∷ □) →ᵛ⟨ ∙pair∷pm ⟩． ⨾
             N>T'
           )
 
@@ -520,9 +679,9 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
           (wk-trans π₂ (wk-wk (wk-wk π₁)))
 
-          ( ⟦ wk-trans π₂ (wk-wk (wk-wk π₁)) ⟧ʷ ⟦ topEnv T ⟧ᴱ
-            ≡⟨ sym (wk-sem-trans π₂ (wk-wk (wk-wk π₁)) ⟦ topEnv T ⟧ᴱ) ⟩
-            ⟦ wk-wk (wk-wk π₁) ⟧ʷ (⟦ π₂ ⟧ʷ ⟦ topEnv T ⟧ᴱ)
+          ( ⟦ wk-trans π₂ (wk-wk (wk-wk π₁)) ⟧ʷ ⟦ botEnv T ⟧ᴱ
+            ≡⟨ sym (wk-sem-trans π₂ (wk-wk (wk-wk π₁)) ⟦ botEnv T ⟧ᴱ) ⟩
+            ⟦ wk-wk (wk-wk π₁) ⟧ʷ (⟦ π₂ ⟧ʷ ⟦ botEnv T ⟧ᴱ)
             ≡⟨ cong (λ y → ⟦ wk-wk (wk-wk π₁) ⟧ʷ y) wk≡₂ ⟩
             ⟦ wk-wk (wk-wk π₁) ⟧ʷ (((⟦ γ₁ ⟧ᴱ , ⟦ toVal LHS ⟧ᵛ ⟦ γ₁ ⟧ᴱ) , ⟦ toVal (wk-v̲a̲l̲ (wk-wk wk-id) RHS) ⟧ᵛ (⟦ γ₁ ⟧ᴱ , ⟦ toVal LHS ⟧ᵛ ⟦ γ₁ ⟧ᴱ)))
             ≡⟨ refl ⟩
@@ -530,10 +689,10 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
             ≡⟨ wk≡₁ ⟩
             ⟦ γ ⟧ᴱ ∎)
 
-
   val-eval : (M : ε ⊢ᵛ X) → ValSteps {T◾ = X} (∘ ((⇡ wk-val wk-id M ⊲ ∗ ∷ □) {↥ = 🗆}))
   val-eval M = val-eval-rec M ∗ wk-id
 
+{-
   -- EXAMPLES
   --------------------------------------------------
 
@@ -549,313 +708,13 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   -- _ : val-eval ex2 ≡ {!val-eval ex2!}
   -- _ = refl
 
-  _ : val-eval ex2 ≡
-      steps
-      (∘
-      ⇡
-      pm (pm (pair (lam (return (var h))) unit) (pair unit (var (t h))))
-      (pm (pair unit unit) (pair (var (t h)) (var (t (t (t h))))))
-      ⊲ ∗ ∷ □
-      →ᵛ⟨ ∘pm ⟩
-      ∘
-      ⇡ pm (pair (lam (return (var h))) unit) (pair unit (var (t h))) ⊲ ∗
-      ∷
-      ⇡ᴹ (pm (pair (lam (return (var h))) unit) (pair unit (var (t h))))
-      (pm (pair unit unit) (pair (var (t h)) (var (t (t (t h))))))
-      ⊲ ∗ ∷ □
-      →ᵛ⟨ ∘pm ⟩
-      ∘
-      ⇡ pair (lam (return (var h))) unit ⊲ ∗ ∷
-      ⇡ᴹ (pair (lam (return (var h))) unit) (pair unit (var (t h))) ⊲ ∗ ∷
-      ⇡ᴹ (pm (pair (lam (return (var h))) unit) (pair unit (var (t h))))
-      (pm (pair unit unit) (pair (var (t h)) (var (t (t (t h))))))
-      ⊲ ∗ ∷ □
-      →ᵛ⟨ ∘pair ⟩
-      ∘
-      ⇡ lam (return (var h)) ⊲ ∗ ∷
-      ⇡ᴸ (lam (return (var h))) unit ⊲ ∗ ∷
-      ⇡ᴹ (pair (lam (return (var h))) unit) (pair unit (var (t h))) ⊲ ∗ ∷
-      ⇡ᴹ (pm (pair (lam (return (var h))) unit) (pair unit (var (t h))))
-      (pm (pair unit unit) (pair (var (t h)) (var (t (t (t h))))))
-      ⊲ ∗ ∷ □
-      →ᵛ⟨ ∘lam ⟩
-      ∙
-      ⭭ l̲a̲m̲ (return (var h)) ⊲ ∗ ∷
-      ⇡ᴸ (lam (return (var h))) unit ⊲ ∗ ∷
-      ⇡ᴹ (pair (lam (return (var h))) unit) (pair unit (var (t h))) ⊲ ∗ ∷
-      ⇡ᴹ (pm (pair (lam (return (var h))) unit) (pair unit (var (t h))))
-      (pm (pair unit unit) (pair (var (t h)) (var (t (t (t h))))))
-      ⊲ ∗ ∷ □
-      →ᵛ⟨ ∙M∷l ⟩
-      ∘
-      ⇡ unit ⊲ ∗ ∷
-      ⇡ᴿ (l̲a̲m̲ (return (var h))) unit ⊲ ∗ ∷
-      ⇡ᴹ (pair (lam (return (var h))) unit) (pair unit (var (t h))) ⊲ ∗ ∷
-      ⇡ᴹ (pm (pair (lam (return (var h))) unit) (pair unit (var (t h))))
-      (pm (pair unit unit) (pair (var (t h)) (var (t (t (t h))))))
-      ⊲ ∗ ∷ □
-      →ᵛ⟨ ∘unit ⟩
-      ∙
-      ⭭ u̲n̲i̲t̲ ⊲ ∗ ∷
-      ⇡ᴿ (l̲a̲m̲ (return (var h))) unit ⊲ ∗ ∷
-      ⇡ᴹ (pair (lam (return (var h))) unit) (pair unit (var (t h))) ⊲ ∗ ∷
-      ⇡ᴹ (pm (pair (lam (return (var h))) unit) (pair unit (var (t h))))
-      (pm (pair unit unit) (pair (var (t h)) (var (t (t (t h))))))
-      ⊲ ∗ ∷ □
-      →ᵛ⟨ ∙M∷r ⟩
-      ∙
-      ⭭ pa̲i̲r̲ (l̲a̲m̲ (return (var h))) u̲n̲i̲t̲ ⊲ ∗ ∷
-      ⇡ᴹ (pair (lam (return (var h))) unit) (pair unit (var (t h))) ⊲ ∗ ∷
-      ⇡ᴹ (pm (pair (lam (return (var h))) unit) (pair unit (var (t h))))
-      (pm (pair unit unit) (pair (var (t h)) (var (t (t (t h))))))
-      ⊲ ∗ ∷ □
-      →ᵛ⟨ ∙pair∷pm ⟩
-      ∘
-      ⇡ pair unit (var (t h)) ⊲ ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ∷
-      ⇡ᴹ (pm (pair (lam (return (var h))) unit) (pair unit (var (t h))))
-      (pm (pair unit unit) (pair (var (t h)) (var (t (t (t h))))))
-      ⊲ ∗ ∷ □
-      →ᵛ⟨ ∘pair ⟩
-      ∘
-      ⇡ unit ⊲ ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ∷
-      ⇡ᴸ unit (var (t h)) ⊲ ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ∷
-      ⇡ᴹ (pm (pair (lam (return (var h))) unit) (pair unit (var (t h))))
-      (pm (pair unit unit) (pair (var (t h)) (var (t (t (t h))))))
-      ⊲ ∗ ∷ □
-      →ᵛ⟨ ∘unit ⟩
-      ∙
-      ⭭ u̲n̲i̲t̲ ⊲ ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ∷
-      ⇡ᴸ unit (var (t h)) ⊲ ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ∷
-      ⇡ᴹ (pm (pair (lam (return (var h))) unit) (pair unit (var (t h))))
-      (pm (pair unit unit) (pair (var (t h)) (var (t (t (t h))))))
-      ⊲ ∗ ∷ □
-      →ᵛ⟨ ∙M∷l ⟩
-      ∘
-      ⇡ var (t h) ⊲ ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ∷
-      ⇡ᴿ u̲n̲i̲t̲ (var (t h)) ⊲ ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ∷
-      ⇡ᴹ (pm (pair (lam (return (var h))) unit) (pair unit (var (t h))))
-      (pm (pair unit unit) (pair (var (t h)) (var (t (t (t h))))))
-      ⊲ ∗ ∷ □
-      →ᵛ⟨
-      ∘var
-      (⟨ t h ∥ ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ⟩ →ᴸ⟨ val-t-step ⟩
-        (⟨ h ∥ ∗ ﹐ l̲a̲m̲ (return (var h)) ⟩ ◼))
-      (wk-wk (wk-wk wk-ε))
-      ⟩
-      ∙
-      ⭭ l̲a̲m̲ (return (var h)) ⊲ ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲
-      ∷
-      ⇡ᴿ u̲n̲i̲t̲ (var (t h)) ⊲ ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ∷
-      ⇡ᴹ (pm (pair (lam (return (var h))) unit) (pair unit (var (t h))))
-      (pm (pair unit unit) (pair (var (t h)) (var (t (t (t h))))))
-      ⊲ ∗ ∷ □
-      →ᵛ⟨ ∙M∷r ⟩
-      ∙
-      ⭭ pa̲i̲r̲ u̲n̲i̲t̲ (l̲a̲m̲ (return (var h))) ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ∷
-      ⇡ᴹ (pm (pair (lam (return (var h))) unit) (pair unit (var (t h))))
-      (pm (pair unit unit) (pair (var (t h)) (var (t (t (t h))))))
-      ⊲ ∗ ∷ □
-      →ᵛ⟨ ∙pair∷pm ⟩
-      ∘
-      ⇡ pm (pair unit unit) (pair (var (t h)) (var (t (t (t h))))) ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ∷ □
-      →ᵛ⟨ ∘pm ⟩
-      ∘
-      ⇡ pair unit unit ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ∷
-      ⇡ᴹ (pair unit unit) (pair (var (t h)) (var (t (t (t h))))) ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ∷ □
-      →ᵛ⟨ ∘pair ⟩
-      ∘
-      ⇡ unit ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ∷
-      ⇡ᴸ unit unit ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ∷
-      ⇡ᴹ (pair unit unit) (pair (var (t h)) (var (t (t (t h))))) ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ∷ □
-      →ᵛ⟨ ∘unit ⟩
-      ∙
-      ⭭ u̲n̲i̲t̲ ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ∷
-      ⇡ᴸ unit unit ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ∷
-      ⇡ᴹ (pair unit unit) (pair (var (t h)) (var (t (t (t h))))) ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ∷ □
-      →ᵛ⟨ ∙M∷l ⟩
-      ∘
-      ⇡ unit ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ∷
-      ⇡ᴿ u̲n̲i̲t̲ unit ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ∷
-      ⇡ᴹ (pair unit unit) (pair (var (t h)) (var (t (t (t h))))) ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ∷ □
-      →ᵛ⟨ ∘unit ⟩
-      ∙
-      ⭭ u̲n̲i̲t̲ ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ∷
-      ⇡ᴿ u̲n̲i̲t̲ unit ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ∷
-      ⇡ᴹ (pair unit unit) (pair (var (t h)) (var (t (t (t h))))) ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ∷ □
-      →ᵛ⟨ ∙M∷r ⟩
-      ∙
-      ⭭ pa̲i̲r̲ u̲n̲i̲t̲ u̲n̲i̲t̲ ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ∷
-      ⇡ᴹ (pair unit unit) (pair (var (t h)) (var (t (t (t h))))) ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ∷ □
-      →ᵛ⟨ ∙pair∷pm ⟩
-      ∘
-      ⇡ pair (var (t h)) (var (t (t (t h)))) ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ﹐ u̲n̲i̲t̲
-      ﹐ u̲n̲i̲t̲
-      ∷ □
-      →ᵛ⟨ ∘pair ⟩
-      ∘
-      ⇡ var (t h) ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ﹐ u̲n̲i̲t̲
-      ﹐ u̲n̲i̲t̲
-      ∷
-      ⇡ᴸ (var (t h)) (var (t (t (t h)))) ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ﹐ u̲n̲i̲t̲
-      ﹐ u̲n̲i̲t̲
-      ∷ □
-      →ᵛ⟨
-      ∘var
-      (⟨ t h ∥
-        ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-        l̲a̲m̲ (return (var h))
-        ﹐ u̲n̲i̲t̲
-        ﹐ u̲n̲i̲t̲
-        ⟩
-        →ᴸ⟨ val-t-step ⟩
-        (⟨ h ∥
-        ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-        l̲a̲m̲ (return (var h))
-        ﹐ u̲n̲i̲t̲
-        ⟩
-        ◼))
-      (wk-wk (wk-wk (wk-cong (wk-cong (wk-cong (wk-cong wk-ε))))))
-      ⟩
-      ∙
-      ⭭ u̲n̲i̲t̲ ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ﹐ u̲n̲i̲t̲
-      ﹐ u̲n̲i̲t̲
-      ∷
-      ⇡ᴸ (var (t h)) (var (t (t (t h)))) ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ﹐ u̲n̲i̲t̲
-      ﹐ u̲n̲i̲t̲
-      ∷ □
-      →ᵛ⟨ ∙M∷l ⟩
-      ∘
-      ⇡ var (t (t (t h))) ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ﹐ u̲n̲i̲t̲
-      ﹐ u̲n̲i̲t̲
-      ∷
-      ⇡ᴿ u̲n̲i̲t̲ (var (t (t (t h)))) ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ﹐ u̲n̲i̲t̲
-      ﹐ u̲n̲i̲t̲
-      ∷ □
-      →ᵛ⟨
-      ∘var
-      (⟨ t (t (t h)) ∥
-        ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-        l̲a̲m̲ (return (var h))
-        ﹐ u̲n̲i̲t̲
-        ﹐ u̲n̲i̲t̲
-        ⟩
-        →ᴸ⟨ val-t-step ⟩
-        (⟨ t (t h) ∥
-        ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-        l̲a̲m̲ (return (var h))
-        ﹐ u̲n̲i̲t̲
-        ⟩
-        →ᴸ⟨ val-t-step ⟩
-        (⟨ t h ∥
-          ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-          l̲a̲m̲ (return (var h))
-          ⟩
-          →ᴸ⟨ val-t-step ⟩
-          (⟨ h ∥ ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ⟩ ◼))))
-      (wk-wk (wk-wk (wk-wk (wk-wk (wk-cong (wk-cong wk-ε))))))
-      ⟩
-      ∙
-      ⭭ u̲n̲i̲t̲ ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ﹐ u̲n̲i̲t̲
-      ﹐ u̲n̲i̲t̲
-      ∷
-      ⇡ᴿ u̲n̲i̲t̲ (var (t (t (t h)))) ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ﹐ u̲n̲i̲t̲
-      ﹐ u̲n̲i̲t̲
-      ∷ □
-      →ᵛ⟨ ∙M∷r ⟩．)
-      ∙ pa̲i̲r̲ u̲n̲i̲t̲ u̲n̲i̲t̲ ⊲
-      ∗ ﹐ l̲a̲m̲ (return (var h)) ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐
-      l̲a̲m̲ (return (var h))
-      ﹐ u̲n̲i̲t̲
-      ﹐ u̲n̲i̲t̲
-      ■
-      refl (wk-wk (wk-wk (wk-wk (wk-wk (wk-wk (wk-wk wk-ε)))))) refl
-  _ = refl
-
   --------------------------------------------------------------
 
-  -- This is not used anywhere, but shows that the interpreteations of environments and computation stacks respect the cps translation of sub
+  -- This is not used anywhere, but shows that the interpretations of environments and computation stacks respect the cps translation of sub
 
   sub-cps : (M : (Γ ∙ `V) ⊢ᶜ X) → (N : Γ ⊢ᶜ X) → (γ : ⟦ Γ ⟧ˣ ) → (k : ⟦ X ⟧ → R) → ⟦ sub M N ⟧ᶜ γ k ≡ ⟦ M ⟧ᶜ ( γ , ⟦ N ⟧ᶜ γ k ) k
   sub-cps M N γ k = refl
 
   sub-cps' : (M : (Γ ∙ `V) ⊢ᶜ X) → (N : Γ ⊢ᶜ X) → (γ : Env Γ) → (cs : CompStack Δ X) → (πₓ : Wk Γ Δ) → (wk≡ : ⟦ πₓ ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → ⟦ sub M N ⟧ᶜ ⟦ γ ⟧ᴱ ⟦ cs ⟧ᴷ ≡ ⟦ M ⟧ᶜ ⟦ (γ ﹐﹝ N ╎ cs ﹞) {π = πₓ} {wk≡ = wk≡} ⟧ᴱ ⟦ cs ⟧ᴷ
   sub-cps' M N γ cs πₓ wk≡ = refl
+-}
