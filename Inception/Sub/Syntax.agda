@@ -420,3 +420,8 @@ mutual
 wk-wk-ε : Wk Γ ε
 wk-wk-ε {Γ = ε} = wk-ε
 wk-wk-ε {Γ = Γ ∙ X} = wk-wk wk-wk-ε
+
+wk-trans-id : {π : Wk Γ Δ} → wk-trans wk-id π ≡ π
+wk-trans-id {π = wk-ε} = refl
+wk-trans-id {π = wk-cong π} = cong wk-cong wk-trans-id
+wk-trans-id {π = wk-wk π} = cong wk-wk wk-trans-id
