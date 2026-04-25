@@ -258,12 +258,448 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   --------------------------------------------------
 
+  {-
+  data LookupState : Ty → Set where
+
+      ⟨_∥_⟩   :  (i : Γ ∋ X) → Env Γ → LookupState X
+  -}
+
+  pair-eq : {A B : Set} {a₁ a₂ : A} {b₁ b₂ : B} → (a₁ , b₁) ≡ (a₂ , b₂) → a₁ ≡ a₂
+  pair-eq refl = refl
+
+  lookup-wk-lift : {πₗ : Wk Ψ Γ} {π : Wk Γ (Γ' ∙ X)} {γₗ : Env Ψ} {γ : Env Γ} {γ' : Env Γ'}
+                 → (i : Γ ∋ X) → (M : V̲a̲l̲ Γ' X) → (ϖₗ : EnvEq πₗ γₗ γ) → (ϖ : EnvEq π γ (γ' ﹐ M))
+                 → ⟨ (wk-mem πₗ i) ∥ γₗ ⟩ →ᴸ* ⟨ h ∥ γ' ﹐ M ⟩
+                 → (H : LookupHaltingState ⟨ h ∥ γ' ﹐ M ⟩)
+                 → Σ[ Ψ' ∈ Ctx ]
+                   Σ[ πᵣ ∈ Wk Ψ' Γ' ]
+                   Σ[ γᵣ ∈ Env Ψ' ]
+                   ⟨ (wk-mem πₗ i) ∥ γₗ ⟩ →ᴸ* ⟨ h ∥ γᵣ ﹐ wk-v̲a̲l̲ πᵣ M ⟩
+
+  lookup-wk-lift Cx.h (l̲a̲m̲ W) (wk-env-val-cong M ϖₗ) (wk-env-val-cong M₁ ϖ) L→*L' H = {!!}
+  lookup-wk-lift Cx.h (l̲a̲m̲ W) (wk-env-val-cong M ϖₗ) (wk-env-val-wk (l̲a̲m̲ x) ϖ) (S ◼) H = {!!}
+  lookup-wk-lift {π = π} Cx.h (l̲a̲m̲ W) (wk-env-val-wk M ϖₗ) (wk-env-val-cong M₁ ϖ) (⟨ t _ ∥ γ' ﹐ _ ⟩ →ᴸ⟨ val-t-step ⟩ L→*L') H =
+                 let
+                   a0 = lookup-wk-lift (wk-mem π h) (V̲a̲l̲.l̲a̲m̲ W) ϖₗ (wk-env-val-cong (V̲a̲l̲.l̲a̲m̲ W) ϖ) L→*L' H
+                   L→*L'₀ = proj₂ (proj₂ (proj₂ a0))
+                 in
+                 proj₁ a0 , proj₁ (proj₂ a0) , proj₁ (proj₂ (proj₂ a0)) , ( _ →ᴸ⟨ val-t-step ⟩ L→*L'₀)
+  lookup-wk-lift Cx.h (l̲a̲m̲ W) (wk-env-val-wk M ϖₗ) (wk-env-val-wk M₁ ϖ) (⟨ t _ ∥ γ' ﹐ _ ⟩ →ᴸ⟨ x ⟩ L→*L') H = {!!}
+  lookup-wk-lift Cx.h (l̲a̲m̲ W) (wk-env-comp-wk W₁ cs) (wk-env-val-cong M ϖ) (S →ᴸ⟨ x ⟩ L→*L') H = {!!}
+  lookup-wk-lift Cx.h (l̲a̲m̲ W) (wk-env-comp-wk W₁ cs) (wk-env-val-wk M ϖ) (S →ᴸ⟨ x ⟩ L→*L') H = {!!}
+
+  lookup-wk-lift Cx.h (pa̲i̲r̲ M M₁) (wk-env-val-cong M₂ ϖₗ) (wk-env-val-cong M₃ ϖ) L→*L' H = {! !}
+  lookup-wk-lift Cx.h (pa̲i̲r̲ M M₁) (wk-env-val-cong M₂ ϖₗ) (wk-env-val-wk (pa̲i̲r̲ M₃ M₄) ϖ) (S ◼) H = {!!}
+  lookup-wk-lift Cx.h (pa̲i̲r̲ M M₁) (wk-env-val-wk M₂ ϖₗ) (wk-env-val-cong M₃ ϖ) (S →ᴸ⟨ x ⟩ L→*L') H = {!!}
+  lookup-wk-lift Cx.h (pa̲i̲r̲ M M₁) (wk-env-val-wk M₂ ϖₗ) (wk-env-val-wk M₃ ϖ) (S →ᴸ⟨ x ⟩ L→*L') H = {!!}
+  lookup-wk-lift Cx.h (pa̲i̲r̲ M M₁) (wk-env-comp-wk W cs) (wk-env-val-cong M₂ ϖ) (S →ᴸ⟨ x ⟩ L→*L') H = {!!}
+  lookup-wk-lift Cx.h (pa̲i̲r̲ M M₁) (wk-env-comp-wk W cs) (wk-env-val-wk M₂ ϖ) (S →ᴸ⟨ x ⟩ L→*L') H = {!!}
+
+  lookup-wk-lift Cx.h u̲n̲i̲t̲ (wk-env-val-cong M ϖₗ) (wk-env-val-cong M₁ ϖ) L→*L' H = {!!}
+  lookup-wk-lift Cx.h u̲n̲i̲t̲ (wk-env-val-cong M ϖₗ) (wk-env-val-wk u̲n̲i̲t̲ ϖ) (S ◼) H = {!!}
+  lookup-wk-lift Cx.h u̲n̲i̲t̲ (wk-env-val-wk M ϖₗ) (wk-env-val-cong M₁ ϖ) (S →ᴸ⟨ x ⟩ L→*L') H = {!!}
+  lookup-wk-lift Cx.h u̲n̲i̲t̲ (wk-env-val-wk M ϖₗ) (wk-env-val-wk M₁ ϖ) (S →ᴸ⟨ x ⟩ L→*L') H = {!!}
+  lookup-wk-lift Cx.h u̲n̲i̲t̲ (wk-env-comp-wk W cs) (wk-env-val-cong M ϖ) (S →ᴸ⟨ x ⟩ L→*L') H = {!!}
+  lookup-wk-lift Cx.h u̲n̲i̲t̲ (wk-env-comp-wk W cs) (wk-env-val-wk M ϖ) (S →ᴸ⟨ x ⟩ L→*L') H = {!!}
+
+  lookup-wk-lift (Cx.t i) (l̲a̲m̲ x) (wk-env-val-cong M ϖₗ) (wk-env-val-cong M₁ ϖ) (S →ᴸ⟨ val-t-step ⟩ L→*L') H = {!!}
+  lookup-wk-lift (Cx.t i) (l̲a̲m̲ x) (wk-env-val-cong M ϖₗ) (wk-env-val-wk M₁ ϖ) (S →ᴸ⟨ val-t-step ⟩ L→*L') H = {!!}
+  lookup-wk-lift (Cx.t i) (l̲a̲m̲ x) (wk-env-comp-cong W cs) (wk-env-comp-wk W₁ cs₁) (S →ᴸ⟨ comp-t-step ⟩ L→*L') H = {!!}
+  lookup-wk-lift (Cx.t i) (l̲a̲m̲ x) (wk-env-val-wk M ϖₗ) (wk-env-val-cong M₁ ϖ) (S →ᴸ⟨ val-t-step ⟩ L→*L') H = {!!}
+  lookup-wk-lift (Cx.t i) (l̲a̲m̲ x) (wk-env-val-wk M ϖₗ) (wk-env-val-wk M₁ ϖ) (S →ᴸ⟨ val-t-step ⟩ L→*L') H = {!!}
+  lookup-wk-lift (Cx.t i) (l̲a̲m̲ x) (wk-env-val-wk M ϖₗ) (wk-env-comp-wk W cs) (S →ᴸ⟨ val-t-step ⟩ L→*L') H = {!!}
+  lookup-wk-lift (Cx.t i) (l̲a̲m̲ x) (wk-env-comp-wk W cs) (wk-env-val-cong M ϖ) (S →ᴸ⟨ comp-t-step ⟩ L→*L') H = {!!}
+  lookup-wk-lift (Cx.t i) (l̲a̲m̲ x) (wk-env-comp-wk W cs) (wk-env-val-wk M ϖ) (S →ᴸ⟨ comp-t-step ⟩ L→*L') H = {!!}
+  lookup-wk-lift (Cx.t i) (l̲a̲m̲ x) (wk-env-comp-wk W cs) (wk-env-comp-wk W₁ cs₁) (S →ᴸ⟨ comp-t-step ⟩ L→*L') H = {!!}
+  lookup-wk-lift (Cx.t i) (pa̲i̲r̲ M M₁) (wk-env-val-cong M₂ ϖₗ) (wk-env-val-cong M₃ ϖ) (S →ᴸ⟨ val-t-step ⟩ L→*L') H = {!!}
+  lookup-wk-lift (Cx.t i) (pa̲i̲r̲ M M₁) (wk-env-val-cong M₂ ϖₗ) (wk-env-val-wk M₃ ϖ) (S →ᴸ⟨ val-t-step ⟩ L→*L') H = {!!}
+  lookup-wk-lift (Cx.t i) (pa̲i̲r̲ M M₁) (wk-env-comp-cong W cs) (wk-env-comp-wk W₁ cs₁) (S →ᴸ⟨ x ⟩ L→*L') H = {!!}
+  lookup-wk-lift (Cx.t i) (pa̲i̲r̲ M M₁) (wk-env-val-wk M₂ ϖₗ) (wk-env-val-cong M₃ ϖ) (S →ᴸ⟨ x ⟩ L→*L') H = {!!}
+  lookup-wk-lift (Cx.t i) (pa̲i̲r̲ M M₁) (wk-env-val-wk M₂ ϖₗ) (wk-env-val-wk M₃ ϖ) (S →ᴸ⟨ x ⟩ L→*L') H = {!!}
+  lookup-wk-lift (Cx.t i) (pa̲i̲r̲ M M₁) (wk-env-val-wk M₂ ϖₗ) (wk-env-comp-wk W cs) (S →ᴸ⟨ x ⟩ L→*L') H = {!!}
+  lookup-wk-lift (Cx.t i) (pa̲i̲r̲ M M₁) (wk-env-comp-wk W cs) (wk-env-val-cong M₂ ϖ) (S →ᴸ⟨ x ⟩ L→*L') H = {!!}
+  lookup-wk-lift (Cx.t i) (pa̲i̲r̲ M M₁) (wk-env-comp-wk W cs) (wk-env-val-wk M₂ ϖ) (S →ᴸ⟨ x ⟩ L→*L') H = {!!}
+  lookup-wk-lift (Cx.t i) (pa̲i̲r̲ M M₁) (wk-env-comp-wk W cs) (wk-env-comp-wk W₁ cs₁) (S →ᴸ⟨ x ⟩ L→*L') H = {!!}
+  lookup-wk-lift (Cx.t i) u̲n̲i̲t̲ (wk-env-val-cong M ϖₗ) (wk-env-val-cong M₁ ϖ) (S →ᴸ⟨ x ⟩ L→*L') H = {!!}
+  lookup-wk-lift (Cx.t i) u̲n̲i̲t̲ (wk-env-val-cong M ϖₗ) (wk-env-val-wk M₁ ϖ) (S →ᴸ⟨ x ⟩ L→*L') H = {!!}
+  lookup-wk-lift (Cx.t i) u̲n̲i̲t̲ (wk-env-comp-cong W cs) (wk-env-comp-wk W₁ cs₁) (S →ᴸ⟨ x ⟩ L→*L') H = {!!}
+  lookup-wk-lift (Cx.t i) u̲n̲i̲t̲ (wk-env-val-wk M ϖₗ) (wk-env-val-cong M₁ ϖ) (S →ᴸ⟨ x ⟩ L→*L') H = {!!}
+  lookup-wk-lift (Cx.t i) u̲n̲i̲t̲ (wk-env-val-wk M ϖₗ) (wk-env-val-wk M₁ ϖ) (S →ᴸ⟨ x ⟩ L→*L') H = {!!}
+  lookup-wk-lift (Cx.t i) u̲n̲i̲t̲ (wk-env-val-wk M ϖₗ) (wk-env-comp-wk W cs) (S →ᴸ⟨ val-t-step ⟩ L→*L') H = {!!}
+  lookup-wk-lift (Cx.t i) u̲n̲i̲t̲ (wk-env-comp-wk W cs) (wk-env-val-cong M ϖ) (S →ᴸ⟨ comp-t-step ⟩ L→*L') H = {!!}
+  lookup-wk-lift (Cx.t i) u̲n̲i̲t̲ (wk-env-comp-wk W cs) (wk-env-val-wk M ϖ) (S →ᴸ⟨ comp-t-step ⟩ L→*L') H = {!!}
+  lookup-wk-lift (Cx.t i) u̲n̲i̲t̲ (wk-env-comp-wk W cs) (wk-env-comp-wk W₁ cs₁) (S →ᴸ⟨ comp-t-step ⟩ L→*L') H = {!!}
+
+
+{- YYY
+
+{-
+  lookup-wk-lift : {i : Γ ∋ X} {γ : Env Γ} {γ' : Env Γ'} {M : V̲a̲l̲ Γ' X}
+                 → ⟨ i ∥ γ ⟩ →ᴸ* ⟨ h ∥ γ' ﹐ M ⟩
+                 → ⟦ ⟨ i ∥ γ ⟩ ⟧ᴸ ≡ ⟦ ⟨ h ∥ γ' ﹐ M ⟩ ⟧ᴸ → (π : Wk Γ (Γ' ∙ X)) → (⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ γ' ﹐ M ⟧ᴱ)
+                 → (πₗ : Wk Ψ Γ) → (γₗ : Env Ψ) → (wk≡ₗ : ⟦ πₗ ⟧ʷ ⟦ γₗ ⟧ᴱ ≡ ⟦ γ ⟧ᴱ)
+                 → (ϖ : EnvEq πₗ γₗ γ)
+                 → Σ[ Ψ' ∈ Ctx ]
+                   Σ[ πᵣ ∈ Wk Ψ' Γ' ]
+                   Σ[ γᵣ ∈ Env Ψ' ]
+                   (     ⟨ (wk-mem πₗ i) ∥ γₗ ⟩   →ᴸ*  ⟨ h ∥ γᵣ ﹐ wk-v̲a̲l̲ πᵣ M ⟩
+                     × ⟦ ⟨ (wk-mem πₗ i) ∥ γₗ ⟩ ⟧ᴸ ≡ ⟦ ⟨ h ∥ γᵣ ﹐ wk-v̲a̲l̲ πᵣ M ⟩ ⟧ᴸ )
+
+  --lookup-wk-lift {Γ = Γ} {Ψ = Ψ} {i = i} {γ = γ} {γ' = γ'} L→L' Q≡Q' π wk≡ {πₗ = πₗ} {γₗ = γₗ} {wk≡ₗ = wk≡ₗ} = {!!}
+  --lookup-wk-lift {Γ = Γ} {Ψ = Ψ} {i = i} {γ = γ} {γ' = γ'} L→L' Q≡Q' π wk≡ πₗ γₗ wk≡ₗ = {!!}
+  --lookup-wk-lift {Γ = Γ} {Ψ = Ψ} {i = i} {γ = γ} {γ' = γ'} L→*L' Q≡Q' π wk≡ πₗ γₗ wk≡ₗ ϖ = {!i γ γₗ πₗ ϖ L→*L'!}
+
+  lookup-wk-lift {Γ = Γ} {Ψ = Ψ} {i = i} {γ = γ} {γ' = γ'} L→*L' Q≡Q' π wk≡ πₗ γₗ wk≡ₗ ϖ = {!i γ γₗ πₗ ϖ L→*L'!}
+
+                 -- ? , ? , ? , ? , ? , {! !}
+-}
+
+{-
+  lookup-wk-lift : {i : Γ ∋ X} {γ : Env Γ} {i' : Γ' ∋ X} {γ' : Env Γ'}
+                 → ⟨ i ∥ γ ⟩ →ᴸ ⟨ i' ∥ γ' ⟩
+                 → ⟦ ⟨ i ∥ γ ⟩ ⟧ᴸ ≡ ⟦ ⟨ i' ∥ γ' ⟩ ⟧ᴸ → (π : Wk Γ Γ') → (⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ γ' ⟧ᴱ)
+                 → (πₗ : Wk Ψ Γ) → (γₗ : Env Ψ) → (wk≡ₗ : ⟦ πₗ ⟧ʷ ⟦ γₗ ⟧ᴱ ≡ ⟦ γ ⟧ᴱ)
+                 → (ϖ : EnvEq πₗ γₗ γ)
+                 → Σ[ Ψ' ∈ Ctx ]
+                   Σ[ πᵣ ∈ Wk Ψ' Γ' ]
+                   Σ[ γᵣ ∈ Env Ψ' ]
+                   Σ[ wk≡ᵣ ∈ ⟦ πᵣ ⟧ʷ ⟦ γᵣ ⟧ᴱ ≡ ⟦ γ' ⟧ᴱ ]
+                   (     ⟨ (wk-mem πₗ i) ∥ γₗ ⟩   →ᴸ   ⟨ (wk-mem πᵣ i') ∥ γᵣ ⟩
+                     × ⟦ ⟨ (wk-mem πₗ i) ∥ γₗ ⟩ ⟧ᴸ ≡ ⟦ ⟨ (wk-mem πᵣ i') ∥ γᵣ ⟩ ⟧ᴸ )
+
+  --lookup-wk-lift {i = i} {γ = γ} {i' = i'} {γ' = γ'} L→L' Q≡Q' π wk≡ πₗ γₗ wk≡ₗ ϖ = {!!}
+
+  lookup-wk-lift {i = i} {γ = γ} {i' = i'} {γ' = γ'} val-h-step Q≡Q' π wk≡ πₗ γₗ wk≡ₗ (wk-env-val-cong M ϖ) = {!!}
+  lookup-wk-lift {i = i} {γ = γ} {i' = i'} {γ' = γ'} val-h-step Q≡Q' π wk≡ πₗ γₗ wk≡ₗ (wk-env-val-wk M ϖ) = {!!}
+  lookup-wk-lift {i = i} {γ = γ} {i' = i'} {γ' = γ'} val-h-step Q≡Q' π wk≡ πₗ γₗ wk≡ₗ (wk-env-comp-wk W cs) = {!!}
+  lookup-wk-lift {i = i} {γ = γ} {i' = i'} {γ' = γ'} val-t-step Q≡Q' π wk≡ πₗ γₗ wk≡ₗ (wk-env-val-cong M ϖ) = {!!}
+  lookup-wk-lift {i = i} {γ = γ} {i' = i'} {γ' = γ'} val-t-step Q≡Q' π wk≡ πₗ γₗ wk≡ₗ (wk-env-val-wk M ϖ) = {!!}
+  lookup-wk-lift {i = i} {γ = γ} {i' = i'} {γ' = γ'} val-t-step Q≡Q' π wk≡ πₗ γₗ wk≡ₗ (wk-env-comp-wk W cs) = {!!}
+  lookup-wk-lift {i = i} {γ = γ} {i' = i'} {γ' = γ'} comp-t-step Q≡Q' π wk≡ πₗ γₗ wk≡ₗ (wk-env-comp-cong W cs) = {!!}
+  lookup-wk-lift {i = i} {γ = γ} {i' = i'} {γ' = γ'} comp-t-step Q≡Q' π wk≡ πₗ γₗ wk≡ₗ (wk-env-val-wk M ϖ) = {!!}
+  lookup-wk-lift {i = i} {γ = γ} {i' = i'} {γ' = γ'} comp-t-step Q≡Q' π wk≡ πₗ γₗ wk≡ₗ (wk-env-comp-wk W cs) = {!!}
+
+-}
+
+{-
+  lookup-wk-lift : {i : Γ ∋ X} {γ : Env Γ} {i' : Γ' ∋ X} {γ' : Env Γ'}
+                 → ⟨ i ∥ γ ⟩ →ᴸ ⟨ i' ∥ γ' ⟩
+                 → ⟦ ⟨ i ∥ γ ⟩ ⟧ᴸ ≡ ⟦ ⟨ i' ∥ γ' ⟩ ⟧ᴸ → (π : Wk Γ Γ') → (⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ γ' ⟧ᴱ)
+                 → {πₗ : Wk Ψ Γ} → {γₗ : Env Ψ} → {wk≡ₗ : ⟦ πₗ ⟧ʷ ⟦ γₗ ⟧ᴱ ≡ ⟦ γ ⟧ᴱ}
+                 → Σ[ Ψ' ∈ Ctx ]
+                   Σ[ πᵣ ∈ Wk Ψ' Γ' ]
+                   Σ[ γᵣ ∈ Env Ψ' ]
+                   Σ[ wk≡ᵣ ∈ ⟦ πᵣ ⟧ʷ ⟦ γᵣ ⟧ᴱ ≡ ⟦ γ' ⟧ᴱ ]
+                   (     ⟨ (wk-mem πₗ i) ∥ γₗ ⟩   →ᴸ   ⟨ (wk-mem πᵣ i') ∥ γᵣ ⟩
+                     × ⟦ ⟨ (wk-mem πₗ i) ∥ γₗ ⟩ ⟧ᴸ ≡ ⟦ ⟨ (wk-mem πᵣ i') ∥ γᵣ ⟩ ⟧ᴸ )
+
+  lookup-wk-lift {Γ = Γ Cx.∙ V} {Ψ = Ψ Cx.∙ V} {i = Cx.h} {γ = γ ﹐ v̲a̲r̲ i'} {i' = i'} {γ' = γ'} (val-h-step {E = γ} {i = i'}) Q≡Q' π wk≡ {πₗ = wk-cong πₗ} {γₗ = γₗ ﹐ v̲a̲r̲ iₗ} {wk≡ₗ = wk≡ₗ} = {!!}
+                   -- let
+                   --   eq0 : iₗ ≡ wk-mem πₗ i'
+                   --   eq0 = {! wk-mem πₗ i'!}
+                   --   eq1 : (⟦ πₗ ⟧ʷ ⟦ γₗ ⟧ᴱ , ⟦ iₗ ⟧ᵐ ⟦ γₗ ⟧ᴱ) ≡ (⟦ γ ⟧ᴱ , ⟦ i' ⟧ᵐ ⟦ γ ⟧ᴱ)
+                   --   eq1 = wk≡ₗ
+                   --   wk≡ᵣ : ⟦ πₗ ⟧ʷ ⟦ γₗ ⟧ᴱ ≡ ⟦ γ ⟧ᴱ
+                   --   wk≡ᵣ = pair-eq wk≡ₗ
+                   -- in
+                   -- Ψ , πₗ , γₗ , wk≡ᵣ , {!!} , {!!}
+
+  lookup-wk-lift {Γ = Γ Cx.∙ V} {Ψ = Ψ Cx.∙ V} {i = Cx.h} {γ = γ ﹐ v̲a̲r̲ i'} {i' = i'} {γ' = γ'} (val-h-step {E = γ} {i = i'}) Q≡Q' π wk≡ {πₗ = wk-cong πₗ} {γₗ = γₗ ﹐﹝ W ╎ cs ﹞} {wk≡ₗ = wk≡ₗ} = {!!}
+                   -- Ψ , πₗ , {!!} , {!!} , {!!} , {!!}
+
+  lookup-wk-lift {Γ = Γ ∙ V} {Ψ = Ψ} {i = h} {γ = γ ﹐ v̲a̲r̲ i'} {i' = i'} {γ' = γ'} (val-h-step {E = γ} {i = i'}) Q≡Q' π wk≡ {πₗ = wk-wk πₗ} {γₗ = γₗ} {wk≡ₗ = wk≡ₗ} = {!!}
+                   -- ? , ? , ? , ? , ? , {!!}
+
+  lookup-wk-lift {i = i} {γ = γ} {i' = i'} {γ' = γ'} val-t-step Q≡Q' π wk≡ {πₗ = πₗ} {γₗ = γₗ} {wk≡ₗ = wk≡ₗ} = {!!}
+
+  lookup-wk-lift {i = i} {γ = γ} {i' = i'} {γ' = γ'} comp-t-step Q≡Q' π wk≡ {πₗ = πₗ} {γₗ = γₗ} {wk≡ₗ = wk≡ₗ} = {!!}
+
+  {-
+        Σ[ Ψ' ∈ Ctx ]
+        Σ[ πᵣ ∈ Wk Ψ' Γ' ]
+        Σ[ γᵣ ∈ Env Ψ' ]
+        Σ[ wk≡ᵣ ∈ ⟦ πᵣ ⟧ʷ ⟦ γᵣ ⟧ᴱ ≡ ⟦ γ' ⟧ᴱ ]
+        (   ⟨ (wk-mem πₗ i) ∥ γₗ ⟩ →ᴸ ⟨ (wk-mem πᵣ i') ∥ γᵣ ⟩
+          × ⟦ ⟨ (wk-mem πₗ i) ∥ γₗ ⟩ ⟧ᴸ ≡ ⟦ ⟨ (wk-mem πᵣ i') ∥ γᵣ ⟩ ⟧ᴸ )
+  -}
+-}
+
+  --------------------------------------------------
+
   uniq-bot : (↥ : BottomTypeEqualsNextType non-empty X T◾) → (↥ ≡ 🗇)
   uniq-bot 🗇 = refl
 
-  -- _⊲_∷_ : PartialTerm Γ X → (γ : Env Γ) → (tail : ValStack b T◾) → {↥ : BottomTypeEqualsNextType b X T◾} → ValStack non-empty T◾
-  -- → ∘ ((⇡ var i ⊲ γ ∷ tail) {↥ = ↥}) →ᵛ ∙ ((⭭ v̲a̲r̲ i ⊲ γ ∷ tail) {↥ = ↥})
 
+{- BEGIN W/O ENV EQ
+  val-wk-lift-∘∘ : {M : PartialTerm Γ X} {γ : Env Γ} {tail : ValStack b T◾} {↥ : BottomTypeEqualsNextType b X T◾} {M' : PartialTerm Γ' X'} {γ' : Env Γ'} {tail' : ValStack b' T◾} {↥' : BottomTypeEqualsNextType b' X' T◾}
+          → ∘ ((M ⊲ γ ∷ tail) {↥ = ↥}) →ᵛ ∘ ((M' ⊲ γ' ∷ tail') {↥ = ↥'})
+          → ⟦ ∘ ((M ⊲ γ ∷ tail) {↥ = ↥}) ⟧ᵛꟴ ≡ ⟦ ∘ ((M' ⊲ γ' ∷ tail') {↥ = ↥'}) ⟧ᵛꟴ
+          → {πₜ : Wk Γ' Γ} → {πₗ : Wk Ψ Γ} → {γₗ : Env Ψ} → {wk≡ₗ : ⟦ πₗ ⟧ʷ ⟦ γₗ ⟧ᴱ ≡ ⟦ γ ⟧ᴱ}
+          → Σ[ Ψ' ∈ Ctx ]
+            Σ[ πᵣ ∈ Wk Ψ' Γ' ]
+            Σ[ γᵣ ∈ Env Ψ' ]
+            Σ[ wk≡ᵣ ∈ ⟦ πᵣ ⟧ʷ ⟦ γᵣ ⟧ᴱ ≡ ⟦ γ' ⟧ᴱ ]
+            Σ[ tailᵣ ∈ ValStack b' T◾ ]
+            ( ∘ (((wk-pt πₗ M) ⊲ γₗ ∷ tail) {↥ = ↥}) →ᵛ ∘ (((wk-pt πᵣ M') ⊲ γᵣ ∷ tailᵣ) {↥ = ↥'})
+              × ⟦ ∘ (((wk-pt πₗ M) ⊲ γₗ ∷ tail) {↥ = ↥}) ⟧ᵛꟴ ≡ ⟦ ∘ (((wk-pt πᵣ M') ⊲ γᵣ ∷ tailᵣ) {↥ = ↥'}) ⟧ᵛꟴ )
+  val-wk-lift-∘∘ {Ψ = Ψ} {M = M} {γ = γ} {tail = □} {↥ = 🗆} {M' = M'} {γ' = γ'} {tail' = tail'} {↥' = ↥'} (∘pair {LHS = LHS} {RHS = RHS}) Q≡Q' {πₜ = πₜ} {πₗ = πₗ} {γₗ = γₗ} {wk≡ₗ = wk≡ₗ} =
+                 Ψ , πₗ , γₗ , wk≡ₗ , ⇡ᴸ (wk-val πₗ LHS) (wk-val πₗ RHS) ⊲ γₗ ∷ □ , ∘pair , refl
+  val-wk-lift-∘∘ {Ψ = Ψ} {M = M} {γ = γ} {tail = M₁ ⊲ γ₁ ∷ tail} {↥ = 🗇} {M' = M'} {γ' = γ'} {tail' = tail'} {↥' = ↥'} (∘pair {LHS = LHS} {RHS = RHS}) Q≡Q' {πₜ = πₜ} {πₗ = πₗ} {γₗ = γₗ} {wk≡ₗ = wk≡ₗ} =
+                 Ψ , πₗ , γₗ , wk≡ₗ , ⇡ᴸ (wk-val πₗ LHS) (wk-val πₗ RHS) ⊲ γₗ ∷ M₁ ⊲ γ₁ ∷ tail , ∘pair , refl
+  val-wk-lift-∘∘ {Ψ = Ψ} {M = M} {γ = γ} {tail = □} {↥ = 🗆} {M' = M'} {γ' = γ'} {tail' = tail'} {↥' = ↥'} (∘pm {M = Mₚ} {N = Nₚ}) Q≡Q' {πₜ = πₜ} {πₗ = πₗ} {γₗ = γₗ} {wk≡ₗ = wk≡ₗ} =
+                 Ψ , πₗ , γₗ , wk≡ₗ , ⇡ᴹ (wk-val πₗ Mₚ) (wk-val (wk-cong (wk-cong πₗ)) Nₚ) ⊲ γₗ ∷ □ , ∘pm , refl
+  val-wk-lift-∘∘ {Ψ = Ψ} {M = M} {γ = γ} {tail = M₁ ⊲ γ₁ ∷ tail} {↥ = 🗇} {M' = M'} {γ' = γ'} {tail' = tail'} {↥' = ↥'} (∘pm {M = Mₚ} {N = Nₚ}) Q≡Q' {πₜ = πₜ} {πₗ = πₗ} {γₗ = γₗ} {wk≡ₗ = wk≡ₗ} =
+                 Ψ , πₗ , γₗ , wk≡ₗ , ⇡ᴹ (wk-val πₗ Mₚ) (wk-val (wk-cong (wk-cong πₗ)) Nₚ) ⊲ γₗ ∷ M₁ ⊲ γ₁ ∷ tail , ∘pm , refl
+
+  val-wk-lift-∘∙ : {M : PartialTerm Γ X} {γ : Env Γ} {tail : ValStack b T◾} {↥ : BottomTypeEqualsNextType b X T◾} {M' : PartialTerm Γ' X'} {γ' : Env Γ'} {tail' : ValStack b' T◾} {↥' : BottomTypeEqualsNextType b' X' T◾}
+          → ∘ ((M ⊲ γ ∷ tail) {↥ = ↥}) →ᵛ ∙ ((M' ⊲ γ' ∷ tail') {↥ = ↥'})
+          → ⟦ ∘ ((M ⊲ γ ∷ tail) {↥ = ↥}) ⟧ᵛꟴ ≡ ⟦ ∙ ((M' ⊲ γ' ∷ tail') {↥ = ↥'}) ⟧ᵛꟴ
+          → {πₜ : Wk Γ' Γ} → {πₗ : Wk Ψ Γ} → {γₗ : Env Ψ} → {wk≡ₗ : ⟦ πₗ ⟧ʷ ⟦ γₗ ⟧ᴱ ≡ ⟦ γ ⟧ᴱ}
+          → Σ[ Ψ' ∈ Ctx ]
+            Σ[ πᵣ ∈ Wk Ψ' Γ' ]
+            Σ[ γᵣ ∈ Env Ψ' ]
+            Σ[ wk≡ᵣ ∈ ⟦ πᵣ ⟧ʷ ⟦ γᵣ ⟧ᴱ ≡ ⟦ γ' ⟧ᴱ ]
+            Σ[ tailᵣ ∈ ValStack b' T◾ ]
+            ( ∘ (((wk-pt πₗ M) ⊲ γₗ ∷ tail) {↥ = ↥}) →ᵛ ∙ (((wk-pt πᵣ M') ⊲ γᵣ ∷ tailᵣ) {↥ = ↥'})
+              × ⟦ ∘ (((wk-pt πₗ M) ⊲ γₗ ∷ tail) {↥ = ↥}) ⟧ᵛꟴ ≡ ⟦ ∙ (((wk-pt πᵣ M') ⊲ γᵣ ∷ tailᵣ) {↥ = ↥'}) ⟧ᵛꟴ )
+  val-wk-lift-∘∙ {Ψ = Ψ} {M = M} {γ = γ} {tail = □} {↥ = 🗆} {M' = M'} {γ' = γ'} {tail' = tail'} {↥' = ↥'} ∘var-c Q≡Q' {πₜ = πₜ} {πₗ = πₗ} {γₗ = γₗ} {wk≡ₗ = wk≡ₗ} =
+                 Ψ , πₗ , γₗ , wk≡ₗ , □ , ∘var-c , refl
+  val-wk-lift-∘∙ {Ψ = Ψ} {M = ⇡ var i} {γ = γ} {tail = □} {↥ = 🗆} {M' = M'} {γ' = γ} {tail' = □} {↥' = ↥'} (∘var L→*L' πᵥ) Q≡Q' {πₜ = πₜ} {πₗ = πₗ} {γₗ = γₗ} {wk≡ₗ = wk≡ₗ} =
+                 Ψ , πₗ , γₗ , wk≡ₗ , □ , {!!} , {!!}
+  val-wk-lift-∘∙ {Ψ = Ψ} {M = M} {γ = γ} {tail = □} {↥ = 🗆} {M' = M'} {γ' = γ'} {tail' = tail'} {↥' = ↥'} ∘lam Q≡Q' {πₜ = πₜ} {πₗ = πₗ} {γₗ = γₗ} {wk≡ₗ = wk≡ₗ} =
+                 Ψ , πₗ , γₗ , wk≡ₗ , □ , ∘lam , refl
+  val-wk-lift-∘∙ {Ψ = Ψ} {M = M} {γ = γ} {tail = □} {↥ = 🗆} {M' = M'} {γ' = γ'} {tail' = tail'} {↥' = ↥'} ∘unit Q≡Q' {πₜ = πₜ} {πₗ = πₗ} {γₗ = γₗ} {wk≡ₗ = wk≡ₗ} =
+                 Ψ , πₗ , γₗ , wk≡ₗ , □ , ∘unit , Q≡Q'
+  val-wk-lift-∘∙ {Ψ = Ψ} {M = M} {γ = γ} {tail = M₁ ⊲ γ₁ ∷ tail} {↥ = 🗇} {M' = M'} {γ' = γ'} {tail' = tail'} {↥' = ↥'} ∘var-c Q≡Q' {πₜ = πₜ} {πₗ = πₗ} {γₗ = γₗ} {wk≡ₗ = wk≡ₗ} =
+                 Ψ , πₗ , γₗ , wk≡ₗ , M₁ ⊲ γ₁ ∷ tail , ∘var-c , Q≡Q'
+  val-wk-lift-∘∙ {Ψ = Ψ} {M = M} {γ = γ} {tail = M₁ ⊲ γ₁ ∷ tail} {↥ = 🗇} {M' = M'} {γ' = γ'} {tail' = tail'} {↥' = ↥'} (∘var x₁ πᵥ) Q≡Q' {πₜ = πₜ} {πₗ = πₗ} {γₗ = γₗ} {wk≡ₗ = wk≡ₗ} = {!!}
+  val-wk-lift-∘∙ {Ψ = Ψ} {M = M} {γ = γ} {tail = M₁ ⊲ γ₁ ∷ tail} {↥ = 🗇} {M' = M'} {γ' = γ'} {tail' = tail'} {↥' = ↥'} ∘lam Q≡Q' {πₜ = πₜ} {πₗ = πₗ} {γₗ = γₗ} {wk≡ₗ = wk≡ₗ} =
+                 Ψ , πₗ , γₗ , wk≡ₗ , M₁ ⊲ γ₁ ∷ tail , ∘lam , Q≡Q'
+  val-wk-lift-∘∙ {Ψ = Ψ} {M = M} {γ = γ} {tail = M₁ ⊲ γ₁ ∷ tail} {↥ = 🗇} {M' = M'} {γ' = γ'} {tail' = tail'} {↥' = ↥'} ∘unit Q≡Q' {πₜ = πₜ} {πₗ = πₗ} {γₗ = γₗ} {wk≡ₗ = wk≡ₗ} =
+                 Ψ , πₗ , γₗ , wk≡ₗ , M₁ ⊲ γ₁ ∷ tail , ∘unit , Q≡Q'
+
+  val-wk-lift-∙∘ : {M : PartialTerm Γ X} {γ : Env Γ} {tail : ValStack b T◾} {↥ : BottomTypeEqualsNextType b X T◾} {M' : PartialTerm Γ' X'} {γ' : Env Γ'} {tail' : ValStack b' T◾} {↥' : BottomTypeEqualsNextType b' X' T◾}
+          → ∙ ((M ⊲ γ ∷ tail) {↥ = ↥}) →ᵛ ∘ ((M' ⊲ γ' ∷ tail') {↥ = ↥'})
+          → ⟦ ∙ ((M ⊲ γ ∷ tail) {↥ = ↥}) ⟧ᵛꟴ ≡ ⟦ ∘ ((M' ⊲ γ' ∷ tail') {↥ = ↥'}) ⟧ᵛꟴ
+          → {πₜ : Wk Γ' Γ} → {πₗ : Wk Ψ Γ} → {γₗ : Env Ψ} → {wk≡ₗ : ⟦ πₗ ⟧ʷ ⟦ γₗ ⟧ᴱ ≡ ⟦ γ ⟧ᴱ}
+          → Σ[ Ψ' ∈ Ctx ]
+            Σ[ πᵣ ∈ Wk Ψ' Γ' ]
+            Σ[ γᵣ ∈ Env Ψ' ]
+            Σ[ wk≡ᵣ ∈ ⟦ πᵣ ⟧ʷ ⟦ γᵣ ⟧ᴱ ≡ ⟦ γ' ⟧ᴱ ]
+            Σ[ tailᵣ ∈ ValStack b' T◾ ]
+            ( ∙ (((wk-pt πₗ M) ⊲ γₗ ∷ tail) {↥ = ↥}) →ᵛ ∘ (((wk-pt πᵣ M') ⊲ γᵣ ∷ tailᵣ) {↥ = ↥'})
+              × ⟦ ∙ (((wk-pt πₗ M) ⊲ γₗ ∷ tail) {↥ = ↥}) ⟧ᵛꟴ ≡ ⟦ ∘ (((wk-pt πᵣ M') ⊲ γᵣ ∷ tailᵣ) {↥ = ↥'}) ⟧ᵛꟴ )
+  val-wk-lift-∙∘ {Ψ = Ψ} {M = M} {γ = γ} {tail = □} {↥ = 🗆} {M' = M'} {γ' = γ'} {tail' = tail'} {↥' = ↥'} () Q≡Q' {πₜ = πₜ} {πₗ = πₗ} {γₗ = γₗ} {wk≡ₗ = wk≡ₗ}
+  val-wk-lift-∙∘ {Ψ = Ψ} {M = ⭭ M} {γ = γ} {tail = ⇡ᴸ LHS RHS ⊲ γ₁ ∷ □} {↥ = 🗇} {M' = M'} {γ' = γ'} {tail' = ((⇡ᴿ M) _ ⊲ γ ∷ □) {↥ = 🗆}} {↥' = 🗇} (∙M∷l {X = X} {Y = Y} {M = M} {LHS = LHS} {RHS = RHS} {π' = π'}) Q≡Q' {πₜ = πₜ} {πₗ = πₗ} {γₗ = γₗ} {wk≡ₗ = wk≡ₗ} =
+                 let
+                   eq : (⇡ wk-val (wk-trans πₗ π') RHS) ≡ wk-pt πₗ (⇡ wk-val π' RHS)
+                   eq = cong (⇡_) (sym (wk-val-trans RHS πₗ π'))
+                   M→M'' : ∙ ((wk-pt πₗ (⭭ M) ⊲ γₗ ∷ ((⇡ᴸ LHS RHS ⊲ γ₁ ∷ □) {↥ = 🗆})) {↥ = 🗇}) →ᵛ ∘ (((⇡ wk-val (wk-trans πₗ π') RHS) ⊲ γₗ ∷ ((⇡ᴿ (wk-v̲a̲l̲ πₗ M) (wk-val (wk-trans πₗ π') RHS) ⊲ γₗ ∷ □) {↥ = 🗆})) {↥ = 🗇})
+                   M→M'' = ∙M∷l
+                   M→M''' : ∙ ((wk-pt πₗ (⭭ M) ⊲ γₗ ∷ ((⇡ᴸ LHS RHS ⊲ γ₁ ∷ □) {↥ = 🗆})) {↥ = 🗇}) →ᵛ ∘ ((wk-pt πₗ (⇡ wk-val π' RHS) ⊲ γₗ ∷ ((⇡ᴿ (wk-v̲a̲l̲ πₗ M) (wk-val (wk-trans πₗ π') RHS) ⊲ γₗ ∷ □) {↥ = 🗆})) {↥ = 🗇})
+                   M→M''' = subst (λ x → ∙ ((wk-pt πₗ (⭭ M) ⊲ γₗ ∷ ((⇡ᴸ LHS RHS ⊲ γ₁ ∷ □) {↥ = 🗆})) {↥ = 🗇}) →ᵛ ∘ ((x ⊲ γₗ ∷ ((⇡ᴿ (wk-v̲a̲l̲ πₗ M) (wk-val (wk-trans πₗ π') RHS) ⊲ γₗ ∷ □) {↥ = 🗆})) {↥ = 🗇})) eq M→M''
+                 in
+                 Ψ , πₗ , γₗ , wk≡ₗ , (⇡ᴿ (wk-v̲a̲l̲ πₗ M) (wk-val (wk-trans πₗ π') RHS) ⊲ γₗ ∷ □) {↥ = 🗆} , M→M''' ,
+                 ( ⟦ ∙ ((wk-pt πₗ (⭭ M) ⊲ γₗ ∷ ((⇡ᴸ LHS RHS ⊲ γ₁ ∷ □) {↥ = 🗆})) {↥ = 🗇}) ⟧ᵛꟴ
+                 ≡⟨ refl ⟩
+                   ⟦ ((wk-pt πₗ (⭭ M) ⊲ γₗ ∷ ((⇡ᴸ LHS RHS ⊲ γ₁ ∷ □) {↥ = 🗆})) {↥ = 🗇}) ⟧ᵛˢ
+                 ≡⟨ refl ⟩
+                   ⟦ ((⇡ᴸ LHS RHS ⊲ γ₁ ∷ □) {↥ = 🗆}) ⟧ᵛˢ
+                 ≡⟨ Q≡Q' ⟩
+                   (⟦ toVal M ⟧ᵛ ⟦ γ ⟧ᴱ , ⟦ RHS ⟧ᵛ (⟦ π' ⟧ʷ ⟦ γ ⟧ᴱ))
+                 ≡⟨ cong (λ x → (⟦ toVal M ⟧ᵛ x , ⟦ RHS ⟧ᵛ (⟦ π' ⟧ʷ x))) (sym wk≡ₗ)  ⟩
+                   (⟦ toVal M ⟧ᵛ (⟦ πₗ ⟧ʷ ⟦ γₗ ⟧ᴱ) , ⟦ RHS ⟧ᵛ (⟦ π' ⟧ʷ (⟦ πₗ ⟧ʷ ⟦ γₗ ⟧ᴱ)))
+                 ≡⟨ cong (λ x → (⟦ toVal M ⟧ᵛ (⟦ πₗ ⟧ʷ ⟦ γₗ ⟧ᴱ) , ⟦ RHS ⟧ᵛ x)) (wk-sem-trans πₗ π' ⟦ γₗ ⟧ᴱ)  ⟩
+                   ⟦ toVal M ⟧ᵛ (⟦ πₗ ⟧ʷ ⟦ γₗ ⟧ᴱ) , ⟦ RHS ⟧ᵛ (⟦ wk-trans πₗ π' ⟧ʷ ⟦ γₗ ⟧ᴱ)
+                 ≡⟨ refl ⟩
+                   ⟦ ((⇡ᴿ (wk-v̲a̲l̲ πₗ M) (wk-val (wk-trans πₗ π') RHS) ⊲ γₗ ∷ □) {↥ = 🗆}) ⟧ᵛˢ
+                 ≡⟨ refl ⟩
+                   ⟦ ((wk-pt πₗ (⇡ wk-val π' RHS) ⊲ γₗ ∷ ((⇡ᴿ (wk-v̲a̲l̲ πₗ M) (wk-val (wk-trans πₗ π') RHS) ⊲ γₗ ∷ □) {↥ = 🗆})) {↥ = 🗇}) ⟧ᵛˢ
+                 ≡⟨ refl ⟩
+                  ⟦ ∘ ((wk-pt πₗ (⇡ wk-val π' RHS) ⊲ γₗ ∷ ((⇡ᴿ (wk-v̲a̲l̲ πₗ M) (wk-val (wk-trans πₗ π') RHS) ⊲ γₗ ∷ □) {↥ = 🗆})) {↥ = 🗇}) ⟧ᵛꟴ ∎ )
+
+  val-wk-lift-∙∘ {Ψ = Ψ} {M = ⭭ M} {γ = γ} {tail = ⇡ᴸ LHS RHS ⊲ γ₁ ∷ ((M₂ ⊲ γ₂ ∷ tail) {↥ = ↥})} {↥ = 🗇} {M' = M'} {γ' = γ'} {tail' = tail'} {↥' = ↥'} (∙M∷l {M = M} {LHS = LHS} {RHS = RHS} {π' = π'} {↥ = ↥₀}) Q≡Q' {πₜ = πₜ} {πₗ = πₗ} {γₗ = γₗ} {wk≡ₗ = wk≡ₗ} =
+                 let
+                   eq : (⇡ wk-val (wk-trans πₗ π') RHS) ≡ wk-pt πₗ (⇡ wk-val π' RHS)
+                   eq = cong (⇡_) (sym (wk-val-trans RHS πₗ π'))
+                   M→M''' : ∙ ((wk-pt πₗ (⭭ M) ⊲ γₗ ∷ ((⇡ᴸ LHS RHS ⊲ γ₁ ∷ ((M₂ ⊲ γ₂ ∷ tail) {↥ = ↥})) {↥ = ↥₀})) {↥ = 🗇}) →ᵛ ∘ ((wk-pt πₗ (⇡ wk-val π' RHS) ⊲ γₗ ∷ ((⇡ᴿ (wk-v̲a̲l̲ πₗ M) (wk-val (wk-trans πₗ π') RHS) ⊲ γₗ ∷ ((M₂ ⊲ γ₂ ∷ tail) {↥ = ↥})) {↥ = 🗇})) {↥ = 🗇})
+                   M→M''' = subst₂ (λ x y → ∙ ((wk-pt πₗ (⭭ M) ⊲ γₗ ∷ ((⇡ᴸ LHS RHS ⊲ γ₁ ∷ ((M₂ ⊲ γ₂ ∷ tail) {↥ = ↥})) {↥ = ↥₀})) {↥ = 🗇}) →ᵛ ∘ ((x ⊲ γₗ ∷ ((⇡ᴿ (wk-v̲a̲l̲ πₗ M) (wk-val (wk-trans πₗ π') RHS) ⊲ γₗ ∷ ((M₂ ⊲ γ₂ ∷ tail) {↥ = ↥})) {↥ = y})) {↥ = 🗇})) eq (uniq-bot ↥₀) ∙M∷l
+                 in
+                 Ψ , πₗ , γₗ , wk≡ₗ , (⇡ᴿ (wk-v̲a̲l̲ πₗ M) (wk-val (wk-trans πₗ π') RHS) ⊲ γₗ ∷ ((M₂ ⊲ γ₂ ∷ tail) {↥ = ↥})) {↥ = 🗇} , M→M''' , --{!!}
+
+                 ( ⟦ ∙ ((wk-pt πₗ (⭭ M) ⊲ γₗ ∷ ((⇡ᴸ LHS RHS ⊲ γ₁ ∷ ((M₂ ⊲ γ₂ ∷ tail) {↥ = ↥})) {↥ = ↥₀})) {↥ = 🗇}) ⟧ᵛꟴ
+                 ≡⟨ refl ⟩
+                   ⟦ ((wk-pt πₗ (⭭ M) ⊲ γₗ ∷ ((⇡ᴸ LHS RHS ⊲ γ₁ ∷ ((M₂ ⊲ γ₂ ∷ tail) {↥ = ↥})) {↥ = ↥₀})) {↥ = 🗇}) ⟧ᵛˢ
+                 ≡⟨ refl ⟩
+                   ⟦ ((⇡ᴸ LHS RHS ⊲ γ₁ ∷ ((M₂ ⊲ γ₂ ∷ tail) {↥ = ↥})) {↥ = ↥₀}) ⟧ᵛˢ
+                 ≡⟨ Q≡Q' ⟩
+                   ⟦ ∘ ((⇡ wk-val π' RHS ⊲ γ ∷ ((⇡ᴿ M (wk-val π' RHS) ⊲ γ ∷ ((M₂ ⊲ γ₂ ∷ tail) {↥ = ↥})) {↥ = ↥₀})) {↥ = 🗇}) ⟧ᵛꟴ
+                 ≡⟨ refl ⟩
+                   ⟦ ((⇡ᴿ M (wk-val π' RHS) ⊲ γ ∷ ((M₂ ⊲ γ₂ ∷ tail) {↥ = ↥})) {↥ = ↥₀}) ⟧ᵛˢ
+                 ≡⟨ cong (λ x → ⟦ ((⇡ᴿ M (wk-val π' RHS) ⊲ γ ∷ ((M₂ ⊲ γ₂ ∷ tail) {↥ = ↥})) {↥ = x}) ⟧ᵛˢ) (uniq-bot ↥₀) ⟩
+                   ⟦ ((⇡ᴿ M (wk-val π' RHS) ⊲ γ ∷ ((M₂ ⊲ γ₂ ∷ tail) {↥ = ↥})) {↥ = 🗇}) ⟧ᵛˢ
+                 ≡⟨ refl ⟩
+                   ⟦ ((M₂ ⊲ γ₂ ∷ tail) {↥ = ↥}) ⟧ᵛˢ
+                 ≡⟨ refl ⟩
+                  ⟦ ∘ ((wk-pt πₗ (⇡ wk-val π' RHS) ⊲ γₗ ∷ ((⇡ᴿ (wk-v̲a̲l̲ πₗ M) (wk-val (wk-trans πₗ π') RHS) ⊲ γₗ ∷ ((M₂ ⊲ γ₂ ∷ tail) {↥ = ↥})) {↥ = 🗇})) {↥ = 🗇}) ⟧ᵛꟴ ∎ )
+
+  val-wk-lift-∙∘ {Ψ = Ψ} {M = ⭭ pa̲i̲r̲ LHS RHS} {γ = γ} {tail = ⇡ᴹ M N ⊲ γ₁ ∷ □} {↥ = 🗇} {M' = M'} {γ' = γ'} {tail' = tail'} {↥' = 🗆} (∙pair∷pm {X = X} {Y = Y} {Γ' = Γ₁} {π' = π'} {↥ = ↥₀}) Q≡Q' {πₜ = πₜ} {πₗ = πₗ} {γₗ = γₗ} {wk≡ₗ = wk≡ₗ} =
+                 let
+                   eq0 : (⇡ wk-val (wk-cong (wk-cong (wk-trans πₗ π'))) N) ≡ (wk-pt (wk-cong (wk-cong πₗ)) (⇡ wk-val (wk-cong (wk-cong π')) N))
+                   eq0 =   (⇡ wk-val (wk-cong (wk-cong (wk-trans πₗ π'))) N)
+                          ≡⟨ refl ⟩
+                           (⇡ wk-val (wk-trans (wk-cong (wk-cong πₗ)) (wk-cong (wk-cong π'))) N)
+                          ≡⟨ cong (⇡_) (sym (wk-val-trans N (wk-cong (wk-cong πₗ)) (wk-cong (wk-cong π')))) ⟩
+                           (⇡ wk-val (wk-cong (wk-cong πₗ)) (wk-val (wk-cong (wk-cong π')) N))
+                          ≡⟨ refl ⟩
+                           (wk-pt (wk-cong (wk-cong πₗ)) (⇡ wk-val (wk-cong (wk-cong π')) N)) ∎
+                   eq1 : (wk-v̲a̲l̲ (wk-wk wk-id) (wk-v̲a̲l̲ πₗ RHS)) ≡ (wk-v̲a̲l̲ (wk-wk πₗ) RHS)
+                   eq1 =   (wk-v̲a̲l̲ (wk-wk wk-id) (wk-v̲a̲l̲ πₗ RHS))
+                          ≡⟨ wk-v̲a̲l̲-trans RHS (wk-wk wk-id) πₗ ⟩
+                           (wk-v̲a̲l̲ (wk-trans (wk-wk wk-id) πₗ) RHS)
+                          ≡⟨ refl ⟩
+                           (wk-v̲a̲l̲ (wk-wk (wk-trans wk-id πₗ)) RHS)
+                          ≡⟨ cong (λ x → wk-v̲a̲l̲ (wk-wk x) RHS) wk-trans-id ⟩
+                           (wk-v̲a̲l̲ (wk-wk πₗ) RHS) ∎
+
+                   t : ∙ (((⭭ pa̲i̲r̲ (wk-v̲a̲l̲ πₗ LHS) (wk-v̲a̲l̲ πₗ RHS)) ⊲ γₗ ∷ ((⇡ᴹ M N ⊲ γ₁ ∷ □) {↥ = 🗆})) {↥ = 🗇}) →ᵛ ∘ ⇡ wk-val (wk-cong (wk-cong (wk-trans πₗ π'))) N ⊲ γₗ ﹐ wk-v̲a̲l̲ πₗ LHS ﹐ wk-v̲a̲l̲ (wk-wk wk-id) (wk-v̲a̲l̲ πₗ RHS) ∷ □
+                   t = ∙pair∷pm {π' = wk-trans πₗ π'}
+
+                   t' : ∙ (((⭭ pa̲i̲r̲ (wk-v̲a̲l̲ πₗ LHS) (wk-v̲a̲l̲ πₗ RHS)) ⊲ γₗ ∷ ((⇡ᴹ M N ⊲ γ₁ ∷ □) {↥ = 🗆})) {↥ = 🗇}) →ᵛ ∘ (wk-pt (wk-cong (wk-cong πₗ)) (⇡ wk-val (wk-cong (wk-cong π')) N) ⊲ γₗ ﹐ wk-v̲a̲l̲ πₗ LHS ﹐ wk-v̲a̲l̲ (wk-wk πₗ) RHS ∷ □)
+                   t' = subst₂ (λ x y → ∙ (((⭭ pa̲i̲r̲ (wk-v̲a̲l̲ πₗ LHS) (wk-v̲a̲l̲ πₗ RHS)) ⊲ γₗ ∷ ((⇡ᴹ M N ⊲ γ₁ ∷ □) {↥ = 🗆})) {↥ = 🗇}) →ᵛ ∘ ((x ⊲ γₗ ﹐ wk-v̲a̲l̲ πₗ LHS ﹐ y ∷ □) {↥ = 🗆})) eq0 eq1 t
+
+                 in
+                 Ψ ∙ X ∙ Y , wk-cong (wk-cong πₗ) , (γₗ ﹐ wk-v̲a̲l̲ πₗ LHS ﹐ wk-v̲a̲l̲ (wk-wk πₗ) RHS) ,
+                 ( ⟦ wk-cong (wk-cong πₗ) ⟧ʷ ⟦ γₗ ﹐ wk-v̲a̲l̲ πₗ LHS ﹐ wk-v̲a̲l̲ (wk-wk πₗ) RHS ⟧ᴱ
+                  ≡⟨ refl ⟩
+                   (⟦ πₗ ⟧ʷ ⟦ γₗ ⟧ᴱ , ⟦ toVal LHS ⟧ᵛ (⟦ πₗ ⟧ʷ ⟦ γₗ ⟧ᴱ)) , ⟦ toVal RHS ⟧ᵛ (⟦ πₗ ⟧ʷ ⟦ γₗ ⟧ᴱ)
+                  ≡⟨ cong (λ x → (x , ⟦ toVal LHS ⟧ᵛ x) , ⟦ toVal RHS ⟧ᵛ x) wk≡ₗ ⟩
+                   (⟦ γ ⟧ᴱ , ⟦ toVal LHS ⟧ᵛ ⟦ γ ⟧ᴱ) , ⟦ toVal RHS ⟧ᵛ ⟦ γ ⟧ᴱ
+                  ≡⟨ refl ⟩
+                    ⟦ γ ﹐ LHS ﹐ wk-v̲a̲l̲ (wk-wk wk-id) RHS ⟧ᴱ ∎ ) ,
+                 □ , t' ,
+                 ( ⟦ ∙ ((wk-pt πₗ (⭭ pa̲i̲r̲ LHS RHS) ⊲ γₗ ∷ ((⇡ᴹ M N ⊲ γ₁ ∷ □) {↥ = 🗆})) {↥ = 🗇}) ⟧ᵛꟴ
+                 ≡⟨ refl ⟩
+                    ⟦ ((⭭ pa̲i̲r̲ (wk-v̲a̲l̲ πₗ LHS) (wk-v̲a̲l̲ πₗ RHS) ⊲ γₗ ∷ ((⇡ᴹ M N ⊲ γ₁ ∷ □) {↥ = 🗆})) {↥ = 🗇}) ⟧ᵛˢ
+                 ≡⟨ refl ⟩
+                    ⟦ (⇡ᴹ M N ⊲ γ₁ ∷ □) {↥ = 🗆} ⟧ᵛˢ
+                 ≡⟨ Q≡Q' ⟩
+                   ⟦ ((⇡ wk-val (wk-cong (wk-cong π')) N ⊲ γ ﹐ LHS ﹐ wk-v̲a̲l̲ (wk-wk wk-id) RHS ∷ □) {↥ = 🗆}) ⟧ᵛˢ
+                 ≡⟨ refl ⟩
+                   ⟦ N ⟧ᵛ ((⟦ π' ⟧ʷ ⟦ γ ⟧ᴱ , ⟦ toVal LHS ⟧ᵛ ⟦ γ ⟧ᴱ) , ⟦ toVal RHS ⟧ᵛ ⟦ γ ⟧ᴱ)
+                 ≡⟨ cong (λ x → ⟦ N ⟧ᵛ ((⟦ π' ⟧ʷ x , ⟦ toVal LHS ⟧ᵛ x) , ⟦ toVal RHS ⟧ᵛ x)) (sym wk≡ₗ) ⟩
+                   ⟦ N ⟧ᵛ ((⟦ π' ⟧ʷ (⟦ πₗ ⟧ʷ ⟦ γₗ ⟧ᴱ) , ⟦ toVal LHS ⟧ᵛ (⟦ πₗ ⟧ʷ ⟦ γₗ ⟧ᴱ)) , ⟦ toVal RHS ⟧ᵛ (⟦ πₗ ⟧ʷ ⟦ γₗ ⟧ᴱ))
+                 ≡⟨ refl ⟩
+                   ⟦ (⇡ wk-val (wk-cong (wk-cong πₗ)) (wk-val (wk-cong (wk-cong π')) N) ⊲ γₗ ﹐ wk-v̲a̲l̲ πₗ LHS ﹐ wk-v̲a̲l̲ (wk-wk πₗ) RHS ∷ □) {↥ = 🗆} ⟧ᵛˢ
+                 ≡⟨ refl ⟩
+                   ⟦ ∘ ((wk-pt (wk-cong (wk-cong πₗ)) (⇡ wk-val (wk-cong (wk-cong π')) N) ⊲ γₗ ﹐ wk-v̲a̲l̲ πₗ LHS ﹐ wk-v̲a̲l̲ (wk-wk πₗ) RHS ∷ □) {↥ = 🗆}) ⟧ᵛꟴ ∎ )
+
+
+  val-wk-lift-∙∘ {b = non-empty} {b' = non-empty} {Ψ = Ψ} {M = ⭭ pa̲i̲r̲ LHS RHS} {γ = γ} {tail = (⇡ᴹ M N ⊲ γ₁ ∷ ((M₂ ⊲ γ₂ ∷ tail) {↥ = ↥})) {↥ = 🗇}} {↥ = 🗇} {M' = M'} {γ' = γ'} {tail' = tail'} {↥' = 🗇} (∙pair∷pm {X = X} {Y = Y} {Γ' = Γ₁} {b = non-empty} {π' = π'} {↥ = ↥₀}) Q≡Q' {πₜ = πₜ} {πₗ = πₗ} {γₗ = γₗ} {wk≡ₗ = wk≡ₗ} =
+                 let
+                   eq0 : (⇡ wk-val (wk-cong (wk-cong (wk-trans πₗ π'))) N) ≡ (wk-pt (wk-cong (wk-cong πₗ)) (⇡ wk-val (wk-cong (wk-cong π')) N))
+                   eq0 =   (⇡ wk-val (wk-cong (wk-cong (wk-trans πₗ π'))) N)
+                          ≡⟨ refl ⟩
+                           (⇡ wk-val (wk-trans (wk-cong (wk-cong πₗ)) (wk-cong (wk-cong π'))) N)
+                          ≡⟨ cong (⇡_) (sym (wk-val-trans N (wk-cong (wk-cong πₗ)) (wk-cong (wk-cong π')))) ⟩
+                           (⇡ wk-val (wk-cong (wk-cong πₗ)) (wk-val (wk-cong (wk-cong π')) N))
+                          ≡⟨ refl ⟩
+                           (wk-pt (wk-cong (wk-cong πₗ)) (⇡ wk-val (wk-cong (wk-cong π')) N)) ∎
+                   eq1 : (wk-v̲a̲l̲ (wk-wk wk-id) (wk-v̲a̲l̲ πₗ RHS)) ≡ (wk-v̲a̲l̲ (wk-wk πₗ) RHS)
+                   eq1 =   (wk-v̲a̲l̲ (wk-wk wk-id) (wk-v̲a̲l̲ πₗ RHS))
+                          ≡⟨ wk-v̲a̲l̲-trans RHS (wk-wk wk-id) πₗ ⟩
+                           (wk-v̲a̲l̲ (wk-trans (wk-wk wk-id) πₗ) RHS)
+                          ≡⟨ refl ⟩
+                           (wk-v̲a̲l̲ (wk-wk (wk-trans wk-id πₗ)) RHS)
+                          ≡⟨ cong (λ x → wk-v̲a̲l̲ (wk-wk x) RHS) wk-trans-id ⟩
+                           (wk-v̲a̲l̲ (wk-wk πₗ) RHS) ∎
+
+                   t : ∙ ((wk-pt πₗ (⭭ pa̲i̲r̲ LHS RHS) ⊲ γₗ ∷ ((⇡ᴹ M N ⊲ γ₁ ∷ ((M₂ ⊲ γ₂ ∷ tail) {↥ = ↥})) {↥ = 🗇})) {↥ = 🗇}) →ᵛ ∘ ((⇡ wk-val (wk-cong (wk-cong (wk-trans πₗ π'))) N ⊲ γₗ ﹐ wk-v̲a̲l̲ πₗ LHS ﹐ wk-v̲a̲l̲ (wk-wk wk-id) (wk-v̲a̲l̲ πₗ RHS) ∷ ((M₂ ⊲ γ₂ ∷ tail) {↥ = ↥})) {↥ = 🗇})
+                   t = ∙pair∷pm {π' = wk-trans πₗ π'}
+
+                   t' : ∙ ((wk-pt πₗ (⭭ pa̲i̲r̲ LHS RHS) ⊲ γₗ ∷ ((⇡ᴹ M N ⊲ γ₁ ∷ ((M₂ ⊲ γ₂ ∷ tail) {↥ = ↥})) {↥ = 🗇})) {↥ = 🗇}) →ᵛ ∘ ((wk-pt (wk-cong (wk-cong πₗ)) (⇡ wk-val (wk-cong (wk-cong π')) N) ⊲ γₗ ﹐ wk-v̲a̲l̲ πₗ LHS ﹐ wk-v̲a̲l̲ (wk-wk πₗ) RHS ∷ ((M₂ ⊲ γ₂ ∷ tail) {↥ = ↥})) {↥ = 🗇})
+                   t' = subst₂ (λ x y → ∙ (((⭭ pa̲i̲r̲ (wk-v̲a̲l̲ πₗ LHS) (wk-v̲a̲l̲ πₗ RHS)) ⊲ γₗ ∷ ((⇡ᴹ M N ⊲ γ₁ ∷ (M₂ ⊲ γ₂ ∷ tail) {↥ = ↥}) {↥ = 🗇})) {↥ = 🗇}) →ᵛ ∘ ((x ⊲ γₗ ﹐ wk-v̲a̲l̲ πₗ LHS ﹐ y ∷ (M₂ ⊲ γ₂ ∷ tail) {↥ = ↥}) {↥ = 🗇})) eq0 eq1 t
+                 in
+                 Ψ ∙ X ∙ Y , wk-cong (wk-cong πₗ) , (γₗ ﹐ wk-v̲a̲l̲ πₗ LHS ﹐ wk-v̲a̲l̲ (wk-wk πₗ) RHS) ,
+                 ( ⟦ wk-cong (wk-cong πₗ) ⟧ʷ ⟦ γₗ ﹐ wk-v̲a̲l̲ πₗ LHS ﹐ wk-v̲a̲l̲ (wk-wk πₗ) RHS ⟧ᴱ
+                  ≡⟨ refl ⟩
+                   (⟦ πₗ ⟧ʷ ⟦ γₗ ⟧ᴱ , ⟦ toVal LHS ⟧ᵛ (⟦ πₗ ⟧ʷ ⟦ γₗ ⟧ᴱ)) , ⟦ toVal RHS ⟧ᵛ (⟦ πₗ ⟧ʷ ⟦ γₗ ⟧ᴱ)
+                  ≡⟨ cong (λ x → (x , ⟦ toVal LHS ⟧ᵛ x) , ⟦ toVal RHS ⟧ᵛ x) wk≡ₗ ⟩
+                  (⟦ γ ⟧ᴱ , ⟦ toVal LHS ⟧ᵛ ⟦ γ ⟧ᴱ) , ⟦ toVal RHS ⟧ᵛ ⟦ γ ⟧ᴱ
+                  ≡⟨ refl ⟩
+                  ⟦ γ ﹐ LHS ﹐ wk-v̲a̲l̲ (wk-wk wk-id) RHS ⟧ᴱ ∎ ) ,
+                  ((M₂ ⊲ γ₂ ∷ tail) {↥ = ↥}) ,
+                  t' ,
+                  ( ⟦ ∙ ((wk-pt πₗ (⭭ pa̲i̲r̲ LHS RHS) ⊲ γₗ ∷ ((⇡ᴹ M N ⊲ γ₁ ∷ ((M₂ ⊲ γ₂ ∷ tail) {↥ = ↥})) {↥ = 🗇})) {↥ = 🗇}) ⟧ᵛꟴ
+                  ≡⟨ Q≡Q' ⟩
+                   ⟦ ((⇡ wk-val (wk-cong (wk-cong π')) N ⊲ γ ﹐ LHS ﹐ wk-v̲a̲l̲ (wk-wk wk-id) RHS ∷ ((M₂ ⊲ γ₂ ∷ tail) {↥ = ↥})) {↥ = 🗇}) ⟧ᵛˢ
+                  ≡⟨ refl ⟩
+                   ⟦ ∘ ((wk-pt (wk-cong (wk-cong πₗ)) (⇡ wk-val (wk-cong (wk-cong π')) N) ⊲ γₗ ﹐ wk-v̲a̲l̲ πₗ LHS ﹐ wk-v̲a̲l̲ (wk-wk πₗ) RHS ∷ ((M₂ ⊲ γ₂ ∷ tail) {↥ = ↥})) {↥ = 🗇}) ⟧ᵛꟴ ∎)
+
+
+  val-wk-lift-∙∙ : {M : PartialTerm Γ X} {γ : Env Γ} {tail : ValStack b T◾} {↥ : BottomTypeEqualsNextType b X T◾} {M' : PartialTerm Γ' X'} {γ' : Env Γ'} {tail' : ValStack b' T◾} {↥' : BottomTypeEqualsNextType b' X' T◾}
+          → ∙ ((M ⊲ γ ∷ tail) {↥ = ↥}) →ᵛ ∙ ((M' ⊲ γ' ∷ tail') {↥ = ↥'})
+          → ⟦ ∙ ((M ⊲ γ ∷ tail) {↥ = ↥}) ⟧ᵛꟴ ≡ ⟦ ∙ ((M' ⊲ γ' ∷ tail') {↥ = ↥'}) ⟧ᵛꟴ
+          → {πₜ : Wk Γ' Γ} → {πₗ : Wk Ψ Γ} → {γₗ : Env Ψ} → {wk≡ₗ : ⟦ πₗ ⟧ʷ ⟦ γₗ ⟧ᴱ ≡ ⟦ γ ⟧ᴱ}
+          → Σ[ Ψ' ∈ Ctx ]
+            Σ[ πᵣ ∈ Wk Ψ' Γ' ]
+            Σ[ γᵣ ∈ Env Ψ' ]
+            Σ[ wk≡ᵣ ∈ ⟦ πᵣ ⟧ʷ ⟦ γᵣ ⟧ᴱ ≡ ⟦ γ' ⟧ᴱ ]
+            Σ[ tailᵣ ∈ ValStack b' T◾ ]
+            ( ∙ (((wk-pt πₗ M) ⊲ γₗ ∷ tail) {↥ = ↥}) →ᵛ ∙ (((wk-pt πᵣ M') ⊲ γᵣ ∷ tailᵣ) {↥ = ↥'})
+              × ⟦ ∙ (((wk-pt πₗ M) ⊲ γₗ ∷ tail) {↥ = ↥}) ⟧ᵛꟴ ≡ ⟦ ∙ (((wk-pt πᵣ M') ⊲ γᵣ ∷ tailᵣ) {↥ = ↥'}) ⟧ᵛꟴ )
+  val-wk-lift-∙∙ {Ψ = Ψ} {M = ⭭ M} {γ = γ} {tail = ⇡ᴿ LHS RHS ⊲ γ'' ∷ □} {↥ = ↥} {M' = M'} {γ' = γ'} {tail' = □} {↥' = 🗆} (∙M∷r {M = M} {LHS = LHS} {RHS = RHS} {π' = π'}) Q≡Q' {πₜ = πₜ} {πₗ = πₗ} {γₗ = γₗ} {wk≡ₗ = wk≡ₗ} =
+                 let
+                   eq0 : (wk-v̲a̲l̲ (wk-trans πₗ π') LHS) ≡ (wk-v̲a̲l̲ πₗ (wk-v̲a̲l̲ π' LHS))
+                   eq0 = sym (wk-v̲a̲l̲-trans LHS πₗ π')
+
+                   t : ∙ ((wk-pt πₗ (⭭ M) ⊲ γₗ ∷ ((⇡ᴿ LHS RHS ⊲ γ'' ∷ □) {↥ = 🗆})) {↥ = 🗇}) →ᵛ ∙ ⭭ pa̲i̲r̲ (wk-v̲a̲l̲ (wk-trans πₗ π') LHS) (wk-v̲a̲l̲ πₗ M) ⊲ γₗ ∷ □
+                   t = ∙M∷r {π' = wk-trans πₗ π'}
+
+                   t' : ∙ ((wk-pt πₗ (⭭ M) ⊲ γₗ ∷ ((⇡ᴿ LHS RHS ⊲ γ'' ∷ □) {↥ = 🗆})) {↥ = 🗇}) →ᵛ ∙ ((⭭ pa̲i̲r̲ (wk-v̲a̲l̲ πₗ (wk-v̲a̲l̲ π' LHS)) (wk-v̲a̲l̲ πₗ M) ⊲ γₗ ∷ □) {↥ = 🗆})
+                   t' = subst (λ x → ∙ ((wk-pt πₗ (⭭ M) ⊲ γₗ ∷ ((⇡ᴿ LHS RHS ⊲ γ'' ∷ □) {↥ = 🗆})) {↥ = 🗇}) →ᵛ ∙ ⭭ pa̲i̲r̲ x (wk-v̲a̲l̲ πₗ M) ⊲ γₗ ∷ □) eq0 t
+                 in
+                 Ψ , πₗ , γₗ , wk≡ₗ , □ , t' ,
+                 ( ⟦ ∙ ((wk-pt πₗ (⭭ M) ⊲ γₗ ∷ ((⇡ᴿ LHS RHS ⊲ γ'' ∷ □) {↥ = 🗆})) {↥ = 🗇}) ⟧ᵛꟴ
+                  ≡⟨ refl ⟩
+                   ⟦ ((⇡ᴿ LHS RHS ⊲ γ'' ∷ □) {↥ = 🗆}) ⟧ᵛˢ
+                  ≡⟨ Q≡Q' ⟩
+                    ⟦ ((⭭ pa̲i̲r̲ (wk-v̲a̲l̲ π' LHS) M ⊲ γ ∷ □) {↥ = 🗆}) ⟧ᵛˢ
+                  ≡⟨ refl ⟩
+                    ⟦ toVal LHS ⟧ᵛ (⟦ π' ⟧ʷ ⟦ γ ⟧ᴱ) , ⟦ toVal M ⟧ᵛ ⟦ γ ⟧ᴱ
+                  ≡⟨ cong (λ x → ⟦ toVal LHS ⟧ᵛ (⟦ π' ⟧ʷ x) , ⟦ toVal M ⟧ᵛ x) (sym wk≡ₗ) ⟩
+                    ⟦ toVal LHS ⟧ᵛ (⟦ π' ⟧ʷ (⟦ πₗ ⟧ʷ ⟦ γₗ ⟧ᴱ)) , ⟦ toVal M ⟧ᵛ (⟦ πₗ ⟧ʷ ⟦ γₗ ⟧ᴱ)
+                  ≡⟨ refl ⟩
+                   ⟦ ((⭭ pa̲i̲r̲ (wk-v̲a̲l̲ πₗ (wk-v̲a̲l̲ π' LHS)) (wk-v̲a̲l̲ πₗ M) ⊲ γₗ ∷ □) {↥ = 🗆}) ⟧ᵛˢ
+                  ≡⟨ refl ⟩
+                   ⟦ ∙ ((wk-pt πₗ (⭭ pa̲i̲r̲ (wk-v̲a̲l̲ π' LHS) M) ⊲ γₗ ∷ □) {↥ = 🗆}) ⟧ᵛꟴ ∎ )
+
+  val-wk-lift-∙∙ {Ψ = Ψ} {M = ⭭ M} {γ = γ} {tail = ⇡ᴿ LHS RHS ⊲ γ'' ∷ ((M₁ ⊲ γ₁ ∷ tail'') {↥ = ↥''})} {↥ = ↥} {M' = M'} {γ' = γ'} {tail' = (M₁ ⊲ γ₁ ∷ tail'') {↥ = ↥''}} {↥' = 🗇} (∙M∷r {M = M} {LHS = LHS} {RHS = RHS} {π' = π'}) Q≡Q' {πₜ = πₜ} {πₗ = πₗ} {γₗ = γₗ} {wk≡ₗ = wk≡ₗ} =
+                 let
+                   eq0 : (wk-v̲a̲l̲ (wk-trans πₗ π') LHS) ≡ (wk-v̲a̲l̲ πₗ (wk-v̲a̲l̲ π' LHS))
+                   eq0 = sym (wk-v̲a̲l̲-trans LHS πₗ π')
+
+                   t : ∙ ((wk-pt πₗ (⭭ M) ⊲ γₗ ∷ ((⇡ᴿ LHS RHS ⊲ γ'' ∷ ((M₁ ⊲ γ₁ ∷ tail'') {↥ = ↥''})) {↥ = 🗇})) {↥ = 🗇}) →ᵛ ∙ ⭭ pa̲i̲r̲ (wk-v̲a̲l̲ (wk-trans πₗ π') LHS) (wk-v̲a̲l̲ πₗ M) ⊲ γₗ ∷ (M₁ ⊲ γ₁ ∷ tail'')
+                   t = ∙M∷r {π' = wk-trans πₗ π'}
+
+                   t' : ∙ ((wk-pt πₗ (⭭ M) ⊲ γₗ ∷ ((⇡ᴿ LHS RHS ⊲ γ'' ∷ (M₁ ⊲ γ₁ ∷ tail'')) {↥ = 🗇})) {↥ = 🗇}) →ᵛ ∙ ((⭭ pa̲i̲r̲ (wk-v̲a̲l̲ πₗ (wk-v̲a̲l̲ π' LHS)) (wk-v̲a̲l̲ πₗ M) ⊲ γₗ ∷ ((M₁ ⊲ γ₁ ∷ tail'') {↥ = ↥''})) {↥ = 🗇})
+                   t' = subst (λ x → ∙ ((wk-pt πₗ (⭭ M) ⊲ γₗ ∷ ((⇡ᴿ LHS RHS ⊲ γ'' ∷ ((M₁ ⊲ γ₁ ∷ tail'') {↥ = ↥''})) {↥ = 🗇})) {↥ = 🗇}) →ᵛ ∙ ⭭ pa̲i̲r̲ x (wk-v̲a̲l̲ πₗ M) ⊲ γₗ ∷ (M₁ ⊲ γ₁ ∷ tail'')) eq0 t
+                 in
+                 Ψ , πₗ , γₗ , wk≡ₗ , (M₁ ⊲ γ₁ ∷ tail'') , t' ,
+                 ( ⟦ ∙ ((wk-pt πₗ (⭭ M) ⊲ γₗ ∷ ((⇡ᴿ LHS RHS ⊲ γ'' ∷ (M₁ ⊲ γ₁ ∷ tail'')) {↥ = 🗇})) {↥ = 🗇}) ⟧ᵛꟴ
+                  ≡⟨ refl ⟩
+                   ⟦ ((⇡ᴿ LHS RHS ⊲ γ'' ∷ (M₁ ⊲ γ₁ ∷ tail'')) {↥ = 🗇}) ⟧ᵛˢ
+                  ≡⟨ Q≡Q' ⟩
+                   ⟦ ((⭭ pa̲i̲r̲ (wk-v̲a̲l̲ π' LHS) M ⊲ γ ∷ (M₁ ⊲ γ₁ ∷ tail'')) {↥ = 🗇}) ⟧ᵛˢ
+                  ≡⟨ refl ⟩
+                   ⟦ M₁ ⊲ γ₁ ∷ tail'' ⟧ᵛˢ
+                  ≡⟨ refl ⟩
+                   ⟦ ((⭭ pa̲i̲r̲ (wk-v̲a̲l̲ πₗ (wk-v̲a̲l̲ π' LHS)) (wk-v̲a̲l̲ πₗ M) ⊲ γₗ ∷ (M₁ ⊲ γ₁ ∷ tail'')) {↥ = 🗇}) ⟧ᵛˢ
+                  ≡⟨ refl ⟩
+                   ⟦ ∙ ((wk-pt πₗ (⭭ pa̲i̲r̲ (wk-v̲a̲l̲ π' LHS) M) ⊲ γₗ ∷ (M₁ ⊲ γ₁ ∷ tail'')) {↥ = 🗇}) ⟧ᵛꟴ ∎ )
+END W/O ENV EQ -}
+
+-- WITH ENV EQ
   val-wk-lift-∘∘ : {M : PartialTerm Γ X} {γ : Env Γ} {tail : ValStack b T◾} {↥ : BottomTypeEqualsNextType b X T◾} {M' : PartialTerm Γ' X'} {γ' : Env Γ'} {tail' : ValStack b' T◾} {↥' : BottomTypeEqualsNextType b' X' T◾}
           → ∘ ((M ⊲ γ ∷ tail) {↥ = ↥}) →ᵛ ∘ ((M' ⊲ γ' ∷ tail') {↥ = ↥'})
           → ⟦ ∘ ((M ⊲ γ ∷ tail) {↥ = ↥}) ⟧ᵛꟴ ≡ ⟦ ∘ ((M' ⊲ γ' ∷ tail') {↥ = ↥'}) ⟧ᵛꟴ
@@ -283,7 +719,6 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                  Ψ , πₗ , γₗ , wk≡ₗ , ⇡ᴹ (wk-val πₗ Mₚ) (wk-val (wk-cong (wk-cong πₗ)) Nₚ) ⊲ γₗ ∷ □ , ∘pm , refl
   val-wk-lift-∘∘ {Ψ = Ψ} {M = M} {γ = γ} {tail = M₁ ⊲ γ₁ ∷ tail} {↥ = 🗇} {M' = M'} {γ' = γ'} {tail' = tail'} {↥' = ↥'} (∘pm {M = Mₚ} {N = Nₚ}) Q≡Q' {πₜ = πₜ} {πₗ = πₗ} {γₗ = γₗ} ϖ {wk≡ₗ = wk≡ₗ} =
                  Ψ , πₗ , γₗ , wk≡ₗ , ⇡ᴹ (wk-val πₗ Mₚ) (wk-val (wk-cong (wk-cong πₗ)) Nₚ) ⊲ γₗ ∷ M₁ ⊲ γ₁ ∷ tail , ∘pm , refl
-                 -- {!!} , {!!} , {!!} , {!!} , {!!} , {!!} , {!!}
 
   val-wk-lift-∘∙ : {M : PartialTerm Γ X} {γ : Env Γ} {tail : ValStack b T◾} {↥ : BottomTypeEqualsNextType b X T◾} {M' : PartialTerm Γ' X'} {γ' : Env Γ'} {tail' : ValStack b' T◾} {↥' : BottomTypeEqualsNextType b' X' T◾}
           → ∘ ((M ⊲ γ ∷ tail) {↥ = ↥}) →ᵛ ∙ ((M' ⊲ γ' ∷ tail') {↥ = ↥'})
@@ -296,7 +731,6 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
             Σ[ tailᵣ ∈ ValStack b' T◾ ]
             ( ∘ (((wk-pt πₗ M) ⊲ γₗ ∷ tail) {↥ = ↥}) →ᵛ ∙ (((wk-pt πᵣ M') ⊲ γᵣ ∷ tailᵣ) {↥ = ↥'})
               × ⟦ ∘ (((wk-pt πₗ M) ⊲ γₗ ∷ tail) {↥ = ↥}) ⟧ᵛꟴ ≡ ⟦ ∙ (((wk-pt πᵣ M') ⊲ γᵣ ∷ tailᵣ) {↥ = ↥'}) ⟧ᵛꟴ )
-  --val-wk-lift-∘∙ {Ψ = Ψ} {M = M} {γ = γ} {tail = tail} {↥ = ↥} {M' = M'} {γ' = γ'} {tail' = tail'} {↥' = ↥'} M→M' Q≡Q' {πₜ = πₜ} {πₗ = πₗ} {γₗ = γₗ} ϖ {wk≡ₗ = wk≡ₗ} = ?
   val-wk-lift-∘∙ {Ψ = Ψ} {M = M} {γ = γ} {tail = □} {↥ = 🗆} {M' = M'} {γ' = γ'} {tail' = tail'} {↥' = ↥'} ∘var-c Q≡Q' {πₜ = πₜ} {πₗ = πₗ} {γₗ = γₗ} ϖ {wk≡ₗ = wk≡ₗ} =
                  Ψ , πₗ , γₗ , wk≡ₗ , □ , ∘var-c , refl
   val-wk-lift-∘∙ {Ψ = Ψ} {M = M} {γ = γ} {tail = □} {↥ = 🗆} {M' = M'} {γ' = γ'} {tail' = tail'} {↥' = ↥'} (∘var x πᵥ) Q≡Q' {πₜ = πₜ} {πₗ = πₗ} {γₗ = γₗ} ϖ {wk≡ₗ = wk≡ₗ} =
@@ -1222,3 +1656,4 @@ ex15 = push (push (app (lam {A = `Unit} (sub (var (var h)) (return unit))) unit)
 -- _ = refl
 
 XXX -}
+YYY -}
