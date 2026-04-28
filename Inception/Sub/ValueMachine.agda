@@ -394,9 +394,24 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   lookup-index : {S T : LookupState X} → S →ᴸ* T → (lCtx S) ∋ X
   lookup-index (⟨ i ∥ _ ⟩ ◼) = i
-  lookup-index (⟨ h ∥ E ﹐ v̲a̲r̲ i ⟩ →ᴸ⟨ val-h-step ⟩ S→T) = t (lookup-index S→T)
+  lookup-index (⟨ h ∥ E ﹐ v̲a̲r̲ i ⟩ →ᴸ⟨ val-h-step ⟩ S→T) = h --t (lookup-index S→T)
   lookup-index (⟨ t i ∥ _ ⟩ →ᴸ⟨ val-t-step ⟩ S→T) = t (lookup-index S→T)
   lookup-index (⟨ t i ∥ _ ⟩ →ᴸ⟨ comp-t-step ⟩ S→T) = t (lookup-index S→T)
+
+  li≡i : {T : LookupState X} {γ : Env Γ} {i : Γ ∋ X} → (S→T : ⟨ i ∥ γ ⟩ →ᴸ* T) → LookupHaltingState T → lookup-index S→T ≡ i
+  li≡i (S ◼) found-unit = refl
+  li≡i (S ◼) found-pair = refl
+  li≡i (S ◼) found-lam = refl
+  li≡i (S ◼) found-comp = refl
+  li≡i (S →ᴸ⟨ val-t-step ⟩ S→T) found-unit = cong t (li≡i S→T found-unit)
+  li≡i (S →ᴸ⟨ comp-t-step ⟩ S→T) found-unit = cong t (li≡i S→T found-unit)
+  li≡i (S →ᴸ⟨ val-t-step ⟩ S→T) found-pair = cong t (li≡i S→T found-pair)
+  li≡i (S →ᴸ⟨ comp-t-step ⟩ S→T) found-pair = cong t (li≡i S→T found-pair)
+  li≡i (S →ᴸ⟨ val-t-step ⟩ S→T) found-lam = cong t (li≡i S→T found-lam)
+  li≡i (S →ᴸ⟨ comp-t-step ⟩ S→T) found-lam = cong t (li≡i S→T found-lam)
+  li≡i (S →ᴸ⟨ val-h-step ⟩ S→T) found-comp = refl
+  li≡i (S →ᴸ⟨ val-t-step ⟩ S→T) found-comp = cong t (li≡i S→T found-comp)
+  li≡i (S →ᴸ⟨ comp-t-step ⟩ S→T) found-comp = cong t (li≡i S→T found-comp)
 
   data EnvExt : (i : Γ ∋ X) → (γ : Env Γ) → (γ' : Env Γ') → Set where
 
@@ -408,6 +423,8 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
     ext-comp : {γ : Env Γ} {γ' : Env Γ'} {W : Γ ⊢ᶜ Y} {cs : CompStack Δ Y} {π : Wk Γ Δ} {wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ} {i : Γ ∋ X} → EnvExt i γ γ' → EnvExt (t i) ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡}) γ'
 
+    ext-jmp : {γ : Env Γ} {γ' : Env Γ'} {i : Γ ∋ `V} → EnvExt i γ γ' → EnvExt h (γ ﹐ v̲a̲r̲ i) γ'
+
   data _→ᵛ_ : ValState T◾ → ValState T◾ → Set where
 
       ∘var-c  :    {i : Γ ∋ `V} → {tail : ValStack b T◾} → {↥ : BottomTypeEqualsNextType b `V T◾}
@@ -417,7 +434,9 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       ∘var    :    {i : Γ ∋ X} → {tail : ValStack b T◾} → {↥ : BottomTypeEqualsNextType b X T◾}
                   → {M : V̲a̲l̲ Γ' X}
                   → (i>>T : (⟨ i ∥ γ ⟩ →ᴸ* ⟨ h ∥ (γ' ﹐ M) ⟩)) → (πᵥ : Wk Γ Γ')
-                  → EnvExt (lookup-index i>>T) γ (γ' ﹐ M)
+                  --→ EnvExt (lookup-index i>>T) γ (γ' ﹐ M)
+                  → EnvExt i γ (γ' ﹐ M)
+                  → LookupHaltingState ⟨ h ∥ (γ' ﹐ M) ⟩
                 ----------------------------------------------------------------
                   → ∘ ((⇡ var i ⊲ γ ∷ tail) {↥ = ↥}) →ᵛ ∙ ((⭭ (wk-v̲a̲l̲ πᵥ M) ⊲ γ ∷ tail) {↥ = ↥})
 
@@ -485,7 +504,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   ⟨_⟩⧻_ : {from : ValState T◾} → {to : ValState T◾} → (F>T : from →ᵛ to) → (tail : ValStack non-empty T◾') → (from ⧻ tail) →ᵛ (to ⧻ tail)
   ⟨ ∘var-c ⟩⧻ tail = ∘var-c
-  ⟨ ∘var T>>U π ext ⟩⧻ tail = ∘var T>>U π ext
+  ⟨ ∘var T>>U π ext H ⟩⧻ tail = ∘var T>>U π ext H
   ⟨ ∘lam ⟩⧻ tail = ∘lam
   ⟨ ∘pair ⟩⧻ tail = ∘pair
   ⟨ ∘pm ⟩⧻ tail = ∘pm
