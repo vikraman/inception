@@ -403,7 +403,6 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
 
 
-{- YYY
   lhwk : (γ' : Env Γ')
           → (M : V̲a̲l̲ Γ' X)
           → (H : LookupHaltingState ⟨ h ∥ γ' ﹐ M ⟩)
@@ -848,39 +847,7 @@ END W/O ENV EQ -}
 
                     c0 : ∘ (PartialTerm.⇡ var (wk-mem πₗ i)) ⊲ γₗ ∷ □ →ᵛ ∙ (⭭ wk-v̲a̲l̲ (wk-trans πₗ πᵥ) M₁) ⊲ γₗ ∷ □
                     c0 = ∘var {γ' = γ₂} {i = wk-mem πₗ i} {M = M₁} {!!} (wk-trans πₗ πᵥ) {!!} H
-env-eq-trans {π₁ = π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-eq π) (wk-eq π₃) wk-env-ε wk-env-ε = ?
-env-eq-trans {π₁ = π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-eq π) (wk-eq π₃) (wk-env-val-cong M ϖ₁) (wk-env-val-cong M₁ ϖ₂) = ?
-env-eq-trans {π₁ = π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-eq π) (wk-eq π₃) (wk-env-val-cong M ϖ₁) (wk-env-val-wk M₁ ϖ₂) = ?
-env-eq-trans {π₁ = π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-eq π) (wk-eq π₃) (wk-env-comp-cong W cs ϖ₁) (wk-env-comp-cong W₁ cs₁ ϖ₂) = ?
-env-eq-trans {π₁ = π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-eq π) (wk-eq π₃) (wk-env-comp-cong W cs ϖ₁) (wk-env-comp-wk W₁ cs₁ ϖ₂) = ?
-env-eq-trans {π₁ = π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-eq π) (wk-eq π₃) (wk-env-val-wk M ϖ₁) (wk-env-val-cong M₁ ϖ₂) = ?
-env-eq-trans {π₁ = π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-eq π) (wk-eq π₃) (wk-env-val-wk M ϖ₁) (wk-env-comp-cong W cs ϖ₂) = ?
-env-eq-trans {π₁ = π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-eq π) (wk-eq π₃) (wk-env-val-wk M ϖ₁) (wk-env-val-wk M₁ ϖ₂) = ?
-env-eq-trans {π₁ = π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-eq π) (wk-eq π₃) (wk-env-val-wk M ϖ₁) (wk-env-comp-wk W cs ϖ₂) = ?
-env-eq-trans {π₁ = π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-eq π) (wk-eq π₃) (wk-env-comp-wk W cs ϖ₁) (wk-env-val-cong M ϖ₂) = ?
-env-eq-trans {π₁ = π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-eq π) (wk-eq π₃) (wk-env-comp-wk W cs ϖ₁) (wk-env-comp-cong W₁ cs₁ ϖ₂) = ?
-env-eq-trans {π₁ = π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-eq π) (wk-eq π₃) (wk-env-comp-wk W cs ϖ₁) (wk-env-val-wk M ϖ₂) = ?
-env-eq-trans {π₁ = π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-eq π) (wk-eq π₃) (wk-env-comp-wk W cs ϖ₁) (wk-env-comp-wk W₁ cs₁ ϖ₂) = ?
-env-eq-trans {π₁ = π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-eq π) (wk-ext π₃ we₂) (wk-env-val-cong M ϖ₁) (wk-env-val-wk M₁ ϖ₂) = ?
-env-eq-trans {π₁ = π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-eq π) (wk-ext π₃ we₂) (wk-env-comp-cong W cs ϖ₁) (wk-env-comp-wk W₁ cs₁ ϖ₂) = ?
-env-eq-trans {π₁ = π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-eq π) (wk-ext π₃ we₂) (wk-env-val-wk M ϖ₁) (wk-env-val-wk M₁ ϖ₂) = ?
-env-eq-trans {π₁ = π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-eq π) (wk-ext π₃ we₂) (wk-env-val-wk M ϖ₁) (wk-env-comp-wk W cs ϖ₂) = ?
-env-eq-trans {π₁ = π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-eq π) (wk-ext π₃ we₂) (wk-env-comp-wk W cs ϖ₁) (wk-env-val-wk M ϖ₂) = ?
-env-eq-trans {π₁ = π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-eq π) (wk-ext π₃ we₂) (wk-env-comp-wk W cs ϖ₁) (wk-env-comp-wk W₁ cs₁ ϖ₂) = ?
-env-eq-trans {π₁ = π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-ext π we₁) (wk-eq π₃) (wk-env-val-wk M ϖ₁) wk-env-ε = ?
-env-eq-trans {π₁ = π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-ext π we₁) (wk-eq π₃) (wk-env-val-wk M ϖ₁) (wk-env-val-cong M₁ ϖ₂) = ?
-env-eq-trans {π₁ = π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-ext π we₁) (wk-eq π₃) (wk-env-val-wk M ϖ₁) (wk-env-comp-cong W cs ϖ₂) = ?
-env-eq-trans {π₁ = π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-ext π we₁) (wk-eq π₃) (wk-env-val-wk M ϖ₁) (wk-env-val-wk M₁ ϖ₂) = ?
-env-eq-trans {π₁ = π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-ext π we₁) (wk-eq π₃) (wk-env-val-wk M ϖ₁) (wk-env-comp-wk W cs ϖ₂) = ?
-env-eq-trans {π₁ = π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-ext π we₁) (wk-eq π₃) (wk-env-comp-wk W cs ϖ₁) wk-env-ε = ?
-env-eq-trans {π₁ = π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-ext π we₁) (wk-eq π₃) (wk-env-comp-wk W cs ϖ₁) (wk-env-val-cong M ϖ₂) = ?
-env-eq-trans {π₁ = π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-ext π we₁) (wk-eq π₃) (wk-env-comp-wk W cs ϖ₁) (wk-env-comp-cong W₁ cs₁ ϖ₂) = ?
-env-eq-trans {π₁ = π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-ext π we₁) (wk-eq π₃) (wk-env-comp-wk W cs ϖ₁) (wk-env-val-wk M ϖ₂) = ?
-env-eq-trans {π₁ = π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-ext π we₁) (wk-eq π₃) (wk-env-comp-wk W cs ϖ₁) (wk-env-comp-wk W₁ cs₁ ϖ₂) = ?
-env-eq-trans {π₁ = π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-ext π we₁) (wk-ext π₃ we₂) (wk-env-val-wk M ϖ₁) (wk-env-val-wk M₁ ϖ₂) = ?
-env-eq-trans {π₁ = π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-ext π we₁) (wk-ext π₃ we₂) (wk-env-val-wk M ϖ₁) (wk-env-comp-wk W cs ϖ₂) = ?
-env-eq-trans {π₁ = π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-ext π we₁) (wk-ext π₃ we₂) (wk-env-comp-wk W cs ϖ₁) (wk-env-val-wk M ϖ₂) = ?
-env-eq-trans {π₁ = π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-ext π we₁) (wk-ext π₃ we₂) (wk-env-comp-wk W cs ϖ₁) (wk-env-comp-wk W₁ cs₁ ϖ₂) = ?
+
                     d0 : ∘ (PartialTerm.⇡ var (wk-mem πₗ i)) ⊲ γₗ ∷ □ →ᵛ ∙ (⭭ wk-v̲a̲l̲ πₗ (wk-v̲a̲l̲ πᵥ M₁)) ⊲ γₗ ∷ □
                     d0 = ∘var {γ' = γ} {i = wk-mem πₗ i} {M = (wk-v̲a̲l̲ πᵥ M₁)} {!!} πₗ {!!} {!!}
 
@@ -1435,7 +1402,7 @@ env-eq-trans {π₁ = π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''}
 
               (wk-ext-trans we₂ we₁)
 
-              {!!}
+              (env-eq-trans we₂ we₁ ϖ₂ ϖ₁)
 
   val-eval-rec {Γ = Γ} (pm {A = A} {B = B} M N) γ γH π with val-eval-rec M γ γH π
   ... | steps {S = S} M>T ∙ pa̲i̲r̲ LHS RHS ⊲ γ₁ ■ M≡T π₁ wk≡₁ γH₁ tH₁ we₁ ϖ₁ with val-eval-rec N (_﹐_ (_﹐_ γ₁ LHS) (wk-v̲a̲l̲ (wk-wk wk-id) RHS)) {!!} ((wk-cong (wk-cong (wk-trans π₁ π)))) | (wk-val-trans N (wk-cong (wk-cong π₁)) (wk-cong (wk-cong π)))
@@ -1492,7 +1459,7 @@ env-eq-trans {π₁ = π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''}
 
           (wk-ext-trans we₂ (wk-ext (wk-wk π₁) (wk-ext π₁ we₁)))
 
-          {!!}
+          (env-eq-trans we₂ (wk-ext (wk-wk π₁) (wk-ext π₁ we₁)) ϖ₂ (wk-env-val-wk (wk-v̲a̲l̲ (wk-wk wk-id) RHS) (wk-env-val-wk LHS ϖ₁)))
 
   val-eval : (M : ε ⊢ᵛ X) → ValSteps {T◾ = X} (∘ ((⇡ wk-val wk-id M ⊲ ∗ ∷ □) {↥ = 🗆}))
   val-eval M = val-eval-rec M ∗ empty-env wk-id
@@ -1846,5 +1813,3 @@ ex15 = push (push (app (lam {A = `Unit} (sub (var (var h)) (return unit))) unit)
 
 -- _ : comp-eval ex15 ≡ {! comp-eval ex15 !}
 -- _ = refl
-
-YYY -}
