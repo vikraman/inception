@@ -20,7 +20,7 @@ import Relation.Binary.HeterogeneousEquality as H
 
 variable
   X X' Y Y' Z Z' T◾ T◾' : Ty
-  Γ' Γ'' Δ' : Ctx
+  Γ' Γ'' Γ''' Δ' : Ctx
   n m n₁ n₂ n₃ n₄ m₁ m₂ m₃ m₄ : ℕ
 
 ≤-trans : n₁ ≤ n₂ → n₂ ≤ n₃ → n₁ ≤ n₃
