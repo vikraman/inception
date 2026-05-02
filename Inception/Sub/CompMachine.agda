@@ -286,10 +286,10 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   --       → f x₁ y₁ ≡ f x₂ y₂
   -- dcong₂' f refl _ = refl
 
-  rewrite-comp-env : (γ : Env Γ) (W W' : Γ ⊢ᶜ X) → (cs : CompStack Δ X) → {π π' : Wk Γ Δ} → {wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ}
-                     → (Wπ≡Wπ' : (W , π) ≡ (W' , π'))
-                     → (γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡} ≡ (γ ﹐﹝ W' ╎ cs ﹞) {π = π'} {wk≡ = subst (λ x → ⟦ proj₂ x ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) Wπ≡Wπ' wk≡}
-  rewrite-comp-env γ W W' cs {wk≡ = wk≡} Wπ≡Wπ' = dcong₂ (λ x y → (γ ﹐﹝ proj₁ x ╎ cs ﹞) {π = proj₂ x} {wk≡ = y} ) {y₁ = wk≡} Wπ≡Wπ' refl
+  -- rewrite-comp-env : (γ : Env Γ) (W W' : Γ ⊢ᶜ X) → (cs : CompStack Δ X) → {π π' : Wk Γ Δ} → {wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ}
+  --                    → (Wπ≡Wπ' : (W , π) ≡ (W' , π'))
+  --                    → (γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡} ≡ (γ ﹐﹝ W' ╎ cs ﹞) {π = π'} {wk≡ = subst (λ x → ⟦ proj₂ x ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) Wπ≡Wπ' wk≡}
+  -- rewrite-comp-env γ W W' cs {wk≡ = wk≡} Wπ≡Wπ' = dcong₂ (λ x y → (γ ﹐﹝ proj₁ x ╎ cs ﹞) {π = proj₂ x} {wk≡ = y} ) {y₁ = wk≡} Wπ≡Wπ' refl
 
   wk-assoc : {π₁ : Wk Γ Γ'} {π₂ : Wk Γ' Γ''} {π₃ : Wk Γ'' Γ'''} → wk-trans π₁ (wk-trans π₂ π₃) ≡ wk-trans (wk-trans π₁ π₂) π₃
   wk-assoc {π₁ = wk-ε} {π₂ = π₂} {π₃ = π₃} = refl
@@ -301,104 +301,48 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   -- proj₁-eq : {A B : Set} {a₁ a₂ : A} {b₁ b₂ : B} → (a₁ , b₁) ≡ (a₂ , b₂) → a₁ ≡ a₂
   -- proj₁-eq refl = refl
 
+  dcong₂-irr : {a b c : Level} → ∀ {A : Set a} {B : A → Set b} {C : Set c}
+              (f : (x : A) → .(B x) → C) {x₁ x₂} .{y₁ y₂}
+            → (p : x₁ ≡ x₂)
+            → f x₁ y₁ ≡ f x₂ y₂
+  dcong₂-irr f refl = refl
+
   pair-eq : {A B : Set} {a₁ a₂ : A} {b₁ b₂ : B} → a₁ ≡ a₂ → b₁ ≡ b₂ → (a₁ , b₁) ≡ (a₂ , b₂)
   pair-eq a₁≡a₂ b₁≡b₂ = cong₂ (λ x y → x , y) a₁≡a₂ b₁≡b₂
 
   enveq-id : {γ : Env Γ} → EnvEq wk-id γ γ
   enveq-id {γ = ∗} = wk-env-ε
   enveq-id {γ = γ ﹐ M} = wk-env-val-cong M enveq-id
-  enveq-id {γ = (_﹐﹝_╎_﹞) {Γ = Γ} {Δ = Δ} γ W cs {π = π} {wk≡ = wk≡}} = {!!}
-  --          let
-  --            W≡ = wk-comp-id W
-  --            π≡ = wk-trans-id {π = π}
+  enveq-id {γ = (_﹐﹝_╎_﹞) {Γ = Γ} {Δ = Δ} γ W cs {π = π} {wk≡ = wk≡}} =
+            let
+              W≡ = wk-comp-id W
+              π≡ = wk-trans-id {π = π}
 
-  --            eq1 : (γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡} ≡ (γ ﹐﹝ (wk-comp wk-id W) ╎ cs ﹞) {π = wk-trans wk-id π} {wk≡ = subst (λ x → ⟦ proj₂ x ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) (sym (pair-eq W≡ π≡)) wk≡}
-  --            eq1 = rewrite-comp-env γ W (wk-comp wk-id W) cs {π = π} {π' = wk-trans wk-id π} {wk≡ = wk≡} (sym (pair-eq W≡ π≡))
+              a0 = wk-env-comp-cong {π = wk-id} {γ' = γ} {γ = γ} W cs {πᶜ = π} {wk≡ = wk≡} {wk≡' = subst (λ x → ⟦ proj₂ x ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) (sym (pair-eq W≡ π≡)) wk≡} (enveq-id {γ = γ})
 
-  --            a0 = wk-env-comp-cong {π = wk-id} {γ' = γ} {γ = γ} W cs {πᶜ = π} {wk≡ = wk≡} {wk≡' = subst (λ x → ⟦ proj₂ x ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) (sym (pair-eq W≡ π≡)) wk≡} (enveq-id {γ = γ})
+              eq1 : ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡}) ≡ ((γ ﹐﹝ wk-comp wk-id W ╎ cs ﹞) {π = wk-trans wk-id π} {wk≡ = subst (λ x → ⟦ proj₂ x ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) (sym (pair-eq W≡ π≡)) wk≡})
+              eq1 = dcong₂-irr ((λ x z → (γ ﹐﹝ proj₁ x ╎ cs ﹞) {π = proj₂ x} {wk≡ = z})) (sym (pair-eq W≡ π≡))
 
-  --            {- EXPERIMENTS
-  --            wk≡' : ⟦ wk-trans wk-id π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ
-  --            wk≡' = {!!}
-  --            --cong (λ x → ⟦ x ⟧ʷ ⟦ γ ⟧ᴱ) wk-trans-id
-
-  --            wk≡'' : ⟦ wk-trans wk-id π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ
-  --            wk≡'' = subst (λ x → ⟦ x ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) (sym wk-trans-id) wk≡
-
-  --            -- wk≡≡₀ : subst (λ z → ⟦ proj₂ z ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) (sym (pair-eq W≡ π≡)) wk≡ ≡ wk≡'
-  --            -- wk≡≡₀ = ?
-
-  --            wk≡≡ : subst (λ z → ⟦ proj₂ z ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) (sym (pair-eq W≡ π≡)) wk≡ ≡ trans wk≡' wk≡
-  --            wk≡≡ = {!refl!}
-
-  --            eq1 : (γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡} ≡ (γ ﹐﹝ (wk-comp wk-id W) ╎ cs ﹞) {π = wk-trans wk-id π} {wk≡ = trans wk≡' wk≡}
-  --            eq1 = dcong₂ (λ x y → (γ ﹐﹝ proj₁ x ╎ cs ﹞) {π = proj₂ x} {wk≡ = y} ) (sym (pair-eq W≡ π≡)) wk≡≡
-
-  --            ---
-
-  --            a0 = wk-env-comp-cong {π = wk-id} {γ' = γ} {γ = γ} W cs {πᶜ = π} {wk≡ = wk≡} {wk≡' = wk≡'} (enveq-id {γ = γ})
-  --            -}
-
-  --            goal : EnvEq (wk-cong {A = `V} wk-id) ((γ ﹐﹝ W ╎ cs ﹞) {π} {wk≡}) ((γ ﹐﹝ W ╎ cs ﹞) {π} {wk≡})
-  --            goal =  subst (λ x → EnvEq (wk-cong {A = `V} wk-id) x ((γ ﹐﹝ W ╎ cs ﹞) {π} {wk≡}) ) (sym eq1) a0
-  --          in
-  --          goal
-
-
-  wk-uip : {π π' : Wk Γ Δ} → (eq1 eq2 : π ≡ π') → eq1 ≡ eq2
-  wk-uip {π = wk-ε} {π' = wk-ε} refl refl = refl
-  wk-uip {π = wk-cong π} {π' = wk-cong π'} refl refl = refl
-  wk-uip {π = wk-wk π} {π' = wk-wk π'} refl refl = refl
-
-{-
-  wk≡-uip : {π : Wk Γ Δ} {γ : Env Γ} {cs : CompStack Δ X} → (eq1 eq2 : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → eq1 ≡ eq2
-  wk≡-uip {π = wk-ε} {γ = ∗} {cs = ◻} refl refl = refl
-  wk≡-uip {π = wk-ε} {γ = ∗} {cs = x ⊲ γ ⦂⦂ cs} refl refl = refl
-  wk≡-uip {π = wk-cong π} {γ = γ ﹐ M} {cs = (x ⊲ γ₁ ⦂⦂ cs) {π = π₀} {wk≡ = wk≡}} eq1 eq2 =
-             let
-               a0 = wk≡-uip {π = π₀} {γ = γ₁} {cs = cs} wk≡ wk≡
-             in
-             {!-m!}
-  wk≡-uip {π = wk-cong π} {γ = γ ﹐﹝ W ╎ cs ﹞} {cs = x ⊲ γ₁ ⦂⦂ cs₁} eq1 eq2 = {!!}
-  wk≡-uip {π = wk-wk π} {γ = γ ﹐ M} {cs = ◻} eq1 eq2 = {!!}
-  wk≡-uip {π = wk-wk π} {γ = γ ﹐ M} {cs = x ⊲ γ₁ ⦂⦂ cs} eq1 eq2 = {!!}
-  wk≡-uip {π = wk-wk π} {γ = γ ﹐﹝ W ╎ cs ﹞} {cs = ◻} eq1 eq2 = {!!}
-  wk≡-uip {π = wk-wk π} {γ = γ ﹐﹝ W ╎ cs ﹞} {cs = x ⊲ γ₁ ⦂⦂ cs₁} eq1 eq2 = {!!}
-  -}
-
+              goal : EnvEq (wk-cong {A = `V} wk-id) ((γ ﹐﹝ W ╎ cs ﹞) {π} {wk≡}) ((γ ﹐﹝ W ╎ cs ﹞) {π} {wk≡})
+              goal =  subst (λ x → EnvEq (wk-cong {A = `V} wk-id) x ((γ ﹐﹝ W ╎ cs ﹞) {π} {wk≡}) ) (sym eq1) a0
+            in
+            goal
 
   env-id : {γ γ' : Env Γ} → EnvEq wk-id γ γ' → γ ≡ γ'
   env-id {γ = γ} {γ' = γ'} wk-env-ε = refl
   env-id {γ = γ ﹐ _} {γ' = γ' ﹐ M} (wk-env-val-cong M ϖ) = cong₂ (λ x y → x ﹐ y) (env-id ϖ) (wk-v̲a̲l̲-id M)
-  env-id {γ = (γ ﹐﹝ _ ╎ _ ﹞) {π = π'} {wk≡ = wk≡'}} {γ' = (γ' ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡}} (wk-env-comp-cong W cs ϖ) = {!!}
-  --            let
-  --              γ≡ = env-id ϖ
-  --              π≡ : wk-trans wk-id π ≡ π
-  --              π≡ = wk-trans-id
-  --              W≡ : wk-comp wk-id W ≡ W
-  --              W≡ = wk-comp-id W
+  env-id {γ = (γ ﹐﹝ _ ╎ _ ﹞) {π = π'} {wk≡ = wk≡'}} {γ' = (γ' ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡}} (wk-env-comp-cong W cs ϖ) = --{!!}
+              let
+                γ≡ = env-id ϖ
+                π≡ : wk-trans wk-id π ≡ π
+                π≡ = wk-trans-id
+                W≡ : wk-comp wk-id W ≡ W
+                W≡ = wk-comp-id W
 
-  --              wk≡≡ : subst (λ z → ⟦ proj₂ (proj₂ z) ⟧ʷ ⟦ proj₁ z ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) (pair-eq γ≡ (pair-eq W≡ π≡)) wk≡' ≡ wk≡
-  --              wk≡≡ = {!!}
-
-
-  --              -- a3 : (γ ﹐﹝ wk-comp wk-id W ╎ cs ﹞) {π = wk-trans wk-id π} {wk≡ = wk≡'} ≡ (γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡}
-  --              -- a3 = ?
-
-  --              {-
-  --              dcong₂ : ∀ {A : Set a} {B : A → Set b} {C : Set c}
-  --                      (f : (x : A) → B x → C) {x₁ x₂ y₁ y₂}
-  --                    → (p : x₁ ≡ x₂) → subst B p y₁ ≡ y₂
-  --                    → f x₁ y₁ ≡ f x₂ y₂
-  --              dcong₂ f refl refl = refl
-  --              -}
-
-
-  dcong₂-irr : {a b c : Level} → ∀ {A : Set a} {B : A → Set b} {C : Set c}
-              (f : (x : A) → .(B x) → C) {x₁ x₂} .{y₁ y₂}
-            → (p : x₁ ≡ x₂)
-            → f x₁ y₁ ≡ f x₂ y₂
-  dcong₂-irr f refl = refl
+                goal : γ ﹐﹝ wk-comp wk-id W ╎ cs ﹞ ≡ γ' ﹐﹝ W ╎ cs ﹞
+                goal = dcong₂-irr ((λ x z → ((proj₁ x) ﹐﹝ proj₁ (proj₂ x) ╎ cs ﹞) {π = proj₂ (proj₂ x)} {wk≡ = z})) {y₁ = wk≡'} {y₂ = wk≡} (pair-eq γ≡ (pair-eq W≡ π≡))
+              in
+              goal
 
 
   data WkExt : Wk Γ Δ → Set where
