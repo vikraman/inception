@@ -425,6 +425,50 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
     ext-jmp : {γ : Env Γ} {γ' : Env Γ'} {i : Γ ∋ `V} → EnvExt i γ γ' → EnvExt h (γ ﹐ v̲a̲r̲ i) γ'
 
+  data EnvEq : (π : Wk Γ' Γ) → (γ' : Env Γ') → (γ : Env Γ) → Set where
+
+    wk-env-ε    : EnvEq wk-ε ∗ ∗
+
+    wk-env-val-cong : {π : Wk Γ' Γ} {γ' : Env Γ'} {γ : Env Γ} → (M : V̲a̲l̲ Γ X) → EnvEq π γ' γ → EnvEq (wk-cong π) (γ' ﹐ wk-v̲a̲l̲ π M) (γ ﹐ M)
+
+    wk-env-comp-cong : {π : Wk Γ' Γ} {γ' : Env Γ'} {γ : Env Γ}
+                       → (W : Γ ⊢ᶜ X) → (cs : CompStack Δ X) → {πᶜ : Wk Γ Δ} → .{wk≡ : ⟦ πᶜ ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ}
+                       → .{wk≡' : ⟦ wk-trans π πᶜ ⟧ʷ ⟦ γ' ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ} -- not sure about this one
+                       --→ {wk≡' : ⟦ wk-trans π πᶜ ⟧ʷ ⟦ γ' ⟧ᴱ ≡ ⟦ πᶜ ⟧ʷ ⟦ γ ⟧ᴱ}
+                       → EnvEq π γ' γ
+                       → EnvEq (wk-cong π) ((γ' ﹐﹝ wk-comp π W ╎ cs ﹞) {π = wk-trans π πᶜ}
+                               {wk≡ = wk≡'}) -- not sure about this one
+                               --{wk≡ = trans wk≡' wk≡})
+                               ((γ ﹐﹝ W ╎ cs ﹞) {π = πᶜ} {wk≡ = wk≡})
+
+    {- TOO RESTRICTIVE: The context of W does not really matter!
+    wk-env-val-wk : {π : Wk Γ' Γ} {γ' : Env Γ'} {γ : Env Γ} → (M : V̲a̲l̲ Γ X) → EnvEq π γ' γ → EnvEq (wk-wk π) (γ' ﹐ wk-v̲a̲l̲ π M) γ
+
+    wk-env-comp-wk : {π : Wk Γ' Γ} {γ' : Env Γ'} {γ : Env Γ}
+                       → (W : Γ ⊢ᶜ X) → (cs : CompStack Δ X) → {πᶜ' : Wk Γ' Δ} --→ {wk≡ : ⟦ πᶜ ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ}
+                       → {wk≡' : ⟦ πᶜ' ⟧ʷ ⟦ γ' ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ} -- not sure about this one
+                       → EnvEq π γ' γ
+                       → EnvEq (wk-wk π) ((γ' ﹐﹝ wk-comp π W ╎ cs ﹞) {π = πᶜ'}
+                               {wk≡ = wk≡'}) -- not sure about this one
+                               γ
+    -}
+
+    wk-env-val-wk : {π : Wk Γ' Γ} {γ' : Env Γ'} {γ : Env Γ} → (M : V̲a̲l̲ Γ' X) → EnvEq π γ' γ → EnvEq (wk-wk π) (γ' ﹐ M) γ
+
+    wk-env-comp-wk : {π : Wk Γ' Γ} {γ' : Env Γ'} {γ : Env Γ}
+                       → (W : Γ' ⊢ᶜ X) → (cs : CompStack Δ X) → {πᶜ' : Wk Γ' Δ}
+                       → .{wk≡' : ⟦ πᶜ' ⟧ʷ ⟦ γ' ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ}
+                       → EnvEq π γ' γ
+                       → EnvEq (wk-wk π) ((γ' ﹐﹝ W ╎ cs ﹞) {π = πᶜ'}
+                               {wk≡ = wk≡'})
+                               γ
+
+  data WkExt : Wk Γ Δ → Set where
+
+    wk-eq : (π : Wk Γ Γ) → WkExt π
+
+    wk-ext : (π : Wk Γ Δ) → WkExt π → WkExt (wk-wk {A = A} π)
+
   data _→ᵛ_ : ValState T◾ → ValState T◾ → Set where
 
       ∘var-c  :    {i : Γ ∋ `V} → {tail : ValStack b T◾} → {↥ : BottomTypeEqualsNextType b `V T◾}
@@ -435,7 +479,8 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                   → {M : V̲a̲l̲ Γ' X}
                   → (i>>T : (⟨ i ∥ γ ⟩ →ᴸ* ⟨ h ∥ (γ' ﹐ M) ⟩)) → (πᵥ : Wk Γ Γ')
                   --→ EnvExt (lookup-index i>>T) γ (γ' ﹐ M)
-                  → EnvExt i γ (γ' ﹐ M)
+                  → WkExt πᵥ
+                  → EnvEq πᵥ γ γ'
                   → LookupHaltingState ⟨ h ∥ (γ' ﹐ M) ⟩
                 ----------------------------------------------------------------
                   → ∘ ((⇡ var i ⊲ γ ∷ tail) {↥ = ↥}) →ᵛ ∙ ((⭭ (wk-v̲a̲l̲ πᵥ M) ⊲ γ ∷ tail) {↥ = ↥})
@@ -504,7 +549,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   ⟨_⟩⧻_ : {from : ValState T◾} → {to : ValState T◾} → (F>T : from →ᵛ to) → (tail : ValStack non-empty T◾') → (from ⧻ tail) →ᵛ (to ⧻ tail)
   ⟨ ∘var-c ⟩⧻ tail = ∘var-c
-  ⟨ ∘var T>>U π ext H ⟩⧻ tail = ∘var T>>U π ext H
+  ⟨ ∘var T>>U π we ϖ H ⟩⧻ tail = ∘var T>>U π we ϖ H
   ⟨ ∘lam ⟩⧻ tail = ∘lam
   ⟨ ∘pair ⟩⧻ tail = ∘pair
   ⟨ ∘pm ⟩⧻ tail = ∘pm
