@@ -575,13 +575,14 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
       ∘var    :    {i : Γ ∋ X} → {tail : ValStack b T◾} → {↥ : BottomTypeEqualsNextType b X T◾}
                   → {M : V̲a̲l̲ Γ' X}
-                  → (i>>T : (⟨ i ∥ γ ⟩ →ᴸ* ⟨ h ∥ (γ' ﹐ M) ⟩)) → (πᵥ : Wk Γ Γ')
+                  → (i>>T : (⟨ i ∥ γ ⟩ →ᴸ* ⟨ h ∥ (γ' ﹐ M) ⟩)) → (πᵥ : Wk Γ (Γ' ∙ X))
                   → EnvExt (lookup-index i>>T) γ (γ' ﹐ M)
                   → WkExt πᵥ
-                  → EnvEq πᵥ γ γ'
+                  → EnvEq πᵥ γ (γ' ﹐ M)
                   → LookupHaltingState ⟨ h ∥ (γ' ﹐ M) ⟩
                 ----------------------------------------------------------------
-                  → ∘ ((⇡ var i ⊲ γ ∷ tail) {↥ = ↥}) →ᵛ ∙ ((⭭ (wk-v̲a̲l̲ πᵥ M) ⊲ γ ∷ tail) {↥ = ↥})
+                  --→ ∘ ((⇡ var i ⊲ γ ∷ tail) {↥ = ↥}) →ᵛ ∙ ((⭭ (wk-v̲a̲l̲ πᵥ M) ⊲ γ ∷ tail) {↥ = ↥})
+                  → ∘ ((⇡ var i ⊲ γ ∷ tail) {↥ = ↥}) →ᵛ ∙ ((⭭ M ⊲ γ' ∷ tail) {↥ = ↥})
 
 
       ∘lam   :  {M : (Γ ∙ X) ⊢ᶜ Y} → {γ  : Env Γ}
