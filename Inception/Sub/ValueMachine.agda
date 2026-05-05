@@ -175,6 +175,104 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   wk-v̲a̲l̲-trans u̲n̲i̲t̲ π₁ π₂ = wk-v̲a̲l̲ π₁ (wk-v̲a̲l̲ π₂ u̲n̲i̲t̲) ∎
   wk-v̲a̲l̲-trans (v̲a̲r̲ i) π₁ π₂ = cong v̲a̲r̲ (wk-mem-trans i π₁ π₂)
 
+  {- NOT TRUE:
+  wk-mem-eq : (i : Γ ∋ X) → (π₁ : Wk Ψ Γ) → (π₂ : Wk Ψ Γ) → wk-mem π₁ i ≡ wk-mem π₂ i
+  wk-mem-eq Cx.h (wk-cong π₁) (wk-cong π₂) = refl
+  wk-mem-eq {Γ = Γ ∙ X} {Ψ = Ψ ∙ X} Cx.h (wk-cong π₁) (wk-wk π₂) =
+                wk-mem (wk-cong π₁) h
+               ≡⟨ {!!} ⟩
+                  {!!}
+               ≡⟨ {!!} ⟩
+                  {!!}
+               ≡⟨ {!!} ⟩
+                wk-mem (wk-wk π₂) h ∎
+  wk-mem-eq Cx.h (wk-wk π₁) (wk-cong π₂) = {!!}
+  wk-mem-eq Cx.h (wk-wk π₁) (wk-wk π₂) = {!!}
+  wk-mem-eq (Cx.t i) (wk-cong π₁) (wk-cong π₂) = {!!}
+  wk-mem-eq (Cx.t i) (wk-cong π₁) (wk-wk π₂) = {!!}
+  wk-mem-eq (Cx.t i) (wk-wk π₁) (wk-cong π₂) = {!!}
+  wk-mem-eq (Cx.t i) (wk-wk π₁) (wk-wk π₂) = {!!}
+
+  wk-val-eq : (M : Val Γ A) → (π₁ : Wk Ψ Γ) → (π₂ : Wk Ψ Γ) → wk-val π₁ M ≡ wk-val π₂ M
+  wk-val-eq (var i) (wk-cong π₁) (wk-cong π₂) = {!!}
+  wk-val-eq (var i) (wk-cong π₁) (wk-wk π₂) = {!!}
+  wk-val-eq (var i) (wk-wk π₁) (wk-cong π₂) = {!!}
+  wk-val-eq (var i) (wk-wk π₁) (wk-wk π₂) = {!!}
+  wk-val-eq (lam W) wk-ε wk-ε = {!!}
+  wk-val-eq (lam W) (wk-cong π₁) (wk-cong π₂) = {!!}
+  wk-val-eq (lam W) (wk-cong π₁) (wk-wk π₂) = {!!}
+  wk-val-eq (lam W) (wk-wk π₁) (wk-cong π₂) = {!!}
+  wk-val-eq (lam W) (wk-wk π₁) (wk-wk π₂) = {!!}
+  wk-val-eq (pair M₁ M₂) wk-ε wk-ε = {!!}
+  wk-val-eq (pair M₁ M₂) (wk-cong π₁) (wk-cong π₂) = {!!}
+  wk-val-eq (pair M₁ M₂) (wk-cong π₁) (wk-wk π₂) = {!!}
+  wk-val-eq (pair M₁ M₂) (wk-wk π₁) (wk-cong π₂) = {!!}
+  wk-val-eq (pair M₁ M₂) (wk-wk π₁) (wk-wk π₂) = {!!}
+  wk-val-eq (pm M M₁) wk-ε wk-ε = {!!}
+  wk-val-eq (pm M M₁) (wk-cong π₁) (wk-cong π₂) = {!!}
+  wk-val-eq (pm M M₁) (wk-cong π₁) (wk-wk π₂) = {!!}
+  wk-val-eq (pm M M₁) (wk-wk π₁) (wk-cong π₂) = {!!}
+  wk-val-eq (pm M M₁) (wk-wk π₁) (wk-wk π₂) = {!!}
+  wk-val-eq unit wk-ε wk-ε = {!!}
+  wk-val-eq unit (wk-cong π₁) (wk-cong π₂) = {!!}
+  wk-val-eq unit (wk-cong π₁) (wk-wk π₂) = {!!}
+  wk-val-eq unit (wk-wk π₁) (wk-cong π₂) = {!!}
+  wk-val-eq unit (wk-wk π₁) (wk-wk π₂) = {!!}
+
+  wk-comp-eq : (W : Comp Γ A) → (π₁ : Wk Ψ Γ) → (π₂ : Wk Ψ Γ) → wk-comp π₁ W ≡ wk-comp π₂ W
+  wk-comp-eq (return M) wk-ε wk-ε = refl
+  wk-comp-eq (return M) (wk-cong π₁) (wk-cong π₂) = cong return (wk-val-eq M (wk-cong π₁) (wk-cong π₂))
+  wk-comp-eq (return M) (wk-cong π₁) (wk-wk π₂) = cong return (wk-val-eq M (wk-cong π₁) (wk-wk π₂))
+  wk-comp-eq (return M) (wk-wk π₁) (wk-cong π₂) = cong return (wk-val-eq M (wk-wk π₁) (wk-cong π₂))
+  wk-comp-eq (return M) (wk-wk π₁) (wk-wk π₂) = cong return (wk-val-eq M (wk-wk π₁) (wk-wk π₂))
+  wk-comp-eq (pm M W) wk-ε wk-ε = refl
+  wk-comp-eq (pm M W) (wk-cong π₁) (wk-cong π₂) = cong₂ pm (wk-val-eq M (wk-cong π₁) (wk-cong π₂)) (wk-comp-eq W (wk-cong (wk-cong (wk-cong π₁))) (wk-cong (wk-cong (wk-cong π₂))))
+  wk-comp-eq (pm M W) (wk-cong π₁) (wk-wk π₂) = cong₂ pm (wk-val-eq M (wk-cong π₁) (wk-wk π₂)) (wk-comp-eq W (wk-cong (wk-cong (wk-cong π₁))) (wk-cong (wk-cong (wk-wk π₂))))
+  wk-comp-eq (pm M W) (wk-wk π₁) (wk-cong π₂) = cong₂ pm (wk-val-eq M (wk-wk π₁) (wk-cong π₂)) (wk-comp-eq W (wk-cong (wk-cong (wk-wk π₁))) (wk-cong (wk-cong (wk-cong π₂))))
+  wk-comp-eq (pm M W) (wk-wk π₁) (wk-wk π₂) = cong₂ pm (wk-val-eq M (wk-wk π₁) (wk-wk π₂)) (wk-comp-eq W (wk-cong (wk-cong (wk-wk π₁))) (wk-cong (wk-cong (wk-wk π₂))))
+  wk-comp-eq (push W₁ W₂) wk-ε wk-ε = cong₂ push (wk-comp-eq W₁ wk-ε wk-ε) (wk-comp-eq W₂ (wk-cong wk-ε) (wk-cong wk-ε))
+  wk-comp-eq (push W₁ W₂) (wk-cong π₁) (wk-cong π₂) = cong₂ push (wk-comp-eq W₁ (wk-cong π₁) (wk-cong π₂)) (wk-comp-eq W₂ (wk-cong (wk-cong π₁)) (wk-cong (wk-cong π₂)))
+  wk-comp-eq (push W₁ W₂) (wk-cong π₁) (wk-wk π₂) = cong₂ push (wk-comp-eq W₁ (wk-cong π₁) (wk-wk π₂)) (wk-comp-eq W₂ (wk-cong (wk-cong π₁)) (wk-cong (wk-wk π₂)))
+  wk-comp-eq (push W₁ W₂) (wk-wk π₁) (wk-cong π₂) = cong₂ push (wk-comp-eq W₁ (wk-wk π₁) (wk-cong π₂)) (wk-comp-eq W₂ (wk-cong (wk-wk π₁)) (wk-cong (wk-cong π₂)))
+  wk-comp-eq (push W₁ W₂) (wk-wk π₁) (wk-wk π₂) = cong₂ push (wk-comp-eq W₁ (wk-wk π₁) (wk-wk π₂)) (wk-comp-eq W₂ (wk-cong (wk-wk π₁)) (wk-cong (wk-wk π₂)))
+  wk-comp-eq (app M N) wk-ε wk-ε = cong₂ app (wk-val-eq M wk-ε wk-ε) (wk-val-eq N wk-ε wk-ε)
+  wk-comp-eq (app M N) (wk-cong π₁) (wk-cong π₂) = cong₂ app (wk-val-eq M (wk-cong π₁) (wk-cong π₂)) (wk-val-eq N (wk-cong π₁) (wk-cong π₂))
+  wk-comp-eq (app M N) (wk-cong π₁) (wk-wk π₂) = cong₂ app (wk-val-eq M (wk-cong π₁) (wk-wk π₂)) (wk-val-eq N (wk-cong π₁) (wk-wk π₂))
+  wk-comp-eq (app M N) (wk-wk π₁) (wk-cong π₂) = cong₂ app (wk-val-eq M (wk-wk π₁) (wk-cong π₂)) (wk-val-eq N (wk-wk π₁) (wk-cong π₂))
+  wk-comp-eq (app M N) (wk-wk π₁) (wk-wk π₂) = cong₂ app (wk-val-eq M (wk-wk π₁) (wk-wk π₂)) (wk-val-eq N (wk-wk π₁) (wk-wk π₂))
+  wk-comp-eq (var M) wk-ε wk-ε = refl
+  wk-comp-eq (var M) (wk-cong π₁) (wk-cong π₂) = cong var (wk-val-eq M (wk-cong π₁) (wk-cong π₂))
+  wk-comp-eq (var M) (wk-cong π₁) (wk-wk π₂) = cong var (wk-val-eq M (wk-cong π₁) (wk-wk π₂))
+  wk-comp-eq (var M) (wk-wk π₁) (wk-cong π₂) = cong var (wk-val-eq M (wk-wk π₁) (wk-cong π₂))
+  wk-comp-eq (var M) (wk-wk π₁) (wk-wk π₂) = cong var (wk-val-eq M (wk-wk π₁) (wk-wk π₂))
+  wk-comp-eq (sub W₁ W₂) wk-ε wk-ε = cong₂ sub (wk-comp-eq W₁ (wk-cong wk-ε) (wk-cong wk-ε)) (wk-comp-eq W₂ wk-ε wk-ε)
+  wk-comp-eq (sub W₁ W₂) (wk-cong π₁) (wk-cong π₂) = cong₂ sub (wk-comp-eq W₁ (wk-cong (wk-cong π₁)) (wk-cong (wk-cong π₂))) (wk-comp-eq W₂ (wk-cong π₁) (wk-cong π₂))
+  wk-comp-eq (sub W₁ W₂) (wk-cong π₁) (wk-wk π₂) = cong₂ sub (wk-comp-eq W₁ (wk-cong (wk-cong π₁)) (wk-cong (wk-wk π₂))) (wk-comp-eq W₂ (wk-cong π₁) (wk-wk π₂))
+  wk-comp-eq (sub W₁ W₂) (wk-wk π₁) (wk-cong π₂) = cong₂ sub (wk-comp-eq W₁ (wk-cong (wk-wk π₁)) (wk-cong (wk-cong π₂))) (wk-comp-eq W₂ (wk-wk π₁) (wk-cong π₂))
+  wk-comp-eq (sub W₁ W₂) (wk-wk π₁) (wk-wk π₂) = cong₂ sub (wk-comp-eq W₁ (wk-cong (wk-wk π₁)) (wk-cong (wk-wk π₂))) (wk-comp-eq W₂ (wk-wk π₁) (wk-wk π₂))
+
+  wk-v̲a̲l̲-eq : (M : V̲a̲l̲ Γ A) → (π₁ : Wk Ψ Γ) → (π₂ : Wk Ψ Γ) → wk-v̲a̲l̲ π₁ M ≡ wk-v̲a̲l̲ π₂ M
+  wk-v̲a̲l̲-eq (l̲a̲m̲ W) wk-ε wk-ε = refl
+  wk-v̲a̲l̲-eq (l̲a̲m̲ W) (wk-cong π₁) (wk-cong π₂) = {!!}
+  wk-v̲a̲l̲-eq (l̲a̲m̲ W) (wk-cong π₁) (wk-wk π₂) = {!!}
+  wk-v̲a̲l̲-eq (l̲a̲m̲ W) (wk-wk π₁) (wk-cong π₂) = {!!}
+  wk-v̲a̲l̲-eq (l̲a̲m̲ W) (wk-wk π₁) (wk-wk π₂) = {!!}
+  wk-v̲a̲l̲-eq (pa̲i̲r̲ M₁ M₂) wk-ε wk-ε = refl
+  wk-v̲a̲l̲-eq (pa̲i̲r̲ M₁ M₂) (wk-cong π₁) (wk-cong π₂) = {!!}
+  wk-v̲a̲l̲-eq (pa̲i̲r̲ M₁ M₂) (wk-cong π₁) (wk-wk π₂) = {!!}
+  wk-v̲a̲l̲-eq (pa̲i̲r̲ M₁ M₂) (wk-wk π₁) (wk-cong π₂) = {!!}
+  wk-v̲a̲l̲-eq (pa̲i̲r̲ M₁ M₂) (wk-wk π₁) (wk-wk π₂) = {!!}
+  wk-v̲a̲l̲-eq u̲n̲i̲t̲ wk-ε wk-ε = refl
+  wk-v̲a̲l̲-eq u̲n̲i̲t̲ (wk-cong π₁) (wk-cong π₂) = refl
+  wk-v̲a̲l̲-eq u̲n̲i̲t̲ (wk-cong π₁) (wk-wk π₂) = refl
+  wk-v̲a̲l̲-eq u̲n̲i̲t̲ (wk-wk π₁) (wk-cong π₂) = refl
+  wk-v̲a̲l̲-eq u̲n̲i̲t̲ (wk-wk π₁) (wk-wk π₂) = refl
+  wk-v̲a̲l̲-eq (v̲a̲r̲ i) (wk-cong π₁) (wk-cong π₂) = {!!}
+  wk-v̲a̲l̲-eq (v̲a̲r̲ i) (wk-cong π₁) (wk-wk π₂) = {!!}
+  wk-v̲a̲l̲-eq (v̲a̲r̲ i) (wk-wk π₁) (wk-cong π₂) = {!!}
+  wk-v̲a̲l̲-eq (v̲a̲r̲ i) (wk-wk π₁) (wk-wk π₂) = {!!}
+  -}
+
   data Env : (Γ : Ctx) → Set
 
   data CompStack : (Δ : Ctx) → (X : Ty) → Set
@@ -478,7 +576,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       ∘var    :    {i : Γ ∋ X} → {tail : ValStack b T◾} → {↥ : BottomTypeEqualsNextType b X T◾}
                   → {M : V̲a̲l̲ Γ' X}
                   → (i>>T : (⟨ i ∥ γ ⟩ →ᴸ* ⟨ h ∥ (γ' ﹐ M) ⟩)) → (πᵥ : Wk Γ Γ')
-                  --→ EnvExt (lookup-index i>>T) γ (γ' ﹐ M)
+                  → EnvExt (lookup-index i>>T) γ (γ' ﹐ M)
                   → WkExt πᵥ
                   → EnvEq πᵥ γ γ'
                   → LookupHaltingState ⟨ h ∥ (γ' ﹐ M) ⟩
@@ -549,7 +647,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   ⟨_⟩⧻_ : {from : ValState T◾} → {to : ValState T◾} → (F>T : from →ᵛ to) → (tail : ValStack non-empty T◾') → (from ⧻ tail) →ᵛ (to ⧻ tail)
   ⟨ ∘var-c ⟩⧻ tail = ∘var-c
-  ⟨ ∘var T>>U π we ϖ H ⟩⧻ tail = ∘var T>>U π we ϖ H
+  ⟨ ∘var T>>U π ext we ϖ H ⟩⧻ tail = ∘var T>>U π ext we ϖ H
   ⟨ ∘lam ⟩⧻ tail = ∘lam
   ⟨ ∘pair ⟩⧻ tail = ∘pair
   ⟨ ∘pm ⟩⧻ tail = ∘pm
