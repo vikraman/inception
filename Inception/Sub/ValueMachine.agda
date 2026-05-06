@@ -470,12 +470,25 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
       ⇡ᴿ  : (LHS : V̲a̲l̲ Γ X) → (RHS : Γ ⊢ᵛ Y) → PartialTerm Γ (X `× Y)
 
+  wk-v̲a̲l̲-id : (M : V̲a̲l̲ Γ X) → wk-v̲a̲l̲ wk-id M ≡ M
+  wk-v̲a̲l̲-id (l̲a̲m̲ M) = cong l̲a̲m̲ (wk-comp-id M)
+  wk-v̲a̲l̲-id (pa̲i̲r̲ LHS RHS) = cong₂ pa̲i̲r̲ (wk-v̲a̲l̲-id LHS) (wk-v̲a̲l̲-id RHS)
+  wk-v̲a̲l̲-id u̲n̲i̲t̲ = refl
+  wk-v̲a̲l̲-id (v̲a̲r̲ i) = cong v̲a̲r̲ (wk-mem-id)
+
   wk-pt : Wk Γ Δ → PartialTerm Δ X → PartialTerm Γ X
   wk-pt π (⭭ M) = ⭭ (wk-v̲a̲l̲ π M)
   wk-pt π (⇡ M) = ⇡ (wk-val π M)
   wk-pt π (⇡ᴹ M N) = ⇡ᴹ (wk-val π M) (wk-val (wk-cong (wk-cong π)) N)
   wk-pt π (⇡ᴸ LHS RHS) = ⇡ᴸ (wk-val π LHS) (wk-val π RHS)
   wk-pt π (⇡ᴿ LHS RHS) = ⇡ᴿ (wk-v̲a̲l̲ π LHS) (wk-val π RHS)
+
+  wk-pt-id : (M : PartialTerm Γ A) → wk-pt wk-id M ≡ M
+  wk-pt-id (⭭ M) = cong ⭭_ (wk-v̲a̲l̲-id M)
+  wk-pt-id (⇡ M) = cong ⇡_ (wk-val-id M)
+  wk-pt-id (⇡ᴹ M N) = cong₂ ⇡ᴹ (wk-val-id M) (wk-val-id N)
+  wk-pt-id (⇡ᴸ LHS RHS) = cong₂ ⇡ᴸ (wk-val-id LHS) (wk-val-id RHS)
+  wk-pt-id (⇡ᴿ LHS RHS) = cong₂ ⇡ᴿ (wk-v̲a̲l̲-id LHS) (wk-val-id RHS)
 
   data ValStack : IsEmpty → Ty → Set where
 
