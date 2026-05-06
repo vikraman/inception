@@ -411,172 +411,6 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   lhwk γ' M found-pair Ψ' πᵣ γᵣ = found-pair
   lhwk γ' M found-lam Ψ' πᵣ γᵣ = found-lam
 
- {-
-  lookup-wk-lift : {γ : Env Γ} {γ' : Env Γ'} {π : Wk Γ Γ'}
-                 → (i : Γ ∋ X) → (M : V̲a̲l̲ Γ' X) → (we : WkExt π)
-                 → ⟨ i ∥ γ ⟩ →ᴸ* ⟨ h ∥ γ' ﹐ M ⟩
-                 → (H : LookupHaltingState ⟨ h ∥ γ' ﹐ M ⟩)
-                 → (πₗ : Wk Ψ Γ)
-                 → (γₗ : Env Ψ)
-                 → (ϖₗ : EnvEq πₗ γₗ γ)
-                 → Σ[ Ψ' ∈ Ctx ]
-                   Σ[ πᵣ ∈ Wk Ψ' Γ' ]
-                   Σ[ π' ∈ Wk Ψ Ψ' ]
-                   Σ[ γᵣ ∈ Env Ψ' ]
-                   ( ⟨ (wk-mem πₗ i) ∥ γₗ ⟩ →ᴸ* ⟨ h ∥ γᵣ ﹐ wk-v̲a̲l̲ πᵣ M ⟩
-                     × (LookupHaltingState ⟨ h ∥ γᵣ ﹐ wk-v̲a̲l̲ πᵣ M ⟩)
-                     × WkExt π'
-                     × EnvEq π' γₗ γᵣ)
-                     --× ⟦ π' ⟧ʷ ⟦ γₗ ⟧ᴱ ≡ ⟦ γᵣ ⟧ᴱ )
-  --lookup-wk-lift {γ = γ} {γ' = γ'} {π = π} i M we L→*L' H πₗ γₗ ϖₗ = {!π we L→*L' πₗ γₗ ϖₗ !}
-  --lookup-wk-lift {Γ = Γ} {Γ' = Γ'} {Ψ = Ψ} {γ = γ} {γ' = γ'} {π = π} i M we L→*L' H πₗ γₗ ϖₗ = {! πₗ !}
-                 -- ? , ? , ? , ? , ? , ? , ? , ?
-                 -}
-
-
-{-
-  lookup-wk-lift {Γ = Γ ∙ X} {Γ' = Γ ∙ X} {Ψ = Ψ ∙ X} {γ = γ ﹐ _} {γ' = γ'} {π = wk-cong π} (t i) M (wk-eq π₁) (S →ᴸ⟨ val-t-step ⟩ L→*L') H (wk-cong πₗ) (γₗ ﹐ M₁) (wk-env-val-cong M₂ ϖₗ) =
-                 let
-                   b0 = lookup-wk-lift {π = {!!}} i {!!} {!!} L→*L' H (wk-wk πₗ) {!!} {!!}
-
-                   Ψ' = proj₁ b0
-                   πᵣ = proj₁ (proj₂ b0)
-                   π' = proj₁ (proj₂ (proj₂ b0))
-                   γᵣ = proj₁ (proj₂ (proj₂ (proj₂ b0)))
-
-                   -- Goal: ⟨ wk-mem πₗ i ∥ γₗ ⟩ →ᴸ* ⟨ h ∥ γᵣ ﹐ wk-v̲a̲l̲ πᵣ M ⟩
-                   L→L↑ : ⟨ wk-mem (wk-wk πₗ) i ∥ γₗ ﹐ wk-v̲a̲l̲ πₗ M₂ ⟩ →ᴸ* ⟨ h ∥ γᵣ ﹐ wk-v̲a̲l̲ πᵣ M ⟩
-                   L→L↑ = proj₁ (proj₂ (proj₂ (proj₂ (proj₂ b0))))
-
-                   LH↑ = proj₁ (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ b0)))))
-                   we↑ = proj₁ (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ b0))))))
-                   ϖ↑ = (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ b0)))))))
-
-                   e1 = S →ᴸ⟨ val-t-step ⟩ L→*L'
-
-                   -- goal : ⟨ wk-mem (wk-cong πₗ) (t i) ∥ γₗ Env.﹐ wk-v̲a̲l̲ πₗ M₂ ⟩ →ᴸ* ⟨ h ∥ γ' ﹐ wk-v̲a̲l̲ (wk-cong π) M ⟩
-                   -- goal = _ →ᴸ⟨ val-t-step ⟩ {!!}
-
-                   goal : ⟨ t (wk-mem πₗ i) ∥ γₗ ﹐ wk-v̲a̲l̲ πₗ M₂ ⟩ →ᴸ* ⟨ h ∥ γᵣ ﹐ wk-v̲a̲l̲ πᵣ M ⟩
-                   goal = _ →ᴸ⟨ val-t-step ⟩ {!L→L↑!}
-                 in
-                 Ψ' , πᵣ , π' , γᵣ , {!!} , LH↑ , we↑ , ϖ↑
-                 -- Γ ∙ X , wk-cong π , wk-cong πₗ , γ' , goal , {!!} , {!!} , {!!}
-  lookup-wk-lift {γ = γ} {γ' = γ'} {π = wk-cong π} i M (wk-eq π₁) (S →ᴸ⟨ comp-t-step ⟩ L→*L') H (wk-cong πₗ) (γₗ ﹐﹝ W ╎ cs ﹞) (wk-env-comp-cong W₁ cs₁ ϖₗ) = {!!}
-  lookup-wk-lift {γ = γ} {γ' = γ'} {π = wk-cong π} i M (wk-eq π₁) (S →ᴸ⟨ val-t-step ⟩ L→*L') H (wk-wk πₗ) (γₗ ﹐ M₁) (wk-env-val-wk M₂ ϖₗ) = {!!}
-  lookup-wk-lift {γ = γ} {γ' = γ'} {π = wk-cong π} i M (wk-eq π₁) (S →ᴸ⟨ comp-t-step ⟩ L→*L') H (wk-wk πₗ) (γₗ ﹐ M₁) (wk-env-val-wk M₂ ϖₗ) = {!!}
-  lookup-wk-lift {γ = γ} {γ' = γ'} {π = wk-cong π} i M (wk-eq π₁) (S →ᴸ⟨ val-t-step ⟩ L→*L') H (wk-wk πₗ) (γₗ ﹐﹝ W ╎ cs ﹞) (wk-env-comp-wk W₁ cs₁ ϖₗ) = {!!}
-  lookup-wk-lift {γ = γ} {γ' = γ'} {π = wk-cong π} i M (wk-eq π₁) (S →ᴸ⟨ comp-t-step ⟩ L→*L') H (wk-wk πₗ) (γₗ ﹐﹝ W ╎ cs ﹞) (wk-env-comp-wk W₁ cs₁ ϖₗ) = {!!}
-  lookup-wk-lift {γ = γ} {γ' = γ'} {π = wk-wk π} i M (wk-eq π₁) (S →ᴸ⟨ x ⟩ L→*L') H (wk-cong πₗ) (γₗ ﹐ M₁) (wk-env-val-cong M₂ ϖₗ) = {!!}
-  lookup-wk-lift {γ = γ} {γ' = γ'} {π = wk-wk π} i M (wk-eq π₁) (S →ᴸ⟨ x ⟩ L→*L') H (wk-cong πₗ) (γₗ ﹐﹝ W ╎ cs ﹞) (wk-env-comp-cong W₁ cs₁ ϖₗ) = {!!}
-  lookup-wk-lift {γ = γ} {γ' = γ'} {π = wk-wk π} i M (wk-eq π₁) (S →ᴸ⟨ x ⟩ L→*L') H (wk-wk πₗ) (γₗ ﹐ M₁) (wk-env-val-wk M₂ ϖₗ) = {!!}
-  lookup-wk-lift {γ = γ} {γ' = γ'} {π = wk-wk π} i M (wk-eq π₁) (S →ᴸ⟨ x ⟩ L→*L') H (wk-wk πₗ) (γₗ ﹐﹝ W ╎ cs ﹞) (wk-env-comp-wk W₁ cs₁ ϖₗ) = {!!}
-  lookup-wk-lift {γ = γ} {γ' = γ'} {π = wk-wk π} i M (wk-ext π₁ we) (S ◼) H (wk-cong πₗ) (γₗ ﹐ M₁) (wk-env-val-cong M₂ ϖₗ) = {!!}
-  lookup-wk-lift {γ = γ} {γ' = γ'} {π = wk-wk π} i M (wk-ext π₁ we) (S ◼) H (wk-cong πₗ) (γₗ ﹐﹝ W ╎ cs ﹞) ()
-  lookup-wk-lift {γ = γ} {γ' = γ'} {π = wk-wk π} i M (wk-ext π₁ we) (S ◼) H (wk-wk πₗ) (γₗ ﹐ M₁) (wk-env-val-wk M₂ ϖₗ) = {!!}
-  lookup-wk-lift {γ = γ} {γ' = γ'} {π = wk-wk π} i M (wk-ext π₁ we) (S ◼) H (wk-wk πₗ) (γₗ ﹐﹝ W ╎ cs ﹞) (wk-env-comp-wk W₁ cs₁ ϖₗ) = {!!}
-  lookup-wk-lift {γ = γ} {γ' = γ'} {π = wk-wk π} i M (wk-ext π₁ we) (S →ᴸ⟨ x ⟩ L→*L') H (wk-cong πₗ) (γₗ ﹐ M₁) (wk-env-val-cong M₂ ϖₗ) = {!!}
-  lookup-wk-lift {γ = γ} {γ' = γ'} {π = wk-wk π} i M (wk-ext π₁ we) (S →ᴸ⟨ x ⟩ L→*L') H (wk-cong πₗ) (γₗ ﹐﹝ W ╎ cs ﹞) (wk-env-comp-cong W₁ cs₁ ϖₗ) = {!!}
-  lookup-wk-lift {γ = γ} {γ' = γ'} {π = wk-wk π} i M (wk-ext π₁ we) (S →ᴸ⟨ x ⟩ L→*L') H (wk-wk πₗ) (γₗ ﹐ M₁) (wk-env-val-wk M₂ ϖₗ) = {!!}
-  lookup-wk-lift {γ = γ} {γ' = γ'} {π = wk-wk π} i M (wk-ext π₁ we) (S →ᴸ⟨ x ⟩ L→*L') H (wk-wk πₗ) (γₗ ﹐﹝ W ╎ cs ﹞) (wk-env-comp-wk W₁ cs₁ ϖₗ) = {!!}
--}
-  {- BEGIN OLD WK LIFT
-
-  lookup-wk-lift-envext : {γ : Env Γ} {γ' : Env Γ'}
-                 → (i : Γ ∋ X) → (M : V̲a̲l̲ Γ' X) → (ext : EnvExt i γ (γ' ﹐ M))
-                 → ⟨ i ∥ γ ⟩ →ᴸ* ⟨ h ∥ γ' ﹐ M ⟩
-                 → (H : LookupHaltingState ⟨ h ∥ γ' ﹐ M ⟩)
-                 → (πₗ : Wk Ψ Γ)
-                 → (γₗ : Env Ψ)
-                 → (ϖₗ : EnvEq πₗ γₗ γ)
-                 → Σ[ Ψ' ∈ Ctx ]
-                   Σ[ πᵣ ∈ Wk Ψ' Γ' ]
-                   Σ[ γᵣ ∈ Env Ψ' ]
-                   ( ⟨ (wk-mem πₗ i) ∥ γₗ ⟩ →ᴸ* ⟨ h ∥ γᵣ ﹐ wk-v̲a̲l̲ πᵣ M ⟩
-                     × (LookupHaltingState ⟨ h ∥ γᵣ ﹐ wk-v̲a̲l̲ πᵣ M ⟩) )
-
-  lookup-wk-lift : {γ : Env Γ} {γ' : Env Γ'} {π : Wk Γ Γ'}
-                 → (i : Γ ∋ X) → (M : V̲a̲l̲ Γ' X) → (we : WkExt π)
-                 → ⟨ i ∥ γ ⟩ →ᴸ* ⟨ h ∥ γ' ﹐ M ⟩
-                 → (H : LookupHaltingState ⟨ h ∥ γ' ﹐ M ⟩)
-                 → (πₗ : Wk Ψ Γ)
-                 → (γₗ : Env Ψ)
-                 → (ϖₗ : EnvEq πₗ γₗ γ)
-                 → Σ[ Ψ' ∈ Ctx ]
-                   Σ[ πᵣ ∈ Wk Ψ' Γ' ]
-                   Σ[ π' ∈ Wk Ψ Ψ' ]
-                   Σ[ γᵣ ∈ Env Ψ' ]
-                   ( ⟨ (wk-mem πₗ i) ∥ γₗ ⟩ →ᴸ* ⟨ h ∥ γᵣ ﹐ wk-v̲a̲l̲ πᵣ M ⟩
-                     × (LookupHaltingState ⟨ h ∥ γᵣ ﹐ wk-v̲a̲l̲ πᵣ M ⟩)
-                     × WkExt π'
-                     × EnvEq π' γₗ γᵣ)
-  lookup-wk-lift {Γ = Γ} {Γ' = Γ'} {Ψ = Ψ} {γ = γ} {γ' = γ'} {π = π} i M we L→*L' H πₗ γₗ ϖₗ = {! πₗ !}
-
-
-  -- lookup-wk-lift-envext i M ext L→*L' H πₗ γₗ ϖₗ = {!!}
-
-  lookup-wk-lift-envext i M env-val (S ◼) H (wk-cong {Γ = Γₗ} πₗ) (γₗ ﹐ M₁) (wk-env-val-cong M₂ ϖₗ) =
-                 Γₗ , πₗ , γₗ , (⟨ h ∥ γₗ ﹐ wk-v̲a̲l̲ πₗ M ⟩ ◼) , lhwk _ M H Γₗ πₗ γₗ
-  lookup-wk-lift-envext i M env-val (S ◼) H (wk-cong πₗ) (γₗ ﹐﹝ W ╎ cs ﹞) ()
-  lookup-wk-lift-envext {γ' = γ'} i M env-val (S ◼) H (wk-wk πₗ) (γₗ ﹐ M₁) (wk-env-val-wk M₂ ϖₗ) =
-                 let
-                   t = lookup-wk-lift-envext h M env-val (⟨ h ∥ γ' ﹐ M ⟩ ◼) H πₗ γₗ ϖₗ
-                 in
-                 proj₁ t , proj₁ (proj₂ t) , proj₁ (proj₂ (proj₂ t)) , (_ →ᴸ⟨ val-t-step ⟩ proj₁ (proj₂ (proj₂ (proj₂ t)))) , proj₂ (proj₂ (proj₂ (proj₂ t)))
-  lookup-wk-lift-envext i M env-val (S ◼) H (wk-wk πₗ) ((γₗ ﹐﹝ W ╎ cs ﹞) {wk≡ = wk≡}) (wk-env-comp-wk W₁ cs₁ ϖₗ) =
-                 let
-                   t = lookup-wk-lift-envext h M env-val (_ ◼) H πₗ γₗ ϖₗ
-                 in
-                 proj₁ t , proj₁ (proj₂ t) , proj₁ (proj₂ (proj₂ t)) , (_ →ᴸ⟨ (comp-t-step {wk≡ = wk≡}) ⟩ proj₁ (proj₂ (proj₂ (proj₂ t)))) , proj₂ (proj₂ (proj₂ (proj₂ t)))
-  lookup-wk-lift-envext i M env-val (S →ᴸ⟨ x ⟩ L→*L') H (wk-cong {Γ = Γₗ} πₗ) (γₗ ﹐ M₁) (wk-env-val-cong M₂ ϖₗ) =
-                 Γₗ , πₗ , γₗ , (_ ◼) , lhwk _ M H Γₗ πₗ γₗ
-  lookup-wk-lift-envext i M env-val (S →ᴸ⟨ x ⟩ L→*L') H (wk-cong πₗ) (γₗ ﹐﹝ W ╎ cs ﹞) ()
-  lookup-wk-lift-envext i M env-val (S →ᴸ⟨ x ⟩ L→*L') H (wk-wk πₗ) (γₗ ﹐ M₁) (wk-env-val-wk M₂ ϖₗ) =
-                 let
-                   t = lookup-wk-lift-envext h M env-val (_ ◼) H πₗ γₗ ϖₗ
-                 in
-                 proj₁ t , proj₁ (proj₂ t) , proj₁ (proj₂ (proj₂ t)) , (_ →ᴸ⟨ val-t-step ⟩ proj₁ (proj₂ (proj₂ (proj₂ t)))) , proj₂ (proj₂ (proj₂ (proj₂ t)))
-  lookup-wk-lift-envext i M env-val (S →ᴸ⟨ x ⟩ L→*L') H (wk-wk πₗ) (γₗ ﹐﹝ W ╎ cs ﹞) (wk-env-comp-wk W₁ cs₁ ϖₗ) =
-                 let
-                   t = lookup-wk-lift-envext h M env-val (_ ◼) H πₗ γₗ ϖₗ
-                 in
-                 proj₁ t , proj₁ (proj₂ t) , proj₁ (proj₂ (proj₂ t)) , ( _ →ᴸ⟨ comp-t-step ⟩ proj₁ (proj₂ (proj₂ (proj₂ t)))) , proj₂ (proj₂ (proj₂ (proj₂ t)))
-  lookup-wk-lift-envext i M (ext-val ext) (⟨ t i₁ ∥ _ ⟩ →ᴸ⟨ val-t-step ⟩ L→*L') H (wk-cong πₗ) (γₗ ﹐ M₁) (wk-env-val-cong M₂ ϖₗ) = --{!S!}
-                 let
-                   t = lookup-wk-lift-envext i₁ M ext L→*L' H πₗ γₗ ϖₗ
-                 in
-                 proj₁ t , proj₁ (proj₂ t) , proj₁ (proj₂ (proj₂ t)) , ( _ →ᴸ⟨ val-t-step ⟩ proj₁ (proj₂ (proj₂ (proj₂ t)))) , proj₂ (proj₂ (proj₂ (proj₂ t)))
-  lookup-wk-lift-envext i M (ext-val ext) (S →ᴸ⟨ x ⟩ L→*L') H (wk-cong πₗ) (γₗ ﹐﹝ W ╎ cs ﹞) ()
-  lookup-wk-lift-envext i M (ext-val ext) (⟨ t i₁ ∥ _ ⟩ →ᴸ⟨ val-t-step ⟩ L→*L') H (wk-wk πₗ) (γₗ ﹐ M₁) (wk-env-val-wk M₂ ϖₗ) =
-                 let
-                   t = lookup-wk-lift-envext (t i₁) M (ext-val ext) (_ →ᴸ⟨ val-t-step ⟩ L→*L') H πₗ γₗ ϖₗ
-                 in
-                 proj₁ t , proj₁ (proj₂ t) , proj₁ (proj₂ (proj₂ t)) , (_ →ᴸ⟨ val-t-step ⟩ proj₁ (proj₂ (proj₂ (proj₂ t)))) , proj₂ (proj₂ (proj₂ (proj₂ t)))
-  lookup-wk-lift-envext i M (ext-val ext) ((⟨ t i₁ ∥ _ ﹐ _ ⟩) →ᴸ⟨ val-t-step ⟩ L→*L') H (wk-wk πₗ) (γₗ ﹐﹝ W ╎ cs ﹞) (wk-env-comp-wk W₁ cs₁ ϖₗ) =
-                 let
-                   t = lookup-wk-lift-envext (t i₁) M (ext-val ext) (_ →ᴸ⟨ val-t-step ⟩ L→*L') H πₗ γₗ ϖₗ
-                 in
-                 proj₁ t , proj₁ (proj₂ t) , proj₁ (proj₂ (proj₂ t)) , (_ →ᴸ⟨ comp-t-step ⟩ proj₁ (proj₂ (proj₂ (proj₂ t)))) , proj₂ (proj₂ (proj₂ (proj₂ t)))
-  lookup-wk-lift-envext i M (ext-comp ext) (S →ᴸ⟨ x ⟩ L→*L') H (wk-cong πₗ) (γₗ ﹐ M₁) ()
-  lookup-wk-lift-envext i M (ext-comp ext) ((⟨ t i₁ ∥ _ ﹐﹝ W₁ ╎ cs ﹞ ⟩) →ᴸ⟨ comp-t-step ⟩ L→*L') H (wk-cong πₗ) (γₗ ﹐﹝ W ╎ cs ﹞) (wk-env-comp-cong W₁ cs₁ ϖₗ) =
-                 let
-                   t = lookup-wk-lift-envext i₁ M ext L→*L' H πₗ γₗ ϖₗ
-                 in
-                 proj₁ t , proj₁ (proj₂ t) , proj₁ (proj₂ (proj₂ t)) , (_ →ᴸ⟨ comp-t-step ⟩ proj₁ (proj₂ (proj₂ (proj₂ t)))) , proj₂ (proj₂ (proj₂ (proj₂ t)))
-  lookup-wk-lift-envext {X = X} i M (ext-comp ext) (⟨ t i₁ ∥ _ ⟩ →ᴸ⟨ comp-t-step ⟩ L→*L') H (wk-wk πₗ) (γₗ ﹐ M₁) (wk-env-val-wk M₂ ϖₗ) =
-                 let
-                   t = lookup-wk-lift-envext (t i₁) M (ext-comp ext) (⟨ t i₁ ∥ _ ﹐﹝ _ ╎ _ ﹞ ⟩ →ᴸ⟨ comp-t-step ⟩ L→*L') H πₗ γₗ ϖₗ
-                 in
-                 proj₁ t , proj₁ (proj₂ t) , proj₁ (proj₂ (proj₂ t)) , (_ →ᴸ⟨ val-t-step ⟩ proj₁ (proj₂ (proj₂ (proj₂ t)))) , proj₂ (proj₂ (proj₂ (proj₂ t)))
-  lookup-wk-lift-envext i M (ext-comp ext) ((⟨ t i₁ ∥ _ ﹐﹝ _ ╎ _ ﹞ ⟩) →ᴸ⟨ comp-t-step ⟩ L→*L') H (wk-wk πₗ) (γₗ ﹐﹝ W ╎ cs ﹞) (wk-env-comp-wk W₁ cs₁ ϖₗ) =
-                 let
-                   t = lookup-wk-lift-envext (t i₁) M (ext-comp ext) (⟨ t i₁ ∥ _ ⟩ →ᴸ⟨ comp-t-step ⟩ L→*L') H πₗ γₗ ϖₗ
-                 in
-                 proj₁ t , proj₁ (proj₂ t) , proj₁ (proj₂ (proj₂ t)) , (_ →ᴸ⟨ comp-t-step ⟩ proj₁ (proj₂ (proj₂ (proj₂ t)))) , proj₂ (proj₂ (proj₂ (proj₂ t)))
-
-  --------------------------------------------------
-  END OLD WK LIFT -}
-
   lookup-wk-lift : {γ : Env Γ} {γ' : Env Γ'}
                  → (i : Γ ∋ X) → (M : V̲a̲l̲ Γ' X) → (ext : EnvExt i γ (γ' ﹐ M))
                  → ⟨ i ∥ γ ⟩ →ᴸ* ⟨ h ∥ γ' ﹐ M ⟩
@@ -654,82 +488,6 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                  proj₁ t , proj₁ (proj₂ t) , wk-wk (proj₁ (proj₂ (proj₂ t))) , proj₁ (proj₂ (proj₂ (proj₂ t))) , (_ →ᴸ⟨ comp-t-step ⟩ proj₁ (proj₂ (proj₂ (proj₂ (proj₂ t))))) , proj₁ (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ t))))) , ext-comp (proj₁ (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ t))))))) , WkExt.wk-ext (proj₁ (proj₂ (proj₂ t))) (proj₁ (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ t)))))))) , wk-env-comp-wk W cs (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ t))))))))
 
 
-
-  --------------------------------------------------
-  {-
-  postulate lookup-skip : {Γₗ : Ctx} {γₗ : Env Γₗ} {γ : Env Γ}
-                 → (π : Wk Γₗ Γ)
-                 → (we : WkExt π)
-                 → (ϖ : EnvEq π γₗ γ)
-                 → (i : Γ ∋ X)
-                 → ⟨ wk-mem π i ∥ γₗ ⟩ →ᴸ* ⟨ i ∥ γ ⟩
-  --lookup-skip {γₗ = γₗ} {γ = γ} π we ϖ i = ?
-  lookup-skip {γₗ = γₗ} {γ = γ} wk-ε (wk-eq π) wk-env-ε ()
-  lookup-skip {γₗ = γₗ ﹐ _} {γ = γ ﹐ M} (wk-cong π) (wk-eq π₁) (wk-env-val-cong M ϖ) Cx.h =
-              let
-                ϖ' : EnvEq wk-id (γₗ ﹐ wk-v̲a̲l̲ π M) (γ ﹐ M)
-                ϖ' = subst (λ x → EnvEq x (γₗ ﹐ wk-v̲a̲l̲ π M) (γ ﹐ M)) (wk-id-id) (wk-env-val-cong M ϖ)
-
-                goal : ⟨ h ∥ γₗ ﹐ wk-v̲a̲l̲ π M ⟩ →ᴸ* ⟨ h ∥ γ ﹐ M ⟩
-                goal = subst (λ x → ⟨ h ∥ x ⟩ →ᴸ* ⟨ h ∥ γ ﹐ M ⟩) (sym (env-id ϖ')) (⟨ h ∥ γ ﹐ M ⟩ ◼)
-              in
-              goal
-  lookup-skip {γₗ = γₗ ﹐ _} {γ = γ ﹐ M} (wk-cong π) (wk-eq π₁) (wk-env-val-cong M ϖ) (Cx.t i) =
-              let
-                ϖ' : EnvEq wk-id (γₗ ﹐ wk-v̲a̲l̲ π M) (γ ﹐ M)
-                ϖ' = subst (λ x → EnvEq x (γₗ ﹐ wk-v̲a̲l̲ π M) (γ ﹐ M)) (wk-id-id) (wk-env-val-cong M ϖ)
-
-                eq : (wk-mem π i) ≡ i
-                eq = trans (cong (λ x → wk-mem x i) wk-id-id) wk-mem-id
-
-                goal : ⟨ t (wk-mem π i) ∥ γₗ ﹐ wk-v̲a̲l̲ π M ⟩ →ᴸ* ⟨ t i ∥ γ ﹐ M ⟩
-                goal = subst₂ (λ x y → ⟨ t x ∥ y ⟩ →ᴸ* ⟨ t i ∥ γ ﹐ M ⟩) (sym eq) (sym (env-id ϖ')) (⟨ t i ∥ γ ﹐ M ⟩ ◼)
-              in
-              goal
-  lookup-skip {γₗ = (γₗ ﹐﹝ _ ╎ _ ﹞) {π = πₓ'} {wk≡ = wk≡'}} {γ = (γ ﹐﹝ W ╎ cs ﹞) {π = πₓ} {wk≡ = wk≡}} (wk-cong π) (wk-eq π₁) (wk-env-comp-cong W cs ϖ) Cx.h =
-              let
-                ϖ' : EnvEq wk-id (γₗ ﹐﹝ wk-comp π W ╎ cs ﹞) (γ ﹐﹝ W ╎ cs ﹞)
-                ϖ' = subst (λ x → EnvEq x ((γₗ ﹐﹝ wk-comp π W ╎ cs ﹞) {π = πₓ'} {wk≡ = wk≡'}) ((γ ﹐﹝ W ╎ cs ﹞) {π = πₓ} {wk≡ = wk≡})) (wk-id-id) (wk-env-comp-cong W cs ϖ)
-
-                goal : ⟨ h ∥ γₗ ﹐﹝ wk-comp π W ╎ cs ﹞ ⟩ →ᴸ* ⟨ h ∥ γ ﹐﹝ W ╎ cs ﹞ ⟩
-                goal = subst (λ x → ⟨ h ∥ x ⟩ →ᴸ* ⟨ h ∥ (γ ﹐﹝ W ╎ cs ﹞) {π = πₓ} {wk≡ = wk≡} ⟩) (sym (env-id ϖ')) (⟨ h ∥ (γ ﹐﹝ W ╎ cs ﹞) {π = πₓ} {wk≡ = wk≡} ⟩ ◼)
-              in
-              goal
-  lookup-skip {γₗ = (γₗ ﹐﹝ _ ╎ _ ﹞) {π = πₓ'} {wk≡ = wk≡'}} {γ = (γ ﹐﹝ W ╎ cs ﹞) {π = πₓ} {wk≡ = wk≡}} (wk-cong π) (wk-eq π₁) (wk-env-comp-cong W cs ϖ) (Cx.t i) =
-              let
-                ϖ' : EnvEq wk-id (γₗ ﹐﹝ wk-comp π W ╎ cs ﹞) (γ ﹐﹝ W ╎ cs ﹞)
-                ϖ' = subst (λ x → EnvEq x ((γₗ ﹐﹝ wk-comp π W ╎ cs ﹞) {π = πₓ'} {wk≡ = wk≡'}) ((γ ﹐﹝ W ╎ cs ﹞) {π = πₓ} {wk≡ = wk≡})) (wk-id-id) (wk-env-comp-cong W cs ϖ)
-
-                eq : (wk-mem π i) ≡ i
-                eq = trans (cong (λ x → wk-mem x i) wk-id-id) wk-mem-id
-
-                eq1 = env-id ϖ'
-
-                goal : ⟨ t (wk-mem π i) ∥ ((γₗ ﹐﹝ wk-comp π W ╎ cs ﹞) {π = πₓ'} {wk≡ = wk≡'}) ⟩ →ᴸ* ⟨ t i ∥ ((γ ﹐﹝ W ╎ cs ﹞) {π = πₓ} {wk≡ = wk≡}) ⟩
-                goal = subst₂ (λ x y → ⟨ t x ∥ y ⟩ →ᴸ* ⟨ t i ∥ ((γ ﹐﹝ W ╎ cs ﹞) {π = πₓ} {wk≡ = wk≡}) ⟩) (sym eq) (sym (env-id ϖ')) (⟨ t i ∥ ((γ ﹐﹝ W ╎ cs ﹞) {π = πₓ} {wk≡ = wk≡}) ⟩ ◼)
-              in
-              goal
-  lookup-skip {γₗ = γₗ ﹐ M} {γ = γ} (wk-wk π) (wk-eq π₁) (wk-env-val-wk M ϖ) Cx.h =
-              let
-                goal : ⟨ t (wk-mem π h) ∥ γₗ ﹐ M ⟩ →ᴸ* ⟨ h ∥ γ ⟩
-                goal = _ →ᴸ⟨ val-t-step ⟩ {!!}
-              in
-              goal
-  lookup-skip {γₗ = γₗ} {γ = γ} (wk-wk π) (wk-eq π₁) (wk-env-val-wk M ϖ) (Cx.t i) = {!!}
-  lookup-skip {γₗ = γₗ} {γ = γ} (wk-wk π) (wk-eq π₁) (wk-env-comp-wk W cs ϖ) Cx.h = {!!}
-  lookup-skip {γₗ = γₗ} {γ = γ} (wk-wk π) (wk-eq π₁) (wk-env-comp-wk W cs ϖ) (Cx.t i) = {!!}
-  lookup-skip {γₗ = γₗ} {γ = γ} (wk-wk π) (wk-ext π₁ we) (wk-env-val-wk M ϖ) Cx.h = {!!}
-  lookup-skip {γₗ = γₗ} {γ = γ} (wk-wk π) (wk-ext π₁ we) (wk-env-val-wk M ϖ) (Cx.t i) = {!!}
-  lookup-skip {γₗ = γₗ} {γ = γ} (wk-wk π) (wk-ext π₁ we) (wk-env-comp-wk W cs ϖ) Cx.h = {!!}
-  lookup-skip {γₗ = γₗ} {γ = γ} (wk-wk π) (wk-ext π₁ we) (wk-env-comp-wk W cs ϖ) (Cx.t i) = {!!}
-  -}
-
-
-                   --  ⟦ wk-mem πₗ i ⟧ᵐ ⟦ γₗ ⟧ᴱ -- ⟦ ⇡ var (wk-mem πₗ i) ⊲ γₗ ∷ □ ⟧ᵛˢ
-                   --≡⟨ {!!} ⟩
-                   --  ⟦ i ⟧ᵐ (⟦ πₗ ⟧ʷ ⟦ γₗ ⟧ᴱ)
-
-
   --------------------------------------------------
 
   wk-uniq : (π π' : Wk Γ Δ) → π ≡ π'
@@ -742,7 +500,6 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   uniq-bot : (↥ : BottomTypeEqualsNextType non-empty X T◾) → (↥ ≡ 🗇)
   uniq-bot 🗇 = refl
 
--- WITH ENV EQ
   val-wk-lift-∘∘ : {M : PartialTerm Γ X} {γ : Env Γ} {tail : ValStack b T◾} {↥ : BottomTypeEqualsNextType b X T◾} {M' : PartialTerm Γ' X'} {γ' : Env Γ'} {tail' : ValStack b' T◾} {↥' : BottomTypeEqualsNextType b' X' T◾}
           → ∘ ((M ⊲ γ ∷ tail) {↥ = ↥}) →ᵛ ∘ ((M' ⊲ γ' ∷ tail') {↥ = ↥'})
           → ⟦ ∘ ((M ⊲ γ ∷ tail) {↥ = ↥}) ⟧ᵛꟴ ≡ ⟦ ∘ ((M' ⊲ γ' ∷ tail') {↥ = ↥'}) ⟧ᵛꟴ
@@ -783,8 +540,6 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                     a1 : EnvEq πₜ γ γ
                     a1 = subst (λ x → EnvEq x γ γ) (sym wk-id-id) a0
 
-                    --b0 = lookup-wk-lift i M₁ weᵥ L→L' H πₗ γₗ ϖ
-
                     a2 = li≡i L→L' H
                     a3 : EnvExt i γ (γ₂ ﹐ M₁)
                     a3 = subst (λ x → EnvExt x γ (γ₂ ﹐ M₁)) a2 extᵥ
@@ -800,19 +555,12 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                     ext↑ = proj₁ (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ b0))))))
                     we↑ = proj₁ (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ b0)))))))
                     ϖ↑ = proj₂ (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ b0)))))))
-                    -- ϖ↑ = proj₁ (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ b0)))))))
-                    -- i≡T↑ = proj₂ (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ b0)))))))
-
-                    --e0 : {!!}
-                    --e0 = ∘var {T◾ = X} {γ' = γᵣ} {i = wk-mem πₗ i} {tail = □} {↥ = 🗆} {M = (wk-v̲a̲l̲ πᵣ M₁)} L→L↑ π' we↑ ϖ↑ LH↑
 
                     e1 : ∘ (⇡ var (wk-mem πₗ i)) ⊲ γₗ ∷ □ →ᵛ ∙ (⭭ wk-v̲a̲l̲ π' (wk-v̲a̲l̲ πᵣ M₁)) ⊲ γₗ ∷ □
                     e1 = ∘var {T◾ = X} {γ' = γᵣ} {i = wk-mem πₗ i} {tail = □} {↥ = 🗆} {M = wk-v̲a̲l̲ πᵣ M₁} L→L↑ π' ext↑ we↑ ϖ↑ LH↑
 
                     goal : ∘ (⇡ var (wk-mem πₗ i)) ⊲ γₗ ∷ □ →ᵛ ∙ (⭭ wk-v̲a̲l̲ πₗ (wk-v̲a̲l̲ πᵥ M₁)) ⊲ γₗ ∷ □
                     goal = ∘var {T◾ = X} {γ' = {!!}} {i = {!!}} {tail = □} {↥ = 🗆} {M = {!!}} {!!} {!!} {!!} {!!} {!!} {!!}
-                           -- rewrite e0 for this hole
-                           --∘var {T◾ = X} {γ' = {!!}} {i = wk-mem πₗ i} {↥ = 🗆} {M = {!!}} {!!} {!!} {!!} {!!} {!!}
                  in
                  Ψ , πₗ , γₗ , wk≡ₗ , □ , goal ,
                  (  ⟦ ∘ ((wk-pt πₗ (⇡ var i) ⊲ γₗ ∷ □) {↥ = 🗆}) ⟧ᵛꟴ
