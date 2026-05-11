@@ -322,11 +322,30 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                ⟦ ∘ ((⇡ wk-val π' RHS ⊲ γ ∷ ((⇡ᴿ M (wk-val π' RHS) ⊲ γ ∷ □) {↥ = 🗆})) {↥ = 🗇}) ⟧ᵛꟴ ∎
   valstate-eq {S = S} {S' = S'} (∙M∷l {tail = x ⊲ γ ∷ tail} {↥ = 🗇} π≡ LHS≡M) = refl
 
-  valstate-eq {S = S} {S' = S'} (∙M∷r {tail = □} {↥ = 🗆}) = {!!}
-  valstate-eq {S = S} {S' = S'} (∙M∷r {tail = x ⊲ γ ∷ tail} {↥ = 🗇}) = refl
+  valstate-eq {S = S} {S' = S'} (∙M∷r {γ' = γ'} {γ = γ} {M = M} {LHS = LHS} {RHS = RHS} {π' = π'} {tail = □} {↥ = 🗆} π≡ RHS≡M) =
+               ⟦ ∙ ((⭭ M ⊲ γ ∷ ((⇡ᴿ LHS RHS ⊲ γ' ∷ □) {↥ = 🗆})) {↥ = 🗇}) ⟧ᵛꟴ
+              ≡⟨ refl ⟩
+               ⟦ toVal LHS ⟧ᵛ ⟦ γ' ⟧ᴱ , ⟦ RHS ⟧ᵛ ⟦ γ' ⟧ᴱ
+              ≡⟨ cong₂ (λ x y → ⟦ toVal LHS ⟧ᵛ x , y) π≡ RHS≡M ⟩
+               ⟦ toVal LHS ⟧ᵛ (⟦ π' ⟧ʷ ⟦ γ ⟧ᴱ) , ⟦ toVal M ⟧ᵛ ⟦ γ ⟧ᴱ
+              ≡⟨ refl ⟩
+               ⟦ ∙ ((⭭ pa̲i̲r̲ (wk-v̲a̲l̲ π' LHS) M ⊲ γ ∷ □) {↥ = 🗆}) ⟧ᵛꟴ ∎
+  valstate-eq {S = S} {S' = S'} (∙M∷r {tail = x ⊲ γ ∷ tail} {↥ = 🗇} π≡ RHS≡M) = refl
 
-  valstate-eq {S = S} {S' = S'} (∙pair∷pm {tail = □} {↥ = 🗆}) = {!!}
-  valstate-eq {S = S} {S' = S'} (∙pair∷pm {tail = x ⊲ γ ∷ tail} {↥ = 🗇}) = refl
+  valstate-eq {S = S} {S' = S'} (∙pair∷pm {γ' = γ'} {γ = γ} {LHS = LHS} {RHS = RHS} {M = M} {N = N} {π' = π'} {tail = □} {↥ = 🗆} π≡ p₁M≡LHS p₂M≡RHS) =
+              {-
+                ⟦ γ' ⟧ᴱ ≡ ⟦ π' ⟧ʷ ⟦ γ ⟧ᴱ
+                proj₁ (⟦ M ⟧ᵛ ⟦ γ' ⟧ᴱ)) ≡ ⟦ toVal LHS ⟧ᵛ ⟦ γ ⟧ᴱ
+                proj₂ (⟦ M ⟧ᵛ ⟦ γ' ⟧ᴱ)) ≡ ⟦ toVal RHS ⟧ᵛ ⟦ γ ⟧ᴱ
+              -}
+               ⟦ ∙ ((⭭ pa̲i̲r̲ LHS RHS ⊲ γ ∷ ((⇡ᴹ M N ⊲ γ' ∷ □) {↥ = 🗆})) {↥ = 🗇}) ⟧ᵛꟴ
+              ≡⟨ refl ⟩
+               ⟦ N ⟧ᵛ ((⟦ γ' ⟧ᴱ , proj₁ (⟦ M ⟧ᵛ ⟦ γ' ⟧ᴱ)) , proj₂ (⟦ M ⟧ᵛ ⟦ γ' ⟧ᴱ))
+              ≡⟨ cong ⟦ N ⟧ᵛ (cong₂ _,_ (cong₂ _,_ π≡ p₁M≡LHS) p₂M≡RHS) ⟩
+               ⟦ N ⟧ᵛ ((⟦ π' ⟧ʷ ⟦ γ ⟧ᴱ , ⟦ toVal LHS ⟧ᵛ ⟦ γ ⟧ᴱ) , ⟦ toVal RHS ⟧ᵛ ⟦ γ ⟧ᴱ)
+              ≡⟨ refl ⟩
+               ⟦ ∘ ((⇡ wk-val (wk-cong (wk-cong π')) N ⊲ γ ﹐ LHS ﹐ wk-v̲a̲l̲ (wk-wk wk-id) RHS ∷ □) {↥ = 🗆}) ⟧ᵛꟴ ∎
+  valstate-eq {S = S} {S' = S'} (∙pair∷pm {tail = x ⊲ γ ∷ tail} {↥ = 🗇} _ _ _) = refl
 
   ------------------------------------------
   ------------------------------------------
@@ -815,6 +834,17 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   ... | steps {T = ∙ (⭭_ {X = X} LT ⊲ γ₁ ∷ □) {↥ = 🗆}} L>T ∙LT L≡T πᴸ wk≡ᴸ γH₁ tH we₁ ϖ₁ with val-eval-rec {X = Y} RHS γ₁ γH₁ (wk-trans πᴸ π)
   ...      | steps {T = ∙ (⭭_ {X = Y} RT ⊲ γ₂ ∷ □) {↥ = 🗆}} R>T ∙RT R≡T πᴿ wk≡ᴿ γH₂ tH we₂ ϖ₂ rewrite sym (wk-val-trans RHS πᴸ π) =
 
+            let
+
+              R≡T' : ⟦ wk-val πᴸ (wk-val π RHS) ⟧ᵛ ⟦ γ₁ ⟧ᴱ ≡ ⟦ toVal RT ⟧ᵛ ⟦ γ₂ ⟧ᴱ
+              R≡T' =  ⟦ RHS ⟧ᵛ (⟦ π ⟧ʷ (⟦ πᴸ ⟧ʷ ⟦ γ₁ ⟧ᴱ))
+                    ≡⟨ cong ⟦ RHS ⟧ᵛ (wk-sem-trans πᴸ π ⟦ γ₁ ⟧ᴱ) ⟩
+                      ⟦ RHS ⟧ᵛ (⟦ wk-trans πᴸ π ⟧ʷ ⟦ γ₁ ⟧ᴱ)
+                    ≡⟨ R≡T ⟩
+                      ⟦ toVal RT ⟧ᵛ ⟦ γ₂ ⟧ᴱ ∎
+
+            in
+
             steps
 
               (
@@ -822,7 +852,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
               (⟪ L>T ⟫⧻ (⇡ᴸ (wk-val π LHS) (wk-val π RHS) ⊲ γ ∷ □)) ⨾
               (∙ ⭭ LT ⊲ γ₁ ∷ ⇡ᴸ (wk-val π LHS) (wk-val π RHS) ⊲ γ ∷ □) →ᵛ⟨ ∙M∷l (sym wk≡ᴸ) L≡T ⟩． ⨾
               (⟪ R>T ⟫⧻ (⇡ᴿ LT (wk-val πᴸ (wk-val π RHS)) ⊲ γ₁ ∷ □)) ⨾
-              (∙ ⭭ RT ⊲ γ₂ ∷ ⇡ᴿ LT (wk-val πᴸ (wk-val π RHS)) ⊲ γ₁ ∷ □) →ᵛ⟨ ∙M∷r ⟩．
+              (∙ ⭭ RT ⊲ γ₂ ∷ ⇡ᴿ LT (wk-val πᴸ (wk-val π RHS)) ⊲ γ₁ ∷ □) →ᵛ⟨ ∙M∷r (sym wk≡ᴿ) R≡T' ⟩．
               )
 
               ∙ pa̲i̲r̲ (wk-v̲a̲l̲ πᴿ LT) RT ⊲ γ₂ ■
@@ -878,7 +908,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
           (
             (∘ ⇡ pm (wk-val π M) (wk-val (wk-cong (wk-cong π)) N) ⊲ γ ∷ □) →ᵛ⟨ ∘pm ⟩． ⨾
             (⟪ M>T ⟫⧻ (⇡ᴹ (wk-val π M) (wk-val (wk-cong (wk-cong π)) N) ⊲ γ ∷ □)) ⨾
-            (∙ ⭭ pa̲i̲r̲ LHS RHS ⊲ γ₁ ∷ ⇡ᴹ (wk-val π M) (wk-val (wk-cong (wk-cong π)) N) ⊲ γ ∷ □) →ᵛ⟨ ∙pair∷pm ⟩． ⨾
+            (∙ ⭭ pa̲i̲r̲ LHS RHS ⊲ γ₁ ∷ ⇡ᴹ (wk-val π M) (wk-val (wk-cong (wk-cong π)) N) ⊲ γ ∷ □) →ᵛ⟨ ∙pair∷pm (sym wk≡₁) (cong proj₁ M≡T) (cong proj₂ M≡T) ⟩． ⨾
             N>T'
           )
 
