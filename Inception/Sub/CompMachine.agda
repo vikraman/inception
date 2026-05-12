@@ -262,7 +262,6 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   -- val-wk-lift {Ψ = Ψ} {M = M} {γ = γ} {tail = tail} {↥ = ↥} {M' = M'} {γ' = γ'} {tail' = tail'} {↥' = ↥'} (S →ᵛ⟨ ∘unit ⟩．) Q≡Q' {πₜ = πₜ} {πₗ = πₗ} {γₗ = γₗ} ϖ {wk≡ₗ = wk≡ₗ} = {!!}
   -- val-wk-lift {Ψ = Ψ} {M = M} {γ = γ} {tail = tail} {↥ = ↥} {M' = M'} {γ' = γ'} {tail' = tail'} {↥' = ↥'} (S →ᵛ⟨ x ⟩ Q→Q') Q≡Q' {πₜ = πₜ} {πₗ = πₗ} {γₗ = γₗ} ϖ {wk≡ₗ = wk≡ₗ} = {!!}
 
-  {-
   -- BBB BEGIN
 
   ----
@@ -706,8 +705,9 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   wk-val-halts {M = M} {π = π} {γ' = γ'} {γ = γ} _ var-halts = var-halts
   wk-val-halts {M = M} {π = π} {γ' = γ'} {γ = γ} ϖ (lam-halts (Δ₁ , cs₁ , π₁ , wk≡₁ , N₁ , CH₁)) = lam-halts (Δ₁ , cs₁ , wk-trans π π₁ , {!!} , wk-val π N₁ , {!!})
 
-  -- BBB END -}
+  -- BBB END
 
+{- ZZZ
   ------------------------------------------------------
   {- just here for reference
   data CompStack  where
@@ -1543,9 +1543,6 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   val-eval M = val-eval-rec M ∗ empty-env wk-id
 
   -------------------------------------------------------------------
-  -- BEGIN OLD EVAL
-
-  --This is the old evaluation function, which is correct, but hard to show to terminate.
 
   data CompSteps : CompState → Set where
 
@@ -1837,8 +1834,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     comp-eval : (W : ε ⊢ᶜ R₀) → CompSteps ((∘⟨ wk-comp wk-id W ⊰ ∗ ╎ ◻ ⟩) {π = wk-id} {wk≡ = refl})
     comp-eval W = comp-eval-rec W ∗ wk-id ◻ wk-id refl
 
-    -- END OLD EVAL
-XXX -}
+    -- END WITH HALTING CONDITION -}
 
 
 postulate k₀ : ⟦ `Unit ⟧ → R
@@ -1891,3 +1887,4 @@ ex15 = push (push (app (lam {A = `Unit} (sub (var (var h)) (return unit))) unit)
 
 _ : comp-eval ex15 ≡ {! comp-eval ex15 !}
 _ = refl
+ZZZ -}
