@@ -428,29 +428,6 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   eq-to-ineq {n = suc n} {m = zero} ()
   eq-to-ineq {n = suc n} {m = suc m} refl = s≤s (eq-to-ineq refl)
 
-  {-
-
-  data LookupSteps : LookupState X → Set where
-
-    steps : {S T : LookupState X} → S →ᴸ* T → (H : LookupHaltingState T) → ⟦ S ⟧ᴸ ≡ ⟦ T ⟧ᴸ → (π : Wk (lCtx S) (lTCtx T)) → (⟦ π ⟧ʷ ⟦ lEnv S ⟧ᴱ ≡ ⟦ lTEnv T ⟧ᴱ)
-            → LookupSteps S
-
-  lookup : (i : Γ ∋ X) → (γ : Env Γ) → LookupSteps {X = X} ⟨ i ∥ γ ⟩
-  lookup h (γ ﹐ l̲a̲m̲ W) = steps (⟨ h ∥ _﹐_ γ (l̲a̲m̲ W) ⟩ ◼) found-lam refl (wk-wk wk-id) refl
-  lookup h (γ ﹐ pa̲i̲r̲ LHS RHS) = steps (⟨ h ∥ _﹐_ γ (pa̲i̲r̲ LHS RHS) ⟩ ◼) found-pair refl (wk-wk wk-id) refl
-  lookup h (γ ﹐ u̲n̲i̲t̲) = steps (⟨ h ∥ _﹐_ γ (u̲n̲i̲t̲) ⟩ ◼) found-unit refl (wk-wk wk-id) refl
-  lookup h (γ ﹐ v̲a̲r̲ i) with lookup i γ
-  ... | steps {T = T} i>>T HT i≡T WK w≡γ = steps (_ →ᴸ⟨ val-h-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ
-  lookup h ((γ ﹐﹝ W ╎ cs ﹞ ) {π = π} {wk≡ = wk≡}) =
-      steps (⟨ h ∥ γ ﹐﹝ W ╎ cs ﹞ ⟩ ◼) found-comp refl (wk-wk wk-id) refl
-  lookup (t i) (γ ﹐ M) with lookup i γ
-  ... | steps {T = T} i>>T HT i≡T WK w≡γ = steps (_ →ᴸ⟨ val-t-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ
-  lookup (t i) (γ ﹐﹝ W ╎ cs ﹞) with lookup i γ
-  ... | steps {T = T} i>>T HT i≡T WK w≡γ =
-      steps (_ →ᴸ⟨ comp-t-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ
-
-  -}
-
   -- Value Machine
   ------------------------------------------------------------------------------
 
@@ -507,7 +484,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   lookup-index : {S T : LookupState X} → S →ᴸ* T → (lCtx S) ∋ X
   lookup-index (⟨ i ∥ _ ⟩ ◼) = i
-  lookup-index (⟨ h ∥ E ﹐ v̲a̲r̲ i ⟩ →ᴸ⟨ val-h-step ⟩ S→T) = h --t (lookup-index S→T)
+  lookup-index (⟨ h ∥ E ﹐ v̲a̲r̲ i ⟩ →ᴸ⟨ val-h-step ⟩ S→T) = h
   lookup-index (⟨ t i ∥ _ ⟩ →ᴸ⟨ val-t-step ⟩ S→T) = t (lookup-index S→T)
   lookup-index (⟨ t i ∥ _ ⟩ →ᴸ⟨ comp-t-step ⟩ S→T) = t (lookup-index S→T)
 
@@ -526,62 +503,6 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   li≡i (S →ᴸ⟨ val-t-step ⟩ S→T) (found-comp {wk≡ = wk≡}) = cong t (li≡i S→T (found-comp {wk≡ = wk≡}))
   li≡i (S →ᴸ⟨ comp-t-step ⟩ S→T) (found-comp {wk≡ = wk≡}) = cong t (li≡i S→T (found-comp {wk≡ = wk≡}))
 
-  data EnvExt : (i : Γ ∋ X) → (γ : Env Γ) → (γ' : Env Γ') → Set where
-
-    env-val : {M : V̲a̲l̲ Γ X} → EnvExt h (γ ﹐ M) (γ ﹐ M)
-
-    env-comp : {W : Γ ⊢ᶜ X} {cs : CompStack Δ X} {π : Wk Γ Δ} .{wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ} → EnvExt h ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡}) ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡})
-
-    ext-val : {γ : Env Γ} {γ' : Env Γ'} {M : V̲a̲l̲ Γ Y} {i : Γ ∋ X} → EnvExt i γ γ' → EnvExt (t i) (γ ﹐ M) γ'
-
-    ext-comp : {γ : Env Γ} {γ' : Env Γ'} {W : Γ ⊢ᶜ Y} {cs : CompStack Δ Y} {π : Wk Γ Δ} .{wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ} {i : Γ ∋ X} → EnvExt i γ γ' → EnvExt (t i) ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡}) γ'
-
-    ext-jmp : {γ : Env Γ} {γ' : Env Γ'} {i : Γ ∋ `V} → EnvExt i γ γ' → EnvExt h (γ ﹐ v̲a̲r̲ i) γ'
-
-  data EnvEq : (π : Wk Γ' Γ) → (γ' : Env Γ') → (γ : Env Γ) → Set where
-
-    wk-env-ε    : EnvEq wk-ε ∗ ∗
-
-    wk-env-val-cong : {π : Wk Γ' Γ} {γ' : Env Γ'} {γ : Env Γ} → (M : V̲a̲l̲ Γ X) → EnvEq π γ' γ → EnvEq (wk-cong π) (γ' ﹐ wk-v̲a̲l̲ π M) (γ ﹐ M)
-
-    wk-env-comp-cong : {π : Wk Γ' Γ} {γ' : Env Γ'} {γ : Env Γ}
-                       → (W : Γ ⊢ᶜ X) → (cs : CompStack Δ X) → {πᶜ : Wk Γ Δ} → .{wk≡ : ⟦ πᶜ ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ}
-                       → .{wk≡' : ⟦ wk-trans π πᶜ ⟧ʷ ⟦ γ' ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ} -- not sure about this one
-                       --→ {wk≡' : ⟦ wk-trans π πᶜ ⟧ʷ ⟦ γ' ⟧ᴱ ≡ ⟦ πᶜ ⟧ʷ ⟦ γ ⟧ᴱ}
-                       → EnvEq π γ' γ
-                       → EnvEq (wk-cong π) ((γ' ﹐﹝ wk-comp π W ╎ cs ﹞) {π = wk-trans π πᶜ}
-                               {wk≡ = wk≡'}) -- not sure about this one
-                               --{wk≡ = trans wk≡' wk≡})
-                               ((γ ﹐﹝ W ╎ cs ﹞) {π = πᶜ} {wk≡ = wk≡})
-
-    {- TOO RESTRICTIVE: The context of W does not really matter!
-    wk-env-val-wk : {π : Wk Γ' Γ} {γ' : Env Γ'} {γ : Env Γ} → (M : V̲a̲l̲ Γ X) → EnvEq π γ' γ → EnvEq (wk-wk π) (γ' ﹐ wk-v̲a̲l̲ π M) γ
-
-    wk-env-comp-wk : {π : Wk Γ' Γ} {γ' : Env Γ'} {γ : Env Γ}
-                       → (W : Γ ⊢ᶜ X) → (cs : CompStack Δ X) → {πᶜ' : Wk Γ' Δ} --→ {wk≡ : ⟦ πᶜ ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ}
-                       → {wk≡' : ⟦ πᶜ' ⟧ʷ ⟦ γ' ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ} -- not sure about this one
-                       → EnvEq π γ' γ
-                       → EnvEq (wk-wk π) ((γ' ﹐﹝ wk-comp π W ╎ cs ﹞) {π = πᶜ'}
-                               {wk≡ = wk≡'}) -- not sure about this one
-                               γ
-    -}
-
-    wk-env-val-wk : {π : Wk Γ' Γ} {γ' : Env Γ'} {γ : Env Γ} → (M : V̲a̲l̲ Γ' X) → EnvEq π γ' γ → EnvEq (wk-wk π) (γ' ﹐ M) γ
-
-    wk-env-comp-wk : {π : Wk Γ' Γ} {γ' : Env Γ'} {γ : Env Γ}
-                       → (W : Γ' ⊢ᶜ X) → (cs : CompStack Δ X) → {πᶜ' : Wk Γ' Δ}
-                       → .{wk≡' : ⟦ πᶜ' ⟧ʷ ⟦ γ' ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ}
-                       → EnvEq π γ' γ
-                       → EnvEq (wk-wk π) ((γ' ﹐﹝ W ╎ cs ﹞) {π = πᶜ'}
-                               {wk≡ = wk≡'})
-                               γ
-
-  data WkExt : Wk Γ Δ → Set where
-
-    wk-eq : (π : Wk Γ Γ) → WkExt π
-
-    wk-ext : (π : Wk Γ Δ) → WkExt π → WkExt (wk-wk {A = A} π)
-
   data _↠ᵛ_ : ValState T◾ → ValState T◾ → Set
 
   data _→ᵛ_ : ValState T◾ → ValState T◾ → Set where
@@ -594,12 +515,13 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                   → {M : V̲a̲l̲ Γ' X}
                   → (i>>T : (⟨ i ∥ γ ⟩ →ᴸ* ⟨ h ∥ (γ' ﹐ M) ⟩)) → (πᵥ : Wk Γ Γ')
                   -- not needed for correctness, but makes things easier:
-                  → EnvExt (lookup-index i>>T) γ (γ' ﹐ M)
-                  → WkExt πᵥ
-                  → EnvEq πᵥ γ γ'
+                  -- → EnvExt (lookup-index i>>T) γ (γ' ﹐ M)
+                  -- → WkExt πᵥ
+                  -- → EnvEq πᵥ γ γ'
                   → LookupHaltingState ⟨ h ∥ (γ' ﹐ M) ⟩
                 ----------------------------------------------------------------
-                  → ∘ ((⇡ var i ⊲ γ ∷ tail) {↥ = ↥}) →ᵛ ∙ ((⭭ (wk-v̲a̲l̲ πᵥ M) ⊲ γ ∷ tail) {↥ = ↥})
+                  --→ ∘ ((⇡ var i ⊲ γ ∷ tail) {↥ = ↥}) →ᵛ ∙ ((⭭ (wk-v̲a̲l̲ πᵥ M) ⊲ γ ∷ tail) {↥ = ↥})
+                  → ∘ ((⇡ var i ⊲ γ ∷ tail) {↥ = ↥}) →ᵛ ∙ ((⭭ M ⊲ γ' ∷ tail) {↥ = ↥}) -- garbage collection step
 
 
       ∘lam   :  {M : (Γ ∙ X) ⊢ᶜ Y} → {γ  : Env Γ}
@@ -676,7 +598,8 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   ⟨_⟩⧻_ : {from : ValState T◾} → {to : ValState T◾} → (F>T : from →ᵛ to) → (tail : ValStack non-empty T◾') → (from ⧻ tail) →ᵛ (to ⧻ tail)
   ⟨ ∘var-c ⟩⧻ tail = ∘var-c
-  ⟨ ∘var T>>U π ext we ϖ H ⟩⧻ tail = ∘var T>>U π ext we ϖ H
+  -- ⟨ ∘var T>>U π ext we ϖ H ⟩⧻ tail = ∘var T>>U π ext we ϖ H
+  ⟨ ∘var T>>U π H ⟩⧻ tail = ∘var T>>U π H
   ⟨ ∘lam ⟩⧻ tail = ∘lam
   ⟨ ∘pair ⟩⧻ tail = ∘pair
   ⟨ ∘pm ⟩⧻ tail = ∘pm
@@ -751,175 +674,6 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   haltingTerm : {S : ValState T◾} → (ValHaltingState S) → V̲a̲l̲ (botCtx S) (T◾)
   haltingTerm ∙ M ⊲ γ ■ = M
 
-{-
-  data ValSteps : ValState T◾ → Set where
-
-    steps : {S T : ValState T◾} → S ↠ᵛ T → ValHaltingState T → ⟦ S ⟧ᵛꟴ ≡ ⟦ T ⟧ᵛꟴ → (π : Wk (botCtx T) (botCtx S)) → (⟦ π ⟧ʷ ⟦ botEnv T ⟧ᴱ ≡ ⟦ botEnv S ⟧ᴱ)
-            → ValSteps S
-
-  val-eval-rec : (M : Γ' ⊢ᵛ X) → (γ : Env Γ) → (π : Wk Γ Γ') → ValSteps {T◾ = X} (∘ ((⇡ (wk-val π M) ⊲ γ ∷ □) {↥ = 🗆}))
-
-  val-eval-rec {X = `V} (var {A = .`V} i) γ π = steps (_ →ᵛ⟨ ∘var-c ⟩．) (∙ v̲a̲r̲ (wk-mem π i) ⊲ γ ■) refl wk-id refl
-
-  val-eval-rec {X = `Unit} (var {A = .`Unit} i) γ π with lookup (wk-mem π i) γ
-  ... | steps i>>T found-unit i≡T π₁ w≡γ = steps (_ →ᵛ⟨ ∘var i>>T π₁ ⟩．) (∙ u̲n̲i̲t̲ ⊲ γ ■) refl wk-id refl
-
-  val-eval-rec {X = X `× X₁} (var {A = .(X `× X₁)} i) γ π with lookup (wk-mem π i) γ
-  ... | steps i>>T (found-pair {LHS = LHS} {RHS = RHS} {γ = γ₁}) i≡T π₁ w≡γ =
-
-            steps
-
-            (_ →ᵛ⟨ ∘var i>>T π₁ ⟩．)
-
-            (∙ pa̲i̲r̲ (wk-v̲a̲l̲ π₁ LHS) (wk-v̲a̲l̲ π₁ RHS) ⊲ γ ■)
-
-            (⟦ wk-mem π i ⟧ᵐ ⟦ γ ⟧ᴱ
-            ≡⟨ i≡T ⟩
-            (< ⟦ toVal LHS ⟧ᵛ , ⟦ toVal RHS ⟧ᵛ > ⟦ γ₁ ⟧ᴱ)
-            ≡⟨ cong (λ x → < ⟦ toVal LHS ⟧ᵛ , ⟦ toVal RHS ⟧ᵛ > x) (sym w≡γ) ⟩
-            (< ⟦ toVal LHS ⟧ᵛ , ⟦ toVal RHS ⟧ᵛ > (⟦ π₁ ⟧ʷ ⟦ γ ⟧ᴱ))
-            ≡⟨ refl ⟩
-            (⟦ wk-val π₁ (toVal LHS) ⟧ᵛ ⟦ γ ⟧ᴱ , ⟦ wk-val π₁ (toVal RHS) ⟧ᵛ ⟦ γ ⟧ᴱ)
-            ≡⟨ cong (λ x → (⟦ x ⟧ᵛ ⟦ γ ⟧ᴱ , ⟦ wk-val π₁ (toVal RHS) ⟧ᵛ ⟦ γ ⟧ᴱ)) (wk-comm {M = LHS} {π = π₁}) ⟩
-            (⟦ toVal (wk-v̲a̲l̲ π₁ LHS) ⟧ᵛ ⟦ γ ⟧ᴱ , ⟦ wk-val π₁ (toVal RHS) ⟧ᵛ ⟦ γ ⟧ᴱ)
-            ≡⟨ cong (λ x → (⟦ toVal (wk-v̲a̲l̲ π₁ LHS) ⟧ᵛ ⟦ γ ⟧ᴱ , ⟦ x ⟧ᵛ ⟦ γ ⟧ᴱ)) (wk-comm {M = RHS} {π = π₁}) ⟩
-            (⟦ toVal (wk-v̲a̲l̲ π₁ LHS) ⟧ᵛ ⟦ γ ⟧ᴱ , ⟦ toVal (wk-v̲a̲l̲ π₁ RHS) ⟧ᵛ ⟦ γ ⟧ᴱ)
-            ≡⟨ refl ⟩
-            (< ⟦ toVal (wk-v̲a̲l̲ π₁ LHS) ⟧ᵛ , ⟦ toVal (wk-v̲a̲l̲ π₁ RHS) ⟧ᵛ > ⟦ γ ⟧ᴱ) ∎)
-
-            wk-id
-
-            refl
-
-  val-eval-rec {X = X `⇒ X₁} (var {A = .(X `⇒ X₁)} i) γ π with lookup (wk-mem π i) γ
-
-  ... | steps i>>T (found-lam {W = W} {γ = γ₁}) i≡T π₁ w≡γ =
-
-            steps
-
-            (_ →ᵛ⟨ ∘var i>>T π₁ ⟩．)
-
-            (∙ (wk-v̲a̲l̲ π₁ (l̲a̲m̲ W)) ⊲ γ ■)
-
-            (⟦ wk-mem π i ⟧ᵐ ⟦ γ ⟧ᴱ
-              ≡⟨ i≡T ⟩
-            ((λ y → ⟦ W ⟧ᶜ (⟦ γ₁ ⟧ᴱ , y) ))
-              ≡⟨ cong (λ x → (λ y → ⟦ W ⟧ᶜ (x , y) )) (sym w≡γ) ⟩
-            (λ y → ⟦ W ⟧ᶜ (⟦ π₁ ⟧ʷ ⟦ γ ⟧ᴱ , y) )
-              ≡⟨ refl ⟩
-            (curry (< (λ r → proj₁ r) ； ⟦ π₁ ⟧ʷ , (λ r → proj₂ r) > ； ⟦ W ⟧ᶜ)) ⟦ γ ⟧ᴱ ∎)
-
-            wk-id
-
-            refl
-
-  val-eval-rec (lam W) γ π = steps (∘ ⇡ (wk-val π (lam W)) ⊲ γ ∷ □ →ᵛ⟨ ∘lam ⟩．) (∙ l̲a̲m̲ (wk-comp (wk-cong π) W) ⊲ γ ■) refl wk-id refl
-
-  val-eval-rec unit γ π = steps (_ →ᵛ⟨ ∘unit ⟩．) (∙ u̲n̲i̲t̲ ⊲ γ ■) refl wk-id refl
-
-  val-eval-rec (pair {A = X} {B = Y} LHS RHS) γ π with val-eval-rec {X = X} LHS γ π
-  ... | steps {T = ∙ (⭭_ {X = X} LT ⊲ γ₁ ∷ □) {↥ = 🗆}} L>T ∙LT L≡T πᴸ wk≡ᴸ with  val-eval-rec {X = Y} RHS γ₁ (wk-trans πᴸ π)
-  ...      | steps {T = ∙ (⭭_ {X = Y} RT ⊲ γ₂ ∷ □) {↥ = 🗆}} R>T ∙RT R≡T πᴿ wk≡ᴿ rewrite sym (wk-val-trans RHS πᴸ π) =
-
-            steps
-
-              (
-              ∘ ⇡ (wk-val π (pair LHS RHS)) ⊲ γ ∷ □ →ᵛ⟨ ∘pair ⟩． ⨾
-              (⟪ L>T ⟫⧻ (⇡ᴸ (wk-val π LHS) (wk-val π RHS) ⊲ γ ∷ □)) ⨾
-              (∙ ⭭ LT ⊲ γ₁ ∷ ⇡ᴸ (wk-val π LHS) (wk-val π RHS) ⊲ γ ∷ □) →ᵛ⟨ ∙M∷l ⟩． ⨾
-              (⟪ R>T ⟫⧻ (⇡ᴿ LT (wk-val πᴸ (wk-val π RHS)) ⊲ γ₁ ∷ □)) ⨾
-              (∙ ⭭ RT ⊲ γ₂ ∷ ⇡ᴿ LT (wk-val πᴸ (wk-val π RHS)) ⊲ γ₁ ∷ □) →ᵛ⟨ ∙M∷r ⟩．
-              )
-
-              ∙ pa̲i̲r̲ (wk-v̲a̲l̲ πᴿ LT) RT ⊲ γ₂ ■
-
-              ( ⟦ wk-val π (pair LHS RHS) ⟧ᵛ ⟦ γ ⟧ᴱ
-              ≡⟨ refl ⟩
-                (⟦ LHS ⟧ᵛ (⟦ π ⟧ʷ ⟦ γ ⟧ᴱ) , ⟦ RHS ⟧ᵛ (⟦ π ⟧ʷ ⟦ γ ⟧ᴱ))
-              ≡⟨ cong (λ y → (⟦ LHS ⟧ᵛ (⟦ π ⟧ʷ ⟦ γ ⟧ᴱ) , ⟦ RHS ⟧ᵛ (⟦ π ⟧ʷ y))) (sym wk≡ᴸ) ⟩
-                (⟦ LHS ⟧ᵛ (⟦ π ⟧ʷ ⟦ γ ⟧ᴱ) , ⟦ RHS ⟧ᵛ (⟦ π ⟧ʷ (⟦ πᴸ ⟧ʷ ⟦ γ₁ ⟧ᴱ)))
-              ≡⟨ cong (λ y → (⟦ LHS ⟧ᵛ (⟦ π ⟧ʷ ⟦ γ ⟧ᴱ) , ⟦ RHS ⟧ᵛ y)) (wk-sem-trans πᴸ π ⟦ γ₁ ⟧ᴱ) ⟩
-                (⟦ LHS ⟧ᵛ (⟦ π ⟧ʷ ⟦ γ ⟧ᴱ) , ⟦ RHS ⟧ᵛ (⟦ wk-trans πᴸ π ⟧ʷ ⟦ γ₁ ⟧ᴱ))
-              ≡⟨ cong (λ y → (y , ⟦ RHS ⟧ᵛ (⟦ wk-trans πᴸ π ⟧ʷ ⟦ γ₁ ⟧ᴱ))) L≡T ⟩
-                (⟦ toVal LT ⟧ᵛ ⟦ γ₁ ⟧ᴱ , ⟦ RHS ⟧ᵛ (⟦ wk-trans πᴸ π ⟧ʷ ⟦ γ₁ ⟧ᴱ))
-              ≡⟨ cong (λ y → (⟦ toVal LT ⟧ᵛ y , ⟦ RHS ⟧ᵛ (⟦ wk-trans πᴸ π ⟧ʷ ⟦ γ₁ ⟧ᴱ))) (sym wk≡ᴿ) ⟩
-                (⟦ toVal LT ⟧ᵛ (⟦ πᴿ ⟧ʷ ⟦ γ₂ ⟧ᴱ) , ⟦ RHS ⟧ᵛ (⟦ wk-trans πᴸ π ⟧ʷ ⟦ γ₁ ⟧ᴱ))
-              ≡⟨ refl ⟩
-                (⟦ wk-val πᴿ (toVal LT) ⟧ᵛ ⟦ γ₂ ⟧ᴱ , ⟦ RHS ⟧ᵛ (⟦ wk-trans πᴸ π ⟧ʷ ⟦ γ₁ ⟧ᴱ))
-              ≡⟨ cong (λ y → (⟦ y ⟧ᵛ ⟦ γ₂ ⟧ᴱ  , ⟦ RHS ⟧ᵛ (⟦ wk-trans πᴸ π ⟧ʷ ⟦ γ₁ ⟧ᴱ))) (wk-comm {M = LT} {π = πᴿ}) ⟩
-                (⟦ toVal (wk-v̲a̲l̲ πᴿ LT) ⟧ᵛ ⟦ γ₂ ⟧ᴱ , ⟦ RHS ⟧ᵛ (⟦ wk-trans πᴸ π ⟧ʷ ⟦ γ₁ ⟧ᴱ))
-              ≡⟨ cong (λ y → (⟦ toVal (wk-v̲a̲l̲ πᴿ LT) ⟧ᵛ ⟦ γ₂ ⟧ᴱ , y)) R≡T ⟩
-                (⟦ toVal (wk-v̲a̲l̲ πᴿ LT) ⟧ᵛ ⟦ γ₂ ⟧ᴱ , ⟦ toVal RT ⟧ᵛ ⟦ γ₂ ⟧ᴱ)
-              ≡⟨ refl ⟩
-                ⟦ pair (toVal (wk-v̲a̲l̲ πᴿ LT)) (toVal RT) ⟧ᵛ ⟦ γ₂ ⟧ᴱ
-              ≡⟨ refl ⟩
-                ⟦ toVal (pa̲i̲r̲ (wk-v̲a̲l̲ πᴿ LT) RT) ⟧ᵛ ⟦ γ₂ ⟧ᴱ
-              ≡⟨ refl ⟩
-                ⟦ ∙ (⭭ pa̲i̲r̲ (wk-v̲a̲l̲ πᴿ LT) RT ⊲ γ₂ ∷ □) {↥ = 🗆} ⟧ᵛꟴ ∎ )
-
-              (wk-trans πᴿ πᴸ)
-
-              ( ⟦ wk-trans πᴿ πᴸ ⟧ʷ ⟦ γ₂ ⟧ᴱ
-              ≡⟨ sym (wk-sem-trans πᴿ πᴸ ⟦ γ₂ ⟧ᴱ) ⟩
-                ⟦ πᴸ ⟧ʷ (⟦ πᴿ ⟧ʷ ⟦ γ₂ ⟧ᴱ)
-              ≡⟨ cong (λ y → ⟦ πᴸ ⟧ʷ y) wk≡ᴿ ⟩
-                ⟦ πᴸ ⟧ʷ ⟦ γ₁ ⟧ᴱ
-              ≡⟨ wk≡ᴸ ⟩
-                ⟦ γ ⟧ᴱ ∎)
-
-
-  val-eval-rec {Γ = Γ} (pm {A = A} {B = B} M N) γ π with val-eval-rec M γ π
-  ... | steps {S = S} M>T ∙ pa̲i̲r̲ LHS RHS ⊲ γ₁ ■ M≡T π₁ wk≡₁ with val-eval-rec N (_﹐_ (_﹐_ γ₁ LHS) (wk-v̲a̲l̲ (wk-wk wk-id) RHS)) ((wk-cong (wk-cong (wk-trans π₁ π)))) | (wk-val-trans N (wk-cong (wk-cong π₁)) (wk-cong (wk-cong π)))
-  ...    | steps {T = T} N>T ∙T N≡T π₂ wk≡₂ | eq with N>T
-  ...      | N>T' rewrite sym eq =
-
-        steps
-          (
-            (∘ ⇡ pm (wk-val π M) (wk-val (wk-cong (wk-cong π)) N) ⊲ γ ∷ □) →ᵛ⟨ ∘pm ⟩． ⨾
-            (⟪ M>T ⟫⧻ (⇡ᴹ (wk-val π M) (wk-val (wk-cong (wk-cong π)) N) ⊲ γ ∷ □)) ⨾
-            (∙ ⭭ pa̲i̲r̲ LHS RHS ⊲ γ₁ ∷ ⇡ᴹ (wk-val π M) (wk-val (wk-cong (wk-cong π)) N) ⊲ γ ∷ □) →ᵛ⟨ ∙pair∷pm ? ? ? ⟩． ⨾
-            N>T'
-          )
-
-          ∙T
-
-          (  ⟦ wk-val π (pm M N) ⟧ᵛ ⟦ γ ⟧ᴱ
-            ≡⟨ refl ⟩
-              ⟦ pm (wk-val π M) (wk-val (wk-cong (wk-cong π)) N) ⟧ᵛ ⟦ γ ⟧ᴱ
-            ≡⟨ refl ⟩
-            (< idf , ⟦ π ⟧ʷ ； ⟦ M ⟧ᵛ > ； assocl ； ⟦ wk-val (wk-cong (wk-cong π)) N ⟧ᵛ) ⟦ γ ⟧ᴱ
-            ≡⟨ refl ⟩
-            ⟦ wk-val (wk-cong (wk-cong π)) N ⟧ᵛ (assocl ( (⟦ γ ⟧ᴱ ,  ⟦ M ⟧ᵛ  (⟦ π ⟧ʷ ⟦ γ ⟧ᴱ))))
-            ≡⟨ cong (λ y → ⟦ wk-val (wk-cong (wk-cong π)) N ⟧ᵛ (assocl ( (⟦ γ ⟧ᴱ , y   )))) M≡T ⟩
-            ⟦ wk-val (wk-cong (wk-cong π)) N ⟧ᵛ (assocl ( (⟦ γ ⟧ᴱ ,  (⟦ toVal LHS ⟧ᵛ ⟦ γ₁ ⟧ᴱ , ⟦ toVal RHS ⟧ᵛ ⟦ γ₁ ⟧ᴱ)  )))
-            ≡⟨ refl ⟩
-              ⟦ N ⟧ᵛ ((⟦ π ⟧ʷ ⟦ γ ⟧ᴱ , ⟦ toVal LHS ⟧ᵛ ⟦ γ₁ ⟧ᴱ) , ⟦ toVal RHS ⟧ᵛ ⟦ γ₁ ⟧ᴱ)
-            ≡⟨ cong  (λ y → ⟦ N ⟧ᵛ ((⟦ π ⟧ʷ y , ⟦ toVal LHS ⟧ᵛ ⟦ γ₁ ⟧ᴱ) , ⟦ toVal RHS ⟧ᵛ ⟦ γ₁ ⟧ᴱ)) (sym wk≡₁) ⟩
-              ⟦ N ⟧ᵛ ((⟦ π ⟧ʷ (⟦ π₁ ⟧ʷ ⟦ γ₁ ⟧ᴱ) , ⟦ toVal LHS ⟧ᵛ ⟦ γ₁ ⟧ᴱ) , ⟦ toVal RHS ⟧ᵛ ⟦ γ₁ ⟧ᴱ)
-            ≡⟨ refl ⟩
-              ⟦ N ⟧ᵛ ((⟦ π ⟧ʷ (⟦ π₁ ⟧ʷ ⟦ γ₁ ⟧ᴱ) , ⟦ toVal LHS ⟧ᵛ ⟦ γ₁ ⟧ᴱ) , ⟦ (wk-val (wk-wk wk-id) (toVal RHS)) ⟧ᵛ (⟦ γ₁ ⟧ᴱ , ⟦ toVal LHS ⟧ᵛ ⟦ γ₁ ⟧ᴱ))
-            ≡⟨ cong (λ y → ⟦ N ⟧ᵛ ((⟦ π ⟧ʷ (⟦ π₁ ⟧ʷ ⟦ γ₁ ⟧ᴱ) , ⟦ toVal LHS ⟧ᵛ ⟦ γ₁ ⟧ᴱ) , ⟦ y ⟧ᵛ (⟦ γ₁ ⟧ᴱ , ⟦ toVal LHS ⟧ᵛ ⟦ γ₁ ⟧ᴱ))) (wk-comm {M = RHS} {π = wk-wk wk-id}) ⟩
-              ⟦ N ⟧ᵛ ((⟦ π ⟧ʷ (⟦ π₁ ⟧ʷ ⟦ γ₁ ⟧ᴱ) , ⟦ toVal LHS ⟧ᵛ ⟦ γ₁ ⟧ᴱ) , ⟦ toVal (wk-v̲a̲l̲ (wk-wk wk-id) RHS) ⟧ᵛ (⟦ γ₁ ⟧ᴱ , ⟦ toVal LHS ⟧ᵛ ⟦ γ₁ ⟧ᴱ))
-            ≡⟨ cong (λ y → ⟦ N ⟧ᵛ ((y , ⟦ toVal LHS ⟧ᵛ ⟦ γ₁ ⟧ᴱ) , ⟦ toVal (wk-v̲a̲l̲ (wk-wk wk-id) RHS) ⟧ᵛ (⟦ γ₁ ⟧ᴱ , ⟦ toVal LHS ⟧ᵛ ⟦ γ₁ ⟧ᴱ))  ) (wk-sem-trans π₁ π ⟦ γ₁ ⟧ᴱ) ⟩
-            ⟦ N ⟧ᵛ ((⟦ wk-trans π₁ π ⟧ʷ ⟦ γ₁ ⟧ᴱ , ⟦ toVal LHS ⟧ᵛ ⟦ γ₁ ⟧ᴱ) , ⟦ toVal (wk-v̲a̲l̲ (wk-wk wk-id) RHS) ⟧ᵛ (⟦ γ₁ ⟧ᴱ , ⟦ toVal LHS ⟧ᵛ ⟦ γ₁ ⟧ᴱ))
-            ≡⟨ N≡T ⟩
-            ⟦ T ⟧ᵛꟴ ∎)
-
-          (wk-trans π₂ (wk-wk (wk-wk π₁)))
-
-          ( ⟦ wk-trans π₂ (wk-wk (wk-wk π₁)) ⟧ʷ ⟦ botEnv T ⟧ᴱ
-            ≡⟨ sym (wk-sem-trans π₂ (wk-wk (wk-wk π₁)) ⟦ botEnv T ⟧ᴱ) ⟩
-            ⟦ wk-wk (wk-wk π₁) ⟧ʷ (⟦ π₂ ⟧ʷ ⟦ botEnv T ⟧ᴱ)
-            ≡⟨ cong (λ y → ⟦ wk-wk (wk-wk π₁) ⟧ʷ y) wk≡₂ ⟩
-            ⟦ wk-wk (wk-wk π₁) ⟧ʷ (((⟦ γ₁ ⟧ᴱ , ⟦ toVal LHS ⟧ᵛ ⟦ γ₁ ⟧ᴱ) , ⟦ toVal (wk-v̲a̲l̲ (wk-wk wk-id) RHS) ⟧ᵛ (⟦ γ₁ ⟧ᴱ , ⟦ toVal LHS ⟧ᵛ ⟦ γ₁ ⟧ᴱ)))
-            ≡⟨ refl ⟩
-            ⟦ π₁ ⟧ʷ ⟦ γ₁ ⟧ᴱ
-            ≡⟨ wk≡₁ ⟩
-            ⟦ γ ⟧ᴱ ∎)
-
-  val-eval : (M : ε ⊢ᵛ X) → ValSteps {T◾ = X} (∘ ((⇡ wk-val wk-id M ⊲ ∗ ∷ □) {↥ = 🗆}))
-  val-eval M = val-eval-rec M ∗ wk-id
--}
 
 {-
   -- EXAMPLES
@@ -986,6 +740,51 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   pair-eq : {A B : Set} {a₁ a₂ : A} {b₁ b₂ : B} → a₁ ≡ a₂ → b₁ ≡ b₂ → (a₁ , b₁) ≡ (a₂ , b₂)
   pair-eq a₁≡a₂ b₁≡b₂ = cong₂ (λ x y → x , y) a₁≡a₂ b₁≡b₂
+
+  --------
+
+  data EnvExt : (i : Γ ∋ X) → (γ : Env Γ) → (γ' : Env Γ') → Set where
+
+    env-val : {M : V̲a̲l̲ Γ X} → EnvExt h (γ ﹐ M) (γ ﹐ M)
+
+    env-comp : {W : Γ ⊢ᶜ X} {cs : CompStack Δ X} {π : Wk Γ Δ} .{wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ} → EnvExt h ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡}) ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡})
+
+    ext-val : {γ : Env Γ} {γ' : Env Γ'} {M : V̲a̲l̲ Γ Y} {i : Γ ∋ X} → EnvExt i γ γ' → EnvExt (t i) (γ ﹐ M) γ'
+
+    ext-comp : {γ : Env Γ} {γ' : Env Γ'} {W : Γ ⊢ᶜ Y} {cs : CompStack Δ Y} {π : Wk Γ Δ} .{wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ} {i : Γ ∋ X} → EnvExt i γ γ' → EnvExt (t i) ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡}) γ'
+
+    ext-jmp : {γ : Env Γ} {γ' : Env Γ'} {i : Γ ∋ `V} → EnvExt i γ γ' → EnvExt h (γ ﹐ v̲a̲r̲ i) γ'
+
+  data EnvEq : (π : Wk Γ' Γ) → (γ' : Env Γ') → (γ : Env Γ) → Set where
+
+    wk-env-ε    : EnvEq wk-ε ∗ ∗
+
+    wk-env-val-cong : {π : Wk Γ' Γ} {γ' : Env Γ'} {γ : Env Γ} → (M : V̲a̲l̲ Γ X) → EnvEq π γ' γ → EnvEq (wk-cong π) (γ' ﹐ wk-v̲a̲l̲ π M) (γ ﹐ M)
+
+    wk-env-comp-cong : {π : Wk Γ' Γ} {γ' : Env Γ'} {γ : Env Γ}
+                       → (W : Γ ⊢ᶜ X) → (cs : CompStack Δ X) → {πᶜ : Wk Γ Δ} → .{wk≡ : ⟦ πᶜ ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ}
+                       → .{wk≡' : ⟦ wk-trans π πᶜ ⟧ʷ ⟦ γ' ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ}
+                       → EnvEq π γ' γ
+                       → EnvEq (wk-cong π) ((γ' ﹐﹝ wk-comp π W ╎ cs ﹞) {π = wk-trans π πᶜ}
+                               {wk≡ = wk≡'})
+                               ((γ ﹐﹝ W ╎ cs ﹞) {π = πᶜ} {wk≡ = wk≡})
+
+    wk-env-val-wk : {π : Wk Γ' Γ} {γ' : Env Γ'} {γ : Env Γ} → (M : V̲a̲l̲ Γ' X) → EnvEq π γ' γ → EnvEq (wk-wk π) (γ' ﹐ M) γ
+
+    wk-env-comp-wk : {π : Wk Γ' Γ} {γ' : Env Γ'} {γ : Env Γ}
+                       → (W : Γ' ⊢ᶜ X) → (cs : CompStack Δ X) → {πᶜ' : Wk Γ' Δ}
+                       → .{wk≡' : ⟦ πᶜ' ⟧ʷ ⟦ γ' ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ}
+                       → EnvEq π γ' γ
+                       → EnvEq (wk-wk π) ((γ' ﹐﹝ W ╎ cs ﹞) {π = πᶜ'}
+                               {wk≡ = wk≡'})
+                               γ
+
+  data WkExt : Wk Γ Δ → Set where
+
+    wk-eq : (π : Wk Γ Γ) → WkExt π
+
+    wk-ext : (π : Wk Γ Δ) → WkExt π → WkExt (wk-wk {A = A} π)
+
 
   enveq-id : {γ : Env Γ} → EnvEq wk-id γ γ
   enveq-id {γ = ∗} = wk-env-ε
@@ -1139,8 +938,6 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   env-eq-sem {π = π} {γ' = γ'} {γ = γ} (wk-env-val-wk M ϖ) = env-eq-sem ϖ
   env-eq-sem {π = π} {γ' = γ'} {γ = γ} (wk-env-comp-wk W cs ϖ) = env-eq-sem ϖ
 
----------------------------------------------------------------
-
   enveq-eq : {π : Wk Γ Γ'} {γ : Env Γ} {γ' : Env Γ'} → EnvEq π γ γ' → ⟦ γ' ⟧ᴱ ≡ ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ
   enveq-eq {π = wk-ε} {γ = ∗} {γ' = ∗} wk-env-ε = refl
   enveq-eq {π = wk-cong π} {γ = γ ﹐ M} {γ' = γ' ﹐ M₁} (wk-env-val-cong M₂ ϖ) =
@@ -1166,6 +963,19 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   enveq-eq {π = wk-wk π} {γ = γ ﹐﹝ W ╎ cs ﹞} {γ' = γ' ﹐ M} (wk-env-comp-wk W₁ cs₁ ϖ) = enveq-eq ϖ
   enveq-eq {π = wk-wk π} {γ = γ ﹐﹝ W ╎ cs ﹞} {γ' = γ' ﹐﹝ W₁ ╎ cs₁ ﹞} (wk-env-comp-wk W₂ cs₂ ϖ) = enveq-eq ϖ
 
+---------------------------------------------------------------
+
+  data EnvSim : (γ' : Env Γ') → (γ : Env Γ) → Set where
+
+    env-sim-geq : {π : Wk Γ' Γ} {γ' : Env Γ'} {γ : Env Γ} → EnvEq π γ' γ → EnvSim γ' γ
+
+    env-sim-leq : {π : Wk Γ Γ'} {γ' : Env Γ'} {γ : Env Γ} → EnvEq π γ γ' → EnvSim γ' γ
+
+  envsim-id : {γ : Env Γ} → EnvSim γ γ
+  envsim-id {γ = γ} = env-sim-geq enveq-id
+
+---------------------------------------------------------------
+
   lstate-eq : {L L' : LookupState X} → L →ᴸ L' → ⟦ L ⟧ᴸ ≡ ⟦ L' ⟧ᴸ
   lstate-eq {L = L} {L' = L'} val-h-step = refl
   lstate-eq {L = L} {L' = L'} val-t-step = refl
@@ -1183,22 +993,9 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   valstate-eq : {S S' : ValState X} → S →ᵛ S' → ⟦ S ⟧ᵛꟴ ≡ ⟦ S' ⟧ᵛꟴ
   valstate-eq {S = S} {S' = S'} (∘var-c {tail = □} {↥ = 🗆}) = refl
   valstate-eq {S = S} {S' = S'} (∘var-c {tail = (x ⊲ γ ∷ tail) {↥ = ↥}} {↥ = 🗇}) = refl
-  valstate-eq {S = S} {S' = S'} (∘var {γ = γ} {γ' = γ'} {i = i} {tail = □} {↥ = 🗆} {M = M} i>>T πᵥ x x₁ ϖ x₃) =
-              let
-                IH0 = lstate-eq* i>>T
-                eq : ⟦ γ' ⟧ᴱ ≡ ⟦ πᵥ ⟧ʷ ⟦ γ ⟧ᴱ
-                eq = enveq-eq ϖ
-              in
-               ⟦ ∘ ((⇡ var i ⊲ γ ∷ □) {↥ = 🗆}) ⟧ᵛꟴ
-              ≡⟨ refl ⟩
-                 ⟦ i ⟧ᵐ ⟦ γ ⟧ᴱ
-              ≡⟨ IH0 ⟩
-                 ⟦ toVal M ⟧ᵛ ⟦ γ' ⟧ᴱ
-              ≡⟨ cong ⟦ toVal M ⟧ᵛ eq ⟩
-               ⟦ toVal M ⟧ᵛ (⟦ πᵥ ⟧ʷ ⟦ γ ⟧ᴱ)
-              ≡⟨ refl ⟩
-               ⟦ ∙ ((⭭ wk-v̲a̲l̲ πᵥ M ⊲ γ ∷ □) {↥ = 🗆}) ⟧ᵛꟴ ∎
-  valstate-eq {S = S} {S' = S'} (∘var {γ = γ} {γ' = γ'} {i = i} {tail = ((M'' ⊲ γ'' ∷ tail) {↥ = ↥})} {↥ = 🗇} {M = M} i>>T πᵥ x x₁ ϖ x₃) =
+  valstate-eq {S = S} {S' = S'} (∘var {γ = γ} {γ' = γ'} {i = i} {tail = □} {↥ = 🗆} {M = M} i>>T πᵥ x) =
+              lstate-eq* i>>T
+  valstate-eq {S = S} {S' = S'} (∘var {γ = γ} {γ' = γ'} {i = i} {tail = ((M'' ⊲ γ'' ∷ tail) {↥ = ↥})} {↥ = 🗇} {M = M} i>>T πᵥ x) =
                ⟦ ∘ ((⇡ var i ⊲ γ ∷ ((M'' ⊲ γ'' ∷ tail) {↥ = ↥})) {↥ = 🗇}) ⟧ᵛꟴ
               ≡⟨ refl ⟩
                ⟦ ∙ ((⭭ wk-v̲a̲l̲ πᵥ M ⊲ γ ∷ ((M'' ⊲ γ'' ∷ tail) {↥ = ↥})) {↥ = 🗇}) ⟧ᵛꟴ ∎
@@ -1215,7 +1012,6 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   valstate-eq {S = S} {S' = S'} (∘unit {tail = □} {↥ = 🗆}) = refl
   valstate-eq {S = S} {S' = S'} (∘unit {tail = x ⊲ γ ∷ tail} {↥ = 🗇}) = refl
 
-  --valstate-eq {S = S} {S' = S'} (∙M∷l {γ = γ} {γ' = γ'} {M = M} {LHS = LHS} {RHS = RHS} {π' = π'} {tail = □} {↥ = 🗆}) =
   valstate-eq {S = S} {S' = S'} (∙M∷l {γ' = γ'} {γ = γ} {M = M} {LHS = LHS} {RHS = RHS} {π' = π'} {tail = □} {↥ = 🗆} π≡ LHS≡M) =
                ⟦ ∙ ((⭭ M ⊲ γ ∷ ((⇡ᴸ LHS RHS ⊲ γ' ∷ □) {↥ = 🗆})) {↥ = 🗇}) ⟧ᵛꟴ
               ≡⟨ refl ⟩
@@ -1246,7 +1042,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                ⟦ ∘ ((⇡ wk-val (wk-cong (wk-cong π')) N ⊲ γ ﹐ LHS ﹐ wk-v̲a̲l̲ (wk-wk wk-id) RHS ∷ □) {↥ = 🗆}) ⟧ᵛꟴ ∎
   valstate-eq {S = S} {S' = S'} (∙pair∷pm {tail = x ⊲ γ ∷ tail} {↥ = 🗇} _ _ _) = refl
 
-
+{- not true with GC
   valstate-wk : {S S' : ValState X} → S →ᵛ S' → Wk (topCtx S') (topCtx S)
   valstate-wk ∘var-c = wk-id
   valstate-wk (∘var i>>T πᵥ x x₁ x₂ x₃) = wk-id
@@ -1257,8 +1053,31 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   valstate-wk (∙M∷l π≡ LHS≡M) = wk-id
   valstate-wk (∙M∷r π≡ RHS≡M) = wk-id
   valstate-wk (∙pair∷pm {tail = tail} {↥ = ↥} π≡ p₁M≡LHS p₂M≡RHS) = wk-wk (wk-wk wk-id)
+-}
 
+  lstate-env-sim : {L L' : LookupState X} → (L→L' : L →ᴸ L') → EnvSim (lTEnv L') (lEnv L)
+  lstate-env-sim (val-h-step {E = γ ﹐ M} {i = i}) = env-sim-leq (wk-env-val-wk (v̲a̲r̲ i) (wk-env-val-wk M enveq-id))
+  lstate-env-sim (val-h-step {E = γ ﹐﹝ W ╎ cs ﹞} {i = i}) = env-sim-leq (wk-env-val-wk (v̲a̲r̲ i) (wk-env-comp-wk W cs enveq-id))
+  lstate-env-sim (val-t-step {i = i} {E = γ ﹐ M}) = env-sim-leq (wk-env-val-wk _ (wk-env-val-wk M enveq-id))
+  lstate-env-sim (val-t-step {i = i} {E = γ ﹐﹝ W ╎ cs ﹞}) = env-sim-leq (wk-env-val-wk _ (wk-env-comp-wk W cs enveq-id))
+  lstate-env-sim (comp-t-step {i = i} {γ = γ ﹐ M} {W = W} {cs = cs}) = env-sim-leq (wk-env-comp-wk W cs (wk-env-val-wk M enveq-id))
+  lstate-env-sim (comp-t-step {i = i} {γ = γ ﹐﹝ W₂ ╎ cs₂ ﹞} {W = W₁} {cs = cs₁}) = env-sim-leq (wk-env-comp-wk W₁ cs₁ (wk-env-comp-wk W₂ cs₂ enveq-id))
 
+  -- lstate-env-sim* : {L L' : LookupState X} → (L→L' : L →ᴸ* L') → EnvSim (lTEnv L') (lEnv L)
+  -- lstate-env-sim* L→L' = {!!}
+
+  valstate-env-sim : {S S' : ValState X} → (S→S' : S →ᵛ S') → EnvSim (topEnv S') (topEnv S)
+  valstate-env-sim ∘var-c = envsim-id
+  valstate-env-sim (∘var i>>T πᵥ x) = {!-m!}
+  valstate-env-sim ∘lam = envsim-id
+  valstate-env-sim ∘pair = envsim-id
+  valstate-env-sim ∘pm = envsim-id
+  valstate-env-sim ∘unit = envsim-id
+  valstate-env-sim (∙M∷l π≡ LHS≡M) = envsim-id
+  valstate-env-sim (∙M∷r π≡ RHS≡M) = envsim-id
+  valstate-env-sim (∙pair∷pm π≡ p₁M≡LHS p₂M≡RHS) = env-sim-geq (wk-env-val-wk (wk-v̲a̲l̲ (wk-wk wk-id) _) (wk-env-val-wk _ enveq-id))
+
+{- not true with GC
   valstate-env-eq : {S S' : ValState X} → (S→S' : S →ᵛ S') → EnvEq (valstate-wk S→S') (topEnv S') (topEnv S)
   valstate-env-eq ∘var-c = enveq-id
   valstate-env-eq (∘var i>>T πᵥ x x₁ x₂ x₃) = enveq-id
@@ -1285,6 +1104,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   valstate-wkext-eq (∙M∷l π≡ LHS≡M) = wk-eq _
   valstate-wkext-eq (∙M∷r π≡ RHS≡M) = wk-eq _
   valstate-wkext-eq (∙pair∷pm π≡ p₁M≡LHS p₂M≡RHS) = wk-ext (wk-wk wk-id) (wk-ext wk-id (wk-eq wk-id))
+-}
 
 -----------------------------------------------
 
@@ -1299,6 +1119,8 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   lhwk γ' M found-pair Ψ' πᵣ γᵣ = found-pair
   lhwk γ' M found-lam Ψ' πᵣ γᵣ = found-lam
 
+
+{- XXX
   lookup-wk-lift : {γ : Env Γ} {γ' : Env Γ'}
                  → (i : Γ ∋ X) → (M : V̲a̲l̲ Γ' X) → (ext : EnvExt i γ (γ' ﹐ M))
                  → ⟨ i ∥ γ ⟩ →ᴸ* ⟨ h ∥ γ' ﹐ M ⟩
@@ -2466,3 +2288,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                    ⟦ ∙ ((wk-pt πₗ (⭭ pa̲i̲r̲ (wk-v̲a̲l̲ π' LHS) M) ⊲ γₗ ∷ (M₂ ⊲ γ₂ ∷ tail'')) {↥ = 🗇}) ⟧ᵛꟴ ∎ ) ,
                  refl
   -}
+
+XXX -}
+
+---
