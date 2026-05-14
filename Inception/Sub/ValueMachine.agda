@@ -565,4 +565,3 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       goal = subst (λ x → VSWk (x ⊲ γ ∷ tail) (M ⊲ γ ∷ tail)) (wk-pt-id M) a0
     in
     goal
-
