@@ -26,11 +26,14 @@ open import Data.Unit
 open import Data.Nat
 open import Data.List using (List; _∷_; []; _++_)
 
+open import Inception.Sub.Equality
+open import Inception.Sub.Environments R
 open import Inception.Sub.ValueMachine R
 
 module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   open VMain {R₀ = R₀} k₀
+  open EnvMain {R₀ = R₀} k₀
 
   data CompState : Set where
 
@@ -262,6 +265,7 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   -- val-wk-lift {Ψ = Ψ} {M = M} {γ = γ} {tail = tail} {↥ = ↥} {M' = M'} {γ' = γ'} {tail' = tail'} {↥' = ↥'} (S →ᵛ⟨ ∘unit ⟩．) Q≡Q' {πₜ = πₜ} {πₗ = πₗ} {γₗ = γₗ} ϖ {wk≡ₗ = wk≡ₗ} = {!!}
   -- val-wk-lift {Ψ = Ψ} {M = M} {γ = γ} {tail = tail} {↥ = ↥} {M' = M'} {γ' = γ'} {tail' = tail'} {↥' = ↥'} (S →ᵛ⟨ x ⟩ Q→Q') Q≡Q' {πₜ = πₜ} {πₗ = πₗ} {γₗ = γₗ} ϖ {wk≡ₗ = wk≡ₗ} = {!!}
 
+  {-
   -- BBB BEGIN
 
   ----
@@ -706,8 +710,8 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   wk-val-halts {M = M} {π = π} {γ' = γ'} {γ = γ} ϖ (lam-halts (Δ₁ , cs₁ , π₁ , wk≡₁ , N₁ , CH₁)) = lam-halts (Δ₁ , cs₁ , wk-trans π π₁ , {!!} , wk-val π N₁ , {!!})
 
   -- BBB END
+  -}
 
-{- ZZZ
   ------------------------------------------------------
   {- just here for reference
   data CompStack  where
@@ -991,6 +995,8 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   data CompSteps : CompState → Set where
 
       steps : {S T : CompState} → S →ᶜ* T → CompHaltingState T → .(⟦ S ⟧ᶜꟴ ≡ ⟦ T ⟧ᶜꟴ) → CompSteps S
+
+  {-# REWRITE wk-comm-explicit #-}
 
   {-# TERMINATING #-}
   mutual
@@ -1885,6 +1891,5 @@ ex14 = push (push (app (lam {A = `Unit} (sub (var (var h)) (return unit))) unit)
 ex15 : ε ⊢ᶜ (`Unit)
 ex15 = push (push (app (lam {A = `Unit} (sub (var (var h)) (return unit))) unit) (return unit)) (return unit)
 
-_ : comp-eval ex15 ≡ {! comp-eval ex15 !}
-_ = refl
-ZZZ -}
+-- _ : comp-eval ex15 ≡ {! comp-eval ex15 !}
+-- _ = refl
