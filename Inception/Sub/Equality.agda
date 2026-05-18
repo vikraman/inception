@@ -32,6 +32,22 @@ dcong₂-irr f refl = refl
 pair-eq : {A B : Set} {a₁ a₂ : A} {b₁ b₂ : B} → a₁ ≡ a₂ → b₁ ≡ b₂ → (a₁ , b₁) ≡ (a₂ , b₂)
 pair-eq a₁≡a₂ b₁≡b₂ = cong₂ (λ x y → x , y) a₁≡a₂ b₁≡b₂
 
+proj₁-eq : {A B : Set} {a₁ a₂ : A} {b₁ b₂ : B} → (a₁ , b₁) ≡ (a₂ , b₂) → a₁ ≡ a₂
+proj₁-eq refl = refl
+
+proj₂-eq : {A B : Set} {a₁ a₂ : A} {b₁ b₂ : B} → (a₁ , b₁) ≡ (a₂ , b₂) → b₁ ≡ b₂
+proj₂-eq refl = refl
+
+proj₁-d-eq : {a b : Level} {A : Set a} {x : A} {b : A → Set b} {p₁ p₂ : Σ[ x ∈ A ] b x}
+             → p₁ ≡ p₂
+             → proj₁ p₁ ≡ proj₁ p₂
+proj₁-d-eq refl = refl
+
+-- proj₁-d-inj : {a b : Level} {A : Set a} {x : A} {b : A → Set b} {p₁ p₂ : Σ[ x ∈ A ] b x}
+--              → proj₁ p₁ ≡ proj₁ p₂
+--              → p₁ ≡ p₂
+-- proj₁-d-inj {p₁ = _ , snd} {p₂ = fst , snd₁} refl = {!!}
+
 data ⊥ : Set where
 
 ql : ⊥ → (A : Set) → A
