@@ -642,12 +642,12 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   ------
   -}
 
-  lemx : (i : Γ ∋ X) → (i' : Γ' ∋ X) → (Γ≡Γ' : Γ ≡ Γ') → (i≅i' : i ≅ i')
+  subst-lemma-var : (i : Γ ∋ X) → (i' : Γ' ∋ X) → (Γ≡Γ' : Γ ≡ Γ') → (i≅i' : i ≅ i')
          → subst (λ x → Val x X) Γ≡Γ' (var i) ≅ Val.var (subst (λ x → x) (H.≅-to-type-≡ i≅i') i)
-  lemx h h refl _≅_.refl = _≅_.refl
-  lemx h (t i') refl ()
-  lemx (t i) h refl ()
-  lemx (t i) (t i') refl _≅_.refl = _≅_.refl
+  subst-lemma-var h h refl _≅_.refl = _≅_.refl
+  subst-lemma-var h (t i') refl ()
+  subst-lemma-var (t i) h refl ()
+  subst-lemma-var (t i) (t i') refl _≅_.refl = _≅_.refl
 
   subst-lemma-pair : (M₁ : Val Γ X) → (M₂ : Val Γ Y) → (M₁' : Val Γ' X) → (M₂' : Val Γ' Y) → (Γ≡Γ' : Γ ≡ Γ') → (M₁≅M₁' : M₁ ≅ M₁') → (M₂≅M₂' : M₂ ≅ M₂')
                    → subst (λ x → Val x (X `× Y)) Γ≡Γ' (pair M₁ M₂) ≅ Val.pair (subst (λ x → x) (H.≅-to-type-≡ M₁≅M₁') M₁) (subst (λ x → x) (H.≅-to-type-≡ M₂≅M₂') M₂)
@@ -656,6 +656,43 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   subst-lemma-pm : (M : Val Γ (A `× B)) → (N : Val (Γ ∙ A ∙ B) Z) → (M' : Val Γ' (A `× B)) → (N' : Val (Γ' ∙ A ∙ B) Z) → (Γ≡Γ' : Γ ≡ Γ') → (M≅M' : M ≅ M') → (N≅N' : N ≅ N')
                    → subst (λ x → Val x Z) Γ≡Γ' (pm M N) ≅ Val.pm (subst (λ x → x) (H.≅-to-type-≡ M≅M') M) (subst (λ x → x) (H.≅-to-type-≡ N≅N') N)
   subst-lemma-pm M N M' N' refl _≅_.refl _≅_.refl = _≅_.refl
+
+  subst-lemma-lam : (W : Comp (Γ ∙ X) Y) → (W' : Comp (Γ' ∙ X) Y) → (Γ≡Γ' : Γ ≡ Γ') → (W≅W' : W ≅ W')
+                   → subst (λ x → Val x (X `⇒ Y)) Γ≡Γ' (lam W) ≅ Val.lam (subst (λ x → x) (H.≅-to-type-≡ W≅W') W)
+  subst-lemma-lam W W' refl _≅_.refl = _≅_.refl
+
+  subst-lemma-return : (M : Val Γ X) → (M' : Val Γ' X) → (Γ≡Γ' : Γ ≡ Γ') → (M≅M' : M ≅ M')
+                   → subst (λ x → Comp x X) Γ≡Γ' (return M) ≅ Comp.return (subst (λ x → x) (H.≅-to-type-≡ M≅M') M)
+  subst-lemma-return M M' refl _≅_.refl = _≅_.refl
+
+  subst-lemma-pm-comp : (M : Val Γ (A `× B)) → (N : (Γ ∙ A ∙ B) ⊢ᶜ C)
+                      → (M' : Val Γ' (A `× B)) → (N' : (Γ' ∙ A ∙ B) ⊢ᶜ C)
+                      → (Γ≡Γ' : Γ ≡ Γ') → (M≅M' : M ≅ M') → (N≅N' : N ≅ N')
+                      → subst (λ x → x ⊢ᶜ C) Γ≡Γ' (Comp.pm M N) ≅ Comp.pm (subst (λ x → x) (H.≅-to-type-≡ M≅M') M) (subst (λ x → x) (H.≅-to-type-≡ N≅N') N)
+  subst-lemma-pm-comp M N M' N' refl _≅_.refl _≅_.refl = _≅_.refl
+
+  subst-lemma-push : (M : Γ ⊢ᶜ A) → (N : (Γ ∙ A) ⊢ᶜ B)
+                  → (M' : Γ' ⊢ᶜ A) → (N' : (Γ' ∙ A) ⊢ᶜ B)
+                  → (Γ≡Γ' : Γ ≡ Γ') → (M≅M' : M ≅ M') → (N≅N' : N ≅ N')
+                  → subst (λ x → x ⊢ᶜ B) Γ≡Γ' (Comp.push M N) ≅ Comp.push (subst (λ x → x) (H.≅-to-type-≡ M≅M') M) (subst (λ x → x) (H.≅-to-type-≡ N≅N') N)
+  subst-lemma-push M N M' N' refl _≅_.refl _≅_.refl = _≅_.refl
+
+  subst-lemma-app : (f : Val Γ (A `⇒ B)) → (x : Val Γ A)
+                  → (f' : Val Γ' (A `⇒ B)) → (x' : Val Γ' A)
+                  → (Γ≡Γ' : Γ ≡ Γ') → (f≅f' : f ≅ f') → (x≅x' : x ≅ x')
+                  → subst (λ y → y ⊢ᶜ B) Γ≡Γ' (Comp.app f x) ≅ Comp.app (subst (λ z → z) (H.≅-to-type-≡ f≅f') f) (subst (λ z → z) (H.≅-to-type-≡ x≅x') x)
+  subst-lemma-app f x f' x' refl _≅_.refl _≅_.refl = _≅_.refl
+
+  subst-lemma-var-comp : (M : Val Γ `V) → (M' : Val Γ' `V) → (Γ≡Γ' : Γ ≡ Γ') → (M≅M' : M ≅ M')
+                      → subst (λ x → x ⊢ᶜ X) Γ≡Γ' (Comp.var {A = X} M) ≅ Comp.var {A = X} (subst (λ x → x) (H.≅-to-type-≡ M≅M') M)
+  subst-lemma-var-comp M M' refl _≅_.refl = _≅_.refl
+
+  subst-lemma-sub : (M : (Γ ∙ `V) ⊢ᶜ A) → (N : Γ ⊢ᶜ A)
+                  → (M' : (Γ' ∙ `V) ⊢ᶜ A) → (N' : Γ' ⊢ᶜ A)
+                  → (Γ≡Γ' : Γ ≡ Γ') → (M≅M' : M ≅ M') → (N≅N' : N ≅ N')
+                  → subst (λ x → x ⊢ᶜ A) Γ≡Γ' (Comp.sub M N)
+                  ≅ Comp.sub (subst (λ x → x) (H.≅-to-type-≡ M≅M') M) (subst (λ x → x) (H.≅-to-type-≡ N≅N') N)
+  subst-lemma-sub M N M' N' refl _≅_.refl _≅_.refl = _≅_.refl
 
 
   memgc-heq : {Δ Γ Γ' Γ'' : Ctx} {π₀ : Wk Δ Γ} {π : Wk Γ Γ'} {π' : Wk Δ Γ''} {i : Γ ∋ X} {i' : Γ' ∋ X} {i'' : Γ'' ∋ X}
@@ -708,7 +745,7 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
         g = cong (var {Γ = Γ'' ∙ X''}) i'≡i''₂
 
         g' : subst (λ x → Val x X) eq (var i') ≅ Val.var (subst (λ x → x) (H.≅-to-type-≡ i'≅i'') i')
-        g' = lemx i' i'' eq i'≅i''
+        g' = subst-lemma-var i' i'' eq i'≅i''
 
         g'' : subst (λ x → Val x X) eq (var i') ≅ var i'
         g'' = H.≡-subst-removable (λ x → Val x X) eq (var i')
@@ -723,7 +760,28 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     valgc-heq {Δ = Δ} {Γ = Γ} {Γ' = Γ' Cx.∙ X'} {Γ'' = Γ'' Cx.∙ X''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = var i'} {M'' = unit} (var x) ()
     valgc-heq {Δ = Δ} {Γ = Γ} {Γ' = Γ' Cx.∙ X'} {Γ'' = Γ'' Cx.∙ X''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = lam x} {M'' = var i} (lam WG) ()
 
-    valgc-heq {Δ = Δ} {Γ = Γ} {Γ' = Γ' Cx.∙ X'} {Γ'' = Γ'' Cx.∙ X''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = lam W'} {M'' = lam W''} (lam WG₁) (lam WG₂) = {!!}
+    valgc-heq {Δ = Δ} {Γ = Γ} {Γ' = Γ' Cx.∙ X'} {Γ'' = Γ'' Cx.∙ X''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = lam {A = X} {B = Y} W'} {M'' = lam W''} (lam WG₁) (lam WG₂) =
+      let
+        eq = valgc-wk-eq (lam WG₁) (lam WG₂)
+
+        W'≅W'' : W' ≅ W''
+        W'≅W'' = compgc-heq WG₁ WG₂
+
+        W'≡W''₂ = H.≅-to-subst-≡ W'≅W''
+
+        g : lam (subst (λ x → x) (H.≅-to-type-≡ W'≅W'') W') ≡ lam W''
+        g = cong lam W'≡W''₂
+
+        g' : subst (λ x → Val x (X `⇒ Y)) eq (lam W') ≅ Val.lam (subst (λ x → x) (H.≅-to-type-≡ W'≅W'') W')
+        g' = subst-lemma-lam W' W'' (pred-ctx-eq (compgc-wk-eq WG₁ WG₂)) W'≅W''
+
+        g'' : subst (λ x → Val x (X `⇒ Y)) eq (lam W') ≅ lam W'
+        g'' = H.≡-subst-removable (λ x → Val x (X `⇒ Y)) eq (lam W')
+
+        goal : lam W' ≅ lam W''
+        goal =  H.trans (H.sym g'') (H.trans g' (≡-to-≅ g))
+      in
+      goal
 
     valgc-heq {Δ = Δ} {Γ = Γ} {Γ' = Γ' Cx.∙ X'} {Γ'' = Γ'' Cx.∙ X''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = lam x} {M'' = pm M'' M'''} (lam WG) ()
     valgc-heq {Δ = Δ} {Γ = Γ} {Γ' = Γ' Cx.∙ X'} {Γ'' = Γ'' Cx.∙ X''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = pair M' M''} {M'' = var i} (pair MG₁ MG₂) ()
@@ -789,7 +847,139 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     compgc-heq : {Δ Γ Γ' Γ'' : Ctx} {π₀ : Wk Δ Γ} {π : Wk Γ Γ'} {π' : Wk Δ Γ''} {W : Comp Γ X} {W' : Comp Γ' X} {W'' : Comp Γ'' X}
                 → (WG₁ : CompGC Γ Γ' π W W') → (WG₂ : CompGC Δ Γ'' π' (wk-comp π₀ W) W'')
                 → (W' ≅ W'')
-    compgc-heq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = W'} {W'' = W''} WG₁ WG₂ = {!!}
+    compgc-heq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = return {A = X} M'} {W'' = return M''} (return MG₁) (return MG₂) =
+       let
+         eq = valgc-wk-eq MG₁ MG₂
+
+         M'≅M'' = valgc-heq MG₁ MG₂
+
+         M'≅M''₂ = H.≅-to-subst-≡ M'≅M''
+
+         g : return (subst (λ x → x) (H.≅-to-type-≡ M'≅M'') M') ≡ return M''
+         g = cong return M'≅M''₂
+
+         g' : subst (λ x → Comp x X) eq (return M') ≅ Comp.return (subst (λ x → x) (H.≅-to-type-≡ M'≅M'') M')
+         g' = subst-lemma-return M' M'' eq M'≅M''
+
+         g'' : subst (λ x → Comp x X) eq (return M') ≅ return M'
+         g'' = H.≡-subst-removable (λ x → Comp x X) eq (return M')
+
+         goal : return M' ≅ return M''
+         goal = H.trans (H.sym g'') (H.trans g' (≡-to-≅ g))
+       in
+       goal
+    compgc-heq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = pm {C = C} M' W'} {W'' = pm M'' W''} (pm MG₁ WG₁) (pm MG₂ WG₂) =
+      let
+        eq = valgc-wk-eq MG₁ MG₂
+
+        M'≅M'' = valgc-heq MG₁ MG₂
+        W'≅W'' = compgc-heq WG₁ WG₂
+
+        M'≅M''₂ = H.≅-to-subst-≡ M'≅M''
+        W'≅W''₂ = H.≅-to-subst-≡ W'≅W''
+
+        g : pm (subst (λ x → x) (H.≅-to-type-≡ M'≅M'') M') (subst (λ x → x) (H.≅-to-type-≡ W'≅W'') W') ≡ pm M'' W''
+        g = cong₂ pm M'≅M''₂ W'≅W''₂
+
+        g' : subst (λ x → x ⊢ᶜ C) eq (pm M' W') ≅ Comp.pm (subst (λ x → x) (H.≅-to-type-≡ M'≅M'') M') (subst (λ x → x) (H.≅-to-type-≡ W'≅W'') W')
+        g' = subst-lemma-pm-comp M' W' M'' W'' eq M'≅M'' W'≅W''
+
+        g'' : subst (λ x → x ⊢ᶜ C) eq (pm M' W') ≅ pm M' W'
+        g'' = H.≡-subst-removable (λ x → x ⊢ᶜ C) eq (pm M' W')
+
+        goal : pm M' W' ≅ pm M'' W''
+        goal = H.trans (H.sym g'') (H.trans g' (≡-to-≅ g))
+      in
+      goal
+    compgc-heq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = push {B = B} W₁' W₂'} {W'' = push W₁'' W₂''} (push WG₁₁ WG₂₁) (push WG₁₂ WG₂₂) =
+      let
+        eq = compgc-wk-eq WG₁₁ WG₁₂
+
+        W₁'≅W₁'' = compgc-heq WG₁₁ WG₁₂
+        W₂'≅W₂'' = compgc-heq WG₂₁ WG₂₂
+
+        W₁'≅W₁''₂ = H.≅-to-subst-≡ W₁'≅W₁''
+        W₂'≅W₂''₂ = H.≅-to-subst-≡ W₂'≅W₂''
+
+        g : push (subst (λ x → x) (H.≅-to-type-≡ W₁'≅W₁'') W₁') (subst (λ x → x) (H.≅-to-type-≡ W₂'≅W₂'') W₂') ≡ push W₁'' W₂''
+        g = cong₂ push W₁'≅W₁''₂ W₂'≅W₂''₂
+
+        g' : subst (λ x → x ⊢ᶜ B) eq (push W₁' W₂') ≅ Comp.push (subst (λ x → x) (H.≅-to-type-≡ W₁'≅W₁'') W₁') (subst (λ x → x) (H.≅-to-type-≡ W₂'≅W₂'') W₂')
+        g' = subst-lemma-push W₁' W₂' W₁'' W₂'' eq W₁'≅W₁'' W₂'≅W₂''
+
+        g'' : subst (λ x → x ⊢ᶜ B) eq (push W₁' W₂') ≅ push W₁' W₂'
+        g'' = H.≡-subst-removable (λ x → x ⊢ᶜ B) eq (push W₁' W₂')
+
+        goal : push W₁' W₂' ≅ push W₁'' W₂''
+        goal = H.trans (H.sym g'') (H.trans g' (≡-to-≅ g))
+      in
+      goal
+    compgc-heq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = app {B = B} M' N'} {W'' = app M'' N''} (app MG₁ NG₁) (app MG₂ NG₂) =
+      let
+        eq = valgc-wk-eq MG₁ MG₂
+
+        M'≅M'' = valgc-heq MG₁ MG₂
+        N'≅N'' = valgc-heq NG₁ NG₂
+
+        M'≅M''₂ = H.≅-to-subst-≡ M'≅M''
+        N'≅N''₂ = H.≅-to-subst-≡ N'≅N''
+
+        g : app (subst (λ x → x) (H.≅-to-type-≡ M'≅M'') M') (subst (λ x → x) (H.≅-to-type-≡ N'≅N'') N') ≡ app M'' N''
+        g = cong₂ app M'≅M''₂ N'≅N''₂
+
+        g' : subst (λ x → x ⊢ᶜ B) eq (app M' N') ≅ Comp.app (subst (λ x → x) (H.≅-to-type-≡ M'≅M'') M') (subst (λ x → x) (H.≅-to-type-≡ N'≅N'') N')
+        g' = subst-lemma-app M' N' M'' N'' eq M'≅M'' N'≅N''
+
+        g'' : subst (λ x → x ⊢ᶜ B) eq (app M' N') ≅ app M' N'
+        g'' = H.≡-subst-removable (λ x → x ⊢ᶜ B) eq (app M' N')
+
+        goal : app M' N' ≅ app M'' N''
+        goal = H.trans (H.sym g'') (H.trans g' (≡-to-≅ g))
+      in
+      goal
+    compgc-heq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = var {A = X} M'} {W'' = var {A = X} M''} (var MG₁) (var MG₂) =
+      let
+        eq = valgc-wk-eq MG₁ MG₂
+
+        M'≅M'' = valgc-heq MG₁ MG₂
+        M'≅M''₂ = H.≅-to-subst-≡ M'≅M''
+
+        g : var (subst (λ x → x) (H.≅-to-type-≡ M'≅M'') M') ≡ var M''
+        g = cong var M'≅M''₂
+
+        g' : subst (λ x → x ⊢ᶜ X) eq (var M') ≅ Comp.var (subst (λ x → x) (H.≅-to-type-≡ M'≅M'') M')
+        g' = subst-lemma-var-comp M' M'' eq M'≅M''
+
+        g'' : subst (λ x → x ⊢ᶜ X) eq (var M') ≅ var M'
+        g'' = H.≡-subst-removable (λ x → x ⊢ᶜ X) eq (var M')
+
+        goal : var M' ≅ var M''
+        goal = H.trans (H.sym g'') (H.trans g' (≡-to-≅ g))
+      in
+      goal
+    compgc-heq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = sub {A = A} W₁' W₂'} {W'' = sub {A = A} W₁'' W₂''} (sub WG₁₁ WG₂₁) (sub WG₁₂ WG₂₂) =
+      let
+        eq = compgc-wk-eq WG₂₁ WG₂₂
+
+        W₁'≅W₁'' = compgc-heq WG₁₁ WG₁₂
+        W₂'≅W₂'' = compgc-heq WG₂₁ WG₂₂
+
+        W₁'≅W₁''₂ = H.≅-to-subst-≡ W₁'≅W₁''
+        W₂'≅W₂''₂ = H.≅-to-subst-≡ W₂'≅W₂''
+
+        g : sub (subst (λ x → x) (H.≅-to-type-≡ W₁'≅W₁'') W₁') (subst (λ x → x) (H.≅-to-type-≡ W₂'≅W₂'') W₂') ≡ sub W₁'' W₂''
+        g = cong₂ sub W₁'≅W₁''₂ W₂'≅W₂''₂
+
+        g' : subst (λ x → x ⊢ᶜ A) eq (sub W₁' W₂') ≅ Comp.sub (subst (λ x → x) (H.≅-to-type-≡ W₁'≅W₁'') W₁') (subst (λ x → x) (H.≅-to-type-≡ W₂'≅W₂'') W₂')
+        g' = subst-lemma-sub W₁' W₂' W₁'' W₂'' eq W₁'≅W₁'' W₂'≅W₂''
+
+        g'' : subst (λ x → x ⊢ᶜ A) eq (sub W₁' W₂') ≅ sub W₁' W₂'
+        g'' = H.≡-subst-removable (λ x → x ⊢ᶜ A) eq (sub W₁' W₂')
+
+        goal : sub W₁' W₂' ≅ sub W₁'' W₂''
+        goal = H.trans (H.sym g'') (H.trans g' (≡-to-≅ g))
+      in
+      goal
 
 
 
