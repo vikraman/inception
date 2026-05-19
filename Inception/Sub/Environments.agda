@@ -18,6 +18,10 @@ open import Data.List using (List; _∷_; []; _++_)
 
 open import Inception.Sub.Equality
 
+open import Relation.Binary.HeterogeneousEquality as H using (_≅_)
+
+open import Relation.Binary.HeterogeneousEquality.Core using (≡-to-≅)
+
 variable
   X X' Y Y' Z Z' T◾ T◾' : Ty
   Γ' Γ'' Γ''' Δ' : Ctx
@@ -472,6 +476,12 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   -- NORMALISE TERMS
   ----------------------------------------------------------
 
+  pred-ctx-eq : Γ ∙ X ≡ Δ ∙ X → Γ ≡ Δ
+  pred-ctx-eq refl = refl
+
+  ctx-absurd : ε ≡ Γ ∙ X → ⊥
+  ctx-absurd ()
+
   -- data MemGC : (Γ : Ctx) → (Γ' : Ctx) → (π : Wk Γ Γ') → (i : Γ' ∋ X) → Set where
   --   z : MemGC (Γ ∙ X) (ε ∙ X) (wk-cong wk-wk-ε) h
   --   s : {Δ : Ctx} {Y : Ty} {π : Wk Δ (ε ∙ X)} → MemGC Δ (ε ∙ X) π h → MemGC (Δ ∙ Y) (ε ∙ X) (wk-wk {A = Y} π) h
@@ -479,82 +489,6 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   data MemGC : (Γ : Ctx) → (Γ' : Ctx) → (π : Wk Γ Γ') → (i : Γ ∋ X) → (i' : Γ' ∋ X) → Set where
     h : MemGC (Γ ∙ X) (ε ∙ X) (wk-cong wk-wk-ε) h h
     t : {Δ : Ctx} {Y : Ty} {π : Wk Δ (ε ∙ X)} {i : Δ ∋ X} → MemGC Δ (ε ∙ X) π i h → MemGC (Δ ∙ Y) (ε ∙ X) (wk-wk {A = Y} π) (t i) h
-
-  memgc-uniq₀ : {Γ : Ctx} {Γ' Γ'' : Ctx} {π : Wk Γ Γ'} {π' : Wk Γ Γ''} {i : Γ ∋ X} {i' : Γ' ∋ X} {i'' : Γ'' ∋ X}
-               → (MG₁ : MemGC Γ Γ' π i i') → (MG₂ : MemGC Γ Γ'' π' i i'')
-               → Γ' ≡ Γ''
-  memgc-uniq₀ {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π = π} {π'} {i = i} {i' = i'} {i'' = i''} h h = refl
-  memgc-uniq₀ {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π = π} {π'} {i = i} {i' = i'} {i'' = i''} (t MG₁) (t MG₂) = refl
-
-  memgc-uniq₁ : {Γ : Ctx} {Γ' : Ctx} {π π' : Wk Γ Γ'} {i : Γ ∋ X} {i' i'' : Γ' ∋ X}
-               → (MG₁ : MemGC Γ Γ' π i i') → (MG₂ : MemGC Γ Γ' π' i i'')
-               → (π ≡ π') × (i' ≡ i'')
-  memgc-uniq₁ {Γ = Γ} {Γ' = Γ'} {π = π} {π'} {i = i} {i' = i'} {i'' = i''} h h = refl , refl
-  memgc-uniq₁ {Γ = Γ} {Γ' = Γ'} {π = π} {π'} {i = i} {i' = i'} {i'' = i''} (t MG₁) (t MG₂) = cong wk-wk (proj₁ (memgc-uniq₁ MG₁ MG₂)) , refl
-
-
-  memgc-wk-eq : {Δ Γ Γ' Γ'' : Ctx} {π₀ : Wk Δ Γ} {π : Wk Γ Γ'} {π' : Wk Δ Γ''} {i : Γ ∋ X} {i' : Γ' ∋ X} {i'' : Γ'' ∋ X}
-               → (MG₁ : MemGC Γ Γ' π i i') → (MG₂ : MemGC Δ Γ'' π' (wk-mem π₀ i) i'')
-               → Γ' ≡ Γ''
-  memgc-wk-eq {Δ = Cx.ε Cx.∙ X} {Γ = Cx.ε Cx.∙ X} {Γ' = Cx.ε Cx.∙ Y} {Γ'' = Cx.ε Cx.∙ Z} {π₀ = wk-cong π₀} {π = π} {π' = π'} {i = Cx.h} {i' = Cx.h} {i'' = Cx.h} MG₁ MG₂ = refl
-  memgc-wk-eq {Δ = Δ Cx.∙ x Cx.∙ X} {Γ = Cx.ε Cx.∙ X} {Γ' = Cx.ε Cx.∙ x₁} {Γ'' = Cx.ε Cx.∙ x₂} {π₀ = wk-cong π₀} {π = π} {π' = π'} {i = Cx.h} {i' = Cx.h} {i'' = Cx.h} MG₁ MG₂ = refl
-  memgc-wk-eq {Δ = Cx.ε Cx.∙ x Cx.∙ X} {Γ = Cx.ε Cx.∙ x₁ Cx.∙ X} {Γ' = Cx.ε Cx.∙ x₂} {Γ'' = Cx.ε Cx.∙ x₃} {π₀ = wk-cong π₀} {π = π} {π' = π'} {i = Cx.h} {i' = Cx.h} {i'' = Cx.h} MG₁ MG₂ = refl
-  memgc-wk-eq {Δ = Cx.ε Cx.∙ x Cx.∙ X} {Γ = Cx.ε Cx.∙ x₁ Cx.∙ X} {Γ' = Cx.ε Cx.∙ x₂} {Γ'' = Cx.ε Cx.∙ x₃} {π₀ = wk-cong π₀} {π = π} {π' = π'} {i = Cx.t i} {i' = Cx.h} {i'' = Cx.h} MG₁ MG₂ = refl
-  memgc-wk-eq {Δ = Cx.ε Cx.∙ x Cx.∙ X} {Γ = Γ Cx.∙ x₄ Cx.∙ x₁ Cx.∙ X} {Γ' = Cx.ε Cx.∙ x₂} {Γ'' = Cx.ε Cx.∙ x₃} {π₀ = wk-cong π₀} {π = π} {π' = π'} {i = Cx.h} {i' = Cx.h} {i'' = Cx.h} MG₁ MG₂ = refl
-  memgc-wk-eq {Δ = Cx.ε Cx.∙ x Cx.∙ X} {Γ = Γ Cx.∙ x₄ Cx.∙ x₁ Cx.∙ X} {Γ' = Cx.ε Cx.∙ x₂} {Γ'' = Cx.ε Cx.∙ x₃} {π₀ = wk-cong π₀} {π = π} {π' = π'} {i = Cx.t i} {i' = Cx.h} {i'' = Cx.h} MG₁ MG₂ = refl
-  memgc-wk-eq {Δ = Δ Cx.∙ x₄ Cx.∙ x Cx.∙ X} {Γ = Cx.ε Cx.∙ x₁ Cx.∙ X} {Γ' = Cx.ε Cx.∙ x₂} {Γ'' = Cx.ε Cx.∙ x₃} {π₀ = wk-cong π₀} {π = π} {π' = π'} {i = Cx.h} {i' = Cx.h} {i'' = Cx.h} MG₁ MG₂ = refl
-  memgc-wk-eq {Δ = Δ Cx.∙ x₄ Cx.∙ x Cx.∙ X} {Γ = Cx.ε Cx.∙ x₁ Cx.∙ X} {Γ' = Cx.ε Cx.∙ x₂} {Γ'' = Cx.ε Cx.∙ x₃} {π₀ = wk-cong π₀} {π = π} {π' = π'} {i = Cx.t i} {i' = Cx.h} {i'' = Cx.h} MG₁ MG₂ = refl
-  memgc-wk-eq {Δ = Δ Cx.∙ x₄ Cx.∙ x Cx.∙ X} {Γ = Γ Cx.∙ x₅ Cx.∙ x₁ Cx.∙ X} {Γ' = Cx.ε Cx.∙ x₂} {Γ'' = Cx.ε Cx.∙ x₃} {π₀ = wk-cong π₀} {π = π} {π' = π'} {i = Cx.h} {i' = Cx.h} {i'' = Cx.h} MG₁ MG₂ = refl
-  memgc-wk-eq {Δ = Δ Cx.∙ x₄ Cx.∙ x Cx.∙ X} {Γ = Γ Cx.∙ x₅ Cx.∙ x₁ Cx.∙ X} {Γ' = Cx.ε Cx.∙ x₂} {Γ'' = Cx.ε Cx.∙ x₃} {π₀ = wk-cong π₀} {π = π} {π' = π'} {i = Cx.t i} {i' = Cx.h} {i'' = Cx.h} MG₁ MG₂ = refl
-  memgc-wk-eq {Δ = Cx.ε Cx.∙ x Cx.∙ X} {Γ = Cx.ε Cx.∙ x₁} {Γ' = Cx.ε Cx.∙ x₂} {Γ'' = Cx.ε Cx.∙ x₃} {π₀ = wk-wk π₀} {π = wk-cong π} {π' = wk-wk π'} {i = Cx.h} {i' = Cx.h} {i'' = Cx.h} MG₁ MG₂ = refl
-  memgc-wk-eq {Δ = Cx.ε Cx.∙ x Cx.∙ X} {Γ = Cx.ε Cx.∙ x₄ Cx.∙ x₁} {Γ' = Cx.ε Cx.∙ x₂} {Γ'' = Cx.ε Cx.∙ x₃} {π₀ = wk-wk π₀} {π = wk-cong π} {π' = wk-wk π'} {i = Cx.h} {i' = Cx.h} {i'' = Cx.h} MG₁ MG₂ = refl
-  memgc-wk-eq {Δ = Cx.ε Cx.∙ x Cx.∙ X} {Γ = Γ Cx.∙ x₅ Cx.∙ x₄ Cx.∙ x₁} {Γ' = Cx.ε Cx.∙ x₂} {Γ'' = Cx.ε Cx.∙ x₃} {π₀ = wk-wk π₀} {π = wk-cong π} {π' = wk-wk π'} {i = Cx.h} {i' = Cx.h} {i'' = Cx.h} MG₁ MG₂ = refl
-  memgc-wk-eq {Δ = Δ Cx.∙ x₄ Cx.∙ x Cx.∙ X} {Γ = Cx.ε Cx.∙ x₁} {Γ' = Cx.ε Cx.∙ x₂} {Γ'' = Cx.ε Cx.∙ x₃} {π₀ = wk-wk π₀} {π = wk-cong π} {π' = wk-wk π'} {i = Cx.h} {i' = Cx.h} {i'' = Cx.h} MG₁ MG₂ = refl
-  memgc-wk-eq {Δ = Cx.ε Cx.∙ x₄ Cx.∙ x Cx.∙ X} {Γ = Cx.ε Cx.∙ x₅ Cx.∙ x₁} {Γ' = Cx.ε Cx.∙ x₂} {Γ'' = Cx.ε Cx.∙ x₃} {π₀ = wk-wk π₀} {π = wk-cong π} {π' = wk-wk π'} {i = Cx.h} {i' = Cx.h} {i'' = Cx.h} MG₁ MG₂ = refl
-  memgc-wk-eq {Δ = Cx.ε Cx.∙ x₄ Cx.∙ x Cx.∙ X} {Γ = Γ Cx.∙ x₆ Cx.∙ x₅ Cx.∙ x₁} {Γ' = Cx.ε Cx.∙ x₂} {Γ'' = Cx.ε Cx.∙ x₃} {π₀ = wk-wk π₀} {π = wk-cong π} {π' = wk-wk π'} {i = Cx.h} {i' = Cx.h} {i'' = Cx.h} MG₁ MG₂ = refl
-  memgc-wk-eq {Δ = Δ Cx.∙ x₆ Cx.∙ x₄ Cx.∙ x Cx.∙ X} {Γ = Cx.ε Cx.∙ x₅ Cx.∙ x₁} {Γ' = Cx.ε Cx.∙ x₂} {Γ'' = Cx.ε Cx.∙ x₃} {π₀ = wk-wk π₀} {π = wk-cong π} {π' = wk-wk π'} {i = Cx.h} {i' = Cx.h} {i'' = Cx.h} MG₁ MG₂ = refl
-  memgc-wk-eq {Δ = Δ Cx.∙ x₆ Cx.∙ x₄ Cx.∙ x Cx.∙ X} {Γ = Γ Cx.∙ x₇ Cx.∙ x₅ Cx.∙ x₁} {Γ' = Cx.ε Cx.∙ x₂} {Γ'' = Cx.ε Cx.∙ x₃} {π₀ = wk-wk π₀} {π = wk-cong π} {π' = wk-wk π'} {i = Cx.h} {i' = Cx.h} {i'' = Cx.h} MG₁ MG₂ = refl
-  memgc-wk-eq {Δ = Cx.ε Cx.∙ x Cx.∙ X} {Γ = Cx.ε Cx.∙ x₄ Cx.∙ x₁} {Γ' = Cx.ε Cx.∙ x₂} {Γ'' = Cx.ε Cx.∙ x₃} {π₀ = wk-wk π₀} {π = wk-wk π} {π' = wk-wk π'} {i = Cx.t i} {i' = Cx.h} {i'' = Cx.h} MG₁ MG₂ = refl
-  memgc-wk-eq {Δ = Cx.ε Cx.∙ x Cx.∙ X} {Γ = Γ Cx.∙ x₅ Cx.∙ x₄ Cx.∙ x₁} {Γ' = Cx.ε Cx.∙ x₂} {Γ'' = Cx.ε Cx.∙ x₃} {π₀ = wk-wk π₀} {π = wk-wk π} {π' = wk-wk π'} {i = Cx.t i} {i' = Cx.h} {i'' = Cx.h} MG₁ MG₂ = refl
-  memgc-wk-eq {Δ = Cx.ε Cx.∙ x₄ Cx.∙ x Cx.∙ X} {Γ = Cx.ε Cx.∙ x₅ Cx.∙ x₁} {Γ' = Cx.ε Cx.∙ x₂} {Γ'' = Cx.ε Cx.∙ x₃} {π₀ = wk-wk π₀} {π = wk-wk π} {π' = wk-wk π'} {i = Cx.t i} {i' = Cx.h} {i'' = Cx.h} MG₁ MG₂ = refl
-  memgc-wk-eq {Δ = Cx.ε Cx.∙ x₄ Cx.∙ x Cx.∙ X} {Γ = Γ Cx.∙ x₆ Cx.∙ x₅ Cx.∙ x₁} {Γ' = Cx.ε Cx.∙ x₂} {Γ'' = Cx.ε Cx.∙ x₃} {π₀ = wk-wk π₀} {π = wk-wk π} {π' = wk-wk π'} {i = Cx.t i} {i' = Cx.h} {i'' = Cx.h} MG₁ MG₂ = refl
-  memgc-wk-eq {Δ = Δ Cx.∙ x₆ Cx.∙ x₄ Cx.∙ x Cx.∙ X} {Γ = Cx.ε Cx.∙ x₅ Cx.∙ x₁} {Γ' = Cx.ε Cx.∙ x₂} {Γ'' = Cx.ε Cx.∙ x₃} {π₀ = wk-wk π₀} {π = wk-wk π} {π' = wk-wk π'} {i = Cx.t i} {i' = Cx.h} {i'' = Cx.h} MG₁ MG₂ = refl
-  memgc-wk-eq {Δ = Δ Cx.∙ x₆ Cx.∙ x₄ Cx.∙ x Cx.∙ X} {Γ = Γ Cx.∙ x₇ Cx.∙ x₅ Cx.∙ x₁} {Γ' = Cx.ε Cx.∙ x₂} {Γ'' = Cx.ε Cx.∙ x₃} {π₀ = wk-wk π₀} {π = wk-wk π} {π' = wk-wk π'} {i = Cx.t i} {i' = Cx.h} {i'' = Cx.h} MG₁ MG₂ = refl
-
-
-  mem-uip : {i i' : Γ ∋ X} {i≡i'₁ i≡i'₂ : i ≡ i'} → i≡i'₁ ≡ i≡i'₂
-  mem-uip {i = Cx.h} {i' = Cx.h} {i≡i'₁ = refl} {i≡i'₂ = refl} = refl
-  mem-uip {i = Cx.t i} {i' = Cx.t i'} {i≡i'₁ = refl} {i≡i'₂ = refl} = refl
-
-  memgc-wk₀-eq : {Δ Γ Γ' : Ctx} {π₀ : Wk Δ Γ} {π : Wk Γ Γ'} {π' : Wk Δ Γ'} {i : Γ ∋ X} {i' i'' : Γ' ∋ X}
-               → (MG₁ : MemGC Γ Γ' π i i') → (MG₂ : MemGC Δ Γ' π' (wk-mem π₀ i) i'')
-               → i' ≡ i''
-  memgc-wk₀-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ' ∙ X} {π₀ = π₀} {π = π} {π' = π'} {i = i} {i' = Cx.h {A = X}} {i'' = Cx.h} MG₁ MG₂ = refl
-
-  -- memgc-wk₀-eq : {Δ Γ Γ' : Ctx} {π₀ : Wk Δ Γ} {π : Wk Γ Γ'} {π' : Wk Δ Γ'} {i : Γ ∋ X} {i' i'' : Γ' ∋ X}
-  --              → (MG₁ : MemGC Γ Γ' π i i') → (MG₂ : MemGC Δ Γ' π' (wk-mem π₀ i) i'')
-  --              → (wk-trans π₀ π , i') ≡ (π' , i'')
-  -- memgc-wk₀-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ' ∙ X} {π₀ = π₀} {π = π} {π' = π'} {i = i} {i' = Cx.h {A = X}} {i'' = Cx.h} MG₁ MG₂ = ?
-
-  memgc-subst-eq : {Δ Γ Γ' Γ'' : Ctx} {π₀ : Wk Δ Γ} {π : Wk Γ Γ'} {π' : Wk Δ Γ''} {i : Γ ∋ X} {i' : Γ' ∋ X} {i'' : Γ'' ∋ X}
-               → (MG₁ : MemGC Γ Γ' π i i') → (MG₂ : MemGC Δ Γ'' π' (wk-mem π₀ i) i'')
-               → (ctxeq : Γ'' ≡ Γ') → (i' ≡ proj₂ (subst (λ z → Wk Δ z × z ∋ X) ctxeq (π' , i'')))
-  memgc-subst-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ' ∙ X} {Γ'' = Γ'' ∙ X} {π₀ = π₀} {π = π} {π' = π'} {i = i} {i' = Cx.h {A = X}} {i'' = Cx.h} MG₁ MG₂ ctxeq =
-    let
-      eq = dcong₂ (λ (x : Ctx) (y : (Wk Δ x) × (x ∋ X)) → x , proj₁ y , proj₂ y) {y₁ = π' , h} ctxeq refl
-      MG₂' : MemGC Δ (Γ' ∙ X) (proj₁ (subst (λ z → Wk Δ z × z ∋ X) ctxeq (π' , h))) (wk-mem π₀ i) (proj₂ (subst (λ z → Wk Δ z × z ∋ X) ctxeq (π' , h)))
-      MG₂' = subst (λ x → MemGC Δ (proj₁ x) (proj₁ (proj₂ x)) (wk-mem π₀ i) (proj₂ (proj₂ x))) eq MG₂
-    in
-    memgc-wk₀-eq MG₁ MG₂'
-
-  {-
-      dcong₂ : ∀ {A : Set a} {B : A → Set b} {C : Set c}
-              (f : (x : A) → B x → C) {x₁ x₂ y₁ y₂}
-            → (p : x₁ ≡ x₂) → subst B p y₁ ≡ y₂
-            → f x₁ y₁ ≡ f x₂ y₂
-      dcong₂ f refl refl = refl
-  -}
-
 
   data CompGC : (Γ : Ctx) → (Γ' : Ctx) → (π : Wk Γ Γ') → (W : Comp Γ X) → (W' : Comp Γ' X) → Set
 
@@ -587,8 +521,68 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
            → (WG₁ : CompGC (Γ ∙ `V) (Γ' ∙ `V) (wk-cong π) W₁ W₁') → (WG₂ : CompGC Γ Γ' π W₂ W₂')
            → CompGC Γ Γ' π (sub W₁ W₂) (sub W₁' W₂')
 
-  pred-ctx-eq : Γ ∙ X ≡ Δ ∙ X → Γ ≡ Δ
-  pred-ctx-eq refl = refl
+  record GCMem (i : Γ ∋ X) : Set where
+    field
+      gmwk   : Wk Γ (ε ∙ X)
+      gmgc   : MemGC Γ (ε ∙ X) gmwk i h
+
+  record GCVal (M : Val Γ X) : Set where
+    field
+      gvcx   : Ctx
+      gvwk   : Wk Γ gvcx
+      gvtm   : Val gvcx X
+      gvgc   : ValGC Γ gvcx gvwk M gvtm
+
+  record GCComp (W : Comp Γ X) : Set where
+    field
+      gccx   : Ctx
+      gcwk   : Wk Γ gccx
+      gctm   : Comp gccx X
+      gcgc   : CompGC Γ gccx gcwk W gctm
+
+  open GCMem
+  open Cx using (h ; t)
+
+  memgc-uniq₀ : {Γ : Ctx} {Γ' Γ'' : Ctx} {π : Wk Γ Γ'} {π' : Wk Γ Γ''} {i : Γ ∋ X} {i' : Γ' ∋ X} {i'' : Γ'' ∋ X}
+               → (MG₁ : MemGC Γ Γ' π i i') → (MG₂ : MemGC Γ Γ'' π' i i'')
+               → Γ' ≡ Γ''
+  memgc-uniq₀ {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π = π} {π'} {i = i} {i' = i'} {i'' = i''} h h = refl
+  memgc-uniq₀ {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π = π} {π'} {i = i} {i' = i'} {i'' = i''} (t MG₁) (t MG₂) = refl
+
+  memgc-uniq₁ : {Γ : Ctx} {Γ' : Ctx} {π π' : Wk Γ Γ'} {i : Γ ∋ X} {i' i'' : Γ' ∋ X}
+               → (MG₁ : MemGC Γ Γ' π i i') → (MG₂ : MemGC Γ Γ' π' i i'')
+               → (π ≡ π') × (i' ≡ i'')
+  memgc-uniq₁ {Γ = Γ} {Γ' = Γ'} {π = π} {π'} {i = i} {i' = i'} {i'' = i''} h h = refl , refl
+  memgc-uniq₁ {Γ = Γ} {Γ' = Γ'} {π = π} {π'} {i = i} {i' = i'} {i'' = i''} (t MG₁) (t MG₂) = cong wk-wk (proj₁ (memgc-uniq₁ MG₁ MG₂)) , refl
+
+
+  memgc-wk-eq : {Δ Γ Γ' Γ'' : Ctx} {π₀ : Wk Δ Γ} {π : Wk Γ Γ'} {π' : Wk Δ Γ''} {i : Γ ∋ X} {i' : Γ' ∋ X} {i'' : Γ'' ∋ X}
+               → (MG₁ : MemGC Γ Γ' π i i') → (MG₂ : MemGC Δ Γ'' π' (wk-mem π₀ i) i'')
+               → Γ' ≡ Γ''
+  memgc-wk-eq {Δ = ε ∙ X} {Γ = ε ∙ X} {Γ' = ε ∙ Y} {Γ'' = ε ∙ Z} {π₀ = wk-cong π₀} {π = π} {π' = π'} {i = h} {i' = h} {i'' = h} MG₁ MG₂ = refl
+  memgc-wk-eq {Δ = Δ ∙ x ∙ X} {Γ = ε ∙ X} {Γ' = ε ∙ x₁} {Γ'' = ε ∙ x₂} {π₀ = wk-cong π₀} {π = π} {π' = π'} {i = h} {i' = h} {i'' = h} MG₁ MG₂ = refl
+  memgc-wk-eq {Δ = ε ∙ x ∙ X} {Γ = ε ∙ x₁ ∙ X} {Γ' = ε ∙ x₂} {Γ'' = ε ∙ x₃} {π₀ = wk-cong π₀} {π = π} {π' = π'} {i = h} {i' = h} {i'' = h} MG₁ MG₂ = refl
+  memgc-wk-eq {Δ = ε ∙ x ∙ X} {Γ = ε ∙ x₁ ∙ X} {Γ' = ε ∙ x₂} {Γ'' = ε ∙ x₃} {π₀ = wk-cong π₀} {π = π} {π' = π'} {i = t i} {i' = h} {i'' = h} MG₁ MG₂ = refl
+  memgc-wk-eq {Δ = ε ∙ x ∙ X} {Γ = Γ ∙ x₄ ∙ x₁ ∙ X} {Γ' = ε ∙ x₂} {Γ'' = ε ∙ x₃} {π₀ = wk-cong π₀} {π = π} {π' = π'} {i = h} {i' = h} {i'' = h} MG₁ MG₂ = refl
+  memgc-wk-eq {Δ = ε ∙ x ∙ X} {Γ = Γ ∙ x₄ ∙ x₁ ∙ X} {Γ' = ε ∙ x₂} {Γ'' = ε ∙ x₃} {π₀ = wk-cong π₀} {π = π} {π' = π'} {i = t i} {i' = h} {i'' = h} MG₁ MG₂ = refl
+  memgc-wk-eq {Δ = Δ ∙ x₄ ∙ x ∙ X} {Γ = ε ∙ x₁ ∙ X} {Γ' = ε ∙ x₂} {Γ'' = ε ∙ x₃} {π₀ = wk-cong π₀} {π = π} {π' = π'} {i = h} {i' = h} {i'' = h} MG₁ MG₂ = refl
+  memgc-wk-eq {Δ = Δ ∙ x₄ ∙ x ∙ X} {Γ = ε ∙ x₁ ∙ X} {Γ' = ε ∙ x₂} {Γ'' = ε ∙ x₃} {π₀ = wk-cong π₀} {π = π} {π' = π'} {i = t i} {i' = h} {i'' = h} MG₁ MG₂ = refl
+  memgc-wk-eq {Δ = Δ ∙ x₄ ∙ x ∙ X} {Γ = Γ ∙ x₅ ∙ x₁ ∙ X} {Γ' = ε ∙ x₂} {Γ'' = ε ∙ x₃} {π₀ = wk-cong π₀} {π = π} {π' = π'} {i = h} {i' = h} {i'' = h} MG₁ MG₂ = refl
+  memgc-wk-eq {Δ = Δ ∙ x₄ ∙ x ∙ X} {Γ = Γ ∙ x₅ ∙ x₁ ∙ X} {Γ' = ε ∙ x₂} {Γ'' = ε ∙ x₃} {π₀ = wk-cong π₀} {π = π} {π' = π'} {i = t i} {i' = h} {i'' = h} MG₁ MG₂ = refl
+  memgc-wk-eq {Δ = ε ∙ x ∙ X} {Γ = ε ∙ x₁} {Γ' = ε ∙ x₂} {Γ'' = ε ∙ x₃} {π₀ = wk-wk π₀} {π = wk-cong π} {π' = wk-wk π'} {i = h} {i' = h} {i'' = h} MG₁ MG₂ = refl
+  memgc-wk-eq {Δ = ε ∙ x ∙ X} {Γ = ε ∙ x₄ ∙ x₁} {Γ' = ε ∙ x₂} {Γ'' = ε ∙ x₃} {π₀ = wk-wk π₀} {π = wk-cong π} {π' = wk-wk π'} {i = h} {i' = h} {i'' = h} MG₁ MG₂ = refl
+  memgc-wk-eq {Δ = ε ∙ x ∙ X} {Γ = Γ ∙ x₅ ∙ x₄ ∙ x₁} {Γ' = ε ∙ x₂} {Γ'' = ε ∙ x₃} {π₀ = wk-wk π₀} {π = wk-cong π} {π' = wk-wk π'} {i = h} {i' = h} {i'' = h} MG₁ MG₂ = refl
+  memgc-wk-eq {Δ = Δ ∙ x₄ ∙ x ∙ X} {Γ = ε ∙ x₁} {Γ' = ε ∙ x₂} {Γ'' = ε ∙ x₃} {π₀ = wk-wk π₀} {π = wk-cong π} {π' = wk-wk π'} {i = h} {i' = h} {i'' = h} MG₁ MG₂ = refl
+  memgc-wk-eq {Δ = ε ∙ x₄ ∙ x ∙ X} {Γ = ε ∙ x₅ ∙ x₁} {Γ' = ε ∙ x₂} {Γ'' = ε ∙ x₃} {π₀ = wk-wk π₀} {π = wk-cong π} {π' = wk-wk π'} {i = h} {i' = h} {i'' = h} MG₁ MG₂ = refl
+  memgc-wk-eq {Δ = ε ∙ x₄ ∙ x ∙ X} {Γ = Γ ∙ x₆ ∙ x₅ ∙ x₁} {Γ' = ε ∙ x₂} {Γ'' = ε ∙ x₃} {π₀ = wk-wk π₀} {π = wk-cong π} {π' = wk-wk π'} {i = h} {i' = h} {i'' = h} MG₁ MG₂ = refl
+  memgc-wk-eq {Δ = Δ ∙ x₆ ∙ x₄ ∙ x ∙ X} {Γ = ε ∙ x₅ ∙ x₁} {Γ' = ε ∙ x₂} {Γ'' = ε ∙ x₃} {π₀ = wk-wk π₀} {π = wk-cong π} {π' = wk-wk π'} {i = h} {i' = h} {i'' = h} MG₁ MG₂ = refl
+  memgc-wk-eq {Δ = Δ ∙ x₆ ∙ x₄ ∙ x ∙ X} {Γ = Γ ∙ x₇ ∙ x₅ ∙ x₁} {Γ' = ε ∙ x₂} {Γ'' = ε ∙ x₃} {π₀ = wk-wk π₀} {π = wk-cong π} {π' = wk-wk π'} {i = h} {i' = h} {i'' = h} MG₁ MG₂ = refl
+  memgc-wk-eq {Δ = ε ∙ x ∙ X} {Γ = ε ∙ x₄ ∙ x₁} {Γ' = ε ∙ x₂} {Γ'' = ε ∙ x₃} {π₀ = wk-wk π₀} {π = wk-wk π} {π' = wk-wk π'} {i = t i} {i' = h} {i'' = h} MG₁ MG₂ = refl
+  memgc-wk-eq {Δ = ε ∙ x ∙ X} {Γ = Γ ∙ x₅ ∙ x₄ ∙ x₁} {Γ' = ε ∙ x₂} {Γ'' = ε ∙ x₃} {π₀ = wk-wk π₀} {π = wk-wk π} {π' = wk-wk π'} {i = t i} {i' = h} {i'' = h} MG₁ MG₂ = refl
+  memgc-wk-eq {Δ = ε ∙ x₄ ∙ x ∙ X} {Γ = ε ∙ x₅ ∙ x₁} {Γ' = ε ∙ x₂} {Γ'' = ε ∙ x₃} {π₀ = wk-wk π₀} {π = wk-wk π} {π' = wk-wk π'} {i = t i} {i' = h} {i'' = h} MG₁ MG₂ = refl
+  memgc-wk-eq {Δ = ε ∙ x₄ ∙ x ∙ X} {Γ = Γ ∙ x₆ ∙ x₅ ∙ x₁} {Γ' = ε ∙ x₂} {Γ'' = ε ∙ x₃} {π₀ = wk-wk π₀} {π = wk-wk π} {π' = wk-wk π'} {i = t i} {i' = h} {i'' = h} MG₁ MG₂ = refl
+  memgc-wk-eq {Δ = Δ ∙ x₆ ∙ x₄ ∙ x ∙ X} {Γ = ε ∙ x₅ ∙ x₁} {Γ' = ε ∙ x₂} {Γ'' = ε ∙ x₃} {π₀ = wk-wk π₀} {π = wk-wk π} {π' = wk-wk π'} {i = t i} {i' = h} {i'' = h} MG₁ MG₂ = refl
+  memgc-wk-eq {Δ = Δ ∙ x₆ ∙ x₄ ∙ x ∙ X} {Γ = Γ ∙ x₇ ∙ x₅ ∙ x₁} {Γ' = ε ∙ x₂} {Γ'' = ε ∙ x₃} {π₀ = wk-wk π₀} {π = wk-wk π} {π' = wk-wk π'} {i = t i} {i' = h} {i'' = h} MG₁ MG₂ = refl
 
   mutual
     valgc-wk-eq : {Δ Γ Γ' Γ'' : Ctx} {π₀ : Wk Δ Γ} {π : Wk Γ Γ'} {π' : Wk Δ Γ''} {M : Val Γ X} {M' : Val Γ' X} {M'' : Val Γ'' X}
@@ -616,21 +610,188 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     compgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = W'} {W'' = W''} (var M₁) (var M₂) = valgc-wk-eq M₁ M₂
     compgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = W'} {W'' = W''} (sub W₁₁ W₂₁) (sub W₁₂ W₂₂) = compgc-wk-eq W₂₁ W₂₂
 
+  -------
 
-  record GCMem (i : Γ ∋ X) : Set where
-    field
-      gmwk   : Wk Γ (ε ∙ X)
-      gmgc   : MemGC Γ (ε ∙ X) gmwk i h
 
-  record GCVal (M : Val Γ X) : Set where
-    field
-      gvcx   : Ctx
-      gvwk   : Wk Γ gvcx
-      gvtm   : Val gvcx X
-      gvgc   : ValGC Γ gvcx gvwk M gvtm
+  {-
+  mem-uip : {i i' : Γ ∋ X} {i≡i'₁ i≡i'₂ : i ≡ i'} → i≡i'₁ ≡ i≡i'₂
+  mem-uip {i = Cx.h} {i' = Cx.h} {i≡i'₁ = refl} {i≡i'₂ = refl} = refl
+  mem-uip {i = Cx.t i} {i' = Cx.t i'} {i≡i'₁ = refl} {i≡i'₂ = refl} = refl
 
-  open GCMem
-  open Cx using (h ; t)
+  memgc-wk₀-eq : {Δ Γ Γ' : Ctx} {π₀ : Wk Δ Γ} {π : Wk Γ Γ'} {π' : Wk Δ Γ'} {i : Γ ∋ X} {i' i'' : Γ' ∋ X}
+               → (MG₁ : MemGC Γ Γ' π i i') → (MG₂ : MemGC Δ Γ' π' (wk-mem π₀ i) i'')
+               → i' ≡ i''
+  memgc-wk₀-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ' ∙ X} {π₀ = π₀} {π = π} {π' = π'} {i = i} {i' = Cx.h {A = X}} {i'' = Cx.h} MG₁ MG₂ = refl
+
+  -- memgc-wk₀-eq : {Δ Γ Γ' : Ctx} {π₀ : Wk Δ Γ} {π : Wk Γ Γ'} {π' : Wk Δ Γ'} {i : Γ ∋ X} {i' i'' : Γ' ∋ X}
+  --              → (MG₁ : MemGC Γ Γ' π i i') → (MG₂ : MemGC Δ Γ' π' (wk-mem π₀ i) i'')
+  --              → (wk-trans π₀ π , i') ≡ (π' , i'')
+  -- memgc-wk₀-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ' ∙ X} {π₀ = π₀} {π = π} {π' = π'} {i = i} {i' = Cx.h {A = X}} {i'' = Cx.h} MG₁ MG₂ = ?
+
+  memgc-subst-eq : {Δ Γ Γ' Γ'' : Ctx} {π₀ : Wk Δ Γ} {π : Wk Γ Γ'} {π' : Wk Δ Γ''} {i : Γ ∋ X} {i' : Γ' ∋ X} {i'' : Γ'' ∋ X}
+               → (MG₁ : MemGC Γ Γ' π i i') → (MG₂ : MemGC Δ Γ'' π' (wk-mem π₀ i) i'')
+               → (ctxeq : Γ'' ≡ Γ') → (i' ≡ proj₂ (subst (λ z → Wk Δ z × z ∋ X) ctxeq (π' , i'')))
+  memgc-subst-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ' ∙ X} {Γ'' = Γ'' ∙ X} {π₀ = π₀} {π = π} {π' = π'} {i = i} {i' = Cx.h {A = X}} {i'' = Cx.h} MG₁ MG₂ ctxeq =
+    let
+      eq = dcong₂ (λ (x : Ctx) (y : (Wk Δ x) × (x ∋ X)) → x , proj₁ y , proj₂ y) {y₁ = π' , h} ctxeq refl
+      MG₂' : MemGC Δ (Γ' ∙ X) (proj₁ (subst (λ z → Wk Δ z × z ∋ X) ctxeq (π' , h))) (wk-mem π₀ i) (proj₂ (subst (λ z → Wk Δ z × z ∋ X) ctxeq (π' , h)))
+      MG₂' = subst (λ x → MemGC Δ (proj₁ x) (proj₁ (proj₂ x)) (wk-mem π₀ i) (proj₂ (proj₂ x))) eq MG₂
+    in
+    memgc-wk₀-eq MG₁ MG₂'
+
+  ------
+  -}
+
+  lemx : (i : Γ ∋ X) → (i' : Γ' ∋ X) → (Γ≡Γ' : Γ ≡ Γ') → (i≅i' : i ≅ i')
+         → subst (λ x → Val x X) Γ≡Γ' (var i) ≅ Val.var (subst (λ x → x) (H.≅-to-type-≡ i≅i') i)
+  lemx h h refl _≅_.refl = _≅_.refl
+  lemx h (t i') refl ()
+  lemx (t i) h refl ()
+  lemx (t i) (t i') refl _≅_.refl = _≅_.refl
+
+  subst-lemma-pair : (M₁ : Val Γ X) → (M₂ : Val Γ Y) → (M₁' : Val Γ' X) → (M₂' : Val Γ' Y) → (Γ≡Γ' : Γ ≡ Γ') → (M₁≅M₁' : M₁ ≅ M₁') → (M₂≅M₂' : M₂ ≅ M₂')
+                   → subst (λ x → Val x (X `× Y)) Γ≡Γ' (pair M₁ M₂) ≅ Val.pair (subst (λ x → x) (H.≅-to-type-≡ M₁≅M₁') M₁) (subst (λ x → x) (H.≅-to-type-≡ M₂≅M₂') M₂)
+  subst-lemma-pair M₁ M₂ M₁' M₂' refl _≅_.refl _≅_.refl = _≅_.refl
+
+  subst-lemma-pm : (M : Val Γ (A `× B)) → (N : Val (Γ ∙ A ∙ B) Z) → (M' : Val Γ' (A `× B)) → (N' : Val (Γ' ∙ A ∙ B) Z) → (Γ≡Γ' : Γ ≡ Γ') → (M≅M' : M ≅ M') → (N≅N' : N ≅ N')
+                   → subst (λ x → Val x Z) Γ≡Γ' (pm M N) ≅ Val.pm (subst (λ x → x) (H.≅-to-type-≡ M≅M') M) (subst (λ x → x) (H.≅-to-type-≡ N≅N') N)
+  subst-lemma-pm M N M' N' refl _≅_.refl _≅_.refl = _≅_.refl
+
+
+  memgc-heq : {Δ Γ Γ' Γ'' : Ctx} {π₀ : Wk Δ Γ} {π : Wk Γ Γ'} {π' : Wk Δ Γ''} {i : Γ ∋ X} {i' : Γ' ∋ X} {i'' : Γ'' ∋ X}
+               → (MG₁ : MemGC Γ Γ' π i i') → (MG₂ : MemGC Δ Γ'' π' (wk-mem π₀ i) i'')
+               → (i' ≅ i'')
+  memgc-heq {Δ = Δ} {Γ = Γ} {Γ' = ε ∙ X} {Γ'' = ε ∙ X} {π₀ = π₀} {π = π} {π' = π'} {i = i} {i' = h {A = X}} {i'' = h} MG₁ MG₂ = _≅_.refl
+
+  mutual
+    valgc-heq : {Δ Γ Γ' Γ'' : Ctx} {π₀ : Wk Δ Γ} {π : Wk Γ Γ'} {π' : Wk Δ Γ''} {M : Val Γ X} {M' : Val Γ' X} {M'' : Val Γ'' X}
+                → (MG₁ : ValGC Γ Γ' π M M') → (MG₂ : ValGC Δ Γ'' π' (wk-val π₀ M) M'')
+                → (M' ≅ M'')
+    -- valgc-heq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = M'} {M'' = M''} MG₁ MG₂ = ?
+    valgc-heq {Δ = Δ} {Γ = Γ} {Γ' = Cx.ε} {Γ'' = Cx.ε} {π₀ = π₀} {π = π} {π' = π'} {M = lam W} {M' = lam W'} {M'' = lam W''} (lam WG₁) (lam WG₂) = H.cong lam (compgc-heq WG₁ WG₂)
+    valgc-heq {Δ = Δ} {Γ = Γ} {Γ' = ε} {Γ'' = ε} {π₀ = π₀} {π = π} {π' = π'} {M = pair M₁ M₂} {M' = pair M₁' M₂'} {M'' = pair M₁'' M₂''} (pair MG₁₁ MG₂₁) (pair MG₁₂ MG₂₂) =
+      let
+        IH1 = valgc-heq MG₁₁ MG₁₂
+        IH2 = valgc-heq MG₂₁ MG₂₂
+      in
+      H.cong₂ pair IH1 IH2
+    valgc-heq {Δ = Δ} {Γ = Γ} {Γ' = ε} {Γ'' = ε} {π₀ = π₀} {π = π} {π' = π'} {M = pm M N} {M' = pm M' N'} {M'' = pm M'' N''} (pm MG₁ NG₁) (pm MG₂ NG₂) =
+      let
+        IH1 = valgc-heq MG₁ MG₂
+        IH2 = valgc-heq NG₁ NG₂
+      in
+      H.cong₂ pm IH1 IH2
+    valgc-heq {Δ = Δ} {Γ = Γ} {Γ' = ε} {Γ'' = ε} {π₀ = π₀} {π = π} {π' = π'} {M = unit} {M' = unit} {M'' = unit} MG₁ MG₂ = _≅_.refl
+
+    valgc-heq {Δ = Δ} {Γ = Γ} {Γ' = ε} {Γ'' = Γ'' ∙ X} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = M'} {M'' = M''} MG₁ MG₂ =
+      let
+        eq = valgc-wk-eq MG₁ MG₂
+      in
+      ql (ctx-absurd eq) (M' ≅ M'')
+
+    valgc-heq {Δ = Δ} {Γ = Γ} {Γ' = Γ' ∙ X'} {Γ'' = ε} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = M'} {M'' = M''} MG₁ MG₂ =
+      let
+        eq = valgc-wk-eq MG₁ MG₂
+      in
+      ql (ctx-absurd (sym eq)) (M' ≅ M'')
+
+    valgc-heq {Δ = Δ} {Γ = Γ} {Γ' = Γ' Cx.∙ X'} {Γ'' = Γ'' Cx.∙ X''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = var {A = X} i'} {M'' = var {A = X} i''} (var MG₁) (var MG₂) =
+      let
+        eq = memgc-wk-eq MG₁ MG₂
+
+        i'≅i'' : i' ≅ i''
+        i'≅i'' = memgc-heq MG₁ MG₂
+
+        i'≡i''₂ = H.≅-to-subst-≡ i'≅i''
+
+        g : var (subst (λ x → x) (H.≅-to-type-≡ i'≅i'') i') ≡ var i''
+        g = cong (var {Γ = Γ'' ∙ X''}) i'≡i''₂
+
+        g' : subst (λ x → Val x X) eq (var i') ≅ Val.var (subst (λ x → x) (H.≅-to-type-≡ i'≅i'') i')
+        g' = lemx i' i'' eq i'≅i''
+
+        g'' : subst (λ x → Val x X) eq (var i') ≅ var i'
+        g'' = H.≡-subst-removable (λ x → Val x X) eq (var i')
+
+        goal : var i' ≅ var i''
+        goal =  H.trans (H.sym g'') (H.trans g' (≡-to-≅ g))
+      in
+      goal
+    valgc-heq {Δ = Δ} {Γ = Γ} {Γ' = Γ' Cx.∙ X'} {Γ'' = Γ'' Cx.∙ X''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = var i'} {M'' = lam x} (var x₁) ()
+    valgc-heq {Δ = Δ} {Γ = Γ} {Γ' = Γ' Cx.∙ X'} {Γ'' = Γ'' Cx.∙ X''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = var i'} {M'' = pair M'' M'''} (var x) ()
+    valgc-heq {Δ = Δ} {Γ = Γ} {Γ' = Γ' Cx.∙ X'} {Γ'' = Γ'' Cx.∙ X''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = var i'} {M'' = pm M'' M'''} (var x) ()
+    valgc-heq {Δ = Δ} {Γ = Γ} {Γ' = Γ' Cx.∙ X'} {Γ'' = Γ'' Cx.∙ X''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = var i'} {M'' = unit} (var x) ()
+    valgc-heq {Δ = Δ} {Γ = Γ} {Γ' = Γ' Cx.∙ X'} {Γ'' = Γ'' Cx.∙ X''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = lam x} {M'' = var i} (lam WG) ()
+
+    valgc-heq {Δ = Δ} {Γ = Γ} {Γ' = Γ' Cx.∙ X'} {Γ'' = Γ'' Cx.∙ X''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = lam W'} {M'' = lam W''} (lam WG₁) (lam WG₂) = {!!}
+
+    valgc-heq {Δ = Δ} {Γ = Γ} {Γ' = Γ' Cx.∙ X'} {Γ'' = Γ'' Cx.∙ X''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = lam x} {M'' = pm M'' M'''} (lam WG) ()
+    valgc-heq {Δ = Δ} {Γ = Γ} {Γ' = Γ' Cx.∙ X'} {Γ'' = Γ'' Cx.∙ X''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = pair M' M''} {M'' = var i} (pair MG₁ MG₂) ()
+
+    valgc-heq {Δ = Δ} {Γ = Γ} {Γ' = Γ' Cx.∙ X'} {Γ'' = Γ'' Cx.∙ X''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = pair {A = X} {B = Y} M₁' M₂'} {M'' = pair M₁'' M₂''} (pair MG₁₁ MG₂₁) (pair MG₁₂ MG₂₂) =
+      let
+        eq = valgc-wk-eq MG₁₁ MG₁₂
+
+        M₁'≅M₁'' = valgc-heq MG₁₁ MG₁₂
+        M₂'≅M₂'' = valgc-heq MG₂₁ MG₂₂
+
+        M₁'≅M₁''₂ = H.≅-to-subst-≡ M₁'≅M₁''
+        M₂'≅M₂''₂ = H.≅-to-subst-≡ M₂'≅M₂''
+
+        g : pair (subst (λ x → x) (H.≅-to-type-≡ M₁'≅M₁'') M₁') (subst (λ x → x) (H.≅-to-type-≡ M₂'≅M₂'') M₂') ≡ pair M₁'' M₂''
+        g = cong₂ pair M₁'≅M₁''₂ M₂'≅M₂''₂
+
+        g' : subst (λ x → Val x (X `× Y)) eq (pair M₁' M₂') ≅ Val.pair (subst (λ x → x) (H.≅-to-type-≡ M₁'≅M₁'') M₁') (subst (λ x → x) (H.≅-to-type-≡ M₂'≅M₂'') M₂')
+        g' = subst-lemma-pair M₁' M₂' M₁'' M₂'' eq M₁'≅M₁'' M₂'≅M₂''
+
+        g'' : subst (λ x → Val x (X `× Y)) eq (pair M₁' M₂') ≅ pair M₁' M₂'
+        g'' = H.≡-subst-removable (λ x → Val x (X `× Y)) eq (pair M₁' M₂')
+
+        goal : pair M₁' M₂' ≅ pair M₁'' M₂''
+        goal = H.trans (H.sym g'') (H.trans g' (≡-to-≅ g))
+      in
+      goal
+
+    valgc-heq {Δ = Δ} {Γ = Γ} {Γ' = Γ' Cx.∙ X'} {Γ'' = Γ'' Cx.∙ X''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = pair M' M''} {M'' = pm M''' M''''} (pair MG₁ MG₂) ()
+    valgc-heq {Δ = Δ} {Γ = Γ} {Γ' = Γ' Cx.∙ X'} {Γ'' = Γ'' Cx.∙ X''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = pm M' M''} {M'' = var i} (pm MG₁ MG₂) ()
+    valgc-heq {Δ = Δ} {Γ = Γ} {Γ' = Γ' Cx.∙ X'} {Γ'' = Γ'' Cx.∙ X''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = pm M' M''} {M'' = lam x} (pm MG₁ MG₂) ()
+    valgc-heq {Δ = Δ} {Γ = Γ} {Γ' = Γ' Cx.∙ X'} {Γ'' = Γ'' Cx.∙ X''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = pm M' M''} {M'' = pair M''' M''''} (pm MG₁ MG₂) ()
+
+    valgc-heq {Δ = Δ} {Γ = Γ} {Γ' = Γ' Cx.∙ X'} {Γ'' = Γ'' Cx.∙ X''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = pm {C = Z} M' N'} {M'' = pm M'' N''} (pm MG₁ NG₁) (pm MG₂ NG₂) =
+      let
+        eq = valgc-wk-eq MG₁ MG₂
+
+        M'≅M'' = valgc-heq MG₁ MG₂
+        N'≅N'' = valgc-heq NG₁ NG₂
+
+        M'≅M''₂ = H.≅-to-subst-≡ M'≅M''
+        N'≅N''₂ = H.≅-to-subst-≡ N'≅N''
+
+        g : pm (subst (λ x → x) (H.≅-to-type-≡ M'≅M'') M') (subst (λ x → x) (H.≅-to-type-≡ N'≅N'') N') ≡ pm M'' N''
+        g = cong₂ pm M'≅M''₂ N'≅N''₂
+
+        g' : subst (λ x → Val x Z) eq (pm M' N') ≅ Val.pm (subst (λ x → x) (H.≅-to-type-≡ M'≅M'') M') (subst (λ x → x) (H.≅-to-type-≡ N'≅N'') N')
+        g' = subst-lemma-pm M' N' M'' N'' eq M'≅M'' N'≅N''
+
+        g'' : subst (λ x → Val x Z) eq (pm M' N') ≅ pm M' N'
+        g'' = H.≡-subst-removable (λ x → Val x Z) eq (pm M' N')
+
+        goal : pm M' N' ≅ pm M'' N''
+        goal = H.trans (H.sym g'') (H.trans g' (≡-to-≅ g))
+      in
+      goal
+
+    valgc-heq {Δ = Δ} {Γ = Γ} {Γ' = Γ' Cx.∙ X'} {Γ'' = Γ'' Cx.∙ X''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = pm M' M''} {M'' = unit} (pm MG₁ MG₂) ()
+    valgc-heq {Δ = Δ} {Γ = Γ} {Γ' = Γ' Cx.∙ X'} {Γ'' = Γ'' Cx.∙ X''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = unit} {M'' = var i} () MG₂
+    valgc-heq {Δ = Δ} {Γ = Γ} {Γ' = Γ' Cx.∙ X'} {Γ'' = Γ'' Cx.∙ X''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = unit} {M'' = pm M'' M'''} () MG₂
+    valgc-heq {Δ = Δ} {Γ = Γ} {Γ' = Γ' Cx.∙ X'} {Γ'' = Γ'' Cx.∙ X''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = unit} {M'' = unit} () MG₂
+
+    compgc-heq : {Δ Γ Γ' Γ'' : Ctx} {π₀ : Wk Δ Γ} {π : Wk Γ Γ'} {π' : Wk Δ Γ''} {W : Comp Γ X} {W' : Comp Γ' X} {W'' : Comp Γ'' X}
+                → (WG₁ : CompGC Γ Γ' π W W') → (WG₂ : CompGC Δ Γ'' π' (wk-comp π₀ W) W'')
+                → (W' ≅ W'')
+    compgc-heq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = W'} {W'' = W''} WG₁ WG₂ = {!!}
+
+
 
   mem-gc : (i : Γ ∋ X) → GCMem i
   mem-gc h = record { gmwk = wk-cong wk-wk-ε ; gmgc = h }
