@@ -3,6 +3,7 @@
 module Inception.Sub.Environments (R : Set) where
 
 open import Data.Product using (proj₁; proj₂; _,_; <_,_>; curry; _×_; Σ; ∃; Σ-syntax; ∃-syntax)
+open import Data.Sum using (inj₁; inj₂; _⊎_)
 open import Function.Base using (const; _∘_; _$_)
 
 import Relation.Binary.PropositionalEquality as Eq
@@ -482,6 +483,7 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   ctx-absurd : ε ≡ Γ ∙ X → ⊥
   ctx-absurd ()
 
+{-
   -- data MemGC : (Γ : Ctx) → (Γ' : Ctx) → (π : Wk Γ Γ') → (i : Γ' ∋ X) → Set where
   --   z : MemGC (Γ ∙ X) (ε ∙ X) (wk-cong wk-wk-ε) h
   --   s : {Δ : Ctx} {Y : Ty} {π : Wk Δ (ε ∙ X)} → MemGC Δ (ε ∙ X) π h → MemGC (Δ ∙ Y) (ε ∙ X) (wk-wk {A = Y} π) h
@@ -492,55 +494,73 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   data CompGC : (Γ : Ctx) → (Γ' : Ctx) → (π : Wk Γ Γ') → (W : Comp Γ X) → (W' : Comp Γ' X) → Set
 
-  data ValGC : (Γ : Ctx) → (Γ' : Ctx) → (π : Wk Γ Γ') → (M : Val Γ X) → (M' : Val Γ' X) → Set where
+  data ValGC : (Γ : Ctx) → (Γ' : Ctx) → (π : Wk Γ Γ') → (M : Val Γ X) → (M' : Val Γ' X) → Set
+
+  data ValGC where
     var  : {π : Wk Γ Γ'} {i : Γ ∋ X} {i' : Γ' ∋ X} → MemGC Γ Γ' π i i' → ValGC Γ Γ' π (var i) (var i')
-    lam  : {π : Wk Γ Γ'} {W : Comp (Γ ∙ X) Y} {W' : Comp (Γ' ∙ X) Y}
+    lam-wk  : {π : Wk Γ Γ'} {W : Comp (Γ ∙ X) Y} {W' : Comp Γ' Y}
+           → (WG : CompGC (Γ ∙ X) Γ' (wk-wk π) W W')
+           → ValGC Γ Γ' π (lam W) (lam (wk-comp (wk-wk wk-id) W'))
+    lam-cong  : {π : Wk Γ Γ'} {W : Comp (Γ ∙ X) Y} {W' : Comp (Γ' ∙ X) Y}
            → (WG : CompGC (Γ ∙ X) (Γ' ∙ X) (wk-cong π) W W')
            → ValGC Γ Γ' π (lam W) (lam W')
     pair : {π : Wk Γ Γ'} {M₁ : Val Γ X} {M₂ : Val Γ Y} {M₁' : Val Γ' X} {M₂' : Val Γ' Y}
            → (MG₁ : ValGC Γ Γ' π M₁ M₁') → (MG₂ : ValGC Γ Γ' π M₂ M₂')
            → ValGC Γ Γ' π (pair M₁ M₂) (pair M₁' M₂')
-    pm   : {π : Wk Γ Γ'} {M : Val Γ (X `× Y)} {N : Val (Γ ∙ X ∙ Y) Z} {M' : Val Γ' (X `× Y)} {N' : Val (Γ' ∙ X ∙ Y) Z}
+    pm-cong-cong : {π : Wk Γ Γ'} {M : Val Γ (X `× Y)} {N : Val (Γ ∙ X ∙ Y) Z}
+                  {M' : Val Γ' (X `× Y)} {N' : Val (Γ' ∙ X ∙ Y) Z}
            → (MG : ValGC Γ Γ' π M M') → (NG : ValGC (Γ ∙ X ∙ Y) (Γ' ∙ X ∙ Y) (wk-cong (wk-cong π)) N N')
            → ValGC Γ Γ' π (pm M N) (pm M' N')
+    pm-cong-wk : {π : Wk Γ Γ'} {M : Val Γ (X `× Y)} {N : Val (Γ ∙ X ∙ Y) Z} {M' : Val Γ' (X `× Y)} {N' : Val (Γ' ∙ Y) Z}
+           → (MG : ValGC Γ Γ' π M M') → (NG : ValGC (Γ ∙ X ∙ Y) (Γ' ∙ Y) (wk-cong (wk-wk π)) N N')
+           → ValGC Γ Γ' π (pm M N) (pm M' (wk-val (wk-cong (wk-wk wk-id)) N'))
+    pm-wk-cong : {π : Wk Γ Γ'} {M : Val Γ (X `× Y)} {N : Val (Γ ∙ X ∙ Y) Z} {M' : Val Γ' (X `× Y)} {N' : Val (Γ' ∙ X) Z}
+           → (MG : ValGC Γ Γ' π M M') → (NG : ValGC (Γ ∙ X ∙ Y) (Γ' ∙ X) (wk-wk (wk-cong π)) N N')
+           → ValGC Γ Γ' π (pm M N) (pm M' (wk-val (wk-wk (wk-cong wk-id)) N'))
+    pm-wk-wk : {π : Wk Γ Γ'} {M : Val Γ (X `× Y)} {N : Val (Γ ∙ X ∙ Y) Z} {M' : Val Γ' (X `× Y)} {N' : Val Γ' Z}
+           → (MG : ValGC Γ Γ' π M M') → (NG : ValGC (Γ ∙ X ∙ Y) (Γ') (wk-wk (wk-wk π)) N N')
+           → ValGC Γ Γ' π (pm M N) (pm M' (wk-val (wk-wk (wk-wk wk-id)) N'))
     unit : {π : Wk Γ ε} → ValGC Γ ε π unit unit
 
   data CompGC where
     return  : {π : Wk Γ Γ'} {M : Val Γ X} {M' : Val Γ' X} → ValGC Γ Γ' π M M' → CompGC Γ Γ' π (return M) (return M')
-    pm      : {π : Wk Γ Γ'} {M : Val Γ (X `× Y)} {W : Comp (Γ ∙ X ∙ Y) Z} {M' : Val Γ' (X `× Y)} {W' : Comp (Γ' ∙ X ∙ Y) Z}
+    pm-cong-cong : {π : Wk Γ Γ'} {M : Val Γ (X `× Y)} {W : Comp (Γ ∙ X ∙ Y) Z}
+                  {M' : Val Γ' (X `× Y)} {W' : Comp (Γ' ∙ X ∙ Y) Z}
            → (MG : ValGC Γ Γ' π M M') → (WG : CompGC (Γ ∙ X ∙ Y) (Γ' ∙ X ∙ Y) (wk-cong (wk-cong π)) W W')
            → CompGC Γ Γ' π (pm M W) (pm M' W')
-    push    : {π : Wk Γ Γ'} {W₁ : Comp Γ X} {W₂ : Comp (Γ ∙ X) Y} {W₁' : Comp Γ' X} {W₂' : Comp (Γ' ∙ X) Y}
+    pm-cong-wk : {π : Wk Γ Γ'} {M : Val Γ (X `× Y)} {W : Comp (Γ ∙ X ∙ Y) Z}
+                {M' : Val Γ' (X `× Y)} {W' : Comp (Γ' ∙ Y) Z}
+           → (MG : ValGC Γ Γ' π M M') → (WG : CompGC (Γ ∙ X ∙ Y) (Γ' ∙ Y) (wk-cong (wk-wk π)) W W')
+           → CompGC Γ Γ' π (pm M W) (pm M' (wk-comp (wk-cong (wk-wk wk-id)) W'))
+    pm-wk-cong : {π : Wk Γ Γ'} {M : Val Γ (X `× Y)} {W : Comp (Γ ∙ X ∙ Y) Z}
+                {M' : Val Γ' (X `× Y)} {W' : Comp (Γ' ∙ X) Z}
+           → (MG : ValGC Γ Γ' π M M') → (WG : CompGC (Γ ∙ X ∙ Y) (Γ' ∙ X) (wk-wk (wk-cong π)) W W')
+           → CompGC Γ Γ' π (pm M W) (pm M' (wk-comp (wk-wk (wk-cong wk-id)) W'))
+    pm-wk-wk : {π : Wk Γ Γ'} {M : Val Γ (X `× Y)} {W : Comp (Γ ∙ X ∙ Y) Z}
+              {M' : Val Γ' (X `× Y)} {W' : Comp Γ' Z}
+           → (MG : ValGC Γ Γ' π M M') → (WG : CompGC (Γ ∙ X ∙ Y) Γ' (wk-wk (wk-wk π)) W W')
+           → CompGC Γ Γ' π (pm M W) (pm M' (wk-comp (wk-wk (wk-wk wk-id)) W'))
+    push-cong : {π : Wk Γ Γ'} {W₁ : Comp Γ X} {W₂ : Comp (Γ ∙ X) Y}
+               {W₁' : Comp Γ' X} {W₂' : Comp (Γ' ∙ X) Y}
            → (WG₁ : CompGC Γ Γ' π W₁ W₁') → (WG₂ : CompGC (Γ ∙ X) (Γ' ∙ X) (wk-cong π) W₂ W₂')
            → CompGC Γ Γ' π (push W₁ W₂) (push W₁' W₂')
+    push-wk : {π : Wk Γ Γ'} {W₁ : Comp Γ X} {W₂ : Comp (Γ ∙ X) Y}
+             {W₁' : Comp Γ' X} {W₂' : Comp Γ' Y}
+           → (WG₁ : CompGC Γ Γ' π W₁ W₁') → (WG₂ : CompGC (Γ ∙ X) Γ' (wk-wk π) W₂ W₂')
+           → CompGC Γ Γ' π (push W₁ W₂) (push W₁' (wk-comp (wk-wk wk-id) W₂'))
     app     : {π : Wk Γ Γ'} {M : Val Γ (X `⇒ Y)} {N : Val Γ X} {M' : Val Γ' (X `⇒ Y)} {N' : Val Γ' X}
            → (MG : ValGC Γ Γ' π M M') → (NG : ValGC Γ Γ' π N N')
            → CompGC Γ Γ' π (app M N) (app M' N')
     var     : {π : Wk Γ Γ'} {M : Val Γ `V} {M' : Val Γ' `V} → ValGC Γ Γ' π M M' → CompGC {X = X} Γ Γ' π (var M) (var M')
-    sub     : {π : Wk Γ Γ'} {W₁ : Comp (Γ ∙ `V) X} {W₂ : Comp Γ X} {W₁' : Comp (Γ' ∙ `V) X} {W₂' : Comp Γ' X}
+    sub-cong : {π : Wk Γ Γ'} {W₁ : Comp (Γ ∙ `V) X} {W₂ : Comp Γ X}
+              {W₁' : Comp (Γ' ∙ `V) X} {W₂' : Comp Γ' X}
            → (WG₁ : CompGC (Γ ∙ `V) (Γ' ∙ `V) (wk-cong π) W₁ W₁') → (WG₂ : CompGC Γ Γ' π W₂ W₂')
            → CompGC Γ Γ' π (sub W₁ W₂) (sub W₁' W₂')
+    sub-wk-gc : {π : Wk Γ Γ'} {W₁ : Comp (Γ ∙ `V) X} {W₂ : Comp Γ X}
+            {W₁' : Comp Γ' X} {W₂' : Comp Γ' X}
+         → (WG₁ : CompGC (Γ ∙ `V) Γ' (wk-wk π) W₁ W₁') → (WG₂ : CompGC Γ Γ' π W₂ W₂')
+         → CompGC Γ Γ' π (sub W₁ W₂) (sub (wk-comp (wk-wk wk-id) W₁') W₂')
 
-  record GCMem (i : Γ ∋ X) : Set where
-    field
-      gmwk   : Wk Γ (ε ∙ X)
-      gmgc   : MemGC Γ (ε ∙ X) gmwk i h
-
-  record GCVal (M : Val Γ X) : Set where
-    field
-      gvcx   : Ctx
-      gvwk   : Wk Γ gvcx
-      gvtm   : Val gvcx X
-      gvgc   : ValGC Γ gvcx gvwk M gvtm
-
-  record GCComp (W : Comp Γ X) : Set where
-    field
-      gccx   : Ctx
-      gcwk   : Wk Γ gccx
-      gctm   : Comp gccx X
-      gcgc   : CompGC Γ gccx gcwk W gctm
-
-  open GCMem
   open Cx using (h ; t)
 
   memgc-uniq₀ : {Γ : Ctx} {Γ' Γ'' : Ctx} {π : Wk Γ Γ'} {π' : Wk Γ Γ''} {i : Γ ∋ X} {i' : Γ' ∋ X} {i'' : Γ'' ∋ X}
@@ -585,6 +605,89 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   memgc-wk-eq {Δ = Δ ∙ x₆ ∙ x₄ ∙ x ∙ X} {Γ = Γ ∙ x₇ ∙ x₅ ∙ x₁} {Γ' = ε ∙ x₂} {Γ'' = ε ∙ x₃} {π₀ = wk-wk π₀} {π = wk-wk π} {π' = wk-wk π'} {i = t i} {i' = h} {i'' = h} MG₁ MG₂ = refl
 
   mutual
+      valgc-wk-eq : {Δ Γ Γ' Γ'' : Ctx} {π₀ : Wk Δ Γ} {π : Wk Γ Γ'} {π' : Wk Δ Γ''} {M : Val Γ X} {M' : Val Γ' X} {M'' : Val Γ'' X}
+                  → (MG₁ : ValGC Γ Γ' π M M') → (MG₂ : ValGC Δ Γ'' π' (wk-val π₀ M) M'')
+                  → Γ' ≡ Γ''
+
+      valgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = var i'} {M'' = M''} (var MG₁) (var MG₂) = memgc-wk-eq MG₁ MG₂
+      valgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = lam W'} {M'' = M''} (lam-wk WG₁) (lam-wk WG₂) = compgc-wk-eq WG₁ WG₂
+      valgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = ε} {Γ'' = ε} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = lam W'} {M'' = M''} (lam-wk {Γ = Γ} {π = π} WG₁) (lam-cong {Γ = Δ} {π = π'} WG₂) = refl
+      valgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = ε} {Γ'' = Γ'' ∙ X''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = lam W'} {M'' = M''} (lam-wk {Γ = Γ} {π = π} WG₁) (lam-cong {Γ = Δ} {π = π'} WG₂) =
+        let
+          IH = compgc-wk-eq WG₁ WG₂
+        in
+        {!!}
+
+      valgc-wk-eq {Δ = Δ ∙ Y} {Γ = Γ ∙ X} {Γ' = Cx.ε Cx.∙ X'} {Γ'' = Cx.ε} {π₀ = π₀} {π = wk-cong π₁} {π' = wk-wk π''} {M = M} {M' = lam W'} {M'' = lam W''} (lam-wk {π = π} WG₁) (lam-cong {π = π'} WG₂) = {!!}
+
+      valgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ' Cx.∙ x Cx.∙ X'} {Γ'' = Cx.ε} {π₀ = π₀} {π = wk-cong π₁} {π' = π'} {M = M} {M' = lam W'} {M'' = M''} (lam-wk {Γ = Γ} {π = π} WG₁) (lam-cong {Γ = Δ} {π = π'} WG₂) =
+        let
+          IH = compgc-wk-eq WG₁ WG₂
+        in
+        {!!}
+
+      valgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ' Cx.∙ X'} {Γ'' = Cx.ε} {π₀ = π₀} {π = wk-wk π₁} {π' = π'} {M = M} {M' = lam W'} {M'' = M''} (lam-wk {Γ = Γ} {π = π} WG₁) (lam-cong {Γ = Δ} {π = π'} WG₂) = {!!}
+
+      valgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ' ∙ X'} {Γ'' = Γ'' ∙ X''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = lam W'} {M'' = M''} (lam-wk {Γ = Γ} {π = π} WG₁) (lam-cong {Γ = Δ} {π = π'} WG₂) = {!!}
+      valgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = lam W'} {M'' = M''} (lam-cong WG₁) (lam-wk WG₂) = {!!}
+      valgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = lam W'} {M'' = M''} (lam-cong WG₁) (lam-cong WG₂) = pred-ctx-eq (compgc-wk-eq WG₁ WG₂)
+      valgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = pair M₁' M₂'} {M'' = M''} (pair MG₁₁ MG₂₁) (pair MG₁₂ MG₂₂) = valgc-wk-eq MG₁₁ MG₁₂
+      valgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = pm M' N'} {M'' = M''} (pm-cong-cong MG₁ NG₁) (pm-cong-cong MG₂ NG₂) = valgc-wk-eq MG₁ MG₂
+      valgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = pm M' N'} {M'' = M''} (pm-cong-cong MG₁ NG₁) (pm-cong-wk MG₂ NG₂) = valgc-wk-eq MG₁ MG₂
+      valgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = pm M' N'} {M'' = M''} (pm-cong-cong MG₁ NG₁) (pm-wk-cong MG₂ NG₂) = valgc-wk-eq MG₁ MG₂
+      valgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = pm M' N'} {M'' = M''} (pm-cong-cong MG₁ NG₁) (pm-wk-wk MG₂ NG₂) = valgc-wk-eq MG₁ MG₂
+      valgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = pm M' N'} {M'' = M''} (pm-cong-wk MG₁ NG₁) (pm-cong-cong MG₂ NG₂) = valgc-wk-eq MG₁ MG₂
+      valgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = pm M' N'} {M'' = M''} (pm-cong-wk MG₁ NG₁) (pm-cong-wk MG₂ NG₂) = valgc-wk-eq MG₁ MG₂
+      valgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = pm M' N'} {M'' = M''} (pm-cong-wk MG₁ NG₁) (pm-wk-cong MG₂ NG₂) = valgc-wk-eq MG₁ MG₂
+      valgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = pm M' N'} {M'' = M''} (pm-cong-wk MG₁ NG₁) (pm-wk-wk MG₂ NG₂) = valgc-wk-eq MG₁ MG₂
+      valgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = pm M' N'} {M'' = M''} (pm-wk-cong MG₁ NG₁) (pm-cong-cong MG₂ NG₂) = valgc-wk-eq MG₁ MG₂
+      valgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = pm M' N'} {M'' = M''} (pm-wk-cong MG₁ NG₁) (pm-cong-wk MG₂ NG₂) = valgc-wk-eq MG₁ MG₂
+      valgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = pm M' N'} {M'' = M''} (pm-wk-cong MG₁ NG₁) (pm-wk-cong MG₂ NG₂) = valgc-wk-eq MG₁ MG₂
+      valgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = pm M' N'} {M'' = M''} (pm-wk-cong MG₁ NG₁) (pm-wk-wk MG₂ NG₂) = valgc-wk-eq MG₁ MG₂
+      valgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = pm M' N'} {M'' = M''} (pm-wk-wk MG₁ NG₁) (pm-cong-cong MG₂ NG₂) = valgc-wk-eq MG₁ MG₂
+      valgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = pm M' N'} {M'' = M''} (pm-wk-wk MG₁ NG₁) (pm-cong-wk MG₂ NG₂) = valgc-wk-eq MG₁ MG₂
+      valgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = pm M' N'} {M'' = M''} (pm-wk-wk MG₁ NG₁) (pm-wk-cong MG₂ NG₂) = valgc-wk-eq MG₁ MG₂
+      valgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = pm M' N'} {M'' = M''} (pm-wk-wk MG₁ NG₁) (pm-wk-wk MG₂ NG₂) = valgc-wk-eq MG₁ MG₂
+      valgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {M = M} {M' = unit} {M'' = M''} unit unit = refl
+
+
+      compgc-wk-eq : {Δ Γ Γ' Γ'' : Ctx} {π₀ : Wk Δ Γ} {π : Wk Γ Γ'} {π' : Wk Δ Γ''} {W : Comp Γ X} {W' : Comp Γ' X} {W'' : Comp Γ'' X}
+                  → (WG₁ : CompGC Γ Γ' π W W') → (WG₂ : CompGC Δ Γ'' π' (wk-comp π₀ W) W'')
+                  → Γ' ≡ Γ''
+
+      compgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = return M'} {W'' = W''} (return MG₁) (return MG₂) = valgc-wk-eq MG₁ MG₂
+      compgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = pm M' W'} {W'' = W''} (pm-cong-cong MG₁ WG₁) (pm-cong-cong MG₂ WG₂) = valgc-wk-eq MG₁ MG₂
+      compgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = pm M' W'} {W'' = W''} (pm-cong-cong MG₁ WG₁) (pm-cong-wk MG₂ WG₂) = valgc-wk-eq MG₁ MG₂
+      compgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = pm M' W'} {W'' = W''} (pm-cong-cong MG₁ WG₁) (pm-wk-cong MG₂ WG₂) = valgc-wk-eq MG₁ MG₂
+      compgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = pm M' W'} {W'' = W''} (pm-cong-cong MG₁ WG₁) (pm-wk-wk MG₂ WG₂) = valgc-wk-eq MG₁ MG₂
+      compgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = pm M' W'} {W'' = W''} (pm-cong-wk MG₁ WG₁) (pm-cong-cong MG₂ WG₂) = valgc-wk-eq MG₁ MG₂
+      compgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = pm M' W'} {W'' = W''} (pm-cong-wk MG₁ WG₁) (pm-cong-wk MG₂ WG₂) = valgc-wk-eq MG₁ MG₂
+      compgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = pm M' W'} {W'' = W''} (pm-cong-wk MG₁ WG₁) (pm-wk-cong MG₂ WG₂) = valgc-wk-eq MG₁ MG₂
+      compgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = pm M' W'} {W'' = W''} (pm-cong-wk MG₁ WG₁) (pm-wk-wk MG₂ WG₂) = valgc-wk-eq MG₁ MG₂
+      compgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = pm M' W'} {W'' = W''} (pm-wk-cong MG₁ WG₁) (pm-cong-cong MG₂ WG₂) = valgc-wk-eq MG₁ MG₂
+      compgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = pm M' W'} {W'' = W''} (pm-wk-cong MG₁ WG₁) (pm-cong-wk MG₂ WG₂) = valgc-wk-eq MG₁ MG₂
+      compgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = pm M' W'} {W'' = W''} (pm-wk-cong MG₁ WG₁) (pm-wk-cong MG₂ WG₂) = valgc-wk-eq MG₁ MG₂
+      compgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = pm M' W'} {W'' = W''} (pm-wk-cong MG₁ WG₁) (pm-wk-wk MG₂ WG₂) = valgc-wk-eq MG₁ MG₂
+      compgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = pm M' W'} {W'' = W''} (pm-wk-wk MG₁ WG₁) (pm-cong-cong MG₂ WG₂) = valgc-wk-eq MG₁ MG₂
+      compgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = pm M' W'} {W'' = W''} (pm-wk-wk MG₁ WG₁) (pm-cong-wk MG₂ WG₂) = valgc-wk-eq MG₁ MG₂
+      compgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = pm M' W'} {W'' = W''} (pm-wk-wk MG₁ WG₁) (pm-wk-cong MG₂ WG₂) = valgc-wk-eq MG₁ MG₂
+      compgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = pm M' W'} {W'' = W''} (pm-wk-wk MG₁ WG₁) (pm-wk-wk MG₂ WG₂) = valgc-wk-eq MG₁ MG₂
+      compgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = push W₁' W₂'} {W'' = W''} (push-cong WG₁₁ WG₂₁) (push-cong WG₁₂ WG₂₂) = compgc-wk-eq WG₁₁ WG₁₂
+      compgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = push W₁' W₂'} {W'' = W''} (push-cong WG₁₁ WG₂₁) (push-wk WG₁₂ WG₂₂) = compgc-wk-eq WG₁₁ WG₁₂
+      compgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = push W₁' W₂'} {W'' = W''} (push-wk WG₁₁ WG₂₁) (push-cong WG₁₂ WG₂₂) = compgc-wk-eq WG₁₁ WG₁₂
+      compgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = push W₁' W₂'} {W'' = W''} (push-wk WG₁₁ WG₂₁) (push-wk WG₁₂ WG₂₂) = compgc-wk-eq WG₁₁ WG₁₂
+      compgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = app M' N'} {W'' = W''} (app MG₁ NG₁) (app MG₂ NG₂) = valgc-wk-eq MG₁ MG₂
+      compgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = var M'} {W'' = W''} (var MG₁) (var MG₂) = valgc-wk-eq MG₁ MG₂
+      compgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = sub W₁' W₂'} {W'' = W''} (sub-cong WG₁₁ WG₂₁) (sub-cong WG₁₂ WG₂₂) = compgc-wk-eq WG₂₁ WG₂₂
+      compgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = sub W₁' W₂'} {W'' = W''} (sub-cong WG₁₁ WG₂₁) (sub-wk-gc WG₁₂ WG₂₂) = compgc-wk-eq WG₂₁ WG₂₂
+      compgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = sub W₁' W₂'} {W'' = W''} (sub-wk-gc WG₁₁ WG₂₁) (sub-cong WG₁₂ WG₂₂) = compgc-wk-eq WG₂₁ WG₂₂
+      compgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = sub W₁' W₂'} {W'' = W''} (sub-wk-gc WG₁₁ WG₂₁) (sub-wk-gc WG₁₂ WG₂₂) = compgc-wk-eq WG₂₁ WG₂₂
+-}
+
+
+
+{-
+  mutual
     valgc-wk-eq : {Δ Γ Γ' Γ'' : Ctx} {π₀ : Wk Δ Γ} {π : Wk Γ Γ'} {π' : Wk Δ Γ''} {M : Val Γ X} {M' : Val Γ' X} {M'' : Val Γ'' X}
                 → (MG₁ : ValGC Γ Γ' π M M') → (MG₂ : ValGC Δ Γ'' π' (wk-val π₀ M) M'')
                 → Γ' ≡ Γ''
@@ -609,6 +712,7 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     compgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = W'} {W'' = W''} (app M₁ N₁) (app M₂ N₂) = valgc-wk-eq M₁ M₂
     compgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = W'} {W'' = W''} (var M₁) (var M₂) = valgc-wk-eq M₁ M₂
     compgc-wk-eq {Δ = Δ} {Γ = Γ} {Γ' = Γ'} {Γ'' = Γ''} {π₀ = π₀} {π = π} {π' = π'} {W = W} {W' = W'} {W'' = W''} (sub W₁₁ W₂₁) (sub W₁₂ W₂₂) = compgc-wk-eq W₂₁ W₂₂
+-}
 
   -------
 
@@ -694,12 +798,15 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                   ≅ Comp.sub (subst (λ x → x) (H.≅-to-type-≡ M≅M') M) (subst (λ x → x) (H.≅-to-type-≡ N≅N') N)
   subst-lemma-sub M N M' N' refl _≅_.refl _≅_.refl = _≅_.refl
 
-
+{-
   memgc-heq : {Δ Γ Γ' Γ'' : Ctx} {π₀ : Wk Δ Γ} {π : Wk Γ Γ'} {π' : Wk Δ Γ''} {i : Γ ∋ X} {i' : Γ' ∋ X} {i'' : Γ'' ∋ X}
                → (MG₁ : MemGC Γ Γ' π i i') → (MG₂ : MemGC Δ Γ'' π' (wk-mem π₀ i) i'')
                → (i' ≅ i'')
   memgc-heq {Δ = Δ} {Γ = Γ} {Γ' = ε ∙ X} {Γ'' = ε ∙ X} {π₀ = π₀} {π = π} {π' = π'} {i = i} {i' = h {A = X}} {i'' = h} MG₁ MG₂ = _≅_.refl
+-}
 
+
+{-
   mutual
     valgc-heq : {Δ Γ Γ' Γ'' : Ctx} {π₀ : Wk Δ Γ} {π : Wk Γ Γ'} {π' : Wk Δ Γ''} {M : Val Γ X} {M' : Val Γ' X} {M'' : Val Γ'' X}
                 → (MG₁ : ValGC Γ Γ' π M M') → (MG₂ : ValGC Δ Γ'' π' (wk-val π₀ M) M'')
@@ -981,12 +1088,59 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       in
       goal
 
+  record GCMem (i : Γ ∋ X) : Set where
+    field
+      gmwk   : Wk Γ (ε ∙ X)
+      gmgc   : MemGC Γ (ε ∙ X) gmwk i Cx.h
+
+  record GCVal (M : Val Γ X) : Set where
+    field
+      gvcx   : Ctx
+      gvwk   : Wk Γ gvcx
+      gvtm   : Val gvcx X
+      gvgc   : ValGC Γ gvcx gvwk M gvtm
+
+  record GCComp (W : Comp Γ X) : Set where
+    field
+      gccx   : Ctx
+      gcwk   : Wk Γ gccx
+      gctm   : Comp gccx X
+      gcgc   : CompGC Γ gccx gcwk W gctm
+
+  open GCMem
+  open GCVal
+  open GCComp
 
 
   mem-gc : (i : Γ ∋ X) → GCMem i
   mem-gc h = record { gmwk = wk-cong wk-wk-ε ; gmgc = h }
   mem-gc (t i) = record { gmwk = wk-wk (gmwk (mem-gc i)) ; gmgc = t (gmgc (mem-gc i)) }
 
+  mutual
+
+    val-gc : (M : Val Γ X) → GCVal M
+    val-gc (var {A = X} i) =
+      let
+        IH = mem-gc i
+      in
+      record { gvcx = ε ∙ X ; gvwk = gmwk IH ; gvtm = var Cx.h ; gvgc = var (gmgc IH) }
+    val-gc (lam W) with comp-gc W
+    ... | IH with gccx IH | gcwk IH | gctm IH | gcgc IH
+    ... | Δ ∙ X | wk-cong π | gctm₁ | gcgc₁ = record { gvcx = Δ ; gvwk = π ; gvtm = lam gctm₁ ; gvgc = lam gcgc₁ }
+    ... | ε | wk-wk π | gctm₁ | gcgc₁  = record { gvcx = ε ; gvwk = π ; gvtm = lam (wk-comp (wk-wk wk-ε) gctm₁) ; gvgc = lam {!!} }
+    ... | Δ ∙ x | wk-wk π | gctm₁ | gcgc₁  = {!!}
+    --record { gvcx = Δ ; gvwk = π ; gvtm = {!!} ; gvgc = {!!} }
+      --let
+      --  IH = comp-gc W
+      --  π = gcwk IH
+      --in
+      --record { gvcx = gccx IH ; gvwk = {!!} ; gvtm = {!!} ; gvgc = {!!} }
+    val-gc (pair M₁ M₂) = {!!}
+    val-gc (pm M N) = {!!}
+    val-gc unit = {!!}
+
+    comp-gc : (W : Comp Γ X) → GCComp W
+    comp-gc W = {!!}
 
 
 {-
@@ -1213,4 +1367,582 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
               π₂'' = proj₂ (proj₂ (proj₂ j))
             in
             Γ' , sub (wk-comp (wk-wk π₁'') W₁') (wk-comp π₂'' W₂') , π
+-}
+-}
+
+  record MemStr (i : Γ ∋ X) : Set where
+    field
+      ↓Γ   : Ctx
+      ↓π   : Wk Γ ↓Γ
+      ↓i   : ↓Γ ∋ X
+      ↓≡   : i ≡ wk-mem ↓π ↓i
+
+  record ValStr (M : Val Γ X) : Set where
+    field
+      ↓Γ   : Ctx
+      ↓π   : Wk Γ ↓Γ
+      ↓M   : Val ↓Γ X
+      ↓≡   : M ≡ wk-val ↓π ↓M
+
+  record CompStr (W : Comp Γ X) : Set where
+    field
+      ↓Γ   : Ctx
+      ↓π   : Wk Γ ↓Γ
+      ↓W   : Comp ↓Γ X
+      ↓≡   : W ≡ wk-comp ↓π ↓W
+
+  open MemStr
+  open ValStr
+  open CompStr
+
+  record MemGC (i : Γ ∋ X) : Set where
+    field
+      mstr   : MemStr i
+      mgcf   : (mstr' : MemStr i) → Wk (↓Γ mstr') (↓Γ mstr)
+
+  record ValGC (M : Val Γ X) : Set where
+    field
+      vstr   : ValStr M
+      vgcf   : (vstr' : ValStr M) → Wk (↓Γ vstr') (↓Γ vstr)
+
+  record CompGC (W : Comp Γ X) : Set where
+    field
+      cstr   : CompStr W
+      cgcf   : (cstr' : CompStr W) → Wk (↓Γ cstr') (↓Γ cstr)
+
+  open MemGC
+  open ValGC
+  open CompGC
+
+  ---
+
+  wk-lem-0 : (π : Wk Γ' (Γ'' ∙ X)) → (Γ ≡ Γ') ⊎ (Γ ∙ Y ≡ Γ') → Wk Γ Γ''
+  wk-lem-0 {Γ'' = Γ''} {X = X} π (inj₁ eq) =
+    let
+      π' = subst (λ x → Wk x (Γ'' ∙ X)) (sym eq) (π)
+    in
+    wk-prev {X = X} (wk-wk π')
+  wk-lem-0 {Γ'' = Γ''} {X = X} π (inj₂ eq) =
+    let
+      π' = subst (λ x → Wk x (Γ'' ∙ X)) (sym eq) (π)
+    in
+    wk-prev π'
+
+
+  eq-lem-1 : (Γ ∙ X ≡ Γ' ∙ Y) → (Γ ≡ Γ')
+  eq-lem-1 {Γ = Γ} {Γ' = Γ'} refl = refl
+
+  wk-lem-1 : (π : Wk Γ' Γ'') → (Γ ≡ Γ') ⊎ (Γ ∙ Y ≡ Γ') → Wk Γ Γ''
+  wk-lem-1 {Γ'' = Γ''} π (inj₁ eq) = subst (λ x → Wk x Γ'') (sym eq) π
+  wk-lem-1 {Γ'' = Γ''} (wk-cong π) (inj₂ eq) =
+    let
+      eq' = eq-lem-1 eq
+    in
+    {!!}
+  wk-lem-1 {Γ'' = Γ''} (wk-wk π) (inj₂ eq) = {!!}
+
+
+  ---
+
+  veq : (π : Wk Γ Γ') → (i : Γ ∋ X) → (M : Val Γ'  X) → var i ≡ wk-val π M → Σ[ i' ∈ Γ' ∋ X ] i ≡ wk-mem π i'
+  veq wk-ε () M eq
+  veq (wk-cong π) Cx.h (var Cx.h) refl = h , refl
+  veq (wk-cong π) (Cx.t i) (var (Cx.t i₁)) refl = (t i₁) , refl
+  veq (wk-wk π) Cx.h (var Cx.h) ()
+  veq (wk-wk π) Cx.h (var (Cx.t i)) ()
+  veq (wk-wk π) (Cx.t i) (var Cx.h) refl = h , refl
+  veq (wk-wk π) (Cx.t i) (var (Cx.t i₁)) refl = (t i₁) , refl
+
+  vs-to-ms : (i : Γ ∋ X) → (vs : ValStr (var i)) → Σ[ ms ∈ MemStr i ] ↓Γ vs ≡ ↓Γ ms
+  vs-to-ms i record { ↓Γ = ↓Γ₁ ; ↓π = ↓π₁ ; ↓M = ↓M₁ ; ↓≡ = ↓≡₁ } =
+    let
+      v = veq ↓π₁ i ↓M₁ ↓≡₁
+    in
+    record { ↓Γ = ↓Γ₁ ; ↓π = ↓π₁ ; ↓i = proj₁ v ; ↓≡ = proj₂ v } , refl
+
+  -- lam-cong-eq : {Γ Γ' : Ctx} → (π : Wk Γ Γ') → (W : Comp (Γ ∙ X) Y) → (W' : Comp (Γ' ∙ X) Y) → (vs : ValStr (lam W)) → W ≡ wk-comp (wk-cong π) W' → Σ[ cs ∈ CompStr W ] (↓Γ vs) ∙ X ≡ ↓Γ cs
+  -- lam-cong-eq wk-ε W W' record { ↓Γ = ↓Γ₁ ; ↓π = wk-ε ; ↓M = ↓M₁ ; ↓≡ = ↓≡₁ } eq = (record { ↓Γ = ε ; ↓π = wk-wk wk-ε ; ↓W = {!!} ; ↓≡ = {!!} }) , {!!}
+  -- lam-cong-eq (wk-cong π) W W' record { ↓Γ = ↓Γ₁ ; ↓π = ↓π₁ ; ↓M = ↓M₁ ; ↓≡ = ↓≡₁ } eq = {!!}
+  -- lam-cong-eq (wk-wk π) W W' record { ↓Γ = ↓Γ₁ ; ↓π = ↓π₁ ; ↓M = ↓M₁ ; ↓≡ = ↓≡₁ } eq = {!!}
+
+  lam-to-cs : (W : Comp (Γ ∙ X) Y) → (vs : ValStr (lam W)) → Σ[ cs ∈ CompStr W ] ((↓Γ vs ≡ ↓Γ cs) ⊎ ((↓Γ vs) ∙ X ≡ ↓Γ cs))
+  lam-to-cs {X = X} W record { ↓Γ = ↓Γ₁ ; ↓π = wk-ε ; ↓M = (lam W₀) ; ↓≡ = ↓≡₁ } = --{!!}
+    (record { ↓Γ = ε ∙ X ; ↓π = wk-id ; ↓W = W₀ ; ↓≡ = {!gg-u!} }) , inj₂ (ε ∙ X ∎) --(inj₁ refl)
+  lam-to-cs W record { ↓Γ = ↓Γ₁ ; ↓π = (wk-cong ↓π₁) ; ↓M = ↓M₁ ; ↓≡ = ↓≡₁ } = {!!}
+  lam-to-cs W record { ↓Γ = ↓Γ₁ ; ↓π = (wk-wk ↓π₁) ; ↓M = ↓M₁ ; ↓≡ = ↓≡₁ } = {!!}
+
+  -- lam-to-cs' : (W : Comp (Γ ∙ X) Y) → (vs : ValStr (lam W)) → Σ[ cs ∈ CompStr W ] ((↓Γ vs ≡ ↓Γ cs) ⊎ ((↓Γ vs) ∙ X ≡ ↓Γ cs))
+  -- lam-to-cs'
+
+  --record { cstr = record { ↓Γ = ↓Γ₁ ∙ X₁ ; ↓π = wk-wk ↓π₁ ; ↓W = ↓W₁ ; ↓≡ = ↓≡₁ } ; cgcf = cgcf₁ } =
+
+  -- W  : Comp (Γ ∙ X) Y
+  -- π  : Wk Γ (Γ' ∙ X')
+  -- W' : Comp (Γ' ∙ X') Y
+  -- eq : W ≡ wk-comp (wk-wk π) W'
+  -- cg : (cstr : CompStr W) → (Wk ↓Γ cstr) (Γ' ∙ X')
+
+  -- lcs-lemma : (W  : Comp (Γ ∙ X) Y) → (π  : Wk Γ (Γ' ∙ X')) → (W' : Comp (Γ' ∙ X') Y) → (eq : W ≡ wk-comp (wk-wk π) W') → (cg : (cstr : CompStr W) → (Wk (↓Γ cstr) (Γ' ∙ X')))
+  --             → (vstr₁ : ValStr (lam {A = X} (wk-comp (wk-wk π) W'))) → Σ[ cstr₁ ∈ CompStr W ] (↓Γ cstr₁ ≡ ↓Γ vstr₁)
+  -- lcs-lemma W π W' eq cg vstr₁ =
+  --   let
+  --     eq2 = ↓≡ vstr₁
+  --   in
+  --   (record { ↓Γ = ↓Γ vstr₁ ; ↓π = wk-wk (↓π vstr₁) ; ↓W = {!!} ; ↓≡ = {!!} }) , refl
+
+  -- lcs-lemma : (W  : Comp (Γ ∙ X) Y) → (π  : Wk Γ (Γ' ∙ X')) → (W' : Comp (Γ' ∙ X') Y) → (eq : W ≡ wk-comp (wk-wk π) W') → (cg : (cstr : CompStr W) → (Wk (↓Γ cstr) (Γ' ∙ X')))
+  --             → (vstr₁ : ValStr (lam {A = X} (wk-comp (wk-wk π) W'))) → Wk (↓Γ vstr₁) (Γ' ∙ X')
+  -- lcs-lemma W π W' eq cg vstr₁ =
+  --   let
+  --     eq2 = ↓≡ vstr₁
+  --   in
+  --   {!!}
+
+  -- mutual
+  --   leq : {W : Comp (Γ ∙ X) Y} → (vs : ValStr (lam W)) → Σ[ W' ∈ Comp ((↓Γ vs) ∙ X) Y ] ((↓M vs) ≡ lam W')
+  --   leq {W = W} record { ↓Γ = ↓Γ₁ ; ↓π = ↓π₁ ; ↓M = ↓M₁ ; ↓≡ = ↓≡₁ } with lam-to-comp-str (record { ↓Γ = ↓Γ₁ ; ↓π = ↓π₁ ; ↓M = ↓M₁ ; ↓≡ = ↓≡₁ })
+  --   ... | record { ↓Γ = ↓Γ₂ ; ↓π = ↓π₂ ; ↓W = ↓W₂ ; ↓≡ = ↓≡₂ } =
+  --     let
+  --       eq0 = subst (λ x → lam x ≡ wk-val ↓π₁ ↓M₁) ↓≡₂ ↓≡₁
+  --     in
+  --     {!!}
+
+  --   lam-to-comp-str : {W : Comp (Γ ∙ X) Y} → ValStr (lam W) → CompStr W
+  --   lam-to-comp-str {W = W} record { ↓Γ = ↓Γ₁ ; ↓π = ↓π₁ ; ↓M = ↓M₁ ; ↓≡ = ↓≡₁ } = record { ↓Γ = ↓Γ₁ ; ↓π = wk-wk ↓π₁ ; ↓W = {!!} ; ↓≡ = {!!} }
+
+  mutual
+    leq : {W : Comp (Γ ∙ X) Y} → (vgc : ValGC (lam W)) → Σ[ W' ∈ Comp ((↓Γ (vstr vgc)) ∙ X) Y ] ((↓M (vstr vgc)) ≡ lam W')
+    leq {W = W} record { vstr = record { ↓Γ = ↓Γ₁ ; ↓π = ↓π₁ ; ↓M = ↓M₁ ; ↓≡ = ↓≡₁ } ; vgcf = vgcf₁ } with lam-to-comp-gc (record { vstr = record { ↓Γ = ↓Γ₁ ; ↓π = ↓π₁ ; ↓M = ↓M₁ ; ↓≡ = ↓≡₁ } ; vgcf = vgcf₁ })
+    ... | record { cstr = record { ↓Γ = ↓Γ₂ ; ↓π = wk-cong ↓π₂ ; ↓W = ↓W₁ ; ↓≡ = ↓≡₂ } ; cgcf = cgcf₂ } =
+      let
+        --eq0 : lam (wk-comp (wk-cong ↓π₂) ↓W₁) ≡ wk-val ↓π₁ ↓M₁
+        eq0 : wk-val ↓π₂ (lam ↓W₁) ≡ wk-val ↓π₁ ↓M₁
+        eq0 = subst (λ x → lam x ≡ wk-val ↓π₁ ↓M₁) ↓≡₂ ↓≡₁
+      in
+      {!!}
+    ... | record { cstr = record { ↓Γ = ↓Γ₂ ; ↓π = wk-wk ↓π₂ ; ↓W = ↓W₁ ; ↓≡ = ↓≡₂ } ; cgcf = cgcf₂ } =
+      let
+        eq0 : lam (wk-comp (wk-wk ↓π₂) ↓W₁) ≡ wk-val ↓π₁ ↓M₁
+        eq0 = subst (λ x → lam x ≡ wk-val ↓π₁ ↓M₁) ↓≡₂ ↓≡₁
+        eq1 : lam {A = X} (wk-comp (wk-wk ↓π₂) ↓W₁) ≡ wk-val ↓π₂ (lam (wk-comp (wk-wk wk-id) ↓W₁))
+        eq1 = {!!}
+        eq2 : wk-val ↓π₂ (lam (wk-comp (wk-wk wk-id) ↓W₁)) ≡ wk-val ↓π₁ ↓M₁
+        eq2 = {!!}
+        cgc : CompStr W
+        cgc = record { ↓Γ = {!!} ; ↓π = {!!} ; ↓W = {!!} ; ↓≡ = {!!} }
+        vgc : ValStr (lam W)
+        vgc = record { ↓Γ = ↓Γ₂ ; ↓π = ↓π₂ ; ↓M = lam (wk-comp (wk-wk wk-id) ↓W₁) ; ↓≡ = trans (cong lam ↓≡₂) eq1 }
+        π = vgcf₁ vgc
+        eq3 : wk-val ↓π₂ (lam (wk-comp (wk-wk wk-id) ↓W₁)) ≡ wk-val (wk-trans ↓π₂ π ) ↓M₁
+        eq3 = {!!}
+      in
+      {!!}
+
+    lam-to-comp-gc : {W : Comp (Γ ∙ X) Y} → ValGC (lam W) → CompGC W
+    lam-to-comp-gc {W = W} vgc = {!!}
+
+  ---
+
+  wk-mem-wk : {Γ Γ' : Ctx} → (π : Wk Γ Γ') → (i : Γ ∋ X) → (i' : Γ' ∋ X) → (i ≡ wk-mem π i') → (t {B = Y} i) ≡ wk-mem (wk-wk π) i'
+  wk-mem-wk wk-ε () i' eq
+  wk-mem-wk (wk-cong π) Cx.h Cx.h refl = refl
+  wk-mem-wk (wk-cong π) Cx.h (Cx.t i') ()
+  wk-mem-wk (wk-cong π) (Cx.t i) Cx.h ()
+  wk-mem-wk (wk-cong π) (Cx.t i) (Cx.t i') refl = refl
+  wk-mem-wk (wk-wk π) Cx.h Cx.h ()
+  wk-mem-wk (wk-wk π) Cx.h (Cx.t i') ()
+  wk-mem-wk (wk-wk π) (Cx.t i) Cx.h refl = refl
+  wk-mem-wk (wk-wk π) (Cx.t i) (Cx.t i') refl = refl
+
+  wk-trans-wk-cong : (π : Wk Γ Γ') → (wk-wk {A = X} π) ≡ (wk-trans (wk-cong π) (wk-wk wk-id))
+  wk-trans-wk-cong {Γ = Γ} {Γ' = Γ'} π = sym wk-trans-id'
+
+  wk-comp-cong-wk : {Γ Γ' : Ctx} → (π : Wk Γ Γ') → (W : Comp Γ' X) → wk-comp (wk-wk {A = Y} π) W ≡ wk-comp (wk-cong π) (wk-comp (wk-wk wk-id) W)
+  wk-comp-cong-wk π W =
+                    wk-comp (wk-wk π) W
+                  ≡⟨ cong (λ x → wk-comp x W) (wk-trans-wk-cong π) ⟩
+                    wk-comp (wk-trans (wk-cong π) (wk-wk wk-id)) W
+                  ≡⟨ sym (wk-comp-trans W (wk-cong π) (wk-wk wk-id)) ⟩
+                    wk-comp (wk-cong π) (wk-comp (wk-wk wk-id) W) ∎
+
+
+  wk-comp-wk : {Γ Γ' : Ctx} → (π : Wk Γ Γ') → (W : Comp (Γ ∙ Y) X) → (W' : Comp Γ' X) → (W ≡ wk-comp (wk-wk π) W') → W ≡ wk-comp (wk-wk π) W'
+  wk-comp-wk wk-ε (return _) (return x) refl = refl
+  wk-comp-wk wk-ε (pm _ W) (pm x W') refl = refl
+  wk-comp-wk wk-ε (push W W₁) (push W' W'') refl = refl
+  wk-comp-wk wk-ε (app _ _) (app x x₁) refl = refl
+  wk-comp-wk wk-ε (var _) (var x) refl = refl
+  wk-comp-wk wk-ε (sub W W₁) (sub W' W'') refl = refl
+  wk-comp-wk (wk-cong π) (return _) (return x) refl = refl
+  wk-comp-wk (wk-cong π) (pm _ W) (pm x W') refl = refl
+  wk-comp-wk (wk-cong π) (push W W₁) (push W' W'') refl = refl
+  wk-comp-wk (wk-cong π) (app _ _) (app x x₁) refl = refl
+  wk-comp-wk (wk-cong π) (var _) (var x) refl = refl
+  wk-comp-wk (wk-cong π) (sub W W₁) (sub W' W'') refl = refl
+  wk-comp-wk (wk-wk π) (return _) (return x) refl = refl
+  wk-comp-wk (wk-wk π) (pm _ W) (pm x W') refl = refl
+  wk-comp-wk (wk-wk π) (push W W₁) (push W' W'') refl = refl
+  wk-comp-wk (wk-wk π) (app _ _) (app x x₁) refl = refl
+  wk-comp-wk (wk-wk π) (var _) (var x) refl = refl
+  wk-comp-wk (wk-wk π) (sub W W₁) (sub W' W'') refl = refl
+
+  wk-mem-str : {i : Γ ∋ X} → MemStr i → MemStr (t {B = Y} i)
+  wk-mem-str {i = i} record { ↓Γ = ↓Γ₁ ; ↓π = ↓π₁ ; ↓i = ↓i₁ ; ↓≡ = ↓≡₁ } = record { ↓Γ = ↓Γ₁ ; ↓π = wk-wk ↓π₁ ; ↓i = ↓i₁ ; ↓≡ = wk-mem-wk ↓π₁ i ↓i₁ ↓≡₁ }
+
+  wk-trans-wk-eq : (π : Wk Γ (Γ' ∙ X)) → (i : Γ' ∋ X') → wk-mem π (t i) ≡ wk-mem (wk-trans π (wk-wk wk-id)) i
+  wk-trans-wk-eq (wk-cong π) Cx.h = cong t (wk-mem-trans h π (wk-cong wk-id))
+  wk-trans-wk-eq (wk-cong π) (Cx.t i) = cong t (cong (λ x → wk-mem x (t i)) (sym (wk-trans-id' {π = π})))
+  wk-trans-wk-eq (wk-wk π) Cx.h = cong t (wk-trans-wk-eq π h)
+  wk-trans-wk-eq (wk-wk π) (Cx.t i) = cong t (wk-trans-wk-eq π (t i))
+
+  mstr-lemma : (i : Γ ∋ X) → (ms : MemStr i) → Wk (↓Γ ms) (ε ∙ X)
+  mstr-lemma {Γ = Γ ∙ X} {X = X} h record { ↓Γ = (↓Γ₁ ∙ X) ; ↓π = ↓π₁ ; ↓i = h ; ↓≡ = ↓≡₁ } = wk-cong wk-wk-ε
+  mstr-lemma {Γ = Γ Cx.∙ X} {X = X} Cx.h record { ↓Γ = (↓Γ₁ Cx.∙ X') ; ↓π = (wk-cong ↓π₁) ; ↓i = (Cx.t ↓i₁) ; ↓≡ = () }
+  mstr-lemma {Γ = Γ Cx.∙ X} {X = X} Cx.h record { ↓Γ = (↓Γ₁ Cx.∙ X') ; ↓π = (wk-wk ↓π₁) ; ↓i = (Cx.t ↓i₁) ; ↓≡ = () }
+  mstr-lemma (Cx.t i) record { ↓Γ = Cx.ε ; ↓π = ↓π₁ ; ↓i = () ; ↓≡ = ↓≡₁ }
+  mstr-lemma (Cx.t i) record { ↓Γ = (↓Γ₁ Cx.∙ X) ; ↓π = ↓π₁ ; ↓i = Cx.h ; ↓≡ = ↓≡₁ } = wk-cong wk-wk-ε
+  mstr-lemma (Cx.t i) record { ↓Γ = (↓Γ₁ Cx.∙ X) ; ↓π = (wk-cong ↓π₁) ; ↓i = (Cx.t ↓i₁) ; ↓≡ = refl } =
+    let
+      IH = mstr-lemma i (record { ↓Γ = ↓Γ₁ ; ↓π = ↓π₁ ; ↓i = ↓i₁ ; ↓≡ = refl })
+    in
+    wk-wk IH
+  mstr-lemma (Cx.t i) record { ↓Γ = (↓Γ₁ Cx.∙ X) ; ↓π = (wk-wk ↓π₁) ; ↓i = (Cx.t ↓i₁) ; ↓≡ = refl } =
+    let
+      IH = mstr-lemma i (record { ↓Γ = ↓Γ₁ ;
+                                  ↓π = wk-prev {X = X} (wk-wk ↓π₁) ;
+                                  ↓i = ↓i₁ ;
+                                  ↓≡ = wk-trans-wk-eq ↓π₁ ↓i₁ })
+    in
+    wk-wk IH
+
+  mutual
+
+    mem-gc : (i : Γ ∋ X) → MemGC i
+    mem-gc {Γ = Γ} {X = X} h =
+      record {
+      mstr = record {
+              ↓Γ = ε ∙ X ;
+              ↓π = wk-cong wk-wk-ε ;
+              ↓i = h ;
+              ↓≡ = refl
+              } ;
+      mgcf = λ mstr' →
+                mstr-lemma
+                (wk-mem (↓π mstr') (↓i mstr'))
+                (record {
+                  ↓Γ = ↓Γ mstr' ;
+                  ↓π = ↓π mstr' ;
+                  ↓i = ↓i mstr' ;
+                  ↓≡ = wk-mem (↓π mstr') (↓i mstr') ∎
+                  })
+      }
+    mem-gc {Γ = Γ ∙ Y} {X = X} (t i) =
+      let
+        IH = mem-gc i
+      in
+      record {
+       mstr = record { ↓Γ = ↓Γ (mstr IH) ; ↓π = wk-wk (↓π (mstr IH)) ; ↓i = ↓i (mstr IH) ; ↓≡ = wk-mem-wk (↓π (mstr IH)) i (↓i (mstr IH)) (↓≡ (mstr IH)) } ;
+       mgcf = λ mstr' → subst (λ x → Wk (↓Γ mstr') x) (sym (mem-gc-lemma i)) (mstr-lemma (t i) mstr')
+      }
+
+    mem-gc-lemma : (i : Γ ∋ X) → ↓Γ (mstr (mem-gc i)) ≡ ε ∙ X
+    mem-gc-lemma Cx.h = refl
+    mem-gc-lemma (Cx.t i) = mem-gc-lemma i
+
+  mutual
+
+    val-gc : (M : Val Γ X) → ValGC M
+    val-gc (var i) =
+      let
+        mgc = mem-gc i
+        f = mgcf mgc
+      in
+      record {
+       vstr =
+         record {
+          ↓Γ = ↓Γ (mstr mgc) ;
+          ↓π = ↓π (mstr mgc) ;
+          ↓M = var (↓i (mstr mgc)) ;
+          ↓≡ = cong var (↓≡ (mstr mgc))
+         } ;
+       vgcf = λ vstr' →
+                let
+                  ms = vs-to-ms i vstr'
+                  π' = f (proj₁ ms)
+                in
+                subst (λ x → Wk x (↓Γ (mstr mgc))) (sym (proj₂ ms)) π'
+      }
+    val-gc (lam W) with comp-gc W
+    ... | record { cstr = record { ↓Γ = ↓Γ₁ ∙ X₁ ; ↓π = wk-cong ↓π₁ ; ↓W = ↓W₁ ; ↓≡ = ↓≡₁ } ; cgcf = cgcf₁ } =
+      record {
+       vstr =
+         record {
+          ↓Γ = ↓Γ₁ ;
+          ↓π = ↓π₁ ;
+          ↓M = lam ↓W₁ ;
+          ↓≡ = cong lam ↓≡₁ } ;
+          vgcf = λ vstr' → {!-u!}
+      }
+    ... | record { cstr = record { ↓Γ = ε ; ↓π = wk-wk ↓π₁ ; ↓W = ↓W₁ ; ↓≡ = ↓≡₁ } ; cgcf = cgcf₁ } =
+      record {
+       vstr =
+         record {
+          ↓Γ = ε ;
+          ↓π = ↓π₁ ;
+          ↓M = lam (wk-comp (wk-wk wk-id) ↓W₁) ;
+          ↓≡ = cong lam (trans (wk-comp-wk ↓π₁ W ↓W₁ ↓≡₁) (wk-comp-cong-wk ↓π₁ ↓W₁)) } ;
+          vgcf = λ vstr' → wk-wk-ε
+      }
+
+    ... | record { cstr = record { ↓Γ = ↓Γ₁ ∙ X₁ ; ↓π = wk-wk ↓π₁ ; ↓W = ↓W₁ ; ↓≡ = ↓≡₁ } ; cgcf = cgcf₁ } =
+      record {
+       vstr =
+         record {
+          ↓Γ = ↓Γ₁ ∙ X₁ ;
+          ↓π = ↓π₁ ;
+          ↓M = lam (wk-comp (wk-wk wk-id) ↓W₁) ;
+          ↓≡ = cong lam (trans (wk-comp-wk ↓π₁ W ↓W₁ ↓≡₁) (wk-comp-cong-wk ↓π₁ ↓W₁)) } ;
+          vgcf = λ vstr' →
+                   let
+                     cstr₀ = lam-to-cs W vstr'
+                     π' = cgcf₁ (proj₁ cstr₀)
+                     eq = proj₂ cstr₀
+                     Γ' = ↓Γ vstr'
+                   in
+                   {!!} --wk-lem-0 {!!} eq
+      }
+
+      -- record {
+      --  vstr =
+      --    record {
+      --     ↓Γ = {!!} ;
+      --     ↓π = {!!} ;
+      --     ↓M = {!!} ;
+      --     ↓≡ = {!!} } ;
+      --     vgcf = {!!}
+      -- }
+    val-gc (pair M₁ M₂) = {!!}
+    val-gc (pm M N) = {!!}
+    val-gc unit = {!!}
+
+    comp-gc : (W : Comp Γ X) → CompGC W
+    comp-gc {Γ = Γ} {X = X} W = {!!}
+
+{-
+  mutual
+
+    val-gc : Val Γ X → Σ[ Γ' ∈ Ctx ] ((Val Γ' X) × (Wk Γ Γ'))
+    val-gc (var i) = let l = mem-gc i in proj₁ l , var (proj₁ (proj₂ l)) , proj₂ (proj₂ l)
+    val-gc (lam {A = X} W) with comp-gc W
+    ... | Γ' ∙ X , W' , wk-cong π' = Γ' , lam W' , π'
+    ... | ε , W' , wk-wk π' = ε , lam (wk-comp (wk-wk wk-id) W') , π'
+    ... | Γ' ∙ X , W' , wk-wk π' = Γ' ∙ X , lam (wk-comp (wk-wk wk-id) W') , π'
+    val-gc {Γ = Γ} (pair M₁ M₂) =
+            let
+              v₁ = val-gc M₁
+              M₁' = proj₁ (proj₂ v₁)
+              π₁ = proj₂ (proj₂ v₁)
+              v₂ = val-gc M₂
+              M₂' = proj₁ (proj₂ v₂)
+              π₂ = proj₂ (proj₂ v₂)
+              j = wk-join π₁ π₂
+              Γ' = proj₁ j
+              π = proj₁ (proj₂ j)
+              π₁' = proj₁ (proj₂ (proj₂ j))
+              π₂' = proj₂ (proj₂ (proj₂ j))
+            in
+            Γ' , pair (wk-val π₁' M₁') (wk-val π₂' M₂') , π
+    val-gc (pm {A = X} {B = Y} {C = Z} M N) with val-gc N
+    ... | Γ₂ , N₂ , wk-cong (wk-cong π₂) =
+            let
+              v = val-gc M
+              M₁ = proj₁ (proj₂ v)
+              π₁ = proj₂ (proj₂ v)
+              j = wk-join π₁ π₂
+              Γ' = proj₁ j
+              π = proj₁ (proj₂ j)
+              π₁' = proj₁ (proj₂ (proj₂ j))
+              π₂' = proj₂ (proj₂ (proj₂ j))
+            in
+            Γ' , pm (wk-val π₁' M₁) (wk-val (wk-cong (wk-cong π₂')) N₂) , π
+    ... | Γ₂ ∙ Y , N₂ , wk-cong (wk-wk π₂) =
+            let
+              v = val-gc M
+              M₁ = proj₁ (proj₂ v)
+              π₁ = proj₂ (proj₂ v)
+              j = wk-join π₁ π₂
+              Γ' = proj₁ j
+              π = proj₁ (proj₂ j)
+              π₁' = proj₁ (proj₂ (proj₂ j))
+              π₂' = proj₂ (proj₂ (proj₂ j))
+            in
+            Γ' , pm (wk-val π₁' M₁) (wk-val (wk-cong (wk-wk π₂')) N₂) , π
+    ... | Γ₂ , N₂ , wk-wk (wk-cong π₂) =
+            let
+              v = val-gc M
+              M₁ = proj₁ (proj₂ v)
+              π₁ = proj₂ (proj₂ v)
+              j = wk-join π₁ π₂
+              Γ' = proj₁ j
+              π = proj₁ (proj₂ j)
+              π₁' = proj₁ (proj₂ (proj₂ j))
+              π₂' = proj₂ (proj₂ (proj₂ j))
+            in
+            Γ' , pm (wk-val π₁' M₁) (wk-val (wk-wk (wk-cong π₂')) N₂) , π
+    ... | Γ₂ , N₂ , wk-wk (wk-wk π₂) =
+            let
+              v = val-gc M
+              M₁ = proj₁ (proj₂ v)
+              π₁ = proj₂ (proj₂ v)
+              j = wk-join π₁ π₂
+              Γ' = proj₁ j
+              π = proj₁ (proj₂ j)
+              π₁' = proj₁ (proj₂ (proj₂ j))
+              π₂' = proj₂ (proj₂ (proj₂ j))
+            in
+            Γ' , pm (wk-val π₁' M₁) (wk-val (wk-wk (wk-wk π₂')) N₂) , π
+    val-gc unit = ε , unit , wk-wk-ε
+
+    comp-gc : Comp Γ X → Σ[ Γ' ∈ Ctx ] ((Comp Γ' X) × (Wk Γ Γ'))
+    comp-gc (return M) = let v = val-gc M in proj₁ v , return (proj₁ (proj₂ v)) , proj₂ (proj₂ v)
+    comp-gc (pm {A = X} {B = Y} {C = Z} M W) with comp-gc W
+    ... | Γ₂ , W₂ , wk-cong (wk-cong π₂) =
+            let
+              v = val-gc M
+              M₁ = proj₁ (proj₂ v)
+              π₁ = proj₂ (proj₂ v)
+              j = wk-join π₁ π₂
+              Γ' = proj₁ j
+              π = proj₁ (proj₂ j)
+              π₁' = proj₁ (proj₂ (proj₂ j))
+              π₂' = proj₂ (proj₂ (proj₂ j))
+            in
+            Γ' , pm (wk-val π₁' M₁) (wk-comp (wk-cong (wk-cong π₂')) W₂) , π
+    ... | Γ₂ ∙ Y , W₂ , wk-cong (wk-wk π₂) =
+            let
+              v = val-gc M
+              M₁ = proj₁ (proj₂ v)
+              π₁ = proj₂ (proj₂ v)
+              j = wk-join π₁ π₂
+              Γ' = proj₁ j
+              π = proj₁ (proj₂ j)
+              π₁' = proj₁ (proj₂ (proj₂ j))
+              π₂' = proj₂ (proj₂ (proj₂ j))
+            in
+            Γ' , pm (wk-val π₁' M₁) (wk-comp (wk-cong (wk-wk π₂')) W₂) , π
+    ... | Γ₂ , W₂ , wk-wk (wk-cong π₂) =
+            let
+              v = val-gc M
+              M₁ = proj₁ (proj₂ v)
+              π₁ = proj₂ (proj₂ v)
+              j = wk-join π₁ π₂
+              Γ' = proj₁ j
+              π = proj₁ (proj₂ j)
+              π₁' = proj₁ (proj₂ (proj₂ j))
+              π₂' = proj₂ (proj₂ (proj₂ j))
+            in
+            Γ' , pm (wk-val π₁' M₁) (wk-comp (wk-wk (wk-cong π₂')) W₂) , π
+    ... | Γ₂ , W₂ , wk-wk (wk-wk π₂) =
+            let
+              v = val-gc M
+              M₁ = proj₁ (proj₂ v)
+              π₁ = proj₂ (proj₂ v)
+              j = wk-join π₁ π₂
+              Γ' = proj₁ j
+              π = proj₁ (proj₂ j)
+              π₁' = proj₁ (proj₂ (proj₂ j))
+              π₂' = proj₂ (proj₂ (proj₂ j))
+            in
+            Γ' , pm (wk-val π₁' M₁) (wk-comp (wk-wk (wk-wk π₂')) W₂) , π
+    comp-gc (push {A = X} {B = Z} W₁ W₂) with comp-gc W₂
+    ... | Γ₂' ∙ X , W₂' , wk-cong π₂' =
+            let
+              c = comp-gc W₁
+              W₁' = proj₁ (proj₂ c)
+              π₁' = proj₂ (proj₂ c)
+              j = wk-join π₁' π₂'
+              Γ' = proj₁ j
+              π = proj₁ (proj₂ j)
+              π₁'' = proj₁ (proj₂ (proj₂ j))
+              π₂'' = proj₂ (proj₂ (proj₂ j))
+            in
+            Γ' , push (wk-comp π₁'' W₁') (wk-comp (wk-cong π₂'') W₂') , π
+    ... | ε , W₂' , wk-wk π₂' =
+            let
+              c = comp-gc W₁
+              W₁' = proj₁ (proj₂ c)
+              π₁' = proj₂ (proj₂ c)
+              j = wk-join π₁' π₂'
+              Γ' = proj₁ j
+              π = proj₁ (proj₂ j)
+              π₁'' = proj₁ (proj₂ (proj₂ j))
+              π₂'' = proj₂ (proj₂ (proj₂ j))
+            in
+            Γ' , push (wk-comp π₁'' W₁') (wk-comp (wk-wk π₂'') W₂') , π
+    ... | Γ₂' ∙ x , W₂' , wk-wk π₂' =
+            let
+              c = comp-gc W₁
+              W₁' = proj₁ (proj₂ c)
+              π₁' = proj₂ (proj₂ c)
+              j = wk-join π₁' π₂'
+              Γ' = proj₁ j
+              π = proj₁ (proj₂ j)
+              π₁'' = proj₁ (proj₂ (proj₂ j))
+              π₂'' = proj₂ (proj₂ (proj₂ j))
+            in
+            Γ' , push (wk-comp π₁'' W₁') (wk-comp (wk-wk π₂'') W₂') , π
+    comp-gc (app M N) =
+            let
+              v₁ = val-gc M
+              M' = proj₁ (proj₂ v₁)
+              π₁ = proj₂ (proj₂ v₁)
+              v₂ = val-gc N
+              N' = proj₁ (proj₂ v₂)
+              π₂ = proj₂ (proj₂ v₂)
+              j = wk-join π₁ π₂
+              Γ' = proj₁ j
+              π = proj₁ (proj₂ j)
+              π₁' = proj₁ (proj₂ (proj₂ j))
+              π₂' = proj₂ (proj₂ (proj₂ j))
+            in
+            Γ' , app (wk-val π₁' M') (wk-val π₂' N') , π
+    comp-gc (var M) =  let v = val-gc M in proj₁ v , var (proj₁ (proj₂ v)) , proj₂ (proj₂ v)
+    comp-gc (sub {A = X} W₁ W₂)  with comp-gc W₁
+    ... | Γ₁' ∙ X , W₁' , wk-cong π₁' =
+            let
+              c = comp-gc W₂
+              W₂' = proj₁ (proj₂ c)
+              π₂' = proj₂ (proj₂ c)
+              j = wk-join π₁' π₂'
+              Γ' = proj₁ j
+              π = proj₁ (proj₂ j)
+              π₁'' = proj₁ (proj₂ (proj₂ j))
+              π₂'' = proj₂ (proj₂ (proj₂ j))
+            in
+            Γ' , sub (wk-comp (wk-cong π₁'') W₁') (wk-comp π₂'' W₂') , π
+    ... | ε , W₁' , wk-wk π₁' =
+            let
+              c = comp-gc W₂
+              W₂' = proj₁ (proj₂ c)
+              π₂' = proj₂ (proj₂ c)
+              j = wk-join π₁' π₂'
+              Γ' = proj₁ j
+              π = proj₁ (proj₂ j)
+              π₁'' = proj₁ (proj₂ (proj₂ j))
+              π₂'' = proj₂ (proj₂ (proj₂ j))
+            in
+            Γ' , sub (wk-comp (wk-wk π₁'') W₁') (wk-comp π₂'' W₂') , π
+    ... | Γ₁' ∙ X' , W₁' , wk-wk π₁' =
+            let
+              c = comp-gc W₂
+              W₂' = proj₁ (proj₂ c)
+              π₂' = proj₂ (proj₂ c)
+              j = wk-join π₁' π₂'
+              Γ' = proj₁ j
+              π = proj₁ (proj₂ j)
+              π₁'' = proj₁ (proj₂ (proj₂ j))
+              π₂'' = proj₂ (proj₂ (proj₂ j))
+            in
+            Γ' , sub (wk-comp (wk-wk π₁'') W₁') (wk-comp π₂'' W₂') , π
+
 -}
