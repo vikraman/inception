@@ -1524,8 +1524,18 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       let
         eq0 : lam (wk-comp (wk-wk ↓π₂) ↓W₁) ≡ wk-val ↓π₁ ↓M₁
         eq0 = subst (λ x → lam x ≡ wk-val ↓π₁ ↓M₁) ↓≡₂ ↓≡₁
-        eq1 : lam {A = X} (wk-comp (wk-wk ↓π₂) ↓W₁) ≡ wk-val ↓π₂ (lam (wk-comp (wk-wk wk-id) ↓W₁))
-        eq1 = {!!}
+        eq1 : lam {A = X} (wk-comp (wk-wk ↓π₂) ↓W₁) ≡ wk-val ↓π₂ (lam (wk-comp (wk-wk wk-id) ↓W₁)) -- <--- NOT TRUE!!!!
+        eq1 =     lam (wk-comp (wk-wk ↓π₂) ↓W₁)
+                ≡⟨ {!!} ⟩
+                   lam (wk-comp (wk-wk (wk-trans wk-id ↓π₂)) ↓W₁)
+                ≡⟨ refl ⟩
+                   lam (wk-comp (wk-trans (wk-wk wk-id) ↓π₂) ↓W₁)
+                ≡⟨ cong lam (sym (wk-comp-trans ↓W₁ (wk-wk wk-id) ↓π₂)) ⟩
+                   lam (wk-comp (wk-wk wk-id) (wk-comp ↓π₂ ↓W₁))
+                ≡⟨ cong lam {!-u!} ⟩
+                   lam (wk-comp (wk-cong ↓π₂) (wk-comp (wk-wk wk-id) ↓W₁))
+                ≡⟨ refl ⟩
+                   wk-val ↓π₂ (lam (wk-comp (wk-wk wk-id) ↓W₁)) ∎
         eq2 : wk-val ↓π₂ (lam (wk-comp (wk-wk wk-id) ↓W₁)) ≡ wk-val ↓π₁ ↓M₁
         eq2 = {!!}
         cgc : CompStr W
