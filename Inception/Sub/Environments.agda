@@ -11,6 +11,7 @@ open Eq using (_≡_; refl; cong; cong₂; cong-app; dcong₂; sym; trans; subst
 open Eq.≡-Reasoning
 
 open import Inception.Sub.Syntax
+open import Inception.Sub.Renaming
 open import Inception.Sub.CPS R
 
 open import Data.Unit
