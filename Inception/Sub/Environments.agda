@@ -23,6 +23,12 @@ open import Relation.Binary.HeterogeneousEquality as H using (_≅_)
 
 open import Relation.Binary.HeterogeneousEquality.Core using (≡-to-≅)
 
+----
+import Data.Fin.Permutation
+import Data.List.Relation.Binary.Permutation.Propositional
+
+----
+
 variable
   X X' Y Y' Z Z' T◾ T◾' : Ty
   Γ' Γ'' Γ''' Δ' : Ctx
