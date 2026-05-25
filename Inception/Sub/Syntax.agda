@@ -24,8 +24,8 @@ module Cx (Ty : Set) where
     _∙_ : Ctx -> Ty -> Ctx
 
   variable
-    A B C D : Ty
-    Γ Δ Ψ : Ctx
+    A B C D X X' Y Y' Z Z' : Ty
+    Γ Δ Ψ Γ' Γ'' Γ''' Δ' : Ctx
 
   data _∋_ : Ctx -> Ty -> Set where
     h :
@@ -93,6 +93,22 @@ data Comp where
   sub : (Γ ∙ `V) ⊢ᶜ A -> Γ ⊢ᶜ A
       ---------------------------
       -> Γ ⊢ᶜ A
+
+data V̲a̲l̲ : Ctx → Ty → Set where
+
+    l̲a̲m̲ : (Γ ∙ X) ⊢ᶜ Y → V̲a̲l̲ Γ (X `⇒ Y)
+
+    pa̲i̲r̲ : V̲a̲l̲ Γ X → V̲a̲l̲ Γ Y → V̲a̲l̲ Γ (X `× Y)
+
+    u̲n̲i̲t̲ : V̲a̲l̲ Γ `Unit
+
+    v̲a̲r̲  : (i : Γ ∋ `V) → V̲a̲l̲ Γ `V
+
+data C̲o̲m̲p : Ctx → Ty → Set where
+
+    r̲e̲t̲u̲r̲n̲ : V̲a̲l̲ Γ X → C̲o̲m̲p Γ X
+
+    a̲pp    : Γ ⊢ᵛ X `⇒ Y -> V̲a̲l̲ Γ X -> C̲o̲m̲p Γ Y
 
 syntax Wk Γ Δ = Γ ⊇ Δ
 

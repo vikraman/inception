@@ -31,23 +31,12 @@ import Data.List.Relation.Binary.Permutation.Propositional
 ----
 
 variable
-  X X' Y Y' Z Z' T◾ T◾' : Ty
-  Γ' Γ'' Γ''' Δ' : Ctx
+  T◾ T◾' : Ty
 
 module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   infixl 27 _﹐_
   infixl 27 _﹐﹝_╎_﹞
-
-  data V̲a̲l̲ : Ctx → Ty → Set where
-
-      l̲a̲m̲ : (Γ ∙ X) ⊢ᶜ Y → V̲a̲l̲ Γ (X `⇒ Y)
-
-      pa̲i̲r̲ : V̲a̲l̲ Γ X → V̲a̲l̲ Γ Y → V̲a̲l̲ Γ (X `× Y)
-
-      u̲n̲i̲t̲ : V̲a̲l̲ Γ `Unit
-
-      v̲a̲r̲  : (i : Γ ∋ `V) → V̲a̲l̲ Γ `V
 
   data Env : (Γ : Ctx) → Set
 
@@ -62,13 +51,6 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       ◻     :   CompStack ε R₀
 
       _⊲_⦂⦂_    : (Γ ∙ Z) ⊢ᶜ X → (γ : Env Γ) → (tail : CompStack Δ X) → {π : Wk Γ Δ} → .{wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv tail ⟧ᴱ} → CompStack Γ Z
-
-  data C̲o̲m̲p : Ctx → Ty → Set
-  data C̲o̲m̲p where
-
-      r̲e̲t̲u̲r̲n̲ : V̲a̲l̲ Γ X → C̲o̲m̲p Γ X
-
-      a̲pp    : Γ ⊢ᵛ X `⇒ Y -> V̲a̲l̲ Γ X -> C̲o̲m̲p Γ Y
 
   data Env where
 
