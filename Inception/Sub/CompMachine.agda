@@ -996,6 +996,8 @@ module CMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
       steps : {S T : CompState} → S →ᶜ* T → CompHaltingState T → .(⟦ S ⟧ᶜꟴ ≡ ⟦ T ⟧ᶜꟴ) → CompSteps S
 
+  wk-comm-explicit : (M : V̲a̲l̲ Γ X) → (π : Wk Δ Γ) → toVal (wk-v̲a̲l̲ π M) ≡ wk-val π (toVal M)
+  wk-comm-explicit M π = sym wk-comm
   {-# REWRITE wk-comm-explicit #-}
 
   {-# TERMINATING #-}

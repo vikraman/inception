@@ -344,7 +344,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                  ⟦ toVal M ⟧ᵛ ⟦ γ' ⟧ᴱ
               ≡⟨ cong ⟦ toVal M ⟧ᵛ eq ⟩
                ⟦ toVal M ⟧ᵛ (⟦ πᵥ ⟧ʷ ⟦ γ ⟧ᴱ)
-              ≡⟨ cong (λ x → ⟦ x ⟧ᵛ ⟦ γ ⟧ᴱ) (sym (wk-comm-explicit M πᵥ)) ⟩
+              ≡⟨ cong (λ x → ⟦ x ⟧ᵛ ⟦ γ ⟧ᴱ) (wk-comm {M = M} {π = πᵥ}) ⟩
                ⟦ ∙ ((⭭ wk-v̲a̲l̲ πᵥ M ⊲ γ ∷ □) {↥ = 🗆}) ⟧ᵛꟴ ∎
   valstate-eq {S = S} {S' = S'} (∘var {γ = γ} {γ' = γ'} {i = i} {tail = ((M'' ⊲ γ'' ∷ tail) {↥ = ↥})} {↥ = 🗇} {M = M} i>>T πᵥ x x₁ ϖ x₃) =
                ⟦ ∘ ((⇡ var i ⊲ γ ∷ ((M'' ⊲ γ'' ∷ tail) {↥ = ↥})) {↥ = 🗇}) ⟧ᵛꟴ
@@ -380,7 +380,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                ⟦ toVal LHS ⟧ᵛ ⟦ γ' ⟧ᴱ , ⟦ RHS ⟧ᵛ ⟦ γ' ⟧ᴱ
               ≡⟨ cong₂ (λ x y → ⟦ toVal LHS ⟧ᵛ x , y) π≡ RHS≡M ⟩
                ⟦ toVal LHS ⟧ᵛ (⟦ π' ⟧ʷ ⟦ γ ⟧ᴱ) , ⟦ toVal M ⟧ᵛ ⟦ γ ⟧ᴱ
-              ≡⟨ cong (λ x → ⟦ x ⟧ᵛ ⟦ γ ⟧ᴱ , ⟦ toVal M ⟧ᵛ ⟦ γ ⟧ᴱ) (sym (wk-comm-explicit LHS π')) ⟩
+              ≡⟨ cong (λ x → ⟦ x ⟧ᵛ ⟦ γ ⟧ᴱ , ⟦ toVal M ⟧ᵛ ⟦ γ ⟧ᴱ) (wk-comm {M = LHS} {π = π'}) ⟩
                ⟦ ∙ ((⭭ pa̲i̲r̲ (wk-v̲a̲l̲ π' LHS) M ⊲ γ ∷ □) {↥ = 🗆}) ⟧ᵛꟴ ∎
   valstate-eq {S = S} {S' = S'} (∙M∷r {tail = x ⊲ γ ∷ tail} {↥ = 🗇} π≡ RHS≡M) = refl
 
@@ -392,7 +392,7 @@ module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                ⟦ N ⟧ᵛ ((⟦ π' ⟧ʷ ⟦ γ ⟧ᴱ , ⟦ toVal LHS ⟧ᵛ ⟦ γ ⟧ᴱ) , ⟦ toVal RHS ⟧ᵛ ⟦ γ ⟧ᴱ)
               ≡⟨ refl  ⟩
                ⟦ N ⟧ᵛ ((⟦ π' ⟧ʷ ⟦ γ ⟧ᴱ , ⟦ toVal LHS ⟧ᵛ ⟦ γ ⟧ᴱ) , ⟦ wk-val (wk-wk wk-id) (toVal RHS) ⟧ᵛ (⟦ γ ⟧ᴱ , ⟦ toVal LHS ⟧ᵛ ⟦ γ ⟧ᴱ))
-              ≡⟨ cong (λ x → ⟦ N ⟧ᵛ ((⟦ π' ⟧ʷ ⟦ γ ⟧ᴱ , ⟦ toVal LHS ⟧ᵛ ⟦ γ ⟧ᴱ) , ⟦ x ⟧ᵛ (⟦ γ ⟧ᴱ , ⟦ toVal LHS ⟧ᵛ ⟦ γ ⟧ᴱ))) (sym (wk-comm-explicit RHS (wk-wk wk-id))) ⟩
+              ≡⟨ cong (λ x → ⟦ N ⟧ᵛ ((⟦ π' ⟧ʷ ⟦ γ ⟧ᴱ , ⟦ toVal LHS ⟧ᵛ ⟦ γ ⟧ᴱ) , ⟦ x ⟧ᵛ (⟦ γ ⟧ᴱ , ⟦ toVal LHS ⟧ᵛ ⟦ γ ⟧ᴱ))) (wk-comm {M = RHS} {π = wk-wk wk-id}) ⟩
                ⟦ N ⟧ᵛ ((⟦ π' ⟧ʷ ⟦ γ ⟧ᴱ , ⟦ toVal LHS ⟧ᵛ ⟦ γ ⟧ᴱ) , ⟦ toVal (wk-v̲a̲l̲ (wk-wk wk-id) RHS) ⟧ᵛ (⟦ γ ⟧ᴱ , ⟦ toVal LHS ⟧ᵛ ⟦ γ ⟧ᴱ))
               ≡⟨ refl ⟩
                ⟦ ∘ ((⇡ wk-val (wk-cong (wk-cong π')) N ⊲ γ ﹐ LHS ﹐ wk-v̲a̲l̲ (wk-wk wk-id) RHS ∷ □) {↥ = 🗆}) ⟧ᵛꟴ ∎
