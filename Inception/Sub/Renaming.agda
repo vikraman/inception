@@ -120,6 +120,16 @@ mutual
     sub (ren-comp (ext ρ) M)
         (ren-comp ρ N)
 
+ren-v̲a̲l̲ : Ren Γ Δ → V̲a̲l̲ Δ A → V̲a̲l̲ Γ A
+ren-v̲a̲l̲ ρ u̲n̲i̲t̲ = u̲n̲i̲t̲
+ren-v̲a̲l̲ ρ (v̲a̲r̲ i) = v̲a̲r̲ (ρ i)
+ren-v̲a̲l̲ ρ (l̲a̲m̲ W) = l̲a̲m̲ (ren-comp (ext ρ) W)
+ren-v̲a̲l̲ ρ (pa̲i̲r̲ M₁ M₂) = pa̲i̲r̲ (ren-v̲a̲l̲ ρ M₁) (ren-v̲a̲l̲ ρ M₂)
+
+ren-c̲o̲m̲p : Ren Γ Δ → C̲o̲m̲p Δ A → C̲o̲m̲p Γ A
+ren-c̲o̲m̲p ρ (r̲e̲t̲u̲r̲n̲ M) = r̲e̲t̲u̲r̲n̲ (ren-v̲a̲l̲ ρ M)
+ren-c̲o̲m̲p ρ (a̲pp M N) = a̲pp (ren-val ρ M) (ren-v̲a̲l̲ ρ N)
+
 wk-ren : Wk Γ Δ → Ren Γ Δ
 wk-ren π {A} i = wk-mem π i
 
