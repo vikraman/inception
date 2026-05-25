@@ -22,7 +22,7 @@ open import Inception.Sub.Environments R
 
 -----------------------------------------------------------------------
 
-module VMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
+module MachineMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   open EnvMain {R₀ = R₀} k₀
 
