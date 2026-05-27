@@ -60,6 +60,11 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
       _﹐﹝_╎_﹞ :  (γ : Env Γ) → (W : Γ ⊢ᶜ X) → (cs : CompStack Δ X) → {π : Wk Γ Δ} → .{wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ} → Env (Γ ∙ `V)
 
+  variable
+      γ  : Env Γ
+      γ' : Env Γ'
+      γ'' : Env Γ''
+
   topCsEnv ◻ = ∗
   topCsEnv (W ⊲ γ ⦂⦂ cs) = γ
 
@@ -76,11 +81,6 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   -----------------------------------------------------------------------------
   -- PROPERTIES OF ENVIRONMENTS
   -----------------------------------------------------------------------------
-
-  variable
-      γ  : Env Γ
-      γ' : Env Γ'
-      γ'' : Env Γ''
 
   data EnvExt : (i : Γ ∋ X) → (γ : Env Γ) → (γ' : Env Γ') → Set where
 

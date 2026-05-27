@@ -29,7 +29,7 @@ module Cx (Ty : Set) where
 
   variable
     A B C D X X' Y Y' Z Z' : Ty
-    Γ Δ Ψ Γ' Γ'' Γ''' Δ' : Ctx
+    Γ Δ Ψ Γ' Γ'' Γ''' Δ' Γ₁ Γ₂ Γ₃ : Ctx
 
   data _∋_ : Ctx -> Ty -> Set where
     h :

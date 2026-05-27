@@ -4,15 +4,24 @@ module Inception.Sub.Renaming where
 
 open import Inception.Sub.Syntax
 
-{-
+open import Data.Product using (proj₁; proj₂; _,_; <_,_>; curry; _×_; Σ; ∃; Σ-syntax; ∃-syntax)
+
 open import Level using (Level; zero)
 open import Function using (_∘_)
 open import Data.Unit using (⊤; tt)
 
 open import Data.List using (List; []; _∷_)
-open import Data.List.Relation.Binary.Permutation.Propositional
-  using
-    (_↭_; ↭-refl; ↭-sym; ↭-trans)
+
+open import Relation.Binary.Core using (Rel; _⇒_)
+open import Relation.Binary.Bundles using (Setoid)
+open import Relation.Binary.Structures using (IsEquivalence)
+open import Relation.Binary.Definitions using (Reflexive; Transitive)
+
+--
+import Data.List.Relation.Binary.Permutation.Propositional
+--open import Data.List.Relation.Binary.Permutation.Propositional
+--  using
+--    (_↭_; ↭-refl; ↭-sym; ↭-trans)
 
 open import Relation.Binary using (Rel; Setoid)
 open import Relation.Binary.Structures using (IsEquivalence)
@@ -20,7 +29,7 @@ open import Relation.Binary.Structures using (IsEquivalence)
 open import Relation.Binary.PropositionalEquality
   using (_≡_; refl; cong)
 
-
+{-
 toList : Ctx → List Ty
 toList ε       = []
 toList (Γ ∙ A) = A ∷ toList Γ
@@ -64,8 +73,81 @@ Ctx-setoid =
 
 -}
 
+-- copied (and adapted) from Data.List...
+
+infix 3 _↭_
+
+data _↭_ : Rel Ctx zero where
+  refl  : Γ ↭ Γ
+  prep  : ∀ X → Γ ↭ Γ' → Γ ∙ X ↭ Γ' ∙ X
+  swap  : ∀ X Y → Γ ↭ Γ' → Γ ∙ Y ∙ X ↭ Γ' ∙ X ∙ Y
+  trans : Γ ↭ Γ' → Γ' ↭ Γ'' → Γ ↭ Γ''
+
+-- Constructor aliases
+
+↭-refl : Reflexive _↭_
+↭-refl = refl
+
+↭-prep  : ∀ X → Γ ↭ Γ' → Γ ∙ X ↭ Γ' ∙ X
+↭-prep = prep
+
+↭-swap  : ∀ X Y → Γ ↭ Γ' → Γ ∙ Y ∙ X ↭ Γ' ∙ X ∙ Y
+↭-swap = swap
+
+--
+
+↭-trans : Transitive _↭_
+↭-trans refl ρ₂ = ρ₂
+↭-trans (prep X ρ₁) refl = prep X ρ₁
+↭-trans (swap X Y ρ₁) refl = swap X Y ρ₁
+↭-trans (trans ρ₁ ρ₂) refl = trans ρ₁ ρ₂
+↭-trans (prep X ρ₁) (prep X₁ ρ₂) = prep X (trans ρ₁ ρ₂)
+↭-trans (prep X ρ₁) (swap X₁ Y ρ₂) = trans (prep X ρ₁) (swap X Y ρ₂)
+↭-trans (prep X ρ₁) (trans ρ₂ ρ₃) = trans (trans (prep X ρ₁) ρ₂) ρ₃
+↭-trans (swap X Y ρ₁) (prep X₁ ρ₂) = trans (swap X Y ρ₁) (prep Y ρ₂)
+↭-trans (swap X Y ρ₁) (swap X₁ Y₁ ρ₂) = prep X (prep Y (trans ρ₁ ρ₂))
+↭-trans (swap X Y ρ₁) (trans ρ₂ ρ₃) = trans (swap X Y ρ₁) (trans ρ₂ ρ₃)
+↭-trans (trans ρ₁ ρ₂) (prep X ρ₃) = trans (trans ρ₁ ρ₂) (prep X ρ₃)
+↭-trans (trans ρ₁ ρ₂) (swap X Y ρ₃) = trans ρ₁ (trans ρ₂ (swap X Y ρ₃))
+↭-trans (trans ρ₁ ρ₂) (trans ρ₃ ρ₄) = trans ρ₁ (trans (trans ρ₂ ρ₃) ρ₄)
+
+{- without exact splitting:
+↭-trans : Transitive _↭_
+↭-trans refl ρ₂ = ρ₂
+↭-trans ρ₁ refl = ρ₁
+↭-trans ρ₁ ρ₂   = trans ρ₁ ρ₂
+-}
+
+↭-sym : Γ ↭ Γ' → Γ' ↭ Γ
+↭-sym refl                = refl
+↭-sym (prep X Γ↭Γ')      = prep X (↭-sym Γ↭Γ')
+↭-sym (swap X Y Γ↭Γ')    = swap Y X (↭-sym Γ↭Γ')
+↭-sym (trans Γ↭Γ' Γ'↭Γ'') = trans (↭-sym Γ'↭Γ'') (↭-sym Γ↭Γ')
+
+-------------------------------------------------------------------------------------------
+-- PERMUTATIONS
+-------------------------------------------------------------------------------------------
+
+perm-mem : Γ ↭ Γ' → Γ ∋ X → Γ' ∋ X
+perm-mem refl Cx.h = h
+perm-mem refl (Cx.t i) = t i
+perm-mem (prep X Γ↭Γ') Cx.h = h
+perm-mem (prep X Γ↭Γ') (Cx.t i) = t (perm-mem Γ↭Γ' i)
+perm-mem (swap X Y Γ↭Γ') Cx.h = t h
+perm-mem (swap X Y Γ↭Γ') (Cx.t Cx.h) = h
+perm-mem (swap X Y Γ↭Γ') (Cx.t (Cx.t i)) = t (t (perm-mem Γ↭Γ' i))
+perm-mem (trans Γ↭Γ' Γ↭Γ'') Cx.h = perm-mem Γ↭Γ'' (perm-mem Γ↭Γ' h)
+perm-mem (trans Γ↭Γ' Γ↭Γ'') (Cx.t i) = perm-mem Γ↭Γ'' (perm-mem Γ↭Γ' (t i))
+
+-------------------------------------------------------------------------------------------
+-- ARBITRARY RENAMINGS
+-------------------------------------------------------------------------------------------
+
 Ren : Ctx → Ctx → Set
 Ren Γ Δ = ∀ {A} → Δ ∋ A → Γ ∋ A
+
+Injective : {Γ Δ : Ctx} → (ρ : Ren Γ Δ) → Set
+Injective {Γ = Γ} {Δ = Δ} ρ = (∀ {X : Ty} → (i j : Δ ∋ X) → ρ i ≡ ρ j → i ≡ j)
 
 ren-id : Ren Γ Γ
 ren-id i = i

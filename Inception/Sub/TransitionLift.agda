@@ -30,6 +30,8 @@ open import Inception.Sub.Equality
 open import Inception.Sub.Environments R
 open import Inception.Sub.Machine R
 
+open import Inception.Sub.Renaming
+
 module LiftMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   open MachineMain {R₀ = R₀} k₀
@@ -37,6 +39,7 @@ module LiftMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
 
   ----------------------------------------------------------
+  {-
 
   lhwk : (γ' : Env Γ')
           → (M : V̲a̲l̲ Γ' X)
@@ -313,9 +316,11 @@ module LiftMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
      }
   lookup-wk-lift {X = X} i M (ext-jmp ext) (S ◼) H (wk-cong πₗ) (γₗ ﹐﹝ W ╎ cs ﹞) ()
   lookup-wk-lift {X = X} i M (ext-jmp ext) (S →ᴸ⟨ x ⟩ L→L') H (wk-cong πₗ) (γₗ ﹐﹝ W ╎ cs ﹞) ()
+  -}
 
   ----------------------------------------------------------
 
+  {-
   vs-height : ValStack b T◾ → ℕ
   vs-height □ = 0
   vs-height (_ ⊲ _ ∷ tail) = suc (vs-height tail)
@@ -349,7 +354,30 @@ module LiftMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       goal = subst (λ x → VSWk (x ⊲ γ ∷ tail) (M ⊲ γ ∷ tail)) (wk-pt-id M) a0
     in
     goal
+  -}
 
+  {-
+  val-ren-lift-∘∙ : {M : PartialTerm Γ X} {γ : Env Γ} {tail : ValStack b T◾} {↥ : BottomTypeEqualsNextType b X T◾} {M' : PartialTerm Γ' X'} {γ' : Env Γ'} {tail' : ValStack b' T◾} {↥' : BottomTypeEqualsNextType b' X' T◾}
+          → ∘ ((M ⊲ γ ∷ tail) {↥ = ↥}) →ᵛ ∙ ((M' ⊲ γ' ∷ tail') {↥ = ↥'})
+          → {ρₗ : Ren Ψ Γ} → {γₗ : Env Ψ} → EnvEq πₗ γₗ γ
+          → (tailₗ : ValStack b T◾)
+          --→ (vs-height tail ≡ vs-height tailₗ)
+          → (vw : VSWk tailₗ tail)
+          → Σ[ Ψ' ∈ Ctx ]
+            Σ[ Γ'' ∈ Ctx ]
+            Σ[ M'' ∈ PartialTerm Γ'' X' ]
+            Σ[ πᵣ ∈ Wk Ψ' Γ'' ]
+            Σ[ γᵣ ∈ Env Ψ' ]
+            Σ[ tailᵣ ∈ ValStack b' T◾ ]
+            ( ∘ (((wk-pt πₗ M) ⊲ γₗ ∷ tailₗ) {↥ = ↥}) →ᵛ ∙ (((wk-pt πᵣ M'') ⊲ γᵣ ∷ tailᵣ) {↥ = ↥'})
+                --× (vs-height tail' ≡ vs-height tailᵣ)
+                × (VSWk tailᵣ tail')
+                )
+  -}
+
+
+  ----------------------------------------------------------
+  -- OLD:
   ----------------------------------------------------------
 
   -- val-wk-lift : {M : PartialTerm Γ X} {γ : Env Γ} {tail : ValStack b T◾} {↥ : BottomTypeEqualsNextType b X T◾} {M' : PartialTerm Γ' X'} {γ' : Env Γ'} {tail' : ValStack b' T◾} {↥' : BottomTypeEqualsNextType b' X' T◾}
@@ -801,3 +829,79 @@ module LiftMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                {!!} , {!!} , {!!} , {!!} , {!!} , {!!} , {!!} , {!!} , {!!} , {!!} , {!!}
   -}
   -}
+
+
+  --------------------------------------------------------
+
+  vs-height : ValStack b T◾ → ℕ
+  vs-height □ = 0
+  vs-height (_ ⊲ _ ∷ tail) = suc (vs-height tail)
+
+  pair-val-eq : {π : Wk Γ Δ} {M : PartialTerm Δ (X `× Y)} {LHS : V̲a̲l̲ Γ X} {RHS : V̲a̲l̲ Γ Y} → (wk-pt π M ≡ ⭭ pa̲i̲r̲ LHS RHS) → Σ[ LHS' ∈ V̲a̲l̲ Δ X ] Σ[ RHS' ∈ V̲a̲l̲ Δ Y ] (⭭ pa̲i̲r̲ LHS' RHS' ≡ M)
+  pair-val-eq {π = π} {M = ⭭ pa̲i̲r̲ LHS' RHS'} {LHS = LHS} {RHS = RHS} refl = LHS' , RHS' , refl
+
+  vs-zero-eq : {vs : ValStack empty T◾} → (0 ≡ vs-height vs) → vs ≡ □
+  vs-zero-eq {vs = □} _ = refl
+
+  pt-⭭-inj : {M M' : V̲a̲l̲ Γ X} → ⭭ M ≡ ⭭ M' → M ≡ M'
+  pt-⭭-inj refl = refl
+
+  uniq-bot : (↥ : BottomTypeEqualsNextType non-empty X T◾) → (↥ ≡ 🗇)
+  uniq-bot 🗇 = refl
+
+  record LookupRenLift
+    (i   : Γ ∋ X)
+    (M   : V̲a̲l̲ Γ' X)
+    (γ   : Env Γ)
+    (γ'  : Env Γ')
+    (ρₗ  : Ren Ψ Γ)
+    (Ρₗ  : Injective ρₗ)
+    (γₗ  : Env Ψ)
+    : Set
+    where
+
+    field
+      ren-lift-Γ : Ctx
+
+      ren-lift-ρᵣ : Ren ren-lift-Γ Γ'
+
+      ren-lift-γᵣ : Env ren-lift-Γ
+
+      ren-lift-steps :
+        ⟨ ρₗ i ∥ γₗ ⟩
+        →ᴸ*
+        ⟨ h ∥ ren-lift-γᵣ ﹐ ren-v̲a̲l̲ ren-lift-ρᵣ M ⟩
+
+      ren-lift-halt :
+        LookupHaltingState
+          ⟨ h ∥ ren-lift-γᵣ ﹐ ren-v̲a̲l̲ ren-lift-ρᵣ M ⟩
+
+  open LookupRenLift
+
+  -- ren-nxt : Ren Γ (Γ' ∙ X) → Ren Γ Γ'
+  -- ren-nxt ρ Cx.h = ρ (t h)
+  -- ren-nxt ρ (Cx.t i) = ρ (t (t i))
+
+  -- -- NOT TRUE
+  -- ren-prev : Ren (Γ ∙ X) (Γ' ∙ X) → Ren Γ Γ'
+  -- ren-prev {Γ = Cx.ε} {Γ' = Γ' Cx.∙ Y} ρ Cx.h = {!!}
+  -- ren-prev {Γ = Γ Cx.∙ x} {Γ' = Γ' Cx.∙ Y} ρ Cx.h = {!!}
+  -- ren-prev {Γ = Γ} {Γ' = Γ' ∙ Y} ρ (Cx.t i) = {!!}
+
+  ren-absurd : Ren ε (Γ ∙ X) → ⊥
+  ren-absurd ρ with ρ h
+  ... | ()
+
+  lookup-ren-lift : {γ : Env Γ} {γ' : Env Γ'}
+                 → (i : Γ ∋ X) → (M : V̲a̲l̲ Γ' X)
+                 --→ (ext : EnvExt i γ (γ' ﹐ M))
+                 → ⟨ i ∥ γ ⟩ →ᴸ* ⟨ h ∥ γ' ﹐ M ⟩
+                 → (H : LookupHaltingState ⟨ h ∥ γ' ﹐ M ⟩)
+                 → (ρₗ : Ren Ψ Γ)
+                 → (Pₗ : Injective ρₗ)
+                 → (γₗ : Env Ψ)
+                 --→ (ϖₗ : EnvEq πₗ γₗ γ)
+                 → LookupRenLift i M γ γ' ρₗ Pₗ γₗ
+
+  --lookup-ren-lift {Γ = Γ} {Γ' = Γ'} {Ψ = Ψ} {γ = γ} {γ' = γ'} i M L→L' H ρₗ Pₗ γₗ = ?
+  --i M L→L' H γ γₗ
