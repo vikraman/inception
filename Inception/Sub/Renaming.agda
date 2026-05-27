@@ -139,6 +139,71 @@ perm-mem (swap X Y Γ↭Γ') (Cx.t (Cx.t i)) = t (t (perm-mem Γ↭Γ' i))
 perm-mem (trans Γ↭Γ' Γ↭Γ'') Cx.h = perm-mem Γ↭Γ'' (perm-mem Γ↭Γ' h)
 perm-mem (trans Γ↭Γ' Γ↭Γ'') (Cx.t i) = perm-mem Γ↭Γ'' (perm-mem Γ↭Γ' (t i))
 
+mutual
+  perm-val : Γ ↭ Γ' → Val Γ X → Val Γ' X
+  perm-val refl (var i) = var i
+  perm-val refl (lam W) = lam W
+  perm-val refl (pair M₁ M₂) = pair M₁ M₂
+  perm-val refl (pm M₁ M₂) = pm M₁ M₂
+  perm-val refl unit = unit
+  perm-val (prep X Γ↭Γ') (var i) = var (perm-mem (prep X Γ↭Γ') i)
+  perm-val (prep X Γ↭Γ') (lam W) = lam (perm-comp (prep _ (prep X Γ↭Γ')) W)
+  perm-val (prep X Γ↭Γ') (pair M₁ M₂) = pair (perm-val (prep X Γ↭Γ') M₁) (perm-val (prep X Γ↭Γ') M₂)
+  perm-val (prep X Γ↭Γ') (pm M N) = pm (perm-val (prep X Γ↭Γ') M) (perm-val (prep _ (prep _ (prep X Γ↭Γ'))) N)
+  perm-val (prep X Γ↭Γ') unit = unit
+  perm-val (swap X Y Γ↭Γ') (var i) = var (perm-mem (swap X Y Γ↭Γ') i)
+  perm-val (swap X Y Γ↭Γ') (lam W) = lam (perm-comp (prep _ (swap X Y Γ↭Γ')) W)
+  perm-val (swap X Y Γ↭Γ') (pair M₁ M₂) = pair (perm-val (swap X Y Γ↭Γ') M₁) (perm-val (swap X Y Γ↭Γ') M₂)
+  perm-val (swap X Y Γ↭Γ') (pm M N) = pm (perm-val (swap X Y Γ↭Γ') M) (perm-val (prep _ (prep _ (swap X Y Γ↭Γ'))) N)
+  perm-val (swap X Y Γ↭Γ') unit = unit
+  perm-val (trans Γ↭Γ' Γ↭Γ'') (var i) = var (perm-mem (trans Γ↭Γ' Γ↭Γ'') i)
+  perm-val (trans Γ↭Γ' Γ↭Γ'') (lam W) = lam (perm-comp (prep _ (trans Γ↭Γ' Γ↭Γ'')) W)
+  perm-val (trans Γ↭Γ' Γ↭Γ'') (pair M₁ M₂) = pair (perm-val (trans Γ↭Γ' Γ↭Γ'') M₁) (perm-val (trans Γ↭Γ' Γ↭Γ'') M₂)
+  perm-val (trans Γ↭Γ' Γ↭Γ'') (pm M N) = pm (perm-val (trans Γ↭Γ' Γ↭Γ'') M) (perm-val (prep _ (prep _ (trans Γ↭Γ' Γ↭Γ''))) N)
+  perm-val (trans Γ↭Γ' Γ↭Γ'') unit = unit
+
+  perm-comp : Γ ↭ Γ' → Comp Γ X → Comp Γ' X
+  perm-comp refl (return M) = return M
+  perm-comp refl (pm M W) = pm M W
+  perm-comp refl (push W₁ W₂) = push W₁ W₂
+  perm-comp refl (app M N) = app M N
+  perm-comp refl (var M) = var M
+  perm-comp refl (sub W₁ W₂) = sub W₁ W₂
+  perm-comp (prep X Γ↭Γ') (return M) = return (perm-val (prep X Γ↭Γ') M)
+  perm-comp (prep X Γ↭Γ') (pm M W) = pm (perm-val (prep X Γ↭Γ') M) (perm-comp (prep _ (prep _ (prep X Γ↭Γ'))) W)
+  perm-comp (prep X Γ↭Γ') (push W₁ W₂) = push (perm-comp (prep X Γ↭Γ') W₁) (perm-comp (prep _ (prep X Γ↭Γ')) W₂)
+  perm-comp (prep X Γ↭Γ') (app M N) = app (perm-val (prep X Γ↭Γ') M) (perm-val (prep X Γ↭Γ') N)
+  perm-comp (prep X Γ↭Γ') (var M) = var (perm-val (prep X Γ↭Γ') M)
+  perm-comp (prep X Γ↭Γ') (sub W₁ W₂) = sub (perm-comp (prep `V (prep X Γ↭Γ')) W₁) (perm-comp (prep X Γ↭Γ') W₂)
+  perm-comp (swap X Y Γ↭Γ') (return M) = return (perm-val (swap X Y Γ↭Γ') M)
+  perm-comp (swap X Y Γ↭Γ') (pm M W) = pm (perm-val (swap X Y Γ↭Γ') M) (perm-comp (prep _ (prep _ (swap X Y Γ↭Γ'))) W)
+  perm-comp (swap X Y Γ↭Γ') (push W₁ W₂) = push (perm-comp (swap X Y Γ↭Γ') W₁) (perm-comp (prep _ (swap X Y Γ↭Γ')) W₂)
+  perm-comp (swap X Y Γ↭Γ') (app M N) = app (perm-val (swap X Y Γ↭Γ') M) (perm-val (swap X Y Γ↭Γ') N)
+  perm-comp (swap X Y Γ↭Γ') (var M) = var (perm-val (swap X Y Γ↭Γ') M)
+  perm-comp (swap X Y Γ↭Γ') (sub W₁ W₂) = sub (perm-comp (prep `V (swap X Y Γ↭Γ')) W₁) (perm-comp (swap X Y Γ↭Γ') W₂)
+  perm-comp (trans Γ↭Γ' Γ↭Γ'') (return M) = return (perm-val (trans Γ↭Γ' Γ↭Γ'') M)
+  perm-comp (trans Γ↭Γ' Γ↭Γ'') (pm M W) = pm (perm-val (trans Γ↭Γ' Γ↭Γ'') M) (perm-comp (prep _ (prep _ (trans Γ↭Γ' Γ↭Γ''))) W)
+  perm-comp (trans Γ↭Γ' Γ↭Γ'') (push W₁ W₂) = push (perm-comp (trans Γ↭Γ' Γ↭Γ'') W₁) (perm-comp (prep _ (trans Γ↭Γ' Γ↭Γ'')) W₂)
+  perm-comp (trans Γ↭Γ' Γ↭Γ'') (app M N) = app (perm-val (trans Γ↭Γ' Γ↭Γ'') M) (perm-val (trans Γ↭Γ' Γ↭Γ'') N)
+  perm-comp (trans Γ↭Γ' Γ↭Γ'') (var M) = var (perm-val (trans Γ↭Γ' Γ↭Γ'') M)
+  perm-comp (trans Γ↭Γ' Γ↭Γ'') (sub W₁ W₂) = sub (perm-comp (prep `V (trans Γ↭Γ' Γ↭Γ'')) W₁) (perm-comp (trans Γ↭Γ' Γ↭Γ'') W₂)
+
+perm-v̲a̲l̲ : Γ ↭ Γ' → V̲a̲l̲ Γ X → V̲a̲l̲ Γ' X
+perm-v̲a̲l̲ Γ↭Γ' u̲n̲i̲t̲ = u̲n̲i̲t̲
+perm-v̲a̲l̲ Γ↭Γ' (v̲a̲r̲ i) = v̲a̲r̲ (perm-mem Γ↭Γ' i)
+perm-v̲a̲l̲ Γ↭Γ' (l̲a̲m̲ W) = l̲a̲m̲ (perm-comp (prep _ Γ↭Γ') W)
+perm-v̲a̲l̲ Γ↭Γ' (pa̲i̲r̲ M₁ M₂) = pa̲i̲r̲ (perm-v̲a̲l̲ Γ↭Γ' M₁) (perm-v̲a̲l̲ Γ↭Γ' M₂)
+
+perm-c̲o̲m̲p : Γ ↭ Γ' → C̲o̲m̲p Γ X → C̲o̲m̲p Γ' X
+perm-c̲o̲m̲p refl (r̲e̲t̲u̲r̲n̲ M) = r̲e̲t̲u̲r̲n̲ M
+perm-c̲o̲m̲p refl (a̲pp M N) = a̲pp M N
+perm-c̲o̲m̲p (prep X Γ↭Γ') (r̲e̲t̲u̲r̲n̲ M) = r̲e̲t̲u̲r̲n̲ (perm-v̲a̲l̲ (prep X Γ↭Γ') M)
+perm-c̲o̲m̲p (prep X Γ↭Γ') (a̲pp M N) = a̲pp (perm-val (prep X Γ↭Γ') M) (perm-v̲a̲l̲ (prep X Γ↭Γ') N)
+perm-c̲o̲m̲p (swap X Y Γ↭Γ') (r̲e̲t̲u̲r̲n̲ M) = r̲e̲t̲u̲r̲n̲ (perm-v̲a̲l̲ (swap X Y Γ↭Γ') M)
+perm-c̲o̲m̲p (swap X Y Γ↭Γ') (a̲pp M N) = a̲pp (perm-val (swap X Y Γ↭Γ') M) (perm-v̲a̲l̲ (swap X Y Γ↭Γ') N)
+perm-c̲o̲m̲p (trans Γ↭Γ' Γ↭Γ'') (r̲e̲t̲u̲r̲n̲ M) = r̲e̲t̲u̲r̲n̲ (perm-v̲a̲l̲ (trans Γ↭Γ' Γ↭Γ'') M)
+perm-c̲o̲m̲p (trans Γ↭Γ' Γ↭Γ'') (a̲pp M N) = a̲pp (perm-val (trans Γ↭Γ' Γ↭Γ'') M) (perm-v̲a̲l̲ (trans Γ↭Γ' Γ↭Γ'') N)
+
 -------------------------------------------------------------------------------------------
 -- ARBITRARY RENAMINGS
 -------------------------------------------------------------------------------------------
