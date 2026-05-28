@@ -78,6 +78,311 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   ⟦ ◻ ⟧ᶜˢ = idf
   ⟦ W₁ ⊲ γ₁ ⦂⦂ tail ⟧ᶜˢ = < const ⟦ γ₁ ⟧ᴱ , idf > ； τ ； (⟦ W₁ ⟧ᶜ ♯) ； ⟦ tail ⟧ᶜˢ
 
+  mutual
+    empty-perm-absurd : ε ↭ (Γ ∙ X) → ⊥
+    empty-perm-absurd (_↭_.trans perm₁ perm₂) rewrite sym (empty-perm perm₁) = empty-perm-absurd perm₂
+
+    empty-perm : ε ↭ Γ → ε ≡ Γ
+    empty-perm {Γ = ε} refl = refl
+    empty-perm {Γ = ε} (_↭_.trans perm₁ perm₂) = refl
+    empty-perm {Γ = Γ ∙ X} (_↭_.trans perm₁ perm₂) rewrite sym (empty-perm perm₁) = ql (empty-perm-absurd perm₂) (ε ≡ Γ ∙ X)
+
+  perm-wk : Γ ↭ Γ' → Wk Γ Δ → Σ[ Δ' ∈ Ctx ] ((Δ ↭ Δ') × (Wk Γ' Δ'))
+  perm-wk refl wk-ε = ε , refl , wk-ε
+  perm-wk refl (wk-cong π) = _ ∙ _ , refl , wk-cong π
+  perm-wk refl (wk-wk π) = _ , refl , wk-wk π
+  perm-wk (prep X Γ↭Γ') (wk-cong π) =
+    let
+      IH = (perm-wk Γ↭Γ' π)
+    in
+    proj₁ IH ∙ X , prep X (proj₁ (proj₂ IH)) , wk-cong (proj₂ (proj₂ IH))
+  perm-wk (prep X Γ↭Γ') (wk-wk π) =
+    let
+      IH = (perm-wk Γ↭Γ' π)
+    in
+    proj₁ IH , proj₁ (proj₂ IH) , wk-wk (proj₂ (proj₂ IH))
+  perm-wk (swap X Y Γ↭Γ') (wk-cong (wk-cong π)) =
+    let
+      IH = (perm-wk Γ↭Γ' π)
+    in
+    proj₁ IH ∙ X ∙ Y , swap X Y (proj₁ (proj₂ IH)) , wk-cong (wk-cong (proj₂ (proj₂ IH)))
+  perm-wk (swap X Y Γ↭Γ') (wk-cong (wk-wk π)) =
+    let
+      IH = (perm-wk Γ↭Γ' π)
+    in
+    proj₁ IH ∙ X , prep X (proj₁ (proj₂ IH)) , wk-wk (wk-cong (proj₂ (proj₂ IH)))
+  perm-wk (swap X Y Γ↭Γ') (wk-wk (wk-cong π)) =
+    let
+      IH = (perm-wk Γ↭Γ' π)
+    in
+    proj₁ IH ∙ Y , prep Y (proj₁ (proj₂ IH)) , wk-cong (wk-wk (proj₂ (proj₂ IH)))
+  perm-wk (swap X Y Γ↭Γ') (wk-wk (wk-wk π)) =
+    let
+      IH = (perm-wk Γ↭Γ' π)
+    in
+    proj₁ IH , proj₁ (proj₂ IH) , wk-wk (wk-wk (proj₂ (proj₂ IH)))
+  perm-wk (_↭_.trans ε↭Γ' Γ'↭Γ'') wk-ε rewrite sym (empty-perm ε↭Γ') | sym (empty-perm Γ'↭Γ'') =
+    ε , refl , wk-ε
+  perm-wk (_↭_.trans Γ↭Γ' Γ'↭Γ'') (wk-cong π) =
+    let
+      IH1 = (perm-wk Γ↭Γ' (wk-cong π))
+      IH2 = (perm-wk Γ'↭Γ'' (proj₂ (proj₂ IH1)))
+    in
+    proj₁ IH2 , _↭_.trans (proj₁ (proj₂ IH1)) (proj₁ (proj₂ IH2)) , proj₂ (proj₂ IH2)
+  perm-wk (_↭_.trans Γ↭Γ' Γ'↭Γ'') (wk-wk π) =
+    let
+      IH1 = (perm-wk Γ↭Γ' (wk-wk π))
+      IH2 = (perm-wk Γ'↭Γ'' (proj₂ (proj₂ IH1)))
+    in
+    proj₁ IH2 , _↭_.trans (proj₁ (proj₂ IH1)) (proj₁ (proj₂ IH2)) , proj₂ (proj₂ IH2)
+
+
+  --perm-wk : Γ ↭ Γ' → (π : Wk Γ Δ) → Σ[ Δ' ∈ Ctx ] ((Δ ↭ Δ') × (Wk Γ' Δ'))
+  -- record PermWk (Γ ↭ Γ') (Wk Γ Δ) : Set where
+  --   field
+  --     pwk-Δ : Ctx
+  --     pwk-perm : Δ ↭ perm-Δ
+  --     pwk-π : Wk Γ' perm-Δ
+  --     pwk-eq : ∀ {γ : Env Γ} → (⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ?) --⟦ pwk-π ⟧ʷ ⟦ γ ⟧ᴱ
+
+  perm-sem-trans : (Γ↭Γ' : Γ ↭ Γ') → (Γ'↭Γ'' : Γ' ↭ Γ'') → ⟦ _↭_.trans Γ↭Γ' Γ'↭Γ'' ⟧ᴾ ≡ ⟦ Γ'↭Γ'' ⟧ᴾ ∘ ⟦ Γ↭Γ' ⟧ᴾ
+  perm-sem-trans Γ↭Γ' Γ'↭Γ'' = refl
+
+  perm-sem-mem : (Γ↭Γ' : Γ ↭ Γ') → (E : ⟦ Γ ⟧ˣ) → (i : Γ ∋ X) → ⟦ i ⟧ᵐ E ≡ ⟦ perm-mem Γ↭Γ' i ⟧ᵐ (⟦ Γ↭Γ' ⟧ᴾ E)
+  perm-sem-mem refl E Cx.h = refl
+  perm-sem-mem refl E (Cx.t i) = refl
+  perm-sem-mem (prep X Γ↭Γ') E Cx.h = refl
+  perm-sem-mem (prep X Γ↭Γ') E (Cx.t i) = perm-sem-mem Γ↭Γ' (proj₁ E) i
+  perm-sem-mem (swap X Y Γ↭Γ') E Cx.h = refl
+  perm-sem-mem (swap X Y Γ↭Γ') E (Cx.t Cx.h) = refl
+  perm-sem-mem (swap X Y Γ↭Γ') E (Cx.t (Cx.t i)) = perm-sem-mem Γ↭Γ' (proj₁ (proj₁ E)) i
+  perm-sem-mem (_↭_.trans Γ↭Γ' Γ'↭Γ'') E Cx.h =
+    let
+      IH1 = perm-sem-mem Γ↭Γ' E h
+      IH2 = perm-sem-mem Γ'↭Γ'' (⟦ Γ↭Γ' ⟧ᴾ E) (perm-mem Γ↭Γ' h)
+    in
+    Eq.trans IH1 IH2
+  perm-sem-mem (_↭_.trans Γ↭Γ' Γ'↭Γ'') E (Cx.t i) =
+    let
+      IH1 = perm-sem-mem Γ↭Γ' E (t i)
+      IH2 = perm-sem-mem Γ'↭Γ'' (⟦ Γ↭Γ' ⟧ᴾ E) (perm-mem Γ↭Γ' (t i))
+    in
+    Eq.trans IH1 IH2
+
+  mutual
+    perm-sem-val : (Γ↭Γ' : Γ ↭ Γ') → (E : ⟦ Γ ⟧ˣ) → (M : Val Γ X) → ⟦ M ⟧ᵛ E ≡ ⟦ perm-val Γ↭Γ' M ⟧ᵛ (⟦ Γ↭Γ' ⟧ᴾ E)
+    perm-sem-val Γ↭Γ' E (var i) = perm-sem-mem Γ↭Γ' E i
+    perm-sem-val Γ↭Γ' E (lam W) = {!!}
+    perm-sem-val Γ↭Γ' E (pair M₁ M₂) = cong₂ _,_ (perm-sem-val Γ↭Γ' E M₁) (perm-sem-val Γ↭Γ' E M₂)
+    perm-sem-val Γ↭Γ' E (pm {A = X} {B = Y} M N) =
+      let
+        a0 : ⟦ N ⟧ᵛ ((E , proj₁ (⟦ M ⟧ᵛ E)) , proj₂ (⟦ M ⟧ᵛ E)) ≡ ⟦ perm-val (prep Y (prep X Γ↭Γ')) N ⟧ᵛ (⟦ prep Y (prep X Γ↭Γ') ⟧ᴾ ((E , proj₁ (⟦ M ⟧ᵛ E)) , proj₂ (⟦ M ⟧ᵛ E)))
+        a0 = perm-sem-val (prep Y (prep X Γ↭Γ')) ((E , proj₁ (⟦ M ⟧ᵛ E)) , proj₂ (⟦ M ⟧ᵛ E)) N
+        -- a0 :   ⟦ N ⟧ᵛ ((E , proj₁ (⟦ M ⟧ᵛ E)) , proj₂ (⟦ M ⟧ᵛ E)) ≡ ⟦ perm-val (prep Y (prep X Γ↭Γ')) N ⟧ᵛ (⟦ prep Y (prep X Γ↭Γ') ⟧ᴾ ((E , proj₁ (⟦ M ⟧ᵛ E)) , proj₂ (⟦ M ⟧ᵛ E)))
+        -- goal : ⟦ N ⟧ᵛ ((E , proj₁ (⟦ M ⟧ᵛ E)) , proj₂ (⟦ M ⟧ᵛ E)) ≡ ⟦ perm-val (prep Y (prep X Γ↭Γ')) N ⟧ᵛ ((⟦ Γ↭Γ' ⟧ᴾ E , proj₁ (⟦ perm-val Γ↭Γ' M ⟧ᵛ (⟦ Γ↭Γ' ⟧ᴾ E))) , proj₂ (⟦ perm-val Γ↭Γ' M ⟧ᵛ (⟦ Γ↭Γ' ⟧ᴾ E)))
+      in
+      {!⟦ pm M N ⟧ᵛ E ≡ ⟦ pm (perm-val Γ↭Γ' M) (perm-val (prep Y (prep X Γ↭Γ')) N) ⟧ᵛ (⟦ Γ↭Γ' ⟧ᴾ E)!}
+    perm-sem-val Γ↭Γ' E unit = refl
+
+    perm-sem-comp : (Γ↭Γ' : Γ ↭ Γ') → (E : ⟦ Γ ⟧ˣ) → (W : Comp Γ X) → ⟦ W ⟧ᶜ E ≡ ⟦ perm-comp Γ↭Γ' W ⟧ᶜ (⟦ Γ↭Γ' ⟧ᴾ E)
+    perm-sem-comp Γ↭Γ' E (return M) =
+      let
+        IH = perm-sem-val Γ↭Γ' E M
+      in
+      extensionality {!IH!}
+      -- let
+      -- in
+      -- {!⟦ return M ⟧ᶜ E ≡ ⟦ return (perm-val Γ↭Γ' M) ⟧ᶜ (⟦ Γ↭Γ' ⟧ᴾ E)!}
+    perm-sem-comp Γ↭Γ' E (pm M W) = {!!}
+    perm-sem-comp Γ↭Γ' E (push W₁ W₂) = {!!}
+    perm-sem-comp Γ↭Γ' E (app M N) = {!!}
+    perm-sem-comp Γ↭Γ' E (var M) = {!!}
+    perm-sem-comp Γ↭Γ' E (sub W₁ W₂) = {!!}
+
+
+  mutual
+
+    perm-cs : Γ ↭ Γ' → CompStack Γ X → CompStack Γ' X
+    perm-cs refl ◻ = ◻
+    perm-cs refl ((W ⊲ γ ⦂⦂ cs) {π = π} {wk≡ = wk≡}) = ((W ⊲ γ ⦂⦂ cs) {π = π} {wk≡ = wk≡})
+    perm-cs (prep X Γ↭Γ') ((W ⊲ γ ⦂⦂ cs) {π = π} {wk≡ = wk≡}) = (perm-comp (prep _ (prep X Γ↭Γ')) W ⊲ perm-env (prep X Γ↭Γ') γ ⦂⦂ perm-cs (proj₁ (proj₂ (perm-wk (prep X Γ↭Γ') π))) cs) {π = proj₂ (proj₂ (perm-wk (prep X Γ↭Γ') π))} {wk≡ = {!!}}
+    perm-cs (swap X Y Γ↭Γ') ((W ⊲ γ ⦂⦂ cs) {π = π} {wk≡ = wk≡}) = {!!}
+    perm-cs (_↭_.trans Γ↭Γ' Γ'↭Γ'') ◻ = {!!}
+    perm-cs (_↭_.trans Γ↭Γ' Γ'↭Γ'') ((W ⊲ γ ⦂⦂ cs) {π = π} {wk≡ = wk≡}) = {!!}
+
+    perm-env : Γ ↭ Γ' → Env Γ → Env Γ'
+    perm-env refl ∗ = ∗
+    perm-env refl (γ ﹐ M) = γ ﹐ M
+    perm-env refl ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡}) = (γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡}
+    perm-env (prep X Γ↭Γ') (γ ﹐ M) = perm-env Γ↭Γ' γ ﹐ perm-v̲a̲l̲ Γ↭Γ' M
+    perm-env (prep X Γ↭Γ') ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡}) =
+      let
+        a0 = perm-wk Γ↭Γ' π
+        Δ↭Δ' = proj₁ (proj₂ a0)
+        π' = proj₂ (proj₂ a0)
+      in
+      (perm-env Γ↭Γ' γ ﹐﹝ perm-comp Γ↭Γ' W ╎ perm-cs Δ↭Δ' cs ﹞) {π = π'} {wk≡ = {!!}}
+    perm-env (swap X Y Γ↭Γ') (γ ﹐ M) = {!!}
+    perm-env (swap X Y Γ↭Γ') (γ ﹐﹝ W ╎ cs ﹞) = {!!}
+    perm-env (_↭_.trans Γ↭Γ' Γ↭Γ'') ∗ = {!!}
+    perm-env (_↭_.trans Γ↭Γ' Γ↭Γ'') (γ ﹐ M) = {!!}
+    perm-env (_↭_.trans Γ↭Γ' Γ↭Γ'') (γ ﹐﹝ W ╎ cs ﹞) = {!!}
+
+    {-
+    perm-sem-mem : (Γ↭Γ' : Γ ↭ Γ') → (γ : Env Γ) → (i : Γ ∋ X) → ⟦ i ⟧ᵐ ⟦ γ ⟧ᴱ ≡ ⟦ perm-mem Γ↭Γ' i ⟧ᵐ (⟦ Γ↭Γ' ⟧ᴾ ⟦ γ ⟧ᴱ)
+
+    perm-sem-mem refl (γ ﹐ M) Cx.h = refl
+    perm-sem-mem (prep X Γ↭Γ') (γ ﹐ M) Cx.h = refl
+    perm-sem-mem (swap X Y Γ↭Γ') (γ ﹐ M) Cx.h = refl
+    perm-sem-mem (_↭_.trans Γ↭Γ' Γ'↭Γ'') (γ ﹐ M) Cx.h =
+      let
+        IH1 = perm-sem-mem Γ↭Γ' (γ ﹐ M) h
+        IH2 = perm-sem-mem Γ'↭Γ'' (perm-env Γ↭Γ' (γ ﹐ M)) (perm-mem Γ↭Γ' h)
+        eq1 = perm-sem Γ↭Γ' (γ ﹐ M)
+      in
+        ⟦ toVal M ⟧ᵛ ⟦ γ ⟧ᴱ
+      ≡⟨ IH1 ⟩
+        ⟦ perm-mem Γ↭Γ' h ⟧ᵐ (⟦ Γ↭Γ' ⟧ᴾ ⟦ γ ﹐ M ⟧ᴱ)
+      ≡⟨ cong ⟦ perm-mem Γ↭Γ' h ⟧ᵐ eq1 ⟩
+        ⟦ perm-mem Γ↭Γ' h ⟧ᵐ ⟦ perm-env Γ↭Γ' (γ ﹐ M) ⟧ᴱ
+      ≡⟨ IH2 ⟩
+        ⟦ perm-mem Γ'↭Γ'' (perm-mem Γ↭Γ' h) ⟧ᵐ (⟦ Γ'↭Γ'' ⟧ᴾ ⟦ perm-env Γ↭Γ' (γ ﹐ M) ⟧ᴱ)
+      ≡⟨ cong (λ x → ⟦ perm-mem Γ'↭Γ'' (perm-mem Γ↭Γ' h) ⟧ᵐ (⟦ Γ'↭Γ'' ⟧ᴾ x)) (sym eq1) ⟩
+        ⟦ perm-mem Γ'↭Γ'' (perm-mem Γ↭Γ' h) ⟧ᵐ (⟦ Γ'↭Γ'' ⟧ᴾ (⟦ Γ↭Γ' ⟧ᴾ (⟦ γ ⟧ᴱ , ⟦ toVal M ⟧ᵛ ⟦ γ ⟧ᴱ))) ∎
+
+    perm-sem-mem refl (γ ﹐﹝ W ╎ cs ﹞) Cx.h = refl
+    perm-sem-mem (prep X Γ↭Γ') (γ ﹐﹝ W ╎ cs ﹞) Cx.h = refl
+    perm-sem-mem (swap X Y Γ↭Γ') (γ ﹐﹝ W ╎ cs ﹞) Cx.h = refl
+    perm-sem-mem (_↭_.trans Γ↭Γ' Γ'↭Γ'') ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡}) Cx.h =
+      let
+        IH1 = perm-sem-mem Γ↭Γ' ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡}) h
+        IH2 = perm-sem-mem Γ'↭Γ'' (perm-env Γ↭Γ' ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡})) (perm-mem Γ↭Γ' h)
+        eq1 = perm-sem Γ↭Γ' ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡})
+      in
+        ⟦ h ⟧ᵐ ⟦ ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡}) ⟧ᴱ
+      ≡⟨ IH1 ⟩
+        ⟦ perm-mem Γ↭Γ' h ⟧ᵐ (⟦ Γ↭Γ' ⟧ᴾ ⟦ ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡}) ⟧ᴱ)
+      ≡⟨ cong ⟦ perm-mem Γ↭Γ' h ⟧ᵐ eq1 ⟩
+        ⟦ perm-mem Γ↭Γ' h ⟧ᵐ ⟦ perm-env Γ↭Γ' (γ ﹐﹝ W ╎ cs ﹞) ⟧ᴱ
+      ≡⟨ IH2 ⟩
+        ⟦ perm-mem Γ'↭Γ'' (perm-mem Γ↭Γ' h) ⟧ᵐ (⟦ Γ'↭Γ'' ⟧ᴾ ⟦ perm-env Γ↭Γ' (γ ﹐﹝ W ╎ cs ﹞) ⟧ᴱ)
+      ≡⟨ cong (λ x → ⟦ perm-mem Γ'↭Γ'' (perm-mem Γ↭Γ' h) ⟧ᵐ (⟦ Γ'↭Γ'' ⟧ᴾ x)) (sym eq1) ⟩
+        ⟦ perm-mem (_↭_.trans Γ↭Γ' Γ'↭Γ'') h ⟧ᵐ (⟦ _↭_.trans Γ↭Γ' Γ'↭Γ'' ⟧ᴾ ⟦ ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡}) ⟧ᴱ) ∎
+
+    perm-sem-mem refl (γ ﹐ M) (Cx.t i) = refl
+    perm-sem-mem (prep X Γ↭Γ') (γ ﹐ M) (Cx.t i) = perm-sem-mem Γ↭Γ' γ i
+
+    perm-sem-mem (swap X Y Γ↭Γ') (γ ﹐ M₁ ﹐ M) (Cx.t Cx.h) = refl
+    perm-sem-mem (swap X Y Γ↭Γ') (γ ﹐ M₁ ﹐ M) (Cx.t (Cx.t i)) = perm-sem-mem Γ↭Γ' γ i
+    perm-sem-mem (swap X Y Γ↭Γ') (∗ ﹐﹝ W ╎ cs ﹞ ﹐ M) (Cx.t Cx.h) = refl
+    perm-sem-mem (swap X Y Γ↭Γ') (γ ﹐ M₁ ﹐﹝ W ╎ cs ﹞ ﹐ M) (Cx.t Cx.h) = refl
+    perm-sem-mem (swap X Y Γ↭Γ') (γ ﹐ M₁ ﹐﹝ W ╎ cs ﹞ ﹐ M) (Cx.t (Cx.t i)) =
+      let
+        IH = perm-sem-mem Γ↭Γ' (γ ﹐ M₁) i
+      in
+      ⟦ i ⟧ᵐ (⟦ γ ⟧ᴱ , ⟦ toVal M₁ ⟧ᵛ ⟦ γ ⟧ᴱ)
+      ≡⟨ IH ⟩
+       ⟦ perm-mem Γ↭Γ' i ⟧ᵐ (⟦ Γ↭Γ' ⟧ᴾ ⟦ γ ﹐ M₁ ⟧ᴱ)
+      ≡⟨ refl ⟩
+      ⟦ perm-mem Γ↭Γ' i ⟧ᵐ (⟦ Γ↭Γ' ⟧ᴾ (⟦ γ ⟧ᴱ , ⟦ toVal M₁ ⟧ᵛ ⟦ γ ⟧ᴱ)) ∎
+    perm-sem-mem (swap X Y Γ↭Γ') (γ ﹐﹝ W₁ ╎ cs₁ ﹞ ﹐﹝ W ╎ cs ﹞ ﹐ M) (Cx.t Cx.h) = refl
+    perm-sem-mem (swap X Y Γ↭Γ') (((γ ﹐﹝ W₁ ╎ cs₁ ﹞) {π = π} {wk≡ = wk≡}) ﹐﹝ W ╎ cs ﹞ ﹐ M) (Cx.t (Cx.t i)) =
+      let
+        IH = perm-sem-mem Γ↭Γ' ((γ ﹐﹝ W₁ ╎ cs₁ ﹞) {π = π} {wk≡ = wk≡}) i
+      in
+      ⟦ i ⟧ᵐ (⟦ γ ⟧ᴱ , ⟦ W₁ ⟧ᶜ ⟦ γ ⟧ᴱ (λ y → ⟦ cs₁ ⟧ᶜˢ (λ k → k y) k₀))
+      ≡⟨ IH ⟩
+       ⟦ perm-mem Γ↭Γ' i ⟧ᵐ (⟦ Γ↭Γ' ⟧ᴾ ⟦ ((γ ﹐﹝ W₁ ╎ cs₁ ﹞) {π = π} {wk≡ = wk≡}) ⟧ᴱ)
+      ≡⟨ refl ⟩
+      ⟦ perm-mem Γ↭Γ' i ⟧ᵐ (⟦ Γ↭Γ' ⟧ᴾ (⟦ γ ⟧ᴱ , ⟦ W₁ ⟧ᶜ ⟦ γ ⟧ᴱ (λ y → ⟦ cs₁ ⟧ᶜˢ (λ k → k y) k₀))) ∎
+
+    perm-sem-mem (_↭_.trans Γ↭Γ' Γ'↭Γ'') (γ ﹐ M) (Cx.t i) =
+      let
+        IH1 = perm-sem-mem Γ↭Γ' (γ ﹐ M) (t i)
+        IH2 = perm-sem-mem Γ'↭Γ'' (perm-env Γ↭Γ' (γ ﹐ M)) (perm-mem Γ↭Γ' (t i))
+        eq1 = perm-sem Γ↭Γ' (γ ﹐ M)
+      in
+      ⟦ i ⟧ᵐ ⟦ γ ⟧ᴱ
+      ≡⟨ IH1 ⟩
+       ⟦ perm-mem Γ↭Γ' (t i) ⟧ᵐ (⟦ Γ↭Γ' ⟧ᴾ ⟦ γ ﹐ M ⟧ᴱ)
+      ≡⟨ cong ⟦ perm-mem Γ↭Γ' (t i) ⟧ᵐ eq1 ⟩
+       ⟦ perm-mem Γ↭Γ' (t i) ⟧ᵐ ⟦ perm-env Γ↭Γ' (γ ﹐ M) ⟧ᴱ
+      ≡⟨ IH2 ⟩
+       ⟦ perm-mem Γ'↭Γ'' (perm-mem Γ↭Γ' (t i)) ⟧ᵐ (⟦ Γ'↭Γ'' ⟧ᴾ ⟦ perm-env Γ↭Γ' (γ ﹐ M) ⟧ᴱ)
+      ≡⟨ cong (λ x → ⟦ perm-mem Γ'↭Γ'' (perm-mem Γ↭Γ' (t i)) ⟧ᵐ (⟦ Γ'↭Γ'' ⟧ᴾ x)) (sym eq1) ⟩
+       ⟦ perm-mem Γ'↭Γ'' (perm-mem Γ↭Γ' (t i)) ⟧ᵐ (⟦ Γ'↭Γ'' ⟧ᴾ (⟦ Γ↭Γ' ⟧ᴾ (⟦ γ ⟧ᴱ , ⟦ toVal M ⟧ᵛ ⟦ γ ⟧ᴱ))) ∎
+
+    perm-sem-mem refl (γ ﹐﹝ W ╎ cs ﹞) (Cx.t i) = refl
+    perm-sem-mem (prep X Γ↭Γ') (γ ﹐﹝ W ╎ cs ﹞) (Cx.t i) = perm-sem-mem Γ↭Γ' γ i
+    perm-sem-mem (swap X Y Γ↭Γ') (γ ﹐ M ﹐﹝ W ╎ cs ﹞) (Cx.t Cx.h) = refl
+    perm-sem-mem (swap X Y Γ↭Γ') (γ ﹐ M ﹐﹝ W ╎ cs ﹞) (Cx.t (Cx.t i)) = perm-sem-mem Γ↭Γ' γ i
+    perm-sem-mem (swap X Y Γ↭Γ') (γ ﹐﹝ W₁ ╎ cs₁ ﹞ ﹐﹝ W ╎ cs ﹞) (Cx.t Cx.h) = refl
+    perm-sem-mem (swap X Y Γ↭Γ') (γ ﹐﹝ W₁ ╎ cs₁ ﹞ ﹐﹝ W ╎ cs ﹞) (Cx.t (Cx.t i)) = perm-sem-mem Γ↭Γ' γ i
+    perm-sem-mem (_↭_.trans Γ↭Γ' Γ'↭Γ'') ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡}) (t i) =
+      let
+        IH1 = perm-sem-mem Γ↭Γ' ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡}) (t i)
+        IH2 = perm-sem-mem Γ'↭Γ'' (perm-env Γ↭Γ' ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡})) (perm-mem Γ↭Γ' (t i))
+        eq1 = perm-sem Γ↭Γ' ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡})
+      in
+       ⟦ t i ⟧ᵐ ⟦ ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡}) ⟧ᴱ
+      ≡⟨ IH1 ⟩
+       ⟦ perm-mem Γ↭Γ' (t i) ⟧ᵐ (⟦ Γ↭Γ' ⟧ᴾ ⟦ ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡}) ⟧ᴱ)
+      ≡⟨ cong ⟦ perm-mem Γ↭Γ' (t i) ⟧ᵐ eq1 ⟩
+       ⟦ perm-mem Γ↭Γ' (t i) ⟧ᵐ ⟦ perm-env Γ↭Γ' ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡}) ⟧ᴱ
+      ≡⟨ IH2 ⟩
+       ⟦ perm-mem Γ'↭Γ'' (perm-mem Γ↭Γ' (t i)) ⟧ᵐ (⟦ Γ'↭Γ'' ⟧ᴾ ⟦ perm-env Γ↭Γ' ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡}) ⟧ᴱ)
+      ≡⟨ cong (λ x → ⟦ perm-mem Γ'↭Γ'' (perm-mem Γ↭Γ' (t i)) ⟧ᵐ (⟦ Γ'↭Γ'' ⟧ᴾ x)) (sym eq1) ⟩
+       ⟦ perm-mem (_↭_.trans Γ↭Γ' Γ'↭Γ'') (t i) ⟧ᵐ (⟦ _↭_.trans Γ↭Γ' Γ'↭Γ'' ⟧ᴾ ⟦ ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡}) ⟧ᴱ) ∎
+
+
+
+    perm-sem-v̲a̲l̲ : (Γ↭Γ' : Γ ↭ Γ') → (γ : Env Γ) → (M : V̲a̲l̲ Γ X) → ⟦ toVal M ⟧ᵛ ⟦ γ ⟧ᴱ ≡ ⟦ toVal (perm-v̲a̲l̲ Γ↭Γ' M) ⟧ᵛ (⟦ Γ↭Γ' ⟧ᴾ ⟦ γ ⟧ᴱ)
+    perm-sem-v̲a̲l̲ Γ↭Γ' γ (l̲a̲m̲ W) = {!!}
+    perm-sem-v̲a̲l̲ Γ↭Γ' γ (pa̲i̲r̲ M₁ M₂) = cong₂ _,_ (perm-sem-v̲a̲l̲ Γ↭Γ' γ M₁) (perm-sem-v̲a̲l̲ Γ↭Γ' γ M₂)
+    perm-sem-v̲a̲l̲ Γ↭Γ' γ u̲n̲i̲t̲ = refl
+    perm-sem-v̲a̲l̲ Γ↭Γ' γ (v̲a̲r̲ i) = perm-sem-mem Γ↭Γ' γ i
+
+    perm-sem-val : (Γ↭Γ' : Γ ↭ Γ') → (γ : Env Γ) → (M : Val Γ X) → ⟦ M ⟧ᵛ ⟦ γ ⟧ᴱ ≡ ⟦ perm-val Γ↭Γ' M ⟧ᵛ (⟦ Γ↭Γ' ⟧ᴾ ⟦ γ ⟧ᴱ)
+    perm-sem-val Γ↭Γ' γ (var i) = perm-sem-mem Γ↭Γ' γ i
+    perm-sem-val Γ↭Γ' γ (lam W) = {!perm-sem-comp ? ? W!}
+    perm-sem-val Γ↭Γ' γ (pair M₁ M₂) = {!!}
+    perm-sem-val Γ↭Γ' γ (pm {A = X} {B = Y} M N) =
+      let
+        a0 = proj₁ (⟦ M ⟧ᵛ ⟦ γ ⟧ᴱ)
+      in
+      perm-sem-val (prep Y (prep X Γ↭Γ')) {!!} N
+    perm-sem-val Γ↭Γ' γ unit = refl
+
+    perm-sem-comp : (Γ↭Γ' : Γ ↭ Γ') → (γ : Env Γ) → (W : Comp Γ X) → ⟦ W ⟧ᶜ ⟦ γ ⟧ᴱ ≡ ⟦ perm-comp Γ↭Γ' W ⟧ᶜ (⟦ Γ↭Γ' ⟧ᴾ ⟦ γ ⟧ᴱ)
+    perm-sem-comp Γ↭Γ' γ (return M) = {!perm-sem-val Γ↭Γ' γ M!}
+    perm-sem-comp Γ↭Γ' γ (pm M W) = {!!}
+    perm-sem-comp Γ↭Γ' γ (push W₁ W₂) = {!!}
+    perm-sem-comp Γ↭Γ' γ (app M N) = {!!}
+    perm-sem-comp Γ↭Γ' γ (var M) = {!!}
+    perm-sem-comp Γ↭Γ' γ (sub W₁ W₂) = {!!}
+
+    perm-sem : (Γ↭Γ' : Γ ↭ Γ') → (γ : Env Γ) → ⟦ Γ↭Γ' ⟧ᴾ ⟦ γ ⟧ᴱ ≡ ⟦ perm-env Γ↭Γ' γ ⟧ᴱ
+    perm-sem refl ∗ = refl
+    perm-sem refl (γ ﹐ M) = refl
+    perm-sem refl (γ ﹐﹝ W ╎ cs ﹞) = refl
+    perm-sem (prep X Γ↭Γ') (γ ﹐ M) =
+       ⟦ prep X Γ↭Γ' ⟧ᴾ (⟦ γ ⟧ᴱ , ⟦ toVal M ⟧ᵛ ⟦ γ ⟧ᴱ)
+      ≡⟨ refl ⟩
+        ⟦ Γ↭Γ' ⟧ᴾ ⟦ γ ⟧ᴱ , ⟦ toVal M ⟧ᵛ ⟦ γ ⟧ᴱ
+      ≡⟨ {!!} ⟩
+       (⟦ perm-env Γ↭Γ' γ ⟧ᴱ , ⟦ toVal (perm-v̲a̲l̲ Γ↭Γ' M) ⟧ᵛ (⟦ Γ↭Γ' ⟧ᴾ ⟦ γ ⟧ᴱ))
+      ≡⟨ {!!} ⟩
+       (⟦ perm-env Γ↭Γ' γ ⟧ᴱ , ⟦ toVal (perm-v̲a̲l̲ Γ↭Γ' M) ⟧ᵛ ⟦ perm-env Γ↭Γ' γ ⟧ᴱ) ∎
+    perm-sem (prep X Γ↭Γ') (γ ﹐﹝ W ╎ cs ﹞) = {!!}
+    perm-sem (swap X Y Γ↭Γ') (γ ﹐ M) = {!!}
+    perm-sem (swap X Y Γ↭Γ') (γ ﹐﹝ W ╎ cs ﹞) = {!!}
+    perm-sem (_↭_.trans Γ↭Γ' Γ↭Γ'') ∗ = {!!}
+    perm-sem (_↭_.trans Γ↭Γ' Γ↭Γ'') (γ ﹐ M) = {!!}
+    perm-sem (_↭_.trans Γ↭Γ' Γ↭Γ'') (γ ﹐﹝ W ╎ cs ﹞) = {!!}
+
+    -}
+
+
   -----------------------------------------------------------------------------
   -- PROPERTIES OF ENVIRONMENTS
   -----------------------------------------------------------------------------

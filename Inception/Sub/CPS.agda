@@ -1,6 +1,9 @@
+{-# OPTIONS --no-postfix-projections #-}
+
 module Inception.Sub.CPS (R : Set) where
 
 open import Inception.Sub.Syntax
+open import Inception.Sub.Renaming
 
 open import Data.Unit
 open import Data.Product as P
@@ -189,7 +192,7 @@ mutual
   eqVal : Γ ⊢ᵛ V ≈ W ∶ A -> ⟦ V ⟧ᵛ ≡ ⟦ W ⟧ᵛ
   eqVal ≈-refl = refl
   eqVal (≈-sym p) = sym (eqVal p)
-  eqVal (≈-trans p q) = trans (eqVal p) (eqVal q)
+  eqVal (≈-trans p q) = Relation.Binary.PropositionalEquality.trans (eqVal p) (eqVal q)
   eqVal (lam-cong p) = cong curry (eqComp p)
   eqVal (pair-cong p q) = cong₂ <_,_> (eqVal p) (eqVal q)
   eqVal (pm-cong p q) rewrite eqVal p | eqVal q = refl
@@ -201,7 +204,7 @@ mutual
   eqComp : Γ ⊢ᶜ M ≈ N ∶ A -> ⟦ M ⟧ᶜ ≡ ⟦ N ⟧ᶜ
   eqComp ≈-refl = refl
   eqComp (≈-sym p) = sym (eqComp p)
-  eqComp (≈-trans p q) = trans (eqComp p) (eqComp q)
+  eqComp (≈-trans p q) = Relation.Binary.PropositionalEquality.trans (eqComp p) (eqComp q)
   eqComp (return-cong p) rewrite eqVal p = refl
   eqComp (pm-cong p q) rewrite eqVal p | eqComp q = refl
   eqComp (push-cong p q) rewrite eqComp p | eqComp q = refl
@@ -251,3 +254,10 @@ wk-sem-trans (wk-wk π₁) (wk-cong π₂) γ =
       ≡⟨ refl ⟩
        ⟦ wk-wk (wk-trans π₁ (wk-cong π₂)) ⟧ʷ γ ∎
 wk-sem-trans (wk-wk π₁) (wk-wk π₂) γ = wk-sem-trans π₁ (wk-wk π₂) (proj₁ γ)
+
+
+⟦_⟧ᴾ : Γ ↭ Γ' → ⟦ Γ ⟧ˣ → ⟦ Γ' ⟧ˣ
+⟦ refl ⟧ᴾ = idf
+⟦ prep X Γ↭Γ' ⟧ᴾ = < proj₁ ； ⟦ Γ↭Γ' ⟧ᴾ , proj₂ >
+⟦ _↭_.swap X Y Γ↭Γ' ⟧ᴾ = < < proj₁ ； proj₁ ； ⟦ Γ↭Γ' ⟧ᴾ , (λ x → proj₂ x) > , (λ x → proj₂ (proj₁ x)) >
+⟦ _↭_.trans Γ↭Γ' Γ'↭Γ'' ⟧ᴾ = ⟦ Γ↭Γ' ⟧ᴾ ； ⟦ Γ'↭Γ'' ⟧ᴾ
