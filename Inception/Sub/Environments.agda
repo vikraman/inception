@@ -172,32 +172,82 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   mutual
     perm-sem-val : (Γ↭Γ' : Γ ↭ Γ') → (E : ⟦ Γ ⟧ˣ) → (M : Val Γ X) → ⟦ M ⟧ᵛ E ≡ ⟦ perm-val Γ↭Γ' M ⟧ᵛ (⟦ Γ↭Γ' ⟧ᴾ E)
     perm-sem-val Γ↭Γ' E (var i) = perm-sem-mem Γ↭Γ' E i
-    perm-sem-val Γ↭Γ' E (lam W) = {!!}
+    perm-sem-val Γ↭Γ' E (lam {A = X} W) = extensionality (λ x → perm-sem-comp (prep X Γ↭Γ') (E , x) W)
     perm-sem-val Γ↭Γ' E (pair M₁ M₂) = cong₂ _,_ (perm-sem-val Γ↭Γ' E M₁) (perm-sem-val Γ↭Γ' E M₂)
     perm-sem-val Γ↭Γ' E (pm {A = X} {B = Y} M N) =
       let
         a0 : ⟦ N ⟧ᵛ ((E , proj₁ (⟦ M ⟧ᵛ E)) , proj₂ (⟦ M ⟧ᵛ E)) ≡ ⟦ perm-val (prep Y (prep X Γ↭Γ')) N ⟧ᵛ (⟦ prep Y (prep X Γ↭Γ') ⟧ᴾ ((E , proj₁ (⟦ M ⟧ᵛ E)) , proj₂ (⟦ M ⟧ᵛ E)))
         a0 = perm-sem-val (prep Y (prep X Γ↭Γ')) ((E , proj₁ (⟦ M ⟧ᵛ E)) , proj₂ (⟦ M ⟧ᵛ E)) N
-        -- a0 :   ⟦ N ⟧ᵛ ((E , proj₁ (⟦ M ⟧ᵛ E)) , proj₂ (⟦ M ⟧ᵛ E)) ≡ ⟦ perm-val (prep Y (prep X Γ↭Γ')) N ⟧ᵛ (⟦ prep Y (prep X Γ↭Γ') ⟧ᴾ ((E , proj₁ (⟦ M ⟧ᵛ E)) , proj₂ (⟦ M ⟧ᵛ E)))
-        -- goal : ⟦ N ⟧ᵛ ((E , proj₁ (⟦ M ⟧ᵛ E)) , proj₂ (⟦ M ⟧ᵛ E)) ≡ ⟦ perm-val (prep Y (prep X Γ↭Γ')) N ⟧ᵛ ((⟦ Γ↭Γ' ⟧ᴾ E , proj₁ (⟦ perm-val Γ↭Γ' M ⟧ᵛ (⟦ Γ↭Γ' ⟧ᴾ E))) , proj₂ (⟦ perm-val Γ↭Γ' M ⟧ᵛ (⟦ Γ↭Γ' ⟧ᴾ E)))
+        a1 : (⟦ prep Y (prep X Γ↭Γ') ⟧ᴾ ((E , proj₁ (⟦ M ⟧ᵛ E)) , proj₂ (⟦ M ⟧ᵛ E))) ≡ ((⟦ Γ↭Γ' ⟧ᴾ E , proj₁ (⟦ perm-val Γ↭Γ' M ⟧ᵛ (⟦ Γ↭Γ' ⟧ᴾ E))) , proj₂ (⟦ perm-val Γ↭Γ' M ⟧ᵛ (⟦ Γ↭Γ' ⟧ᴾ E)))
+        a1 =  (⟦ prep Y (prep X Γ↭Γ') ⟧ᴾ ((E , proj₁ (⟦ M ⟧ᵛ E)) , proj₂ (⟦ M ⟧ᵛ E)))
+             ≡⟨ refl ⟩
+              (⟦ Γ↭Γ' ⟧ᴾ E , proj₁ (⟦ M ⟧ᵛ E)) , proj₂ (⟦ M ⟧ᵛ E)
+             ≡⟨ cong (λ x → (⟦ Γ↭Γ' ⟧ᴾ E , proj₁ x) , proj₂ x) (perm-sem-val Γ↭Γ' E M) ⟩
+              ((⟦ Γ↭Γ' ⟧ᴾ E , proj₁ (⟦ perm-val Γ↭Γ' M ⟧ᵛ (⟦ Γ↭Γ' ⟧ᴾ E))) , proj₂ (⟦ perm-val Γ↭Γ' M ⟧ᵛ (⟦ Γ↭Γ' ⟧ᴾ E))) ∎
       in
-      {!⟦ pm M N ⟧ᵛ E ≡ ⟦ pm (perm-val Γ↭Γ' M) (perm-val (prep Y (prep X Γ↭Γ')) N) ⟧ᵛ (⟦ Γ↭Γ' ⟧ᴾ E)!}
+      ⟦ N ⟧ᵛ ((E , proj₁ (⟦ M ⟧ᵛ E)) , proj₂ (⟦ M ⟧ᵛ E))
+      ≡⟨ a0 ⟩
+      ⟦ perm-val (prep Y (prep X Γ↭Γ')) N ⟧ᵛ (⟦ prep Y (prep X Γ↭Γ') ⟧ᴾ ((E , proj₁ (⟦ M ⟧ᵛ E)) , proj₂ (⟦ M ⟧ᵛ E)))
+      ≡⟨ cong ⟦ perm-val (prep Y (prep X Γ↭Γ')) N ⟧ᵛ a1 ⟩
+      ⟦ perm-val (prep Y (prep X Γ↭Γ')) N ⟧ᵛ ((⟦ Γ↭Γ' ⟧ᴾ E , proj₁ (⟦ perm-val Γ↭Γ' M ⟧ᵛ (⟦ Γ↭Γ' ⟧ᴾ E))) , proj₂ (⟦ perm-val Γ↭Γ' M ⟧ᵛ (⟦ Γ↭Γ' ⟧ᴾ E))) ∎
     perm-sem-val Γ↭Γ' E unit = refl
 
     perm-sem-comp : (Γ↭Γ' : Γ ↭ Γ') → (E : ⟦ Γ ⟧ˣ) → (W : Comp Γ X) → ⟦ W ⟧ᶜ E ≡ ⟦ perm-comp Γ↭Γ' W ⟧ᶜ (⟦ Γ↭Γ' ⟧ᴾ E)
-    perm-sem-comp Γ↭Γ' E (return M) =
+    perm-sem-comp Γ↭Γ' E (return M) = extensionality (λ k → cong k (perm-sem-val Γ↭Γ' E M))
+    perm-sem-comp Γ↭Γ' E (pm {A = X} {B = Y} M W) =
       let
-        IH = perm-sem-val Γ↭Γ' E M
+        a1 = perm-sem-comp (prep Y (prep X Γ↭Γ')) ((E , proj₁ (⟦ M ⟧ᵛ E)) , proj₂ (⟦ M ⟧ᵛ E)) W
+        a2 = perm-sem-val Γ↭Γ' E M
+        goal : ⟦ pm M W ⟧ᶜ E ≡ ⟦ pm (perm-val Γ↭Γ' M) (perm-comp (prep Y (prep X Γ↭Γ')) W) ⟧ᶜ (⟦ Γ↭Γ' ⟧ᴾ E)
+        goal = ⟦ pm M W ⟧ᶜ E
+               ≡⟨ refl ⟩
+               ⟦ W ⟧ᶜ ((E , proj₁ (⟦ M ⟧ᵛ E)) , proj₂ (⟦ M ⟧ᵛ E))
+               ≡⟨ a1 ⟩
+               ⟦ perm-comp (prep Y (prep X Γ↭Γ')) W ⟧ᶜ (⟦ prep Y (prep X Γ↭Γ') ⟧ᴾ ((E , proj₁ (⟦ M ⟧ᵛ E)) , proj₂ (⟦ M ⟧ᵛ E)))
+               ≡⟨ cong (λ x → ⟦ perm-comp (prep Y (prep X Γ↭Γ')) W ⟧ᶜ ((⟦ Γ↭Γ' ⟧ᴾ E , proj₁ x) , proj₂ x)) a2 ⟩
+               ⟦ perm-comp (prep Y (prep X Γ↭Γ')) W ⟧ᶜ ((⟦ Γ↭Γ' ⟧ᴾ E , proj₁ (⟦ perm-val Γ↭Γ' M ⟧ᵛ (⟦ Γ↭Γ' ⟧ᴾ E))) , proj₂ (⟦ perm-val Γ↭Γ' M ⟧ᵛ (⟦ Γ↭Γ' ⟧ᴾ E)))
+               ≡⟨ refl ⟩
+               ⟦ pm (perm-val Γ↭Γ' M) (perm-comp (prep Y (prep X Γ↭Γ')) W) ⟧ᶜ (⟦ Γ↭Γ' ⟧ᴾ E) ∎
       in
-      extensionality {!IH!}
-      -- let
-      -- in
-      -- {!⟦ return M ⟧ᶜ E ≡ ⟦ return (perm-val Γ↭Γ' M) ⟧ᶜ (⟦ Γ↭Γ' ⟧ᴾ E)!}
-    perm-sem-comp Γ↭Γ' E (pm M W) = {!!}
-    perm-sem-comp Γ↭Γ' E (push W₁ W₂) = {!!}
-    perm-sem-comp Γ↭Γ' E (app M N) = {!!}
-    perm-sem-comp Γ↭Γ' E (var M) = {!!}
-    perm-sem-comp Γ↭Γ' E (sub W₁ W₂) = {!!}
+      goal
+    perm-sem-comp Γ↭Γ' E (push {A = X} W₁ W₂) =
+      let
+        IH1 = perm-sem-comp Γ↭Γ' E W₁
+        goal : (λ k → ⟦ W₁ ⟧ᶜ E (λ z → ⟦ W₂ ⟧ᶜ (E , z) k)) ≡ (λ k → ⟦ perm-comp Γ↭Γ' W₁ ⟧ᶜ (⟦ Γ↭Γ' ⟧ᴾ E) (λ z → ⟦ perm-comp (prep X Γ↭Γ') W₂ ⟧ᶜ (⟦ Γ↭Γ' ⟧ᴾ E , z) k))
+        goal = extensionality λ k → cong₂ (λ x y → x y) IH1 (extensionality λ x → cong-app (perm-sem-comp (prep X Γ↭Γ') (E , x) W₂) k)
+      in
+      goal
+    perm-sem-comp Γ↭Γ' E (app M N) =
+      let
+        IH1 = perm-sem-val Γ↭Γ' E M
+        IH2 = perm-sem-val Γ↭Γ' E N
+        goal : ⟦ M ⟧ᵛ E (⟦ N ⟧ᵛ E) ≡ ⟦ perm-val Γ↭Γ' M ⟧ᵛ (⟦ Γ↭Γ' ⟧ᴾ E) (⟦ perm-val Γ↭Γ' N ⟧ᵛ (⟦ Γ↭Γ' ⟧ᴾ E))
+        goal = cong₂ (λ x y → x y) IH1 IH2
+      in
+      goal
+    perm-sem-comp Γ↭Γ' E (var M) = cong varK (perm-sem-val Γ↭Γ' E M)
+    perm-sem-comp Γ↭Γ' E (sub {A = X} W₁ W₂) =
+      let
+        IH2 = perm-sem-comp Γ↭Γ' E W₂
+        goal : (λ k → ⟦ W₁ ⟧ᶜ (E , ⟦ W₂ ⟧ᶜ E k) k) ≡ (λ k → ⟦ perm-comp (prep `V Γ↭Γ') W₁ ⟧ᶜ (⟦ Γ↭Γ' ⟧ᴾ E , ⟦ perm-comp Γ↭Γ' W₂ ⟧ᶜ (⟦ Γ↭Γ' ⟧ᴾ E) k) k)
+        goal = extensionality λ k →
+                              let
+                                a1 = perm-sem-comp (prep `V Γ↭Γ') (E , ⟦ W₂ ⟧ᶜ E k) W₁
+                                a2 : (⟦ Γ↭Γ' ⟧ᴾ E , ⟦ perm-comp Γ↭Γ' W₂ ⟧ᶜ (⟦ Γ↭Γ' ⟧ᴾ E) k) ≡ (⟦ prep `V Γ↭Γ' ⟧ᴾ (E , ⟦ W₂ ⟧ᶜ E k))
+                                a2 =   (⟦ Γ↭Γ' ⟧ᴾ E , ⟦ perm-comp Γ↭Γ' W₂ ⟧ᶜ (⟦ Γ↭Γ' ⟧ᴾ E) k)
+                                      ≡⟨ cong (⟦ Γ↭Γ' ⟧ᴾ E ,_) (sym (cong-app IH2 k)) ⟩
+                                       ⟦ Γ↭Γ' ⟧ᴾ E , ⟦ W₂ ⟧ᶜ E k
+                                      ≡⟨ refl ⟩
+                                       (⟦ prep `V Γ↭Γ' ⟧ᴾ (E , ⟦ W₂ ⟧ᶜ E k)) ∎
+                                b1 = cong-app a1 k
+                              in
+                              ⟦ W₁ ⟧ᶜ (E , ⟦ W₂ ⟧ᶜ E k) k
+                              ≡⟨ b1 ⟩
+                               ⟦ perm-comp (prep `V Γ↭Γ') W₁ ⟧ᶜ (⟦ prep `V Γ↭Γ' ⟧ᴾ (E , ⟦ W₂ ⟧ᶜ E k)) k
+                              ≡⟨ cong (λ x → ⟦ perm-comp (prep `V Γ↭Γ') W₁ ⟧ᶜ x k) (sym a2) ⟩
+                              ⟦ perm-comp (prep `V Γ↭Γ') W₁ ⟧ᶜ (⟦ Γ↭Γ' ⟧ᴾ E , ⟦ perm-comp Γ↭Γ' W₂ ⟧ᶜ (⟦ Γ↭Γ' ⟧ᴾ E) k) k ∎
+      in
+      goal
 
 
   mutual
