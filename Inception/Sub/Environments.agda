@@ -601,7 +601,21 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       mem-gc-i : mem-gc-Γ ∋ X
       mem-gc-π : Wk Γ mem-gc-Γ
 
+  record ValGC (M : Val Γ X) : Set where
+    field
+      val-gc-Γ : Ctx
+      val-gc-M : Val val-gc-Γ X
+      val-gc-π : Wk Γ val-gc-Γ
+
+  record CompGC (W : Comp Γ X) : Set where
+    field
+      comp-gc-Γ : Ctx
+      comp-gc-W : Comp comp-gc-Γ X
+      comp-gc-π : Wk Γ comp-gc-Γ
+
   open MemGC
+  open ValGC
+  open CompGC
 
   mem-gc : (i : Γ ∋ X) → MemGC i
   mem-gc {Γ = Γ ∙ X} h = record { mem-gc-Γ = ε ∙ X ; mem-gc-i = h ; mem-gc-π = wk-cong wk-wk-ε }
@@ -612,217 +626,216 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     record { mem-gc-Γ = mem-gc-Γ l ; mem-gc-i = mem-gc-i l ; mem-gc-π = wk-wk (mem-gc-π l) }
 
   mutual
-
-    val-gc : Val Γ X → Σ[ Γ' ∈ Ctx ] ((Val Γ' X) × (Wk Γ Γ'))
-    val-gc (var i) = let l = mem-gc i in mem-gc-Γ l , var (mem-gc-i l) , mem-gc-π l
+    val-gc : (M : Val Γ X) → ValGC M
+    val-gc (var i) = let l = mem-gc i in record { val-gc-Γ = mem-gc-Γ l ; val-gc-M = var (mem-gc-i l) ; val-gc-π = mem-gc-π l}
     val-gc (lam {A = X} W) with comp-gc W
-    ... | Γ' ∙ X , W' , wk-cong π' = Γ' , lam W' , π'
-    ... | ε , W' , wk-wk π' = ε , lam (wk-comp (wk-wk wk-id) W') , π'
-    ... | Γ' ∙ X , W' , wk-wk π' = Γ' ∙ X , lam (wk-comp (wk-wk wk-id) W') , π'
+    ... | record { comp-gc-Γ = ε ; comp-gc-W = W' ; comp-gc-π = wk-wk π' } = record { val-gc-Γ = ε ; val-gc-M = lam (wk-comp (wk-wk wk-id) W') ; val-gc-π = π' }
+    ... | record { comp-gc-Γ = Γ' ∙ X ; comp-gc-W = W' ; comp-gc-π = wk-cong π' } = record { val-gc-Γ = Γ' ; val-gc-M = lam W' ; val-gc-π = π' }
+    ... | record { comp-gc-Γ = Γ' ∙ X ; comp-gc-W = W' ; comp-gc-π = wk-wk π' } = record { val-gc-Γ = Γ' ∙ X ; val-gc-M = lam (wk-comp (wk-wk wk-id) W') ; val-gc-π = π' }
     val-gc {Γ = Γ} (pair M₁ M₂) =
             let
               v₁ = val-gc M₁
-              M₁' = proj₁ (proj₂ v₁)
-              π₁ = proj₂ (proj₂ v₁)
-              v₂ = val-gc M₂
-              M₂' = proj₁ (proj₂ v₂)
-              π₂ = proj₂ (proj₂ v₂)
+              M₁' = val-gc-M v₁
+              π₁  = val-gc-π v₁
+              v₂  = val-gc M₂
+              M₂' = val-gc-M v₂
+              π₂  = val-gc-π v₂
               j = wk-merge π₁ π₂
               Γ' = proj₁ j
               π = proj₁ (proj₂ j)
               π₁' = proj₁ (proj₂ (proj₂ j))
               π₂' = proj₂ (proj₂ (proj₂ j))
             in
-            Γ' , pair (wk-val π₁' M₁') (wk-val π₂' M₂') , π
+            record { val-gc-Γ = Γ' ; val-gc-M = pair (wk-val π₁' M₁') (wk-val π₂' M₂') ; val-gc-π = π }
     val-gc (pm {A = X} {B = Y} {C = Z} M N) with val-gc N
-    ... | Γ₂ , N₂ , wk-cong (wk-cong π₂) =
+    ... | record { val-gc-Γ = Γ₂ ; val-gc-M = N₂ ; val-gc-π = wk-wk (wk-wk π₂) } =
             let
               v = val-gc M
-              M₁ = proj₁ (proj₂ v)
-              π₁ = proj₂ (proj₂ v)
+              M₁ = val-gc-M v
+              π₁ = val-gc-π v
               j = wk-merge π₁ π₂
               Γ' = proj₁ j
               π = proj₁ (proj₂ j)
               π₁' = proj₁ (proj₂ (proj₂ j))
               π₂' = proj₂ (proj₂ (proj₂ j))
             in
-            Γ' , pm (wk-val π₁' M₁) (wk-val (wk-cong (wk-cong π₂')) N₂) , π
-    ... | Γ₂ ∙ Y , N₂ , wk-cong (wk-wk π₂) =
+            record { val-gc-Γ = Γ' ; val-gc-M = pm (wk-val π₁' M₁) (wk-val (wk-wk (wk-wk π₂')) N₂) ; val-gc-π = π }
+    ... | record { val-gc-Γ = Γ₂ ∙ Y ; val-gc-M = N₂ ; val-gc-π = wk-cong (wk-cong π₂) } =
             let
               v = val-gc M
-              M₁ = proj₁ (proj₂ v)
-              π₁ = proj₂ (proj₂ v)
+              M₁ = val-gc-M v
+              π₁ = val-gc-π v
               j = wk-merge π₁ π₂
               Γ' = proj₁ j
               π = proj₁ (proj₂ j)
               π₁' = proj₁ (proj₂ (proj₂ j))
               π₂' = proj₂ (proj₂ (proj₂ j))
             in
-            Γ' , pm (wk-val π₁' M₁) (wk-val (wk-cong (wk-wk π₂')) N₂) , π
-    ... | Γ₂ , N₂ , wk-wk (wk-cong π₂) =
+            record { val-gc-Γ = Γ' ; val-gc-M = pm (wk-val π₁' M₁) (wk-val (wk-cong (wk-cong π₂')) N₂) ; val-gc-π = π }
+    ... | record { val-gc-Γ = Γ₂ ∙ Y ; val-gc-M = N₂ ; val-gc-π = wk-cong (wk-wk π₂) } =
             let
               v = val-gc M
-              M₁ = proj₁ (proj₂ v)
-              π₁ = proj₂ (proj₂ v)
+              M₁ = val-gc-M v
+              π₁ = val-gc-π v
               j = wk-merge π₁ π₂
               Γ' = proj₁ j
               π = proj₁ (proj₂ j)
               π₁' = proj₁ (proj₂ (proj₂ j))
               π₂' = proj₂ (proj₂ (proj₂ j))
             in
-            Γ' , pm (wk-val π₁' M₁) (wk-val (wk-wk (wk-cong π₂')) N₂) , π
-    ... | Γ₂ , N₂ , wk-wk (wk-wk π₂) =
+            record { val-gc-Γ = Γ' ; val-gc-M = pm (wk-val π₁' M₁) (wk-val (wk-cong (wk-wk π₂')) N₂) ; val-gc-π = π }
+    ... | record { val-gc-Γ = Γ₂ ∙ x ; val-gc-M = N₂ ; val-gc-π = wk-wk (wk-cong π₂) } =
             let
               v = val-gc M
-              M₁ = proj₁ (proj₂ v)
-              π₁ = proj₂ (proj₂ v)
+              M₁ = val-gc-M v
+              π₁ = val-gc-π v
               j = wk-merge π₁ π₂
               Γ' = proj₁ j
               π = proj₁ (proj₂ j)
               π₁' = proj₁ (proj₂ (proj₂ j))
               π₂' = proj₂ (proj₂ (proj₂ j))
             in
-            Γ' , pm (wk-val π₁' M₁) (wk-val (wk-wk (wk-wk π₂')) N₂) , π
-    val-gc unit = ε , unit , wk-wk-ε
+            record { val-gc-Γ = Γ' ; val-gc-M = pm (wk-val π₁' M₁) (wk-val (wk-wk (wk-cong π₂')) N₂) ; val-gc-π = π }
+    val-gc unit = record { val-gc-Γ = ε ; val-gc-M = unit ; val-gc-π = wk-wk-ε }
 
-    comp-gc : Comp Γ X → Σ[ Γ' ∈ Ctx ] ((Comp Γ' X) × (Wk Γ Γ'))
-    comp-gc (return M) = let v = val-gc M in proj₁ v , return (proj₁ (proj₂ v)) , proj₂ (proj₂ v)
+    comp-gc : (W : Comp Γ X) → CompGC W
+    comp-gc (return M) = let v = val-gc M in record { comp-gc-Γ = val-gc-Γ v ; comp-gc-W = return (val-gc-M v) ; comp-gc-π = val-gc-π v }
     comp-gc (pm {A = X} {B = Y} {C = Z} M W) with comp-gc W
-    ... | Γ₂ , W₂ , wk-cong (wk-cong π₂) =
+    ... | record { comp-gc-Γ = Γ₂ ; comp-gc-W = W₂ ; comp-gc-π = wk-wk (wk-wk π₂) } =
             let
               v = val-gc M
-              M₁ = proj₁ (proj₂ v)
-              π₁ = proj₂ (proj₂ v)
+              M₁ = val-gc-M v
+              π₁ = val-gc-π v
               j = wk-merge π₁ π₂
               Γ' = proj₁ j
               π = proj₁ (proj₂ j)
               π₁' = proj₁ (proj₂ (proj₂ j))
               π₂' = proj₂ (proj₂ (proj₂ j))
             in
-            Γ' , pm (wk-val π₁' M₁) (wk-comp (wk-cong (wk-cong π₂')) W₂) , π
-    ... | Γ₂ ∙ Y , W₂ , wk-cong (wk-wk π₂) =
+            record { comp-gc-Γ = Γ' ; comp-gc-W = pm (wk-val π₁' M₁) (wk-comp (wk-wk (wk-wk π₂')) W₂) ; comp-gc-π = π }
+    ... | record { comp-gc-Γ = Γ₂ ∙ Y ; comp-gc-W = W₂ ; comp-gc-π = wk-cong (wk-cong π₂) } =
             let
               v = val-gc M
-              M₁ = proj₁ (proj₂ v)
-              π₁ = proj₂ (proj₂ v)
+              M₁ = val-gc-M v
+              π₁ = val-gc-π v
               j = wk-merge π₁ π₂
               Γ' = proj₁ j
               π = proj₁ (proj₂ j)
               π₁' = proj₁ (proj₂ (proj₂ j))
               π₂' = proj₂ (proj₂ (proj₂ j))
             in
-            Γ' , pm (wk-val π₁' M₁) (wk-comp (wk-cong (wk-wk π₂')) W₂) , π
-    ... | Γ₂ , W₂ , wk-wk (wk-cong π₂) =
+            record { comp-gc-Γ = Γ' ; comp-gc-W = pm (wk-val π₁' M₁) (wk-comp (wk-cong (wk-cong π₂')) W₂) ; comp-gc-π = π }
+    ... | record { comp-gc-Γ = Γ₂ ∙ Y ; comp-gc-W = W₂ ; comp-gc-π = wk-cong (wk-wk π₂) } =
             let
               v = val-gc M
-              M₁ = proj₁ (proj₂ v)
-              π₁ = proj₂ (proj₂ v)
+              M₁ = val-gc-M v
+              π₁ = val-gc-π v
               j = wk-merge π₁ π₂
               Γ' = proj₁ j
               π = proj₁ (proj₂ j)
               π₁' = proj₁ (proj₂ (proj₂ j))
               π₂' = proj₂ (proj₂ (proj₂ j))
             in
-            Γ' , pm (wk-val π₁' M₁) (wk-comp (wk-wk (wk-cong π₂')) W₂) , π
-    ... | Γ₂ , W₂ , wk-wk (wk-wk π₂) =
+            record { comp-gc-Γ = Γ' ; comp-gc-W = pm (wk-val π₁' M₁) (wk-comp (wk-cong (wk-wk π₂')) W₂) ; comp-gc-π = π }
+    ... | record { comp-gc-Γ = Γ₂ ∙ x ; comp-gc-W = W₂ ; comp-gc-π = wk-wk (wk-cong π₂) } =
             let
               v = val-gc M
-              M₁ = proj₁ (proj₂ v)
-              π₁ = proj₂ (proj₂ v)
+              M₁ = val-gc-M v
+              π₁ = val-gc-π v
               j = wk-merge π₁ π₂
               Γ' = proj₁ j
               π = proj₁ (proj₂ j)
               π₁' = proj₁ (proj₂ (proj₂ j))
               π₂' = proj₂ (proj₂ (proj₂ j))
             in
-            Γ' , pm (wk-val π₁' M₁) (wk-comp (wk-wk (wk-wk π₂')) W₂) , π
+            record { comp-gc-Γ = Γ' ; comp-gc-W = pm (wk-val π₁' M₁) (wk-comp (wk-wk (wk-cong π₂')) W₂) ; comp-gc-π = π }
     comp-gc (push {A = X} {B = Z} W₁ W₂) with comp-gc W₂
-    ... | Γ₂' ∙ X , W₂' , wk-cong π₂' =
+    ... | record { comp-gc-Γ = ε ; comp-gc-W = W₂' ; comp-gc-π = wk-wk π₂' } =
             let
               c = comp-gc W₁
-              W₁' = proj₁ (proj₂ c)
-              π₁' = proj₂ (proj₂ c)
+              W₁' = comp-gc-W c
+              π₁' = comp-gc-π c
               j = wk-merge π₁' π₂'
               Γ' = proj₁ j
               π = proj₁ (proj₂ j)
               π₁'' = proj₁ (proj₂ (proj₂ j))
               π₂'' = proj₂ (proj₂ (proj₂ j))
             in
-            Γ' , push (wk-comp π₁'' W₁') (wk-comp (wk-cong π₂'') W₂') , π
-    ... | ε , W₂' , wk-wk π₂' =
+            record { comp-gc-Γ = Γ' ; comp-gc-W = push (wk-comp π₁'' W₁') (wk-comp (wk-wk π₂'') W₂') ; comp-gc-π = π }
+    ... | record { comp-gc-Γ = Γ₂' ∙ X ; comp-gc-W = W₂' ; comp-gc-π = wk-cong π₂' } =
             let
               c = comp-gc W₁
-              W₁' = proj₁ (proj₂ c)
-              π₁' = proj₂ (proj₂ c)
+              W₁' = comp-gc-W c
+              π₁' = comp-gc-π c
               j = wk-merge π₁' π₂'
               Γ' = proj₁ j
               π = proj₁ (proj₂ j)
               π₁'' = proj₁ (proj₂ (proj₂ j))
               π₂'' = proj₂ (proj₂ (proj₂ j))
             in
-            Γ' , push (wk-comp π₁'' W₁') (wk-comp (wk-wk π₂'') W₂') , π
-    ... | Γ₂' ∙ x , W₂' , wk-wk π₂' =
+            record { comp-gc-Γ = Γ' ; comp-gc-W = push (wk-comp π₁'' W₁') (wk-comp (wk-cong π₂'') W₂') ; comp-gc-π = π }
+    ... | record { comp-gc-Γ = Γ₂' ∙ X ; comp-gc-W = W₂' ; comp-gc-π = wk-wk π₂' } =
             let
               c = comp-gc W₁
-              W₁' = proj₁ (proj₂ c)
-              π₁' = proj₂ (proj₂ c)
+              W₁' = comp-gc-W c
+              π₁' = comp-gc-π c
               j = wk-merge π₁' π₂'
               Γ' = proj₁ j
               π = proj₁ (proj₂ j)
               π₁'' = proj₁ (proj₂ (proj₂ j))
               π₂'' = proj₂ (proj₂ (proj₂ j))
             in
-            Γ' , push (wk-comp π₁'' W₁') (wk-comp (wk-wk π₂'') W₂') , π
+            record { comp-gc-Γ = Γ' ; comp-gc-W = push (wk-comp π₁'' W₁') (wk-comp (wk-wk π₂'') W₂') ; comp-gc-π = π }
     comp-gc (app M N) =
             let
               v₁ = val-gc M
-              M' = proj₁ (proj₂ v₁)
-              π₁ = proj₂ (proj₂ v₁)
+              M' = val-gc-M v₁
+              π₁ = val-gc-π v₁
               v₂ = val-gc N
-              N' = proj₁ (proj₂ v₂)
-              π₂ = proj₂ (proj₂ v₂)
+              N' = val-gc-M v₂
+              π₂ = val-gc-π v₂
               j = wk-merge π₁ π₂
               Γ' = proj₁ j
               π = proj₁ (proj₂ j)
               π₁' = proj₁ (proj₂ (proj₂ j))
               π₂' = proj₂ (proj₂ (proj₂ j))
             in
-            Γ' , app (wk-val π₁' M') (wk-val π₂' N') , π
-    comp-gc (var M) =  let v = val-gc M in proj₁ v , var (proj₁ (proj₂ v)) , proj₂ (proj₂ v)
-    comp-gc (sub {A = X} W₁ W₂)  with comp-gc W₁
-    ... | Γ₁' ∙ X , W₁' , wk-cong π₁' =
+            record { comp-gc-Γ = Γ' ; comp-gc-W = app (wk-val π₁' M') (wk-val π₂' N') ; comp-gc-π = π }
+    comp-gc (var M) = let v = val-gc M in record { comp-gc-Γ = val-gc-Γ v ; comp-gc-W = var (val-gc-M v) ; comp-gc-π = val-gc-π v }
+    comp-gc (sub {A = X} W₁ W₂) with comp-gc W₁
+    ... | record { comp-gc-Γ = ε ; comp-gc-W = W₁' ; comp-gc-π = wk-wk π₁' } =
             let
               c = comp-gc W₂
-              W₂' = proj₁ (proj₂ c)
-              π₂' = proj₂ (proj₂ c)
+              W₂' = comp-gc-W c
+              π₂' = comp-gc-π c
               j = wk-merge π₁' π₂'
               Γ' = proj₁ j
               π = proj₁ (proj₂ j)
               π₁'' = proj₁ (proj₂ (proj₂ j))
               π₂'' = proj₂ (proj₂ (proj₂ j))
             in
-            Γ' , sub (wk-comp (wk-cong π₁'') W₁') (wk-comp π₂'' W₂') , π
-    ... | ε , W₁' , wk-wk π₁' =
+            record { comp-gc-Γ = Γ' ; comp-gc-W = sub (wk-comp (wk-wk π₁'') W₁') (wk-comp π₂'' W₂') ; comp-gc-π = π }
+    ... | record { comp-gc-Γ = Γ₁' ∙ X ; comp-gc-W = W₁' ; comp-gc-π = wk-cong π₁' } =
             let
               c = comp-gc W₂
-              W₂' = proj₁ (proj₂ c)
-              π₂' = proj₂ (proj₂ c)
+              W₂' = comp-gc-W c
+              π₂' = comp-gc-π c
               j = wk-merge π₁' π₂'
               Γ' = proj₁ j
               π = proj₁ (proj₂ j)
               π₁'' = proj₁ (proj₂ (proj₂ j))
               π₂'' = proj₂ (proj₂ (proj₂ j))
             in
-            Γ' , sub (wk-comp (wk-wk π₁'') W₁') (wk-comp π₂'' W₂') , π
-    ... | Γ₁' ∙ X' , W₁' , wk-wk π₁' =
+            record { comp-gc-Γ = Γ' ; comp-gc-W = sub (wk-comp (wk-cong π₁'') W₁') (wk-comp π₂'' W₂') ; comp-gc-π = π }
+    ... | record { comp-gc-Γ = Γ₁' ∙ X ; comp-gc-W = W₁' ; comp-gc-π = wk-wk π₁' } =
             let
               c = comp-gc W₂
-              W₂' = proj₁ (proj₂ c)
-              π₂' = proj₂ (proj₂ c)
+              W₂' = comp-gc-W c
+              π₂' = comp-gc-π c
               j = wk-merge π₁' π₂'
               Γ' = proj₁ j
               π = proj₁ (proj₂ j)
               π₁'' = proj₁ (proj₂ (proj₂ j))
               π₂'' = proj₂ (proj₂ (proj₂ j))
             in
-            Γ' , sub (wk-comp (wk-wk π₁'') W₁') (wk-comp π₂'' W₂') , π
+            record { comp-gc-Γ = Γ' ; comp-gc-W = sub (wk-comp (wk-wk π₁'') W₁') (wk-comp π₂'' W₂') ; comp-gc-π = π }
