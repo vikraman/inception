@@ -595,18 +595,26 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                   ≅ Comp.sub (subst (λ x → x) (H.≅-to-type-≡ M≅M') M) (subst (λ x → x) (H.≅-to-type-≡ N≅N') N)
   subst-lemma-sub M N M' N' refl _≅_.refl _≅_.refl = _≅_.refl
 
-  mem-gc : Γ ∋ X → Σ[ Γ' ∈ Ctx ] ((Γ' ∋ X) × (Wk Γ Γ'))
-  mem-gc {Γ = Γ ∙ X} h = ε ∙ X , h , wk-cong wk-wk-ε
+  record MemGC (i : Γ ∋ X) : Set where
+    field
+      mem-gc-Γ : Ctx
+      mem-gc-i : mem-gc-Γ ∋ X
+      mem-gc-π : Wk Γ mem-gc-Γ
+
+  open MemGC
+
+  mem-gc : (i : Γ ∋ X) → MemGC i
+  mem-gc {Γ = Γ ∙ X} h = record { mem-gc-Γ = ε ∙ X ; mem-gc-i = h ; mem-gc-π = wk-cong wk-wk-ε }
   mem-gc (t i) =
     let
       l = mem-gc i
     in
-    proj₁ l , proj₁ (proj₂ l) , wk-wk (proj₂ (proj₂ l))
+    record { mem-gc-Γ = mem-gc-Γ l ; mem-gc-i = mem-gc-i l ; mem-gc-π = wk-wk (mem-gc-π l) }
 
   mutual
 
     val-gc : Val Γ X → Σ[ Γ' ∈ Ctx ] ((Val Γ' X) × (Wk Γ Γ'))
-    val-gc (var i) = let l = mem-gc i in proj₁ l , var (proj₁ (proj₂ l)) , proj₂ (proj₂ l)
+    val-gc (var i) = let l = mem-gc i in mem-gc-Γ l , var (mem-gc-i l) , mem-gc-π l
     val-gc (lam {A = X} W) with comp-gc W
     ... | Γ' ∙ X , W' , wk-cong π' = Γ' , lam W' , π'
     ... | ε , W' , wk-wk π' = ε , lam (wk-comp (wk-wk wk-id) W') , π'
