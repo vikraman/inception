@@ -533,9 +533,9 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   enveq-eq {π = wk-wk π} {γ = γ ﹐﹝ W ╎ cs ﹞} {γ' = γ' ﹐﹝ W₁ ╎ cs₁ ﹞} (wk-env-comp-wk W₂ cs₂ ϖ) = enveq-eq ϖ
 
   ----------------------------------------------------------
-  -- GARBAGE COLLECTION (not used)
+  -- GARBAGE COLLECTION
   ----------------------------------------------------------
-  {-
+
   pred-ctx-eq : Γ ∙ X ≡ Δ ∙ X → Γ ≡ Δ
   pred-ctx-eq refl = refl
 
@@ -618,7 +618,7 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
               v₂ = val-gc M₂
               M₂' = proj₁ (proj₂ v₂)
               π₂ = proj₂ (proj₂ v₂)
-              j = wk-join π₁ π₂
+              j = wk-merge π₁ π₂
               Γ' = proj₁ j
               π = proj₁ (proj₂ j)
               π₁' = proj₁ (proj₂ (proj₂ j))
@@ -631,7 +631,7 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
               v = val-gc M
               M₁ = proj₁ (proj₂ v)
               π₁ = proj₂ (proj₂ v)
-              j = wk-join π₁ π₂
+              j = wk-merge π₁ π₂
               Γ' = proj₁ j
               π = proj₁ (proj₂ j)
               π₁' = proj₁ (proj₂ (proj₂ j))
@@ -643,7 +643,7 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
               v = val-gc M
               M₁ = proj₁ (proj₂ v)
               π₁ = proj₂ (proj₂ v)
-              j = wk-join π₁ π₂
+              j = wk-merge π₁ π₂
               Γ' = proj₁ j
               π = proj₁ (proj₂ j)
               π₁' = proj₁ (proj₂ (proj₂ j))
@@ -655,7 +655,7 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
               v = val-gc M
               M₁ = proj₁ (proj₂ v)
               π₁ = proj₂ (proj₂ v)
-              j = wk-join π₁ π₂
+              j = wk-merge π₁ π₂
               Γ' = proj₁ j
               π = proj₁ (proj₂ j)
               π₁' = proj₁ (proj₂ (proj₂ j))
@@ -667,7 +667,7 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
               v = val-gc M
               M₁ = proj₁ (proj₂ v)
               π₁ = proj₂ (proj₂ v)
-              j = wk-join π₁ π₂
+              j = wk-merge π₁ π₂
               Γ' = proj₁ j
               π = proj₁ (proj₂ j)
               π₁' = proj₁ (proj₂ (proj₂ j))
@@ -684,7 +684,7 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
               v = val-gc M
               M₁ = proj₁ (proj₂ v)
               π₁ = proj₂ (proj₂ v)
-              j = wk-join π₁ π₂
+              j = wk-merge π₁ π₂
               Γ' = proj₁ j
               π = proj₁ (proj₂ j)
               π₁' = proj₁ (proj₂ (proj₂ j))
@@ -696,7 +696,7 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
               v = val-gc M
               M₁ = proj₁ (proj₂ v)
               π₁ = proj₂ (proj₂ v)
-              j = wk-join π₁ π₂
+              j = wk-merge π₁ π₂
               Γ' = proj₁ j
               π = proj₁ (proj₂ j)
               π₁' = proj₁ (proj₂ (proj₂ j))
@@ -708,7 +708,7 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
               v = val-gc M
               M₁ = proj₁ (proj₂ v)
               π₁ = proj₂ (proj₂ v)
-              j = wk-join π₁ π₂
+              j = wk-merge π₁ π₂
               Γ' = proj₁ j
               π = proj₁ (proj₂ j)
               π₁' = proj₁ (proj₂ (proj₂ j))
@@ -720,7 +720,7 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
               v = val-gc M
               M₁ = proj₁ (proj₂ v)
               π₁ = proj₂ (proj₂ v)
-              j = wk-join π₁ π₂
+              j = wk-merge π₁ π₂
               Γ' = proj₁ j
               π = proj₁ (proj₂ j)
               π₁' = proj₁ (proj₂ (proj₂ j))
@@ -733,7 +733,7 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
               c = comp-gc W₁
               W₁' = proj₁ (proj₂ c)
               π₁' = proj₂ (proj₂ c)
-              j = wk-join π₁' π₂'
+              j = wk-merge π₁' π₂'
               Γ' = proj₁ j
               π = proj₁ (proj₂ j)
               π₁'' = proj₁ (proj₂ (proj₂ j))
@@ -745,7 +745,7 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
               c = comp-gc W₁
               W₁' = proj₁ (proj₂ c)
               π₁' = proj₂ (proj₂ c)
-              j = wk-join π₁' π₂'
+              j = wk-merge π₁' π₂'
               Γ' = proj₁ j
               π = proj₁ (proj₂ j)
               π₁'' = proj₁ (proj₂ (proj₂ j))
@@ -757,7 +757,7 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
               c = comp-gc W₁
               W₁' = proj₁ (proj₂ c)
               π₁' = proj₂ (proj₂ c)
-              j = wk-join π₁' π₂'
+              j = wk-merge π₁' π₂'
               Γ' = proj₁ j
               π = proj₁ (proj₂ j)
               π₁'' = proj₁ (proj₂ (proj₂ j))
@@ -772,7 +772,7 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
               v₂ = val-gc N
               N' = proj₁ (proj₂ v₂)
               π₂ = proj₂ (proj₂ v₂)
-              j = wk-join π₁ π₂
+              j = wk-merge π₁ π₂
               Γ' = proj₁ j
               π = proj₁ (proj₂ j)
               π₁' = proj₁ (proj₂ (proj₂ j))
@@ -786,7 +786,7 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
               c = comp-gc W₂
               W₂' = proj₁ (proj₂ c)
               π₂' = proj₂ (proj₂ c)
-              j = wk-join π₁' π₂'
+              j = wk-merge π₁' π₂'
               Γ' = proj₁ j
               π = proj₁ (proj₂ j)
               π₁'' = proj₁ (proj₂ (proj₂ j))
@@ -798,7 +798,7 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
               c = comp-gc W₂
               W₂' = proj₁ (proj₂ c)
               π₂' = proj₂ (proj₂ c)
-              j = wk-join π₁' π₂'
+              j = wk-merge π₁' π₂'
               Γ' = proj₁ j
               π = proj₁ (proj₂ j)
               π₁'' = proj₁ (proj₂ (proj₂ j))
@@ -810,11 +810,10 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
               c = comp-gc W₂
               W₂' = proj₁ (proj₂ c)
               π₂' = proj₂ (proj₂ c)
-              j = wk-join π₁' π₂'
+              j = wk-merge π₁' π₂'
               Γ' = proj₁ j
               π = proj₁ (proj₂ j)
               π₁'' = proj₁ (proj₂ (proj₂ j))
               π₂'' = proj₂ (proj₂ (proj₂ j))
             in
             Γ' , sub (wk-comp (wk-wk π₁'') W₁') (wk-comp π₂'' W₂') , π
-  -}
