@@ -441,6 +441,10 @@ wk-wk-ε : Wk Γ ε
 wk-wk-ε {Γ = ε} = wk-ε
 wk-wk-ε {Γ = Γ ∙ X} = wk-wk wk-wk-ε
 
+wk-wk-uniq : (π : Wk Γ ε) → π ≡ wk-wk-ε
+wk-wk-uniq wk-ε = refl
+wk-wk-uniq (wk-wk π) = cong wk-wk (wk-wk-uniq π)
+
 wk-trans-id : {π : Wk Γ Δ} → wk-trans wk-id π ≡ π
 wk-trans-id {π = wk-ε} = refl
 wk-trans-id {π = wk-cong π} = cong wk-cong wk-trans-id
