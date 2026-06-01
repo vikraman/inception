@@ -725,13 +725,31 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     in
     Γ' ∙ X' , π' , lam (wk-comp (wk-wk wk-id) W') , cong lam (Eq.trans (Eq.trans eq a1) (sym a0))
 
+  --wk-merge : Wk Γ Δ → Wk Γ Δ' → Σ[ Γ' ∈ Ctx ] (Wk Γ Γ' × Wk Γ' Δ × Wk Γ' Δ')
+  --wk-val-merge₁ : (π₁ : Wk Γ Δ) → (π₂ : Wk Γ Δ') → (M : Val Δ X) → (π₁ ≡ (wk-val )
 
   mutual
 
     val-gc : (M : Val Γ X) → Σ[ Γ' ∈ Ctx ] Σ[ π ∈ Wk Γ Γ' ] Σ[ M' ∈ (Val Γ' X) ] (M ≡ wk-val π M')
-    val-gc (var i) = {!!} --let l = mem-gc i in proj₁ l , proj₁ (proj₂ l) , var (proj₁ (proj₂ (proj₂ l))) , cong var (proj₂ (proj₂ (proj₂ l)))
+    val-gc (var i) = let l = mem-gc i in proj₁ l , proj₁ (proj₂ l) , var (proj₁ (proj₂ (proj₂ l))) , cong var (proj₂ (proj₂ (proj₂ l)))
     val-gc (lam {A = X} W) = val-lam-helper W (comp-gc W)
-    val-gc {Γ = Γ} (pair M₁ M₂) = {!!}
+    val-gc {Γ = Γ} (pair M₁ M₂) =
+            let
+              v₁ = val-gc M₁
+              M₁' = proj₁ (proj₂ (proj₂ v₁))
+              π₁ = proj₁ (proj₂ v₁)
+              eq₁ = proj₂ (proj₂ (proj₂ v₁))
+              v₂ = val-gc M₂
+              M₂' = proj₁ (proj₂ (proj₂ v₂))
+              π₂ = proj₁ (proj₂ v₂)
+              eq₂ = proj₂ (proj₂ (proj₂ v₂))
+              j = wk-merge π₁ π₂
+              Γ' = proj₁ j
+              π = proj₁ (proj₂ j)
+              π₁' = proj₁ (proj₂ (proj₂ j))
+              π₂' = proj₁ (proj₂ (proj₂ (proj₂ j)))
+            in
+            Γ' , π , pair (wk-val π₁' M₁') (wk-val π₂' M₂') , cong₂ pair {!!} {!!}
             -- let
             --   v₁ = val-gc M₁
             --   M₁' = proj₁ (proj₂ v₁)
