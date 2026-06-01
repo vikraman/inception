@@ -806,11 +806,10 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
             -- in
             -- Γ' , pm (wk-val π₁' M₁) (wk-val (wk-wk (wk-wk π₂')) N₂) , π
     -}
-    val-gc unit = {!!} --ε , unit , wk-wk-ε
+    val-gc unit = ε , wk-wk-ε , unit , refl
 
-    --comp-gc : Comp Γ X → Σ[ Γ' ∈ Ctx ] ((Comp Γ' X) × (Wk Γ Γ'))
     comp-gc : (W : Comp Γ X) → Σ[ Γ' ∈ Ctx ] Σ[ π ∈ Wk Γ Γ' ] Σ[ W' ∈ (Comp Γ' X) ] (W ≡ wk-comp π W')
-    comp-gc (return M) = {!!} --let v = val-gc M in proj₁ v , return (proj₁ (proj₂ v)) , proj₂ (proj₂ v)
+    comp-gc (return M) = let v = val-gc M in proj₁ v , proj₁ (proj₂ v) , return (proj₁ (proj₂ (proj₂ v))) , cong return (proj₂ (proj₂ (proj₂ v)))
     comp-gc (pm {A = X} {B = Y} {C = Z} M W) = {!!}
     {-
     with comp-gc W
@@ -903,22 +902,31 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
             -- in
             -- Γ' , push (wk-comp π₁'' W₁') (wk-comp (wk-wk π₂'') W₂') , π
     -}
-    comp-gc (app M N) = {!!}
-            -- let
-            --   v₁ = val-gc M
-            --   M' = proj₁ (proj₂ v₁)
-            --   π₁ = proj₂ (proj₂ v₁)
-            --   v₂ = val-gc N
-            --   N' = proj₁ (proj₂ v₂)
-            --   π₂ = proj₂ (proj₂ v₂)
-            --   j = wk-merge π₁ π₂
-            --   Γ' = proj₁ j
-            --   π = proj₁ (proj₂ j)
-            --   π₁' = proj₁ (proj₂ (proj₂ j))
-            --   π₂' = proj₂ (proj₂ (proj₂ j))
-            -- in
-            -- Γ' , app (wk-val π₁' M') (wk-val π₂' N') , π
-    comp-gc (var M) = {!!} -- let v = val-gc M in proj₁ v , var (proj₁ (proj₂ v)) , proj₂ (proj₂ v)
+    comp-gc (app M N) =
+            let
+              v₁ = val-gc M
+              M' = proj₁ (proj₂ (proj₂ v₁))
+              π₁ = proj₁ (proj₂ v₁)
+              eq₁ = proj₂ (proj₂ (proj₂ v₁))
+              v₂ = val-gc N
+              N' = proj₁ (proj₂ (proj₂ v₂))
+              π₂ = proj₁ (proj₂ v₂)
+              eq₂ = proj₂ (proj₂ (proj₂ v₂))
+              j = wk-merge π₁ π₂
+              Γ' = proj₁ j
+              π = proj₁ (proj₂ j)
+              π₁' = proj₁ (proj₂ (proj₂ j))
+              π₂' = proj₁ (proj₂ (proj₂ (proj₂ j)))
+              eq₁' = proj₁ (proj₂ (proj₂ (proj₂ (proj₂ j))))
+              eq₂' = proj₂ (proj₂ (proj₂ (proj₂ (proj₂ j))))
+              eq₁'' : M ≡ wk-val π (wk-val π₁' M')
+              eq₁'' = M ≡⟨ eq₁ ⟩ wk-val π₁ M' ≡⟨ cong (λ x → wk-val x M') eq₁' ⟩ wk-val (wk-trans π π₁') M' ≡⟨ sym (wk-val-trans M' π π₁') ⟩ wk-val π (wk-val π₁' M') ∎
+              eq₂'' : N ≡ wk-val π (wk-val π₂' N')
+              eq₂'' = N ≡⟨ eq₂ ⟩ wk-val π₂ N' ≡⟨ cong (λ x → wk-val x N') eq₂' ⟩ wk-val (wk-trans π π₂') N' ≡⟨ sym (wk-val-trans N' π π₂') ⟩ wk-val π (wk-val π₂' N') ∎
+            in
+            Γ' , π , app (wk-val π₁' M') (wk-val π₂' N') , cong₂ app eq₁'' eq₂''
+
+    comp-gc (var M) = let v = val-gc M in proj₁ v , proj₁ (proj₂ v) , var (proj₁ (proj₂ (proj₂ v))) , cong var (proj₂ (proj₂ (proj₂ v)))
     comp-gc (sub {A = X} W₁ W₂) = {!!}
     {-
     with comp-gc W₁
