@@ -725,8 +725,6 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     in
     Γ' ∙ X' , π' , lam (wk-comp (wk-wk wk-id) W') , cong lam (Eq.trans (Eq.trans eq a1) (sym a0))
 
-  --wk-merge : Wk Γ Δ → Wk Γ Δ' → Σ[ Γ' ∈ Ctx ] (Wk Γ Γ' × Wk Γ' Δ × Wk Γ' Δ')
-  --wk-val-merge₁ : (π₁ : Wk Γ Δ) → (π₂ : Wk Γ Δ') → (M : Val Δ X) → (π₁ ≡ (wk-val )
 
   mutual
 
@@ -748,22 +746,14 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
               π = proj₁ (proj₂ j)
               π₁' = proj₁ (proj₂ (proj₂ j))
               π₂' = proj₁ (proj₂ (proj₂ (proj₂ j)))
+              eq₁' = proj₁ (proj₂ (proj₂ (proj₂ (proj₂ j))))
+              eq₂' = proj₂ (proj₂ (proj₂ (proj₂ (proj₂ j))))
+              eq₁'' : M₁ ≡ wk-val π (wk-val π₁' M₁')
+              eq₁'' = M₁ ≡⟨ eq₁ ⟩ wk-val π₁ M₁' ≡⟨ cong (λ x → wk-val x M₁') eq₁' ⟩ wk-val (wk-trans π π₁') M₁' ≡⟨ sym (wk-val-trans M₁' π π₁') ⟩ wk-val π (wk-val π₁' M₁') ∎
+              eq₂'' : M₂ ≡ wk-val π (wk-val π₂' M₂')
+              eq₂'' = M₂ ≡⟨ eq₂ ⟩ wk-val π₂ M₂' ≡⟨ cong (λ x → wk-val x M₂') eq₂' ⟩ wk-val (wk-trans π π₂') M₂' ≡⟨ sym (wk-val-trans M₂' π π₂') ⟩ wk-val π (wk-val π₂' M₂') ∎
             in
-            Γ' , π , pair (wk-val π₁' M₁') (wk-val π₂' M₂') , cong₂ pair {!!} {!!}
-            -- let
-            --   v₁ = val-gc M₁
-            --   M₁' = proj₁ (proj₂ v₁)
-            --   π₁ = proj₂ (proj₂ v₁)
-            --   v₂ = val-gc M₂
-            --   M₂' = proj₁ (proj₂ v₂)
-            --   π₂ = proj₂ (proj₂ v₂)
-            --   j = wk-merge π₁ π₂
-            --   Γ' = proj₁ j
-            --   π = proj₁ (proj₂ j)
-            --   π₁' = proj₁ (proj₂ (proj₂ j))
-            --   π₂' = proj₂ (proj₂ (proj₂ j))
-            -- in
-            -- Γ' , pair (wk-val π₁' M₁') (wk-val π₂' M₂') , π
+            Γ' , π , pair (wk-val π₁' M₁') (wk-val π₂' M₂') , cong₂ pair eq₁'' eq₂''
     val-gc (pm {A = X} {B = Y} {C = Z} M N) = {!!}
     {-
     with val-gc N
