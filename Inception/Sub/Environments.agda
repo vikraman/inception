@@ -725,6 +725,140 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     in
     Γ' ∙ X' , π' , lam (wk-comp (wk-wk wk-id) W') , cong lam (Eq.trans (Eq.trans eq a1) (sym a0))
 
+  val-pm-helper : (M : Val Γ (X `× Y)) → Σ[ Γ' ∈ Ctx ] Σ[ π ∈ Wk Γ Γ' ] Σ[ M' ∈ (Val Γ' (X `× Y)) ] (M ≡ wk-val π M')
+                  → (N : Val (Γ ∙ X ∙ Y) Z) → Σ[ Γ' ∈ Ctx ] Σ[ π ∈ Wk (Γ ∙ X ∙ Y) Γ' ] Σ[ N' ∈ (Val Γ' Z) ] (N ≡ wk-val π N')
+                  → Σ[ Γ' ∈ Ctx ] Σ[ π ∈ Wk Γ Γ' ] Σ[ PM ∈ (Val Γ' Z) ] (pm M N ≡ wk-val π PM)
+  val-pm-helper M v N (Cx.ε , wk-wk (wk-wk π₂) , N' , eq₂) =
+    let
+      π₁ = proj₁ (proj₂ v)
+      M' = proj₁ (proj₂ (proj₂ v))
+      eq₁ = proj₂ (proj₂ (proj₂ v))
+      j = wk-merge π₁ π₂
+      Γ' = proj₁ j
+      π = proj₁ (proj₂ j)
+      π₁' = proj₁ (proj₂ (proj₂ j))
+      π₂' = proj₁ (proj₂ (proj₂ (proj₂ j)))
+      eq₁' = proj₁ (proj₂ (proj₂ (proj₂ (proj₂ j))))
+      eq₂' = proj₂ (proj₂ (proj₂ (proj₂ (proj₂ j))))
+      eq₁'' : M ≡ wk-val π (wk-val π₁' M')
+      eq₁'' = M ≡⟨ eq₁ ⟩ wk-val π₁ M' ≡⟨ cong (λ x → wk-val x M') eq₁' ⟩ wk-val (wk-trans π π₁') M' ≡⟨ sym (wk-val-trans M' π π₁') ⟩ wk-val π (wk-val π₁' M') ∎
+      eq₂'' : N ≡ (wk-val (wk-cong (wk-cong π)) (wk-val (wk-wk (wk-wk π₂')) N'))
+      eq₂'' =   N
+               ≡⟨ eq₂ ⟩
+                wk-val (wk-wk (wk-wk π₂)) N'
+               ≡⟨ cong (λ x → wk-val (wk-wk (wk-wk x)) N') eq₂' ⟩
+                wk-val (wk-wk (wk-wk (wk-trans π π₂'))) N'
+               ≡⟨ refl ⟩
+                wk-val (wk-wk ((wk-trans (wk-cong π) (wk-wk π₂')))) N'
+               ≡⟨ refl ⟩
+                wk-val (wk-trans (wk-cong (wk-cong π)) (wk-wk (wk-wk π₂'))) N'
+               ≡⟨ sym (wk-val-trans N' (wk-cong (wk-cong π)) (wk-wk (wk-wk π₂'))) ⟩
+                (wk-val (wk-cong (wk-cong π)) (wk-val (wk-wk (wk-wk π₂')) N')) ∎
+    in
+    Γ' , π , pm (wk-val π₁' M') (wk-val (wk-wk (wk-wk π₂')) N') , cong₂ pm eq₁'' eq₂''
+  val-pm-helper M v N (Γ' Cx.∙ X , wk-wk (wk-wk π₂) , N' , eq₂) =
+    let
+      π₁ = proj₁ (proj₂ v)
+      M' = proj₁ (proj₂ (proj₂ v))
+      eq₁ = proj₂ (proj₂ (proj₂ v))
+      j = wk-merge π₁ π₂
+      Γ' = proj₁ j
+      π = proj₁ (proj₂ j)
+      π₁' = proj₁ (proj₂ (proj₂ j))
+      π₂' = proj₁ (proj₂ (proj₂ (proj₂ j)))
+      eq₁' = proj₁ (proj₂ (proj₂ (proj₂ (proj₂ j))))
+      eq₂' = proj₂ (proj₂ (proj₂ (proj₂ (proj₂ j))))
+      eq₁'' : M ≡ wk-val π (wk-val π₁' M')
+      eq₁'' = M ≡⟨ eq₁ ⟩ wk-val π₁ M' ≡⟨ cong (λ x → wk-val x M') eq₁' ⟩ wk-val (wk-trans π π₁') M' ≡⟨ sym (wk-val-trans M' π π₁') ⟩ wk-val π (wk-val π₁' M') ∎
+      eq₂'' : N ≡ (wk-val (wk-cong (wk-cong π)) (wk-val (wk-wk (wk-wk π₂')) N'))
+      eq₂'' =   N
+               ≡⟨ eq₂ ⟩
+                wk-val (wk-wk (wk-wk π₂)) N'
+               ≡⟨ cong (λ x → wk-val (wk-wk (wk-wk x)) N') eq₂' ⟩
+                wk-val (wk-wk (wk-wk (wk-trans π π₂'))) N'
+               ≡⟨ refl ⟩
+                wk-val (wk-wk ((wk-trans (wk-cong π) (wk-wk π₂')))) N'
+               ≡⟨ refl ⟩
+                wk-val (wk-trans (wk-cong (wk-cong π)) (wk-wk (wk-wk π₂'))) N'
+               ≡⟨ sym (wk-val-trans N' (wk-cong (wk-cong π)) (wk-wk (wk-wk π₂'))) ⟩
+                (wk-val (wk-cong (wk-cong π)) (wk-val (wk-wk (wk-wk π₂')) N')) ∎
+    in
+    Γ' , π , pm (wk-val π₁' M') (wk-val (wk-wk (wk-wk π₂')) N') , cong₂ pm eq₁'' eq₂''
+  val-pm-helper M v N (Γ' Cx.∙ X , wk-wk (wk-cong π₂) , N' , eq₂) =
+    let
+      π₁ = proj₁ (proj₂ v)
+      M' = proj₁ (proj₂ (proj₂ v))
+      eq₁ = proj₂ (proj₂ (proj₂ v))
+      j = wk-merge π₁ π₂
+      Γ' = proj₁ j
+      π = proj₁ (proj₂ j)
+      π₁' = proj₁ (proj₂ (proj₂ j))
+      π₂' = proj₁ (proj₂ (proj₂ (proj₂ j)))
+      eq₁' = proj₁ (proj₂ (proj₂ (proj₂ (proj₂ j))))
+      eq₂' = proj₂ (proj₂ (proj₂ (proj₂ (proj₂ j))))
+      eq₁'' : M ≡ wk-val π (wk-val π₁' M')
+      eq₁'' = M ≡⟨ eq₁ ⟩ wk-val π₁ M' ≡⟨ cong (λ x → wk-val x M') eq₁' ⟩ wk-val (wk-trans π π₁') M' ≡⟨ sym (wk-val-trans M' π π₁') ⟩ wk-val π (wk-val π₁' M') ∎
+      eq₂'' : N ≡ (wk-val (wk-cong (wk-cong π)) (wk-val (wk-wk (wk-cong π₂')) N'))
+      eq₂'' =   N
+               ≡⟨ eq₂ ⟩
+                wk-val (wk-wk (wk-cong π₂)) N'
+               ≡⟨ cong (λ x → wk-val (wk-wk (wk-cong x)) N') eq₂' ⟩
+                wk-val (wk-wk (wk-cong (wk-trans π π₂'))) N'
+               ≡⟨ refl ⟩
+                wk-val (wk-trans (wk-cong (wk-cong π)) (wk-wk (wk-cong π₂'))) N'
+               ≡⟨ sym (wk-val-trans N' (wk-cong (wk-cong π)) (wk-wk (wk-cong π₂'))) ⟩
+                (wk-val (wk-cong (wk-cong π)) (wk-val (wk-wk (wk-cong π₂')) N')) ∎
+    in
+    Γ' , π , pm (wk-val π₁' M') (wk-val (wk-wk (wk-cong π₂')) N') , cong₂ pm eq₁'' eq₂''
+  val-pm-helper M v N (Γ' Cx.∙ X , wk-cong (wk-cong π₂) , N' , eq₂) =
+    let
+      π₁ = proj₁ (proj₂ v)
+      M' = proj₁ (proj₂ (proj₂ v))
+      eq₁ = proj₂ (proj₂ (proj₂ v))
+      j = wk-merge π₁ π₂
+      Γ' = proj₁ j
+      π = proj₁ (proj₂ j)
+      π₁' = proj₁ (proj₂ (proj₂ j))
+      π₂' = proj₁ (proj₂ (proj₂ (proj₂ j)))
+      eq₁' = proj₁ (proj₂ (proj₂ (proj₂ (proj₂ j))))
+      eq₂' = proj₂ (proj₂ (proj₂ (proj₂ (proj₂ j))))
+      eq₁'' : M ≡ wk-val π (wk-val π₁' M')
+      eq₁'' = M ≡⟨ eq₁ ⟩ wk-val π₁ M' ≡⟨ cong (λ x → wk-val x M') eq₁' ⟩ wk-val (wk-trans π π₁') M' ≡⟨ sym (wk-val-trans M' π π₁') ⟩ wk-val π (wk-val π₁' M') ∎
+      eq₂'' : N ≡ wk-val (wk-cong (wk-cong π)) (wk-val (wk-cong (wk-cong π₂')) N')
+      eq₂'' =   N
+               ≡⟨ eq₂ ⟩
+                wk-val (wk-cong (wk-cong π₂)) N'
+               ≡⟨ cong (λ x → wk-val (wk-cong (wk-cong x)) N') eq₂' ⟩
+                wk-val (wk-trans (wk-cong (wk-cong π)) (wk-cong (wk-cong π₂'))) N'
+               ≡⟨ sym (wk-val-trans N' (wk-cong (wk-cong π)) (wk-cong (wk-cong π₂'))) ⟩
+                (wk-val (wk-cong (wk-cong π)) (wk-val (wk-cong (wk-cong π₂')) N')) ∎
+    in
+    Γ' , π , pm (wk-val π₁' M') (wk-val (wk-cong (wk-cong π₂')) N') , cong₂ pm eq₁'' eq₂''
+  val-pm-helper M v N (Γ' Cx.∙ X , wk-cong (wk-wk π₂) , N' , eq₂) =
+    let
+      π₁ = proj₁ (proj₂ v)
+      M' = proj₁ (proj₂ (proj₂ v))
+      eq₁ = proj₂ (proj₂ (proj₂ v))
+      j = wk-merge π₁ π₂
+      Γ' = proj₁ j
+      π = proj₁ (proj₂ j)
+      π₁' = proj₁ (proj₂ (proj₂ j))
+      π₂' = proj₁ (proj₂ (proj₂ (proj₂ j)))
+      eq₁' = proj₁ (proj₂ (proj₂ (proj₂ (proj₂ j))))
+      eq₂' = proj₂ (proj₂ (proj₂ (proj₂ (proj₂ j))))
+      eq₁'' : M ≡ wk-val π (wk-val π₁' M')
+      eq₁'' = M ≡⟨ eq₁ ⟩ wk-val π₁ M' ≡⟨ cong (λ x → wk-val x M') eq₁' ⟩ wk-val (wk-trans π π₁') M' ≡⟨ sym (wk-val-trans M' π π₁') ⟩ wk-val π (wk-val π₁' M') ∎
+      eq₂'' : N ≡ (wk-val (wk-cong (wk-cong π)) (wk-val (wk-cong (wk-wk π₂')) N'))
+      eq₂'' =   N
+               ≡⟨ eq₂ ⟩
+                wk-val (wk-cong (wk-wk π₂)) N'
+               ≡⟨ cong (λ x → wk-val (wk-cong (wk-wk x)) N') eq₂' ⟩
+                wk-val (wk-trans (wk-cong (wk-cong π)) (wk-cong (wk-wk π₂'))) N'
+               ≡⟨ sym (wk-val-trans N' (wk-cong (wk-cong π)) (wk-cong (wk-wk π₂'))) ⟩
+                (wk-val (wk-cong (wk-cong π)) (wk-val (wk-cong (wk-wk π₂')) N')) ∎
+    in
+    Γ' , π , pm (wk-val π₁' M') (wk-val (wk-cong (wk-wk π₂')) N') , cong₂ pm eq₁'' eq₂''
+
 
   mutual
 
@@ -754,58 +888,7 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
               eq₂'' = M₂ ≡⟨ eq₂ ⟩ wk-val π₂ M₂' ≡⟨ cong (λ x → wk-val x M₂') eq₂' ⟩ wk-val (wk-trans π π₂') M₂' ≡⟨ sym (wk-val-trans M₂' π π₂') ⟩ wk-val π (wk-val π₂' M₂') ∎
             in
             Γ' , π , pair (wk-val π₁' M₁') (wk-val π₂' M₂') , cong₂ pair eq₁'' eq₂''
-    val-gc (pm {A = X} {B = Y} {C = Z} M N) = {!!}
-    {-
-    with val-gc N
-    ... | Γ₂ , N₂ , wk-cong (wk-cong π₂) = {!!}
-            -- let
-            --   v = val-gc M
-            --   M₁ = proj₁ (proj₂ v)
-            --   π₁ = proj₂ (proj₂ v)
-            --   j = wk-merge π₁ π₂
-            --   Γ' = proj₁ j
-            --   π = proj₁ (proj₂ j)
-            --   π₁' = proj₁ (proj₂ (proj₂ j))
-            --   π₂' = proj₂ (proj₂ (proj₂ j))
-            -- in
-            -- Γ' , pm (wk-val π₁' M₁) (wk-val (wk-cong (wk-cong π₂')) N₂) , π
-    ... | Γ₂ ∙ Y , N₂ , wk-cong (wk-wk π₂) = {!!}
-            -- let
-            --   v = val-gc M
-            --   M₁ = proj₁ (proj₂ v)
-            --   π₁ = proj₂ (proj₂ v)
-            --   j = wk-merge π₁ π₂
-            --   Γ' = proj₁ j
-            --   π = proj₁ (proj₂ j)
-            --   π₁' = proj₁ (proj₂ (proj₂ j))
-            --   π₂' = proj₂ (proj₂ (proj₂ j))
-            -- in
-            -- Γ' , pm (wk-val π₁' M₁) (wk-val (wk-cong (wk-wk π₂')) N₂) , π
-    ... | Γ₂ , N₂ , wk-wk (wk-cong π₂) = {!!}
-            -- let
-            --   v = val-gc M
-            --   M₁ = proj₁ (proj₂ v)
-            --   π₁ = proj₂ (proj₂ v)
-            --   j = wk-merge π₁ π₂
-            --   Γ' = proj₁ j
-            --   π = proj₁ (proj₂ j)
-            --   π₁' = proj₁ (proj₂ (proj₂ j))
-            --   π₂' = proj₂ (proj₂ (proj₂ j))
-            -- in
-            -- Γ' , pm (wk-val π₁' M₁) (wk-val (wk-wk (wk-cong π₂')) N₂) , π
-    ... | Γ₂ , N₂ , wk-wk (wk-wk π₂) = {!!}
-            -- let
-            --   v = val-gc M
-            --   M₁ = proj₁ (proj₂ v)
-            --   π₁ = proj₂ (proj₂ v)
-            --   j = wk-merge π₁ π₂
-            --   Γ' = proj₁ j
-            --   π = proj₁ (proj₂ j)
-            --   π₁' = proj₁ (proj₂ (proj₂ j))
-            --   π₂' = proj₂ (proj₂ (proj₂ j))
-            -- in
-            -- Γ' , pm (wk-val π₁' M₁) (wk-val (wk-wk (wk-wk π₂')) N₂) , π
-    -}
+    val-gc (pm {A = X} {B = Y} {C = Z} M N) = val-pm-helper M (val-gc M) N (val-gc N)
     val-gc unit = ε , wk-wk-ε , unit , refl
 
     comp-gc : (W : Comp Γ X) → Σ[ Γ' ∈ Ctx ] Σ[ π ∈ Wk Γ Γ' ] Σ[ W' ∈ (Comp Γ' X) ] (W ≡ wk-comp π W')
