@@ -684,3 +684,42 @@ wk-pt-id (⇡ M) = cong ⇡_ (wk-val-id M)
 wk-pt-id (⇡ᴹ M N) = cong₂ ⇡ᴹ (wk-val-id M) (wk-val-id N)
 wk-pt-id (⇡ᴸ LHS RHS) = cong₂ ⇡ᴸ (wk-val-id LHS) (wk-val-id RHS)
 wk-pt-id (⇡ᴿ LHS RHS) = cong₂ ⇡ᴿ (wk-v̲a̲l̲-id LHS) (wk-val-id RHS)
+
+-- wk-wk-trans-id : (π : Wk Δ (Γ ∙ X ∙ Y)) → wk-mem (wk-trans π (wk-wk wk-id)) h ≡ wk-mem π (t h)
+-- wk-wk-trans-id (wk-cong (wk-cong π)) = refl
+-- wk-wk-trans-id (wk-cong (wk-wk π)) = cong (λ x → (t (t (wk-mem x h)))) wk-trans-id'
+-- wk-wk-trans-id (wk-wk π) = cong t (wk-wk-trans-id π)
+
+wk-wk-trans-id : {Δ Γ : Ctx} → {X Y : Ty} → (π : Wk Δ (Γ ∙ X)) → (i : Γ ∋ Y) → wk-mem (wk-trans π (wk-wk wk-id)) i ≡ wk-mem π (t i)
+wk-wk-trans-id (wk-cong (wk-cong π)) Cx.h = refl
+wk-wk-trans-id (wk-cong (wk-cong π)) (Cx.t i) = cong (λ x → t (t (wk-mem x i))) wk-trans-id'
+wk-wk-trans-id (wk-cong (wk-wk π)) Cx.h = cong (λ x → (t (t (wk-mem x h)))) wk-trans-id'
+wk-wk-trans-id (wk-cong (wk-wk π)) (Cx.t i) = cong (λ x → (t (t (wk-mem x (t i))))) wk-trans-id'
+wk-wk-trans-id (wk-wk π) Cx.h = cong t (wk-wk-trans-id π h)
+wk-wk-trans-id (wk-wk π) (Cx.t i) = cong t (wk-wk-trans-id π (t i))
+
+
+mutual
+  wk-cong-wk-trans : {Δ Γ : Ctx} → (π : Wk Δ (Γ ∙ X)) → (π' : Wk Γ Ψ) → wk-trans (wk-trans π (wk-cong wk-id)) (wk-wk π') ≡ wk-trans π (wk-wk π')
+  wk-cong-wk-trans (wk-cong π) wk-ε = wk-trans-id'
+  wk-cong-wk-trans (wk-cong π) (wk-cong π') = cong wk-wk (wk-cong-trans π π')
+  wk-cong-wk-trans (wk-cong π) (wk-wk π') = cong wk-wk (wk-cong-wk-trans π π')
+  wk-cong-wk-trans (wk-wk π) wk-ε = cong wk-wk (wk-cong-wk-trans π wk-ε)
+  wk-cong-wk-trans (wk-wk π) (wk-cong π') = cong wk-wk (wk-cong-wk-trans π (wk-cong π'))
+  wk-cong-wk-trans (wk-wk π) (wk-wk π') = cong wk-wk (wk-cong-wk-trans π (wk-wk π'))
+
+  wk-cong-trans : {Δ Γ : Ctx} → (π : Wk Δ (Γ ∙ X)) → (π' : Wk Γ Ψ) → wk-trans (wk-trans π (wk-cong wk-id)) (wk-cong π') ≡ wk-trans π (wk-cong π')
+  wk-cong-trans (wk-cong π) wk-ε = wk-trans-id'
+  wk-cong-trans (wk-cong π) (wk-cong π') = cong wk-cong (wk-cong-trans π π')
+  wk-cong-trans (wk-cong π) (wk-wk π') = cong wk-cong (wk-cong-wk-trans π π')
+  wk-cong-trans (wk-wk π) wk-ε = wk-trans-id'
+  wk-cong-trans (wk-wk π) (wk-cong π') = cong wk-wk (wk-cong-trans π (wk-cong π'))
+  wk-cong-trans (wk-wk π) (wk-wk π') = cong wk-wk (wk-cong-trans π (wk-wk π'))
+
+  wk-wk-trans : {Δ Γ : Ctx} → (π : Wk Δ (Γ ∙ X)) → (π' : Wk Γ Ψ) → wk-trans (wk-trans π (wk-wk wk-id)) π' ≡ wk-trans π (wk-wk π')
+  wk-wk-trans (wk-cong π) wk-ε = cong wk-wk wk-trans-id'
+  wk-wk-trans (wk-cong π) (wk-cong π') = cong wk-wk (wk-cong-trans π π')
+  wk-wk-trans (wk-cong π) (wk-wk π') = cong wk-wk (wk-cong-wk-trans π π')
+  wk-wk-trans (wk-wk π) wk-ε = cong wk-wk (wk-wk-trans π wk-ε)
+  wk-wk-trans (wk-wk π) (wk-cong π') = cong wk-wk (wk-wk-trans π (wk-cong π'))
+  wk-wk-trans (wk-wk π) (wk-wk π') = cong wk-wk (wk-wk-trans π (wk-wk π'))
