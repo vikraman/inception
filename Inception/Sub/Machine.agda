@@ -26,9 +26,6 @@ module MachineMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   open EnvMain {R₀ = R₀} k₀
 
-  infixr 25 _⊲_∷_
-  infix  20 ∘_
-  infix  20 ∙_
   infixr 17 _→ᵛ⟨_⟩．
   infixr 15 _→ᵛ⟨_⟩_
   infix  15 _→ᵛ_
@@ -111,32 +108,6 @@ module MachineMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   ------------------------------------------------------------------------------
   -- Value Machine
   ------------------------------------------------------------------------------
-
-  data IsEmpty : Set where
-      non-empty : IsEmpty
-      empty : IsEmpty
-
-  variable
-      b b' : IsEmpty
-
-  data BottomTypeEqualsNextType : IsEmpty → Ty → Ty → Set where
-
-      🗆 : BottomTypeEqualsNextType empty X X
-
-      🗇 : BottomTypeEqualsNextType non-empty X Y
-
-  data ValStack : IsEmpty → Ty → Set where
-
-      □ : ValStack empty T◾
-
-      _⊲_∷_ : PartialTerm Γ X → (γ : Env Γ) → (tail : ValStack b T◾) → {↥ : BottomTypeEqualsNextType b X T◾} → ValStack non-empty T◾
-
-
-  data ValState : Ty → Set where
-
-      ∘_ : ValStack non-empty T◾ → ValState T◾
-
-      ∙_ : ValStack non-empty T◾ → ValState T◾
 
   -------
 

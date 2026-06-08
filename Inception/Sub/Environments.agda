@@ -1131,3 +1131,36 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
     comp-gc (var M) = let v = val-gc M in proj₁ v , proj₁ (proj₂ v) , var (proj₁ (proj₂ (proj₂ v))) , cong var (proj₂ (proj₂ (proj₂ v)))
     comp-gc (sub {A = X} W₁ W₂) = comp-sub-helper W₁ (comp-gc W₁) W₂ (comp-gc W₂)
+
+  ----------------
+  -- data types for value machine
+
+  infixr 25 _⊲_∷_
+  infix  20 ∘_
+  infix  20 ∙_
+
+  data IsEmpty : Set where
+      non-empty : IsEmpty
+      empty : IsEmpty
+
+  variable
+      b b' : IsEmpty
+
+  data BottomTypeEqualsNextType : IsEmpty → Ty → Ty → Set where
+
+      🗆 : BottomTypeEqualsNextType empty X X
+
+      🗇 : BottomTypeEqualsNextType non-empty X Y
+
+  data ValStack : IsEmpty → Ty → Set where
+
+      □ : ValStack empty T◾
+
+      _⊲_∷_ : PartialTerm Γ X → (γ : Env Γ) → (tail : ValStack b T◾) → {↥ : BottomTypeEqualsNextType b X T◾} → ValStack non-empty T◾
+
+
+  data ValState : Ty → Set where
+
+      ∘_ : ValStack non-empty T◾ → ValState T◾
+
+      ∙_ : ValStack non-empty T◾ → ValState T◾
