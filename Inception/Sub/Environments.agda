@@ -1151,14 +1151,25 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   MemGC {Γ = Γ} {X = X} i = Σ[ Γ' ∈ Ctx ] Σ[ π ∈ Wk Γ Γ' ] Σ[ i' ∈ (Γ' ∋ X) ] (∀ {Δ : Ctx} (π' : Wk Δ Γ) → wk-mem π' i ≡ wk-mem (wk-trans π' π) i')
 
   ValGC : (M : Val Γ X) → Set
-  ValGC {Γ = Γ} {X = X} M = Σ[ Ψ ∈ Ctx ] Σ[ π ∈ Wk Γ Ψ ] Σ[ M' ∈ (Val Ψ X) ] (∀ {Δ : Ctx} (π' : Wk Δ Γ) → wk-val π' M ≡ wk-val (wk-trans π' π) M')
+  -- ValGC {Γ = Γ} {X = X} M = Σ[ Ψ ∈ Ctx ] Σ[ π ∈ Wk Γ Ψ ] Σ[ M' ∈ (Val Ψ X) ] (∀ {Δ : Ctx} (π' : Wk Δ Γ) → wk-val π' M ≡ wk-val (wk-trans π' π) M')
+  ValGC {Γ = Γ} {X = X} M =
+        Σ[ Ψ ∈ Ctx ] Σ[ π ∈ Wk Γ Ψ ] Σ[ M' ∈ (Val Ψ X) ]
+         ( (M ≡ wk-val π M') ×
+           (∀ {Δ : Ctx} {π' : Wk Δ Γ} {π'' : Wk Δ Ψ} (M'' : Val Ψ X) → wk-val π' M ≡ wk-val π'' M'' → M' ≡ M'' ))
 
   CompGC : (W : Comp Γ X) → Set
   CompGC {Γ = Γ} {X = X} W = Σ[ Ψ ∈ Ctx ] Σ[ π ∈ Wk Γ Ψ ] Σ[ W' ∈ (Comp Ψ X) ] (∀ {Δ : Ctx} (π' : Wk Δ Γ) → wk-comp π' W ≡ wk-comp (wk-trans π' π) W')
 
-  -- mem-gc-helper : (i : (Γ ∋ X)) → Wk Γ (ε ∙ X)
-  -- mem-gc-helper Cx.h = wk-cong wk-wk-ε
-  -- mem-gc-helper (Cx.t i) = wk-wk (mem-gc-helper i)
+
+  {- TRY B:
+  MemGC : (i : Γ ∋ X) → Set
+  MemGC {Γ = Γ} {X = X} i = Σ[ Γ' ∈ Ctx ] Σ[ π ∈ Wk Γ Γ' ] Σ[ i' ∈ (Γ' ∋ X) ] (∀ {Δ : Ctx} (π' : Wk Δ Γ) → wk-mem π' i ≡ wk-mem (wk-trans π' π) i')
+
+  ValGC : (M : Val Γ X) → Set
+  ValGC {Γ = Γ} {X = X} M = Σ[ Ψ ∈ Ctx ] Σ[ π ∈ Wk Γ Ψ ] Σ[ M' ∈ (Val Ψ X) ] (∀ {Δ : Ctx} (π' : Wk Δ Γ) → wk-val π' M ≡ wk-val (wk-trans π' π) M')
+
+  CompGC : (W : Comp Γ X) → Set
+  CompGC {Γ = Γ} {X = X} W = Σ[ Ψ ∈ Ctx ] Σ[ π ∈ Wk Γ Ψ ] Σ[ W' ∈ (Comp Ψ X) ] (∀ {Δ : Ctx} (π' : Wk Δ Γ) → wk-comp π' W ≡ wk-comp (wk-trans π' π) W')
 
   mem-gc-helper : (i : (Γ ∋ X)) → (π : Wk Δ (Γ ∙ X)) → wk-mem (wk-trans π (wk-wk wk-id)) i ≡ wk-mem π (t i)
   mem-gc-helper {Γ = Cx.ε} () π
@@ -1344,10 +1355,10 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       in
       proj₁ v , proj₁ (proj₂ v) , var (proj₁ (proj₂ (proj₂ v))) , λ π' → cong var (proj₂ (proj₂ (proj₂ v)) π')
     comp-gc (sub W₁ W₂) = {!!}
+  -}
 
-  val-gc-wk : (π : Wk Δ Γ) → (M : Val Γ X) → ValGC M
 
-  {-
+  {- TRY A:
     val-gc (var i) =
       let
         m = (mem-gc i)
