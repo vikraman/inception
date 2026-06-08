@@ -599,25 +599,6 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   ----
 
-  {-
-  mem-gc : Γ ∋ X → Σ[ Γ' ∈ Ctx ] ((Γ' ∋ X) × (Wk Γ Γ'))
-  mem-gc {Γ = Γ ∙ X} h = ε ∙ X , h , wk-cong wk-wk-ε
-  mem-gc (t i) =
-    let
-      l = mem-gc i
-    in
-    proj₁ l , proj₁ (proj₂ l) , wk-wk (proj₂ (proj₂ l))
-  -}
-
-  {-
-  mem-gc-Γ-eq : (π : Wk Γ' Γ) → (i : Γ ∋ X) → (proj₁ (mem-gc i)) ≡ (proj₁ (mem-gc (wk-mem π i)))
-  mem-gc-Γ-eq wk-ε ()
-  mem-gc-Γ-eq (wk-cong π) Cx.h = refl
-  mem-gc-Γ-eq (wk-cong π) (Cx.t i) = mem-gc-Γ-eq π i
-  mem-gc-Γ-eq (wk-wk π) Cx.h = mem-gc-Γ-eq π h
-  mem-gc-Γ-eq (wk-wk π) (Cx.t i) = mem-gc-Γ-eq π (t i)
-  -}
-
   wk-mem-wk-eq : {Γ Γ' : Ctx} {X Y : Ty} → {i : Γ ∋ X} {i' : Γ' ∋ X} {π : Wk Γ Γ'} → i ≡ wk-mem π i' → t {B = Y} i ≡ wk-mem (wk-wk π) i'
   wk-mem-wk-eq {i = i} {i' = Cx.h} {π = wk-cong π} refl = refl
   wk-mem-wk-eq {i = i} {i' = Cx.h} {π = wk-wk π} refl = refl
@@ -626,16 +607,6 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   MemStr : (i : Γ ∋ X) → Set
   MemStr {Γ = Γ} {X = X} i = Σ[ Γ' ∈ Ctx ] Σ[ π ∈ Wk Γ Γ' ] Σ[ i' ∈ (Γ' ∋ X) ] (i ≡ wk-mem π i')
-
-  {-
-  mem-gc : (i : Γ ∋ X) → MemStr i
-  mem-gc {Γ = Γ ∙ X} h = ε ∙ X , wk-cong wk-wk-ε , h , refl
-  mem-gc (t i) =
-    let
-      IH = mem-gc i
-    in
-    proj₁ IH , wk-wk (proj₁ (proj₂ IH)) , proj₁ (proj₂ (proj₂ IH)) , wk-mem-wk-eq (proj₂ (proj₂ (proj₂ IH)))
-  -}
 
   mem-gc-helper : (i : (Γ ∋ X)) → Wk Γ (ε ∙ X)
   mem-gc-helper Cx.h = wk-cong wk-wk-ε
@@ -660,26 +631,6 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     mem-gc-ctx (Cx.t i) = mem-gc-ctx i
 
 
-
-  {-
-  record MemGC (i : Γ ∋ X) : Set where
-    field
-      mem-gc-Γ : Ctx
-      mem-gc-i : mem-gc-Γ ∋ X
-      mem-gc-π : Wk Γ mem-gc-Γ
-      mem-gc-eq : (mem-gc i) ≡ (mem-gc-Γ , mem-gc-i , mem-gc-π)
-
-  open MemGC
-
-  mem-gc-rec : (i : Γ ∋ X) → MemGC i
-  mem-gc-rec i =
-    let
-      M = mem-gc i
-    in
-    record { mem-gc-Γ = proj₁ M ; mem-gc-i = proj₁ (proj₂ M) ; mem-gc-π = proj₂ (proj₂ M) ; mem-gc-eq = refl }
-  -}
-
-
   dproj₁-eq : {ℓ₁ ℓ₂ : Level} {A : Set ℓ₁} {B : A → Set ℓ₂} {a₁ a₂ : A} {b₁ : B a₁} {b₂ : B a₂} → (a₁ , b₁) ≡ (a₂ , b₂) → a₁ ≡ a₂
   dproj₁-eq refl = refl
 
@@ -695,7 +646,6 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   -------------------------------
 
-
   var-injective : {i i' : Γ ∋ X} → var i ≡ var i' → i ≡ i'
   var-injective refl = refl
 
@@ -709,14 +659,8 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   ValStr : (M : Val Γ X) → Set
   ValStr {Γ = Γ} {X = X} M = Σ[ Γ' ∈ Ctx ] Σ[ π ∈ Wk Γ Γ' ] Σ[ M' ∈ (Val Γ' X) ] (M ≡ wk-val π M')
 
-  --ValMin : (M : Val Γ X) → Set
-  --ValMin M = Σ[ Mₘ ∈ ValStr M ] (∀ (Mₛ : ValStr M) → Wk (proj₁ Mₛ) (proj₁ Mₘ))
-
   CompStr : (W : Comp Γ X) → Set
   CompStr {Γ = Γ} {X = X} W = Σ[ Γ' ∈ Ctx ] Σ[ π ∈ Wk Γ Γ' ] Σ[ W' ∈ (Comp Γ' X) ] (W ≡ wk-comp π W')
-
-  --CompMin : (W : Comp Γ X) → Set
-  --CompMin W = Σ[ Wₘ ∈ CompStr W ] (∀ (Wₛ : CompStr W) → Wk (proj₁ Wₛ) (proj₁ Wₘ))
 
   val-lam-helper : (W : Comp (Γ ∙ X) Y) → CompStr W → ValStr (lam W)
   val-lam-helper W (ε , wk-wk π' , W' , eq) =
@@ -1120,11 +1064,7 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     Γ' , π , sub (wk-comp (wk-wk π₁'') W₁') (wk-comp π₂'' W₂') , cong₂ sub eq₁'' eq₂''
 
   mutual
-    --Σ[ iₘ ∈ MemStr i ] (∀ (iₛ : MemStr i) → Wk (proj₁ iₛ) (proj₁ iₘ))
-
-    --val-gc : (M : Val Γ X) → Σ[ Γ' ∈ Ctx ] Σ[ π ∈ Wk Γ Γ' ] Σ[ M' ∈ (Val Γ' X) ] (M ≡ wk-val π M')
-    val-gc : (M : Val Γ X) → ValStr M --Σ[ Mₘ ∈ ValStr M ] (∀ (Mₛ : ValStr M) → Wk (proj₁ Mₛ) (proj₁ Mₘ))
-    --val-gc : (M : Val Γ X) → ValMin M
+    val-gc : (M : Val Γ X) → ValStr M
     val-gc (var i) =
       let
         m = (mem-gc i)
@@ -1134,15 +1074,6 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
         π = proj₁ (proj₂ l)
       in
       (proj₁ l , proj₁ (proj₂ l) , var (proj₁ (proj₂ (proj₂ l))) , cong var (proj₂ (proj₂ (proj₂ l)))) --,
-      -- λ Mₛ →
-      --   let
-      --     eq2 = proj₂ (proj₂ (proj₂ Mₛ))
-      --     vm = (var-to-memstr eq2)
-      --     c' = c (proj₁ vm)
-      --     c'' : Wk (proj₁ Mₛ) (proj₁ (proj₁ m))
-      --     c'' = subst (λ x → Wk x (proj₁ (proj₁ m))) (proj₂ vm) c'
-      --   in
-      --   c''
     val-gc (lam {A = X} W) = val-lam-helper W (comp-gc W)
     val-gc {Γ = Γ} (pair M₁ M₂) =
             let
