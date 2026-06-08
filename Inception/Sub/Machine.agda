@@ -19,11 +19,13 @@ open import Data.List using (List; _∷_; []; _++_)
 open import Inception.Sub.Equality
 
 open import Inception.Sub.Environments R
+open import Inception.Sub.States R
 
 -----------------------------------------------------------------------
 
 module MachineMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
+  open StatesMain {R₀ = R₀} k₀
   open EnvMain {R₀ = R₀} k₀
 
   infixr 17 _→ᵛ⟨_⟩．
