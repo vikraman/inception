@@ -517,7 +517,6 @@ wk-id-id {π = wk-ε} = refl
 wk-id-id {π = wk-cong π} rewrite wk-id-id {π = π} = refl
 wk-id-id {π = wk-wk π} = ql (wk-absurd π wk-id) (wk-wk π ≡ wk-id)
 
--- ? , ? , ? , ? , ? , ?
 wk-merge : (π₁ : Wk Γ Δ) → (π₂ : Wk Γ Δ') → Σ[ Γ' ∈ Ctx ] Σ[ π ∈ Wk Γ Γ' ] Σ[ π₁' ∈ Wk Γ' Δ ] Σ[ π₂' ∈ Wk Γ' Δ' ] ((π₁ ≡ wk-trans π π₁') × (π₂ ≡ wk-trans π π₂'))
 wk-merge {Γ = Γ} {Δ = Δ} {Δ' = Δ'} wk-ε wk-ε = ε , wk-ε , wk-ε , wk-ε , refl , refl
 wk-merge {Γ = Γ ∙ X} {Δ = Δ ∙ X} {Δ' = Δ' ∙ X} (wk-cong π₁) (wk-cong π₂) =
@@ -594,67 +593,6 @@ wk-merge {Γ = Γ Cx.∙ X} {Δ = Δ Cx.∙ x} {Δ' = Δ' Cx.∙ x₁} (wk-wk π
         Γ₀ , wk-wk π₀ , proj₁ (proj₂ (proj₂ w)) , proj₁ (proj₂ (proj₂ (proj₂ w))) , cong wk-wk eq₁ , cong wk-wk eq₂
 
 
-{-
-wk-merge : Wk Γ Δ → Wk Γ Δ' → Σ[ Γ' ∈ Ctx ] (Wk Γ Γ' × Wk Γ' Δ × Wk Γ' Δ')
-wk-merge {Γ = Γ} {Δ = Δ} {Δ' = Δ'} wk-ε wk-ε = ε , wk-ε , wk-ε , wk-ε
-wk-merge {Γ = Γ ∙ X} {Δ = Δ ∙ X} {Δ' = Δ' ∙ X} (wk-cong π₁) (wk-cong π₂) =
-        let
-          w = wk-merge π₁ π₂
-          Γ₀ = proj₁ w
-          π₀ = proj₁ (proj₂ w)
-        in
-        Γ₀ ∙ X , wk-cong π₀ , wk-cong (proj₁ (proj₂ (proj₂ w))) , wk-cong (proj₂ (proj₂ (proj₂ w)))
-wk-merge {Γ = Γ ∙ X} {Δ = Δ ∙ X} {Δ' = ε} (wk-cong π₁) (wk-wk π₂) =
-        let
-          w = wk-merge π₁ π₂
-          Γ₀ = proj₁ w
-          π₀ = proj₁ (proj₂ w)
-        in
-        Γ₀ ∙ X , wk-cong π₀ , wk-cong (proj₁ (proj₂ (proj₂ w))) , wk-wk (proj₂ (proj₂ (proj₂ w)))
-wk-merge {Γ = Γ ∙ X} {Δ = Δ ∙ X} {Δ' = Δ' ∙ x} (wk-cong π₁) (wk-wk π₂) =
-        let
-          w = wk-merge π₁ π₂
-          Γ₀ = proj₁ w
-          π₀ = proj₁ (proj₂ w)
-        in
-        Γ₀ ∙ X , wk-cong π₀ , wk-cong (proj₁ (proj₂ (proj₂ w))) , wk-wk (proj₂ (proj₂ (proj₂ w)))
-wk-merge {Γ = Γ ∙ X} {Δ = Δ} {Δ' = Δ' ∙ X} (wk-wk π₁) (wk-cong π₂) =
-        let
-          w = wk-merge π₁ π₂
-          Γ₀ = proj₁ w
-          π₀ = proj₁ (proj₂ w)
-        in
-        Γ₀ ∙ X , wk-cong π₀ , wk-wk (proj₁ (proj₂ (proj₂ w))) , wk-cong (proj₂ (proj₂ (proj₂ w)))
-wk-merge {Γ = Γ Cx.∙ X} {Δ = Cx.ε} {Δ' = Cx.ε} (wk-wk π₁) (wk-wk π₂) =
-        let
-          w = wk-merge π₁ π₂
-          Γ₀ = proj₁ w
-          π₀ = proj₁ (proj₂ w)
-        in
-        Γ₀ , wk-wk π₀ , proj₁ (proj₂ (proj₂ w)) , proj₁ (proj₂ (proj₂ w))
-wk-merge {Γ = Γ Cx.∙ X} {Δ = Cx.ε} {Δ' = Δ' Cx.∙ x} (wk-wk π₁) (wk-wk π₂) =
-        let
-          w = wk-merge π₁ π₂
-          Γ₀ = proj₁ w
-          π₀ = proj₁ (proj₂ w)
-        in
-        Γ₀ , wk-wk π₀ , proj₁ (proj₂ (proj₂ w)) , proj₂ (proj₂ (proj₂ w))
-wk-merge {Γ = Γ Cx.∙ X} {Δ = Δ Cx.∙ x} {Δ' = Cx.ε} (wk-wk π₁) (wk-wk π₂) =
-        let
-          w = wk-merge π₁ π₂
-          Γ₀ = proj₁ w
-          π₀ = proj₁ (proj₂ w)
-        in
-        Γ₀ , wk-wk π₀ , proj₁ (proj₂ (proj₂ w)) , proj₂ (proj₂ (proj₂ w))
-wk-merge {Γ = Γ Cx.∙ X} {Δ = Δ Cx.∙ x} {Δ' = Δ' Cx.∙ x₁} (wk-wk π₁) (wk-wk π₂) =
-        let
-          w = wk-merge π₁ π₂
-          Γ₀ = proj₁ w
-          π₀ = proj₁ (proj₂ w)
-        in
-        Γ₀ , wk-wk π₀ , proj₁ (proj₂ (proj₂ w)) , proj₂ (proj₂ (proj₂ w))
--}
-
 
 infix  26 ⭭_
 infix  26 ⇡_
@@ -684,11 +622,6 @@ wk-pt-id (⇡ M) = cong ⇡_ (wk-val-id M)
 wk-pt-id (⇡ᴹ M N) = cong₂ ⇡ᴹ (wk-val-id M) (wk-val-id N)
 wk-pt-id (⇡ᴸ LHS RHS) = cong₂ ⇡ᴸ (wk-val-id LHS) (wk-val-id RHS)
 wk-pt-id (⇡ᴿ LHS RHS) = cong₂ ⇡ᴿ (wk-v̲a̲l̲-id LHS) (wk-val-id RHS)
-
--- wk-wk-trans-id : (π : Wk Δ (Γ ∙ X ∙ Y)) → wk-mem (wk-trans π (wk-wk wk-id)) h ≡ wk-mem π (t h)
--- wk-wk-trans-id (wk-cong (wk-cong π)) = refl
--- wk-wk-trans-id (wk-cong (wk-wk π)) = cong (λ x → (t (t (wk-mem x h)))) wk-trans-id'
--- wk-wk-trans-id (wk-wk π) = cong t (wk-wk-trans-id π)
 
 wk-wk-trans-id : {Δ Γ : Ctx} → {X Y : Ty} → (π : Wk Δ (Γ ∙ X)) → (i : Γ ∋ Y) → wk-mem (wk-trans π (wk-wk wk-id)) i ≡ wk-mem π (t i)
 wk-wk-trans-id (wk-cong (wk-cong π)) Cx.h = refl

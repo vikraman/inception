@@ -85,6 +85,57 @@ module MachineMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   li≡i (S →ᴸ⟨ val-t-step ⟩ S→T) (found-comp {wk≡ = wk≡}) = cong t (li≡i S→T (found-comp {wk≡ = wk≡}))
   li≡i (S →ᴸ⟨ comp-t-step ⟩ S→T) (found-comp {wk≡ = wk≡}) = cong t (li≡i S→T (found-comp {wk≡ = wk≡}))
 
+  lstate-eq : {L L' : LookupState X} → L →ᴸ L' → ⟦ L ⟧ᴸ ≡ ⟦ L' ⟧ᴸ
+  lstate-eq {L = L} {L' = L'} val-h-step = refl
+  lstate-eq {L = L} {L' = L'} val-t-step = refl
+  lstate-eq {L = L} {L' = L'} comp-t-step = refl
+
+  lstate-eq* : {L L' : LookupState X} → L →ᴸ* L' → ⟦ L ⟧ᴸ ≡ ⟦ L' ⟧ᴸ
+  lstate-eq* {L = L} {L' = L'} (L ◼) = refl
+  lstate-eq* {L = L} {L' = L'} (L →ᴸ⟨ L→L' ⟩ L'→L'') =
+             let
+               IH0 = lstate-eq L→L'
+               IH1 = lstate-eq* L'→L''
+             in
+             trans IH0 IH1
+
+  data LookupSteps : LookupState X → Set where
+
+    steps : {S T : LookupState X} → (S→T : S →ᴸ* T) → (H : LookupHaltingState T) → ⟦ S ⟧ᴸ ≡ ⟦ T ⟧ᴸ → (π : Wk (lCtx S) (lTCtx T)) → (⟦ π ⟧ʷ ⟦ lEnv S ⟧ᴱ ≡ ⟦ lTEnv T ⟧ᴱ)
+            --→ TermHalts H
+            → EnvExt (lookup-index S→T) (lEnv S) (lEnv T)
+            → WkExt π
+            → EnvEq π (lEnv S) (lTEnv T)
+            → LookupSteps S
+
+  lookup : (i : Γ ∋ X) → (γ : Env Γ) → LookupSteps {X = X} ⟨ i ∥ γ ⟩
+  lookup Cx.h (γ ﹐ l̲a̲m̲ W) = steps (⟨ h ∥ _﹐_ γ (l̲a̲m̲ W) ⟩ ◼) (found-lam {W = W} {γ = γ}) refl (wk-wk wk-id) refl env-val (wk-ext wk-id (wk-eq wk-id)) (wk-env-val-wk (l̲a̲m̲ W) enveq-id)
+  lookup Cx.h (γ ﹐ pa̲i̲r̲ LHS RHS) = steps (⟨ h ∥ _﹐_ γ (pa̲i̲r̲ LHS RHS) ⟩ ◼) found-pair refl (wk-wk wk-id) refl env-val (wk-ext wk-id (wk-eq wk-id)) (wk-env-val-wk (pa̲i̲r̲ LHS RHS) enveq-id)
+  lookup h (γ ﹐ u̲n̲i̲t̲) = steps (⟨ h ∥ _﹐_ γ (u̲n̲i̲t̲) ⟩ ◼) found-unit refl (wk-wk wk-id) refl env-val (wk-ext wk-id (wk-eq wk-id)) (wk-env-val-wk u̲n̲i̲t̲ enveq-id)
+  lookup Cx.h (γ ﹐ v̲a̲r̲ i) with lookup i γ
+  ... | steps {T = T} i>>T HT i≡T WK w≡γ ext we ϖ =
+              let
+                a0 = li≡i i>>T HT
+                a1 = subst (λ x → EnvExt x γ (lEnv T)) (a0) ext
+              in
+              steps (_ →ᴸ⟨ val-h-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ (ext-jmp a1) (wk-ext WK we) (wk-env-val-wk (v̲a̲r̲ i) ϖ)
+  lookup Cx.h ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡}) =
+    steps (⟨ h ∥ γ ﹐﹝ W ╎ cs ﹞ ⟩ ◼) found-comp refl (wk-wk wk-id) refl env-comp (wk-ext wk-id (wk-eq wk-id)) (wk-env-comp-wk W cs enveq-id)
+  lookup (Cx.t i) (γ ﹐ M) with lookup i γ
+  ... | steps {T = T} i>>T HT i≡T WK w≡γ ext we ϖ = steps (_ →ᴸ⟨ val-t-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ (ext-val ext) (wk-ext WK we) (wk-env-val-wk M ϖ)
+  lookup (Cx.t i) (γ ﹐﹝ W ╎ cs ﹞) with lookup i γ
+  ... | steps {T = T} i>>T HT i≡T WK w≡γ ext we ϖ =
+      steps (_ →ᴸ⟨ (comp-t-step) ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ (ext-comp ext) (wk-ext WK we) (wk-env-comp-wk W cs ϖ)
+
+  get-lsteps : {S : LookupState X} → LookupSteps S → Σ[ T ∈ LookupState X ] ((S →ᴸ* T) × (LookupHaltingState T))
+  get-lsteps {S = S} (steps {T = T} S→T H x π x₁ x₂ x₃ x₄) = T , S→T , H
+
+  lh-eq : {T : LookupState X} → (H : LookupHaltingState T) → Σ[ Γ ∈ Ctx ] Σ[ γ ∈ Env (Γ ∙ X) ] (T ≡ ⟨ h  ∥ γ ⟩)
+  lh-eq {T = ⟨ h ∥ _ ⟩} found-unit = _ , _ Env.﹐ u̲n̲i̲t̲ , refl
+  lh-eq {T = ⟨ h ∥ _ ⟩} found-pair = _ , _ Env.﹐ pa̲i̲r̲ _ _ , refl
+  lh-eq {T = ⟨ h ∥ _ ⟩} found-lam = _ , _ Env.﹐ l̲a̲m̲ _ , refl
+  lh-eq {T = ⟨ h ∥ _ ⟩} found-comp = _ , _ Env.﹐﹝ _ ╎ _ ﹞ , refl
+
   ------------------------------------------------------------------------------
   -- Value Machine
   ------------------------------------------------------------------------------
@@ -305,20 +356,6 @@ module MachineMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   _⨾ᶜ_ (F →ᶜ⟨ F>S₁ ⟩ S₁>>S₂) S₂>>T = F →ᶜ⟨ F>S₁ ⟩ (S₁>>S₂ ⨾ᶜ S₂>>T)
 
   -----------------------------------------------------
-
-  lstate-eq : {L L' : LookupState X} → L →ᴸ L' → ⟦ L ⟧ᴸ ≡ ⟦ L' ⟧ᴸ
-  lstate-eq {L = L} {L' = L'} val-h-step = refl
-  lstate-eq {L = L} {L' = L'} val-t-step = refl
-  lstate-eq {L = L} {L' = L'} comp-t-step = refl
-
-  lstate-eq* : {L L' : LookupState X} → L →ᴸ* L' → ⟦ L ⟧ᴸ ≡ ⟦ L' ⟧ᴸ
-  lstate-eq* {L = L} {L' = L'} (L ◼) = refl
-  lstate-eq* {L = L} {L' = L'} (L →ᴸ⟨ L→L' ⟩ L'→L'') =
-             let
-               IH0 = lstate-eq L→L'
-               IH1 = lstate-eq* L'→L''
-             in
-             trans IH0 IH1
 
   valstate-eq : {S S' : ValState X} → S →ᵛ S' → ⟦ S ⟧ᵛꟴ ≡ ⟦ S' ⟧ᵛꟴ
   valstate-eq {S = S} {S' = S'} (∘var-c {tail = □} {↥ = 🗆}) = refl

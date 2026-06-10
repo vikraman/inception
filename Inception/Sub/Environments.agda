@@ -649,6 +649,53 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   var-injective : {i i' : Γ ∋ X} → var i ≡ var i' → i ≡ i'
   var-injective refl = refl
 
+  lam-injective : {Γ : Ctx} {X Y : Ty} {W W' : (Γ ∙ X) ⊢ᶜ Y} → lam W ≡ lam W' → W ≡ W'
+  lam-injective refl = refl
+
+  pair-injective₁ : {Γ : Ctx} {A B : Ty} {M M' : Γ ⊢ᵛ A} {N N' : Γ ⊢ᵛ B} → pair M N ≡ pair M' N' → M ≡ M'
+  pair-injective₁ refl = refl
+
+  pair-injective₂ : {Γ : Ctx} {A B : Ty} {M M' : Γ ⊢ᵛ A} {N N' : Γ ⊢ᵛ B} → pair M N ≡ pair M' N' → N ≡ N'
+  pair-injective₂ refl = refl
+
+  pm-val-injective-scr : {Γ : Ctx} {A B C : Ty} {M M' : Γ ⊢ᵛ A `× B} {N N' : (Γ ∙ A ∙ B) ⊢ᵛ C} → pm M N ≡ pm M' N' → M ≡ M'
+  pm-val-injective-scr refl = refl
+
+  pm-val-injective-body : {Γ : Ctx} {A B C : Ty} {M M' : Γ ⊢ᵛ A `× B} {N N' : (Γ ∙ A ∙ B) ⊢ᵛ C} → pm M N ≡ pm M' N' → N ≡ N'
+  pm-val-injective-body refl = refl
+
+  return-injective : {Γ : Ctx} {A : Ty} {M M' : Γ ⊢ᵛ A} → return M ≡ return M' → M ≡ M'
+  return-injective refl = refl
+
+  pm-comp-injective-scr : {Γ : Ctx} {A B C : Ty} {M M' : Γ ⊢ᵛ A `× B} {W W' : (Γ ∙ A ∙ B) ⊢ᶜ C} → pm M W ≡ pm M' W' → M ≡ M'
+  pm-comp-injective-scr refl = refl
+
+  pm-comp-injective-body : {Γ : Ctx} {A B C : Ty} {M M' : Γ ⊢ᵛ A `× B} {W W' : (Γ ∙ A ∙ B) ⊢ᶜ C} → pm M W ≡ pm M' W' → W ≡ W'
+  pm-comp-injective-body refl = refl
+
+  push-injective-fst : {Γ : Ctx} {A B : Ty} {W₁ W₁' : Γ ⊢ᶜ A} {W₂ W₂' : (Γ ∙ A) ⊢ᶜ B} → push W₁ W₂ ≡ push W₁' W₂' → W₁ ≡ W₁'
+  push-injective-fst refl = refl
+
+  push-injective-snd : {Γ : Ctx} {A B : Ty} {W₁ W₁' : Γ ⊢ᶜ A} {W₂ W₂' : (Γ ∙ A) ⊢ᶜ B} → push W₁ W₂ ≡ push W₁' W₂' → W₂ ≡ W₂'
+  push-injective-snd refl = refl
+
+  app-injective-fun : {Γ : Ctx} {A B : Ty} {M M' : Γ ⊢ᵛ A `⇒ B} {N N' : Γ ⊢ᵛ A} → app M N ≡ app M' N' → M ≡ M'
+  app-injective-fun refl = refl
+
+  app-injective-arg : {Γ : Ctx} {A B : Ty} {M M' : Γ ⊢ᵛ A `⇒ B} {N N' : Γ ⊢ᵛ A} → app M N ≡ app M' N' → N ≡ N'
+  app-injective-arg refl = refl
+
+  var-comp-injective : {Γ : Ctx} {M M' : Γ ⊢ᵛ `V} → var {A = A} M ≡ var M' → M ≡ M'
+  var-comp-injective refl = refl
+
+  sub-injective-fst : {Γ : Ctx} {A : Ty} {W₁ W₁' : (Γ ∙ `V) ⊢ᶜ A} {W₂ W₂' : Γ ⊢ᶜ A} → sub W₁ W₂ ≡ sub W₁' W₂' → W₁ ≡ W₁'
+  sub-injective-fst refl = refl
+
+  sub-injective-snd : {Γ : Ctx} {A : Ty} {W₁ W₁' : (Γ ∙ `V) ⊢ᶜ A} {W₂ W₂' : Γ ⊢ᶜ A} → sub W₁ W₂ ≡ sub W₁' W₂' → W₂ ≡ W₂'
+  sub-injective-snd refl = refl
+
+  -------------------------------------------------------
+
   var-to-memstr : {i : Γ ∋ X} {M : Val Γ' X} {π : Wk Γ Γ'} → (var i ≡ wk-val π M) → Σ[ iₛ ∈ MemStr i ] (proj₁ iₛ ≡ Γ')
   var-to-memstr {Γ = Γ ∙ X} {Γ' = Γ' ∙ X} {i = Cx.h} {M = var Cx.h} {π = wk-cong π} refl = (Γ' ∙ X , wk-cong π , h , refl) , refl
   var-to-memstr {Γ = Γ} {Γ' = Γ'} {i = Cx.h} {M = var Cx.h} {π = wk-wk π} ()
