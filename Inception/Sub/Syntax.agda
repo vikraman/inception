@@ -495,6 +495,10 @@ wk-v̲a̲l̲-id (pa̲i̲r̲ LHS RHS) = cong₂ pa̲i̲r̲ (wk-v̲a̲l̲-id LHS) 
 wk-v̲a̲l̲-id u̲n̲i̲t̲ = refl
 wk-v̲a̲l̲-id (v̲a̲r̲ i) = cong v̲a̲r̲ (wk-mem-id)
 
+wk-c̲o̲m̲p-id : (W : C̲o̲m̲p Γ X) → wk-c̲o̲m̲p wk-id W ≡ W
+wk-c̲o̲m̲p-id (r̲e̲t̲u̲r̲n̲ M) = cong r̲e̲t̲u̲r̲n̲ (wk-v̲a̲l̲-id M)
+wk-c̲o̲m̲p-id (a̲pp M N) = cong₂ a̲pp (wk-val-id M) (wk-v̲a̲l̲-id N)
+
 wk-prev : Wk (Γ ∙ X) (Δ ∙ Y) → Wk Γ Δ
 wk-prev (wk-cong π) = π
 wk-prev (wk-wk π) = wk-trans π (wk-wk wk-id)

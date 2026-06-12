@@ -41,6 +41,8 @@ module LiftMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   open EquivMain {R₀ = R₀} k₀
   open EnvMain {R₀ = R₀} k₀
 
+
+  {-
   lstate-eqv : {S S' : LookupState X} → (S →ᴸ S') → (S ≍ᴸꟴ S')
   lstate-eqv {S = ⟨ h  ∥ γ ﹐ (v̲a̲r̲ {Γ = Γ ∙ X} i) ⟩} {S' = ⟨ i ∥ γ ⟩} val-h-step =
     let
@@ -94,6 +96,8 @@ module LiftMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
      ; halt₂ = H
      ; eqv = ≣ᴸꟴ-refl T
      }
+  -}
+
 
   --lstate-eqv :    {S S' : LookupState X} → (S →ᴸ S') → (S ≍ᴸꟴ S')
   --lstate-eqv {S = ⟨ h  ∥ E ﹐ (v̲a̲r̲ {Γ = Γ} i) ⟩} {S' = ⟨ i ∥ E ⟩} val-h-step =
@@ -103,7 +107,6 @@ module LiftMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   --lstate-eqv {S = ⟨ t i  ∥ E ﹐ M ⟩} {S' = ⟨ i ∥ E ⟩} val-t-step = {!!}
   --lstate-eqv {S = ⟨ t i  ∥ (_﹐﹝_╎_﹞ γ W cs {π = π} {wk≡ = wk≡}) ⟩} {S' = ⟨ i ∥ γ ⟩} comp-t-step = {!!}
 
-{- XXX
   ----------------------------------------------------------
 
   lhwk : (γ' : Env Γ')
@@ -382,6 +385,52 @@ module LiftMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   lookup-wk-lift {X = X} i M (ext-jmp ext) (S ◼) H (wk-cong πₗ) (γₗ ﹐﹝ W ╎ cs ﹞) ()
   lookup-wk-lift {X = X} i M (ext-jmp ext) (S →ᴸ⟨ x ⟩ L→L') H (wk-cong πₗ) (γₗ ﹐﹝ W ╎ cs ﹞) ()
 
+-------------------------------------
+
+  {-
+  wk-lstep : {Δ Γ : Ctx} {X : Ty} {i : Γ ∋ X} {δ : Env Δ} {γ : Env Γ} {π : Wk Δ Γ} {T : LookupState X} {H : LookupHaltingState T}
+            → EnvEq π δ γ → ⟨ i ∥ γ ⟩ →ᴸ T
+            → Σ[ Ψ ∈ Ctx ] Σ[ i' ∈ Ψ ∋ X ] Σ[ γ' ∈ Env Ψ ] ⟨ wk-mem π i ∥ δ ⟩ →ᴸ* ⟨ i' ∥ γ' ⟩
+  wk-lstep {Δ = Δ} {Γ = Γ} {X = X} {i = Cx.h} {δ = δ} {γ = γ ﹐ M} {π = wk-cong π} {T = ⟨ i ∥ γ ⟩} {H = H} (wk-env-val-cong M ϖ) val-h-step = {!!}
+    --let
+    --  a0 = wk-lstep {π = π} ϖ {!!}
+    --in
+    --{!!}
+  wk-lstep {Δ = Δ} {Γ = Γ} {X = X} {i = Cx.t i} {δ = δ} {γ = γ ﹐ M} {π = wk-cong π} {T = T} {H = H} (wk-env-val-cong M ϖ) L→T = {!!}
+  wk-lstep {Δ = Δ} {Γ = Γ} {X = X} {i = i} {δ = δ} {γ = γ} {π = wk-cong π} {T = T} {H = H} (wk-env-comp-cong W cs ϖ) L→T = {!!}
+  wk-lstep {Δ = Δ} {Γ = Γ} {X = X} {i = i} {δ = δ} {γ = γ} {π = wk-wk π} {T = T} {H = H} ϖ L→T = {!!}
+
+  mE-to-L :   {Γ₁ Γ₂ : Ctx} {X : Ty} {i₁ : Γ₁ ∋ X} {γ₁ : Env Γ₁} {i₂ : Γ₂ ∋ X} {γ₂ : Env Γ₂}
+            → ⟨ i₁ , γ₁ ⟩≍ᵐᴱ⟨ i₂ , γ₂ ⟩ → ⟨ i₁ ∥ γ₁ ⟩ ≍ᴸ ⟨ i₂ ∥ γ₂ ⟩
+  mE-to-L record { ctx = Γ ; env = γ ; wkn₁ = π₁ ; wkn₂ = π₂ ; base = i ; eq₁ = ≡₁ ; eq₂ = ≡₂ ; enveq₁ = ϖ₁ ; enveq₂ = ϖ₂ } =
+    let
+      ls = lookup i γ
+      gs = get-lsteps ls
+      t = proj₁ gs
+      s = proj₁ (proj₂ gs)
+      h = proj₂ (proj₂ gs)
+    in
+    record { T = t ; halt = h ; path₁ = {!!} ; path₂ = {!!} }
+  -}
+
+-------------------------------------
+  {-
+  lstate-≣-to-≍ : {S S' : LookupState X} → (S ≣ᴸꟴ S') → (S ≍ᴸꟴ S')
+  lstate-≣-to-≍ {S = ⟨ i₁ ∥ γ₁ ⟩} {S' = ⟨ i₂ ∥ γ₂ ⟩} (ls-eqv record { ctx = Γ ; wkn₁ = π₁ ; wkn₂ = π₂ ; base = i ; eq₁ = eq₁ ; eq₂ = eq₂ } γ₁≍γ₂) = --{!!}
+    let
+      l₁ = lookup i₁ γ₁
+      g₁ = get-lsteps l₁
+      s₁ = proj₁ (proj₂ g₁)
+
+      l₂ = lookup i₂ γ₂
+      g₂ = get-lsteps l₂
+      s₂ = proj₁ (proj₂ g₂)
+    in
+    {!!}
+  -}
+
+-------------------------------------
+
   ----------------------------------------------------------
 
   var-c-LHS-eq : {Γ : Ctx} {X Z : Ty} {b : _} {γ : Env Γ} {x : Γ ∋ X} {tail : ValStack b Z}
@@ -454,30 +503,26 @@ module LiftMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   ----------------------------------------------------------
 
-  lstate-lift :    {S S' : LookupState X} {M : V̲a̲l̲ Γ X}
-                 → (S ≍ᴸꟴ S') → (S →ᴸ* ⟨ h ∥ (γ ﹐ M) ⟩) → LookupHaltingState ⟨ h ∥ (γ ﹐ M) ⟩
+  {-
+  lstate-lift :    {Γ₀ Γ₁ Γ₂ : Ctx} {X : Ty} {i₁ : Γ₁ ∋ X} {γ₀ : Env Γ₀} {γ₁ : Env Γ₁} {i₂ : Γ₂ ∋ X} {γ₂ : Env Γ₂} {M : V̲a̲l̲ Γ₀ X}
+                 → (⟨ i₁ , γ₁ ⟩≍ᵐᴱ⟨ i₂ , γ₂ ⟩) → (⟨ i₁ ∥ γ₁ ⟩ →ᴸ* ⟨ h ∥ (γ₀ ﹐ M) ⟩) → LookupHaltingState ⟨ h ∥ (γ₀ ﹐ M) ⟩
                  → Σ[ Γ' ∈ Ctx ]
                    Σ[ γ' ∈ Env Γ' ]
                    Σ[ M' ∈ V̲a̲l̲ Γ' X ]
-                   ((S' →ᴸ* ⟨ h ∥ (γ' ﹐ M') ⟩) × (M ≍ᵉᵛ M') × LookupHaltingState ⟨ h ∥ (γ' ﹐ M') ⟩)
-  lstate-lift = {!!}
-  -- lstate-lift {S = ⟨ Cx.h ∥ γ ﹐ M ⟩} {S' = ⟨ i₂ ∥ γ₂ ⟩} (ls-eqv record { ctx = ctx ; wkn₁ = (wk-cong wkn₁) ; wkn₂ = wkn₂ ; base = Cx.h ; eq₁ = refl ; eq₂ = eq₂ } (consᵛ x₁ x)) (.(⟨ h ∥ γ ﹐ M ⟩) ◼) H =
-  --   let
-  --     a0 = {!!}
-  --   in
-  --   {!!} , {!!} , {!!} , {!!} , {!!} , {!!}
-  -- lstate-lift {S = ⟨ Cx.h ∥ γ ﹐ M ⟩} {S' = ⟨ i₂ ∥ γ₂ ⟩} (ls-eqv record { ctx = ctx ; wkn₁ = wkn₁ ; wkn₂ = wkn₂ ; base = (Cx.t base) ; eq₁ = eq₁ ; eq₂ = eq₂ } x₁) (.(⟨ h ∥ γ ﹐ M ⟩) ◼) H = {!!}
-  -- -- {!!} , {!!} , {!!} , {!!} , {!!} , {!!}
-  -- lstate-lift {S = S} {S' = S'} (ls-eqv x x₁) (S₁ →ᴸ⟨ x₂ ⟩ S→T) H = {!!}
-
-  -- lstate-lift {S = ⟨ h ∥ E ﹐ v̲a̲r̲ i ⟩} {T = ⟨ i ∥ E ⟩} {S' = ⟨ i₂ ∥ γ₂ ⟩} (ls-eqv record { ctx = ctx ; wkn₁ = (wk-cong wkn₁) ; wkn₂ = wkn₂ ; base = Cx.h ; eq₁ = refl ; eq₂ = eq₂ } x₁) val-h-step =
-  --   ⟨ i ∥ E ⟩ , {!!} , {!!}
-  -- lstate-lift {S = ⟨ Cx.h ∥ E ﹐ v̲a̲r̲ i ⟩} (ls-eqv record { ctx = ctx ; wkn₁ = wkn₁ ; wkn₂ = wkn₂ ; base = (Cx.t base) ; eq₁ = eq₁ ; eq₂ = eq₂ } x₁) val-h-step = {!!}
-  -- lstate-lift {S = S} S≍S' val-t-step = {!!}
-  -- lstate-lift {S = S} S≍S' comp-t-step = {!!}
+                   ((⟨ i₂ ∥ γ₂ ⟩ →ᴸ* ⟨ h ∥ (γ' ﹐ M') ⟩) × (M ≍ᵉᵛ M') × LookupHaltingState ⟨ h ∥ (γ' ﹐ M') ⟩)
+  lstate-lift {γ₀ = γ₀} {γ₁ = γ₁} {γ₂ = γ₂} {M = M} record { ctx = Γ ; env = γ ; wkn₁ = π₁ ; wkn₂ = π₂ ; base = i ; eq₁ = eq₁ ; eq₂ = eq₂ ; enveq₁ = ϖ₁ ; enveq₂ = ϖ₂ } L→T H =
+    let
+      a0 = lookup-wk-lift {!!} {!!} {!!} L→T H {!!} γ {!!}
+      ls = lift-steps a0
+      L→T' : ⟨ wk-mem π₁ i ∥ γ₁ ⟩ →ᴸ* ⟨ h ∥ γ₀ ﹐ M ⟩
+      L→T' = subst (λ x → ⟨ x ∥ γ₁ ⟩ →ᴸ* ⟨ h ∥ γ₀ ﹐ M ⟩) eq₁ L→T
+    in
+    {!!} , {!!} , {!!} , {!!} , {!!} , {!!}
+  -}
 
   ----------------------------------------------------------
 
+  {-
   vstate-lift :  {S T S' : ValState X} → (S ≍ᵛꟴ S') → (S →ᵛ T) → Σ[ T' ∈ ValState X ] ((S' →ᵛ T') × (T ≍ᵛꟴ T'))
 
   vstate-lift {S = ∘ ((⇡ var i ⊲ γ ∷ tail) {↥ = ↥})} {T = T} {S' = S'} (∘eqv (cons {Γ₂ = Γ₂} {b₂ = b₂} {γ₂ = γ₂} {tail₂ = tail₂} {↥₂ = ↥₂} (⇡eqv record { ctx = ctx ; wkn₁ = wkn₁ ; wkn₂ = wkn₂ ; base = (var x₁) ; eq₁ = refl ; eq₂ = refl }) x₂ x₃)) ∘var-c =
@@ -491,12 +536,38 @@ module LiftMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     st ,
     ∙eqv (cons (⭭eqv (record { ctx = ctx ; wkn₁ = wkn₁ ; wkn₂ = wkn₂ ; base = v̲a̲r̲ x₁ ; eq₁ = refl ; eq₂ = refl})) x₂ x₃)
 
-  vstate-lift {S = ∘ ((⇡ var i ⊲ γ ∷ tail) {↥ = ↥})} {T = T} {S' = S'} ((∘eqv (cons {Γ₂ = Γ₂} {b₂ = b₂} {γ₂ = γ₂} {tail₂ = tail₂} {↥₂ = ↥₂} (⇡eqv record { ctx = ctx ; wkn₁ = wkn₁ ; wkn₂ = wkn₂ ; base = (var i') ; eq₁ = refl ; eq₂ = refl }) y₂ y₃))) (∘var i>>T πᵥ x x₁ x₂ x₃) =
+  vstate-lift {S = ∘ ((⇡ var i ⊲ γ ∷ tail) {↥ = ↥})} {T = T} {S' = S'} ((∘eqv (cons {Γ₂ = Γ₂} {b₂ = b₂} {γ₂ = γ₂} {tail₂ = tail₂} {↥₂ = ↥₂} (⇡eqv record { ctx = ctx ; wkn₁ = wkn₁ ; wkn₂ = wkn₂ ; base = (var i') ; eq₁ = refl ; eq₂ = refl }) y₂ y₃))) (∘var {γ = γ} {γ' = γ'} {M = M} i>>T πᵥ envext wkext ϖ H) =
     let
       l = var-LHS-eq {↥ = ↥} ((∘eqv (cons {Γ₂ = Γ₂} {b₂ = b₂} {γ₂ = γ₂} {tail₂ = tail₂} {↥₂ = ↥₂} (⇡eqv record { ctx = ctx ; wkn₁ = wkn₁ ; wkn₂ = wkn₂ ; base = (var i') ; eq₁ = refl ; eq₂ = refl }) y₂ y₃)))
-      --t' = ∘var
+
+      p :  ⟨ wk-mem wkn₁ i' ∥ γ ⟩ →ᴸ* ⟨ h ∥ γ' ﹐ M ⟩
+      p = i>>T
+
+      p' : ⟨ wk-mem wkn₂ i' ∥ γ₂ ⟩ →ᴸ* ⟨ h ∥ {!!} ﹐ {!!} ⟩
+      p' = {!!}
+
+      lm : ⟨ wk-mem wkn₁ i' ∥ γ ⟩ ≣ᴸꟴ ⟨ wk-mem wkn₂ i' ∥ γ₂ ⟩
+      lm = _≣ᴸꟴ_.ls-eqv
+            (record
+             { ctx = ctx
+             ; wkn₁ = wkn₁
+             ; wkn₂ = wkn₂
+             ; base = i'
+             ; eq₁ = refl
+             ; eq₂ = refl
+             })
+            y₂
+
+      geq : γ ≍ᴱ γ₂
+      geq = y₂
+
+      t : (∘ ⇡ var (wk-mem wkn₂ i') ⊲ γ₂ ∷ tail₂) →ᵛ {!!}
+      t = ∘var {!!} wkn₂ {!!} {!!} {!!} {!!}
+
+      t' : (∘ ⇡ var (wk-mem wkn₂ i') ⊲ γ₂ ∷ tail₂) →ᵛ {!!}
+      t' = {!!}
     in
-    {!!}
+    {!!} , t' , {!!}
 
   vstate-lift {S = S} {T = T} {S' = S'} (∘eqv (cons {Γ₂ = Γ₂} {b₂ = b₂} {γ₂ = γ₂} {tail₂ = tail₂} {↥₂ = ↥₂} (⇡eqv record { ctx = ctx ; wkn₁ = wkn₁ ; wkn₂ = wkn₂ ; base = (lam W) ; eq₁ = refl ; eq₂ = refl }) x₂ x₃)) ∘lam = {!!}
 
@@ -511,6 +582,7 @@ module LiftMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   vstate-lift {S = S} {T = T} {S' = S'} S≍S' (∙M∷r π≡ RHS≡M) = {!!}
 
   vstate-lift {S = S} {T = T} {S' = S'} S≍S' (∙pair∷pm π≡ p₁M≡LHS p₂M≡RHS) = {!!}
+  -}
 
 
   ----------------------------------------------------------
@@ -1101,4 +1173,3 @@ module LiftMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   --lookup-ren-lift {Γ = Γ} {Γ' = Γ'} {Ψ = Ψ} {γ = γ} {γ' = γ'} i M L→L' H ρₗ Pₗ γₗ = ?
   --i M L→L' H γ γₗ
 
-XXX -}
