@@ -30,6 +30,7 @@ module EquivMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   open StatesMain {R₀ = R₀} k₀
   open MachineMain {R₀ = R₀} k₀
 
+  {- OLD DEFINITIONS; must rethink this
   record _≍ᵐ_ {Γ₁ Γ₂ : Ctx} {X : Ty} (i₁ : Γ₁ ∋ X) (i₂ : Γ₂ ∋ X) : Set where
     field
       ctx  : Ctx
@@ -373,3 +374,5 @@ module EquivMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                  {π₁ : Wk Γ₁ Δ₁} {π₂ : Wk Γ₂ Δ₂} .{wk≡₁ : ⟦ π₁ ⟧ʷ ⟦ γ₁ ⟧ᴱ ≡ ⟦ topCsEnv cs₁ ⟧ᴱ} .{wk≡₂ : ⟦ π₂ ⟧ʷ ⟦ γ₂ ⟧ᴱ ≡ ⟦ topCsEnv cs₂ ⟧ᴱ}
                → (W₁ ≍ᶜᵉᵛ W₂) → (γ₁ ≍ᴱ γ₂) → (cs₁ ≍ᶜˢ cs₂)
                → (((∙⟨ W₁ ⊰ γ₁ ╎ cs₁ ⟩) {π = π₁} {wk≡ = wk≡₁}) ≍ᶜꟴ ((∙⟨ W₂ ⊰ γ₂ ╎ cs₂ ⟩) {π = π₂} {wk≡ = wk≡₂}))
+
+  -}

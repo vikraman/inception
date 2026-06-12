@@ -320,7 +320,7 @@ module LiftMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   lookup-wk-lift {X = X} i M (ext-jmp ext) (S →ᴸ⟨ x ⟩ L→L') H (wk-cong πₗ) (γₗ ﹐﹝ W ╎ cs ﹞) ()
 
   ----------------------------------------------------------
-
+  {- OLD LEMMAS; must rethink this
   var-c-LHS-eq : {Γ : Ctx} {X Z : Ty} {b : _} {γ : Env Γ} {x : Γ ∋ X} {tail : ValStack b Z}
                  {↥ : BottomTypeEqualsNextType b X Z} {S' : ValState Z}
                → ((∘ ((⇡ (var x) ⊲ γ ∷ tail) {↥ = ↥})) ≍ᵛꟴ S')
@@ -360,3 +360,4 @@ module LiftMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                 Σ[ ↥' ∈ BottomTypeEqualsNextType b' `Unit Z ]
                 (S' ≡ (∘ ((⇡ unit ⊲ γ' ∷ tail') {↥ = ↥'})))
   unit-LHS-eq {Γ = Γ} {Z = Z} {γ = γ} {tail = tail} {↥ = ↥} {S' = S'} (∘eqv (cons {Γ₂ = Γ₂} {b₂ = b₂} {γ₂ = γ₂} {tail₂ = tail₂} {↥₂ = ↥₂} (⇡eqv record { ctx = ctx ; wkn₁ = wkn₁ ; wkn₂ = wkn₂ ; base = unit ; eq₁ = refl ; eq₂ = refl }) x₁ x₂)) = Γ₂ , b₂ , γ₂ , tail₂ , ↥₂ , refl
+  -}
