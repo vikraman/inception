@@ -537,6 +537,49 @@ module LiftMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   ----------------------------------------------------------
 
+  {- THIS IS NOT TRUE
+  factor-wk : {Δ Γ₁ Γ₂ Ψ : Ctx} → (πₗ : Wk Δ Γ₁) → (πᵣ : Wk Γ₂ Ψ) → (π : Wk Δ Γ₂) → (extₗ : WkExt πₗ) → (extᵣ : WkExt πᵣ) → Wk Γ₁ Ψ
+  factor-wk wk-ε wk-ε wk-ε (wk-eq π) (wk-eq π₁) = wk-ε
+  factor-wk wk-ε (wk-cong πᵣ) () extₗ extᵣ
+  factor-wk wk-ε (wk-wk πᵣ) () extₗ extᵣ
+  factor-wk (wk-cong πₗ) wk-ε (wk-wk π) (wk-eq π₁) (wk-eq π₂) = wk-wk π
+  factor-wk (wk-cong πₗ) (wk-cong πᵣ) (wk-cong π) (wk-eq π₁) (wk-eq π₂) = wk-cong π
+  factor-wk (wk-cong πₗ) (wk-cong πᵣ) (wk-wk π) (wk-eq π₁) (wk-eq π₂) = wk-wk π
+  factor-wk (wk-cong πₗ) (wk-wk πᵣ) (wk-cong π) (wk-eq π₁) (wk-eq π₂) = wk-cong π
+  factor-wk (wk-cong πₗ) (wk-wk πᵣ) (wk-cong π) (wk-eq π₁) (wk-ext π₂ extᵣ) = wk-wk (factor-wk πₗ πᵣ π (WkExt.wk-eq πₗ) extᵣ)
+  factor-wk (wk-cong πₗ) (wk-wk πᵣ) (wk-wk π) (wk-eq π₁) (wk-eq π₂) = wk-wk π
+  factor-wk (wk-cong πₗ) (wk-wk πᵣ) (wk-wk π) (wk-eq π₁) (wk-ext π₂ extᵣ) = wk-wk (wk-trans π (wk-wk πᵣ))
+  factor-wk (wk-wk πₗ) wk-ε (wk-wk π) (wk-eq π₁) (wk-eq π₂) = wk-wk π
+  factor-wk (wk-wk πₗ) wk-ε (wk-wk π) (wk-ext π₁ extₗ) (wk-eq π₂) = factor-wk πₗ wk-ε π extₗ (WkExt.wk-eq wk-ε)
+  factor-wk (wk-wk πₗ) (wk-cong πᵣ) (wk-cong π) (wk-eq π₁) (wk-eq π₂) = wk-cong π
+
+  factor-wk {Δ = Δ Cx.∙ X} {Γ₁ = Cx.ε} {Γ₂ = Γ₂} {Ψ = Ψ Cx.∙ X} (wk-wk πₗ) (wk-cong πᵣ) (wk-cong π) (wk-ext π₁ extₗ) (wk-eq π₂) = {!!}
+  factor-wk {Δ = Δ Cx.∙ X} {Γ₁ = Γ₁ Cx.∙ x} {Γ₂ = Γ₂} {Ψ = Ψ Cx.∙ X} (wk-wk πₗ) (wk-cong πᵣ) (wk-cong π) (wk-ext π₁ extₗ) (wk-eq π₂) = {!!}
+
+  --factor-wk {Δ = Δ ∙ X} {Γ₁ = Γ₁} {Γ₂ = Γ₂} {Ψ = Ψ ∙ X} (wk-wk πₗ) (wk-cong πᵣ) (wk-cong π) (wk-ext π₁ extₗ) (wk-eq π₂) =
+  --  let
+  --    IH = factor-wk πₗ πᵣ π extₗ (WkExt.wk-eq πᵣ)
+  --  in
+  --  {!!}
+
+  factor-wk (wk-wk πₗ) (wk-cong πᵣ) (wk-wk π) (wk-eq π₁) (wk-eq π₂) = wk-wk π
+  factor-wk (wk-wk πₗ) (wk-cong πᵣ) (wk-wk π) (wk-ext π₁ extₗ) (wk-eq π₂) = factor-wk πₗ (wk-cong πᵣ) π extₗ (WkExt.wk-eq (wk-cong πᵣ))
+  factor-wk (wk-wk πₗ) (wk-wk πᵣ) (wk-cong π) (wk-eq π₁) (wk-eq π₂) = wk-cong π
+  factor-wk (wk-wk πₗ) (wk-wk πᵣ) (wk-cong π) (wk-eq π₁) (wk-ext π₂ extᵣ) = {!!}
+  factor-wk (wk-wk πₗ) (wk-wk πᵣ) (wk-cong π) (wk-ext π₁ extₗ) (wk-eq π₂) = {!!}
+  factor-wk (wk-wk πₗ) (wk-wk πᵣ) (wk-cong π) (wk-ext π₁ extₗ) (wk-ext π₂ extᵣ) = factor-wk πₗ πᵣ π extₗ extᵣ
+  factor-wk (wk-wk πₗ) (wk-wk πᵣ) (wk-wk π) (wk-eq π₁) (wk-eq π₂) = wk-wk π
+  factor-wk (wk-wk πₗ) (wk-wk πᵣ) (wk-wk π) (wk-eq π₁) (wk-ext π₂ extᵣ) = {!!}
+  factor-wk (wk-wk πₗ) (wk-wk πᵣ) (wk-wk π) (wk-ext π₁ extₗ) (wk-eq π₂) = factor-wk πₗ (wk-wk πᵣ) π extₗ (WkExt.wk-eq (wk-wk πᵣ))
+  factor-wk (wk-wk πₗ) (wk-wk πᵣ) (wk-wk π) (wk-ext π₁ extₗ) (wk-ext π₂ extᵣ) = factor-wk πₗ (wk-wk πᵣ) π extₗ (WkExt.wk-ext πᵣ extᵣ)
+  -}
+
+  -- factor-env-eq :   {Δ Γ₁ Γ₂ Ψ : Ctx} {πₗ : Wk Δ Γ₁} {πᵣ : Wk Γ₂ Ψ} {π : Wk Δ Γ₂} {δ : Env Δ} {γ₁ : Env Γ₁} {γ₂ : Env Γ₂} {ψ : Env Ψ}
+  --                   {j : Δ ∋ X} {i : Γ₂ ∋ X} {extₗ : EnvExt j δ Γ₁} {extᵣ : EnvExt i γ₂ ψ} {ϖ : EnvEq π δ γ₂}
+  --                 → EnvEq γ₂
+
+  ----------------------------------------------------------
+
   ltrans-val-lift :   {Γ₁ Γ₁' Γ₂ : Ctx} {X : Ty} {i₁ : Γ₁ ∋ X} {γ₁ : Env Γ₁} {i₁' : Γ₁' ∋ X} {γ₁' : Env Γ₁'} {γ₂ : Env Γ₂} {M : V̲a̲l̲ Γ₂ X}
                 → (H : LookupHaltingState ⟨ h ∥ γ₂ ﹐ M ⟩) → (L₁→L₂ : ⟨ i₁ ∥ γ₁ ⟩ →ᴸ* ⟨ h ∥ γ₂ ﹐ M ⟩) → ⟨ i₁ ∥ γ₁ ⟩≍ᴸ⟨ i₁' ∥ γ₁' ⟩
                 → Σ[ Γ₂' ∈ Ctx ] Σ[ M' ∈ V̲a̲l̲ Γ₂' X ] Σ[ γ₂' ∈ Env Γ₂' ] ((⟨ i₁' ∥ γ₁' ⟩ →ᴸ* ⟨ h ∥ γ₂' ﹐ M' ⟩) × LookupHaltingState ⟨ h ∥ γ₂' ﹐ M' ⟩ × (⟨ h ∥ γ₂ ﹐ M ⟩≍ᴸ⟨ h ∥ γ₂' ﹐ M' ⟩))
