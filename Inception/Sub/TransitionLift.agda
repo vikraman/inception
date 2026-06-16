@@ -41,6 +41,265 @@ module LiftMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   open EquivMain {R₀ = R₀} k₀
   open EnvMain {R₀ = R₀} k₀
 
+  ----------------------------------------------------------------
+
+  record LookupWkStr
+    (i   : Γ ∋ X)
+    (M   : V̲a̲l̲ Δ' X)
+    --(δ   : Env Δ)
+    --(δ'  : Env Δ')
+    --(πₗ  : Wk Δ Γ)
+    (γ   : Env Γ)
+    : Set
+    where
+
+    field
+      str-ctx : Ctx
+
+      str-wk-r : Wk Δ' str-ctx
+      str-wk  : Wk Γ str-ctx
+
+      str-env : Env str-ctx
+
+      -- M = wk-v̲a̲l̲ str-wk-r M'
+      str-M :  V̲a̲l̲ str-ctx X
+      str-eq : M ≡ wk-v̲a̲l̲ str-wk-r str-M
+
+      str-steps :
+        ⟨ i ∥ γ ⟩
+        →ᴸ*
+        ⟨ h ∥ str-env ﹐ str-M ⟩
+
+      str-halt :
+        LookupHaltingState
+          ⟨ h ∥ str-env ﹐ str-M ⟩
+
+      str-env-ext :
+        EnvExt
+          (lookup-index str-steps)
+          γ
+          (str-env ﹐ str-M)
+
+      str-wk-ext :
+        WkExt str-wk
+
+      str-env-eq :
+        EnvEq str-wk γ str-env
+
+      str-eval-eq :
+        ⟦ ⟨ i ∥ γ ⟩ ⟧ᴸ
+        ≡
+        ⟦ ⟨ h ∥ str-env ﹐ str-M ⟩ ⟧ᴸ
+
+      str-sem-eq :
+        ⟦ str-wk ⟧ʷ ⟦ γ ⟧ᴱ
+        ≡
+        ⟦ str-env ⟧ᴱ
+
+  open LookupWkStr
+
+  lhaltingstate-str :   {Δ Γ : Ctx} {X : Ty} {δ : Env Δ} {γ : Env Γ} {M : V̲a̲l̲ Γ X}
+                      → (π : Wk Δ Γ) → (H : LookupHaltingState ⟨ h ∥ δ ﹐ wk-v̲a̲l̲ π M ⟩)
+                      → LookupHaltingState ⟨ h ∥ γ ﹐ M ⟩
+  lhaltingstate-str {M = l̲a̲m̲ W} π found-lam = found-lam
+  lhaltingstate-str {M = pa̲i̲r̲ M₁ M₂} π found-pair = found-pair
+  lhaltingstate-str {M = u̲n̲i̲t̲} π found-unit = found-unit
+
+
+  lookup-eq-absurd : {i : Γ ∋ X} → h ≡ t i → ⊥
+  lookup-eq-absurd ()
+
+  enveq-lem0 : {π : Wk Δ (Γ ∙ X)} {δ : Env Δ} {γ : Env Γ} {M : V̲a̲l̲ Γ X} → (ϖ : EnvEq π δ (γ ﹐ M)) → EnvEq (wk-trans π (wk-wk wk-id)) δ γ
+  enveq-lem0 {π = π} {δ = δ ﹐ _} {γ = γ} {M = M} (wk-env-val-cong M ϖ) = wk-env-val-wk (wk-v̲a̲l̲ _ M) (subst (λ x → EnvEq x δ γ) (sym wk-trans-id') ϖ)
+  enveq-lem0 {π = wk-wk π} {δ = δ ﹐ _} {γ = γ} {M = M} (wk-env-val-wk M₁ ϖ) = wk-env-val-wk M₁ (enveq-lem0 ϖ)
+  enveq-lem0 {π = wk-wk π} {δ = δ ﹐﹝ W ╎ cs ﹞} {γ = γ} {M = M} (wk-env-comp-wk W cs ϖ) = wk-env-comp-wk W cs (enveq-lem0 ϖ)
+
+  enveq-lem1 :   {Γ' : Ctx} {X : Ty} {π : Wk Δ (Γ ∙ `V)} {δ : Env Δ} {γ : Env Γ} {W : Comp Γ X} {cs : CompStack Γ' X} {π' : Wk Γ Γ'} .{wk≡ : ⟦ π' ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ}
+               → (ϖ : EnvEq π δ ((γ ﹐﹝ W ╎ cs ﹞) {π = π'} {wk≡ = wk≡}))
+               → EnvEq (wk-trans π (wk-wk wk-id)) δ γ
+  enveq-lem1 {π = π} {δ = δ ﹐﹝ _ ╎ _ ﹞} {γ = γ} {W = W} (wk-env-comp-cong W cs ϖ) = wk-env-comp-wk (wk-comp _ W) cs (subst (λ x → EnvEq x δ γ) (sym wk-trans-id') ϖ)
+  enveq-lem1 {π = wk-wk π} {δ = δ ﹐ _} {γ = γ} {W = W} {wk≡ = wk≡} (wk-env-val-wk M ϖ) = wk-env-val-wk M (enveq-lem1 {wk≡ = wk≡} ϖ)
+  enveq-lem1 {π = wk-wk π} {δ = δ ﹐﹝ _ ╎ _ ﹞} {γ = γ} {W = W} {wk≡ = wk≡} (wk-env-comp-wk W₁ cs ϖ) = wk-env-comp-wk W₁ cs (enveq-lem1 {wk≡ = wk≡} ϖ)
+
+
+  lookup-wk-str :  {δ  : Env Δ} {δ' : Env Δ'}
+                 → (j  : Δ ∋ X)
+                 → (i  : Γ ∋ X) → (M : V̲a̲l̲ Δ' X)
+                 → (πₗ : Wk Δ Γ)
+                 → (ext : EnvExt j δ (δ' ﹐ M))
+                 → (j≡wki : j ≡ wk-mem πₗ i)
+                 → ⟨ j ∥ δ ⟩ →ᴸ* ⟨ h ∥ δ' ﹐ M ⟩
+                 → (H  : LookupHaltingState ⟨ h ∥ δ' ﹐ M ⟩)
+                 → (γ  : Env Γ)
+                 → (ϖₗ : EnvEq πₗ δ γ)
+                 → LookupWkStr i M γ
+
+  lookup-wk-str {Δ = Δ} {Δ' = Δ'} {Γ = Γ ∙ X} {δ = δ' ﹐ M} {δ' = δ'} Cx.h Cx.h M (wk-cong πₗ) env-val j≡wki (S ◼) H (γ ﹐ M₁) (wk-env-val-cong M₁ ϖₗ) =
+    record
+     { str-ctx = Γ
+     ; str-wk-r = πₗ
+     ; str-wk = wk-wk wk-id
+     ; str-env = γ
+     ; str-M = M₁
+     ; str-eq = refl
+     ; str-steps = ⟨ h ∥ γ Env.﹐ M₁ ⟩ ◼
+     ; str-halt = lhaltingstate-str πₗ H
+     ; str-env-ext = env-val
+     ; str-wk-ext = wk-ext wk-id (wk-eq wk-id)
+     ; str-env-eq = wk-env-val-wk M₁ enveq-id
+     ; str-eval-eq = refl
+     ; str-sem-eq = refl
+     }
+
+  lookup-wk-str {δ = δ' ﹐ M} {δ' = δ'} h h M (wk-wk πₗ) env-val j≡wki (S ◼) H γ (wk-env-val-wk M₁ ϖₗ) = ql (lookup-eq-absurd j≡wki) _ --(LookupWkStr h M (δ' ﹐ M) δ' (wk-wk πₗ) γ)
+  lookup-wk-str {δ = δ} {δ' = δ'} h (t i) M (wk-wk πₗ) env-val j≡wki (S ◼) H γ (wk-env-val-wk M₁ ϖₗ) = ql (lookup-eq-absurd j≡wki) _ --(LookupWkStr (t i) M (δ' ﹐ M) δ' (wk-wk πₗ) γ)
+  lookup-wk-str {Δ = Δ} {Δ' = Δ'} {Γ = Γ ∙ X} {δ = δ} {δ' = δ'} h h M (wk-cong πₗ) env-val j≡wki (S →ᴸ⟨ x ⟩ L→T) H (γ ﹐ M₁) (wk-env-val-cong M₁ ϖₗ) =
+    record
+     { str-ctx = Γ
+     ; str-wk-r = πₗ
+     ; str-wk = wk-wk wk-id
+     ; str-env = γ
+     ; str-M = M₁
+     ; str-eq = refl
+     ; str-steps = ⟨ h ∥ γ ﹐ M₁ ⟩ ◼
+     ; str-halt = lhaltingstate-str πₗ H
+     ; str-env-ext = EnvExt.env-val
+     ; str-wk-ext = WkExt.wk-ext wk-id (WkExt.wk-eq wk-id)
+     ; str-env-eq = EnvEq.wk-env-val-wk M₁ enveq-id
+     ; str-eval-eq = refl
+     ; str-sem-eq = refl
+     }
+  lookup-wk-str {δ = δ} {δ' = δ'} h h M (wk-wk πₗ) env-val j≡wki (S →ᴸ⟨ x ⟩ L→T) H γ (wk-env-val-wk M₁ ϖₗ) = ql (lookup-eq-absurd j≡wki) _ --(LookupWkStr h M (δ' ﹐ M) δ' (wk-wk πₗ) γ)
+  lookup-wk-str {δ = δ} {δ' = δ'} h (t i) M (wk-wk πₗ) env-val j≡wki (S →ᴸ⟨ x ⟩ L→T) H γ (wk-env-val-wk M₁ ϖₗ) = ql (lookup-eq-absurd j≡wki) _ --(LookupWkStr (t i) M (δ' ﹐ M) δ' (wk-wk πₗ) γ)
+
+  lookup-wk-str {Δ = Δ Cx.∙ X} {Δ' = Δ'} {Γ = Γ Cx.∙ X} {δ = δ ﹐ _} {δ' = δ'} (Cx.t j) (Cx.t i) M (wk-cong πₗ) (ext-val ext₁) j≡wki (S →ᴸ⟨ val-t-step ⟩ L→T) H (γ ﹐ M₁) (wk-env-val-cong M₁ ϖₗ) =
+    let
+      IH = lookup-wk-str j i M πₗ ext₁ (t-injective j≡wki) L→T H γ ϖₗ
+    in
+    record
+     { str-ctx = str-ctx IH
+     ; str-wk-r = str-wk-r IH
+     ; str-wk = wk-wk (str-wk IH)
+     ; str-env = str-env IH
+     ; str-M = str-M IH
+     ; str-eq = str-eq IH
+     ; str-steps = ⟨ t i ∥ γ ﹐ M₁ ⟩ →ᴸ⟨ val-t-step ⟩ (str-steps IH)
+     ; str-halt = str-halt IH
+     ; str-env-ext = ext-val (str-env-ext IH)
+     ; str-wk-ext = wk-ext (str-wk IH) (str-wk-ext IH)
+     ; str-env-eq = wk-env-val-wk M₁ (str-env-eq IH)
+     ; str-eval-eq = str-eval-eq IH
+     ; str-sem-eq = str-sem-eq IH
+     }
+
+  lookup-wk-str {Δ = Δ Cx.∙ X} {Δ' = Δ'} {Γ = Γ Cx.∙ Y} {δ = δ ﹐ M₁} {δ' = δ'} (Cx.t j) Cx.h M (wk-wk πₗ) (ext-val ext₁) j≡wki (S →ᴸ⟨ val-t-step ⟩ L→T) H γ (wk-env-val-wk M₁ ϖₗ) =
+    lookup-wk-str j h M πₗ ext₁ (t-injective j≡wki) L→T H γ ϖₗ
+  lookup-wk-str {Δ = Δ Cx.∙ X} {Δ' = Δ'} {Γ = Γ Cx.∙ Y} {δ = δ ﹐ M₁} {δ' = δ'} (Cx.t j) (Cx.t i) M (wk-wk πₗ) (ext-val ext₁) j≡wki (S →ᴸ⟨ val-t-step ⟩ L→T) H (γ ﹐ M₂) (wk-env-val-wk M₁ ϖₗ) =
+    lookup-wk-str j (t i) M πₗ ext₁ (t-injective j≡wki) L→T H (γ Env.﹐ M₂) ϖₗ
+  lookup-wk-str {Δ = Δ Cx.∙ X} {Δ' = Δ'} {Γ = Γ Cx.∙ Y} {δ = δ ﹐ M₁} {δ' = δ'} (Cx.t j) (Cx.t i) M (wk-wk πₗ) (ext-val ext₁) j≡wki (S →ᴸ⟨ val-t-step ⟩ L→T) H ((γ ﹐﹝ W ╎ cs ﹞) {wk≡ = wk≡}) (wk-env-val-wk M₁ ϖₗ) = lookup-wk-str j (t i) M πₗ ext₁ (t-injective j≡wki) L→T H (γ Env.﹐﹝ W ╎ cs ﹞) ϖₗ
+  lookup-wk-str {Δ = Δ} {Δ' = Δ'} {Γ = Γ Cx.∙ X} {δ = δ} {δ' = δ'} (Cx.t j) (Cx.t i) M (wk-cong πₗ) (ext-comp ext₁) j≡wki (S →ᴸ⟨ comp-t-step ⟩ L→T) H (γ ﹐﹝ W ╎ cs ﹞) (wk-env-comp-cong W cs ϖₗ) =
+    let
+      IH = lookup-wk-str j i M πₗ ext₁ (t-injective j≡wki) L→T H γ ϖₗ
+    in
+    record
+     { str-ctx = str-ctx IH
+     ; str-wk-r = str-wk-r IH
+     ; str-wk = wk-wk (str-wk IH)
+     ; str-env = str-env IH
+     ; str-M = str-M IH
+     ; str-eq = str-eq IH
+     ; str-steps = ⟨ t i ∥ γ Env.﹐﹝ W ╎ cs ﹞ ⟩ →ᴸ⟨ comp-t-step ⟩ (str-steps IH)
+     ; str-halt = str-halt IH
+     ; str-env-ext = ext-comp (str-env-ext IH)
+     ; str-wk-ext = WkExt.wk-ext (str-wk IH) (str-wk-ext IH)
+     ; str-env-eq = wk-env-comp-wk W cs (str-env-eq IH)
+     ; str-eval-eq = str-eval-eq IH
+     ; str-sem-eq = str-sem-eq IH
+     }
+  lookup-wk-str {Δ = Δ} {Δ' = Δ'} {Γ = Γ Cx.∙ X} {δ = δ} {δ' = δ'} (Cx.t j) Cx.h M (wk-wk πₗ) (ext-comp ext₁) j≡wki (S →ᴸ⟨ comp-t-step ⟩ L→T) H γ (wk-env-comp-wk W cs ϖₗ) =
+    lookup-wk-str j h M πₗ ext₁ (t-injective j≡wki) L→T H γ ϖₗ
+  lookup-wk-str {Δ = Δ} {Δ' = Δ'} {Γ = Γ Cx.∙ X} {δ = δ} {δ' = δ'} (Cx.t j) (Cx.t i) M (wk-wk πₗ) (ext-comp ext₁) j≡wki (S →ᴸ⟨ comp-t-step ⟩ L→T) H (γ ﹐ M₁) (wk-env-comp-wk W cs ϖₗ) =
+    let
+      IH = lookup-wk-str j i M (wk-prev {X = X} (wk-wk πₗ)) ext₁ (Eq.trans (t-injective j≡wki) (sym (wk-wk-trans-id πₗ i))) L→T H γ (enveq-lem0 ϖₗ)
+    in
+    record
+     { str-ctx = str-ctx IH
+     ; str-wk-r = str-wk-r IH
+     ; str-wk = wk-wk (str-wk IH)
+     ; str-env = str-env IH
+     ; str-M = str-M IH
+     ; str-eq = str-eq IH
+     ; str-steps = ⟨ t i ∥ γ ﹐ M₁ ⟩ →ᴸ⟨ val-t-step ⟩ (str-steps IH)
+     ; str-halt = str-halt IH
+     ; str-env-ext = EnvExt.ext-val (str-env-ext IH)
+     ; str-wk-ext = WkExt.wk-ext (str-wk IH) (str-wk-ext IH)
+     ; str-env-eq = EnvEq.wk-env-val-wk M₁ (str-env-eq IH)
+     ; str-eval-eq = str-eval-eq IH
+     ; str-sem-eq = str-sem-eq IH
+     }
+  lookup-wk-str {Δ = Δ} {Δ' = Δ'} {Γ = Γ Cx.∙ X} {δ = δ} {δ' = δ'} (Cx.t j) (Cx.t i) M (wk-wk πₗ) (ext-comp ext₁) j≡wki (S →ᴸ⟨ comp-t-step ⟩ L→T) H ((γ ﹐﹝ W₁ ╎ cs₁ ﹞) {wk≡ = wk≡}) (wk-env-comp-wk W cs ϖₗ) =
+    let
+      IH = lookup-wk-str j i M (wk-prev {X = X} (wk-wk πₗ)) ext₁ (Eq.trans (t-injective j≡wki) (sym (wk-wk-trans-id πₗ i))) L→T H γ (enveq-lem1 {wk≡ = wk≡} ϖₗ)
+    in
+    record
+     { str-ctx = str-ctx IH
+     ; str-wk-r = str-wk-r IH
+     ; str-wk = wk-wk (str-wk IH)
+     ; str-env = str-env IH
+     ; str-M = str-M IH
+     ; str-eq = str-eq IH
+     ; str-steps = ⟨ t i ∥ γ ﹐﹝ W₁ ╎ cs₁ ﹞ ⟩ →ᴸ⟨ comp-t-step ⟩ (str-steps IH)
+     ; str-halt = str-halt IH
+     ; str-env-ext = EnvExt.ext-comp (str-env-ext IH)
+     ; str-wk-ext = WkExt.wk-ext (str-wk IH) (str-wk-ext IH)
+     ; str-env-eq = EnvEq.wk-env-comp-wk W₁ cs₁ (str-env-eq IH)
+     ; str-eval-eq = str-eval-eq IH
+     ; str-sem-eq = str-sem-eq IH
+     }
+
+  {-
+  lookup-wk-str :  {δ  : Env Δ} {δ' : Env Δ'}
+                 → (i  : Γ ∋ X) → (M : V̲a̲l̲ Δ' X)
+                 → (πₗ : Wk Δ Γ)
+                 → (ext : EnvExt (wk-mem πₗ i) δ (δ' ﹐ M))
+                 → ⟨ wk-mem πₗ i ∥ δ ⟩ →ᴸ* ⟨ h ∥ δ' ﹐ M ⟩
+                 → (H  : LookupHaltingState ⟨ h ∥ δ' ﹐ M ⟩)
+                 → (γ  : Env Γ)
+                 → (ϖₗ : EnvEq πₗ δ γ)
+                 → LookupWkStr i M δ δ' πₗ γ
+  lookup-wk-str {δ = δ} {δ' = δ'} i M πₗ ext L→T H γ ϖₗ = {!!}
+  -}
+
+  ----------------------------------------------------------
+
+  {-
+  ltrans-str :   {Δ Δ' Γ : Ctx} {X : Ty} {j : Γ ∋ X} {δ : Env Δ} {j' : Γ ∋ X} {δ' : Env Δ} {i : Γ ∋ X} {γ : Env Γ}
+                → (L₁→L₂ : ⟨ j ∥ δ ⟩ →ᴸ* ⟨ j' ∥ δ' ⟩) → ⟨ j , δ ⟩←⟨ i , γ ⟩
+                → Σ[ Γ' ∈ Ctx ] Σ[ i' ∈ Γ' ∋ X ] Σ[ γ' ∈ Env Γ' ] ((⟨ i ∥ γ ⟩ →ᴸ ⟨ i' ∥ γ' ⟩) × (⟨ j' , δ' ⟩←⟨ i' , γ' ⟩))
+  -}
+
+  {-
+  ltrans-lift :   {Γ₁ Γ₁' Γ₂ : Ctx} {X : Ty} {i₁ : Γ₁ ∋ X} {γ₁ : Env Γ₁} {i₁' : Γ₁' ∋ X} {γ₁' : Env Γ₁'} {i₂ : Γ₂ ∋ X} {γ₂ : Env Γ₂}
+                → (L₁→L₂ : ⟨ i₁ ∥ γ₁ ⟩ →ᴸ ⟨ i₂ ∥ γ₂ ⟩) → ⟨ i₁ ∥ γ₁ ⟩≍ᴸ⟨ i₁' ∥ γ₁' ⟩
+                → Σ[ Γ₂' ∈ Ctx ] Σ[ i₂' ∈ Γ₂' ∋ X ] Σ[ γ₂' ∈ Env Γ₂' ] ((⟨ i₁' ∥ γ₁' ⟩ →ᴸ ⟨ i₂' ∥ γ₂' ⟩) × (⟨ i₂ ∥ γ₂ ⟩≍ᴸ⟨ i₂' ∥ γ₂' ⟩))
+  ltrans-lift {Γ₁ = Γ₂ Cx.∙ `V} {Γ₁' = Γ₁'} {Γ₂ = Γ₂} {X = X} {i₁ = Cx.h} {γ₁ = γ₂ ﹐ v̲a̲r̲ i₂} {i₁' = Cx.h} {γ₁' = γ₁' ﹐ M} {i₂ = i₂} {γ₂ = γ₂} val-h-step record { ctx = (Γ Cx.∙ `V) ; env = env ; idx = Cx.h ; eqv = record { ext₁ = record { wkn = (wk-cong wkn) ; enveq = enveq ; eq = refl } ; ext₂ = ext₂ } } = {!enveq!}
+  ltrans-lift {Γ₁ = Γ₂ Cx.∙ `V} {Γ₁' = Γ₁'} {Γ₂ = Γ₂} {X = X} {i₁ = Cx.h} {γ₁ = γ₂ ﹐ v̲a̲r̲ i₂} {i₁' = Cx.h} {γ₁' = γ₁' ﹐﹝ W ╎ cs ﹞} {i₂ = i₂} {γ₂ = γ₂} val-h-step record { ctx = (Γ Cx.∙ `V) ; env = env ; idx = Cx.h ; eqv = record { ext₁ = record { wkn = (wk-cong wkn) ; enveq = enveq ; eq = refl } ; ext₂ = ext₂ } } = {!!}
+  ltrans-lift {Γ₁ = Γ₂ Cx.∙ `V} {Γ₁' = Γ₁'} {Γ₂ = Γ₂} {X = X} {i₁ = Cx.h} {γ₁ = γ₂ ﹐ v̲a̲r̲ i₂} {i₁' = Cx.h} {γ₁' = γ₁'} {i₂ = i₂} {γ₂ = γ₂} val-h-step record { ctx = ctx ; env = env ; idx = (Cx.t idx) ; eqv = record { ext₁ = record { wkn = wkn ; enveq = enveq ; eq = eq } ; ext₂ = ext₂ } } = {!!}
+  --Γ₂ , i₂ , γ₂ , {!-u!} , {!!}
+  ltrans-lift {Γ₁ = Γ₂ Cx.∙ `V} {Γ₁' = Γ₁'} {Γ₂ = Γ₂} {X = X} {i₁ = Cx.h} {γ₁ = γ₂ ﹐ v̲a̲r̲ i₂} {i₁' = Cx.t i₁'} {γ₁' = γ₁'} {i₂ = i₂} {γ₂ = γ₂} val-h-step record { ctx = ctx ; env = env ; idx = idx ; eqv = eqv } = {!!}
+  ltrans-lift {Γ₁ = Γ₁} {Γ₁' = Γ₁'} {Γ₂ = Γ₂} {X = X} {i₁ = i₁} {γ₁ = γ₁} {i₁' = i₁'} {γ₁' = γ₁'} {i₂ = i₂} {γ₂ = γ₂} val-t-step eqv = {!!}
+  ltrans-lift {Γ₁ = Γ₁} {Γ₁' = Γ₁'} {Γ₂ = Γ₂} {X = X} {i₁ = i₁} {γ₁ = γ₁} {i₁' = i₁'} {γ₁' = γ₁'} {i₂ = i₂} {γ₂ = γ₂} comp-t-step eqv = {!!}
+  -}
+
+  --ltrans-lift :   {Γ₁ Γ₁' Γ₂ : Ctx} {X : Ty} {i₁ : Γ₁ ∋ X} {γ₁ : Env Γ₁} {i₁' : Γ₁' ∋ X} {γ₁' : Env Γ₁'} {i₂ : Γ₂ ∋ X} {γ₂ : Env Γ₂}
+  --              → (L₁→L₂ : ⟨ i₁ ∥ γ₁ ⟩ →ᴸ ⟨ i₂ ∥ γ₂ ⟩) → ⟨ i₁ ∥ γ₁ ⟩≍ᴸ⟨ i₁' ∥ γ₁' ⟩
+  --              → Σ[ Γ₂' ∈ Ctx ] Σ[ i₂' ∈ Γ₂' ∋ X ] Σ[ γ₂' ∈ Env Γ₂' ] ((⟨ i₁' ∥ γ₁' ⟩ →ᴸ ⟨ i₂' ∥ γ₂' ⟩) × (⟨ i₂ ∥ γ₂ ⟩≍ᴸ⟨ i₂' ∥ γ₂' ⟩))
+  --ltrans-lift {Γ₁ = Γ₁} {Γ₁' = Γ₁'} {Γ₂ = Γ₂} {X = X} {i₁ = i₁} {γ₁ = γ₁} {i₁' = i₁'} {γ₁' = γ₁'} {i₂ = i₂} {γ₂ = γ₂} L₁→L₂ eqv = ?
+
+  --ltrans-lift : {X : Ty} {L₁ L₂ L₁' : LookupState X} → (L₁→L₂ : L₁ →ᴸ L₂) → (L₁' ≍ᴸ L₁) → Σ[ L₂' ∈ LookupState X ] ((L₁' →ᴸ L₂') × (L₂' ≍ᴸ L₂))
+  --ltrans-lift {X = X} {L₁ = L₁} {L₂ = L₂} {L₁' = L₁'} L₁→L₂ eqv = {!!}
+
+{-
   ----------------------------------------------------------
 
   lhwk : (γ' : Env Γ')
@@ -361,3 +620,5 @@ module LiftMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                 (S' ≡ (∘ ((⇡ unit ⊲ γ' ∷ tail') {↥ = ↥'})))
   unit-LHS-eq {Γ = Γ} {Z = Z} {γ = γ} {tail = tail} {↥ = ↥} {S' = S'} (∘eqv (cons {Γ₂ = Γ₂} {b₂ = b₂} {γ₂ = γ₂} {tail₂ = tail₂} {↥₂ = ↥₂} (⇡eqv record { ctx = ctx ; wkn₁ = wkn₁ ; wkn₂ = wkn₂ ; base = unit ; eq₁ = refl ; eq₂ = refl }) x₁ x₂)) = Γ₂ , b₂ , γ₂ , tail₂ , ↥₂ , refl
   -}
+
+-}

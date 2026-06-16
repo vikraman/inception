@@ -660,3 +660,6 @@ mutual
   wk-wk-trans (wk-wk π) wk-ε = cong wk-wk (wk-wk-trans π wk-ε)
   wk-wk-trans (wk-wk π) (wk-cong π') = cong wk-wk (wk-wk-trans π (wk-cong π'))
   wk-wk-trans (wk-wk π) (wk-wk π') = cong wk-wk (wk-wk-trans π (wk-wk π'))
+
+t-injective : {i i' : Γ ∋ X} → t {B = B} i ≡ t i' → i ≡ i'
+t-injective refl = refl

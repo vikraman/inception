@@ -30,6 +30,54 @@ module EquivMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   open StatesMain {R₀ = R₀} k₀
   open MachineMain {R₀ = R₀} k₀
 
+  record ⟨_,_⟩←⟨_,_⟩ {Γ Δ : Ctx} {X : Ty} (j : Δ ∋ X) (δ : Env Δ) (i : Γ ∋ X) (γ : Env Γ) : Set where
+    field
+      wkn   : Wk Δ Γ
+      -- wkext : WkExt wkn
+      enveq : EnvEq wkn δ γ
+      eq    : j ≡ wk-mem wkn i
+
+  record ⟨_,_⟩←⟨_,_⟩→⟨_,_⟩ {Γ Δ₁ Δ₂ : Ctx} {X : Ty} (j₁ : Δ₁ ∋ X) (δ₁ : Env Δ₁) (i : Γ ∋ X) (γ : Env Γ) (j₂ : Δ₂ ∋ X) (δ₂ : Env Δ₂) : Set where
+    field
+      ext₁ : ⟨ j₁ , δ₁ ⟩←⟨ i , γ ⟩
+      ext₂ : ⟨ j₂ , δ₂ ⟩←⟨ i , γ ⟩
+
+  eqv-refl : {Γ Δ : Ctx} {X : Ty} {j : Δ ∋ X} {δ : Env Δ} {i : Γ ∋ X} {γ : Env Γ} → ⟨ j , δ ⟩←⟨ i , γ ⟩ → ⟨ j , δ ⟩←⟨ i , γ ⟩→⟨ j , δ ⟩
+  eqv-refl ext = record { ext₁ = ext ; ext₂ = ext }
+
+  eqv-trans :   {Γ Δ₁ Δ₂ Δ₃ : Ctx} {X : Ty} {i : Γ ∋ X} {γ : Env Γ} {j₁ : Δ₁ ∋ X} {δ₁ : Env Δ₁} {j₂ : Δ₂ ∋ X} {δ₂ : Env Δ₂} {j₃ : Δ₃ ∋ X} {δ₃ : Env Δ₃}
+             → ⟨ j₁ , δ₁ ⟩←⟨ i , γ ⟩→⟨ j₂ , δ₂ ⟩
+             → ⟨ j₂ , δ₂ ⟩←⟨ i , γ ⟩→⟨ j₃ , δ₃ ⟩
+             → ⟨ j₁ , δ₁ ⟩←⟨ i , γ ⟩→⟨ j₃ , δ₃ ⟩
+  eqv-trans record { ext₁ = ext₁ ; ext₂ = ext₂ } record { ext₁ = ext₃ ; ext₂ = ext₄ } = record { ext₁ = ext₁ ; ext₂ = ext₄ }
+
+  record ⟨_∥_⟩≍ᴸ⟨_∥_⟩ {Γ₁ Γ₂ : Ctx} {X : Ty} (i₁ : Γ₁ ∋ X) (γ₁ : Env Γ₁) (i₂ : Γ₂ ∋ X) (γ₂ : Env Γ₂) : Set where
+    field
+      ctx   : Ctx
+      env   : Env ctx
+      idx   : ctx ∋ X
+      eqv   : ⟨ i₁ , γ₁ ⟩←⟨ idx , env ⟩→⟨ i₂ , γ₂ ⟩
+
+  {-
+  record _≍ᴸ_ {X : Ty} (L₁ : LookupState X) (L₂ : LookupState X) : Set where
+    field
+      ctx   : Ctx
+      env   : Env ctx
+      idx   : ctx ∋ X
+      ctx₁  : Ctx
+      env₁  : Env ctx₁
+      idx₁  : ctx₁ ∋ X
+      ctx₂  : Ctx
+      env₂  : Env ctx₂
+      idx₂  : ctx₂ ∋ X
+      eq₁   : L₁ ≡ ⟨ idx₁ ∥ env₁ ⟩
+      eq₂   : L₂ ≡ ⟨ idx₂ ∥ env₂ ⟩
+      eqv   : ⟨ idx₁ , env₁ ⟩←⟨ idx , env ⟩→⟨ idx₂ , env₂ ⟩
+  -}
+
+  ------------------------------------------------------------------------------------------------------
+  ------------------------------------------------------------------------------------------------------
+
   {- OLD DEFINITIONS; must rethink this
   record _≍ᵐ_ {Γ₁ Γ₂ : Ctx} {X : Ty} (i₁ : Γ₁ ∋ X) (i₂ : Γ₂ ∋ X) : Set where
     field

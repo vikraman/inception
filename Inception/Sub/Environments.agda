@@ -309,6 +309,7 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   -- PROPERTIES OF ENVIRONMENTS
   -----------------------------------------------------------------------------
 
+  -- This can be expressed in terms of EnvEq and WkExt and is hence redundant. To be removed.
   data EnvExt : (i : Γ ∋ X) → (γ : Env Γ) → (γ' : Env Γ') → Set where
 
     env-val : {M : V̲a̲l̲ Γ X} → EnvExt h (γ ﹐ M) (γ ﹐ M)
