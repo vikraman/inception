@@ -151,8 +151,8 @@ module LiftMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
      ; str-sem-eq = refl
      }
 
-  lookup-wk-str {δ = δ' ﹐ M} {δ' = δ'} h h M (wk-wk πₗ) env-val j≡wki (S ◼) H γ (wk-env-val-wk M₁ ϖₗ) = ql (lookup-eq-absurd j≡wki) _ --(LookupWkStr h M (δ' ﹐ M) δ' (wk-wk πₗ) γ)
-  lookup-wk-str {δ = δ} {δ' = δ'} h (t i) M (wk-wk πₗ) env-val j≡wki (S ◼) H γ (wk-env-val-wk M₁ ϖₗ) = ql (lookup-eq-absurd j≡wki) _ --(LookupWkStr (t i) M (δ' ﹐ M) δ' (wk-wk πₗ) γ)
+  lookup-wk-str {δ = δ' ﹐ M} {δ' = δ'} h h M (wk-wk πₗ) env-val j≡wki (S ◼) H γ (wk-env-val-wk M₁ ϖₗ) = ql (lookup-eq-absurd j≡wki) (LookupWkStr h M γ)
+  lookup-wk-str {δ = δ} {δ' = δ'} h (t i) M (wk-wk πₗ) env-val j≡wki (S ◼) H γ (wk-env-val-wk M₁ ϖₗ) = ql (lookup-eq-absurd j≡wki) (LookupWkStr (t i) M γ)
   lookup-wk-str {Δ = Δ} {Δ' = Δ'} {Γ = Γ ∙ X} {δ = δ} {δ' = δ'} h h M (wk-cong πₗ) env-val j≡wki (S →ᴸ⟨ x ⟩ L→T) H (γ ﹐ M₁) (wk-env-val-cong M₁ ϖₗ) =
     record
      { str-ctx = Γ
@@ -169,8 +169,8 @@ module LiftMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
      ; str-eval-eq = refl
      ; str-sem-eq = refl
      }
-  lookup-wk-str {δ = δ} {δ' = δ'} h h M (wk-wk πₗ) env-val j≡wki (S →ᴸ⟨ x ⟩ L→T) H γ (wk-env-val-wk M₁ ϖₗ) = ql (lookup-eq-absurd j≡wki) _ --(LookupWkStr h M (δ' ﹐ M) δ' (wk-wk πₗ) γ)
-  lookup-wk-str {δ = δ} {δ' = δ'} h (t i) M (wk-wk πₗ) env-val j≡wki (S →ᴸ⟨ x ⟩ L→T) H γ (wk-env-val-wk M₁ ϖₗ) = ql (lookup-eq-absurd j≡wki) _ --(LookupWkStr (t i) M (δ' ﹐ M) δ' (wk-wk πₗ) γ)
+  lookup-wk-str {δ = δ} {δ' = δ'} h h M (wk-wk πₗ) env-val j≡wki (S →ᴸ⟨ x ⟩ L→T) H γ (wk-env-val-wk M₁ ϖₗ) = ql (lookup-eq-absurd j≡wki) (LookupWkStr h M γ)
+  lookup-wk-str {δ = δ} {δ' = δ'} h (t i) M (wk-wk πₗ) env-val j≡wki (S →ᴸ⟨ x ⟩ L→T) H γ (wk-env-val-wk M₁ ϖₗ) = ql (lookup-eq-absurd j≡wki) (LookupWkStr (t i) M γ)
 
   lookup-wk-str {Δ = Δ Cx.∙ X} {Δ' = Δ'} {Γ = Γ Cx.∙ X} {δ = δ ﹐ _} {δ' = δ'} (Cx.t j) (Cx.t i) M (wk-cong πₗ) (ext-val ext₁) j≡wki (S →ᴸ⟨ val-t-step ⟩ L→T) H (γ ﹐ M₁) (wk-env-val-cong M₁ ϖₗ) =
     let
@@ -256,19 +256,6 @@ module LiftMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
      ; str-eval-eq = str-eval-eq IH
      ; str-sem-eq = str-sem-eq IH
      }
-
-  {-
-  lookup-wk-str :  {δ  : Env Δ} {δ' : Env Δ'}
-                 → (i  : Γ ∋ X) → (M : V̲a̲l̲ Δ' X)
-                 → (πₗ : Wk Δ Γ)
-                 → (ext : EnvExt (wk-mem πₗ i) δ (δ' ﹐ M))
-                 → ⟨ wk-mem πₗ i ∥ δ ⟩ →ᴸ* ⟨ h ∥ δ' ﹐ M ⟩
-                 → (H  : LookupHaltingState ⟨ h ∥ δ' ﹐ M ⟩)
-                 → (γ  : Env Γ)
-                 → (ϖₗ : EnvEq πₗ δ γ)
-                 → LookupWkStr i M δ δ' πₗ γ
-  lookup-wk-str {δ = δ} {δ' = δ'} i M πₗ ext L→T H γ ϖₗ = {!!}
-  -}
 
   ----------------------------------------------------------
 
