@@ -99,6 +99,12 @@ module MachineMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
              in
              trans IH0 IH1
 
+  lstep-ext : {i₁ : Γ₁ ∋ X} {γ₁ : Env Γ₁} {γ₂ : Env (Γ₂ ∙ X)} → ⟨ i₁ ∥ γ₁ ⟩ →ᴸ* ⟨ h ∥ γ₂ ⟩ → EnvExt i₁ γ₁ γ₂
+  lstep-ext (⟨ h ∥ γ₁ ⟩ ◼) = envext-id
+  lstep-ext (S →ᴸ⟨ val-h-step ⟩ L→T) = ext-jmp (lstep-ext L→T)
+  lstep-ext (S →ᴸ⟨ val-t-step ⟩ L→T) = ext-val (lstep-ext L→T)
+  lstep-ext (S →ᴸ⟨ comp-t-step ⟩ L→T) = ext-comp (lstep-ext L→T)
+
   ------------------------------------------------------------------------------
   -- Value Machine
   ------------------------------------------------------------------------------

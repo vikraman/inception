@@ -352,6 +352,10 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
     wk-ext : (π : Wk Γ Δ) → WkExt π → WkExt (wk-wk {A = A} π)
 
+  envext-id : {γ : Env (Γ ∙ X)} → EnvExt h γ γ
+  envext-id {γ = γ ﹐ M} = env-val
+  envext-id {γ = γ ﹐﹝ W ╎ cs ﹞} = env-comp
+
   enveq-id : {γ : Env Γ} → EnvEq wk-id γ γ
   enveq-id {γ = ∗} = wk-env-ε
   enveq-id {γ = γ ﹐ M} = subst (λ x → EnvEq (wk-cong wk-id) (γ ﹐ x) (γ ﹐ M)) (wk-v̲a̲l̲-id M) (wk-env-val-cong M enveq-id ) --wk-env-val-cong M enveq-id
