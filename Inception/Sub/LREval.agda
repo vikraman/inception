@@ -649,7 +649,26 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
     comp-eval-rec (var {A = X} M) γ ↓ π cs πₓ wk≡₀ with val-eval-rec {X = `V} M γ ↓ π
     ... | steps {T = ∙ ((⭭ v̲a̲r̲ i) ⊲ γ₁ ∷ □) {↥ = 🗆}} M>T ∙T M≡T π' wk≡ ↓ᵛ v↓ with lookup i γ₁ ↓ᵛ
-    ... | steps i>>T (found-comp {X = X} {W = W'} {γ = γ'} {cs = cs'} {π = πᶜ} {wk≡ = wk≡c}) i≡T π₂ w≡γ ↓ᴸᴴ ext we ϖ with
+    ... | steps i>>T (found-comp {X = X} {W = W'} {γ = γ'} {cs = cs'} {π = πᶜ} {wk≡ = wk≡c}) i≡T π₂ w≡γ (comp-term-halts (comp-halts T' H' S→T' eq')) ext we ϖ =
+
+                steps
+
+                  ((∘⟨ var (wk-val π M) ⊰ γ ╎ cs ⟩ →ᶜ⟨ ∘var {wk≡ₓ = wk≡₀} M>T π' i>>T π₂ ⟩ S→T'))
+
+                  H'
+
+                  (((⟦ π ⟧ʷ ； ⟦ M ⟧ᵛ) ； varK) ⟦ γ ⟧ᴱ ⟦ cs ⟧ᴷ
+                    ≡⟨ refl ⟩
+                      ⟦ M ⟧ᵛ (⟦ π ⟧ʷ ⟦ γ ⟧ᴱ)
+                    ≡⟨ M≡T ⟩
+                      ⟦ i ⟧ᵐ ⟦ γ₁ ⟧ᴱ
+                    ≡⟨ i≡T ⟩
+                      ⟦ W' ⟧ᶜ ⟦ γ' ⟧ᴱ (λ y → ⟦ cs' ⟧ᶜˢ (λ k → k y) k₀)
+                    ≡⟨ eq' ⟩
+                      ⟦ T' ⟧ᶜꟴ ∎
+                  )
+    {-
+    with
                     comp-eval-rec
                      W'
                      γ'
@@ -676,6 +695,7 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                     ≡⟨ S≡T ⟩
                       (⟦ toVal M₁ ⟧ᵛ ； η) ⟦ γ₂ ⟧ᴱ ⟦ ◻ ⟧ᴷ ∎
                   )
+                 -}
 
     comp-eval-rec (sub W V) γ ↓ π cs πₓ wk≡₀ with comp-eval-rec W ((γ ﹐﹝ wk-comp π V ╎ cs ﹞) {π = πₓ} {wk≡ = wk≡₀}) {!!} (wk-cong π) cs (wk-wk πₓ) wk≡₀
     ... | steps {T = T} W>WT HT S≡T =
