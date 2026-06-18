@@ -116,6 +116,14 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                   → EnvHalts γ
                   → EnvHalts ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡})
 
+  data CSHalts : {Δ : Ctx} {Z : Ty} → CompStack Δ Z → Set where
+
+    cs-empty : CSHalts ◻
+
+    cs-head-halts : {W : (Γ ∙ X) ⊢ᶜ Z} {γ : Env Γ} {cs : CompStack Δ Z} {π : Wk Γ Δ} {wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ}
+      → EnvHalts γ → ((M : V̲a̲l̲ Γ X) → CompHalts W (γ ﹐ M) cs (wk-wk π) wk≡) → CSHalts cs
+      → CSHalts ((W ⊲ γ ⦂⦂ cs) {π = π} {wk≡ = wk≡})
+
   data TermHalts : {T : LookupState X} → (H : LookupHaltingState T) → Set where
 
     unit-term-halts : {γ : Env Γ} → TermHalts (found-unit {γ = γ})
