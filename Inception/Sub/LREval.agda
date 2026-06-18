@@ -84,9 +84,10 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   data CompHalts where
 
     comp-halts : {W : Γ ⊢ᶜ Z} {γ : Env Γ} {cs : CompStack Δ Z} {π : Wk Γ Δ} {wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ}
-            {M : V̲a̲l̲ Γ' Z} {γ' : Env Γ'} {π' : Wk Γ' Δ} {wk≡' : ⟦ π' ⟧ʷ ⟦ γ' ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ}
-            → (((∘⟨ W ⊰ γ ╎ cs ⟩) {π = π} {wk≡ = wk≡})) →ᶜ* ((∙⟨ r̲e̲t̲u̲r̲n̲ M ⊰ γ' ╎ cs ⟩) {π = π'} {wk≡ = wk≡'})
-            → ⟦ (((∘⟨ W ⊰ γ ╎ cs ⟩) {π = π} {wk≡ = wk≡})) ⟧ᶜꟴ ≡ ⟦ ((∙⟨ r̲e̲t̲u̲r̲n̲ M ⊰ γ' ╎ cs ⟩) {π = π'} {wk≡ = wk≡'}) ⟧ᶜꟴ
+            --{M : V̲a̲l̲ Γ' Z} {γ' : Env Γ'} {π' : Wk Γ' Δ} {wk≡' : ⟦ π' ⟧ʷ ⟦ γ' ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ}
+            → (T : CompState) → (H : CompHaltingState T)
+            → (((∘⟨ W ⊰ γ ╎ cs ⟩) {π = π} {wk≡ = wk≡})) →ᶜ* T --((∙⟨ r̲e̲t̲u̲r̲n̲ M ⊰ γ' ╎ cs ⟩) {π = π'} {wk≡ = wk≡'})
+            → ⟦ (((∘⟨ W ⊰ γ ╎ cs ⟩) {π = π} {wk≡ = wk≡})) ⟧ᶜꟴ ≡ ⟦ T ⟧ᶜꟴ -- ⟦ ((∙⟨ r̲e̲t̲u̲r̲n̲ M ⊰ γ' ╎ cs ⟩) {π = π'} {wk≡ = wk≡'}) ⟧ᶜꟴ
             → CompHalts W γ cs π wk≡
 
   {-
@@ -204,8 +205,8 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
       steps : {S T : CompState} → S →ᶜ* T → CompHaltingState T → (⟦ S ⟧ᶜꟴ ≡ ⟦ T ⟧ᶜꟴ) → CompSteps S
 
-  get-csteps : {S : CompState} → CompSteps S → Σ[ T ∈ CompState ] ((S →ᶜ* T) × (CompHaltingState T) × (⟦ S ⟧ᶜꟴ ≡ ⟦ T ⟧ᶜꟴ))
-  get-csteps {S = S} (steps {T = T} S→T H eq) = T , S→T , H , {!eq!}
+  get-csteps : {S : CompState} → CompSteps S → Σ[ T ∈ CompState ] ((CompHaltingState T) × (S →ᶜ* T) × (⟦ S ⟧ᶜꟴ ≡ ⟦ T ⟧ᶜꟴ))
+  get-csteps {S = S} (steps {T = T} S→T H eq) = T , H , S→T , eq
 
   wk-comm-explicit : (M : V̲a̲l̲ Γ X) → (π : Wk Δ Γ) → toVal (wk-v̲a̲l̲ π M) ≡ wk-val π (toVal M)
   wk-comm-explicit M π = sym wk-comm
@@ -299,8 +300,9 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
               (vs-halts (λ Δ cs πₓ wk≡₀ N n↓ →
                 let
                   IH = comp-eval-rec W (γ ﹐ N) (val-in-env N γ n↓ ↓) (wk-cong π) cs (wk-wk πₓ) wk≡₀
+                  s = get-csteps IH
                 in
-                {!!} )) --comp-halts {!!} {!!}))
+                comp-halts (proj₁ s) (proj₁ (proj₂ s)) (proj₁ (proj₂ (proj₂ s))) (proj₂ (proj₂ (proj₂ s)))))
 
               -- (vs-halts (lam-halts λ Δ cs πₓ wk≡₀ N →
               --   let
