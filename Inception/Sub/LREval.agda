@@ -39,6 +39,7 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   -------------------------------------------------------------------
 
+  {- without halting condition
   data LookupSteps : LookupState X → Set where
 
     steps : {S T : LookupState X} → (S→T : S →ᴸ* T) → (H : LookupHaltingState T) → ⟦ S ⟧ᴸ ≡ ⟦ T ⟧ᴸ → (π : Wk (lCtx S) (lTCtx T)) → (⟦ π ⟧ʷ ⟦ lEnv S ⟧ᴱ ≡ ⟦ lTEnv T ⟧ᴱ)
@@ -75,9 +76,7 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   lh-eq {T = ⟨ h ∥ _ ⟩} found-pair = _ , _ Env.﹐ pa̲i̲r̲ _ _ , refl
   lh-eq {T = ⟨ h ∥ _ ⟩} found-lam = _ , _ Env.﹐ l̲a̲m̲ _ , refl
   lh-eq {T = ⟨ h ∥ _ ⟩} found-comp = _ , _ Env.﹐﹝ _ ╎ _ ﹞ , refl
-
-  -------------------------------------------------------------------
-
+  -}
 
   data CompHalts : (W : Γ ⊢ᶜ Z) (γ : Env Γ) (cs : CompStack Δ Z) (π : Wk Γ Δ) (wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → Set
 
@@ -90,42 +89,6 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
             → ⟦ (((∘⟨ W ⊰ γ ╎ cs ⟩) {π = π} {wk≡ = wk≡})) ⟧ᶜꟴ ≡ ⟦ T ⟧ᶜꟴ -- ⟦ ((∙⟨ r̲e̲t̲u̲r̲n̲ M ⊰ γ' ╎ cs ⟩) {π = π'} {wk≡ = wk≡'}) ⟧ᶜꟴ
             → CompHalts W γ cs π wk≡
 
-  {-
-  data ValHalts : (M : V̲a̲l̲ Γ Z) (γ : Env Γ) → Set
-  data ValHalts where
-
-    unit-halts : {γ : Env Γ} → ValHalts u̲n̲i̲t̲ γ
-
-    pair-halts : {γ : Env Γ} {M₁ : V̲a̲l̲ Γ X} {M₂ : V̲a̲l̲ Γ X} → ValHalts M₁ γ → ValHalts M₂ γ → ValHalts (pa̲i̲r̲ M₁ M₂) γ
-
-    var-halts : {γ : Env Γ} {i : Γ ∋ `V} → ValHalts (v̲a̲r̲ i) γ
-
-    lam-halts : {W : (Γ ∙ X) ⊢ᶜ Y} {γ : Env Γ} →
-                 ( (Δ : Ctx) →
-                   (cs : CompStack Δ Y) →
-                   (π : Wk Γ Δ) →
-                   (wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) →
-                   (N : V̲a̲l̲ Γ X) →
-                   -- (n↓ : ValHalts N γ) → -- cannot do this because of strict positivity requirement
-                   (CompHalts W (γ ﹐ N) cs (wk-wk π) wk≡) )
-                   → ValHalts (l̲a̲m̲ W) γ
-  -}
-
-  {-
-  ValHalts : (M : V̲a̲l̲ Γ Z) → (γ : Env Γ) → Set
-  ValHalts (l̲a̲m̲ {Γ = Γ} {X = X} {Y = Y} W) γ = (Δ : Ctx) → (cs : CompStack Δ Y) → (π : Wk Γ Δ) → (wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → (N : V̲a̲l̲ Γ X) → (n↓ : ValHalts N γ) → (CompHalts W (γ ﹐ N) cs (wk-wk π) wk≡)
-  ValHalts (pa̲i̲r̲ M₁ M₂) γ = ValHalts M₁ γ × ValHalts M₂ γ
-  ValHalts u̲n̲i̲t̲ γ = ⊤
-  ValHalts (v̲a̲r̲ i) γ = ⊤
-  -}
-
-  {-
-  ValHaltsWk : (π : Wk Γ Γ') → (M : V̲a̲l̲ Γ' Z) → (γ : Env Γ) → Set
-  ValHaltsWk {Γ = Γ} {Γ' = Γ'} π' (l̲a̲m̲ {X = X} {Y = Y} W) γ = (Δ : Ctx) → (cs : CompStack Δ Y) → (π : Wk Γ Δ) → (wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → (N : V̲a̲l̲ Γ X) → (n↓ : ValHalts N γ) → (CompHalts (wk-comp (wk-cong π') W) (γ ﹐ N) cs (wk-wk π) wk≡)
-  ValHaltsWk π (pa̲i̲r̲ M₁ M₂) γ = ValHaltsWk π M₁ γ × ValHaltsWk π M₂ γ
-  ValHaltsWk π u̲n̲i̲t̲ γ = ⊤
-  ValHaltsWk π (v̲a̲r̲ i) γ = ⊤
-  -}
 
   data EnvWk : (π : Wk Γ Γ') → Env Γ → Env Γ' → Set where
 
@@ -141,27 +104,6 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   ValHalts (v̲a̲r̲ i) _ = ⊤
 
 
-  ------------------------------------------------------
-
-  {-
-  wk-comp-halts : {W : Γ ⊢ᶜ Z} {γ : Env Γ} {cs : CompStack Δ Z} {π : Wk Γ Δ} .{wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ}
-                  {π' : Wk Γ' Γ} {γ' : Env Γ'} → EnvEq π' γ' γ
-                  → CompHalts W γ cs π wk≡
-                  → Σ[ π'' ∈ Wk Γ' Δ ] Σ[ wk≡' ∈ ⟦ π'' ⟧ʷ ⟦ γ' ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ ] CompHalts (wk-comp π' W) γ' cs π'' wk≡'
-  wk-comp-halts {W = W} {γ = γ} {cs = cs} {π = π} {π' = π'} {γ' = γ'} ϖ (comp-halts {W = W} {γ = γ} {cs = cs} {π = π} {M = M} {γ' = γ₁} {π' = π₁} W→W' W≡W') =
-                _ , {!!} , comp-halts {W = wk-comp π' W} {γ = γ'} {cs = cs} {π = wk-trans π' π} {M = {!!}} {γ' = γ₁} {π' = π₁} {wk≡' = {!!}} {!!} {!!}
-                -- wk-trans π' π , {!!} , {!!}
-
-
-  wk-val-halts : {M : V̲a̲l̲ Γ X} {π : Wk Γ' Γ} {γ' : Env Γ'} {γ : Env Γ} → EnvEq π γ' γ → ValHalts M γ → ValHalts (wk-v̲a̲l̲ π M) γ'
-  wk-val-halts {M = M} {π = π} {γ' = γ'} {γ = γ} _ unit-halts = unit-halts
-  wk-val-halts {M = M} {π = π} {γ' = γ'} {γ = γ} ϖ (pair-halts vH₁ vH₂) = pair-halts (wk-val-halts ϖ vH₁) (wk-val-halts ϖ vH₂)
-  wk-val-halts {M = M} {π = π} {γ' = γ'} {γ = γ} _ var-halts = var-halts
-  wk-val-halts {M = M} {π = π} {γ' = γ'} {γ = γ} ϖ (lam-halts (Δ₁ , cs₁ , π₁ , wk≡₁ , N₁ , CH₁)) = lam-halts (Δ₁ , cs₁ , wk-trans π π₁ , {!!} , wk-val π N₁ , {!!})
-  -}
-
-  ------------------------------------------------------
-
   data EnvHalts : Env Γ → Set
 
   data EnvHalts where
@@ -174,8 +116,6 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                   → EnvHalts γ
                   → EnvHalts ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡})
 
-  -------------------------
-
   data TermHalts : {T : LookupState X} → (H : LookupHaltingState T) → Set where
 
     unit-term-halts : {γ : Env Γ} → TermHalts (found-unit {γ = γ})
@@ -186,7 +126,6 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
     comp-term-halts : {γ : Env Γ} → {W : Γ ⊢ᶜ X} → {cs : CompStack Δ X} → {π : Wk Γ Δ} → {wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ} → CompHalts W γ cs π wk≡ → TermHalts (found-comp {W = W} {γ = γ} {cs = cs} {π = π} {wk≡ = wk≡})
 
-  ------------------------------
 
   data VSHalts : {T : ValState X} → (H : ValHaltingState T) → Set where
     vs-halts : {M : V̲a̲l̲ Γ Z} {γ : Env Γ} → ValHalts M γ → VSHalts ∙ M ⊲ γ ■
@@ -198,8 +137,35 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
             → VSHalts H
             → ValSteps S
 
-  --term-state : {S : ValState T◾} → ValSteps S → ValState T◾
-  --term-state (steps {T = T}_ _ _ _ _) = T
+  data LookupSteps : LookupState X → Set where
+
+    steps : {S T : LookupState X} → (S→T : S →ᴸ* T) → (H : LookupHaltingState T) → ⟦ S ⟧ᴸ ≡ ⟦ T ⟧ᴸ → (π : Wk (lCtx S) (lTCtx T)) → (⟦ π ⟧ʷ ⟦ lEnv S ⟧ᴱ ≡ ⟦ lTEnv T ⟧ᴱ)
+            → TermHalts H
+            → EnvExt (lookup-index S→T) (lEnv S) (lEnv T)
+            → WkExt π
+            → EnvEq π (lEnv S) (lTEnv T)
+            → LookupSteps S
+
+  lookup : (i : Γ ∋ X) → (γ : Env Γ) → (EnvHalts γ) → LookupSteps {X = X} ⟨ i ∥ γ ⟩
+  lookup Cx.h (γ ﹐ l̲a̲m̲ W) (val-in-env M γ₁ vH eh) = steps (⟨ h ∥ _﹐_ γ (l̲a̲m̲ W) ⟩ ◼) (found-lam {W = W} {γ = γ}) refl (wk-wk wk-id) refl (lam-term-halts vH) env-val (wk-ext wk-id (wk-eq wk-id)) (wk-env-val-wk (l̲a̲m̲ W) enveq-id)
+  lookup Cx.h (γ ﹐ pa̲i̲r̲ LHS RHS) (val-in-env M γ₁ vH eh) = steps (⟨ h ∥ _﹐_ γ (pa̲i̲r̲ LHS RHS) ⟩ ◼) found-pair refl (wk-wk wk-id) refl (pair-term-halts vH) env-val (wk-ext wk-id (wk-eq wk-id)) (wk-env-val-wk (pa̲i̲r̲ LHS RHS) enveq-id)
+  lookup Cx.h (γ ﹐ u̲n̲i̲t̲) (val-in-env M γ₁ vH eh) = steps (⟨ h ∥ _﹐_ γ (u̲n̲i̲t̲) ⟩ ◼) found-unit refl (wk-wk wk-id) refl unit-term-halts env-val (wk-ext wk-id (wk-eq wk-id)) (wk-env-val-wk u̲n̲i̲t̲ enveq-id)
+  lookup Cx.h (γ ﹐ v̲a̲r̲ i) (val-in-env M γ₁ vH eh) with lookup i γ eh
+  ... | steps {T = T} i>>T HT i≡T WK w≡γ eh' ext we ϖ =
+              let
+                a0 = li≡i i>>T HT
+                a1 = subst (λ x → EnvExt x γ (lEnv T)) (a0) ext
+              in
+              steps (_ →ᴸ⟨ val-h-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ eh' (ext-jmp a1) (wk-ext WK we) (wk-env-val-wk (v̲a̲r̲ i) ϖ)
+  lookup Cx.h ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡}) (comp-in-env W₁ γ₁ cs₁ x eh) =
+    steps (⟨ h ∥ γ ﹐﹝ W ╎ cs ﹞ ⟩ ◼) found-comp refl (wk-wk wk-id) refl (comp-term-halts x) env-comp (wk-ext wk-id (wk-eq wk-id)) (wk-env-comp-wk W cs enveq-id)
+  lookup (Cx.t i) (γ ﹐ M) (val-in-env M₁ γ₁ vH eh) with lookup i γ eh
+  ... | steps {T = T} i>>T HT i≡T WK w≡γ eh' ext we ϖ = steps (_ →ᴸ⟨ val-t-step ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ eh' (ext-val ext) (wk-ext WK we) (wk-env-val-wk M ϖ)
+  lookup (Cx.t i) (γ ﹐﹝ W ╎ cs ﹞) (comp-in-env W₁ γ₁ cs₁ x eh) with lookup i γ eh
+  ... | steps {T = T} i>>T HT i≡T WK w≡γ eh' ext we ϖ =
+      steps (_ →ᴸ⟨ (comp-t-step) ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ eh' (ext-comp ext) (wk-ext WK we) (wk-env-comp-wk W cs ϖ)
+
+  -------------------------------------------------------------------
 
   data CompSteps : CompState → Set where
 
@@ -219,13 +185,13 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
     val-eval-rec {X = `V} (var {A = .`V} i) γ ↓ π = steps (_ →ᵛ⟨ ∘var-c ⟩．) (∙ v̲a̲r̲ (wk-mem π i) ⊲ γ ■) refl wk-id refl ↓ (vs-halts tt)
 
-    val-eval-rec {X = `Unit} (var {A = .`Unit} i) γ ↓ π with lookup (wk-mem π i) γ
-    ... | steps i>>T found-unit i≡T π₁ w≡γ ext we ϖ =
+    val-eval-rec {X = `Unit} (var {A = .`Unit} i) γ ↓ π with lookup (wk-mem π i) γ ↓
+    ... | steps i>>T found-unit i≡T π₁ w≡γ ↓ᴸᴴ ext we ϖ =
 
                 steps (_ →ᵛ⟨ ∘var i>>T π₁ ext we ϖ found-unit ⟩．) (∙ u̲n̲i̲t̲ ⊲ γ ■) refl wk-id refl ↓ (vs-halts tt)
 
-    val-eval-rec {X = X `× X₁} (var {A = .(X `× X₁)} i) γ ↓ π with lookup (wk-mem π i) γ
-    ... | steps i>>T (found-pair {LHS = LHS} {RHS = RHS} {γ = γ₁}) i≡T π₁ w≡γ ext we ϖ =
+    val-eval-rec {X = X `× X₁} (var {A = .(X `× X₁)} i) γ ↓ π with lookup (wk-mem π i) γ ↓
+    ... | steps i>>T (found-pair {LHS = LHS} {RHS = RHS} {γ = γ₁}) i≡T π₁ w≡γ ↓ᴸᴴ ext we ϖ =
 
               steps
 
@@ -255,9 +221,9 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
               {!!}
 
-    val-eval-rec {X = X `⇒ X₁} (var {A = .(X `⇒ X₁)} i) γ ↓ π with lookup (wk-mem π i) γ
+    val-eval-rec {X = X `⇒ X₁} (var {A = .(X `⇒ X₁)} i) γ ↓ π with lookup (wk-mem π i) γ ↓
 
-    ... | steps i>>T (found-lam {W = W} {γ = γ₁}) i≡T π₁ w≡γ ext we ϖ =
+    ... | steps i>>T (found-lam {W = W} {γ = γ₁}) i≡T π₁ w≡γ ↓ᴸᴴ ext we ϖ =
 
               steps
 
@@ -439,8 +405,8 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                    → (wk≡₀ : ⟦ πₓ ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ)
                    → CompSteps ((∙⟨ (a̲pp (wk-val π M) N) ⊰ γ ╎ cs ⟩) {π = πₓ} {wk≡ = wk≡₀})
 
-    app-eval-rec (var i) N γ ↓ n↓ π cs πₓ wk≡₀ with lookup (wk-mem π i) γ
-    ... | steps i>>T (found-lam {X = X} {W = W} {γ = γ₁}) i≡T π₁ w≡γ ext we ϖ with comp-eval-rec W (γ ﹐ N) (val-in-env N γ n↓ ↓) (wk-cong π₁) cs (wk-wk πₓ) wk≡₀
+    app-eval-rec (var i) N γ ↓ n↓ π cs πₓ wk≡₀ with lookup (wk-mem π i) γ ↓
+    ... | steps i>>T (found-lam {X = X} {W = W} {γ = γ₁}) i≡T π₁ w≡γ ↓ᴸᴴ ext we ϖ with comp-eval-rec W (γ ﹐ N) (val-in-env N γ n↓ ↓) (wk-cong π₁) cs (wk-wk πₓ) wk≡₀
     ... | steps {T = T} W>WT HT S≡T =
 
                  steps
@@ -682,8 +648,8 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                 ⟦ T ⟧ᶜꟴ ∎)
 
     comp-eval-rec (var {A = X} M) γ ↓ π cs πₓ wk≡₀ with val-eval-rec {X = `V} M γ ↓ π
-    ... | steps {T = ∙ ((⭭ v̲a̲r̲ i) ⊲ γ₁ ∷ □) {↥ = 🗆}} M>T ∙T M≡T π' wk≡ ↓ᵛ v↓ with lookup i γ₁
-    ... | steps i>>T (found-comp {X = X} {W = W'} {γ = γ'} {cs = cs'} {π = πᶜ} {wk≡ = wk≡c}) i≡T π₂ w≡γ ext we ϖ with
+    ... | steps {T = ∙ ((⭭ v̲a̲r̲ i) ⊲ γ₁ ∷ □) {↥ = 🗆}} M>T ∙T M≡T π' wk≡ ↓ᵛ v↓ with lookup i γ₁ ↓ᵛ
+    ... | steps i>>T (found-comp {X = X} {W = W'} {γ = γ'} {cs = cs'} {π = πᶜ} {wk≡ = wk≡c}) i≡T π₂ w≡γ ↓ᴸᴴ ext we ϖ with
                     comp-eval-rec
                      W'
                      γ'
