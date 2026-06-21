@@ -307,6 +307,24 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   mutual
 
+    VH-to-PVH : {M : V̲a̲l̲ Γ X} {γ : Env Γ} → ValHalts M γ → PValHalts M
+    VH-to-PVH {M = l̲a̲m̲ W} ↓ᵛ =
+      λ Γ₁ γ₁ ↓ᴱ π' Δ cs π wk≡ N n↓ →
+      let
+        ↓ᴱ' = EH-to-PEH ↓ᴱ
+        n↓' = VH-to-PVH n↓
+        IH = comp-eval-rec W (γ₁ ﹐ N) (val-in-env N γ₁ n↓' ↓ᴱ') (wk-cong π') cs (wk-wk π) wk≡ {!!}
+      in
+      comp-halts {!!} {!!} {!!} {!!}
+    VH-to-PVH {M = pa̲i̲r̲ M₁ M₂} ↓ᵛ = {!!}
+    VH-to-PVH {M = u̲n̲i̲t̲} ↓ᵛ = {!!}
+    VH-to-PVH {M = v̲a̲r̲ i} ↓ᵛ = {!!}
+
+    EH-to-PEH : {γ : Env Γ} → EnvHalts γ → PEnvHalts γ
+    EH-to-PEH {γ = ∗} ↓ᴱ = empty-penv
+    EH-to-PEH {γ = γ ﹐ M} ↓ᴱ = val-in-env M γ {!!} {!!}
+    EH-to-PEH {γ = γ ﹐﹝ W ╎ cs ﹞} ↓ᴱ = {!!}
+
     val-eval-rec : (M : Γ' ⊢ᵛ X) → (γ : Env Γ) → (↓ : PEnvHalts γ) → (π : Wk Γ Γ') → ValSteps {T◾ = X} (∘ ((⇡ (wk-val π M) ⊲ γ ∷ □) {↥ = 🗆}))
 
     val-eval-rec {X = `V} (var {A = .`V} i) γ ↓ π = steps (_ →ᵛ⟨ ∘var-c ⟩．) (∙ v̲a̲r̲ (wk-mem π i) ⊲ γ ■) refl wk-id refl ↓ {!!} --(pval-halts (haltingTerm ∙ v̲a̲r̲ (wk-mem π i) ⊲ γ ■) (λ {Γ = Γ₁} γ₁ ↓ᴱ π₁ → tt)) --(vs-halts tt)
@@ -391,7 +409,13 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
               ↓
 
-              {!-u!} --(pval-halts (haltingTerm ∙ l̲a̲m̲ (wk-comp (wk-cong π) W) ⊲ γ ■) (λ γ₁ ↓ᴱ π₁ Δ cs π₂ wk≡ N n↓ → {!!}))
+              (λ Γ₁ γ₁ ↓ᴱ π' Δ cs π₁ wk≡ N n↓ →
+                let
+                  IH = comp-eval-rec (wk-comp (wk-cong π) W) (γ₁ ﹐ N) (val-in-env N γ₁ {!!} {!!}) (wk-cong π') cs (wk-wk π₁) wk≡ {!!}
+                in
+                {!!})
+
+              --(pval-halts (haltingTerm ∙ l̲a̲m̲ (wk-comp (wk-cong π) W) ⊲ γ ■) (λ γ₁ ↓ᴱ π₁ Δ cs π₂ wk≡ N n↓ → {!!}))
 
               -- (vs-halts (λ Δ cs πₓ wk≡₀ N n↓ →
               --   let
