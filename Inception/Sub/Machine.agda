@@ -221,7 +221,7 @@ module MachineMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   data CompHaltingState : CompState → Set where
 
-      ret : {M : V̲a̲l̲ Γ R₀} → {γ : Env Γ} → CompHaltingState ((∙⟨ r̲e̲t̲u̲r̲n̲ M ⊰ γ ╎ ◻ ⟩) {π = wk-wk-ε} {wk≡ = refl} )
+      ret : {M : V̲a̲l̲ Γ R₀} → {γ : Env Γ} → {wk≡ : ⟦ wk-wk-ε ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv ◻ ⟧ᴱ} → CompHaltingState ((∙⟨ r̲e̲t̲u̲r̲n̲ M ⊰ γ ╎ ◻ ⟩) {π = wk-wk-ε} {wk≡ = wk≡} )
 
 
   infixr 15 _→ᶜ⟨_⟩_
