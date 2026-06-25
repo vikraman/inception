@@ -379,6 +379,29 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
            in
            goal
 
+  {-
+  enveq-id-eq : {γ γ' : Env Γ} → EnvEq wk-id γ γ' → γ ≡ γ'
+  enveq-id-eq {γ = γ} {γ' = γ'} wk-env-ε = refl
+  enveq-id-eq {γ = γ} {γ' = γ'} (wk-env-val-cong M ϖ) rewrite wk-v̲a̲l̲-id M = cong (_﹐ M) (enveq-id-eq ϖ)
+  enveq-id-eq {γ = (_﹐﹝_╎_﹞) {Γ = Γ} {Δ = Δ} γ W cs {π = π} {wk≡ = wk≡}} {γ' = (_﹐﹝_╎_﹞) {Γ = Γ} {Δ = Δ} γ' W' cs {π = π'} {wk≡ = wk≡'}} (wk-env-comp-cong W' cs ϖ) =
+    let
+      W≡ = wk-comp-id W'
+      π≡ = wk-trans-id {π = π'}
+      γ≡ = (enveq-id-eq ϖ)
+      γWπ≡ : (γ , (wk-comp wk-id W') , (wk-trans wk-id π')) ≡ (γ' , W' , π')
+      γWπ≡ = pair-eq γ≡ (pair-eq W≡ π≡)
+
+      eq0 : (γ' ﹐﹝ W' ╎ cs ﹞) {π = π'} {wk≡ = wk≡'} ≡ (γ ﹐﹝ (wk-comp wk-id W') ╎ cs ﹞) {π = wk-trans wk-id π'} {wk≡ = subst (λ z → ⟦ proj₂ (proj₂ z) ⟧ʷ ⟦ proj₁ z ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) (sym γWπ≡) wk≡'}
+      eq0 = dcong₂ (λ x y → (proj₁ x ﹐﹝ proj₁ (proj₂ x) ╎ cs ﹞) {π = proj₂ (proj₂ x)} {wk≡ = y} ) (sym γWπ≡) refl
+
+
+      goal : (γ' ﹐﹝ W' ╎ cs ﹞) {π = π'} {wk≡ = wk≡'} ≡ ((γ ﹐﹝ (wk-comp wk-id W') ╎ cs ﹞) {π = wk-trans wk-id π'} {wk≡ = wk≡})
+      goal = {!-u!}
+    in
+    sym goal
+  -}
+
+
 {- BBB
   -- proof irrelevant version
   enveq-id : {γ : Env Γ} → EnvEq wk-id γ γ
