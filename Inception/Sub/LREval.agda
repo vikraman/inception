@@ -440,27 +440,43 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   MemHalts (Cx.t i) (γ ﹐ M) = MemHalts i γ
   MemHalts (Cx.t i) (γ ﹐﹝ W ╎ cs ﹞) = MemHalts i γ
 
-  CompHalts : Comp Γ' Z → Set
-  CompHalts {Γ' = Γ'} {Z = Z} W = ∀ (Δ : Ctx) → (Γ : Ctx) → (γ : Env Γ) → (cs : CompStack Δ Z) → (π : Wk Γ Δ) → (π' : Wk Γ Γ') → (wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → CStateHalts ((∘⟨ wk-comp π' W ⊰ γ ╎ cs ⟩) {π = π} {wk≡ = wk≡})
-
-  V̲a̲l̲Halts : (M : V̲a̲l̲ Γ' Z) → Set
-  V̲a̲l̲Halts {Γ' = Γ'} (l̲a̲m̲ {X = X} {Y = Y} W) = CompHalts W
-  V̲a̲l̲Halts {Γ' = Γ'} (pa̲i̲r̲ M₁ M₂) = V̲a̲l̲Halts M₁ × V̲a̲l̲Halts M₂
-  V̲a̲l̲Halts {Γ' = Γ'} u̲n̲i̲t̲ = {Γ : Ctx} → (γ : Env Γ) → (π' : Wk Γ Γ') → ⊤
-  V̲a̲l̲Halts {Γ' = Γ'} (v̲a̲r̲ i) = {Γ : Ctx} → (γ : Env Γ) → (π' : Wk Γ Γ') → MemHalts (wk-mem π' i) γ
-
-  EnvHalts : {Γ : Ctx} → (γ : Env Γ) → Set
-  EnvHalts ∗ = ⊤
-  EnvHalts (γ ﹐ M) = EnvHalts γ × V̲a̲l̲Halts M
-  EnvHalts ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡}) = EnvHalts γ × CStateHalts (((∘⟨ W ⊰ γ ╎ cs ⟩) {π = π} {wk≡ = wk≡}))
-
-  data ValSteps : ValState T◾ → Set where
-
-    steps : {S T : ValState T◾} → S ↠ᵛ T → (H : ValHaltingState T) → ⟦ S ⟧ᵛꟴ ≡ ⟦ T ⟧ᵛꟴ → (π : Wk (botCtx T) (botCtx S)) → (⟦ π ⟧ʷ ⟦ botEnv T ⟧ᴱ ≡ ⟦ botEnv S ⟧ᴱ)
-            → EnvHalts (botEnv T)
-            → ValSteps S
+  -- CompHalts : Comp Γ' Z → Set
+  -- CompHalts {Γ' = Γ'} {Z = Z} W = ∀ (Δ : Ctx) → (Γ : Ctx) → (γ : Env Γ) → (cs : CompStack Δ Z) → (π : Wk Γ Δ) → (π' : Wk Γ Γ') → (wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → CStateHalts ((∘⟨ wk-comp π' W ⊰ γ ╎ cs ⟩) {π = π} {wk≡ = wk≡})
 
   mutual
+
+    data ValSteps : ValState T◾ → Set where
+
+      steps : {S T : ValState T◾} → S ↠ᵛ T → (H : ValHaltingState T) → ⟦ S ⟧ᵛꟴ ≡ ⟦ T ⟧ᵛꟴ → (π : Wk (botCtx T) (botCtx S)) → (⟦ π ⟧ʷ ⟦ botEnv T ⟧ᴱ ≡ ⟦ botEnv S ⟧ᴱ)
+              --→ EnvHalts (botEnv T)
+              → V̲a̲l̲Halts (haltingTerm H)
+              → ValSteps S
+
+    V̲a̲l̲Halts : (M : V̲a̲l̲ Γ' Z) → Set
+    V̲a̲l̲Halts {Γ' = Γ'} (l̲a̲m̲ {X = X} {Y = Y} W) = (∘C↓ (∘C↑ CompHalts)) W
+    V̲a̲l̲Halts {Γ' = Γ'} (pa̲i̲r̲ M₁ M₂) = V̲a̲l̲Halts M₁ × V̲a̲l̲Halts M₂
+    V̲a̲l̲Halts {Γ' = Γ'} u̲n̲i̲t̲ = {Γ : Ctx} → (γ : Env Γ) → (π' : Wk Γ Γ') → ⊤
+    V̲a̲l̲Halts {Γ' = Γ'} (v̲a̲r̲ i) = {Γ : Ctx} → (γ : Env Γ) → (π' : Wk Γ Γ') → MemHalts (wk-mem π' i) γ
+
+    ValHalts : (M : Val Γ' Z) → Set
+    ValHalts {Γ' = Γ'} {Z = Z} M = {Γ : Ctx} → (γ : Env Γ) → (π' : Wk Γ Γ') →
+      let
+        IH = val-eval-rec M γ π'
+      in
+      {!!}
+
+    CompHalts : (W : Comp Γ' Z) → Set
+    CompHalts {Z = Z} (return M) = ValHalts M
+    CompHalts (pm {A = X} {B = Y} M W) = ValHalts M × CompHalts W
+    CompHalts (push W₁ W₂) = CompHalts W₁ × CompHalts W₂
+    CompHalts (app {A = X} {B = Y} M N) = ValHalts M × ValHalts N
+    CompHalts (var M) = ValHalts M
+    CompHalts (sub W₁ W₂) = CompHalts W₁ × CompHalts W₂
+
+    EnvHalts : {Γ : Ctx} → (γ : Env Γ) → Set
+    EnvHalts ∗ = ⊤
+    EnvHalts (γ ﹐ M) = EnvHalts γ × V̲a̲l̲Halts M
+    EnvHalts ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡}) = EnvHalts γ × CStateHalts (((∘⟨ W ⊰ γ ╎ cs ⟩) {π = π} {wk≡ = wk≡}))
 
     val-eval-rec : (M : Γ' ⊢ᵛ X) → (γ : Env Γ) → (π : Wk Γ Γ') → ValSteps {T◾ = X} (∘ ((⇡ (wk-val π M) ⊲ γ ∷ □) {↥ = 🗆}))
 
@@ -469,7 +485,7 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     val-eval-rec {X = `Unit} (var {A = .`Unit} i) γ π with lookup (wk-mem π i) γ
     ... | steps i>>T found-unit i≡T π₁ w≡γ ext we ϖ =
 
-                steps (_ →ᵛ⟨ ∘var i>>T π₁ ext we ϖ found-unit ⟩．) (∙ u̲n̲i̲t̲ ⊲ γ ■) refl wk-id refl {!!}
+                steps (_ →ᵛ⟨ ∘var i>>T π₁ ext we ϖ found-unit ⟩．) (∙ u̲n̲i̲t̲ ⊲ γ ■) refl wk-id refl λ {Γ = Γ₂} γ₂ π' → tt
 
     val-eval-rec {X = X `× X₁} (var {A = .(X `× X₁)} i) γ π with lookup (wk-mem π i) γ
     ... | steps i>>T (found-pair {LHS = LHS} {RHS = RHS} {γ = γ₁}) i≡T π₁ w≡γ ext we ϖ =
@@ -538,7 +554,7 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
               refl
 
-              {!!}
+              λ Δ Γ₁ γ₁ cs π₁ π' wk≡ x → {!!}
 
     val-eval-rec unit γ π = steps (_ →ᵛ⟨ ∘unit ⟩．) (∙ u̲n̲i̲t̲ ⊲ γ ■) refl wk-id refl {!!}
 
