@@ -107,6 +107,21 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       trace : c →ᶜ* target-state
       result-eq : ⟦ c ⟧ᶜꟴ ≡ ⟦ target-state ⟧ᶜꟴ
 
+  -- ∘C↑ : {Γ' : Ctx} {Z : Ty} → ((W : Γ' ⊢ᶜ Z) → Set) → (Δ : Ctx) → (Γ : Ctx) → (γ : Env Γ) → (cs : CompStack Δ Z) → (π : Wk Γ Δ) → (π' : Wk Γ Γ') → (wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → Set
+  -- ∘C↑ {Γ' = Γ'} {Z = Z} P Γ Δ γ cs π π' wk≡ = ∀ {W : Γ' ⊢ᶜ Z} → P W → CStateHalts (((∘⟨ wk-comp π' W ⊰ γ ╎ cs ⟩) {π = π} {wk≡ = wk≡}))
+
+  -- ∘C↓ : {Γ' : Ctx} {Z : Ty} → ((Δ : Ctx) → (Γ : Ctx) → (γ : Env Γ) → (cs : CompStack Δ Z) → (π : Wk Γ Δ) → (π' : Wk Γ Γ') → (wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → Set) → (W : Γ' ⊢ᶜ Z) → Set
+  -- ∘C↓ {Γ' = Γ'} {Z = Z} Q W = ∀ (Δ : Ctx) → (Γ : Ctx) → (γ : Env Γ) → (cs : CompStack Δ Z) → (π : Wk Γ Δ) → (π' : Wk Γ Γ') → (wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → Q Δ Γ γ cs π π' wk≡ → CStateHalts ((∘⟨ wk-comp π' W ⊰ γ ╎ cs ⟩) {π = π} {wk≡ = wk≡})
+
+
+  V↑ : {Γ : Ctx} {X : Ty} → ((M : V̲a̲l̲ Γ X) → Set) → (Δ : Ctx) → (Γ' : Ctx) → (Y : Ty) → (W : Comp (Γ' ∙ X) Y) → (γ : Env Γ) → (cs : CompStack Δ Y) → (π : Wk Γ Δ) → (π' : Wk Γ Γ') → (wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → Set
+  V↑ {Γ = Γ} {X = X} P Δ Γ' Y W γ cs π π' wk≡ = ∀ {M : V̲a̲l̲ Γ X} → P M → CStateHalts (((∙⟨ a̲pp (wk-val π' (lam W)) M ⊰ γ ╎ cs ⟩) {π = π} {wk≡ = wk≡}))
+
+  V↓ : {Γ : Ctx} {X : Ty} → ((Δ : Ctx) → (Γ' : Ctx) → (Y : Ty) → (W : Comp (Γ' ∙ X) Y) → (γ : Env Γ) → (cs : CompStack Δ Y) → (π : Wk Γ Δ) → (π' : Wk Γ Γ') → (wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → Set) → (M : V̲a̲l̲ Γ X) → Set
+  V↓ {Γ = Γ} {X = X} Q M = ∀ (Δ : Ctx) → (Γ' : Ctx) → (Y : Ty) → (W : Comp (Γ' ∙ X) Y) → (γ : Env Γ) → (cs : CompStack Δ Y) → (π : Wk Γ Δ) → (π' : Wk Γ Γ') → (wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → CStateHalts (((∙⟨ a̲pp (wk-val π' (lam W)) M ⊰ γ ╎ cs ⟩) {π = π} {wk≡ = wk≡}))
+  -- ∘C↓ : {Γ' : Ctx} {Z : Ty} → ((Δ : Ctx) → (Γ : Ctx) → (γ : Env Γ) → (cs : CompStack Δ Z) → (π : Wk Γ Δ) → (π' : Wk Γ Γ') → (wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → Set) → (W : Γ' ⊢ᶜ Z) → Set
+  -- ∘C↓ {Γ' = Γ'} {Z = Z} Q W = ∀ (Δ : Ctx) → (Γ : Ctx) → (γ : Env Γ) → (cs : CompStack Δ Z) → (π : Wk Γ Δ) → (π' : Wk Γ Γ') → (wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → Q Δ Γ γ cs π π' wk≡ → CStateHalts ((∘⟨ wk-comp π' W ⊰ γ ╎ cs ⟩) {π = π} {wk≡ = wk≡})
+
   MemHalts : (i : Γ ∋ `V) → (γ : Env Γ) → Set
   MemHalts Cx.h (γ ﹐ v̲a̲r̲ i) = MemHalts i γ
   MemHalts Cx.h ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡}) = CStateHalts (((∘⟨ W ⊰ γ ╎ cs ⟩) {π = π} {wk≡ = wk≡}))
@@ -120,14 +135,19 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     EnvHalts ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡}) = EnvHalts γ × CStateHalts (((∘⟨ W ⊰ γ ╎ cs ⟩) {π = π} {wk≡ = wk≡}))
 
     V̲a̲l̲Halts : (M : V̲a̲l̲ Γ' Z) → (γ' : Env Γ') → Set
-    V̲a̲l̲Halts {Γ' = Γ'} (l̲a̲m̲ {X = X} {Y = Y} W) γ' = (↓ᴱ : EnvHalts γ') → ∀ (M : V̲a̲l̲ Γ' X) → (↓ᴹ : V̲a̲l̲Halts M γ') → CompHalts W (γ' ﹐ M) (↓ᴱ , ↓ᴹ)
+    --V̲a̲l̲Halts {Γ' = Γ'} (l̲a̲m̲ {X = X} {Y = Y} W) γ' = (↓ᴱ : EnvHalts γ') → ∀ (M : V̲a̲l̲ Γ' X) → (↓ᴹ : V̲a̲l̲Halts M γ') → CompHalts W (γ' ﹐ M) (↓ᴱ , ↓ᴹ)
+    --V̲a̲l̲Halts {Γ' = Γ'} γ' (l̲a̲m̲ {X = X} {Y = Y} W) = (γ' : Env Γ') → (↓ᴱ : EnvHalts γ') → ∀ (Γ : Ctx) → (γ : Env Γ) → (M : V̲a̲l̲ Γ' X) → V↓ (V↑ (V̲a̲l̲Halts {!!})) M → {!!}
+    V̲a̲l̲Halts {Γ' = Γ'} (l̲a̲m̲ {X = X} {Y = Y} W) γ' = (↓ᴱ : EnvHalts γ') → ∀ (Γ : Ctx) → (γ : Env Γ) → (π : Wk Γ Γ') → (ϖ : EnvEq π γ γ') → (M : V̲a̲l̲ Γ X) → CompHalts (wk-comp (wk-cong π) W) (γ ﹐ M)
     V̲a̲l̲Halts {Γ' = Γ'} (pa̲i̲r̲ M₁ M₂) γ' = V̲a̲l̲Halts M₁ γ' × V̲a̲l̲Halts M₂ γ'
     V̲a̲l̲Halts {Γ' = Γ'} u̲n̲i̲t̲ γ' = {Γ : Ctx} → (γ : Env Γ) → (π' : Wk Γ Γ') → ⊤
     V̲a̲l̲Halts {Γ' = Γ'} (v̲a̲r̲ i) γ' = (↓ᴱ : EnvHalts γ') → {Γ : Ctx} → (γ : Env Γ) → (π' : Wk Γ Γ') → (ϖ : EnvEq π' γ γ') → MemHalts (wk-mem π' i) γ
 
-    CompHalts : Comp Γ' Z → (γ' : Env Γ') → EnvHalts γ' → Set
-    CompHalts {Γ' = Γ'} {Z = Z} W γ' ↓ᴱ = ∀ (Δ : Ctx) → (Γ : Ctx) → (γ : Env Γ) → (cs : CompStack Δ Z) → (π : Wk Γ Δ) → (π' : Wk Γ Γ') → (ϖ : EnvEq π' γ γ') → (wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → CStateHalts ((∘⟨ wk-comp π' W ⊰ γ ╎ cs ⟩) {π = π} {wk≡ = wk≡})
 
+    CompHalts : (W : Comp Γ Z) → (γ : Env Γ) → Set
+    CompHalts {Γ = Γ} {Z = Z} W γ = ∀ (Δ : Ctx) → (cs : CompStack Δ Z) → (π : Wk Γ Δ) → (wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → CStateHalts ((∘⟨ W ⊰ γ ╎ cs ⟩) {π = π} {wk≡ = wk≡})
+
+    --CompHalts : Comp Γ' Z → (γ' : Env Γ') → EnvHalts γ' → Set
+    --CompHalts {Γ' = Γ'} {Z = Z} W γ' ↓ᴱ = ∀ (Δ : Ctx) → (Γ : Ctx) → (γ : Env Γ) → (cs : CompStack Δ Z) → (π : Wk Γ Δ) → (π' : Wk Γ Γ') → (ϖ : EnvEq π' γ γ') → (wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → CStateHalts ((∘⟨ wk-comp π' W ⊰ γ ╎ cs ⟩) {π = π} {wk≡ = wk≡})
 
   TermHalts : {T : LookupState X} → (H : LookupHaltingState T) → Set
   TermHalts found-unit = ⊤
@@ -169,6 +189,19 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
             --→ EnvHalts (botEnv T)
             → V̲a̲l̲Halts (haltingTerm H) (botEnv T)
             → ValSteps S
+
+  {-
+  postulate val-lift :   (M : Val Γ X) → (M' : Val Γ' X) → (γ : Env Γ) → (γ' : Env Γ') → ((∘ ((⇡ M ⊲ γ ∷ □) {↥ = 🗆})) ↠ᵛ (∙ ((⇡ M' ⊲ γ' ∷ □) {↥ = 🗆})))
+                       → (π : Wk Ψ Γ) → (ψ : Env Ψ) → (ext : WkExt π) → (EnvEq π ψ γ)
+                       → Σ[ Ψ' ∈ Ctx ] Σ[ π' ∈ Wk Ψ' Γ' ] Σ[ ψ' ∈ Env Ψ' ] ((∘ ((⇡ wk-val π M ⊲ ψ ∷ □) {↥ = 🗆})) ↠ᵛ (∙ ((⇡ wk-val π' M' ⊲ ψ' ∷ □) {↥ = 🗆})))
+
+  postulate comp-lift : {Γ Γ' Δ₁ Δ₂ Ψ : Ctx} {X : Ty} → (W : Comp Γ X) → (W' : C̲o̲m̲p Γ' R₀) → (γ : Env Γ) → (γ' : Env Γ') → (cs₁ : CompStack Δ₁ X) → (π₁ : Wk Γ Δ₁) → (wk≡₁ : ⟦ π₁ ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs₁ ⟧ᴱ)
+                        → (π₁' : Wk Γ' ε) → (wk≡' : ⟦ π₁' ⟧ʷ ⟦ γ' ⟧ᴱ ≡ ⟦ topCsEnv ◻ ⟧ᴱ)
+                       → (δ : Wk Ψ Γ) → (ψ : Env Ψ) → (ext : WkExt δ) → (EnvEq δ ψ γ) → (cs₂ : CompStack Δ₂ X) → (π₂ : Wk Ψ Δ₂) → (wk≡₂ : ⟦ π₂ ⟧ʷ ⟦ ψ ⟧ᴱ ≡ ⟦ topCsEnv cs₂ ⟧ᴱ)
+                        → ((∘⟨ W ⊰ γ ╎ cs₁ ⟩) {π = π₁} {wk≡ = wk≡₁}) →ᶜ* ((∙⟨ W' ⊰ γ' ╎ ◻ ⟩) {π = π₁'} {wk≡ = wk≡'})
+                        → Σ[ Ψ' ∈ Ctx ] Σ[ δ' ∈ Wk Ψ' Γ' ] Σ[ ψ' ∈ Env Ψ' ] Σ[ π₂' ∈ Wk Ψ' ε ] Σ[ wk≡₂' ∈ ⟦ π₂' ⟧ʷ ⟦ ψ' ⟧ᴱ ≡ ⟦ topCsEnv ◻ ⟧ᴱ ]
+                          ((∘⟨ wk-comp δ W ⊰ ψ ╎ cs₂ ⟩) {π = π₂} {wk≡ = wk≡₂}) →ᶜ* ((∙⟨ wk-c̲o̲m̲p δ' W' ⊰ ψ' ╎ ◻ ⟩) {π = π₂'} {wk≡ = wk≡₂'})
+  -}
 
   mutual
 
@@ -369,13 +402,38 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     val-eval : (M : ε ⊢ᵛ X) → ValSteps {T◾ = X} (∘ ((⇡ wk-val wk-id M ⊲ ∗ ∷ □) {↥ = 🗆}))
     val-eval M = val-eval-rec M ∗ wk-id
 
-  {-# TERMINATING #-}
+  -- {-# TERMINATING #-}
   mutual
     app-eval-rec :   (M : Γ' ⊢ᵛ X `⇒ Y) → (N : V̲a̲l̲ Γ X) → (γ : Env Γ) → (π : Wk Γ Γ') → (cs : CompStack Δ Y) → (πₓ : Wk Γ Δ)
                    → (wk≡₀ : ⟦ πₓ ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ)
                    → CompSteps ((∙⟨ (a̲pp (wk-val π M) N) ⊰ γ ╎ cs ⟩) {π = πₓ} {wk≡ = wk≡₀})
 
     app-eval-rec (var i) N γ π cs πₓ wk≡₀ with lookup (wk-mem π i) γ {!!}
+    ... | steps i>>T (found-lam {X = X} {W = W} {γ = γ₁}) i≡T π₁ w≡γ ext we ϖ ↓ᴹ =
+      let
+        a1 = ↓ᴹ {!!} {!!} {!!}
+        -- a2 = a1 _ _ _ cs (wk-wk πₓ) (wk-cong π₁) {!!} wk≡₀
+        -- a3 = CStateHalts.trace a2
+      in
+                 steps
+
+                    ((∙⟨ a̲pp (wk-val π (var i)) N ⊰ γ ╎ cs ⟩ →ᶜ⟨ ∙app-var {wk≡ₓ = wk≡₀} i>>T π₁ ⟩ {!!}))
+
+                    {!!}
+
+                    (   ⟦ ((∙⟨ C̲o̲m̲p.a̲pp (var (wk-mem π i)) N ⊰ γ ╎ cs ⟩) {π = πₓ} {wk≡ = wk≡₀}) ⟧ᶜꟴ
+                      ≡⟨ refl ⟩
+                        ⟦ wk-mem π i ⟧ᵐ ⟦ γ ⟧ᴱ (⟦ toVal N ⟧ᵛ ⟦ γ ⟧ᴱ) (λ y → ⟦ cs ⟧ᶜˢ (λ k → k y) k₀)
+                      ≡⟨ cong (λ x → x (⟦ toVal N ⟧ᵛ ⟦ γ ⟧ᴱ) (λ y → ⟦ cs ⟧ᶜˢ (λ k → k y) k₀)) i≡T ⟩
+                       ⟦ W ⟧ᶜ (⟦ γ₁ ⟧ᴱ , (⟦ toVal N ⟧ᵛ ⟦ γ ⟧ᴱ))  (λ y → ⟦ cs ⟧ᶜˢ (λ k → k y) k₀)
+                      ≡⟨ cong (λ x → ⟦ W ⟧ᶜ (x , (⟦ toVal N ⟧ᵛ ⟦ γ ⟧ᴱ))  (λ y → ⟦ cs ⟧ᶜˢ (λ k → k y) k₀)) (sym w≡γ) ⟩
+                       ⟦ W ⟧ᶜ (⟦ π₁ ⟧ʷ ⟦ γ ⟧ᴱ , ⟦ toVal N ⟧ᵛ ⟦ γ ⟧ᴱ) (λ y → ⟦ cs ⟧ᶜˢ (λ k → k y) k₀)
+                      ≡⟨ refl ⟩
+                        ⟦ ((∘⟨ wk-comp (wk-cong π₁) W ⊰ γ Env.﹐ N ╎ cs ⟩) {π = wk-wk πₓ} {wk≡ = wk≡₀}) ⟧ᶜꟴ
+                      ≡⟨ {!!} ⟩
+                        ⟦ {!!} ⟧ᶜꟴ ∎)
+
+    {-with lookup (wk-mem π i) γ {!!}
     ... | steps i>>T (found-lam {X = X} {W = W} {γ = γ₁}) i≡T π₁ w≡γ ext we ϖ ↓ᴱ' with comp-eval-rec W (γ ﹐ N) (wk-cong π₁) cs (wk-wk πₓ) wk≡₀
     ... | steps {T = T} W>WT HT S≡T =
 
@@ -395,7 +453,7 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                       ≡⟨ refl ⟩
                         ⟦ ((∘⟨ wk-comp (wk-cong π₁) W ⊰ γ Env.﹐ N ╎ cs ⟩) {π = wk-wk πₓ} {wk≡ = wk≡₀}) ⟧ᶜꟴ
                       ≡⟨ S≡T ⟩
-                        ⟦ T ⟧ᶜꟴ ∎)
+                        ⟦ T ⟧ᶜꟴ ∎) -}
 
 
     app-eval-rec (lam W) N γ π cs πₓ wk≡₀ with comp-eval-rec W (γ ﹐ N) (wk-cong π) cs (wk-wk πₓ) wk≡₀
@@ -481,7 +539,7 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
                     (cong (λ x → (η x) k₀) M≡T)
 
-    comp-eval-rec (return {A = X} M) γ π ((M' ⊲ γ' ⦂⦂ cs) {π = π₁} {wk≡ = wk≡₁}) πₓ wk≡₀ with val-eval-rec {X = X} M γ π
+    comp-eval-rec (return {A = X} M) γ π ((M' ⊲ γ' ⦂⦂ cs) {π = π₁} {wk≡ = wk≡₁}) πₓ wk≡₀ = {!!} {-with val-eval-rec {X = X} M γ π
     ... | steps {T = ∙ ((⭭ M₁ ⊲ γ₁ ∷ □) {↥ = 🗆})} M>T ∙T M≡T π' wk≡ ↓ᴱ with
                  comp-eval-rec
                    M'
@@ -531,6 +589,7 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                        (< (λ r → proj₁ r) ； ⟦ wk-trans π' πₓ ⟧ʷ , (λ r → proj₂ r) > ； ⟦ M' ⟧ᶜ) (⟦ γ₁ ⟧ᴱ , ⟦ toVal M₁ ⟧ᵛ ⟦ γ₁ ⟧ᴱ) ⟦ cs ⟧ᴷ
                      ≡⟨ S≡T ⟩
                        (⟦ toVal M₂ ⟧ᵛ ； η) ⟦ γ₂ ⟧ᴱ ⟦ ◻ ⟧ᴷ ∎)
+    -}
 
     comp-eval-rec (pm {A = X} {B = Y} M W) γ π cs πₓ wk≡₀ with val-eval-rec {X = X `× Y} M γ π
     ...  | steps {T = ∙ ((⭭_ {X = X `× Y} (pa̲i̲r̲ LHS RHS) ⊲ γ' ∷ □) {↥ = 🗆})} M>T ∙T M≡T π' wk≡ ↓ᴱ with
@@ -611,7 +670,7 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                 ≡⟨ S≡T ⟩
                 ⟦ T ⟧ᶜꟴ ∎)
 
-    comp-eval-rec (var {A = X} M) γ π cs πₓ wk≡₀ with val-eval-rec {X = `V} M γ π
+    comp-eval-rec (var {A = X} M) γ π cs πₓ wk≡₀ = {!!} {-with val-eval-rec {X = `V} M γ π
     ... | steps {T = ∙ ((⭭ v̲a̲r̲ i) ⊲ γ₁ ∷ □) {↥ = 🗆}} M>T ∙T M≡T π' wk≡ ↓ᴱ with lookup i γ₁ {!!}
     ... | steps i>>T (found-comp {X = X} {W = W'} {γ = γ'} {cs = cs'} {π = πᶜ} {wk≡ = wk≡c}) i≡T π₂ w≡γ ext we ϖ ↓ᴱ' with
                     comp-eval-rec
@@ -639,6 +698,7 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                     ≡⟨ S≡T ⟩
                       (⟦ toVal M₁ ⟧ᵛ ； η) ⟦ γ₂ ⟧ᴱ ⟦ ◻ ⟧ᴷ ∎
                   )
+    -}
 
     comp-eval-rec (sub W V) γ π cs πₓ wk≡₀ with comp-eval-rec W ((γ ﹐﹝ wk-comp π V ╎ cs ﹞) {π = πₓ} {wk≡ = wk≡₀}) (wk-cong π) cs (wk-wk πₓ) wk≡₀
     ... | steps {T = T} W>WT HT S≡T =
