@@ -32,6 +32,11 @@ open import Inception.Sub.Environments R
 open import Inception.Sub.States R
 open import Inception.Sub.Machine R
 
+-- open import Level using (0ℓ)
+-- open import Relation.Binary.Core using (Rel)
+
+open import Inception.Sub.Arithmetic
+
 module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   open StatesMain {R₀ = R₀} k₀
@@ -122,12 +127,13 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   -- ∘C↓ : {Γ' : Ctx} {Z : Ty} → ((Δ : Ctx) → (Γ : Ctx) → (γ : Env Γ) → (cs : CompStack Δ Z) → (π : Wk Γ Δ) → (π' : Wk Γ Γ') → (wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → Set) → (W : Γ' ⊢ᶜ Z) → Set
   -- ∘C↓ {Γ' = Γ'} {Z = Z} Q W = ∀ (Δ : Ctx) → (Γ : Ctx) → (γ : Env Γ) → (cs : CompStack Δ Z) → (π : Wk Γ Δ) → (π' : Wk Γ Γ') → (wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → Q Δ Γ γ cs π π' wk≡ → CStateHalts ((∘⟨ wk-comp π' W ⊰ γ ╎ cs ⟩) {π = π} {wk≡ = wk≡})
 
-  MemHalts : (i : Γ ∋ `V) → (γ : Env Γ) → Set
-  MemHalts Cx.h (γ ﹐ v̲a̲r̲ i) = MemHalts i γ
-  MemHalts Cx.h ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡}) = CStateHalts (((∘⟨ W ⊰ γ ╎ cs ⟩) {π = π} {wk≡ = wk≡}))
-  MemHalts (Cx.t i) (γ ﹐ M) = MemHalts i γ
-  MemHalts (Cx.t i) (γ ﹐﹝ W ╎ cs ﹞) = MemHalts i γ
+  -- MemHalts : (i : Γ ∋ `V) → (γ : Env Γ) → Set
+  -- MemHalts Cx.h (γ ﹐ v̲a̲r̲ i) = MemHalts i γ
+  -- MemHalts Cx.h ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡}) = CStateHalts (((∘⟨ W ⊰ γ ╎ cs ⟩) {π = π} {wk≡ = wk≡}))
+  -- MemHalts (Cx.t i) (γ ﹐ M) = MemHalts i γ
+  -- MemHalts (Cx.t i) (γ ﹐﹝ W ╎ cs ﹞) = MemHalts i γ
 
+  {-
   mutual
     EnvHalts : {Γ : Ctx} → (γ : Env Γ) → Set
     EnvHalts ∗ = ⊤
@@ -146,7 +152,189 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
     CompHalts : (W : Comp Γ Z) → (γ : Env Γ) → Set
     CompHalts {Γ = Γ} {Z = Z} W γ = ∀ (Δ : Ctx) → (cs : CompStack Δ Z) → (π : Wk Γ Δ) → (wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → CStateHalts ((∘⟨ W ⊰ γ ╎ cs ⟩) {π = π} {wk≡ = wk≡})
+  -}
 
+  {-
+  mutual
+    EnvHalts : {Γ : Ctx} → (γ : Env Γ) → Set
+    EnvHalts ∗ = ⊤
+    EnvHalts (γ ﹐ M) = EnvHalts γ × (V̲a̲l̲Halts M γ)
+    EnvHalts ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡}) = EnvHalts γ × CStateHalts (((∘⟨ W ⊰ γ ╎ cs ⟩) {π = π} {wk≡ = wk≡}))
+
+    V̲a̲l̲Halts : (M : V̲a̲l̲ Γ' Z) → (γ' : Env Γ') → Set
+    V̲a̲l̲Halts {Γ' = Γ'} (l̲a̲m̲ {X = X} {Y = Y} W) γ' = ∀ (Γ : Ctx) → (γ : Env Γ) → (π : Wk Γ Γ') → (ϖ : EnvEq π γ γ') → (M : V̲a̲l̲ Γ X) → CompHalts (wk-comp (wk-cong π) W) (γ ﹐ M)
+    V̲a̲l̲Halts {Γ' = Γ'} (pa̲i̲r̲ M₁ M₂) γ' = V̲a̲l̲Halts M₁ γ' × V̲a̲l̲Halts M₂ γ'
+    V̲a̲l̲Halts {Γ' = Γ'} u̲n̲i̲t̲ γ' = {Γ : Ctx} → (γ : Env Γ) → (π' : Wk Γ Γ') → ⊤
+    V̲a̲l̲Halts {Γ' = Γ'} (v̲a̲r̲ i) γ' = {!!}
+
+    CompHalts : (W : Comp Γ Z) → (γ : Env Γ) → Set
+    CompHalts {Γ = Γ} {Z = Z} W γ = ∀ (Δ : Ctx) → (cs : CompStack Δ Z) → (π : Wk Γ Δ) → (wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → CStateHalts ((∘⟨ W ⊰ γ ╎ cs ⟩) {π = π} {wk≡ = wk≡})
+  -}
+
+  ∣_∣ : Wk Γ Γ' → ℕ
+  ∣ wk-ε ∣ = 0
+  ∣ wk-cong π ∣ = ∣ π ∣
+  ∣ wk-wk π ∣ = suc ∣ π ∣
+
+  wk-id-lemma : ∣ wk-id {Γ = Γ} ∣ ≡ 0
+  wk-id-lemma {Γ = Cx.ε} = refl
+  wk-id-lemma {Γ = Γ Cx.∙ x} = wk-id-lemma {Γ = Γ}
+
+  wk-trans-lemma : (π : Wk Γ (Δ ∙ X)) → suc ∣ π ∣ ≡ ∣ wk-trans π (wk-wk wk-id) ∣
+  wk-trans-lemma (wk-cong π) = cong suc (subst (λ x → ∣ π ∣ ≡ ∣ x ∣) (sym (wk-trans-id' {π = π})) refl)
+  wk-trans-lemma (wk-wk π) = cong suc (wk-trans-lemma π)
+
+  wk-lemma : (π π' : Wk Γ Δ) → ∣ π ∣ ≡ ∣ π' ∣
+  wk-lemma wk-ε wk-ε = refl
+  wk-lemma (wk-cong π) (wk-cong π') = wk-lemma π π'
+  wk-lemma (wk-cong π) (wk-wk π') =
+    let
+      IH = wk-lemma π (wk-trans π' (wk-wk wk-id))
+    in
+    trans IH (sym (wk-trans-lemma π'))
+  wk-lemma (wk-wk π) (wk-cong π') =
+    let
+      IH = wk-lemma (wk-trans π (wk-wk wk-id)) π'
+    in
+    trans (wk-trans-lemma π) IH
+  wk-lemma (wk-wk π) (wk-wk π') = cong suc (wk-lemma π π')
+
+  {-
+  wkext-lemma : {Γ Δ Γ' : Ctx} → (π : Wk Γ Γ') → (π₁ : Wk Γ Δ) → (π₂ : Wk Δ Γ') → (ext : WkExt π) → (ext₁ : WkExt π₁) → (ext₂ : WkExt π₂) → (∣ π₁ ∣ ≤ ∣ π ∣)
+  wkext-lemma π π₁ π₂ (wk-eq π₃) (wk-eq π₄) (wk-eq π₅) rewrite wk-id-id {π = π} | wk-id-id {π = π₁} = ≤-refl
+  wkext-lemma π π₁ π₂ (wk-eq π₃) (wk-eq π₄) (wk-ext π₅ ext₂) rewrite wk-id-id {π = π} | wk-id-id {π = π₁} = ≤-refl
+  wkext-lemma π π₁ π₂ (wk-eq π₃) (wk-ext π₄ ext₁) (wk-eq π₅) = ql (wk-absurd (wk-wk π₄) π₄) _
+  wkext-lemma π π₁ π₂ (wk-eq π₃) (wk-ext π₄ ext₁) (wk-ext π₅ ext₂) = ql (wk-absurd (wk-wk π₅) π₄) _
+  wkext-lemma π π₁ π₂ (wk-ext π₃ ext) (wk-eq π₄) (wk-eq π₅) = ql (wk-absurd (wk-wk π₃) π₃) _
+  wkext-lemma π (wk-cong π₁) π₂ (wk-ext π₃ ext) (wk-eq π₄) (wk-ext π₅ ext₂) = let IH = wkext-lemma π₃ π₁ π₃ ext (WkExt.wk-eq π₁) ext in n≤sm IH
+  wkext-lemma π (wk-wk π₁) π₂ (wk-ext π₃ ext) (wk-eq π₄) (wk-ext π₅ ext₂) = ql (wk-absurd (wk-wk π₁) π₁) _
+  wkext-lemma π π₁ π₂ (wk-ext π₃ ext) (wk-ext π₄ ext₁) (wk-eq π₅) = let IH = (wkext-lemma π₃ π₄ π₂ ext ext₁ (WkExt.wk-eq π₂)) in s≤s IH
+  wkext-lemma π π₁ π₂ (wk-ext π₃ ext) (wk-ext π₄ ext₁) (wk-ext π₅ ext₂) = let IH = (wkext-lemma π₃ π₄ π₂ ext ext₁ (WkExt.wk-ext π₅ ext₂)) in s≤s IH
+  -}
+
+  wk-trans-lemma₁ : (π₁ : Wk Γ Γ') → (π₂ : Wk Γ' Γ'') → ∣ π₁ ∣ ≤ ∣ wk-trans π₁ π₂ ∣
+  wk-trans-lemma₁ wk-ε wk-ε = z≤n
+  wk-trans-lemma₁ (wk-cong π₁) (wk-cong π₂) = wk-trans-lemma₁ π₁ π₂
+  wk-trans-lemma₁ (wk-cong π₁) (wk-wk π₂) = n≤sm (wk-trans-lemma₁ π₁ π₂)
+  wk-trans-lemma₁ (wk-wk π₁) wk-ε = s≤s (wk-trans-lemma₁ π₁ wk-ε)
+  wk-trans-lemma₁ (wk-wk π₁) (wk-cong π₂) = s≤s (wk-trans-lemma₁ π₁ (wk-cong π₂))
+  wk-trans-lemma₁ (wk-wk π₁) (wk-wk π₂) = s≤s (wk-trans-lemma₁ π₁ (wk-wk π₂))
+
+  n-lemma : {Γ Δ Γ' : Ctx} → (π : Wk Γ Γ') → (π₁ : Wk Γ Δ) → (π₂ : Wk Δ Γ') → (∣ π₁ ∣ ≤ ∣ π ∣)
+  n-lemma π π₁ π₂ rewrite wk-lemma π (wk-trans π₁ π₂) = wk-trans-lemma₁ π₁ π₂
+
+  wk-trans-lemma-eq : (π₁ : Wk Γ Γ') → (π₂ : Wk Γ' Γ'') → ∣ π₁ ∣ + ∣ π₂ ∣ ≡ ∣ wk-trans π₁ π₂ ∣
+  wk-trans-lemma-eq wk-ε wk-ε = refl
+  wk-trans-lemma-eq (wk-cong π₁) (wk-cong π₂) = wk-trans-lemma-eq π₁ π₂
+  wk-trans-lemma-eq (wk-cong π₁) (wk-wk π₂) rewrite sym (snm {n = ∣ π₁ ∣} {m = ∣ π₂ ∣}) = cong suc (wk-trans-lemma-eq π₁ π₂)
+  wk-trans-lemma-eq (wk-wk π₁) wk-ε = cong suc (wk-trans-lemma-eq π₁ wk-ε)
+  wk-trans-lemma-eq (wk-wk π₁) (wk-cong π₂) = cong suc (wk-trans-lemma-eq π₁ (wk-cong π₂))
+  wk-trans-lemma-eq (wk-wk π₁) (wk-wk π₂) = cong suc (wk-trans-lemma-eq π₁ (wk-wk π₂))
+
+  wk-suc-eq : (π : Wk Γ Γ') → (π' : Wk Γ (Γ' ∙ X)) → ∣ π ∣ ≡ suc ∣ π' ∣
+  wk-suc-eq {Γ = Γ} {Γ' = Γ'} π π' =
+    let
+      a1 = wk-trans-lemma-eq π' (wk-wk wk-id)
+      a2 : suc (∣ π' ∣ + ∣ wk-id {Γ = Γ'} ∣) ≡ ∣ wk-trans π' (wk-wk wk-id) ∣
+      a2 = trans (snm {n = ∣ π' ∣} {m = ∣ wk-id {Γ = Γ'} ∣}) a1
+      a3 : ∣ wk-id {Γ = Γ'} ∣ + ∣ π' ∣ ≡ ∣ π' ∣
+      a3 = subst (λ x → x + ∣ π' ∣ ≡ ∣ π' ∣) (sym (wk-id-lemma {Γ = Γ'})) refl
+      a4 : ∣ π' ∣ + ∣ wk-id {Γ = Γ'} ∣ ≡ ∣ π' ∣
+      a4 = trans (+-comm {n = ∣ π' ∣} {m = ∣ wk-id {Γ = Γ'} ∣}) a3
+      a5 : suc ∣ π' ∣ ≡ ∣ wk-trans π' (wk-wk wk-id) ∣
+      a5 = subst (λ x → suc x ≡ ∣ wk-trans π' (wk-wk wk-id) ∣) a4 a2
+      a6 : ∣ wk-trans π' (wk-wk wk-id) ∣ ≡ ∣ π ∣
+      a6 = wk-lemma (wk-trans π' (wk-wk wk-id)) π
+    in
+    sym (trans a5 a6)
+
+  vh-lemma : (π : Wk Γ (Γ' ∙ A)) → (eq : n ≡ ∣ π ∣) → suc n ≡ ∣ wk-trans π (wk-wk {A = A} (wk-id {Γ = Γ'})) ∣
+  vh-lemma {n = n} π eq rewrite eq = wk-trans-lemma π
+
+  CompHalts : (W : Comp Γ Z) → (γ : Env Γ) → Set
+  CompHalts {Γ = Γ} {Z = Z} W γ = ∀ (Δ : Ctx) → (cs : CompStack Δ Z) → (π : Wk Γ Δ) → (wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → CStateHalts ((∘⟨ W ⊰ γ ╎ cs ⟩) {π = π} {wk≡ = wk≡})
+
+  V̲a̲l̲Halts : {Γ Γ' : Ctx} → (M : V̲a̲l̲ Γ' Z) → (γ' : Env Γ') → (n : ℕ) → (π : Wk Γ Γ') → (m : ℕ) → (n ≡ m + ∣ π ∣) → Set
+  V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} (l̲a̲m̲ {X = X} {Y = Y} W) γ' zero π zero eq = ⊤
+  V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} (l̲a̲m̲ {X = X} {Y = Y} W) γ' zero π (suc m) ()
+  V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} (l̲a̲m̲ {X = X} {Y = Y} W) γ' (suc n) π zero eq =
+    ∀ (Δ : Ctx) → (δ : Env Δ) → (π'' : Wk Γ (Δ ∙ X)) → (π' : Wk (Δ ∙ X) (Γ' ∙ X)) → (M : V̲a̲l̲ Δ X)
+      → V̲a̲l̲Halts {Γ = Γ} (wk-v̲a̲l̲ (wk-wk wk-id) M) (δ ﹐ M) n π'' ∣ π' ∣
+                     (let
+                        a4 = wk-suc-eq π (wk-trans π'' π')
+                        a5 = trans eq a4
+                        a6 : n ≡ ∣ wk-trans π'' π' ∣
+                        a6 = p-eq-p a5
+                        a7 = wk-trans-lemma-eq π'' π'
+                        a8 = sym (+-comm {n = ∣ π'' ∣} {m = ∣ π' ∣})
+                        a9 = trans a6 (sym (trans a8 a7))
+                      in a9)
+      → CompHalts (wk-comp π' W) (δ ﹐ M)
+  V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} (l̲a̲m̲ {X = X} {Y = Y} W) γ' (suc n) π (suc m) refl = V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} (l̲a̲m̲ {X = X} {Y = Y} W) γ' n π m refl
+  V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} (pa̲i̲r̲ M₁ M₂) γ' n π m eq = V̲a̲l̲Halts M₁ γ' n π m eq × V̲a̲l̲Halts M₂ γ' n π m eq
+  V̲a̲l̲Halts {Γ' = Γ'} u̲n̲i̲t̲ _ _ _ _ _ = ⊤
+
+  V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} (v̲a̲r̲ Cx.h) (γ' ﹐ (v̲a̲r̲ i)) n π zero eq =  V̲a̲l̲Halts {Γ = Γ} (v̲a̲r̲ i) γ' (suc n) (wk-trans π (wk-wk wk-id)) 0 (vh-lemma π eq)
+  V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} (v̲a̲r̲ Cx.h) (γ' ﹐ (v̲a̲r̲ i)) (suc n) π (suc m) eq = V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} (v̲a̲r̲ Cx.h) (γ' ﹐ (v̲a̲r̲ i)) n π m (p-eq-p eq)
+  V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} (v̲a̲r̲ Cx.h) ((γ' ﹐﹝ W ╎ cs ﹞) {π = π'} {wk≡ = wk≡}) n π zero eq = CStateHalts (((∘⟨ W ⊰ γ' ╎ cs ⟩) {π = π'} {wk≡ = wk≡}))
+  V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} (v̲a̲r̲ Cx.h) ((γ' ﹐﹝ W ╎ cs ﹞) {π = π'} {wk≡ = wk≡}) (suc n) π (suc m) eq = V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} (v̲a̲r̲ Cx.h) ((γ' ﹐﹝ W ╎ cs ﹞) {π = π'} {wk≡ = wk≡}) n π m (p-eq-p eq)
+  V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} (v̲a̲r̲ (Cx.t i)) (γ' ﹐ M) n π zero eq = V̲a̲l̲Halts {Γ = Γ} (v̲a̲r̲ i) γ' (suc n) (wk-trans π (wk-wk wk-id)) 0 (vh-lemma π eq)
+  V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} (v̲a̲r̲ (Cx.t i)) (γ' ﹐ M) (suc n) π (suc m) eq = V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} (v̲a̲r̲ (t i)) (γ' ﹐ M) n π m (p-eq-p eq)
+  V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} (v̲a̲r̲ (Cx.t i)) ((γ' ﹐﹝ W ╎ cs ﹞) {π = π'} {wk≡ = wk≡}) n π zero eq = V̲a̲l̲Halts {Γ = Γ} (v̲a̲r̲ i) γ' (suc n) (wk-trans π (wk-wk wk-id)) 0 (vh-lemma π eq)
+  V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} (v̲a̲r̲ (Cx.t i)) ((γ' ﹐﹝ W ╎ cs ﹞) {π = π'} {wk≡ = wk≡}) (suc n) π (suc m) eq = V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} (v̲a̲r̲ (Cx.t i)) ((γ' ﹐﹝ W ╎ cs ﹞) {π = π'} {wk≡ = wk≡}) n π m (p-eq-p eq)
+
+  -- V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} (v̲a̲r̲ Cx.h) (γ' ﹐ v̲a̲r̲ i) n π m eq = V̲a̲l̲Halts {Γ = Γ} (v̲a̲r̲ i) γ' n (wk-trans π (wk-wk wk-id)) m {!!}
+  -- V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} (v̲a̲r̲ Cx.h) ((γ' ﹐﹝ W ╎ cs ﹞) {π = π'} {wk≡ = wk≡}) n π m eq = CStateHalts (((∘⟨ W ⊰ γ' ╎ cs ⟩) {π = π'} {wk≡ = wk≡}))
+  -- V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} (v̲a̲r̲ (Cx.t i)) (γ' ﹐ M) n π m eq = V̲a̲l̲Halts {Γ = Γ} (v̲a̲r̲ i) γ' n (wk-trans π (wk-wk wk-id)) (suc m) {!!}
+  -- V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} (v̲a̲r̲ (Cx.t i)) (γ' ﹐﹝ W ╎ cs ﹞) n π m eq = V̲a̲l̲Halts {Γ = Γ} (v̲a̲r̲ i) γ' n (wk-trans π (wk-wk wk-id)) (suc m) {!!}
+
+{-
+    V̲a̲l̲Halts {Γ' = Γ'} (v̲a̲r̲ Cx.h) (γ' ﹐ v̲a̲r̲ i) = V̲a̲l̲Halts (v̲a̲r̲ i) γ'
+    V̲a̲l̲Halts {Γ' = Γ'} (v̲a̲r̲ Cx.h) ((γ' ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡}) = CStateHalts (((∘⟨ W ⊰ γ' ╎ cs ⟩) {π = π} {wk≡ = wk≡}))
+    V̲a̲l̲Halts {Γ' = Γ'} (v̲a̲r̲ (Cx.t i)) (γ' ﹐ M) = V̲a̲l̲Halts (v̲a̲r̲ i) γ'
+    V̲a̲l̲Halts {Γ' = Γ'} (v̲a̲r̲ (Cx.t i)) (γ' ﹐﹝ W ╎ cs ﹞) = V̲a̲l̲Halts (v̲a̲r̲ i) γ'
+-}
+
+{- YYY
+  {-
+  mutual
+    EnvHalts : {Γ Γ' : Ctx} → (π : Wk Γ Γ') → (γ : Env Γ) → (γ' : Env Γ') → (ϖ : EnvEq π γ γ') → Set
+    EnvHalts γ = {!!}
+
+    --V̲a̲l̲Halts : {Γ Γ' : Ctx} {π : Wk Γ Γ'} {γ : Env Γ} {γ' : Env Γ'} {ϖ : EnvEq π γ γ'} → (↓ᴱ : EnvHalts π γ γ' ϖ) → (M : V̲a̲l̲ Γ' Z) → Set
+    V̲a̲l̲Halts : {Γ Γ' : Ctx} {π : Wk Γ Γ'} {γ : Env Γ} {γ' : Env Γ'} → (ϖ : EnvEq π γ γ') → (M : V̲a̲l̲ Γ' Z) → Set
+    V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} {π = π} {γ = γ} {γ' = γ'} ϖ (l̲a̲m̲ {X = X} {Y = Y} W) = ∀ (Γ'' : Ctx) → (γ'' : Env Γ'') → (π₁ : Wk Γ Γ'') → (π₂ : Wk Γ'' Γ') → (ϖ₁ : EnvEq π₁ γ γ'') → (ϖ₂ : EnvEq π₂ γ'' γ') → (M : V̲a̲l̲ Γ'' X) → CompHalts (wk-comp (wk-cong π₂) W) (γ'' ﹐ M)
+    V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} {π = π} {γ = γ} {γ' = γ'} ϖ (pa̲i̲r̲ M₁ M₂) = V̲a̲l̲Halts ϖ M₁ × V̲a̲l̲Halts ϖ M₂
+    V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} {π = π} {γ = γ} {γ' = γ'} ϖ u̲n̲i̲t̲ = ⊤
+    V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} {π = wk-cong π} {γ = γ} {γ' = γ' ﹐ v̲a̲r̲ i} (wk-env-val-cong M ϖ) (v̲a̲r̲ Cx.h) = V̲a̲l̲Halts ϖ (v̲a̲r̲ i)
+    V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} {π = wk-wk π} {γ = γ} {γ' = γ' ﹐ v̲a̲r̲ i} (wk-env-val-wk M ϖ) (v̲a̲r̲ Cx.h) = V̲a̲l̲Halts ϖ (v̲a̲r̲ (t i))
+    V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} {π = wk-wk π} {γ = γ} {γ' = γ' ﹐ v̲a̲r̲ i} (wk-env-comp-wk W cs ϖ) (v̲a̲r̲ Cx.h) = V̲a̲l̲Halts ϖ (v̲a̲r̲ (t i))
+    V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} {π = wk-cong π} {γ = γ} {γ' = ((γ' ﹐﹝ W ╎ cs ﹞) {π = π'} {wk≡ = wk≡})} (wk-env-comp-cong W₁ cs₁ ϖ) (v̲a̲r̲ Cx.h) = CStateHalts (((∘⟨ W ⊰ γ' ╎ cs ⟩) {π = π'} {wk≡ = wk≡}))
+    V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} {π = wk-wk π} {γ = γ} {γ' = ((γ' ﹐﹝ W ╎ cs ﹞) {π = π'} {wk≡ = wk≡})} (wk-env-val-wk M ϖ) (v̲a̲r̲ Cx.h) = CStateHalts (((∘⟨ W ⊰ γ' ╎ cs ⟩) {π = π'} {wk≡ = wk≡}))
+    V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} {π = wk-wk π} {γ = γ} {γ' = ((γ' ﹐﹝ W ╎ cs ﹞) {π = π'} {wk≡ = wk≡})} (wk-env-comp-wk W₁ cs₁ ϖ) (v̲a̲r̲ Cx.h) = CStateHalts (((∘⟨ W ⊰ γ' ╎ cs ⟩) {π = π'} {wk≡ = wk≡}))
+    V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} {π = wk-cong π} {γ = γ} {γ' = γ' ﹐ l̲a̲m̲ _} (wk-env-val-cong M ϖ) (v̲a̲r̲ (Cx.t i)) = V̲a̲l̲Halts ϖ (v̲a̲r̲ i)
+    V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} {π = wk-wk π} {γ = γ} {γ' = γ' ﹐ l̲a̲m̲ _} (wk-env-val-wk M ϖ) (v̲a̲r̲ (Cx.t i)) =  V̲a̲l̲Halts ϖ (v̲a̲r̲ (t i))
+    V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} {π = wk-wk π} {γ = γ} {γ' = γ' ﹐ l̲a̲m̲ _} (wk-env-comp-wk W cs ϖ) (v̲a̲r̲ (Cx.t i)) = V̲a̲l̲Halts ϖ (v̲a̲r̲ (t i))
+    V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} {π = wk-cong π} {γ = γ} {γ' = γ' ﹐ pa̲i̲r̲ _ _} (wk-env-val-cong M ϖ) (v̲a̲r̲ (Cx.t i)) = V̲a̲l̲Halts ϖ (v̲a̲r̲ i)
+    V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} {π = wk-wk π} {γ = γ} {γ' = γ' ﹐ pa̲i̲r̲ _ _} (wk-env-val-wk M ϖ) (v̲a̲r̲ (Cx.t i)) = V̲a̲l̲Halts ϖ (v̲a̲r̲ (t i))
+    V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} {π = wk-wk π} {γ = γ} {γ' = γ' ﹐ pa̲i̲r̲ _ _} (wk-env-comp-wk W cs ϖ) (v̲a̲r̲ (Cx.t i)) = V̲a̲l̲Halts ϖ (v̲a̲r̲ (t i))
+    V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} {π = wk-cong π} {γ = γ} {γ' = γ' ﹐ u̲n̲i̲t̲} (wk-env-val-cong M ϖ) (v̲a̲r̲ (Cx.t i)) = V̲a̲l̲Halts ϖ (v̲a̲r̲ i)
+    V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} {π = wk-wk π} {γ = γ} {γ' = γ' ﹐ u̲n̲i̲t̲} (wk-env-val-wk M ϖ) (v̲a̲r̲ (Cx.t i)) = V̲a̲l̲Halts ϖ (v̲a̲r̲ (t i))
+    V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} {π = wk-wk π} {γ = γ} {γ' = γ' ﹐ u̲n̲i̲t̲} (wk-env-comp-wk W cs ϖ) (v̲a̲r̲ (Cx.t i)) = V̲a̲l̲Halts ϖ (v̲a̲r̲ (t i))
+    V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} {π = wk-cong π} {γ = γ} {γ' = γ' ﹐ v̲a̲r̲ _} (wk-env-val-cong M ϖ) (v̲a̲r̲ (Cx.t i)) = V̲a̲l̲Halts ϖ (v̲a̲r̲ i)
+    V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} {π = wk-wk π} {γ = γ} {γ' = γ' ﹐ v̲a̲r̲ _} (wk-env-val-wk M ϖ) (v̲a̲r̲ (Cx.t i)) = V̲a̲l̲Halts ϖ (v̲a̲r̲ (t i))
+    V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} {π = wk-wk π} {γ = γ} {γ' = γ' ﹐ v̲a̲r̲ _} (wk-env-comp-wk W cs ϖ) (v̲a̲r̲ (Cx.t i)) = V̲a̲l̲Halts ϖ (v̲a̲r̲ (t i))
+    V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} {π = wk-cong π} {γ = γ} {γ' = γ' ﹐﹝ W ╎ cs ﹞} (wk-env-comp-cong W₁ cs₁ ϖ) (v̲a̲r̲ (Cx.t i)) = V̲a̲l̲Halts ϖ (v̲a̲r̲ i)
+    V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} {π = wk-wk π} {γ = γ} {γ' = γ' ﹐﹝ W ╎ cs ﹞} (wk-env-val-wk M ϖ) (v̲a̲r̲ (Cx.t i)) = V̲a̲l̲Halts ϖ (v̲a̲r̲ (t i))
+    V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} {π = wk-wk π} {γ = γ} {γ' = γ' ﹐﹝ W ╎ cs ﹞} (wk-env-comp-wk W₁ cs₁ ϖ) (v̲a̲r̲ (Cx.t i)) = V̲a̲l̲Halts ϖ (v̲a̲r̲ (t i))
+
+
+    CompHalts : (W : Comp Γ Z) → (γ : Env Γ) → Set
+    CompHalts {Γ = Γ} {Z = Z} W γ = ∀ (Δ : Ctx) → (cs : CompStack Δ Z) → (π : Wk Γ Δ) → (wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → CStateHalts ((∘⟨ W ⊰ γ ╎ cs ⟩) {π = π} {wk≡ = wk≡})
+  -}
+
+
+{- ZZZ
   TermHalts : {T : LookupState X} → (H : LookupHaltingState T) → Set
   TermHalts found-unit = ⊤
   TermHalts (found-pair {LHS = LHS} {RHS = RHS} {γ = γ}) = V̲a̲l̲Halts LHS γ × V̲a̲l̲Halts RHS γ
@@ -1170,3 +1358,5 @@ ex15 = push (push (app (lam {A = `Unit} (sub (var (var h)) (return unit))) unit)
 -- _ = refl
 
 XXX -}
+ZZZ -}
+YYY -}
