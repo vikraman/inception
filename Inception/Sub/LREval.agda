@@ -205,24 +205,25 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   CompHalts : (W : Comp Γ Z) → (γ : Env Γ) → Set
   CompHalts {Γ = Γ} {Z = Z} W γ = ∀ (Δ : Ctx) → (cs : CompStack Δ Z) → (π : Wk Γ Δ) → (wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → CStateHalts ((∘⟨ W ⊰ γ ╎ cs ⟩) {π = π} {wk≡ = wk≡})
 
-  {-
-  V↑ : {Γ : Ctx} {X : Ty} → ((M : V̲a̲l̲ Γ X) → Set) → (Δ : Ctx) → (Γ' : Ctx) → (Y : Ty) → (W : Comp (Γ' ∙ X) Y) → (γ : Env Γ) → (cs : CompStack Δ Y) → (π : Wk Γ Δ) → (π' : Wk Γ Γ') → (wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → Set
-  V↑ {Γ = Γ} {X = X} P Δ Γ' Y W γ cs π π' wk≡ = ∀ {M : V̲a̲l̲ Γ X} → P M → CStateHalts (((∙⟨ a̲pp (wk-val π' (lam W)) M ⊰ γ ╎ cs ⟩) {π = π} {wk≡ = wk≡}))
+  --V↑ : {Γ : Ctx} {X : Ty} → ((M : V̲a̲l̲ Γ X) → Set) → (Δ : Ctx) → (Γ' : Ctx) → (Y : Ty) → (W : Comp (Γ' ∙ X) Y) → (γ : Env Γ) → (cs : CompStack Δ Y) → (π : Wk Γ Δ) → (π' : Wk Γ Γ') → (wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → Set
+  --V↑ {Γ = Γ} {X = X} P Δ Γ' Y W γ cs π π' wk≡ = ∀ {M : V̲a̲l̲ Γ X} → P M → CStateHalts (((∙⟨ a̲pp (wk-val π' (lam W)) M ⊰ γ ╎ cs ⟩) {π = π} {wk≡ = wk≡}))
+
+  V↑ : {Γ : Ctx} {X : Ty} → (γ : Env Γ) → ((M : V̲a̲l̲ Γ X) → Set) → (Δ : Ctx) → (Γ' : Ctx) → (γ' : Env Γ') → (cs : CompStack Δ X) → (π' : Wk Γ' Δ) → (π : Wk Γ' Γ) → (ϖ : EnvEq π ) → (wk≡ : ⟦ π' ⟧ʷ ⟦ γ' ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → Set
+  V↑ {Γ = Γ} {X = X} P Δ Γ' γ' cs π' π wk≡ = ∀ {M : V̲a̲l̲ Γ X} → P M → CStateHalts (((∙⟨ wk-c̲o̲m̲p π (r̲e̲t̲u̲r̲n̲ M) ⊰ γ' ╎ cs ⟩) {π = π'} {wk≡ = wk≡}))
 
   --V↓ : {Γ : Ctx} {X : Ty} → ((Δ : Ctx) → (Γ' : Ctx) → (Y : Ty) → (W : Comp (Γ' ∙ X) Y) → (γ : Env Γ) → (cs : CompStack Δ Y) → (π : Wk Γ Δ) → (π' : Wk Γ Γ') → (wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → Set) → (M : V̲a̲l̲ Γ X) → Set
   --V↓ {Γ = Γ} {X = X} Q M = ∀ (Δ : Ctx) → (Γ' : Ctx) → (Y : Ty) → (W : Comp (Γ' ∙ X) Y) → (γ : Env Γ) → (cs : CompStack Δ Y) → (π : Wk Γ Δ) → (π' : Wk Γ Γ') → (wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → CStateHalts (((∙⟨ a̲pp (wk-val π' (lam W)) M ⊰ γ ╎ cs ⟩) {π = π} {wk≡ = wk≡}))
 
-  V↓ : {Γ : Ctx} {X : Ty} → ((Δ : Ctx) → (Γ' : Ctx) → (Y : Ty) → (W : Comp (Γ' ∙ X) Y) → (γ : Env Γ) → (cs : CompStack Δ Y) → (π : Wk Γ Δ) → (π' : Wk Γ Γ') → (wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → Set) → (W' : Comp Γ X) → Set
-  V↓ {Γ = Γ} {X = X} Q M = ∀ (Δ : Ctx) → (Γ' : Ctx) → (Y : Ty) → (W : Comp (Γ' ∙ X) Y) → (γ : Env Γ) → (cs : CompStack Δ Y) → (π : Wk Γ Δ) → (π' : Wk Γ Γ') → (wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → CStateHalts (((∙⟨ a̲pp (wk-val π' (lam W)) M ⊰ γ ╎ cs ⟩) {π = π} {wk≡ = wk≡}))
+  V↓ : {Γ : Ctx} {X : Ty} → ((Δ : Ctx) → (Γ' : Ctx) → (γ' : Env Γ') → (cs : CompStack Δ X) → (π' : Wk Γ' Δ) → (π : Wk Γ' Γ) → (wk≡ : ⟦ π' ⟧ʷ ⟦ γ' ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → Set) → (W : Comp Γ X) → Set
+  V↓ {Γ = Γ} {X = X} Q W = ∀ (Δ : Ctx) → (Γ' : Ctx) → (γ' : Env Γ') → (cs : CompStack Δ X) → (π' : Wk Γ' Δ) → (π : Wk Γ' Γ) → (wk≡ : ⟦ π' ⟧ʷ ⟦ γ' ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → (Q Δ Γ' γ' cs π' π wk≡) → CStateHalts (((∙⟨ {!!} ⊰ γ' ╎ cs ⟩) {π = π'} {wk≡ = wk≡}))
 
   V̲a̲l̲Halts : (M : V̲a̲l̲ Γ' Z) → (γ' : Env Γ') → Set
   V̲a̲l̲Halts {Γ' = Γ'} (l̲a̲m̲ {X = X} {Y = Y} W) γ' = ∀ (Γ : Ctx) → (γ : Env Γ) → (π : Wk Γ Γ') → (ϖ : EnvEq π γ γ') → (M : V̲a̲l̲ Γ X) → {!!} → CompHalts (wk-comp (wk-cong π) W) (γ ﹐ M)
   V̲a̲l̲Halts {Γ' = Γ'} (pa̲i̲r̲ M₁ M₂) γ' = V̲a̲l̲Halts M₁ γ' × V̲a̲l̲Halts M₂ γ'
   V̲a̲l̲Halts {Γ' = Γ'} u̲n̲i̲t̲ γ' = {Γ : Ctx} → (γ : Env Γ) → (π' : Wk Γ Γ') → ⊤
   V̲a̲l̲Halts {Γ' = Γ'} (v̲a̲r̲ i) γ' = {!!}
-  -}
 
-
+{- AAA
   V̲a̲l̲Halts : {Γ Γ' : Ctx} → (M : V̲a̲l̲ Γ' Z) → (γ' : Env Γ') → (n : ℕ) → (π : Wk Γ Γ') → (m : ℕ) → (n ≡ m + ∣ π ∣) → Set
   V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} (l̲a̲m̲ {X = X} {Y = Y} W) γ' zero π zero eq = ⊤
   V̲a̲l̲Halts {Γ = Γ} {Γ' = Γ'} (l̲a̲m̲ {X = X} {Y = Y} W) γ' zero π (suc m) ()
@@ -1326,3 +1327,5 @@ XXX -}
 ZZZ -}
 
 YYY -}
+
+AAA -}
