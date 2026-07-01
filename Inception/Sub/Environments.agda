@@ -111,6 +111,43 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   ⟦ ◻ ⟧ᶜˢ = idf
   ⟦ W₁ ⊲ γ₁ ⦂⦂ tail ⟧ᶜˢ = < const ⟦ γ₁ ⟧ᴱ , idf > ； τ ； (⟦ W₁ ⟧ᶜ ♯) ； ⟦ tail ⟧ᶜˢ
 
+  ----
+
+  env-eq-sem-lemma : {π : Wk Γ' Γ} {γ' : Env Γ'} {γ : Env Γ} → (ϖ : EnvEq π γ' γ) → ⟦ π ⟧ʷ ⟦ γ' ⟧ᴱ ≡ ⟦ γ ⟧ᴱ
+  env-eq-sem-lemma {π = wk-ε} {γ' = ∗} {γ = ∗} wk-env-ε = refl
+  env-eq-sem-lemma {π = wk-cong π} {γ' = γ' ﹐ M'} {γ = γ ﹐ M} (wk-env-val-cong M₀ ϖ) =
+       ⟦ wk-cong π ⟧ʷ (⟦ γ' ⟧ᴱ , ⟦ toVal (wk-v̲a̲l̲ π M) ⟧ᵛ ⟦ γ' ⟧ᴱ)
+      ≡⟨ refl ⟩
+        ⟦ π ⟧ʷ ⟦ γ' ⟧ᴱ , ⟦ toVal (wk-v̲a̲l̲ π M) ⟧ᵛ ⟦ γ' ⟧ᴱ
+      ≡⟨ cong (λ x → ⟦ π ⟧ʷ ⟦ γ' ⟧ᴱ , ⟦ x ⟧ᵛ ⟦ γ' ⟧ᴱ) (sym (wk-comm {M = M} {π = π})) ⟩
+        ⟦ π ⟧ʷ ⟦ γ' ⟧ᴱ , ⟦ wk-val π (toVal M) ⟧ᵛ ⟦ γ' ⟧ᴱ
+      ≡⟨ refl ⟩
+        ⟦ π ⟧ʷ ⟦ γ' ⟧ᴱ , ⟦ toVal M ⟧ᵛ (⟦ π ⟧ʷ ⟦ γ' ⟧ᴱ)
+      ≡⟨ cong (λ x → x , ⟦ toVal M ⟧ᵛ x) (env-eq-sem-lemma ϖ) ⟩
+        (⟦ γ ⟧ᴱ , ⟦ toVal M ⟧ᵛ ⟦ γ ⟧ᴱ) ∎
+  env-eq-sem-lemma {π = wk-cong π} {γ' = γ' ﹐ M} {γ = γ ﹐﹝ W ╎ cs ﹞} ()
+  env-eq-sem-lemma {π = wk-cong π} {γ' = γ' ﹐﹝ W ╎ cs ﹞} {γ = γ ﹐ M} ()
+  env-eq-sem-lemma {π = wk-cong π} {γ' = γ' ﹐﹝ W ╎ cs ﹞} {γ = γ ﹐﹝ W₁ ╎ cs₁ ﹞} (wk-env-comp-cong W₂ cs₂ ϖ) =
+       ⟦ wk-cong π ⟧ʷ (⟦ γ' ⟧ᴱ , (⟦ π ⟧ʷ ； ⟦ W₁ ⟧ᶜ) ⟦ γ' ⟧ᴱ ⟦ cs ⟧ᴷ)
+      ≡⟨ refl ⟩
+        ⟦ π ⟧ʷ ⟦ γ' ⟧ᴱ , ⟦ W₁ ⟧ᶜ (⟦ π ⟧ʷ ⟦ γ' ⟧ᴱ) (λ y → ⟦ cs ⟧ᶜˢ (λ k → k y) k₀)
+      ≡⟨ cong (λ x → x , ⟦ W₁ ⟧ᶜ x (λ y → ⟦ cs ⟧ᶜˢ (λ k → k y) k₀)) (env-eq-sem-lemma ϖ) ⟩
+        ⟦ γ ⟧ᴱ , ⟦ W₁ ⟧ᶜ ⟦ γ ⟧ᴱ (λ y → ⟦ cs ⟧ᶜˢ (λ k → k y) k₀)
+      ≡⟨ refl ⟩
+        (⟦ γ ⟧ᴱ , ⟦ W₁ ⟧ᶜ ⟦ γ ⟧ᴱ ⟦ cs ⟧ᴷ) ∎
+  env-eq-sem-lemma {π = wk-wk π} {γ' = γ' ﹐ M} {γ = ∗} (wk-env-val-wk M₁ ϖ) = env-eq-sem-lemma ϖ
+  env-eq-sem-lemma {π = wk-wk π} {γ' = γ' ﹐ M} {γ = γ ﹐ M₁} (wk-env-val-wk M₂ ϖ) = env-eq-sem-lemma ϖ
+  env-eq-sem-lemma {π = wk-wk π} {γ' = γ' ﹐ M} {γ = γ ﹐﹝ W ╎ cs ﹞} (wk-env-val-wk M₁ ϖ) = env-eq-sem-lemma ϖ
+  env-eq-sem-lemma {π = wk-wk π} {γ' = γ' ﹐﹝ W ╎ cs ﹞} {γ = ∗} (wk-env-comp-wk W₁ cs₁ ϖ) = env-eq-sem-lemma ϖ
+  env-eq-sem-lemma {π = wk-wk π} {γ' = γ' ﹐﹝ W ╎ cs ﹞} {γ = γ ﹐ M} (wk-env-comp-wk W₁ cs₁ ϖ) = env-eq-sem-lemma ϖ
+  env-eq-sem-lemma {π = wk-wk π} {γ' = γ' ﹐﹝ W ╎ cs ﹞} {γ = γ ﹐﹝ W₁ ╎ cs₁ ﹞} (wk-env-comp-wk W₂ cs₂ ϖ) = env-eq-sem-lemma ϖ
+
+
+  env-eq-cs-sem-lemma : {π : Wk Γ Δ} {γ : Env Γ} {cs : CompStack Δ X} → EnvEq π γ (topCsEnv cs) → ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ
+  env-eq-cs-sem-lemma {π = π} {γ = γ} {cs = cs} ϖ = env-eq-sem-lemma ϖ
+
+  ----
+
   mutual
     empty-perm-absurd : ε ↭ (Γ ∙ X) → ⊥
     empty-perm-absurd (_↭_.trans perm₁ perm₂) rewrite sym (empty-perm perm₁) = empty-perm-absurd perm₂
