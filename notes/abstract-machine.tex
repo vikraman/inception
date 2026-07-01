@@ -155,7 +155,7 @@ Variables $x : X \in \Gamma$ are interpreted as morphisms $\llbracket \Gamma \rr
 && \frac{\Gamma \VTS M : X \quad \Gamma \VTS N : Y}{\Gamma \VTS (M , N) : X \times Y}
 \end{align*}
 \begin{align*}
-\frac{\Gamma \VTS M : X \times Y \quad \Gamma, x : X , y : Y \VTS N : Z}{\Gamma \VTS \PMV(M, N) : Z}
+\frac{\Gamma \VTS M : X \times Y \quad \Gamma, X , Y \VTS N : Z}{\Gamma \VTS \PMV(M, N) : Z}
 && \frac{}{\Gamma \VTS \ast : \unit}
 \end{align*}
 
@@ -173,20 +173,20 @@ Variables $x : X \in \Gamma$ are interpreted as morphisms $\llbracket \Gamma \rr
 \begin{align*}
   \frac{\Gamma \VTS M : X \quad \Gamma \VTS N : Y}{\Gamma \VPTS (-_M , N) : X \times Y}
   && \frac{\Gamma \VVTS \underline{M} : X \quad \Gamma \VTS N : Y}{\Gamma \VPTS (\underline{M} , -_N) : X \times Y}
-  && \frac{\Gamma \VTS M : X \times Y \quad \Gamma, x : X , y : Y \VTS N : Z}{\Gamma \VPTS \PMV(-_M, N) : Z}
+  && \frac{\Gamma \VTS M : X \times Y \quad \Gamma, X , Y \VTS N : Z}{\Gamma \VPTS \PMV(-_M, N) : Z}
 \end{align*}
 
 \subsubsection{Typing rules for full computation terms}$ $
 
 \begin{align*}
    \frac{\Gamma \VTS M : X}{\Gamma \CTS \RET (M) : X}
-&& \frac{\Gamma \CTS W : X \quad \Gamma, X \CTS Y}{\Gamma \CTS \PUSH (M , N) : Y}
+&& \frac{\Gamma \CTS W_1 : X \quad \Gamma, X \CTS W_2 : Y}{\Gamma \CTS \PUSH (W_1 , W_2) : Y}
 && \frac{\Gamma \VTS M : X \Rightarrow Y \quad \Gamma \VTS N : X}{\Gamma \CTS \APP(M, N) : Y}
 \end{align*}
 \begin{align*}
    \frac{\Gamma \VTS M : \LABEL}{\Gamma \CTS \VAR_X (M) : X}
-&& \frac{\Gamma , a : \LABEL \CTS M : X \quad \Gamma \CTS N : X}{\Gamma \CTS \SUB (a.M , N) : X}
-&& \frac{\Gamma \VTS M : X \times Y \quad \Gamma, x : X , y : Y \CTS N : Z}{\Gamma \CTS \PMC(M, (x,y).N) : Z}
+&& \frac{\Gamma , \LABEL \CTS W_1 : X \quad \Gamma \CTS W_2 : X}{\Gamma \CTS \SUB (W_1 , W_2) : X}
+&& \frac{\Gamma \VTS M : X \times Y \quad \Gamma, X , Y \CTS W : Z}{\Gamma \CTS \PMC(M, W) : Z}
 \end{align*}
 
 \subsubsection{Typing rules for (partially) evaluated computation terms}$ $
@@ -205,7 +205,7 @@ For the judgements of value terms $\mathbf{M}$ and computation terms $\mathbf{W}
 Full value terms $\Gamma \VTS M : X$ are interpreted as morphisms ${\llbracket \Gamma \rrbracket}_T \xrightarrow{{\llbracket M \rrbracket}_T} {\llbracket X \rrbracket}_T$.
 
 \begin{align*}
-  {\llbracket \Gamma \VTS x : X \rrbracket}_T &= {\llbracket x \rrbracket}_T \\
+  {\llbracket \Gamma \VTS X \rrbracket}_T &= {\llbracket x \rrbracket}_T \\
   {\llbracket \Gamma \VTS \lambda W : X \Rightarrow Y \rrbracket}_T &= \lambda {\llbracket W \rrbracket}_T \\
   {\llbracket \Gamma \VTS (M, N) : X \times Y \rrbracket}_T &= \langle {\llbracket M \rrbracket}_T, {\llbracket N \rrbracket}_T \rangle \\
   {\llbracket \Gamma \VTS \PMV(M , N) : X \rrbracket}_T &= {\llbracket N \rrbracket}_T \circ \alpha \circ \langle \ID , {\llbracket M \rrbracket}_T \rangle \\
@@ -221,11 +221,11 @@ Computation terms $\Gamma \CTS W : X$ are interpreted by ${\llbracket \_ \rrbrac
 
 \begin{align*}
   {\llbracket \Gamma \CTS \RET (M) : X \rrbracket}_S &= \eta \circ {\llbracket M \rrbracket}_S \\
-  {\llbracket \Gamma \CTS \PUSH (W_1, x.W_2) : X\rrbracket}_S &= {\llbracket W_2 \rrbracket}_S^{\sharp} \circ \STR \circ \langle \ID , {\llbracket W_1 \rrbracket}_S \rangle\\
+  {\llbracket \Gamma \CTS \PUSH (W_1, W_2) : X\rrbracket}_S &= {\llbracket W_2 \rrbracket}_S^{\sharp} \circ \STR \circ \langle \ID , {\llbracket W_1 \rrbracket}_S \rangle\\
   {\llbracket \Gamma \CTS \APP(M , N) : X \rrbracket}_S &= \EVAL \circ \langle {\llbracket M \rrbracket}_S , {\llbracket N \rrbracket}_S \rangle\\
   {\llbracket \Gamma \CTS \VAR(M) : X \rrbracket}_S &= \VAR_X \circ {\llbracket M \rrbracket}_S\\
-  {\llbracket \Gamma \CTS \SUB(a.W_1 , W_2) : X \rrbracket}_S &= \SUB_X \circ \langle \lambda {\llbracket W_1 \rrbracket}_S , {\llbracket W_2 \rrbracket}_S \rangle\\
-  {\llbracket \Gamma \CTS \PMC(M , (x , y).W) : X \rrbracket}_S &= {\llbracket W \rrbracket}_S \circ \alpha \circ \langle \ID , \llbracket M \rrbracket \rangle
+  {\llbracket \Gamma \CTS \SUB(W_1 , W_2) : X \rrbracket}_S &= \SUB_X \circ \langle \lambda {\llbracket W_1 \rrbracket}_S , {\llbracket W_2 \rrbracket}_S \rangle\\
+  {\llbracket \Gamma \CTS \PMC(M , W) : X \rrbracket}_S &= {\llbracket W \rrbracket}_S \circ \alpha \circ \langle \ID , \llbracket M \rrbracket \rangle
 \end{align*}
 
 \subsubsection{Interpretation of full computation terms for monad $K_R$}$ $
@@ -234,11 +234,11 @@ Computation terms $\Gamma \CTS W : X$ are interpreted by $\llbracket \_ \rrbrack
 
 \begin{align*}
   \llbracket \Gamma \CTS \RET (M) : X \rrbracket \;\gamma\; k &= k \;(\llbracket M \rrbracket\; \gamma)\\
-  \llbracket \Gamma \CTS \PUSH (W_1, x.W_2) : X\rrbracket \;\gamma \; k &= ({\llbracket W_2 \rrbracket}^{\sharp} \circ \STR \circ \langle \gamma , \llbracket W_1 \rrbracket \;\gamma \rangle) \; k\\
+  \llbracket \Gamma \CTS \PUSH (W_1, W_2) : X\rrbracket \;\gamma \; k &= ({\llbracket W_2 \rrbracket}^{\sharp} \circ \STR \circ \langle \gamma , \llbracket W_1 \rrbracket \;\gamma \rangle) \; k\\
   \llbracket \Gamma \CTS \APP(M , N) : X \rrbracket \; \gamma \; k &= (\EVAL \circ \langle \llbracket M \rrbracket , \llbracket N \rrbracket \rangle) \; \gamma \; k\\
   \llbracket \Gamma \CTS \VAR(L) : X \rrbracket \; \gamma \; k &= \llbracket L \rrbracket \; \gamma\\
-  \llbracket \Gamma \CTS \SUB(a.W_1 , W_2) : X \rrbracket &= \llbracket W_1 \rrbracket \; (\gamma , \llbracket W_2 \rrbracket \, \gamma \, k) \; k\\
-  \llbracket \Gamma \CTS \PMC(M , (x , y).W) : X \rrbracket \; \gamma \; k &= (\llbracket W \rrbracket \circ \alpha \circ \langle \gamma , \llbracket M \rrbracket \rangle) k
+  \llbracket \Gamma \CTS \SUB(W_1 , W_2) : X \rrbracket &= \llbracket W_1 \rrbracket \; (\gamma , \llbracket W_2 \rrbracket \, \gamma \, k) \; k\\
+  \llbracket \Gamma \CTS \PMC(M , W) : X \rrbracket \; \gamma \; k &= (\llbracket W \rrbracket \circ \alpha \circ \langle \gamma , \llbracket M \rrbracket \rangle) k
 \end{align*}
 
 
@@ -391,8 +391,8 @@ The only halting state is: $\CSB{\underline{\RET}(\underline{M})}{\gamma}{\empty
 
 \begin{align*}
   \CSA{\RET (M)}{\gamma}{C} &\leadsto^C \CSB{\underline{\RET} (\underline{M'})}{\gamma'}{C}\\ & \hspace{120pt} \text{if $\VS{\vstack{M}{\gamma}{\emptyvs}} \leadsto^{V*} \VS{\vstack{\underline{M'}}{\gamma'}{\emptyvs}}$} \\
-  \CSB{\underline{\RET} (\underline{M})}{\gamma}{\cstack{N}{\gamma'}{C}} &\leadsto^C \CSA{N}{\gamma, \underline{M}}{C} \\
-  \CSA{\PUSH (M, N)}{\gamma}{C} &\leadsto^C \CSA{M}{\gamma}{\cstack{N}{\gamma}{C}} \\
+  \CSB{\underline{\RET} (\underline{M})}{\gamma}{\cstack{W}{\gamma'}{C}} &\leadsto^C \CSA{W}{\gamma, \underline{M}}{C} \\
+  \CSA{\PUSH (W_1, W_2)}{\gamma}{C} &\leadsto^C \CSA{W_1}{\gamma}{\cstack{W_2}{\gamma}{C}} \\
   \CSA{\SUB (W_1, W_2)}{\gamma}{C} &\leadsto^C \CSA{W_1}{\gamma , \cspair{W_2}{C}}{C} \\
   \CSA{\PMC (M, W)}{\gamma}{C} &\leadsto^C \CSA{W}{\gamma' , \underline{M_1} , \underline{M_2}}{C}\\ & \hspace{120pt} \text{if $\VS{\vstack{M}{\gamma}{\emptyvs}} \leadsto^{V*} \VS{\vstack{(\underline{M_1}, \underline{M_2})}{\gamma'}{\emptyvs}}$}  \\
   \CSA{\APP (M , N)}{\gamma}{C} &\leadsto^C \CSB{\underline{\APP} (M , \underline{N'})}{\gamma'}{C}\\ & \hspace{120pt} \text{if $\VS{\vstack{N}{\gamma}{\emptyvs}} \leadsto^{V*} \VS{\vstack{\underline{N'}}{\gamma'}{\emptyvs}}$} \\
