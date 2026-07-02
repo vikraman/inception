@@ -375,10 +375,11 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   ... | steps {T = T} i>>T HT i≡T WK w≡γ ext we ϖ ↓ᴱ' =
       steps (_ →ᴸ⟨ (comp-t-step) ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ (ext-comp ext) (wk-ext WK we) (wk-env-comp-wk W cs ϖ) ↓ᴱ'
 
-{- ZZZ
   data ValSteps : ValState T◾ → Set where
 
-    steps : {S T : ValState T◾} → S ↠ᵛ T → (H : ValHaltingState T) → ⟦ S ⟧ᵛꟴ ≡ ⟦ T ⟧ᵛꟴ → (π : Wk (botCtx T) (botCtx S)) → (⟦ π ⟧ʷ ⟦ botEnv T ⟧ᴱ ≡ ⟦ botEnv S ⟧ᴱ)
+    steps : {S T : ValState T◾} → S ↠ᵛ T → (H : ValHaltingState T) → ⟦ S ⟧ᵛꟴ ≡ ⟦ T ⟧ᵛꟴ → (π : Wk (botCtx T) (botCtx S)) --→ (⟦ π ⟧ʷ ⟦ botEnv T ⟧ᴱ ≡ ⟦ botEnv S ⟧ᴱ)
+            → WkExt π
+            → EnvEq π (botEnv T) (botEnv S)
             → LookupEnvHalts (botEnv T)
             → LabelHalts (haltingTerm H) (botEnv T)
             → ValSteps S
@@ -388,12 +389,12 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
     val-eval-rec : (M : Γ' ⊢ᵛ X) → (γ : Env Γ) → (↓ᴱ : LookupEnvHalts γ) → (π : Wk Γ Γ') → ValSteps {T◾ = X} (∘ ((⇡ (wk-val π M) ⊲ γ ∷ □) {↥ = 🗆}))
 
-    val-eval-rec {X = `V} (var {A = .`V} i) γ ↓ᴱ π = steps (_ →ᵛ⟨ ∘var-c ⟩．) (∙ v̲a̲r̲ (wk-mem π i) ⊲ γ ■) refl wk-id refl ↓ᴱ {!!}
+    val-eval-rec {X = `V} (var {A = .`V} i) γ ↓ᴱ π = steps (_ →ᵛ⟨ ∘var-c ⟩．) (∙ v̲a̲r̲ (wk-mem π i) ⊲ γ ■) refl wk-id (WkExt.wk-eq wk-id) enveq-id ↓ᴱ {!!}
 
     val-eval-rec {X = `Unit} (var {A = .`Unit} i) γ ↓ᴱ π with lookup (wk-mem π i) γ ↓ᴱ
     ... | steps i>>T found-unit i≡T π₁ w≡γ ext we ϖ ↓ᴸ =
 
-                steps (_ →ᵛ⟨ ∘var i>>T π₁ ext we ϖ found-unit ⟩．) (∙ u̲n̲i̲t̲ ⊲ γ ■) refl wk-id refl ↓ᴱ tt
+                steps (_ →ᵛ⟨ ∘var i>>T π₁ ext we ϖ found-unit ⟩．) (∙ u̲n̲i̲t̲ ⊲ γ ■) refl wk-id (WkExt.wk-eq wk-id) enveq-id ↓ᴱ tt
 
     val-eval-rec {X = X `× X₁} (var {A = .(X `× X₁)} i) γ ↓ᴱ π with lookup (wk-mem π i) γ ↓ᴱ
     ... | steps i>>T (found-pair {LHS = LHS} {RHS = RHS} {γ = γ₁}) i≡T π₁ w≡γ ext we ϖ ↓ᴸ =
@@ -420,7 +421,9 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
               wk-id
 
-              refl
+              (WkExt.wk-eq wk-id)
+
+              enveq-id
 
               ↓ᴱ
 
@@ -446,7 +449,9 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
               wk-id
 
-              refl
+              (WkExt.wk-eq wk-id)
+
+              enveq-id
 
               ↓ᴱ
 
@@ -464,17 +469,19 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
               wk-id
 
-              refl
+              (WkExt.wk-eq wk-id)
+
+              enveq-id
 
               ↓ᴱ
 
               tt
 
-    val-eval-rec unit γ ↓ᴱ π = steps (_ →ᵛ⟨ ∘unit ⟩．) (∙ u̲n̲i̲t̲ ⊲ γ ■) refl wk-id refl ↓ᴱ tt
+    val-eval-rec unit γ ↓ᴱ π = steps (_ →ᵛ⟨ ∘unit ⟩．) (∙ u̲n̲i̲t̲ ⊲ γ ■) refl wk-id (WkExt.wk-eq wk-id) enveq-id ↓ᴱ tt
 
     val-eval-rec (pair {A = X} {B = Y} LHS RHS) γ ↓ᴱ π with val-eval-rec {X = X} LHS γ ↓ᴱ π
-    ... | steps {T = ∙ (⭭_ {X = X} LT ⊲ γ₁ ∷ □) {↥ = 🗆}} L>T ∙LT L≡T πᴸ wk≡ᴸ ↓ᴱ' ↓ᴸ' with val-eval-rec {X = Y} RHS γ₁ ↓ᴱ' (wk-trans πᴸ π)
-    ... | steps {T = ∙ (⭭_ {X = Y} RT ⊲ γ₂ ∷ □) {↥ = 🗆}} R>T (∙ RT ⊲ γ₂ ■) R≡T πᴿ wk≡ᴿ ↓ᴱ'' ↓ᴸ''  rewrite sym (wk-val-trans RHS πᴸ π) =
+    ... | steps {T = ∙ (⭭_ {X = X} LT ⊲ γ₁ ∷ □) {↥ = 🗆}} L>T ∙LT L≡T πᴸ extᴸ ϖᴸ ↓ᴱ' ↓ᴸ' with val-eval-rec {X = Y} RHS γ₁ ↓ᴱ' (wk-trans πᴸ π)
+    ... | steps {T = ∙ (⭭_ {X = Y} RT ⊲ γ₂ ∷ □) {↥ = 🗆}} R>T (∙ RT ⊲ γ₂ ■) R≡T πᴿ extᴿ ϖᴿ ↓ᴱ'' ↓ᴸ''  rewrite sym (wk-val-trans RHS πᴸ π) =
 
               let
 
@@ -484,6 +491,8 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                         ⟦ RHS ⟧ᵛ (⟦ wk-trans πᴸ π ⟧ʷ ⟦ γ₁ ⟧ᴱ)
                       ≡⟨ R≡T ⟩
                         ⟦ toVal RT ⟧ᵛ ⟦ γ₂ ⟧ᴱ ∎
+                wk≡ᴸ = env-eq-sem-lemma ϖᴸ
+                wk≡ᴿ = env-eq-sem-lemma ϖᴿ
 
               in
 
@@ -525,22 +534,30 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
                 (wk-trans πᴿ πᴸ)
 
-                ( ⟦ wk-trans πᴿ πᴸ ⟧ʷ ⟦ γ₂ ⟧ᴱ
+                (wk-ext-trans extᴿ extᴸ)
+
+                (env-eq-trans extᴿ extᴸ ϖᴿ ϖᴸ)
+                {- ( ⟦ wk-trans πᴿ πᴸ ⟧ʷ ⟦ γ₂ ⟧ᴱ
                 ≡⟨ sym (wk-sem-trans πᴿ πᴸ ⟦ γ₂ ⟧ᴱ) ⟩
                   ⟦ πᴸ ⟧ʷ (⟦ πᴿ ⟧ʷ ⟦ γ₂ ⟧ᴱ)
                 ≡⟨ cong (λ y → ⟦ πᴸ ⟧ʷ y) wk≡ᴿ ⟩
                   ⟦ πᴸ ⟧ʷ ⟦ γ₁ ⟧ᴱ
                 ≡⟨ wk≡ᴸ ⟩
-                  ⟦ γ ⟧ᴱ ∎)
+                  ⟦ γ ⟧ᴱ ∎) -}
 
                 ↓ᴱ''
 
                 {!!}
 
     val-eval-rec {Γ = Γ} (pm {A = A} {B = B} M N) γ ↓ᴱ π with val-eval-rec M γ ↓ᴱ π
-    ... | steps {S = S} M>T ∙ pa̲i̲r̲ LHS RHS ⊲ γ₁ ■ M≡T π₁ wk≡₁ ↓ᴱ' ↓ᴸ' with val-eval-rec N (_﹐_ (_﹐_ γ₁ LHS) (wk-v̲a̲l̲ (wk-wk wk-id) RHS)) ((↓ᴱ' , proj₁ ↓ᴸ') , {!!}) ((wk-cong (wk-cong (wk-trans π₁ π)))) | (wk-val-trans N (wk-cong (wk-cong π₁)) (wk-cong (wk-cong π)))
-    ...    | steps {T = T} N>T ∙T N≡T π₂ wk≡₂ ↓ᴱ'' ↓ᴸ'' | eq with N>T
+    ... | steps {S = S} M>T ∙ pa̲i̲r̲ LHS RHS ⊲ γ₁ ■ M≡T π₁ ext₁ ϖ₁ ↓ᴱ' ↓ᴸ' with val-eval-rec N (_﹐_ (_﹐_ γ₁ LHS) (wk-v̲a̲l̲ (wk-wk wk-id) RHS)) ((↓ᴱ' , proj₁ ↓ᴸ') , {!!}) ((wk-cong (wk-cong (wk-trans π₁ π)))) | (wk-val-trans N (wk-cong (wk-cong π₁)) (wk-cong (wk-cong π)))
+    ...    | steps {T = T} N>T ∙T N≡T π₂ ext₂ ϖ₂ ↓ᴱ'' ↓ᴸ'' | eq with N>T
     ...      | N>T' rewrite sym eq =
+
+          let
+            wk≡₁ = env-eq-sem-lemma ϖ₁
+            wk≡₂ = env-eq-sem-lemma ϖ₂
+          in
 
           steps
             (
@@ -576,7 +593,10 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
             (wk-trans π₂ (wk-wk (wk-wk π₁)))
 
-            ( ⟦ wk-trans π₂ (wk-wk (wk-wk π₁)) ⟧ʷ ⟦ botEnv T ⟧ᴱ
+            (wk-ext-trans ext₂ (WkExt.wk-ext (wk-wk π₁) (WkExt.wk-ext π₁ ext₁)))
+
+            (env-eq-trans ext₂ (WkExt.wk-ext (wk-wk π₁) (WkExt.wk-ext π₁ ext₁)) ϖ₂ (EnvEq.wk-env-val-wk (wk-v̲a̲l̲ (wk-wk wk-id) RHS) (EnvEq.wk-env-val-wk LHS ϖ₁)))
+            {- ( ⟦ wk-trans π₂ (wk-wk (wk-wk π₁)) ⟧ʷ ⟦ botEnv T ⟧ᴱ
               ≡⟨ sym (wk-sem-trans π₂ (wk-wk (wk-wk π₁)) ⟦ botEnv T ⟧ᴱ) ⟩
               ⟦ wk-wk (wk-wk π₁) ⟧ʷ (⟦ π₂ ⟧ʷ ⟦ botEnv T ⟧ᴱ)
               ≡⟨ cong (λ y → ⟦ wk-wk (wk-wk π₁) ⟧ʷ y) wk≡₂ ⟩
@@ -584,7 +604,7 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
               ≡⟨ refl ⟩
               ⟦ π₁ ⟧ʷ ⟦ γ₁ ⟧ᴱ
               ≡⟨ wk≡₁ ⟩
-              ⟦ γ ⟧ᴱ ∎)
+              ⟦ γ ⟧ᴱ ∎) -}
 
             ↓ᴱ''
 
@@ -593,6 +613,7 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     val-eval : (M : ε ⊢ᵛ X) → ValSteps {T◾ = X} (∘ ((⇡ wk-val wk-id M ⊲ ∗ ∷ □) {↥ = 🗆}))
     val-eval M = val-eval-rec M ∗ tt wk-id
 
+{- ZZZ
   -- {-# TERMINATING #-}
   --mutual
     app-eval-rec :   (M : Γ' ⊢ᵛ X `⇒ Y) → (N : V̲a̲l̲ Γ X) → (γ : Env Γ) → (π : Wk Γ Γ') → (cs : CompStack Δ Y) → (πₓ : Wk Γ Δ)

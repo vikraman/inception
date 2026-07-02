@@ -465,6 +465,19 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   wk-ext-wk-lift (wk-eq (wk-wk π)) = ql (wk-absurd π wk-id) (WkExt π)
   wk-ext-wk-lift (wk-ext π we) = we
 
+  wk-ext-trans : {π₁ : Wk Γ Γ'} {π₂ : Wk Γ' Γ''} → WkExt π₁ → WkExt π₂ → WkExt (wk-trans π₁ π₂)
+  wk-ext-trans {π₁ = wk-ε} {π₂ = wk-ε} (wk-eq π) (wk-eq π₁) = wk-eq (wk-trans wk-ε wk-ε)
+  wk-ext-trans {π₁ = wk-cong π₁} {π₂ = wk-cong π₂} (wk-eq π) (wk-eq π₃) = wk-eq (wk-trans (wk-cong π₁) (wk-cong π₂))
+  wk-ext-trans {π₁ = wk-cong π₁} {π₂ = wk-wk π₂} (wk-eq π) (wk-eq π₃) = wk-eq (wk-trans (wk-cong π₁) (wk-wk π₂))
+  wk-ext-trans {π₁ = wk-cong π₁} {π₂ = wk-wk π₂} (wk-eq π) (wk-ext π₃ ext₂) = wk-ext (wk-trans π₁ π₂) (wk-ext-trans (wk-eq π₁) ext₂)
+  wk-ext-trans {π₁ = wk-wk π₁} {π₂ = wk-ε} (wk-ext π ext₁) (wk-eq π₂) = wk-ext (wk-trans π₁ wk-ε) (wk-ext-trans ext₁ (wk-eq wk-ε))
+  wk-ext-trans {π₁ = wk-wk π₁} {π₂ = wk-cong π₂} (wk-eq π) (wk-eq π₃) = wk-eq (wk-trans (wk-wk π₁) (wk-cong π₂))
+  wk-ext-trans {π₁ = wk-wk π₁} {π₂ = wk-cong π₂} (wk-ext π ext₁) (wk-eq π₃) = wk-ext (wk-trans π₁ (wk-cong π₂)) (wk-ext-trans ext₁ (wk-eq (wk-cong π₂)))
+  wk-ext-trans {π₁ = wk-wk π₁} {π₂ = wk-wk π₂} (wk-eq π) (wk-eq π₃) = wk-eq (wk-trans (wk-wk π₁) (wk-wk π₂))
+  wk-ext-trans {π₁ = wk-wk π₁} {π₂ = wk-wk π₂} (wk-eq π) (wk-ext π₂ ext₂) = ql (wk-absurd (wk-wk π₁) π₁) (WkExt (wk-trans (wk-wk π₁) (wk-wk π₂)))
+  wk-ext-trans {π₁ = wk-wk π₁} {π₂ = wk-wk π₂} (wk-ext π ext₁) (wk-eq π₃) = wk-ext (wk-trans π₁ (wk-wk π₂)) (wk-ext-trans ext₁ (wk-eq (wk-wk π₂)))
+  wk-ext-trans {π₁ = wk-wk π₁} {π₂ = wk-wk π₂} (wk-ext π ext₁) (wk-ext π₃ ext₂) = wk-ext (wk-trans π₁ (wk-wk π₂)) (wk-ext-trans ext₁ (wk-ext π₂ ext₂))
+
   ----
   -- adapted env-eq-trans
 
