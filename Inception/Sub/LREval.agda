@@ -293,7 +293,6 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   LabelHalts (v̲a̲r̲ (Cx.t i)) (γ ﹐ M) = LabelHalts (v̲a̲r̲ i) γ
   LabelHalts (v̲a̲r̲ (Cx.t i)) (γ ﹐﹝ W ╎ cs ﹞) = LabelHalts (v̲a̲r̲ i) γ
 
-  {- TODO
   wk-LabelHalts : (M : V̲a̲l̲ Γ Z) → (γ' : Env Γ') → (γ : Env Γ) → (π : Wk Γ' Γ) → (ext : WkExt π) → (ϖ : EnvEq π γ' γ) → (↓ᴸ : LabelHalts M γ) → LabelHalts (wk-v̲a̲l̲ π M) γ'
   wk-LabelHalts (l̲a̲m̲ W) γ' γ π ext ϖ ↓ᴸ = tt
   wk-LabelHalts (pa̲i̲r̲ M₁ M₂) γ' γ π ext ϖ ↓ᴸ = wk-LabelHalts M₁ γ' γ π ext ϖ (proj₁ ↓ᴸ) , wk-LabelHalts M₂ γ' γ π ext ϖ (proj₂ ↓ᴸ)
@@ -330,7 +329,6 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   wk-LabelHalts (v̲a̲r̲ (Cx.t i)) (γ' ﹐﹝ W ╎ cs ﹞) (γ ﹐﹝ W₁ ╎ cs₁ ﹞) (wk-cong π) (wk-eq π₁) (wk-env-comp-cong W₂ cs₂ ϖ) ↓ᴸ = {!!}
   wk-LabelHalts (v̲a̲r̲ (Cx.t i)) (γ' ﹐﹝ W ╎ cs ﹞) (γ ﹐﹝ W₁ ╎ cs₁ ﹞) (wk-wk π) (wk-eq π₁) (wk-env-comp-wk W₂ cs₂ ϖ) ↓ᴸ = {!!}
   wk-LabelHalts (v̲a̲r̲ (Cx.t i)) (γ' ﹐﹝ W ╎ cs ﹞) (γ ﹐﹝ W₁ ╎ cs₁ ﹞) (wk-wk π) (wk-ext π₁ ext) (wk-env-comp-wk W₂ cs₂ ϖ) ↓ᴸ = {!!}
-  -}
 
 
   LookupTermHalts : {T : LookupState X} → (H : LookupHaltingState T) → Set
