@@ -192,3 +192,8 @@ module StatesMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                                       lem0'' : (λ z → ⟦ W ⟧ᶜ (⟦ γ ⟧ᴱ , z) (λ y → ⟦ cs ⟧ᶜˢ (λ k → k y) k₀)) ≡ (λ z → ⟦ cs ⟧ᶜˢ (λ k → ⟦ W ⟧ᶜ (⟦ γ ⟧ᴱ , z) k) k₀)
                                       lem0'' = extensionality lem0'
   -}
+
+
+  -- ∘⟨_⊰_╎_⟩ : (W : Γ ⊢ᶜ X) → (γ : Env Γ) → (cs : CompStack Δ X) → {π : Wk Γ Δ} → {ϖ : EnvEq π γ (topCsEnv cs)} → CompState
+  cstate-eq : {W W' : Γ ⊢ᶜ X} {γ : Env Γ} {cs : CompStack Δ X} {π : Wk Γ Δ} {ϖ : EnvEq π γ (topCsEnv cs)} → W ≡ W' → ((∘⟨ W ⊰ γ ╎ cs ⟩) {π = π} {ϖ = ϖ}) ≡ ((∘⟨ W' ⊰ γ ╎ cs ⟩) {π = π} {ϖ = ϖ})
+  cstate-eq {W = W} {W' = W'} {γ = γ} {cs = cs} {π = π} {ϖ = ϖ} eq = dcong₂ (λ x y → ((∘⟨ x ⊰ γ ╎ cs ⟩) {π = π} {ϖ = y})) eq (sym (env-eq-uip ϖ (subst (λ _ → EnvEq π γ (topCsEnv cs)) eq ϖ)))

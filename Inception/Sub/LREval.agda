@@ -300,35 +300,44 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   wk-LabelHalts (v̲a̲r̲ Cx.h) ∗ (γ ﹐ M) () ext ϖ ↓ᴸ
   wk-LabelHalts (v̲a̲r̲ Cx.h) ∗ (γ ﹐﹝ W ╎ cs ﹞) () ext ϖ ↓ᴸ
   wk-LabelHalts (v̲a̲r̲ Cx.h) (γ' ﹐ M) (γ ﹐ v̲a̲r̲ i) (wk-cong π) (wk-eq π₁) (wk-env-val-cong M₂ ϖ) ↓ᴸ = wk-LabelHalts (v̲a̲r̲ i) γ' γ π (wk-eq π) ϖ ↓ᴸ
-  wk-LabelHalts (v̲a̲r̲ Cx.h) (γ' ﹐ M) (γ ﹐ v̲a̲r̲ i) (wk-wk π) (wk-eq (wk-wk π)) (wk-env-val-wk M₂ ϖ) ↓ᴸ =
-    let
-      IH = wk-LabelHalts (v̲a̲r̲ i) γ' γ wk-id (WkExt.wk-eq wk-id) {!-u!} ↓ᴸ
-    in
-    {!!}
-  wk-LabelHalts (v̲a̲r̲ Cx.h) (γ' ﹐ M) (γ ﹐ v̲a̲r̲ i) (wk-wk π) (wk-ext π₁ ext) (wk-env-val-wk M₂ ϖ) ↓ᴸ = {!!}
+  wk-LabelHalts (v̲a̲r̲ Cx.h) (γ' ﹐ M) (γ ﹐ v̲a̲r̲ i) (wk-wk π) (wk-eq (wk-wk π)) (wk-env-val-wk M₂ ϖ) ↓ᴸ = ql (wk-absurd wk-id π) (LabelHalts (wk-v̲a̲l̲ (wk-wk π) (v̲a̲r̲ h)) (γ' Env.﹐ M))
+  wk-LabelHalts (v̲a̲r̲ Cx.h) (γ' ﹐ M) (γ ﹐ v̲a̲r̲ i) (wk-wk π) (wk-ext π₁ ext) (wk-env-val-wk M₂ ϖ) ↓ᴸ = wk-LabelHalts (v̲a̲r̲ h) γ' (γ ﹐ v̲a̲r̲ i) π ext ϖ ↓ᴸ
   wk-LabelHalts (v̲a̲r̲ Cx.h) (γ' ﹐ M) (γ ﹐﹝ W ╎ cs ﹞) (wk-cong π) (wk-eq π₁) () ↓ᴸ
-  wk-LabelHalts (v̲a̲r̲ Cx.h) (γ' ﹐ M) (γ ﹐﹝ W ╎ cs ﹞) (wk-wk π) (wk-eq π₁) (wk-env-val-wk M₁ ϖ) ↓ᴸ = {!!}
-  wk-LabelHalts (v̲a̲r̲ Cx.h) (γ' ﹐ M) (γ ﹐﹝ W ╎ cs ﹞) (wk-wk π) (wk-ext π₁ ext) (wk-env-val-wk M₁ ϖ) ↓ᴸ = {!!}
+  wk-LabelHalts (v̲a̲r̲ Cx.h) (γ' ﹐ M) (γ ﹐﹝ W ╎ cs ﹞) (wk-wk π) (wk-eq π₁) (wk-env-val-wk M₁ ϖ) ↓ᴸ = ql (wk-absurd (wk-wk π) π) (LabelHalts (wk-v̲a̲l̲ (wk-wk π) (v̲a̲r̲ h)) (γ' Env.﹐ M))
+  wk-LabelHalts (v̲a̲r̲ Cx.h) (γ' ﹐ M) (γ ﹐﹝ W ╎ cs ﹞) (wk-wk π) (wk-ext π₁ ext) (wk-env-val-wk M₁ ϖ) ↓ᴸ = wk-LabelHalts (v̲a̲r̲ Cx.h) γ' (γ ﹐﹝ W ╎ cs ﹞) π ext ϖ ↓ᴸ
   wk-LabelHalts (v̲a̲r̲ Cx.h) (γ' ﹐﹝ W ╎ cs ﹞) (γ ﹐ M) (wk-cong π) (wk-eq π₁) () ↓ᴸ
-  wk-LabelHalts (v̲a̲r̲ Cx.h) (γ' ﹐﹝ W ╎ cs ﹞) (γ ﹐ M) (wk-wk π) (wk-eq π₁) (wk-env-comp-wk W₁ cs₁ ϖ) ↓ᴸ = {!!}
-  wk-LabelHalts (v̲a̲r̲ Cx.h) (γ' ﹐﹝ W ╎ cs ﹞) (γ ﹐ M) (wk-wk π) (wk-ext π₁ ext) (wk-env-comp-wk W₁ cs₁ ϖ) ↓ᴸ = {!!}
-  wk-LabelHalts (v̲a̲r̲ Cx.h) (γ' ﹐﹝ W ╎ cs ﹞) (γ ﹐﹝ W₁ ╎ cs₁ ﹞) (wk-cong π) (wk-eq π₁) (wk-env-comp-cong W₂ cs₂ ϖ) ↓ᴸ = {!!}
-  wk-LabelHalts (v̲a̲r̲ Cx.h) (γ' ﹐﹝ W ╎ cs ﹞) (γ ﹐﹝ W₁ ╎ cs₁ ﹞) (wk-wk π) (wk-eq π₁) (wk-env-comp-wk W₂ cs₂ ϖ) ↓ᴸ = {!!}
-  wk-LabelHalts (v̲a̲r̲ Cx.h) (γ' ﹐﹝ W ╎ cs ﹞) (γ ﹐﹝ W₁ ╎ cs₁ ﹞) (wk-wk π) (wk-ext π₁ ext) (wk-env-comp-wk W₂ cs₂ ϖ) ↓ᴸ = {!!}
+  wk-LabelHalts (v̲a̲r̲ Cx.h) (γ' ﹐﹝ W ╎ cs ﹞) (γ ﹐ M) (wk-wk π) (wk-eq π₁) (wk-env-comp-wk W₁ cs₁ ϖ) ↓ᴸ = ql (wk-absurd (wk-wk π) π) _
+  wk-LabelHalts (v̲a̲r̲ Cx.h) (γ' ﹐﹝ W ╎ cs ﹞) (γ ﹐ M) (wk-wk π) (wk-ext π₁ ext) (wk-env-comp-wk W₁ cs₁ ϖ) ↓ᴸ = wk-LabelHalts (v̲a̲r̲ Cx.h) γ' (γ ﹐ M) π ext ϖ ↓ᴸ
+  wk-LabelHalts (v̲a̲r̲ Cx.h) (γ' ﹐﹝ W ╎ cs ﹞) (γ ﹐﹝ W₁ ╎ cs₁ ﹞) (wk-cong π) (wk-eq π₁) (wk-env-comp-cong W₂ cs₂ ϖ) ↓ᴸ =
+    λ Γ' γ'' π' ext' π'' ϖ'' ϖ₃ →
+    let
+      ϖ1 : EnvEq wk-id γ' γ
+      ϖ1 = subst (λ x → EnvEq x γ' γ) wk-id-id ϖ
+      ϖ''' : EnvEq π' γ'' γ
+      ϖ''' = subst (λ x → EnvEq π' γ'' x) (enveq-id-eq ϖ1) ϖ₃
+      csh = ↓ᴸ Γ' γ'' π' ext' π'' ϖ'' ϖ'''
+      weq : wk-comp π' W₁ ≡ wk-comp π' (wk-comp π W₁)
+      weq = wk-comp π' W₁ ≡⟨ cong (wk-comp π') (sym (wk-comp-id W₁)) ⟩ wk-comp π' (wk-comp wk-id W₁) ≡⟨ cong (λ x → wk-comp π' (wk-comp x W₁)) (sym (wk-id-id {π = π})) ⟩ wk-comp π' (wk-comp π W₁) ∎
+      goal : CStateHalts ((∘⟨ wk-comp π' (wk-comp π W₁) ⊰ γ'' ╎ cs ⟩) {π = π''} {ϖ = ϖ''})
+      goal = subst (λ x → CStateHalts x) (cstate-eq weq) csh
+    in
+    goal
+  wk-LabelHalts (v̲a̲r̲ Cx.h) (γ' ﹐﹝ W ╎ cs ﹞) (γ ﹐﹝ W₁ ╎ cs₁ ﹞) (wk-wk π) (wk-eq π₁) (wk-env-comp-wk W₂ cs₂ ϖ) ↓ᴸ = ql (wk-absurd (wk-wk π) π) _
+  wk-LabelHalts (v̲a̲r̲ Cx.h) (γ' ﹐﹝ W ╎ cs ﹞) (γ ﹐﹝ W₁ ╎ cs₁ ﹞) (wk-wk π) (wk-ext π₁ ext) (wk-env-comp-wk W₂ cs₂ ϖ) ↓ᴸ = wk-LabelHalts (v̲a̲r̲ Cx.h) γ' (γ ﹐﹝ W₁ ╎ cs₁ ﹞) π ext ϖ ↓ᴸ
   wk-LabelHalts (v̲a̲r̲ (Cx.t i)) ∗ (γ ﹐ M) () ext ϖ ↓ᴸ
   wk-LabelHalts (v̲a̲r̲ (Cx.t i)) ∗ (γ ﹐﹝ W ╎ cs ﹞) () ext ϖ ↓ᴸ
-  wk-LabelHalts (v̲a̲r̲ (Cx.t i)) (γ' ﹐ M) (γ ﹐ M₁) (wk-cong π) (wk-eq π₁) (wk-env-val-cong M₂ ϖ) ↓ᴸ = {!!}
-  wk-LabelHalts (v̲a̲r̲ (Cx.t i)) (γ' ﹐ M) (γ ﹐ M₁) (wk-wk π) (wk-eq π₁) (wk-env-val-wk M₂ ϖ) ↓ᴸ = {!!}
-  wk-LabelHalts (v̲a̲r̲ (Cx.t i)) (γ' ﹐ M) (γ ﹐ M₁) (wk-wk π) (wk-ext π₁ ext) (wk-env-val-wk M₂ ϖ) ↓ᴸ = {!!}
+  wk-LabelHalts (v̲a̲r̲ (Cx.t i)) (γ' ﹐ M) (γ ﹐ M₁) (wk-cong π) (wk-eq π₁) (wk-env-val-cong M₂ ϖ) ↓ᴸ = wk-LabelHalts (v̲a̲r̲ i) γ' γ π (WkExt.wk-eq π) ϖ ↓ᴸ
+  wk-LabelHalts (v̲a̲r̲ (Cx.t i)) (γ' ﹐ M) (γ ﹐ M₁) (wk-wk π) (wk-eq π₁) (wk-env-val-wk M₂ ϖ) ↓ᴸ = ql (wk-absurd (wk-wk π) π) (LabelHalts (wk-v̲a̲l̲ (wk-wk π) (v̲a̲r̲ (t i))) (γ' Env.﹐ M))
+  wk-LabelHalts (v̲a̲r̲ (Cx.t i)) (γ' ﹐ M) (γ ﹐ M₁) (wk-wk π) (wk-ext π₁ ext) (wk-env-val-wk M₂ ϖ) ↓ᴸ = wk-LabelHalts (v̲a̲r̲ (Cx.t i)) γ' (γ ﹐ M₁) π ext ϖ ↓ᴸ
   wk-LabelHalts (v̲a̲r̲ (Cx.t i)) (γ' ﹐ M) (γ ﹐﹝ W ╎ cs ﹞) (wk-cong π) (wk-eq π₁) () ↓ᴸ
-  wk-LabelHalts (v̲a̲r̲ (Cx.t i)) (γ' ﹐ M) (γ ﹐﹝ W ╎ cs ﹞) (wk-wk π) (wk-eq π₁) (wk-env-val-wk M₁ ϖ) ↓ᴸ = {!!}
-  wk-LabelHalts (v̲a̲r̲ (Cx.t i)) (γ' ﹐ M) (γ ﹐﹝ W ╎ cs ﹞) (wk-wk π) (wk-ext π₁ ext) (wk-env-val-wk M₁ ϖ) ↓ᴸ = {!!}
+  wk-LabelHalts (v̲a̲r̲ (Cx.t i)) (γ' ﹐ M) (γ ﹐﹝ W ╎ cs ﹞) (wk-wk π) (wk-eq π₁) (wk-env-val-wk M₁ ϖ) ↓ᴸ = ql (wk-absurd (wk-wk π) π) (LabelHalts (wk-v̲a̲l̲ (wk-wk π) (v̲a̲r̲ (t i))) (γ' Env.﹐ M))
+  wk-LabelHalts (v̲a̲r̲ (Cx.t i)) (γ' ﹐ M) (γ ﹐﹝ W ╎ cs ﹞) (wk-wk π) (wk-ext π₁ ext) (wk-env-val-wk M₁ ϖ) ↓ᴸ = wk-LabelHalts (v̲a̲r̲ (Cx.t i)) γ' (γ ﹐﹝ W ╎ cs ﹞) π ext ϖ ↓ᴸ
   wk-LabelHalts (v̲a̲r̲ (Cx.t i)) (γ' ﹐﹝ W ╎ cs ﹞) (γ ﹐ M) (wk-cong π) (wk-eq π₁) () ↓ᴸ
-  wk-LabelHalts (v̲a̲r̲ (Cx.t i)) (γ' ﹐﹝ W ╎ cs ﹞) (γ ﹐ M) (wk-wk π) (wk-eq π₁) (wk-env-comp-wk W₁ cs₁ ϖ) ↓ᴸ = {!!}
-  wk-LabelHalts (v̲a̲r̲ (Cx.t i)) (γ' ﹐﹝ W ╎ cs ﹞) (γ ﹐ M) (wk-wk π) (wk-ext π₁ ext) (wk-env-comp-wk W₁ cs₁ ϖ) ↓ᴸ = {!!}
-  wk-LabelHalts (v̲a̲r̲ (Cx.t i)) (γ' ﹐﹝ W ╎ cs ﹞) (γ ﹐﹝ W₁ ╎ cs₁ ﹞) (wk-cong π) (wk-eq π₁) (wk-env-comp-cong W₂ cs₂ ϖ) ↓ᴸ = {!!}
-  wk-LabelHalts (v̲a̲r̲ (Cx.t i)) (γ' ﹐﹝ W ╎ cs ﹞) (γ ﹐﹝ W₁ ╎ cs₁ ﹞) (wk-wk π) (wk-eq π₁) (wk-env-comp-wk W₂ cs₂ ϖ) ↓ᴸ = {!!}
-  wk-LabelHalts (v̲a̲r̲ (Cx.t i)) (γ' ﹐﹝ W ╎ cs ﹞) (γ ﹐﹝ W₁ ╎ cs₁ ﹞) (wk-wk π) (wk-ext π₁ ext) (wk-env-comp-wk W₂ cs₂ ϖ) ↓ᴸ = {!!}
+  wk-LabelHalts (v̲a̲r̲ (Cx.t i)) (γ' ﹐﹝ W ╎ cs ﹞) (γ ﹐ M) (wk-wk π) (wk-eq π₁) (wk-env-comp-wk W₁ cs₁ ϖ) ↓ᴸ = ql (wk-absurd (wk-wk π) π) _
+  wk-LabelHalts (v̲a̲r̲ (Cx.t i)) (γ' ﹐﹝ W ╎ cs ﹞) (γ ﹐ M) (wk-wk π) (wk-ext π₁ ext) (wk-env-comp-wk W₁ cs₁ ϖ) ↓ᴸ = wk-LabelHalts (v̲a̲r̲ (Cx.t i)) γ' (γ ﹐ M) π ext ϖ ↓ᴸ
+  wk-LabelHalts (v̲a̲r̲ (Cx.t i)) (γ' ﹐﹝ W ╎ cs ﹞) (γ ﹐﹝ W₁ ╎ cs₁ ﹞) (wk-cong π) (wk-eq π₁) (wk-env-comp-cong W₂ cs₂ ϖ) ↓ᴸ = wk-LabelHalts (v̲a̲r̲ i) γ' γ π (WkExt.wk-eq π) ϖ ↓ᴸ
+  wk-LabelHalts (v̲a̲r̲ (Cx.t i)) (γ' ﹐﹝ W ╎ cs ﹞) (γ ﹐﹝ W₁ ╎ cs₁ ﹞) (wk-wk π) (wk-eq π₁) (wk-env-comp-wk W₂ cs₂ ϖ) ↓ᴸ = ql (wk-absurd (wk-wk π) π) _
+  wk-LabelHalts (v̲a̲r̲ (Cx.t i)) (γ' ﹐﹝ W ╎ cs ﹞) (γ ﹐﹝ W₁ ╎ cs₁ ﹞) (wk-wk π) (wk-ext π₁ ext) (wk-env-comp-wk W₂ cs₂ ϖ) ↓ᴸ = wk-LabelHalts (v̲a̲r̲ (Cx.t i)) γ' (γ ﹐﹝ W₁ ╎ cs₁ ﹞) π ext ϖ ↓ᴸ
 
 
   LookupTermHalts : {T : LookupState X} → (H : LookupHaltingState T) → Set
