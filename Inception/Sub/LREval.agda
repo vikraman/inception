@@ -345,13 +345,15 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   LookupTermHalts (found-pair {LHS = LHS} {RHS = RHS} {γ = γ}) = LabelHalts LHS γ × LabelHalts RHS γ
   LookupTermHalts (found-lam {W = W} {γ = γ}) = ⊤
   --LookupTermHalts (found-comp {W = W} {γ = γ} {cs = cs} {π = π} {wk≡ = wk≡}) = CStateHalts (((∘⟨ W ⊰ γ ╎ cs ⟩) {π = π} {wk≡ = wk≡}))
-  LookupTermHalts (found-comp {W = W} {γ = γ} {cs = cs} {π = π} {ϖ = ϖ}) = CStateHalts (((∘⟨ W ⊰ γ ╎ cs ⟩) {π = π} {ϖ = ϖ}))
+  LookupTermHalts (found-comp {W = W} {γ = γ} {cs = cs} {π = π} {ϖ = ϖ}) = LabelHalts (v̲a̲r̲ h) ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {ϖ = ϖ}) --CStateHalts (((∘⟨ W ⊰ γ ╎ cs ⟩) {π = π} {ϖ = ϖ}))
 
   LookupEnvHalts : {Γ : Ctx} → (γ : Env Γ) → Set
   LookupEnvHalts ∗ = ⊤
   LookupEnvHalts (γ ﹐ M) = LookupEnvHalts γ × (LabelHalts M γ)
   --LookupEnvHalts ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {wk≡ = wk≡}) = LookupEnvHalts γ × CStateHalts (((∘⟨ W ⊰ γ ╎ cs ⟩) {π = π} {wk≡ = wk≡}))
-  LookupEnvHalts ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {ϖ = ϖ}) = LookupEnvHalts γ × CStateHalts (((∘⟨ W ⊰ γ ╎ cs ⟩) {π = π} {ϖ = ϖ}))
+  --LookupEnvHalts ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {ϖ = ϖ}) = LookupEnvHalts γ × CStateHalts (((∘⟨ W ⊰ γ ╎ cs ⟩) {π = π} {ϖ = ϖ}))
+  --LookupEnvHalts ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {ϖ = ϖ}) = LookupEnvHalts γ × ⊤
+  LookupEnvHalts ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {ϖ = ϖ}) = LookupEnvHalts γ × LabelHalts (v̲a̲r̲ h) ((γ ﹐﹝ W ╎ cs ﹞) {π = π} {ϖ = ϖ})
 
   data LookupSteps : LookupState X → Set where
 
@@ -382,6 +384,27 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   ... | steps {T = T} i>>T HT i≡T WK w≡γ ext we ϖ ↓ᴱ' =
       steps (_ →ᴸ⟨ (comp-t-step) ⟩ i>>T) HT i≡T (wk-wk WK) w≡γ (ext-comp ext) (wk-ext WK we) (wk-env-comp-wk W cs ϖ) ↓ᴱ'
 
+  lookup-halt-lemma : (i : Γ' ∋ `V) → (γ : Env Γ) → (↓ᴱ : LookupEnvHalts γ) → (π : Wk Γ Γ') → (LabelHalts (v̲a̲r̲ (wk-mem π i)) γ)
+  lookup-halt-lemma Cx.h ∗ ↓ᴱ ()
+  lookup-halt-lemma Cx.h (γ ﹐ v̲a̲r̲ i) ↓ᴱ (wk-cong π) =
+    let
+     IH = lookup-halt-lemma i γ (proj₁ ↓ᴱ) wk-id
+     goal : LabelHalts (v̲a̲r̲ i) γ
+     goal = subst (λ x → LabelHalts (v̲a̲r̲ x) γ) wk-mem-id IH
+    in
+    goal
+  lookup-halt-lemma Cx.h (γ ﹐ l̲a̲m̲ _) ↓ᴱ (wk-wk π) = lookup-halt-lemma h γ (proj₁ ↓ᴱ) π
+  lookup-halt-lemma Cx.h (γ ﹐ pa̲i̲r̲ _ _) ↓ᴱ (wk-wk π) = lookup-halt-lemma h γ (proj₁ ↓ᴱ) π
+  lookup-halt-lemma Cx.h (γ ﹐ u̲n̲i̲t̲) ↓ᴱ (wk-wk π) = lookup-halt-lemma h γ (proj₁ ↓ᴱ) π
+  lookup-halt-lemma Cx.h (γ ﹐ v̲a̲r̲ _) ↓ᴱ (wk-wk π) = lookup-halt-lemma h γ (proj₁ ↓ᴱ) π
+  lookup-halt-lemma Cx.h (γ ﹐﹝ W ╎ cs ﹞) ↓ᴱ (wk-cong π) = proj₂ ↓ᴱ
+  lookup-halt-lemma Cx.h (γ ﹐﹝ W ╎ cs ﹞) ↓ᴱ (wk-wk π) = lookup-halt-lemma h γ (proj₁ ↓ᴱ) π
+  lookup-halt-lemma (Cx.t i) ∗ ↓ᴱ ()
+  lookup-halt-lemma (Cx.t i) (γ ﹐ M) ↓ᴱ (wk-cong π) = lookup-halt-lemma i γ (proj₁ ↓ᴱ) π
+  lookup-halt-lemma (Cx.t i) (γ ﹐ M) ↓ᴱ (wk-wk π) = lookup-halt-lemma (t i) γ (proj₁ ↓ᴱ) π
+  lookup-halt-lemma (Cx.t i) (γ ﹐﹝ W ╎ cs ﹞) ↓ᴱ (wk-cong π) = lookup-halt-lemma i γ (proj₁ ↓ᴱ) π
+  lookup-halt-lemma (Cx.t i) (γ ﹐﹝ W ╎ cs ﹞) ↓ᴱ (wk-wk π) = lookup-halt-lemma (t i) γ (proj₁ ↓ᴱ) π
+
   data ValSteps : ValState T◾ → Set where
 
     steps : {S T : ValState T◾} → S ↠ᵛ T → (H : ValHaltingState T) → ⟦ S ⟧ᵛꟴ ≡ ⟦ T ⟧ᵛꟴ → (π : Wk (botCtx T) (botCtx S)) --→ (⟦ π ⟧ʷ ⟦ botEnv T ⟧ᴱ ≡ ⟦ botEnv S ⟧ᴱ)
@@ -396,7 +419,7 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
     val-eval-rec : (M : Γ' ⊢ᵛ X) → (γ : Env Γ) → (↓ᴱ : LookupEnvHalts γ) → (π : Wk Γ Γ') → ValSteps {T◾ = X} (∘ ((⇡ (wk-val π M) ⊲ γ ∷ □) {↥ = 🗆}))
 
-    val-eval-rec {X = `V} (var {A = .`V} i) γ ↓ᴱ π = steps (_ →ᵛ⟨ ∘var-c ⟩．) (∙ v̲a̲r̲ (wk-mem π i) ⊲ γ ■) refl wk-id (WkExt.wk-eq wk-id) enveq-id ↓ᴱ {!!}
+    val-eval-rec {X = `V} (var {A = .`V} i) γ ↓ᴱ π = steps (_ →ᵛ⟨ ∘var-c ⟩．) (∙ v̲a̲r̲ (wk-mem π i) ⊲ γ ■) refl wk-id (WkExt.wk-eq wk-id) enveq-id ↓ᴱ (lookup-halt-lemma i γ ↓ᴱ π)
 
     val-eval-rec {X = `Unit} (var {A = .`Unit} i) γ ↓ᴱ π with lookup (wk-mem π i) γ ↓ᴱ
     ... | steps i>>T found-unit i≡T π₁ w≡γ ext we ϖ ↓ᴸ =
@@ -434,7 +457,7 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
               ↓ᴱ
 
-              ({!!} , {!!})
+              (wk-LabelHalts LHS _ γ₁ π₁ we ϖ (proj₁ ↓ᴸ) , wk-LabelHalts RHS _ (lTEnv LookupState.⟨ h ∥ γ₁ Env.﹐ pa̲i̲r̲ LHS RHS ⟩) π₁ we ϖ (proj₂ ↓ᴸ))
 
     val-eval-rec {Γ' = Γ'} {X = X `⇒ X₁} {Γ = Γ} (var {A = .(X `⇒ X₁)} i) γ ↓ᴱ π with lookup (wk-mem π i) γ ↓ᴱ
 
@@ -487,7 +510,7 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
     val-eval-rec unit γ ↓ᴱ π = steps (_ →ᵛ⟨ ∘unit ⟩．) (∙ u̲n̲i̲t̲ ⊲ γ ■) refl wk-id (WkExt.wk-eq wk-id) enveq-id ↓ᴱ tt
 
     val-eval-rec (pair {A = X} {B = Y} LHS RHS) γ ↓ᴱ π with val-eval-rec {X = X} LHS γ ↓ᴱ π
-    ... | steps {T = ∙ (⭭_ {X = X} LT ⊲ γ₁ ∷ □) {↥ = 🗆}} L>T ∙LT L≡T πᴸ extᴸ ϖᴸ ↓ᴱ' ↓ᴸ' with val-eval-rec {X = Y} RHS γ₁ ↓ᴱ' (wk-trans πᴸ π)
+    ... | steps {T = ∙ (⭭_ {X = X} LT ⊲ γ₁ ∷ □) {↥ = 🗆}} L>T (∙ LT ⊲ γ₁ ■) L≡T πᴸ extᴸ ϖᴸ ↓ᴱ' ↓ᴸ' with val-eval-rec {X = Y} RHS γ₁ ↓ᴱ' (wk-trans πᴸ π)
     ... | steps {T = ∙ (⭭_ {X = Y} RT ⊲ γ₂ ∷ □) {↥ = 🗆}} R>T (∙ RT ⊲ γ₂ ■) R≡T πᴿ extᴿ ϖᴿ ↓ᴱ'' ↓ᴸ''  rewrite sym (wk-val-trans RHS πᴸ π) =
 
               let
@@ -554,10 +577,10 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
                 ↓ᴱ''
 
-                {!!}
+                (wk-LabelHalts LT _ γ₁ πᴿ extᴿ ϖᴿ ↓ᴸ' , ↓ᴸ'')
 
     val-eval-rec {Γ = Γ} (pm {A = A} {B = B} M N) γ ↓ᴱ π with val-eval-rec M γ ↓ᴱ π
-    ... | steps {S = S} M>T ∙ pa̲i̲r̲ LHS RHS ⊲ γ₁ ■ M≡T π₁ ext₁ ϖ₁ ↓ᴱ' ↓ᴸ' with val-eval-rec N (_﹐_ (_﹐_ γ₁ LHS) (wk-v̲a̲l̲ (wk-wk wk-id) RHS)) ((↓ᴱ' , proj₁ ↓ᴸ') , {!!}) ((wk-cong (wk-cong (wk-trans π₁ π)))) | (wk-val-trans N (wk-cong (wk-cong π₁)) (wk-cong (wk-cong π)))
+    ... | steps {S = S} M>T ∙ pa̲i̲r̲ LHS RHS ⊲ γ₁ ■ M≡T π₁ ext₁ ϖ₁ ↓ᴱ' (↓ᴸᴸ' , ↓ᴸᴿ') with val-eval-rec N (_﹐_ (_﹐_ γ₁ LHS) (wk-v̲a̲l̲ (wk-wk wk-id) RHS)) ((↓ᴱ' , ↓ᴸᴸ') , wk-LabelHalts RHS (γ₁ ﹐ LHS) γ₁ (wk-wk wk-id) (WkExt.wk-ext wk-id (WkExt.wk-eq wk-id)) (EnvEq.wk-env-val-wk LHS enveq-id) ↓ᴸᴿ') ((wk-cong (wk-cong (wk-trans π₁ π)))) | (wk-val-trans N (wk-cong (wk-cong π₁)) (wk-cong (wk-cong π)))
     ...    | steps {T = T} N>T ∙T N≡T π₂ ext₂ ϖ₂ ↓ᴱ'' ↓ᴸ'' | eq with N>T
     ...      | N>T' rewrite sym eq =
 
