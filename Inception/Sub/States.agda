@@ -143,19 +143,10 @@ module StatesMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   botStackTerm ((_⊲_∷_) {Γ = Γ} M γ □ {↥ = 🗆}) = M
   botStackTerm ((x ⊲ γ ∷ ((x₁ ⊲ γ₁ ∷ xs) {↥ = ↥'})) {↥ = ↥}) = botStackTerm ((x₁ ⊲ γ₁ ∷ xs) {↥ = ↥'})
 
-  -- botTerm : (S : ValState T◾) → PartialTerm (botCtx S) (T◾)
-  -- botTerm (∘ S) = botStackTerm S
-  -- botTerm (∙ S) = botStackTerm S
-
-  ----------------------------------------------------
-  -- for comp machine
-
   data CompState : Set where
 
-        --∘⟨_⊰_╎_⟩ : (W : Γ ⊢ᶜ X) → (γ : Env Γ) → (cs : CompStack Δ X) → {π : Wk Γ Δ} → {wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ} → CompState
         ∘⟨_⊰_╎_⟩ : (W : Γ ⊢ᶜ X) → (γ : Env Γ) → (cs : CompStack Δ X) → {π : Wk Γ Δ} → {ϖ : EnvEq π γ (topCsEnv cs)} → CompState
 
-        --∙⟨_⊰_╎_⟩ : (W : C̲o̲m̲p Γ X) → (γ : Env Γ) → (cs : CompStack Δ X) → {π : Wk Γ Δ} → {wk≡ : ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ} → CompState
         ∙⟨_⊰_╎_⟩ : (W : C̲o̲m̲p Γ X) → (γ : Env Γ) → (cs : CompStack Δ X) → {π : Wk Γ Δ} → {ϖ : EnvEq π γ (topCsEnv cs)} → CompState
 
   ⟦_⟧ᶜꟴ : CompState → R
@@ -169,29 +160,6 @@ module StatesMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   topCompEnv : (Q : CompState) → Env (topCompCtx Q)
   topCompEnv (∘⟨_⊰_╎_⟩ _ γ _) = γ
   topCompEnv (∙⟨_⊰_╎_⟩ _ γ _) = γ
-
-  {-
-  lem0 : (cs : CompStack Δ X) → (MM : K ⟦ X ⟧) → ⟦ cs ⟧ᶜˢ (λ k → MM k) k₀ ≡ MM (λ y → ⟦ cs ⟧ᶜˢ (λ k → k y) k₀)
-  lem0 ◻ MM = refl
-  lem0 {X = X} ((W ⊲ γ ⦂⦂ cs) {π = π} {wk≡ = wk≡}) MM =           ⟦ (W ⊲ γ ⦂⦂ cs) {π = π} {wk≡ = wk≡} ⟧ᶜˢ MM k₀
-                                   ≡⟨ refl ⟩
-                                     ⟦ cs ⟧ᶜˢ (λ k → (λ x → MM (λ z → ⟦ W ⟧ᶜ (⟦ γ ⟧ᴱ , z) x)) k) k₀
-                                   ≡⟨ lem0 cs (λ x → MM (λ z → ⟦ W ⟧ᶜ (⟦ γ ⟧ᴱ , z) x)) ⟩
-                                     (λ x → MM (λ z → ⟦ W ⟧ᶜ (⟦ γ ⟧ᴱ , z) x)) (λ y → ⟦ cs ⟧ᶜˢ (λ k → k y) k₀)
-                                   ≡⟨ refl ⟩
-                                     MM (λ z →       ⟦ W ⟧ᶜ (⟦ γ ⟧ᴱ , z) (λ y → ⟦ cs ⟧ᶜˢ (λ k → k y) k₀)            )
-                                   ≡⟨ cong MM lem0'' ⟩
-                                     MM (λ z →       ⟦ cs ⟧ᶜˢ (λ k → ⟦ W ⟧ᶜ (⟦ γ ⟧ᴱ , z) k) k₀                      )
-                                   ≡⟨ refl ⟩
-                                     MM (λ y → ⟦ (W ⊲ γ ⦂⦂ cs) {π = π} {wk≡ = wk≡} ⟧ᶜˢ (λ k → k y) k₀) ∎
-
-                                   where
-                                      lem0' : (z : ⟦ X ⟧) → ⟦ W ⟧ᶜ (⟦ γ ⟧ᴱ , z) (λ y → ⟦ cs ⟧ᶜˢ (λ k → k y) k₀) ≡ ⟦ cs ⟧ᶜˢ (λ k → ⟦ W ⟧ᶜ (⟦ γ ⟧ᴱ , z) k) k₀
-                                      lem0' z = sym (lem0 cs (⟦ W ⟧ᶜ (⟦ γ ⟧ᴱ , z)))
-
-                                      lem0'' : (λ z → ⟦ W ⟧ᶜ (⟦ γ ⟧ᴱ , z) (λ y → ⟦ cs ⟧ᶜˢ (λ k → k y) k₀)) ≡ (λ z → ⟦ cs ⟧ᶜˢ (λ k → ⟦ W ⟧ᶜ (⟦ γ ⟧ᴱ , z) k) k₀)
-                                      lem0'' = extensionality lem0'
-  -}
 
   lem0 : (cs : CompStack Δ X) → (MM : K ⟦ X ⟧) → ⟦ cs ⟧ᶜˢ (λ k → MM k) k₀ ≡ MM (λ y → ⟦ cs ⟧ᶜˢ (λ k → k y) k₀)
   lem0 ◻ MM = refl
@@ -214,10 +182,6 @@ module StatesMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                                       lem0'' : (λ z → ⟦ W ⟧ᶜ (⟦ γ ⟧ᴱ , z) (λ y → ⟦ cs ⟧ᶜˢ (λ k → k y) k₀)) ≡ (λ z → ⟦ cs ⟧ᶜˢ (λ k → ⟦ W ⟧ᶜ (⟦ γ ⟧ᴱ , z) k) k₀)
                                       lem0'' = extensionality lem0'
 
-
-  -- ∘⟨_⊰_╎_⟩ : (W : Γ ⊢ᶜ X) → (γ : Env Γ) → (cs : CompStack Δ X) → {π : Wk Γ Δ} → {ϖ : EnvEq π γ (topCsEnv cs)} → CompState
-  cstate-eq : {W W' : Γ ⊢ᶜ X} {γ : Env Γ} {cs : CompStack Δ X} {π : Wk Γ Δ} {ϖ : EnvEq π γ (topCsEnv cs)} → W ≡ W' → ((∘⟨ W ⊰ γ ╎ cs ⟩) {π = π} {ϖ = ϖ}) ≡ ((∘⟨ W' ⊰ γ ╎ cs ⟩) {π = π} {ϖ = ϖ})
-  cstate-eq {W = W} {W' = W'} {γ = γ} {cs = cs} {π = π} {ϖ = ϖ} eq = dcong₂ (λ x y → ((∘⟨ x ⊰ γ ╎ cs ⟩) {π = π} {ϖ = y})) eq (sym (env-eq-uip ϖ (subst (λ _ → EnvEq π γ (topCsEnv cs)) eq ϖ)))
 
   cstate-eq' : {W W' : Γ ⊢ᶜ X} {γ γ' : Env Γ} {cs : CompStack Δ X} {π π' : Wk Γ Δ} {ϖ : EnvEq π γ (topCsEnv cs)} {ϖ' : EnvEq π' γ' (topCsEnv cs)} → (W , (γ , π)) ≡ (W' , (γ' , π')) → ((∘⟨ W ⊰ γ ╎ cs ⟩) {π = π} {ϖ = ϖ}) ≡ ((∘⟨ W' ⊰ γ' ╎ cs ⟩) {π = π'} {ϖ = ϖ'})
   cstate-eq' {W = W} {W' = W'} {γ = γ} {cs = cs} {π = π} {ϖ = ϖ} eq = dcong₂ (λ x y → ((∘⟨ (proj₁ x) ⊰ proj₁ (proj₂ x) ╎ cs ⟩) {π = proj₂ (proj₂ x)} {ϖ = y})) eq (env-eq-uip (subst (λ z → EnvEq (proj₂ (proj₂ z)) (proj₁ (proj₂ z)) (topCsEnv cs)) eq ϖ) _)
