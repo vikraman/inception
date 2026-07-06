@@ -146,6 +146,11 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   env-eq-cs-sem-lemma : {π : Wk Γ Δ} {γ : Env Γ} {cs : CompStack Δ X} → EnvEq π γ (topCsEnv cs) → ⟦ π ⟧ʷ ⟦ γ ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ
   env-eq-cs-sem-lemma {π = π} {γ = γ} {cs = cs} ϖ = env-eq-sem-lemma ϖ
 
+  env-wk-wk-ε : {Γ : Ctx} → (γ : Env Γ) → EnvEq wk-wk-ε γ ∗
+  env-wk-wk-ε {Γ = Cx.ε} ∗ = wk-env-ε
+  env-wk-wk-ε {Γ = Γ Cx.∙ x} (γ ﹐ M) = wk-env-val-wk M (env-wk-wk-ε γ)
+  env-wk-wk-ε {Γ = Γ Cx.∙ _} (γ ﹐﹝ W ╎ cs ﹞) = wk-env-comp-wk W cs (env-wk-wk-ε γ)
+
   ----
 
   mutual
@@ -480,6 +485,45 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
   ----
   -- adapted env-eq-trans
+
+  env-eq-trans : {π₁ : Wk Γ Γ'} {π₂ : Wk Γ' Γ''} {γ : Env Γ} {γ' : Env Γ'} {γ'' : Env Γ''}
+                 → EnvEq π₁ γ γ' → EnvEq π₂ γ' γ'' → EnvEq (wk-trans π₁ π₂) γ γ''
+  env-eq-trans {π₁ = wk-ε} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} wk-env-ε ϖ₂ = ϖ₂
+  env-eq-trans {π₁ = wk-cong π₁} {π₂ = wk-cong π₂} {γ = γ ﹐ _} {γ' = γ' ﹐ M} {γ'' = γ'' ﹐ M₁} (wk-env-val-cong M ϖ₁) (wk-env-val-cong M₁ ϖ₂) =
+    let
+      a0 = env-eq-trans ϖ₁ ϖ₂
+      a1 : EnvEq (wk-cong (wk-trans π₁ π₂)) (γ ﹐ wk-v̲a̲l̲ (wk-trans π₁ π₂) M₁) (γ'' ﹐ M₁)
+      a1 = wk-env-val-cong M₁ a0
+      a2 : EnvEq (wk-cong (wk-trans π₁ π₂)) (γ ﹐ wk-v̲a̲l̲ π₁ (wk-v̲a̲l̲ π₂ M₁)) (γ'' ﹐ M₁)
+      a2 = subst (λ x → EnvEq (wk-cong (wk-trans π₁ π₂)) (γ ﹐ x) (γ'' ﹐ M₁)) (sym (wk-v̲a̲l̲-trans M₁ π₁ π₂)) a1
+    in
+    a2
+  env-eq-trans {π₁ = wk-cong π₁} {π₂ = wk-wk π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-env-val-cong M ϖ₁) (wk-env-val-wk M₁ ϖ₂) = wk-env-val-wk (wk-v̲a̲l̲ π₁ M) (env-eq-trans ϖ₁ ϖ₂)
+  env-eq-trans {π₁ = wk-cong π₁} {π₂ = wk-cong π₂} {γ = (γ ﹐﹝ _ ╎ _ ﹞) {ϖ = ϖ₁}} {γ' = (γ' ﹐﹝ _ ╎ _ ﹞) {ϖ = ϖ₂}} {γ'' = (γ'' ﹐﹝ _ ╎ _ ﹞) {π = π₃} {ϖ = ϖ₃}} (wk-env-comp-cong W cs {ϖ = ϖ₄} {ϖ' = ϖ₅} ϖ₀₁) (wk-env-comp-cong W₁ cs₁ {ϖ = ϖ₆} {ϖ' = ϖ₇} ϖ₀₂) =
+    let
+      a0 = env-eq-trans ϖ₀₁ ϖ₀₂
+
+      a1 : EnvEq (wk-cong (wk-trans π₁ π₂)) ((γ ﹐﹝ wk-comp (wk-trans π₁ π₂) W₁ ╎ cs ﹞) {π = wk-trans (wk-trans π₁ π₂) π₃}) ((γ'' ﹐﹝ W₁ ╎ cs ﹞) {π = π₃} {ϖ = ϖ₃})
+      a1 = wk-env-comp-cong W₁ cs {πᶜ = π₃} {ϖ = ϖ₃} a0
+
+      π≡ : wk-trans π₁ (wk-trans π₂ π₃) ≡ wk-trans (wk-trans π₁ π₂) π₃
+      π≡ = wk-assoc {π₁ = π₁} {π₂ = π₂} {π₃ = π₃}
+      W≡ : wk-comp π₁ (wk-comp π₂ W₁) ≡ wk-comp (wk-trans π₁ π₂) W₁
+      W≡ = wk-comp-trans W₁ π₁ π₂
+
+      eq2 :    ((γ ﹐﹝ wk-comp π₁ (wk-comp π₂ W₁) ╎ cs ﹞) {π = wk-trans π₁ (wk-trans π₂ π₃)} {ϖ = ϖ₁})
+             ≡ ((γ ﹐﹝ wk-comp (wk-trans π₁ π₂) W₁ ╎ cs ﹞) {π = wk-trans (wk-trans π₁ π₂) π₃} {ϖ = subst (λ z → EnvEq (proj₂ z) γ (topCsEnv cs)) (pair-eq W≡ π≡) ϖ₁})
+      eq2 = dcong₂ ((λ x z → (γ ﹐﹝ proj₁ x ╎ cs ﹞) {π = proj₂ x} {ϖ = z})) (pair-eq W≡ π≡) refl
+
+      a2 : EnvEq (wk-cong (wk-trans π₁ π₂)) ((γ ﹐﹝ wk-comp π₁ (wk-comp π₂ W₁) ╎ cs ﹞) {π = wk-trans π₁ (wk-trans π₂ π₃)} {ϖ = ϖ₁}) ((γ'' ﹐﹝ W₁ ╎ cs ﹞) {π = π₃} {ϖ = ϖ₃})
+      a2 = subst (λ x → EnvEq (wk-cong (wk-trans π₁ π₂)) x ((γ'' ﹐﹝ W₁ ╎ cs ﹞) {π = π₃} {ϖ = ϖ₃})) (sym eq2) a1
+    in
+    a2
+  env-eq-trans {π₁ = wk-cong π₁} {π₂ = wk-wk π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-env-comp-cong W cs ϖ₁) (wk-env-comp-wk W₁ cs₁ ϖ₂) = wk-env-comp-wk (wk-comp π₁ W) cs (env-eq-trans ϖ₁ ϖ₂)
+  env-eq-trans {π₁ = wk-wk π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-env-val-wk M ϖ₁) ϖ₂ = wk-env-val-wk M (env-eq-trans ϖ₁ ϖ₂)
+  env-eq-trans {π₁ = wk-wk π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-env-comp-wk W cs ϖ₁) ϖ₂ = wk-env-comp-wk W cs (env-eq-trans ϖ₁ ϖ₂)
+
+  {- 3
   env-eq-trans : {π₁ : Wk Γ Γ'} {π₂ : Wk Γ' Γ''} {γ : Env Γ} {γ' : Env Γ'} {γ'' : Env Γ''}
                  → WkExt π₁ → EnvEq π₁ γ γ' → EnvEq π₂ γ' γ'' → EnvEq (wk-trans π₁ π₂) γ γ''
   env-eq-trans {π₁ = wk-ε} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-eq π) wk-env-ε ϖ₂ = ϖ₂
@@ -524,6 +568,7 @@ module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   env-eq-trans {π₁ = wk-wk π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-eq π) (wk-env-comp-wk W cs ϖ₁) ϖ₂ = wk-env-comp-wk W cs (env-eq-trans (wk-ext-wk-lift (wk-eq (wk-wk π₁))) ϖ₁ ϖ₂)
   env-eq-trans {π₁ = wk-wk π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-ext π ext₁) (wk-env-val-wk M ϖ₁) ϖ₂ = wk-env-val-wk M (env-eq-trans ext₁ ϖ₁ ϖ₂)
   env-eq-trans {π₁ = wk-wk π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-ext π ext₁) (wk-env-comp-wk W cs ϖ₁) ϖ₂ = wk-env-comp-wk W cs (env-eq-trans ext₁ ϖ₁ ϖ₂)
+  3 -}
 
   {- 2 ext
   env-eq-trans : {π₁ : Wk Γ Γ'} {π₂ : Wk Γ' Γ''} {γ : Env Γ} {γ' : Env Γ'} {γ'' : Env Γ''}
