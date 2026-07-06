@@ -822,20 +822,34 @@ ex15 = push (push (app (lam {A = `Unit} (sub (var (var h)) (return unit))) unit)
 
 -- s/\(PartialTerm\.\|ValStack\.\|Env\.\|V̲a̲l̲\.\|CompStack\.\|ValStack\.\|ValState\.\|_↠ᵛ_\.\|_→ᵛ_\.\|_→ᴸ\*_\.\|_→ᴸ_\.\|LookupState\.\|C̲o̲m̲p.\)//g
 
-{-
-_ : comp-eval ex15 ≡ steps
-  (StatesMain.∘⟨ push (push (app (lam (sub (var (var h)) (return unit))) unit) (return unit)) (return unit) ⊰ EnvMain.∗ ╎ EnvMain.◻ ⟩
-  →ᶜ⟨ ∘push ⟩ StatesMain.∘⟨ push (app (lam (sub (var (var h)) (return unit))) unit) (return unit) ⊰ EnvMain.∗ ╎ return unit EnvMain.⊲ EnvMain.∗ ⦂⦂ EnvMain.◻ ⟩
-  _→ᶜ*_.→ᶜ⟨ _→ᶜ_.∘push ⟩ StatesMain.∘⟨ app (lam (sub (var (var h)) (return unit))) unit ⊰ EnvMain.∗ ╎ return unit EnvMain.⊲ EnvMain.∗ ⦂⦂ (return unit EnvMain.⊲ EnvMain.∗ ⦂⦂ EnvMain.◻) ⟩
-  _→ᶜ*_.→ᶜ⟨ _→ᶜ_.∘app (StatesMain.∘ ⇡ unit StatesMain.⊲ EnvMain.∗ ∷ StatesMain.□ _↠ᵛ_.→ᵛ⟨ _→ᵛ_.∘unit ⟩．) wk-ε ⟩ StatesMain.∙⟨ a̲pp (lam (sub (var (var h)) (return unit))) u̲n̲i̲t̲ ⊰ EnvMain.∗ ╎ return unit EnvMain.⊲ EnvMain.∗ ⦂⦂ (return unit EnvMain.⊲ EnvMain.∗ ⦂⦂ EnvMain.◻) ⟩
-  _→ᶜ*_.→ᶜ⟨ _→ᶜ_.∙app-lam ⟩ StatesMain.∘⟨ sub (var (var h)) (return unit) ⊰ EnvMain.∗ EnvMain.﹐ u̲n̲i̲t̲ ╎ return unit EnvMain.⊲ EnvMain.∗ ⦂⦂ (return unit EnvMain.⊲ EnvMain.∗ ⦂⦂ EnvMain.◻) ⟩
-  _→ᶜ*_.→ᶜ⟨ _→ᶜ_.∘sub ⟩ StatesMain.∘⟨ var (var h) ⊰ EnvMain.∗ EnvMain.﹐ u̲n̲i̲t̲ EnvMain.﹐﹝ return unit ╎ return unit EnvMain.⊲ EnvMain.∗ ⦂⦂ (return unit EnvMain.⊲ EnvMain.∗ ⦂⦂ EnvMain.◻) ﹞ ╎ return unit EnvMain.⊲ EnvMain.∗ ⦂⦂ (return unit EnvMain.⊲ EnvMain.∗ ⦂⦂ EnvMain.◻) ⟩
-  _→ᶜ*_.→ᶜ⟨ _→ᶜ_.∘var (StatesMain.∘ ⇡ var h StatesMain.⊲ EnvMain.∗ EnvMain.﹐ u̲n̲i̲t̲ EnvMain.﹐﹝ return unit ╎ return unit EnvMain.⊲ EnvMain.∗ ⦂⦂ (return unit EnvMain.⊲ EnvMain.∗ ⦂⦂ EnvMain.◻) ﹞ ∷ StatesMain.□ _↠ᵛ_.→ᵛ⟨ _→ᵛ_.∘var-c ⟩．) (wk-cong (wk-cong wk-ε)) (StatesMain.⟨ h ∥ EnvMain.∗ EnvMain.﹐ u̲n̲i̲t̲ EnvMain.﹐﹝ return unit ╎ return unit EnvMain.⊲ EnvMain.∗ ⦂⦂ (return unit EnvMain.⊲ EnvMain.∗ ⦂⦂ EnvMain.◻) ﹞ ⟩ _→ᴸ*_.◼) (wk-wk (wk-cong wk-ε)) ⟩ StatesMain.∘⟨ return unit ⊰ EnvMain.∗ EnvMain.﹐ u̲n̲i̲t̲ ╎ return unit EnvMain.⊲ EnvMain.∗ ⦂⦂ (return unit EnvMain.⊲ EnvMain.∗ ⦂⦂ EnvMain.◻) ⟩
-  _→ᶜ*_.→ᶜ⟨ _→ᶜ_.∘return (StatesMain.∘ ⇡ unit StatesMain.⊲ EnvMain.∗ EnvMain.﹐ u̲n̲i̲t̲ ∷ StatesMain.□ _↠ᵛ_.→ᵛ⟨ _→ᵛ_.∘unit ⟩．) ⟩ StatesMain.∙⟨ r̲e̲t̲u̲r̲n̲ u̲n̲i̲t̲ ⊰ EnvMain.∗ EnvMain.﹐ u̲n̲i̲t̲ ╎ return unit EnvMain.⊲ EnvMain.∗ ⦂⦂ (return unit EnvMain.⊲ EnvMain.∗ ⦂⦂ EnvMain.◻) ⟩
-  _→ᶜ*_.→ᶜ⟨ _→ᶜ_.∙return ⟩ StatesMain.∘⟨ return unit ⊰ EnvMain.∗ EnvMain.﹐ u̲n̲i̲t̲ EnvMain.﹐ u̲n̲i̲t̲ ╎ return unit EnvMain.⊲ EnvMain.∗ ⦂⦂ EnvMain.◻ ⟩ _→ᶜ*_.→ᶜ⟨ _→ᶜ_.∘return (StatesMain.∘ ⇡ unit StatesMain.⊲ EnvMain.∗ EnvMain.﹐ u̲n̲i̲t̲ EnvMain.﹐ u̲n̲i̲t̲ ∷ StatesMain.□ _↠ᵛ_.→ᵛ⟨ _→ᵛ_.∘unit ⟩．) ⟩ StatesMain.∙⟨ r̲e̲t̲u̲r̲n̲ u̲n̲i̲t̲ ⊰ EnvMain.∗ EnvMain.﹐ u̲n̲i̲t̲ EnvMain.﹐ u̲n̲i̲t̲ ╎ return unit EnvMain.⊲ EnvMain.∗ ⦂⦂ EnvMain.◻ ⟩ _→ᶜ*_.→ᶜ⟨ _→ᶜ_.∙return ⟩ StatesMain.∘⟨ return unit ⊰ EnvMain.∗ EnvMain.﹐ u̲n̲i̲t̲ EnvMain.﹐ u̲n̲i̲t̲ EnvMain.﹐ u̲n̲i̲t̲ ╎ EnvMain.◻ ⟩
-  _→ᶜ*_.→ᶜ⟨ _→ᶜ_.∘return (StatesMain.∘ ⇡ unit StatesMain.⊲ EnvMain.∗ EnvMain.﹐ u̲n̲i̲t̲ EnvMain.﹐ u̲n̲i̲t̲ EnvMain.﹐ u̲n̲i̲t̲ ∷ StatesMain.□ _↠ᵛ_.→ᵛ⟨ _→ᵛ_.∘unit ⟩．) ⟩ (StatesMain.∙⟨ r̲e̲t̲u̲r̲n̲ u̲n̲i̲t̲ ⊰ EnvMain.∗ EnvMain.﹐ u̲n̲i̲t̲ EnvMain.﹐ u̲n̲i̲t̲ EnvMain.﹐ u̲n̲i̲t̲ ╎ EnvMain.◻ ⟩ _→ᶜ*_.◼))
+_ : comp-eval ex15 ≡
+
+ steps
+
+  ( ∘⟨ push (push (app (lam (sub (var (var h)) (return unit))) unit) (return unit)) (return unit) ⊰ ∗ ╎ ◻ ⟩
+  →ᶜ⟨ ∘push ⟩
+    ∘⟨ push (app (lam (sub (var (var h)) (return unit))) unit) (return unit) ⊰ ∗ ╎ return unit ⊲ ∗ ⦂⦂ ◻ ⟩
+  →ᶜ⟨ ∘push ⟩
+    ∘⟨ app (lam (sub (var (var h)) (return unit))) unit ⊰ ∗ ╎ return unit ⊲ ∗ ⦂⦂ (return unit ⊲ ∗ ⦂⦂ ◻) ⟩
+  →ᶜ⟨ ∘app (∘ ⇡ unit ⊲ ∗ ∷ □ →ᵛ⟨ ∘unit ⟩．) wk-ε ⟩
+    ∙⟨ a̲pp (lam (sub (var (var h)) (return unit))) u̲n̲i̲t̲ ⊰ ∗ ╎ return unit ⊲ ∗ ⦂⦂ (return unit ⊲ ∗ ⦂⦂ ◻) ⟩
+  →ᶜ⟨ ∙app-lam ⟩
+    ∘⟨ sub (var (var h)) (return unit) ⊰ ∗ ﹐ u̲n̲i̲t̲ ╎ return unit ⊲ ∗ ⦂⦂ (return unit ⊲ ∗ ⦂⦂ ◻) ⟩
+  →ᶜ⟨ ∘sub ⟩
+    ∘⟨ var (var h) ⊰ ∗ ﹐ u̲n̲i̲t̲ ﹐﹝ return unit ╎ return unit ⊲ ∗ ⦂⦂ (return unit ⊲ ∗ ⦂⦂ ◻) ﹞ ╎ return unit ⊲ ∗ ⦂⦂ (return unit ⊲ ∗ ⦂⦂ ◻) ⟩
+  →ᶜ⟨ ∘var (∘ ⇡ var h ⊲ ∗ ﹐ u̲n̲i̲t̲ ﹐﹝ return unit ╎ return unit ⊲ ∗ ⦂⦂ (return unit ⊲ ∗ ⦂⦂ ◻) ﹞ ∷ □ →ᵛ⟨ ∘var-c ⟩．) (wk-cong (wk-cong wk-ε)) (⟨ h ∥ ∗ ﹐ u̲n̲i̲t̲ ﹐﹝ return unit ╎ return unit ⊲ ∗ ⦂⦂ (return unit ⊲ ∗ ⦂⦂ ◻) ﹞ ⟩ _→ᴸ*_.◼) (wk-wk (wk-cong wk-ε)) ⟩
+    ∘⟨ return unit ⊰ ∗ ﹐ u̲n̲i̲t̲ ╎ return unit ⊲ ∗ ⦂⦂ (return unit ⊲ ∗ ⦂⦂ ◻) ⟩
+  →ᶜ⟨ ∘return (∘ ⇡ unit ⊲ ∗ ﹐ u̲n̲i̲t̲ ∷ □ →ᵛ⟨ ∘unit ⟩．) ⟩
+    ∙⟨ r̲e̲t̲u̲r̲n̲ u̲n̲i̲t̲ ⊰ ∗ ﹐ u̲n̲i̲t̲ ╎ return unit ⊲ ∗ ⦂⦂ (return unit ⊲ ∗ ⦂⦂ ◻) ⟩
+  →ᶜ⟨ ∙return ⟩
+    ∘⟨ return unit ⊰ ∗ ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ╎ return unit ⊲ ∗ ⦂⦂ ◻ ⟩ →ᶜ⟨ ∘return (∘ ⇡ unit ⊲ ∗ ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ∷ □ →ᵛ⟨ ∘unit ⟩．) ⟩ ∙⟨ r̲e̲t̲u̲r̲n̲ u̲n̲i̲t̲ ⊰ ∗ ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ╎ return unit ⊲ ∗ ⦂⦂ ◻ ⟩ →ᶜ⟨ ∙return ⟩ ∘⟨ return unit ⊰ ∗ ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ╎ ◻ ⟩
+  →ᶜ⟨ ∘return (∘ ⇡ unit ⊲ ∗ ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ∷ □ →ᵛ⟨ ∘unit ⟩．) ⟩
+   (∙⟨ r̲e̲t̲u̲r̲n̲ u̲n̲i̲t̲ ⊰ ∗ ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ﹐ u̲n̲i̲t̲ ╎ ◻ ⟩ ◼))
+
   ret
+
   (trans (cong (λ k → k tt) (extensionality (λ z → refl)))
+
   (trans (trans (cong (λ k → k tt) (extensionality (λ z → sym (trans (cong (λ k → k tt) (extensionality (λ z₁ → refl))) refl)))) (trans (trans (trans (trans (cong (λ k → k tt) (extensionality (λ z → refl))) refl) refl) refl) refl)) refl))
+
 _ = refl
--}
