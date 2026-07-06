@@ -1,0 +1,434 @@
+{-# OPTIONS --no-postfix-projections #-}
+
+module Inception.Sub.Machine (R : Set) where
+
+open import Data.Product using (proj₁; proj₂; _,_; <_,_>; curry; _×_; Σ; ∃; Σ-syntax; ∃-syntax)
+open import Function.Base using (const; _∘_; _$_)
+
+import Relation.Binary.PropositionalEquality as Eq
+open Eq using (_≡_; refl; cong; cong₂; cong-app; dcong₂; sym; trans; subst; subst₂)
+open Eq.≡-Reasoning
+
+open import Inception.Sub.Syntax
+open import Inception.Sub.CPS R
+
+open import Data.Unit
+open import Data.Nat
+open import Data.List using (List; _∷_; []; _++_)
+
+open import Inception.Sub.Equality
+
+open import Inception.Sub.Environments R
+open import Inception.Sub.States R
+
+-----------------------------------------------------------------------
+
+module MachineMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
+
+  open StatesMain {R₀ = R₀} k₀
+  open EnvMain {R₀ = R₀} k₀
+
+  infixr 17 _→ᵛ⟨_⟩．
+  infixr 15 _→ᵛ⟨_⟩_
+  infix  15 _→ᵛ_
+  infix  15 _→ᴸ_
+  infixr 10 _⨾_
+
+  ------------------------------------------------------------------------------
+  -- Lookup Machine
+  ------------------------------------------------------------------------------
+  data _→ᴸ_ : LookupState X → LookupState X → Set where
+
+      val-h-step    : {E : Env Γ} → {i : Γ ∋ `V} → ⟨ h  ∥ E ﹐ (v̲a̲r̲ i) ⟩ →ᴸ ⟨ i ∥ E ⟩
+
+      val-t-step    : {i : Γ ∋ Y} → {E : Env Γ} → {M : V̲a̲l̲ Γ X} → ⟨ t i  ∥ _﹐_ E M ⟩ →ᴸ ⟨ i ∥ E ⟩
+
+      comp-t-step   : {i : Γ ∋ Y} → {γ : Env Γ} → {W : Γ ⊢ᶜ X} → {cs : CompStack Δ X} → {π : Wk Γ Δ} → {ϖ : EnvEq π γ (topCsEnv cs)} → ⟨ t i  ∥ (_﹐﹝_╎_﹞ γ W cs {π = π} {ϖ = ϖ}) ⟩ →ᴸ ⟨ i ∥ γ ⟩
+
+
+  data _→ᴸ*_ : LookupState X → LookupState X → Set where
+
+    _◼ : (S : LookupState X) → S →ᴸ* S
+
+    _→ᴸ⟨_⟩_ : (S : LookupState X) → {S' S'' : LookupState X} → S →ᴸ S' → S' →ᴸ* S'' → S →ᴸ* S''
+
+
+  data LookupHaltingState : LookupState X → Set where
+
+        found-unit : {γ : Env Γ} → LookupHaltingState ⟨ h ∥ _﹐_ γ u̲n̲i̲t̲ ⟩
+
+        found-pair : {LHS : V̲a̲l̲ Γ X} → {RHS : V̲a̲l̲ Γ Y} → {γ : Env Γ} → LookupHaltingState ⟨ h ∥ _﹐_ γ (pa̲i̲r̲ LHS RHS) ⟩
+
+        found-lam : {W : (Γ ∙ X) ⊢ᶜ Y} → {γ : Env Γ} → LookupHaltingState ⟨ h ∥ _﹐_ γ (l̲a̲m̲ W) ⟩
+
+        found-comp : {W : Γ ⊢ᶜ X} → {γ : Env Γ} → {cs : CompStack Δ X} → {π : Wk Γ Δ} → {ϖ : EnvEq π γ (topCsEnv cs)} → LookupHaltingState ⟨ h ∥ (_﹐﹝_╎_﹞ γ W cs {π = π} {ϖ = ϖ}) ⟩
+
+  lookup-index : {S T : LookupState X} → S →ᴸ* T → (lCtx S) ∋ X
+  lookup-index (⟨ i ∥ _ ⟩ ◼) = i
+  lookup-index (⟨ h ∥ E ﹐ v̲a̲r̲ i ⟩ →ᴸ⟨ val-h-step ⟩ S→T) = h
+  lookup-index (⟨ t i ∥ _ ⟩ →ᴸ⟨ val-t-step ⟩ S→T) = t (lookup-index S→T)
+  lookup-index (⟨ t i ∥ _ ⟩ →ᴸ⟨ comp-t-step ⟩ S→T) = t (lookup-index S→T)
+
+  li≡i : {T : LookupState X} {γ : Env Γ} {i : Γ ∋ X} → (S→T : ⟨ i ∥ γ ⟩ →ᴸ* T) → LookupHaltingState T → lookup-index S→T ≡ i
+  li≡i (S ◼) found-unit = refl
+  li≡i (S ◼) found-pair = refl
+  li≡i (S ◼) found-lam = refl
+  li≡i (S ◼) found-comp = refl
+  li≡i (S →ᴸ⟨ val-t-step ⟩ S→T) found-unit = cong t (li≡i S→T found-unit)
+  li≡i (S →ᴸ⟨ comp-t-step ⟩ S→T) found-unit = cong t (li≡i S→T found-unit)
+  li≡i (S →ᴸ⟨ val-t-step ⟩ S→T) found-pair = cong t (li≡i S→T found-pair)
+  li≡i (S →ᴸ⟨ comp-t-step ⟩ S→T) found-pair = cong t (li≡i S→T found-pair)
+  li≡i (S →ᴸ⟨ val-t-step ⟩ S→T) found-lam = cong t (li≡i S→T found-lam)
+  li≡i (S →ᴸ⟨ comp-t-step ⟩ S→T) found-lam = cong t (li≡i S→T found-lam)
+  li≡i (S →ᴸ⟨ val-h-step ⟩ S→T) found-comp = refl
+  li≡i (S →ᴸ⟨ val-t-step ⟩ S→T) (found-comp {ϖ = ϖ}) = cong t (li≡i S→T (found-comp {ϖ = ϖ}))
+  li≡i (S →ᴸ⟨ comp-t-step ⟩ S→T) (found-comp {ϖ = ϖ}) = cong t (li≡i S→T (found-comp {ϖ = ϖ}))
+
+  lstate-eq : {L L' : LookupState X} → L →ᴸ L' → ⟦ L ⟧ᴸ ≡ ⟦ L' ⟧ᴸ
+  lstate-eq {L = L} {L' = L'} val-h-step = refl
+  lstate-eq {L = L} {L' = L'} val-t-step = refl
+  lstate-eq {L = L} {L' = L'} comp-t-step = refl
+
+  lstate-eq* : {L L' : LookupState X} → L →ᴸ* L' → ⟦ L ⟧ᴸ ≡ ⟦ L' ⟧ᴸ
+  lstate-eq* {L = L} {L' = L'} (L ◼) = refl
+  lstate-eq* {L = L} {L' = L'} (L →ᴸ⟨ L→L' ⟩ L'→L'') =
+             let
+               IH0 = lstate-eq L→L'
+               IH1 = lstate-eq* L'→L''
+             in
+             trans IH0 IH1
+
+  lstep-ext : {i₁ : Γ₁ ∋ X} {γ₁ : Env Γ₁} {γ₂ : Env (Γ₂ ∙ X)} → ⟨ i₁ ∥ γ₁ ⟩ →ᴸ* ⟨ h ∥ γ₂ ⟩ → EnvExt i₁ γ₁ γ₂
+  lstep-ext (⟨ h ∥ γ₁ ⟩ ◼) = envext-id
+  lstep-ext (S →ᴸ⟨ val-h-step ⟩ L→T) = ext-jmp (lstep-ext L→T)
+  lstep-ext (S →ᴸ⟨ val-t-step ⟩ L→T) = ext-val (lstep-ext L→T)
+  lstep-ext (S →ᴸ⟨ comp-t-step ⟩ L→T) = ext-comp (lstep-ext L→T)
+
+  ------------------------------------------------------------------------------
+  -- Value Machine
+  ------------------------------------------------------------------------------
+
+  -------
+
+  data _↠ᵛ_ : ValState T◾ → ValState T◾ → Set
+
+  data _→ᵛ_ : ValState T◾ → ValState T◾ → Set where
+
+      ∘var-c  :    {i : Γ ∋ `V} → {tail : ValStack b T◾} → {↥ : BottomTypeEqualsNextType b `V T◾}
+                ----------------------------------------------------------------
+                  → ∘ ((⇡ var i ⊲ γ ∷ tail) {↥ = ↥}) →ᵛ ∙ ((⭭ v̲a̲r̲ i ⊲ γ ∷ tail) {↥ = ↥})
+
+      ∘var    :    {i : Γ ∋ X} → {tail : ValStack b T◾} → {↥ : BottomTypeEqualsNextType b X T◾}
+                  → {M : V̲a̲l̲ Γ' X}
+                  → (i>>T : (⟨ i ∥ γ ⟩ →ᴸ* ⟨ h ∥ (γ' ﹐ M) ⟩)) → (πᵥ : Wk Γ Γ')
+                  -- not needed for correctness, but makes things easier:
+                  → EnvExt (lookup-index i>>T) γ (γ' ﹐ M)
+                  → WkExt πᵥ
+                  → EnvEq πᵥ γ γ'
+                  → LookupHaltingState ⟨ h ∥ (γ' ﹐ M) ⟩
+                ----------------------------------------------------------------
+                  → ∘ ((⇡ var i ⊲ γ ∷ tail) {↥ = ↥}) →ᵛ ∙ ((⭭ (wk-v̲a̲l̲ πᵥ M) ⊲ γ ∷ tail) {↥ = ↥})
+
+
+      ∘lam   :  {M : (Γ ∙ X) ⊢ᶜ Y} → {γ  : Env Γ}
+              → {tail : ValStack b T◾} → {↥ : BottomTypeEqualsNextType b (X `⇒ Y) T◾}
+                ---------------------------------------------------------------------------
+              →     ∘ ((⇡ lam M ⊲ γ ∷ tail) {↥ = ↥})
+                  →ᵛ ∙ ((⭭ l̲a̲m̲ M ⊲ γ ∷ tail) {↥ = ↥})
+
+      ∘pair  :  {LHS : Γ ⊢ᵛ X} → {RHS : Γ ⊢ᵛ Y}
+              → {tail : ValStack b T◾} → {↥ : BottomTypeEqualsNextType b (X `× Y) T◾}
+                ---------------------------------------------------------------------------
+              →     ∘ ((⇡ pair LHS RHS ⊲ γ ∷ tail) {↥ = ↥})
+                  →ᵛ ∘ ((⇡ LHS ⊲ γ ∷ ((⇡ᴸ LHS RHS ⊲ γ ∷ tail) {↥ = ↥})) {↥ = 🗇})
+
+      ∘pm    :  {M : Γ ⊢ᵛ X `× Y} → {N : (Γ ∙ X ∙ Y) ⊢ᵛ Z}
+              → {tail : ValStack b T◾} → {↥ : BottomTypeEqualsNextType b Z T◾}
+                ---------------------------------------------------------------------------
+              →     ∘ ((⇡ pm M N ⊲ γ ∷ tail) {↥ = ↥})
+                  →ᵛ ∘ ((⇡ M ⊲ γ ∷ (⇡ᴹ M N ⊲ γ ∷ tail) {↥ = ↥}) {↥ = 🗇})
+
+      ∘unit  :  {γ  : Env Γ}
+              → {tail : ValStack b T◾} → {↥ : BottomTypeEqualsNextType b `Unit T◾}
+                ---------------------------------------------------------------------------
+              →     ∘ ((⇡ unit ⊲ γ ∷ tail) {↥ = ↥})
+                  →ᵛ ∙ ((⭭ u̲n̲i̲t̲ ⊲ γ ∷ tail) {↥ = ↥})
+
+      ∙M∷l   :  {M : V̲a̲l̲ Γ X} → {LHS : Γ' ⊢ᵛ X} → {RHS : Γ' ⊢ᵛ Y} → {π' : Wk Γ Γ'}
+              → {tail : ValStack b T◾} → {↥ : BottomTypeEqualsNextType b (X `× Y) T◾}
+              -- not needed for correctness, but makes things easier  --→ (LHS→M : (∘ (⇡ LHS ⊲ γ' ∷ □) {↥ = 🗆}) ↠ᵛ (∙ (⭭ M ⊲ γ ∷ □) {↥ = 🗆}))
+              → (π≡ : ⟦ γ' ⟧ᴱ ≡ ⟦ π' ⟧ʷ ⟦ γ ⟧ᴱ)
+              → (LHS≡M : ⟦ LHS ⟧ᵛ ⟦ γ' ⟧ᴱ ≡ ⟦ toVal M ⟧ᵛ ⟦ γ ⟧ᴱ)
+                ---------------------------------------------------------------------------
+              →     ∙ ((⭭ M ⊲ γ ∷ ((⇡ᴸ LHS RHS ⊲ γ' ∷ tail) {↥ = ↥})) {↥ = 🗇})
+                  →ᵛ ∘ ((⇡ wk-val π' RHS ⊲ γ ∷ ((⇡ᴿ M (wk-val π' RHS) ⊲ γ ∷ tail) {↥ = ↥})) {↥ = 🗇})
+
+      ∙M∷r   :  {M : V̲a̲l̲ Γ Y} → {LHS : V̲a̲l̲ Γ' X} → {RHS : Γ' ⊢ᵛ Y} {π' : Wk Γ Γ'}
+              → {tail : ValStack b T◾} → {↥ : BottomTypeEqualsNextType b (X `× Y) T◾}
+              -- not needed for correctness, but makes things easier
+              → (π≡ : ⟦ γ' ⟧ᴱ ≡ ⟦ π' ⟧ʷ ⟦ γ ⟧ᴱ)
+              → (RHS≡M : ⟦ RHS ⟧ᵛ ⟦ γ' ⟧ᴱ ≡ ⟦ toVal M ⟧ᵛ ⟦ γ ⟧ᴱ)
+                ---------------------------------------------------------------------------
+              →     ∙ ((⭭ M ⊲ γ ∷ ((⇡ᴿ LHS RHS ⊲ γ' ∷ tail) {↥ = ↥})) {↥ = 🗇})
+                  →ᵛ ∙ ((⭭ pa̲i̲r̲ (wk-v̲a̲l̲ π' LHS) M ⊲ γ ∷ tail) {↥ = ↥})
+
+      ∙pair∷pm  :  {LHS : V̲a̲l̲ Γ X} → {RHS : V̲a̲l̲ Γ Y} → {M : Γ' ⊢ᵛ X `× Y} → {N : (Γ' ∙ X ∙ Y) ⊢ᵛ Z}
+              → {π' : Wk Γ Γ'}
+              → {tail : ValStack b T◾} → {↥ : BottomTypeEqualsNextType b Z T◾}
+              -- not needed for correctness, but makes things easier
+              →  (π≡ : ⟦ γ' ⟧ᴱ ≡ ⟦ π' ⟧ʷ ⟦ γ ⟧ᴱ)
+              →  (p₁M≡LHS : proj₁ (⟦ M ⟧ᵛ ⟦ γ' ⟧ᴱ) ≡ ⟦ toVal LHS ⟧ᵛ ⟦ γ ⟧ᴱ)
+              →  (p₂M≡RHS : proj₂ (⟦ M ⟧ᵛ ⟦ γ' ⟧ᴱ) ≡ ⟦ toVal RHS ⟧ᵛ ⟦ γ ⟧ᴱ)
+                ---------------------------------------------------------------------------
+              →     ∙ ((⭭ pa̲i̲r̲ LHS RHS ⊲ γ ∷ ((⇡ᴹ M N ⊲ γ' ∷ tail) {↥ = ↥})) {↥ = 🗇})
+                  →ᵛ  ∘ ((⇡ (wk-val (wk-cong (wk-cong π')) N) ⊲ γ ﹐ LHS ﹐ (wk-v̲a̲l̲ (wk-wk wk-id) RHS) ∷ tail) {↥ = ↥})
+
+  --data _↠ᵛ_ : ValState T◾ → ValState T◾ → Set where
+  data _↠ᵛ_ where
+
+    _→ᵛ⟨_⟩． : (S : ValState T◾) → {S' : ValState T◾} → (laststep : S →ᵛ S') → S ↠ᵛ S'
+
+    _→ᵛ⟨_⟩_ : (S : ValState T◾) → {S' S'' : ValState T◾} → S →ᵛ S' → S' ↠ᵛ S'' → S ↠ᵛ S''
+
+  _⨾_ : {F S T : ValState T◾} → (F ↠ᵛ S) → (S ↠ᵛ T) → (F ↠ᵛ T)
+  _⨾_ (F →ᵛ⟨ F>S ⟩．) S>>T = F →ᵛ⟨ F>S ⟩ S>>T
+  _⨾_ (F →ᵛ⟨ F>S₁ ⟩ S₁>>S₂) S₂>>T = F →ᵛ⟨ F>S₁ ⟩ (S₁>>S₂ ⨾ S₂>>T)
+
+  ⟨_⟩⧻_ : {from : ValState T◾} → {to : ValState T◾} → (F>T : from →ᵛ to) → (tail : ValStack non-empty T◾') → (from ⧻ tail) →ᵛ (to ⧻ tail)
+  ⟨ ∘var-c ⟩⧻ tail = ∘var-c
+  ⟨ ∘var T>>U π ext we ϖ H ⟩⧻ tail = ∘var T>>U π ext we ϖ H
+  ⟨ ∘lam ⟩⧻ tail = ∘lam
+  ⟨ ∘pair ⟩⧻ tail = ∘pair
+  ⟨ ∘pm ⟩⧻ tail = ∘pm
+  ⟨ ∘unit ⟩⧻ tail = ∘unit
+  ⟨ ∙pair∷pm π≡ L R ⟩⧻ tail = ∙pair∷pm π≡ L R
+  ⟨ ∙M∷l π≡ LHS≡M ⟩⧻ tail = ∙M∷l π≡ LHS≡M
+  ⟨ ∙M∷r π≡ RHS≡M ⟩⧻ tail = ∙M∷r π≡ RHS≡M
+
+  ⟪_⟫⧻_ : {from : ValState T◾} → {to : ValState T◾} → (F>T : from ↠ᵛ to) → (tail : ValStack non-empty T◾') → (from ⧻ tail) ↠ᵛ (to ⧻ tail)
+  ⟪ _ →ᵛ⟨ F>T ⟩． ⟫⧻ tail =  _ →ᵛ⟨ ⟨ F>T ⟩⧻ tail ⟩．
+  ⟪ _ →ᵛ⟨ F>T ⟩ F>>T ⟫⧻ tail =   _ →ᵛ⟨ ⟨ F>T ⟩⧻ tail ⟩ (⟪ F>>T ⟫⧻ tail)
+
+  data ValHaltingState : ValState T◾ → Set where
+
+      ∙_⊲_■ : (M : V̲a̲l̲ Γ X) → (γ : Env Γ) → ValHaltingState (∙ ((⭭ M ⊲ γ ∷ □) {↥ = 🗆}))
+
+  haltingTerm : {S : ValState T◾} → (ValHaltingState S) → V̲a̲l̲ (botCtx S) (T◾)
+  haltingTerm ∙ M ⊲ γ ■ = M
+
+-----------------------
+
+  data CompHaltingState : CompState → Set where
+
+      ret : {M : V̲a̲l̲ Γ R₀} → {γ : Env Γ} → {ϖ : EnvEq wk-wk-ε γ (topCsEnv ◻)} → CompHaltingState ((∙⟨ r̲e̲t̲u̲r̲n̲ M ⊰ γ ╎ ◻ ⟩) {π = wk-wk-ε} {ϖ = ϖ} )
+
+
+  infixr 15 _→ᶜ⟨_⟩_
+  infixr 15 _→ᶜ*_
+  infixr 10 _⨾ᶜ_
+
+  -- Computation Machine
+  --------------------------------------------------
+
+  infix  15 _→ᶜ_
+  data _→ᶜ*_ : CompState → CompState → Set
+  data _→ᶜ_ : CompState → CompState → Set
+
+  data _→ᶜ_  where
+
+        ∘return  :    {M : Γ ⊢ᵛ X} → {γ : Env Γ'} → {π : Wk Γ' Γ} → {M' : V̲a̲l̲ Γ'' X} → {γ' : Env Γ''}
+                      → {cs : CompStack Δ X} → {πₓ : Wk Γ' Δ} → {πₓ' : Wk Γ'' Δ}
+                      → {ϖₓ : EnvEq πₓ γ (topCsEnv cs)} → {ϖₓ' : EnvEq πₓ' γ' (topCsEnv cs)}
+                      → ((∘ ((⇡ wk-val π M ⊲ γ ∷ □) {↥ = 🗆})) ↠ᵛ (∙ ((⭭ M' ⊲ γ' ∷ □) {↥ = 🗆})))
+                     ----------------------------------------------------------------
+                      →     ((∘⟨ wk-comp π (return M) ⊰ γ ╎ cs ⟩) {π = πₓ} {ϖ = ϖₓ} )
+                         →ᶜ ((∙⟨ r̲e̲t̲u̲r̲n̲ M' ⊰ γ' ╎ cs ⟩) {π = πₓ'} {ϖ = ϖₓ'})
+
+        ∙return  :    {M : V̲a̲l̲ Γ X} → {γ : Env Γ} → {N : (Γ' ∙ X) ⊢ᶜ Y} → {γ' : Env Γ'} → {π : Wk Γ Γ'}
+                      → {cs : CompStack Δ Y} → {πₓ : Wk Γ Δ} → {πₓ' : Wk Γ' Δ}
+                      → {ϖₓ : EnvEq π γ γ'} → {ϖₓ' : EnvEq πₓ γ (topCsEnv cs)} → {ϖ : EnvEq πₓ' γ' (topCsEnv cs)}
+                  ----------------------------------------------------------------
+                    →       ((∙⟨ r̲e̲t̲u̲r̲n̲ M ⊰ γ ╎ ((N ⊲ γ' ⦂⦂ cs) {π = πₓ'} {ϖ = ϖ}) ⟩) {π = π} {ϖ = ϖₓ})
+                         →ᶜ ((∘⟨ wk-comp (wk-cong π) N ⊰ γ ﹐ M ╎ cs ⟩) {π = wk-wk πₓ} {ϖ = EnvEq.wk-env-val-wk M ϖₓ'})
+
+        ∘push    :    {M : Γ ⊢ᶜ X} → {N : (Γ ∙ X) ⊢ᶜ Y} → {γ : Env Γ}
+                    → {cs : CompStack Δ Y} → {πₓ : Wk Γ Δ}
+                    → {ϖₓ : EnvEq πₓ γ (topCsEnv cs)} → {ϖ : EnvEq πₓ γ (topCsEnv cs)}
+                  ----------------------------------------------------------------
+                    →       ((∘⟨ push M N ⊰ γ ╎ cs ⟩) {π = πₓ} {ϖ = ϖₓ})
+                        →ᶜ ((∘⟨ M ⊰ γ ╎ ((N ⊲ γ ⦂⦂ cs) {π = πₓ}  {ϖ = ϖ}) ⟩) {π = wk-id} {ϖ = enveq-id})
+
+        ∘sub     :    {M : (Γ ∙ `V) ⊢ᶜ X} → {N : Γ ⊢ᶜ X} → {γ : Env Γ}
+                    → {cs : CompStack Δ X} → {πₓ : Wk Γ Δ} → {ϖₓ : EnvEq πₓ γ (topCsEnv cs)}
+                  ----------------------------------------------------------------
+                    →       ((∘⟨ sub M N ⊰ γ ╎ cs ⟩) {π = πₓ} {ϖ = ϖₓ})
+                         →ᶜ ((∘⟨ M ⊰ ((γ ﹐﹝ N ╎ cs ﹞) {π = πₓ} {ϖ = ϖₓ}) ╎ cs ⟩) {π = wk-wk πₓ} {ϖ = EnvEq.wk-env-comp-wk N cs ϖₓ})
+
+        ∘pm      :    {M : Γ' ⊢ᵛ X `× Y} → {γ : Env Γ} → {W : (Γ' ∙ X ∙ Y) ⊢ᶜ Z}
+                    → {cs : CompStack Δ Z} → {πₓ : Wk Γ Δ} → {πₓ' : Wk Γ'' Δ} → {γ'' : Env Γ''}
+                    → {ϖₓ : EnvEq πₓ γ (topCsEnv cs)} → {ϖₓ' : EnvEq πₓ' γ'' (topCsEnv cs)}
+                    → {LHS : V̲a̲l̲ Γ'' X} → {RHS : V̲a̲l̲ Γ'' Y} → (π : Wk Γ Γ')
+                    → ((∘ ((⇡ wk-val π M ⊲ γ ∷ □) {↥ = 🗆})) ↠ᵛ (∙ ((⭭ pa̲i̲r̲ LHS RHS ⊲ γ'' ∷ □) {↥ = 🗆}))) → (π' : Wk Γ'' Γ)
+                  ----------------------------------------------------------------
+                    →       ((∘⟨ pm (wk-val π M) (wk-comp (wk-cong (wk-cong π)) W) ⊰ γ ╎ cs ⟩) {π = πₓ} {ϖ = ϖₓ})
+                         →ᶜ ((∘⟨ wk-comp (wk-cong (wk-cong π')) (wk-comp (wk-cong (wk-cong π)) W) ⊰ γ'' ﹐ LHS ﹐ wk-v̲a̲l̲ (wk-wk wk-id) RHS ╎ cs ⟩)
+                               {π = wk-wk (wk-wk πₓ')}  {ϖ = EnvEq.wk-env-val-wk (wk-v̲a̲l̲ (wk-wk wk-id) RHS) (EnvEq.wk-env-val-wk LHS ϖₓ')})
+
+        ∙app-var   :     {i : Γ ∋ (Z' `⇒ Z)} → {N : V̲a̲l̲ Γ Z'} → {γ : Env Γ} → {cs : CompStack Δ Z} → {πₓ : Wk Γ Δ} → {ϖₓ : EnvEq πₓ γ (topCsEnv cs)}
+                       → {W : (Γ' ∙ Z') ⊢ᶜ Z} → {γ' : Env Γ'}
+                       → (⟨ i ∥ γ ⟩ →ᴸ* ⟨ h ∥ _﹐_ γ' (l̲a̲m̲ W) ⟩) → (πᵥ : Wk Γ Γ')
+                     ----------------------------------------------------------------
+                       →    ((∙⟨ a̲pp (var i) N ⊰ γ ╎ cs ⟩) {π = πₓ} {ϖ = ϖₓ})
+                         →ᶜ ((∘⟨ (wk-comp (wk-cong πᵥ) W) ⊰ γ ﹐ N ╎ cs ⟩) {π = wk-wk πₓ} {ϖ = EnvEq.wk-env-val-wk N ϖₓ})
+
+        ∙app-pm     :    {M : Γ ⊢ᵛ (X `× Y)} → {N₁ : (Γ ∙ X ∙ Y) ⊢ᵛ (Z' `⇒ Z)} → {N : V̲a̲l̲ Γ Z'} → {γ : Env Γ}
+                       → {cs : CompStack Δ Z} → {πₓ : Wk Γ Δ} → {πₓ' : Wk Γ' Δ}
+                       → {LHS : V̲a̲l̲ Γ' X} → {RHS : V̲a̲l̲ Γ' Y} → {γ' : Env Γ'}
+                       → {ϖₓ : EnvEq πₓ γ (topCsEnv cs)} → {ϖₓ' : EnvEq πₓ' γ' (topCsEnv cs)}
+                       → ((∘ ((⇡ M ⊲ γ ∷ □) {↥ = 🗆})) ↠ᵛ (∙ ((⭭ pa̲i̲r̲ LHS RHS ⊲ γ' ∷ □) {↥ = 🗆}))) → (π : Wk Γ' Γ)
+                     ----------------------------------------------------------------
+                       →    ((∙⟨ a̲pp (pm M N₁) N ⊰ γ ╎ cs ⟩) {π = πₓ} {ϖ = ϖₓ})
+                         →ᶜ ((∙⟨ a̲pp ((wk-val (wk-cong (wk-cong π)) N₁)) (wk-v̲a̲l̲ (wk-wk (wk-wk π)) N) ⊰ γ' ﹐ LHS ﹐ (wk-v̲a̲l̲ (wk-wk wk-id) RHS) ╎ cs ⟩)
+                               {π = wk-wk (wk-wk πₓ')} {ϖ = EnvEq.wk-env-val-wk (wk-v̲a̲l̲ (wk-wk wk-id) RHS) (EnvEq.wk-env-val-wk LHS ϖₓ')})
+
+        ∙app-lam     :   {W : (Γ ∙ X) ⊢ᶜ Y} → {N : V̲a̲l̲ Γ X} → {γ : Env Γ}
+                       → {cs : CompStack Δ Y} → {πₓ : Wk Γ Δ} → {ϖₓ : EnvEq πₓ γ (topCsEnv cs)}
+                     ----------------------------------------------------------------
+                       → ((∙⟨ a̲pp (lam W) N ⊰ γ ╎ cs ⟩) {π = πₓ} {ϖ = ϖₓ}) →ᶜ ((∘⟨ W ⊰ γ ﹐ N ╎ cs ⟩) {π = wk-wk πₓ} {ϖ = EnvEq.wk-env-val-wk N ϖₓ})
+
+        ∘app         :   {M : Γ ⊢ᵛ X `⇒ Y} → {N : Γ ⊢ᵛ X} → {γ : Env Γ} → {cs : CompStack Δ Y} → {πₓ : Wk Γ Δ} → {πₓ' : Wk Γ' Δ}
+                       → {N' : V̲a̲l̲ Γ' X} → {γ' : Env Γ'} → {ϖₓ : EnvEq πₓ γ (topCsEnv cs)} → {ϖₓ' : EnvEq πₓ' γ' (topCsEnv cs)}
+                       → ((∘ ((⇡ N ⊲ γ ∷ □) {↥ = 🗆})) ↠ᵛ (∙ ((⭭ N' ⊲ γ' ∷ □) {↥ = 🗆}))) → (π : Wk Γ' Γ)
+                     ----------------------------------------------------------------
+                       →    ((∘⟨ app M N ⊰ γ ╎ cs ⟩) {π = πₓ} {ϖ = ϖₓ})
+                         →ᶜ ((∙⟨ a̲pp (wk-val π M) N' ⊰ γ' ╎ cs ⟩) {π = πₓ'} {ϖ = ϖₓ'})
+
+        ∘var         :   {M : Γ ⊢ᵛ `V} → {γ : Env Γ} → {i : Γ' ∋ `V} → {γ' : Env Γ'} → {W : Γ'' ⊢ᶜ X'} → {γ'' : Env Γ''}
+                       → {cs : CompStack Δ X} → {cs' : CompStack Δ' X'} → {πₓ : Wk Γ Δ} → {πₓ'' : Wk Γ'' Δ'}
+                       → {ϖₓ : EnvEq πₓ γ (topCsEnv cs)} → {ϖₓ'' : EnvEq πₓ'' γ'' (topCsEnv cs')}
+                       → ((∘ ((⇡ M ⊲ γ ∷ □) {↥ = 🗆})) ↠ᵛ (∙ ((⭭ v̲a̲r̲ i ⊲ γ' ∷ □) {↥ = 🗆}))) → (π' : Wk Γ' Γ)
+                       → (⟨ i ∥ γ' ⟩ →ᴸ* ⟨ h ∥ ((γ'' ﹐﹝ W ╎ cs' ﹞) {π = πₓ''} {ϖ = ϖₓ''}) ⟩) → (πᵥ : Wk Γ' Γ'')
+                  ----------------------------------------------------------------
+                       →    ((∘⟨ var M ⊰ γ ╎ cs ⟩) {π = πₓ} {ϖ = ϖₓ})
+                         →ᶜ ((∘⟨ W ⊰ γ'' ╎ cs' ⟩) {π = πₓ''} {ϖ = ϖₓ''})
+
+  data _→ᶜ*_ where
+
+    _◼ : (S : CompState) → S →ᶜ* S
+
+    _→ᶜ⟨_⟩_ : (S : CompState) → {S' S'' : CompState} → S →ᶜ S' → S' →ᶜ* S'' → S →ᶜ* S''
+
+  _⨾ᶜ_ : {F S T : CompState} → (F →ᶜ* S) → (S →ᶜ* T) → (F →ᶜ* T)
+  _⨾ᶜ_ (S ◼) S>>T = S>>T
+  _⨾ᶜ_ (F →ᶜ⟨ F>S₁ ⟩ S₁>>S₂) S₂>>T = F →ᶜ⟨ F>S₁ ⟩ (S₁>>S₂ ⨾ᶜ S₂>>T)
+
+  -----------------------------------------------------
+
+  valstate-eq : {S S' : ValState X} → S →ᵛ S' → ⟦ S ⟧ᵛꟴ ≡ ⟦ S' ⟧ᵛꟴ
+  valstate-eq {S = S} {S' = S'} (∘var-c {tail = □} {↥ = 🗆}) = refl
+  valstate-eq {S = S} {S' = S'} (∘var-c {tail = (x ⊲ γ ∷ tail) {↥ = ↥}} {↥ = 🗇}) = refl
+  valstate-eq {S = S} {S' = S'} (∘var {γ = γ} {γ' = γ'} {i = i} {tail = □} {↥ = 🗆} {M = M} i>>T πᵥ x x₁ ϖ x₃) =
+              let
+                IH0 = lstate-eq* i>>T
+                eq : ⟦ γ' ⟧ᴱ ≡ ⟦ πᵥ ⟧ʷ ⟦ γ ⟧ᴱ
+                eq = enveq-eq ϖ
+              in
+               ⟦ ∘ ((⇡ var i ⊲ γ ∷ □) {↥ = 🗆}) ⟧ᵛꟴ
+              ≡⟨ refl ⟩
+                 ⟦ i ⟧ᵐ ⟦ γ ⟧ᴱ
+              ≡⟨ IH0 ⟩
+                 ⟦ toVal M ⟧ᵛ ⟦ γ' ⟧ᴱ
+              ≡⟨ cong ⟦ toVal M ⟧ᵛ eq ⟩
+               ⟦ toVal M ⟧ᵛ (⟦ πᵥ ⟧ʷ ⟦ γ ⟧ᴱ)
+              ≡⟨ cong (λ x → ⟦ x ⟧ᵛ ⟦ γ ⟧ᴱ) (wk-comm {M = M} {π = πᵥ}) ⟩
+               ⟦ ∙ ((⭭ wk-v̲a̲l̲ πᵥ M ⊲ γ ∷ □) {↥ = 🗆}) ⟧ᵛꟴ ∎
+  valstate-eq {S = S} {S' = S'} (∘var {γ = γ} {γ' = γ'} {i = i} {tail = ((M'' ⊲ γ'' ∷ tail) {↥ = ↥})} {↥ = 🗇} {M = M} i>>T πᵥ x x₁ ϖ x₃) =
+               ⟦ ∘ ((⇡ var i ⊲ γ ∷ ((M'' ⊲ γ'' ∷ tail) {↥ = ↥})) {↥ = 🗇}) ⟧ᵛꟴ
+              ≡⟨ refl ⟩
+               ⟦ ∙ ((⭭ wk-v̲a̲l̲ πᵥ M ⊲ γ ∷ ((M'' ⊲ γ'' ∷ tail) {↥ = ↥})) {↥ = 🗇}) ⟧ᵛꟴ ∎
+
+  valstate-eq {S = S} {S' = S'} (∘lam {M = W} {γ = γ} {tail = □} {↥ = 🗆}) = refl
+  valstate-eq {S = S} {S' = S'} (∘lam {M = W} {γ = γ} {tail = x ⊲ γ₁ ∷ tail} {↥ = 🗇}) = refl
+
+  valstate-eq {S = S} {S' = S'} (∘pair {tail = □} {↥ = 🗆}) = refl
+  valstate-eq {S = S} {S' = S'} (∘pair {tail = x ⊲ γ ∷ tail} {↥ = 🗇}) = refl
+
+  valstate-eq {S = S} {S' = S'} (∘pm {tail = □} {↥ = 🗆}) = refl
+  valstate-eq {S = S} {S' = S'} (∘pm {tail = x ⊲ γ ∷ tail} {↥ = 🗇}) = refl
+
+  valstate-eq {S = S} {S' = S'} (∘unit {tail = □} {↥ = 🗆}) = refl
+  valstate-eq {S = S} {S' = S'} (∘unit {tail = x ⊲ γ ∷ tail} {↥ = 🗇}) = refl
+
+  valstate-eq {S = S} {S' = S'} (∙M∷l {γ' = γ'} {γ = γ} {M = M} {LHS = LHS} {RHS = RHS} {π' = π'} {tail = □} {↥ = 🗆} π≡ LHS≡M) =
+               ⟦ ∙ ((⭭ M ⊲ γ ∷ ((⇡ᴸ LHS RHS ⊲ γ' ∷ □) {↥ = 🗆})) {↥ = 🗇}) ⟧ᵛꟴ
+              ≡⟨ refl ⟩
+               ⟦ LHS ⟧ᵛ ⟦ γ' ⟧ᴱ , ⟦ RHS ⟧ᵛ ⟦ γ' ⟧ᴱ
+              ≡⟨ cong₂ (λ x y → x , ⟦ RHS ⟧ᵛ y) LHS≡M π≡ ⟩
+               ⟦ toVal M ⟧ᵛ ⟦ γ ⟧ᴱ , ⟦ RHS ⟧ᵛ (⟦ π' ⟧ʷ ⟦ γ ⟧ᴱ)
+              ≡⟨ refl ⟩
+               ⟦ ∘ ((⇡ wk-val π' RHS ⊲ γ ∷ ((⇡ᴿ M (wk-val π' RHS) ⊲ γ ∷ □) {↥ = 🗆})) {↥ = 🗇}) ⟧ᵛꟴ ∎
+  valstate-eq {S = S} {S' = S'} (∙M∷l {tail = x ⊲ γ ∷ tail} {↥ = 🗇} π≡ LHS≡M) = refl
+
+  valstate-eq {S = S} {S' = S'} (∙M∷r {γ' = γ'} {γ = γ} {M = M} {LHS = LHS} {RHS = RHS} {π' = π'} {tail = □} {↥ = 🗆} π≡ RHS≡M) =
+               ⟦ ∙ ((⭭ M ⊲ γ ∷ ((⇡ᴿ LHS RHS ⊲ γ' ∷ □) {↥ = 🗆})) {↥ = 🗇}) ⟧ᵛꟴ
+              ≡⟨ refl ⟩
+               ⟦ toVal LHS ⟧ᵛ ⟦ γ' ⟧ᴱ , ⟦ RHS ⟧ᵛ ⟦ γ' ⟧ᴱ
+              ≡⟨ cong₂ (λ x y → ⟦ toVal LHS ⟧ᵛ x , y) π≡ RHS≡M ⟩
+               ⟦ toVal LHS ⟧ᵛ (⟦ π' ⟧ʷ ⟦ γ ⟧ᴱ) , ⟦ toVal M ⟧ᵛ ⟦ γ ⟧ᴱ
+              ≡⟨ cong (λ x → ⟦ x ⟧ᵛ ⟦ γ ⟧ᴱ , ⟦ toVal M ⟧ᵛ ⟦ γ ⟧ᴱ) (wk-comm {M = LHS} {π = π'}) ⟩
+               ⟦ ∙ ((⭭ pa̲i̲r̲ (wk-v̲a̲l̲ π' LHS) M ⊲ γ ∷ □) {↥ = 🗆}) ⟧ᵛꟴ ∎
+  valstate-eq {S = S} {S' = S'} (∙M∷r {tail = x ⊲ γ ∷ tail} {↥ = 🗇} π≡ RHS≡M) = refl
+
+  valstate-eq {S = S} {S' = S'} (∙pair∷pm {γ' = γ'} {γ = γ} {LHS = LHS} {RHS = RHS} {M = M} {N = N} {π' = π'} {tail = □} {↥ = 🗆} π≡ p₁M≡LHS p₂M≡RHS) =
+               ⟦ ∙ ((⭭ pa̲i̲r̲ LHS RHS ⊲ γ ∷ ((⇡ᴹ M N ⊲ γ' ∷ □) {↥ = 🗆})) {↥ = 🗇}) ⟧ᵛꟴ
+              ≡⟨ refl ⟩
+               ⟦ N ⟧ᵛ ((⟦ γ' ⟧ᴱ , proj₁ (⟦ M ⟧ᵛ ⟦ γ' ⟧ᴱ)) , proj₂ (⟦ M ⟧ᵛ ⟦ γ' ⟧ᴱ))
+              ≡⟨ cong ⟦ N ⟧ᵛ (cong₂ _,_ (cong₂ _,_ π≡ p₁M≡LHS) p₂M≡RHS) ⟩
+               ⟦ N ⟧ᵛ ((⟦ π' ⟧ʷ ⟦ γ ⟧ᴱ , ⟦ toVal LHS ⟧ᵛ ⟦ γ ⟧ᴱ) , ⟦ toVal RHS ⟧ᵛ ⟦ γ ⟧ᴱ)
+              ≡⟨ refl  ⟩
+               ⟦ N ⟧ᵛ ((⟦ π' ⟧ʷ ⟦ γ ⟧ᴱ , ⟦ toVal LHS ⟧ᵛ ⟦ γ ⟧ᴱ) , ⟦ wk-val (wk-wk wk-id) (toVal RHS) ⟧ᵛ (⟦ γ ⟧ᴱ , ⟦ toVal LHS ⟧ᵛ ⟦ γ ⟧ᴱ))
+              ≡⟨ cong (λ x → ⟦ N ⟧ᵛ ((⟦ π' ⟧ʷ ⟦ γ ⟧ᴱ , ⟦ toVal LHS ⟧ᵛ ⟦ γ ⟧ᴱ) , ⟦ x ⟧ᵛ (⟦ γ ⟧ᴱ , ⟦ toVal LHS ⟧ᵛ ⟦ γ ⟧ᴱ))) (wk-comm {M = RHS} {π = wk-wk wk-id}) ⟩
+               ⟦ N ⟧ᵛ ((⟦ π' ⟧ʷ ⟦ γ ⟧ᴱ , ⟦ toVal LHS ⟧ᵛ ⟦ γ ⟧ᴱ) , ⟦ toVal (wk-v̲a̲l̲ (wk-wk wk-id) RHS) ⟧ᵛ (⟦ γ ⟧ᴱ , ⟦ toVal LHS ⟧ᵛ ⟦ γ ⟧ᴱ))
+              ≡⟨ refl ⟩
+               ⟦ ∘ ((⇡ wk-val (wk-cong (wk-cong π')) N ⊲ γ ﹐ LHS ﹐ wk-v̲a̲l̲ (wk-wk wk-id) RHS ∷ □) {↥ = 🗆}) ⟧ᵛꟴ ∎
+  valstate-eq {S = S} {S' = S'} (∙pair∷pm {tail = x ⊲ γ ∷ tail} {↥ = 🗇} _ _ _) = refl
+
+
+  valstate-wk : {S S' : ValState X} → S →ᵛ S' → Wk (topCtx S') (topCtx S)
+  valstate-wk ∘var-c = wk-id
+  valstate-wk (∘var i>>T πᵥ x x₁ x₂ x₃) = wk-id
+  valstate-wk ∘lam = wk-id
+  valstate-wk ∘pair = wk-id
+  valstate-wk ∘pm = wk-id
+  valstate-wk ∘unit = wk-id
+  valstate-wk (∙M∷l π≡ LHS≡M) = wk-id
+  valstate-wk (∙M∷r π≡ RHS≡M) = wk-id
+  valstate-wk (∙pair∷pm {tail = tail} {↥ = ↥} π≡ p₁M≡LHS p₂M≡RHS) = wk-wk (wk-wk wk-id)
+
+
+  valstate-env-eq : {S S' : ValState X} → (S→S' : S →ᵛ S') → EnvEq (valstate-wk S→S') (topEnv S') (topEnv S)
+  valstate-env-eq ∘var-c = enveq-id
+  valstate-env-eq (∘var i>>T πᵥ x x₁ x₂ x₃) = enveq-id
+  valstate-env-eq ∘lam = enveq-id
+  valstate-env-eq ∘pair = enveq-id
+  valstate-env-eq ∘pm = enveq-id
+  valstate-env-eq ∘unit = enveq-id
+  valstate-env-eq (∙M∷l π≡ LHS≡M) = enveq-id
+  valstate-env-eq (∙M∷r π≡ RHS≡M) = enveq-id
+  valstate-env-eq (∙pair∷pm {Γ = Γ} {X = X} {Y = Y} {Z = Z} {γ' = γ'} {γ = γ} {LHS = LHS} {RHS = RHS} {M = M} {N = N} {π' = π'} {tail = tail} {↥ = ↥} π≡ p₁M≡LHS p₂M≡RHS) =
+                  let
+                    goal : EnvEq (wk-wk (wk-wk wk-id)) (γ ﹐ LHS ﹐ wk-v̲a̲l̲ (wk-wk wk-id) RHS) γ
+                    goal = wk-env-val-wk (wk-v̲a̲l̲ (wk-wk wk-id) RHS) (wk-env-val-wk LHS enveq-id)
+                  in
+                  goal
+
+  valstate-wkext : {S S' : ValState X} → (S→S' : S →ᵛ S') → WkExt (valstate-wk S→S')
+  valstate-wkext ∘var-c = wk-eq _
+  valstate-wkext (∘var i>>T πᵥ x x₁ x₂ x₃) = wk-eq _
+  valstate-wkext ∘lam = wk-eq _
+  valstate-wkext ∘pair = wk-eq _
+  valstate-wkext ∘pm = wk-eq _
+  valstate-wkext ∘unit = wk-eq _
+  valstate-wkext (∙M∷l π≡ LHS≡M) = wk-eq _
+  valstate-wkext (∙M∷r π≡ RHS≡M) = wk-eq _
+  valstate-wkext (∙pair∷pm π≡ p₁M≡LHS p₂M≡RHS) = wk-ext (wk-wk wk-id) (wk-ext wk-id (wk-eq wk-id))
