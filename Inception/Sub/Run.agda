@@ -1,6 +1,6 @@
 {-# OPTIONS --no-postfix-projections #-}
 
-module Inception.Sub.LREval (R : Set) where
+module Inception.Sub.Run (R : Set) where
 
 open import Data.Product using (proj₁; proj₂; _,_; <_,_>; curry; _×_; Σ; ∃; Σ-syntax; ∃-syntax)
 open import Data.Sum using (_⊎_; inj₁; inj₂)
