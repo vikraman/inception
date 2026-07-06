@@ -288,7 +288,8 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   --LabelHalts {Γ = Γ ∙ `V} (v̲a̲r̲ Cx.h) (_﹐﹝_╎_﹞ {Δ = Δ} γ W cs {π = π} {wk≡ = wk≡}) =
   --  (Γ' : Ctx) → (γ' : Env Γ') → (π' : Wk Γ' Γ) → (ext' : WkExt π') → (π'' : Wk Γ' Δ) → (wk≡'' : ⟦ π'' ⟧ʷ ⟦ γ' ⟧ᴱ ≡ ⟦ topCsEnv cs ⟧ᴱ) → (ϖ : EnvEq π' γ' γ) → CStateHalts (((∘⟨ wk-comp π' W ⊰ γ' ╎ cs ⟩) {π = π''} {wk≡ = wk≡''}))
   LabelHalts {Γ = Γ ∙ `V} (v̲a̲r̲ Cx.h) (_﹐﹝_╎_﹞ {Δ = Δ} γ W cs {π = π} {ϖ = ϖ}) =
-    (Γ' : Ctx) → (γ' : Env Γ') → (π' : Wk Γ' Γ) → (ext' : WkExt π') → (π'' : Wk Γ' Δ) → (ϖ'' : EnvEq π'' γ' (topCsEnv cs)) → (ϖ : EnvEq π' γ' γ) → CStateHalts (((∘⟨ wk-comp π' W ⊰ γ' ╎ cs ⟩) {π = π''} {ϖ = ϖ''}))
+    --(Γ' : Ctx) → (γ' : Env Γ') → (π' : Wk Γ' Γ) → (ext' : WkExt π') → (π'' : Wk Γ' Δ) → (ϖ'' : EnvEq π'' γ' (topCsEnv cs)) → (ϖ : EnvEq π' γ' γ) → CStateHalts (((∘⟨ wk-comp π' W ⊰ γ' ╎ cs ⟩) {π = π''} {ϖ = ϖ''}))
+    CStateHalts (((∘⟨ W ⊰ γ ╎ cs ⟩) {π = π} {ϖ = ϖ}))
 
   LabelHalts (v̲a̲r̲ (Cx.t i)) (γ ﹐ M) = LabelHalts (v̲a̲r̲ i) γ
   LabelHalts (v̲a̲r̲ (Cx.t i)) (γ ﹐﹝ W ╎ cs ﹞) = LabelHalts (v̲a̲r̲ i) γ
@@ -308,7 +309,35 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   wk-LabelHalts (v̲a̲r̲ Cx.h) (γ' ﹐﹝ W ╎ cs ﹞) (γ ﹐ M) (wk-cong π) (wk-eq π₁) () ↓ᴸ
   wk-LabelHalts (v̲a̲r̲ Cx.h) (γ' ﹐﹝ W ╎ cs ﹞) (γ ﹐ M) (wk-wk π) (wk-eq π₁) (wk-env-comp-wk W₁ cs₁ ϖ) ↓ᴸ = ql (wk-absurd (wk-wk π) π) _
   wk-LabelHalts (v̲a̲r̲ Cx.h) (γ' ﹐﹝ W ╎ cs ﹞) (γ ﹐ M) (wk-wk π) (wk-ext π₁ ext) (wk-env-comp-wk W₁ cs₁ ϖ) ↓ᴸ = wk-LabelHalts (v̲a̲r̲ Cx.h) γ' (γ ﹐ M) π ext ϖ ↓ᴸ
-  wk-LabelHalts (v̲a̲r̲ Cx.h) (γ' ﹐﹝ W ╎ cs ﹞) (γ ﹐﹝ W₁ ╎ cs₁ ﹞) (wk-cong π) (wk-eq π₁) (wk-env-comp-cong W₂ cs₂ ϖ) ↓ᴸ =
+  wk-LabelHalts (v̲a̲r̲ Cx.h) ((γ' ﹐﹝ W ╎ cs ﹞) {π = π₀₁} {ϖ = ϖ₀₁}) ((γ ﹐﹝ W₁ ╎ cs₁ ﹞) {π = π₀₂} {ϖ = ϖ₀₂}) (wk-cong π) (wk-eq π₁) (wk-env-comp-cong W₂ cs₂ ϖ) ↓ᴸ =
+    let
+      {-
+      ϖ1 : EnvEq wk-id γ' γ
+      ϖ1 = subst (λ x → EnvEq x γ' γ) wk-id-id ϖ
+      ϖ''' : EnvEq π' γ'' γ
+      ϖ''' = subst (λ x → EnvEq π' γ'' x) (enveq-id-eq ϖ1) ϖ₃
+      csh = ↓ᴸ Γ' γ'' π' ext' π'' ϖ'' ϖ'''
+      weq : wk-comp π' W₁ ≡ wk-comp π' (wk-comp π W₁)
+      weq = wk-comp π' W₁ ≡⟨ cong (wk-comp π') (sym (wk-comp-id W₁)) ⟩ wk-comp π' (wk-comp wk-id W₁) ≡⟨ cong (λ x → wk-comp π' (wk-comp x W₁)) (sym (wk-id-id {π = π})) ⟩ wk-comp π' (wk-comp π W₁) ∎
+      -}
+
+      Weq : W₁ ≡ wk-comp π W₁
+      Weq = W₁ ≡⟨ sym (wk-comp-id W₁) ⟩ wk-comp wk-id W₁ ≡⟨ cong (λ x → wk-comp x W₁) (sym wk-id-id) ⟩ wk-comp π W₁ ∎
+
+      γeq : γ ≡ γ'
+      γeq = sym (enveq-id-eq (subst (λ x → EnvEq x γ' γ) wk-id-id ϖ))
+
+      πeq : π₀₂ ≡ wk-trans π π₀₂
+      πeq = π₀₂ ≡⟨ sym wk-trans-id ⟩ wk-trans wk-id π₀₂ ≡⟨ cong (λ x → wk-trans x π₀₂) (sym wk-id-id) ⟩ wk-trans π π₀₂ ∎
+
+      eq : (W₁ , γ , π₀₂) ≡ (wk-comp π W₁ , γ' , wk-trans π π₀₂)
+      eq = pair-eq Weq (pair-eq γeq πeq)
+
+      goal : CStateHalts ((∘⟨ (wk-comp π W₁) ⊰ γ' ╎ cs ⟩) {π = wk-trans π π₀₂} {ϖ = ϖ₀₁})
+      goal = subst (λ x → CStateHalts x) (cstate-eq' eq) ↓ᴸ
+    in
+    goal
+    {-
     λ Γ' γ'' π' ext' π'' ϖ'' ϖ₃ →
     let
       ϖ1 : EnvEq wk-id γ' γ
@@ -322,6 +351,7 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
       goal = subst (λ x → CStateHalts x) (cstate-eq weq) csh
     in
     goal
+    -}
   wk-LabelHalts (v̲a̲r̲ Cx.h) (γ' ﹐﹝ W ╎ cs ﹞) (γ ﹐﹝ W₁ ╎ cs₁ ﹞) (wk-wk π) (wk-eq π₁) (wk-env-comp-wk W₂ cs₂ ϖ) ↓ᴸ = ql (wk-absurd (wk-wk π) π) _
   wk-LabelHalts (v̲a̲r̲ Cx.h) (γ' ﹐﹝ W ╎ cs ﹞) (γ ﹐﹝ W₁ ╎ cs₁ ﹞) (wk-wk π) (wk-ext π₁ ext) (wk-env-comp-wk W₂ cs₂ ϖ) ↓ᴸ = wk-LabelHalts (v̲a̲r̲ Cx.h) γ' (γ ﹐﹝ W₁ ╎ cs₁ ﹞) π ext ϖ ↓ᴸ
   wk-LabelHalts (v̲a̲r̲ (Cx.t i)) ∗ (γ ﹐ M) () ext ϖ ↓ᴸ
@@ -338,7 +368,6 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   wk-LabelHalts (v̲a̲r̲ (Cx.t i)) (γ' ﹐﹝ W ╎ cs ﹞) (γ ﹐﹝ W₁ ╎ cs₁ ﹞) (wk-cong π) (wk-eq π₁) (wk-env-comp-cong W₂ cs₂ ϖ) ↓ᴸ = wk-LabelHalts (v̲a̲r̲ i) γ' γ π (WkExt.wk-eq π) ϖ ↓ᴸ
   wk-LabelHalts (v̲a̲r̲ (Cx.t i)) (γ' ﹐﹝ W ╎ cs ﹞) (γ ﹐﹝ W₁ ╎ cs₁ ﹞) (wk-wk π) (wk-eq π₁) (wk-env-comp-wk W₂ cs₂ ϖ) ↓ᴸ = ql (wk-absurd (wk-wk π) π) _
   wk-LabelHalts (v̲a̲r̲ (Cx.t i)) (γ' ﹐﹝ W ╎ cs ﹞) (γ ﹐﹝ W₁ ╎ cs₁ ﹞) (wk-wk π) (wk-ext π₁ ext) (wk-env-comp-wk W₂ cs₂ ϖ) ↓ᴸ = wk-LabelHalts (v̲a̲r̲ (Cx.t i)) γ' (γ ﹐﹝ W₁ ╎ cs₁ ﹞) π ext ϖ ↓ᴸ
-
 
   LookupTermHalts : {T : LookupState X} → (H : LookupHaltingState T) → Set
   LookupTermHalts found-unit = ⊤
@@ -953,7 +982,30 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
                 (wk-trans π₂ πᴺ)
 
                 (env-eq-trans ϖ₂ ϖ₁)
-    comp-eval-rec (var {A = X} M) γ ↓ᴱ π cs πₓ wk≡₀ = {!!} {-with val-eval-rec {X = `V} M γ π
+    comp-eval-rec (var {A = X} M) γ ↓ᴱ π cs πₓ ϖ₀ with val-eval-rec {X = `V} M γ {!!} π
+    ... | steps {T = ∙ ((⭭ v̲a̲r̲ i) ⊲ γ₁ ∷ □) {↥ = 🗆}} M>T ∙T M≡T π' ext₁ _ ↓ᴱ _ with lookup i γ₁ {!!}
+    ... | steps i>>T (found-comp {X = X} {W = W'} {γ = γ'} {cs = cs'} {π = πᶜ} {ϖ = ϖc}) i≡T π₂ w≡γ ext we ϖ ↓ᴸ' =
+                steps
+
+                  ((∘⟨ var (wk-val π M) ⊰ γ ╎ cs ⟩ →ᶜ⟨ ∘var {ϖₓ = ϖ₀} M>T π' i>>T π₂ ⟩ {!!}))
+
+                  ret
+
+                  {!!} {-(((⟦ π ⟧ʷ ； ⟦ M ⟧ᵛ) ； varK) ⟦ γ ⟧ᴱ ⟦ cs ⟧ᴷ
+                    ≡⟨ refl ⟩
+                      ⟦ M ⟧ᵛ (⟦ π ⟧ʷ ⟦ γ ⟧ᴱ)
+                    ≡⟨ M≡T ⟩
+                      ⟦ i ⟧ᵐ ⟦ γ₁ ⟧ᴱ
+                    ≡⟨ i≡T ⟩
+                      ⟦ W' ⟧ᶜ ⟦ γ' ⟧ᴱ (λ y → ⟦ cs' ⟧ᶜˢ (λ k → k y) k₀)
+                    ≡⟨ S≡T ⟩
+                      (⟦ toVal M₁ ⟧ᵛ ； η) ⟦ γ₂ ⟧ᴱ ⟦ ◻ ⟧ᴷ ∎
+                  ) -}
+
+                  {!!}
+
+                  {!!}
+    {-with val-eval-rec {X = `V} M γ π
     ... | steps {T = ∙ ((⭭ v̲a̲r̲ i) ⊲ γ₁ ∷ □) {↥ = 🗆}} M>T ∙T M≡T π' wk≡ ↓ᴱ with lookup i γ₁ {!!}
     ... | steps i>>T (found-comp {X = X} {W = W'} {γ = γ'} {cs = cs'} {π = πᶜ} {wk≡ = wk≡c}) i≡T π₂ w≡γ ext we ϖ ↓ᴱ' with
                     comp-eval-rec
@@ -986,17 +1038,19 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
     comp-eval-rec (sub W V) γ ↓ᴱ π cs πₓ ϖ₀ with
       comp-eval-rec W ((γ ﹐﹝ wk-comp π V ╎ cs ﹞) {π = πₓ} {ϖ = ϖ₀})
-        (↓ᴱ , λ Γ' γ' π' ext' π'' ϖ'' ϖ →
+        (↓ᴱ ,
           let
-            IH = comp-eval-rec V γ' {!!} {!!} {!!} {!!} {!!}
+            IH = comp-eval-rec V γ ↓ᴱ π cs πₓ ϖ₀
+            csh = get-csteps IH
           in
           record
-            { target-state = {!!}
-            ; target-is-halting = {!!}
-            ; trace = {!!}
-            ; result-eq = {!!}
-            }) (wk-cong π) cs (wk-wk πₓ) (wk-env-comp-wk (wk-comp π V) cs ϖ₀)
-    ... | steps {T = T} W>WT HT S≡T _ _ =
+           { target-state = proj₁ csh
+           ; target-is-halting = proj₁ (proj₂ (proj₂ csh))
+           ; trace = proj₁ (proj₂ (proj₂ (proj₂ csh)))
+           ; result-eq = proj₁ (proj₂ (proj₂ (proj₂ (proj₂ csh))))
+           })
+        (wk-cong π) cs (wk-wk πₓ) (wk-env-comp-wk (wk-comp π V) cs ϖ₀)
+    ... | steps {T = T} W>WT HT S≡T π₁ ϖ₁ =
 
                 steps
 
@@ -1006,9 +1060,9 @@ module EvalMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 
                     S≡T
 
-                    {!!}
+                    (wk-trans π₁ (wk-wk wk-id))
 
-                    {!!}
+                    (env-eq-trans ϖ₁ (wk-env-comp-wk (wk-comp π V) cs enveq-id))
 
     comp-eval : (W : ε ⊢ᶜ R₀) → CompSteps ((∘⟨ wk-comp wk-id W ⊰ ∗ ╎ ◻ ⟩) {π = wk-id} {ϖ = EnvEq.wk-env-ε})
     comp-eval W = comp-eval-rec W ∗ tt wk-id ◻ wk-id EnvEq.wk-env-ε --refl

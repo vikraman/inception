@@ -197,3 +197,6 @@ module StatesMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
   -- ∘⟨_⊰_╎_⟩ : (W : Γ ⊢ᶜ X) → (γ : Env Γ) → (cs : CompStack Δ X) → {π : Wk Γ Δ} → {ϖ : EnvEq π γ (topCsEnv cs)} → CompState
   cstate-eq : {W W' : Γ ⊢ᶜ X} {γ : Env Γ} {cs : CompStack Δ X} {π : Wk Γ Δ} {ϖ : EnvEq π γ (topCsEnv cs)} → W ≡ W' → ((∘⟨ W ⊰ γ ╎ cs ⟩) {π = π} {ϖ = ϖ}) ≡ ((∘⟨ W' ⊰ γ ╎ cs ⟩) {π = π} {ϖ = ϖ})
   cstate-eq {W = W} {W' = W'} {γ = γ} {cs = cs} {π = π} {ϖ = ϖ} eq = dcong₂ (λ x y → ((∘⟨ x ⊰ γ ╎ cs ⟩) {π = π} {ϖ = y})) eq (sym (env-eq-uip ϖ (subst (λ _ → EnvEq π γ (topCsEnv cs)) eq ϖ)))
+
+  cstate-eq' : {W W' : Γ ⊢ᶜ X} {γ γ' : Env Γ} {cs : CompStack Δ X} {π π' : Wk Γ Δ} {ϖ : EnvEq π γ (topCsEnv cs)} {ϖ' : EnvEq π' γ' (topCsEnv cs)} → (W , (γ , π)) ≡ (W' , (γ' , π')) → ((∘⟨ W ⊰ γ ╎ cs ⟩) {π = π} {ϖ = ϖ}) ≡ ((∘⟨ W' ⊰ γ' ╎ cs ⟩) {π = π'} {ϖ = ϖ'})
+  cstate-eq' {W = W} {W' = W'} {γ = γ} {cs = cs} {π = π} {ϖ = ϖ} eq = dcong₂ (λ x y → ((∘⟨ (proj₁ x) ⊰ proj₁ (proj₂ x) ╎ cs ⟩) {π = proj₂ (proj₂ x)} {ϖ = y})) eq (env-eq-uip (subst (λ z → EnvEq (proj₂ (proj₂ z)) (proj₁ (proj₂ z)) (topCsEnv cs)) eq ϖ) _)
