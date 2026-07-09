@@ -4,6 +4,10 @@ module Inception.Everything where
 import Inception.Cont.Base
 import Inception.Cont.Repr
 
+-- lambda calculi
+import Inception.Lam
+import Inception.LamPm
+
 -- substitution calculus
 import Inception.Sub.Syntax
 import Inception.Sub.CPS
