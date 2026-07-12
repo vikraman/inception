@@ -36,6 +36,7 @@ open import Inception.Sub.Arithmetic
 private
   variable
     Γ₀ : Ctx
+    X₁ X₂ : Ty
     Z₀ : Ty
 
 -------------------------------------------------------------------
@@ -52,6 +53,10 @@ data EnvWk : (π : Wk Γ Γ') → Env Γ Z₀ → Env Γ' Z₀ → Set where
 data CompSteps : CompState Z₀ → Set where
 
   steps : {S T : CompState Z₀} → S →ᶜ* T → CompHaltingState T → CompSteps S
+
+data SN (S : CompState Z₀) : Set where
+
+  step : ({S' : CompState Z₀} → S →ᶜ S' → SN S') → SN S
 
 get-csteps : {S : CompState Z₀} → CompSteps S → Σ[ T ∈ CompState Z₀ ] ((CompHaltingState T) × (S →ᶜ* T))
 get-csteps {S = S} (steps {T = T} S→T H) = T , H , S→T
@@ -386,6 +391,79 @@ val-eval-rec {Γ = Γ} (pm {A = A} {B = B} M N) γ ↓ᴱ π with val-eval-rec M
 val-eval : (M : ε ⊢ᵛ X) → ValSteps {T◾ = X} {Z₀ = Z₀} (∘ ((⇡ wk-val wk-id M ⊲ ∗ ∷ □) {↥ = 🗆}))
 val-eval M = val-eval-rec M ∗ tt wk-id
 
+halts : (X : Ty) → V̲a̲l̲ Γ X → Env Γ Z₀ → Set
+halts `Unit u̲n̲i̲t̲ γ = ⊤
+halts (X₁ `× X₂) (pa̲i̲r̲ W₁ W₂) γ = halts X₁ W₁ γ × halts X₂ W₂ γ
+halts {Z₀ = Z₀} (X `⇒ Y) (l̲a̲m̲ {Γ = Γ} M) γ = ∀ (W : V̲a̲l̲ Γ X) → (halts {Z₀ = Z₀} X W γ) → (LabelHalts W γ)
+                              → ({Δ : Ctx} → (cs : CompStack Δ Y Z₀) → (π : Wk Γ Δ) → (ϖ : EnvEq π γ (topCsEnv cs))
+                                  → SN (((∙⟨ a̲pp (lam M) W ⊰ γ ╎ cs ⟩) {π = π} {ϖ = ϖ})))
+halts `V (v̲a̲r̲ i) γ = ⊤
+
+env-halts : Env Γ Z₀ → Set
+env-halts ∗ = ⊤
+env-halts (γ ﹐ M) = (env-halts γ) × (halts _ M γ)
+env-halts (γ ﹐﹝ W ╎ cs ﹞) = (env-halts γ) × ⊤
+
+----------------------------------------------------------------------------------------------------
+
+{- SN
+
+determinism : {C C' : CompState Z₀} → (S→S' T→T' : C →ᶜ C') → (S→S' ≡ T→T')
+determinism {C = (∘⟨ return x ⊰ γ ╎ cs ⟩) {π = π} {ϖ = ϖ}} (∘return x₁) T→T' = {!T→T'!}
+determinism {C = ∘⟨ pm x W ⊰ γ ╎ cs ⟩} S→S' T→T' = {!!}
+determinism {C = ∘⟨ push W W₁ ⊰ γ ╎ cs ⟩} S→S' T→T' = {!!}
+determinism {C = ∘⟨ app x x₁ ⊰ γ ╎ cs ⟩} S→S' T→T' = {!!}
+determinism {C = ∘⟨ var x ⊰ γ ╎ cs ⟩} S→S' T→T' = {!!}
+determinism {C = ∘⟨ sub W W₁ ⊰ γ ╎ cs ⟩} S→S' T→T' = {!!}
+determinism {C = ∙⟨ r̲e̲t̲u̲r̲n̲ x ⊰ γ ╎ cs ⟩} S→S' T→T' = {!!}
+determinism {C = ∙⟨ a̲pp x x₁ ⊰ γ ╎ cs ⟩} S→S' T→T' = {!!}
+
+mutual
+  val-fundamental-lemma : (W : V̲a̲l̲ Γ X) → (γ : Env Γ Z₀) → (env-halts γ) → (↓ᴱ : LookupEnvHalts γ) → halts _ W γ
+  val-fundamental-lemma (l̲a̲m̲ M) γ ↓env ↓ᴱ =
+    λ W W-halts ↓ᴸ cs π ϖ →
+      let
+        eq1 : (a̲pp (lam M) W ≡ a̲pp (lam (wk-comp (wk-cong wk-id) M)) W)
+        eq1 = cong₂ a̲pp (cong lam (sym (wk-comp-id M))) refl
+
+        IH : SN ∙⟨ a̲pp (wk-val wk-id (lam M)) W ⊰ γ ╎ cs ⟩
+        IH = app-eval-rec (lam M) W γ ↓ᴸ ↓ᴱ wk-id cs π ϖ ↓env
+        goal : SN ∙⟨ a̲pp (lam M) W ⊰ γ ╎ cs ⟩
+        goal = subst (λ x → SN x) (sym (cstate-eq (pair-eq eq1 refl))) IH
+      in
+      goal
+  val-fundamental-lemma (pa̲i̲r̲ W₁ W₂) γ ↓env ↓ᴱ = (val-fundamental-lemma W₁ γ ↓env ↓ᴱ) , (val-fundamental-lemma W₂ γ ↓env ↓ᴱ)
+  val-fundamental-lemma u̲n̲i̲t̲ γ ↓env ↓ᴱ = tt
+  val-fundamental-lemma (v̲a̲r̲ i) γ ↓env ↓ᴱ = tt
+
+  comp-fundamental-lemma : (M : Γ' ⊢ᶜ X) → (γ : Env Γ Z₀) → (↓ᴱ : LookupEnvHalts γ) → (π : Wk Γ Γ') → (cs : CompStack Δ X Z₀) → (πₓ : Wk Γ Δ)
+                → (ϖ₀ : EnvEq πₓ γ (topCsEnv cs))
+                → (env-halts γ)
+                → SN ((∘⟨ wk-comp π M ⊰ γ ╎ cs ⟩) {π = πₓ} {ϖ = ϖ₀})
+  comp-fundamental-lemma (return {A = X} M) γ ↓ᴱ π ◻ πₓ ϖ₀ ↓env with val-eval-rec {X = X} M γ ↓ᴱ π
+  ... | steps {T = ∙ ((⭭ M₁ ⊲ γ₁ ∷ □) {↥ = 🗆})} M>T ∙T π' ext₁ ϖ₁ _ _ =
+    let
+      the-step : ∘⟨ return (wk-val π M) ⊰ γ ╎ ◻ ⟩ →ᶜ ∙⟨ r̲e̲t̲u̲r̲n̲ M₁ ⊰ γ₁ ╎ ◻ ⟩
+      the-step = ∘return {πₓ' = wk-wk-ε} {ϖₓ = ϖ₀} {ϖₓ' = env-wk-wk-ε γ₁} M>T
+      goal : SN ∘⟨ return (wk-val π M) ⊰ γ ╎ ◻ ⟩
+      goal =
+              step (λ {S' : CompState X} → λ {S→S' → {!S→S'!} })
+    in
+    goal
+  comp-fundamental-lemma (return x) γ ↓ᴱ π (x₁ ⊲ γ₁ ⦂⦂ cs) πₓ ϖ₀ ↓env = {!!}
+  comp-fundamental-lemma (pm x M) γ ↓ᴱ π cs πₓ ϖ₀ ↓env = {!!}
+  comp-fundamental-lemma (push M M₁) γ ↓ᴱ π cs πₓ ϖ₀ ↓env = {!!}
+  comp-fundamental-lemma (app x x₁) γ ↓ᴱ π cs πₓ ϖ₀ ↓env = {!!}
+  comp-fundamental-lemma (var x) γ ↓ᴱ π cs πₓ ϖ₀ ↓env = {!!}
+  comp-fundamental-lemma (sub M M₁) γ ↓ᴱ π cs πₓ ϖ₀ ↓env = {!!}
+
+  postulate app-eval-rec :   (M : Γ' ⊢ᵛ X `⇒ Y) → (N : V̲a̲l̲ Γ X) → (γ : Env Γ Z₀) → (↓ᴸ : LabelHalts N γ) → (↓ᴱ : LookupEnvHalts γ) → (π : Wk Γ Γ') → (cs : CompStack Δ Y Z₀) → (πₓ : Wk Γ Δ)
+                  → (ϖ₀ : EnvEq πₓ γ (topCsEnv cs))
+                  → (env-halts γ)
+                  → SN ((∙⟨ (a̲pp (wk-val π M) N) ⊰ γ ╎ cs ⟩) {π = πₓ} {ϖ = ϖ₀})
+SN -}
+
+----------------------------
 {-# TERMINATING #-}
 mutual
   app-eval-rec :   (M : Γ' ⊢ᵛ X `⇒ Y) → (N : V̲a̲l̲ Γ X) → (γ : Env Γ Z₀) → (↓ᴸ : LabelHalts N γ) → (↓ᴱ : LookupEnvHalts γ) → (π : Wk Γ Γ') → (cs : CompStack Δ Y Z₀) → (πₓ : Wk Γ Δ)

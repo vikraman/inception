@@ -316,10 +316,9 @@ infixr 10 _⨾ᶜ_
 --------------------------------------------------
 
 infix  15 _→ᶜ_
-data _→ᶜ*_ : CompState Z₀ → CompState Z₀ → Set
-data _→ᶜ_ : CompState Z₀ → CompState Z₀ → Set
+data _→ᶜ_ {Z₀ : Ty} : CompState Z₀ → CompState Z₀ → Set where
 
-data _→ᶜ_  where
+--data _→ᶜ_  where
 
       ∘return  :    {M : Γ ⊢ᵛ X} → {γ : Env Γ' Z₀} → {π : Wk Γ' Γ} → {M' : V̲a̲l̲ Γ'' X} → {γ' : Env Γ'' Z₀}
                     → {cs : CompStack Δ X Z₀} → {πₓ : Wk Γ' Δ} → {πₓ' : Wk Γ'' Δ}
@@ -397,7 +396,8 @@ data _→ᶜ_  where
                       →    ((∘⟨ var M ⊰ γ ╎ cs ⟩) {π = πₓ} {ϖ = ϖₓ})
                         →ᶜ ((∘⟨ W ⊰ γ'' ╎ cs' ⟩) {π = πₓ''} {ϖ = ϖₓ''})
 
-data _→ᶜ*_ where
+--data _→ᶜ*_ where
+data _→ᶜ*_ {Z₀ : Ty} : CompState Z₀ → CompState Z₀ → Set where
 
   _◼ : (S : CompState Z₀) → S →ᶜ* S
 

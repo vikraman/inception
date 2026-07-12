@@ -133,5 +133,8 @@ topCompEnv : (Q : CompState Z) → Env (topCompCtx Q) Z
 topCompEnv (∘⟨_⊰_╎_⟩ _ γ _) = γ
 topCompEnv (∙⟨_⊰_╎_⟩ _ γ _) = γ
 
+cstate-eq : {W W' : C̲o̲m̲p Γ X} {γ γ' : Env Γ Z} {cs : CompStack Δ X Z} {π π' : Wk Γ Δ} {ϖ : EnvEq π γ (topCsEnv cs)} {ϖ' : EnvEq π' γ' (topCsEnv cs)} → (W , (γ , π)) ≡ (W' , (γ' , π')) → ((∙⟨ W ⊰ γ ╎ cs ⟩) {π = π} {ϖ = ϖ}) ≡ ((∙⟨ W' ⊰ γ' ╎ cs ⟩) {π = π'} {ϖ = ϖ'})
+cstate-eq {W = W} {W' = W'} {γ = γ} {cs = cs} {π = π} {ϖ = ϖ} eq = dcong₂ (λ x y → ((∙⟨ (proj₁ x) ⊰ proj₁ (proj₂ x) ╎ cs ⟩) {π = proj₂ (proj₂ x)} {ϖ = y})) eq (env-eq-uip (subst (λ z → EnvEq (proj₂ (proj₂ z)) (proj₁ (proj₂ z)) (topCsEnv cs)) eq ϖ) _)
+
 cstate-eq' : {W W' : Γ ⊢ᶜ X} {γ γ' : Env Γ Z} {cs : CompStack Δ X Z} {π π' : Wk Γ Δ} {ϖ : EnvEq π γ (topCsEnv cs)} {ϖ' : EnvEq π' γ' (topCsEnv cs)} → (W , (γ , π)) ≡ (W' , (γ' , π')) → ((∘⟨ W ⊰ γ ╎ cs ⟩) {π = π} {ϖ = ϖ}) ≡ ((∘⟨ W' ⊰ γ' ╎ cs ⟩) {π = π'} {ϖ = ϖ'})
 cstate-eq' {W = W} {W' = W'} {γ = γ} {cs = cs} {π = π} {ϖ = ϖ} eq = dcong₂ (λ x y → ((∘⟨ (proj₁ x) ⊰ proj₁ (proj₂ x) ╎ cs ⟩) {π = proj₂ (proj₂ x)} {ϖ = y})) eq (env-eq-uip (subst (λ z → EnvEq (proj₂ (proj₂ z)) (proj₁ (proj₂ z)) (topCsEnv cs)) eq ϖ) _)
