@@ -12,8 +12,8 @@ import Relation.Binary.PropositionalEquality as Eq
 open Eq using (_≡_; refl; cong; cong₂; cong-app; icong; dcong₂; sym; trans; subst; subst₂)
 open Eq.≡-Reasoning
 
-open import Inception.Sub.Syntax
-open import Inception.Sub.Renaming
+open import Inception.Sub.SyntaxPS
+open import Inception.Sub.RenamingPS
 --open import Inception.Sub.CPS R
 
 open import Data.Unit
