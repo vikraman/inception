@@ -625,12 +625,6 @@ determinismꟲ {C = ∘⟨ var x ⊰ γ ╎ cs ⟩} (∘var {eq = refl}) (∘var
 determinismꟲ {C = ∘⟨ sub W W₁ ⊰ γ ╎ cs ⟩} ∘sub ∘sub = refl
 determinismꟲ {C = ∙⟨ r̲e̲t̲u̲r̲n̲ x ⊰ γ ╎ cs ⟩} (∙return {eq = refl}) (∙return {eq = refl}) = refl
 
-data WkChain : Ctx → Set where
-
-  wkc-ε : WkChain ε
-
-  wkc-cons : (π : Wk Γ' Γ) → (π* : WkChain Γ) → WkChain Γ'
-
 {-
 infix  15 _→ᶜ_
 data _→ᶜ_ {Z₀ : Ty} : CompState Z₀ → CompState Z₀ → Set where
@@ -704,17 +698,15 @@ data _→ᶜ_ {Z₀ : Ty} : CompState Z₀ → CompState Z₀ → Set where
                       →    ((∘⟨ var M ⊰ γ ╎ cs ⟩)) →ᶜ ((∘⟨ W ⊰ γ'' ╎ cs' ⟩))
 -}
 
-{-
-data _→ᶜ*_ {Z₀ : Ty} : CompState Z₀ → CompState Z₀ → Set where
+data _→ᶜ*_ {δ : Wk Γ Δ} {Z₀ : Ty} : CompState Z₀ → CompState Z₀ → Set where
 
   _◼ : (S : CompState Z₀) → S →ᶜ* S
 
-  _→ᶜ⟨_⟩_ : (S : CompState Z₀) → {S' S'' : CompState Z₀} → S →ᶜ S' → S' →ᶜ* S'' → S →ᶜ* S''
+  _→ᶜ⟨_⟩_ : (S : CompState Z₀) → {S' S'' : CompState Z₀} → _→ᶜ_ {δ = δ} S S' → _→ᶜ*_ {δ = δ} S' S'' → S →ᶜ* S''
 
-_⨾ᶜ_ : {F S T : CompState Z₀} → (F →ᶜ* S) → (S →ᶜ* T) → (F →ᶜ* T)
+_⨾ᶜ_ : {F S T : CompState Z₀} {δ : Wk Γ Δ} → (_→ᶜ*_ {δ = δ} F S) → (S →ᶜ* T) → (F →ᶜ* T)
 _⨾ᶜ_ (S ◼) S>>T = S>>T
 _⨾ᶜ_ (F →ᶜ⟨ F>S₁ ⟩ S₁>>S₂) S₂>>T = F →ᶜ⟨ F>S₁ ⟩ (S₁>>S₂ ⨾ᶜ S₂>>T)
--}
 
 data CompHaltingState : CompState Z₀ → Set where
 

@@ -38,16 +38,18 @@ variable
 --module EnvMain {R₀ : Ty} (k₀ : ⟦ R₀ ⟧ → R) where
 --module EnvMain where
 
+data WkChain : Ctx → Set where
+
+  wkc-ε : WkChain ε
+
+  wkc-cons : (π : Wk Γ' Γ) → (π* : WkChain Γ) → WkChain Γ'
+
 infixl 27 _﹐_
 infixl 27 _﹐﹝_╎_﹞
 
 data Env : (Γ : Ctx) → (Z : Ty) → Set
-data CompStack : (Δ : Ctx) → (X : Ty) → (Z : Ty) → Set
-data EnvEq : (π : Wk Γ' Γ) → (γ' : Env Γ' Z) → (γ : Env Γ Z) → Set
 
-topCsEnv : CompStack Δ X Z → Env Δ Z
-
-data CompStack  where
+data CompStack : (Δ : Ctx) → (X : Ty) → (Z : Ty) → Set where
 
     ◻     :   CompStack ε Z Z
 
@@ -61,7 +63,7 @@ data Env where
 
   _﹐﹝_╎_﹞ :  (γ : Env Γ Z) → (W : Γ ⊢ᶜ X) → (cs : CompStack Δ X Z) → Env (Γ ∙ `V) Z
 
-data EnvEq where
+data EnvEq : (π : Wk Γ' Γ) → (γ' : Env Γ' Z) → (γ : Env Γ Z) → Set where
 
   wk-env-ε    : EnvEq {Z = Z} wk-ε ∗ ∗
 
@@ -75,6 +77,8 @@ data EnvEq where
   wk-env-comp-wk : {π : Wk Γ' Γ} {γ' : Env Γ' Z} {γ : Env Γ Z}
                       → (W : Γ' ⊢ᶜ X) → (cs : CompStack Δ X Z)
                       → EnvEq π γ' γ → EnvEq (wk-wk π) (γ' ﹐﹝ W ╎ cs ﹞) γ
+
+topCsEnv : CompStack Δ X Z → Env Δ Z
 
 topCsEnv ◻ = ∗
 topCsEnv (W ⊲ γ ⦂⦂ cs) = γ

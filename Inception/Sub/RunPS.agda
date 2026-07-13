@@ -19,7 +19,7 @@ open import Relation.Binary.Definitions
   using (Symmetric; Transitive; Substitutive; Irreflexive
         ; _Respects_; _Respectsˡ_; _Respectsʳ_; _Respects₂_)
 
-open import Inception.Sub.Syntax
+open import Inception.Sub.SyntaxPS
 
 open import Data.Unit
 open import Data.Nat
@@ -38,6 +38,12 @@ private
     Γ₀ : Ctx
     X₁ X₂ : Ty
     Z₀ : Ty
+
+-- record CStateHalts (c : CompState Z₀) : Set where
+--   field
+--     target-state : CompState Z₀
+--     target-is-halting : CompHaltingState target-state
+--     trace : c →ᶜ* target-state
 
 {- ZZZ
 -- CURRENTLY BROKEN
