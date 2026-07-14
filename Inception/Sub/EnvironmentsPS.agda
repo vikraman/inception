@@ -48,12 +48,13 @@ infixl 27 _﹐_
 infixl 27 _﹐﹝_╎_﹞
 
 data Env : (Γ : Ctx) → (Z : Ty) → Set
+data CompStack : (π* : WkChain Δ) → (X : Ty) → (Z : Ty) → Set
 
-data CompStack : (Δ : Ctx) → (X : Ty) → (Z : Ty) → Set where
+data CompStack where
 
-    ◻     :   CompStack ε Z Z
+    ◻     :   CompStack wkc-ε Z Z
 
-    _⊲_⦂⦂_    : (Γ ∙ Y) ⊢ᶜ X → (γ : Env Γ Z) → (tail : CompStack Δ X Z) → CompStack Γ Y Z
+    _⊲_⦂⦂_    : (Γ ∙ Y) ⊢ᶜ X → (γ : Env Γ Z) → {π* : WkChain Δ} → (tail : CompStack π* X Z) → {π : Wk Γ Δ} → CompStack (wkc-cons π π*) Y Z
 
 data Env where
 
@@ -61,7 +62,8 @@ data Env where
 
   _﹐_     :  Env Γ Z → (M : V̲a̲l̲ Γ X) → Env (Γ ∙ X) Z
 
-  _﹐﹝_╎_﹞ :  (γ : Env Γ Z) → (W : Γ ⊢ᶜ X) → (cs : CompStack Δ X Z) → Env (Γ ∙ `V) Z
+  _﹐﹝_╎_﹞ :  (γ : Env Γ Z) → (W : Γ ⊢ᶜ X) → {π* : WkChain Δ} → (cs : CompStack π* X Z) → {π : Wk Γ Δ} → Env (Γ ∙ `V) Z
+
 
 data EnvEq : (π : Wk Γ' Γ) → (γ' : Env Γ' Z) → (γ : Env Γ Z) → Set where
 
@@ -69,22 +71,22 @@ data EnvEq : (π : Wk Γ' Γ) → (γ' : Env Γ' Z) → (γ : Env Γ Z) → Set 
 
   wk-env-val-cong : {π : Wk Γ' Γ} {γ' : Env Γ' Z} {γ : Env Γ Z} → (M : V̲a̲l̲ Γ X) → EnvEq π γ' γ → EnvEq (wk-cong π) (γ' ﹐ wk-v̲a̲l̲ π M) (γ ﹐ M)
 
-  wk-env-comp-cong : {π : Wk Γ' Γ} {γ' : Env Γ' Z} {γ : Env Γ Z} → (W : Γ ⊢ᶜ X) → (cs : CompStack Δ X Z)
-                      → EnvEq π γ' γ → EnvEq (wk-cong π) (γ' ﹐﹝ wk-comp π W ╎ cs ﹞) (γ ﹐﹝ W ╎ cs ﹞)
+  wk-env-comp-cong : {π : Wk Γ' Γ} {γ' : Env Γ' Z} {γ : Env Γ Z} → (W : Γ ⊢ᶜ X) → {π' : Wk Γ Δ} → {π* : WkChain Δ} → (cs : CompStack π* X Z)
+                      → EnvEq π γ' γ → EnvEq (wk-cong π) ((γ' ﹐﹝ wk-comp π W ╎ cs ﹞) {π = wk-trans π π'}) ((γ ﹐﹝ W ╎ cs ﹞) {π = π'})
 
   wk-env-val-wk : {π : Wk Γ' Γ} {γ' : Env Γ' Z} {γ : Env Γ Z} → (M : V̲a̲l̲ Γ' X) → EnvEq π γ' γ → EnvEq (wk-wk π) (γ' ﹐ M) γ
 
   wk-env-comp-wk : {π : Wk Γ' Γ} {γ' : Env Γ' Z} {γ : Env Γ Z}
-                      → (W : Γ' ⊢ᶜ X) → (cs : CompStack Δ X Z)
-                      → EnvEq π γ' γ → EnvEq (wk-wk π) (γ' ﹐﹝ W ╎ cs ﹞) γ
+                      → (W : Γ' ⊢ᶜ X) → {π* : WkChain Δ} → (cs : CompStack π* X Z) → {π' : Wk Γ' Δ}
+                      → EnvEq π γ' γ → EnvEq (wk-wk π) ((γ' ﹐﹝ W ╎ cs ﹞) {π = π'}) γ
 
-topCsEnv : CompStack Δ X Z → Env Δ Z
+topCsEnv : {π* : WkChain Δ} → CompStack π* X Z → Env Δ Z
 
 topCsEnv ◻ = ∗
 topCsEnv (W ⊲ γ ⦂⦂ cs) = γ
 
 ----
-
+{-
 cat-ctx : CompStack Δ X Z → CompStack Δ' Z Z' → Ctx
 cat-ctx {Δ = Δ} {Δ' = Δ'} ◻ cs₂ = Δ'
 cat-ctx {Δ = Δ} {Δ' = Δ'} (x ⊲ γ ⦂⦂ cs₁) cs₂ = Δ
@@ -98,7 +100,7 @@ mutual
   ∗ ⧺ᴱ cs = ∗
   (γ ﹐ M) ⧺ᴱ cs = (γ ⧺ᴱ cs) ﹐ M
   (γ ﹐﹝ W ╎ cs₁ ﹞) ⧺ᴱ cs = (γ ⧺ᴱ cs) ﹐﹝ W ╎ cs₁ ⧺ᵏ cs ﹞
-
+-}
 ----
 
 env-wk-wk-ε : {Γ : Ctx} → (γ : Env Γ Z) → EnvEq wk-wk-ε γ ∗
@@ -115,11 +117,11 @@ data EnvExt : (i : Γ ∋ X) → (γ : Env Γ Z) → (γ' : Env Γ' Z) → Set w
 
   env-val : {γ : Env Γ Z} {M : V̲a̲l̲ Γ X} → EnvExt h (γ ﹐ M) (γ ﹐ M)
 
-  env-comp : {γ : Env Γ Z} {W : Γ ⊢ᶜ X} {cs : CompStack Δ X Z} → EnvExt h (γ ﹐﹝ W ╎ cs ﹞) (γ ﹐﹝ W ╎ cs ﹞)
+  env-comp : {γ : Env Γ Z} {W : Γ ⊢ᶜ X} {π : Wk Γ Δ} {π* : WkChain Δ} {cs : CompStack π* X Z} → EnvExt h ((γ ﹐﹝ W ╎ cs ﹞) {π = π}) ((γ ﹐﹝ W ╎ cs ﹞) {π = π})
 
   ext-val : {γ : Env Γ Z} {γ' : Env Γ' Z} {M : V̲a̲l̲ Γ Y} {i : Γ ∋ X} → EnvExt i γ γ' → EnvExt (t i) (γ ﹐ M) γ'
 
-  ext-comp : {γ : Env Γ Z} {γ' : Env Γ' Z} {W : Γ ⊢ᶜ Y} {cs : CompStack Δ Y Z} {i : Γ ∋ X} → EnvExt i γ γ' → EnvExt (t i) (γ ﹐﹝ W ╎ cs ﹞) γ'
+  ext-comp : {γ : Env Γ Z} {γ' : Env Γ' Z} {W : Γ ⊢ᶜ Y} {π : Wk Γ Δ} {π* : WkChain Δ} {cs : CompStack π* Y Z} {i : Γ ∋ X} → EnvExt i γ γ' → EnvExt (t i) ((γ ﹐﹝ W ╎ cs ﹞) {π = π}) γ'
 
   ext-jmp : {γ : Env Γ Z} {γ' : Env Γ' Z} {i : Γ ∋ `V} → EnvExt i γ γ' → EnvExt h (γ ﹐ v̲a̲r̲ i) γ'
 
@@ -140,12 +142,13 @@ env-eq-uip {π = π} {γ' = γ'} {γ = γ} (wk-env-comp-cong W cs ϖ) (wk-env-co
 env-eq-uip {π = π} {γ' = γ'} {γ = γ} (wk-env-val-wk M ϖ) (wk-env-val-wk M₁ ϖ') = cong (wk-env-val-wk M) (env-eq-uip ϖ ϖ')
 env-eq-uip {π = π} {γ' = γ'} {γ = γ} (wk-env-comp-wk W cs ϖ) (wk-env-comp-wk W₁ cs₁ ϖ') = cong (wk-env-comp-wk W cs) (env-eq-uip ϖ ϖ')
 
+{-
 -- proof relevant version with EnvEq
 enveq-id : {γ : Env Γ Z} → EnvEq wk-id γ γ
 enveq-id {γ = ∗} = wk-env-ε
 enveq-id {γ = γ ﹐ M} = subst (λ x → EnvEq (wk-cong wk-id) (γ ﹐ x) (γ ﹐ M)) (wk-v̲a̲l̲-id M) (wk-env-val-cong M enveq-id )
-enveq-id {γ = (_﹐﹝_╎_﹞) {Γ = Γ} {Δ = Δ} γ W cs} = subst (λ x → EnvEq (wk-cong wk-id) (γ ﹐﹝ x ╎ cs ﹞) (γ ﹐﹝ W ╎ cs ﹞)) (wk-comp-id W) (wk-env-comp-cong W cs enveq-id)
-
+enveq-id {γ = (_﹐﹝_╎_﹞) {Γ = Γ} {Δ = Δ} γ W cs} = subst (λ x → EnvEq (wk-cong wk-id) (γ ﹐﹝ x ╎ cs ﹞) (γ ﹐﹝ W ╎ cs ﹞)) (wk-comp-id W) {!!} --(wk-env-comp-cong W cs enveq-id)
+-}
 
 wk-ext-cong-lift : {π : Wk Γ Δ} → WkExt (wk-cong {A = A} π) → WkExt π
 wk-ext-cong-lift (wk-eq π) = wk-eq _
@@ -170,6 +173,7 @@ wk-ext-trans {π₁ = wk-wk π₁} {π₂ = wk-wk π₂} (wk-ext π ext₁) (wk-
 ----
 -- adapted env-eq-trans
 
+{-
 env-eq-trans : {π₁ : Wk Γ Γ'} {π₂ : Wk Γ' Γ''} {γ : Env Γ Z} {γ' : Env Γ' Z} {γ'' : Env Γ'' Z}
                 → EnvEq π₁ γ γ' → EnvEq π₂ γ' γ'' → EnvEq (wk-trans π₁ π₂) γ γ''
 env-eq-trans {π₁ = wk-ε} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} wk-env-ε ϖ₂ = ϖ₂
@@ -188,7 +192,7 @@ env-eq-trans {π₁ = wk-cong π₁} {π₂ = wk-cong π₂} {γ = (γ ﹐﹝ W 
     ϖ = env-eq-trans ϖ₁ ϖ₂
     a1 = wk-env-comp-cong W'' cs ϖ
     goal : EnvEq (wk-trans (wk-cong π₁) (wk-cong π₂)) (γ ﹐﹝ wk-comp π₁ (wk-comp π₂ W'') ╎ cs ﹞) (γ'' ﹐﹝ W'' ╎ cs ﹞)
-    goal = subst (λ x → EnvEq (wk-trans (wk-cong π₁) (wk-cong π₂)) (γ ﹐﹝ x ╎ cs ﹞) (γ'' ﹐﹝ W'' ╎ cs ﹞)) (sym (wk-comp-trans W'' π₁ π₂)) a1
+    goal = subst (λ x → EnvEq (wk-trans (wk-cong π₁) (wk-cong π₂)) (γ ﹐﹝ x ╎ cs ﹞) (γ'' ﹐﹝ W'' ╎ cs ﹞)) (sym (wk-comp-trans W'' π₁ π₂)) {!!} --a1
   in
   goal
 env-eq-trans {π₁ = wk-cong π₁} {π₂ = wk-wk π₂} {γ = γ} {γ' = γ'} {γ'' = γ''} (wk-env-comp-cong W cs ϖ₁) (wk-env-comp-wk W₁ cs₁ ϖ₂) = wk-env-comp-wk (wk-comp π₁ W) cs (env-eq-trans ϖ₁ ϖ₂)
@@ -198,4 +202,5 @@ env-eq-trans {π₁ = wk-wk π₁} {π₂ = π₂} {γ = γ} {γ' = γ'} {γ'' =
 enveq-id-eq : {γ γ' : Env Γ Z} → EnvEq wk-id γ γ' → γ ≡ γ'
 enveq-id-eq {γ = γ} {γ' = γ'} wk-env-ε = refl
 enveq-id-eq {γ = γ} {γ' = γ'} (wk-env-val-cong M ϖ) rewrite wk-v̲a̲l̲-id M = cong (_﹐ M) (enveq-id-eq ϖ)
-enveq-id-eq {γ = (_﹐﹝_╎_﹞) {Γ = Γ} {Δ = Δ} γ W cs} {γ' = (_﹐﹝_╎_﹞) {Γ = Γ} {Δ = Δ} γ' W' cs} (wk-env-comp-cong W' cs ϖ) rewrite wk-comp-id W' = cong (_﹐﹝ W' ╎ cs ﹞) (enveq-id-eq ϖ)
+enveq-id-eq {γ = (_﹐﹝_╎_﹞) {Γ = Γ} {Δ = Δ} γ W cs} {γ' = (_﹐﹝_╎_﹞) {Γ = Γ} {Δ = Δ} γ' W' cs} (wk-env-comp-cong W' cs ϖ) rewrite wk-comp-id W' = {!!} --cong (_﹐﹝ W' ╎ cs ﹞) (enveq-id-eq ϖ)
+-}

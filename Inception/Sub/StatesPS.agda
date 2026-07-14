@@ -122,22 +122,24 @@ botStackTerm : (S : ValStack non-empty T◾ Z) → PartialTerm (botStackCtx S) (
 botStackTerm ((_⊲_∷_) {Γ = Γ} M γ □ {↥ = 🗆}) = M
 botStackTerm ((x ⊲ γ ∷ ((x₁ ⊲ γ₁ ∷ xs) {↥ = ↥'})) {↥ = ↥}) = botStackTerm ((x₁ ⊲ γ₁ ∷ xs) {↥ = ↥'})
 
-data CompState : Ty → Set where
+data CompState : WkChain Γ → Ty → Set where
 
-      ∘⟨_⊰_╎_⟩ : (W : Γ ⊢ᶜ X) → (γ : Env Γ Z) → (cs : CompStack Δ X Z) → CompState Z
+      ∘⟨_⊰_╎_⟩ : (W : Γ ⊢ᶜ X) → (γ : Env Γ Z) → {π* : WkChain Δ} → (cs : CompStack π* X Z) → {π : Wk Γ Δ} → CompState (wkc-cons π π*) Z
 
-      ∙⟨_⊰_╎_⟩ : (W : C̲o̲m̲p Γ X) → (γ : Env Γ Z) → (cs : CompStack Δ X Z) → CompState Z
+      ∙⟨_⊰_╎_⟩ : (W : C̲o̲m̲p Γ X) → (γ : Env Γ Z) → {π* : WkChain Δ} → (cs : CompStack π* X Z) → {π : Wk Γ Δ} → CompState (wkc-cons π π*) Z
 
-topCompCtx : CompState Z → Ctx
+topCompCtx : {π* : WkChain Δ} → CompState π* Z → Ctx
 topCompCtx (∘⟨_⊰_╎_⟩ {Γ = Γ} _ _ _) = Γ
 topCompCtx (∙⟨_⊰_╎_⟩ {Γ = Γ} _ _ _) = Γ
 
-topCompEnv : (Q : CompState Z) → Env (topCompCtx Q) Z
+topCompEnv : {π* : WkChain Δ} → (Q : CompState π* Z) → Env (topCompCtx Q) Z
 topCompEnv (∘⟨_⊰_╎_⟩ _ γ _) = γ
 topCompEnv (∙⟨_⊰_╎_⟩ _ γ _) = γ
 
+{-
 cstate-eq : {W W' : C̲o̲m̲p Γ X} {γ γ' : Env Γ Z} {cs : CompStack Δ X Z} → W ≡ W' → γ ≡ γ' → ((∙⟨ W ⊰ γ ╎ cs ⟩)) ≡ ((∙⟨ W' ⊰ γ' ╎ cs ⟩))
 cstate-eq {W = W} {W' = W'} {γ = γ} {cs = cs} eq₁ eq₂ = cong₂ (λ x y → ((∙⟨ x ⊰ y ╎ cs ⟩))) eq₁ eq₂
 
 cstate-eq' : {W W' : Γ ⊢ᶜ X} {γ γ' : Env Γ Z} {cs : CompStack Δ X Z} → W ≡ W' → γ ≡ γ' → ((∘⟨ W ⊰ γ ╎ cs ⟩)) ≡ ((∘⟨ W' ⊰ γ' ╎ cs ⟩))
 cstate-eq' {W = W} {W' = W'} {γ = γ} {cs = cs} eq₁ eq₂ = cong₂ (λ x y → ((∘⟨ x ⊰ y ╎ cs ⟩))) eq₁ eq₂
+-}
