@@ -32,7 +32,7 @@ private
 infixr 17 _→ᵛ⟨_⟩．
 infixr 15 _→ᵛ⟨_⟩_
 infix  15 _→ᵛ_
-infix  15 _→ᴸ_
+--infix  15 _→ᴸ_
 infixr 10 _⨾_
 
 lookup : (i : Γ ∋ X) → Env {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X
@@ -230,7 +230,7 @@ data _→ᶜ*_ {Z₀ : Ty} : CompState {Z₀ = Z₀} → CompState {Z₀ = Z₀}
 
   _◼ : (S : CompState {Z₀ = Z₀}) → S →ᶜ* S
 
-  _→ᶜ⟨_⟩_ : (S : CompState {Z₀ = Z₀}) → {S' S'' : CompState {Z₀ = Z₀}} → S →ᶜ S' → S →ᶜ* S'' → S →ᶜ* S''
+  _→ᶜ⟨_⟩_ : (S : CompState {Z₀ = Z₀}) → {S' S'' : CompState {Z₀ = Z₀}} → S →ᶜ S' → S' →ᶜ* S'' → S →ᶜ* S''
 
 _⨾ᶜ_ : {Z₀ : Ty} → {F S T : CompState {Z₀ = Z₀}} → (F →ᶜ* S) → (S →ᶜ* T) → (F →ᶜ* T)
 _⨾ᶜ_ (S ◼) S>>T = S>>T
@@ -258,15 +258,9 @@ Rᵏ {Z₀ = Z₀} X k = ∀ {W : Value {Z₀ = Z₀} X} → Rᵛ X W → SN ⟨
 Rᴱ : {Z₀ : Ty} → Env {Z₀ = Z₀} Γ → Set
 Rᴱ {Γ = Γ} γ = ∀ {X : Ty} → (i : Γ ∋ X) → Rᵛ X (lookup i γ)
 
-Rᴱ-⊘ : {Z₀ : Ty} → Rᴱ {Z₀ = Z₀} ∅
-Rᴱ-⊘ = λ ()
-
 Rᴱ-ext : {Z₀ : Ty} {γ : Env {Z₀ = Z₀} Γ} {W : Value {Z₀ = Z₀} X} → Rᴱ γ → Rᵛ X W → Rᴱ (γ ، W)
 Rᴱ-ext Rγ RW Cx.h = RW
 Rᴱ-ext Rγ RW (Cx.t i) = Rγ i
-
-Rᵏ-◻ : {Z₀ : Ty} → Rᵏ {Z₀ = Z₀} Z₀ ◻
-Rᵏ-◻ RW = sn λ {σ'} ()
 
 rv≡sn : {Z₀ : Ty} → (W : Val Γ `V) → (γ : Env {Z₀ = Z₀} Γ) → Rᵛ `V (result (run-val W γ)) ≡ SN (jump-to-state (result (run-val W γ)))
 rv≡sn (var Cx.h) (γ ، jumpᵛ _ _ _) = refl
@@ -327,3 +321,56 @@ mutual
     sn λ { ∘app → IH' (fundamentalᵛ W₂ Rγ) Rk }
   fundamentalᶜ (var W) {γ = γ} Rγ Rk = sn λ { ∘var → subst (λ x → x) (rv≡sn W γ) (Rʲ W Rγ)}
   fundamentalᶜ (sub M₁ M₂) Rγ Rk = sn λ { ∘sub → fundamentalᶜ M₁ (Rᴱ-ext Rγ (fundamentalᶜ M₂ Rγ Rk)) Rk}
+
+Rᴱ-⊘ : {Z₀ : Ty} → Rᴱ {Z₀ = Z₀} ∅
+Rᴱ-⊘ = λ ()
+
+Rᵏ-◻ : {Z₀ : Ty} → Rᵏ {Z₀ = Z₀} Z₀ ◻
+Rᵏ-◻ RW = sn λ {σ'} ()
+
+SN-theorem : {Z₀ : Ty} → (M : Comp ε Z₀) → SN {Z₀ = Z₀} ⟨ M ╎ ∅ ╎ ◻ ⟩
+SN-theorem M = fundamentalᶜ M Rᴱ-⊘ Rᵏ-◻
+
+Normal : {Z₀ : Ty} → CompState {Z₀ = Z₀} → Set
+Normal σ = ∀ {σ'} → σ →ᶜ σ' → ⊥
+
+data Progress {Z₀ : Ty} (σ : CompState {Z₀ = Z₀}) : Set where
+  done : Normal σ → Progress σ
+  step : {σ' : CompState} → σ →ᶜ σ' → Progress σ
+
+step? : {Z₀ : Ty} (σ : CompState {Z₀ = Z₀}) → Progress σ
+step? ⟨return W ╎ ◻ ⟩ = done (λ ())
+step? ⟨return W ╎ M ⊲ γ ⦂⦂ k ⟩ = step ∙return
+step? ⟨ return W ╎ γ ╎ k ⟩ = step ∘return
+step? ⟨ pm W M ╎ γ ╎ k ⟩ = step ∘pm
+step? ⟨ push M₁ M₂ ╎ γ ╎ k ⟩ = step ∘push
+step? ⟨ app W₁ W₂ ╎ γ ╎ k ⟩ = step ∘app
+step? ⟨ var W ╎ γ ╎ k ⟩ = step ∘var
+step? ⟨ sub M₁ M₂ ╎ γ ╎ k ⟩ = step ∘sub
+
+eval-acc : {Z₀ : Ty} {σ : CompState {Z₀ = Z₀}} → SN σ → Σ[ σ' ∈ CompState ] (σ →ᶜ* σ') × Normal σ'
+eval-acc {σ = σ} (sn f) with step? σ
+... | done NF    = σ , (σ ◼) , NF
+... | step S→S' with eval-acc (f S→S')
+...   | (σ'' , S'→*S'' , NF) = σ'' , (_ →ᶜ⟨ S→S' ⟩ S'→*S'') , NF
+
+eval : {Z₀ : Ty} → (M : Comp ε Z₀) → Σ[ σ' ∈ CompState ] (⟨ M ╎ ∅ ╎ ◻ ⟩ →ᶜ* σ') × Normal σ'
+eval M = eval-acc (SN-theorem M)
+
+ex15 : ε ⊢ᶜ (`Unit)
+ex15 = push (push (app (lam {A = `Unit} (sub (var (var h)) (return unit))) unit) (return unit)) (return unit)
+
+_ : eval ex15 ≡ (_ ,
+                  (⟨ push (push (app (lam (sub (var (var h)) (return unit))) unit) (return unit)) (return unit) ╎ ∅ ╎ ◻ ⟩
+    →ᶜ⟨ ∘push ⟩   (⟨ push (app (lam (sub (var (var h)) (return unit))) unit) (return unit) ╎ ∅ ╎ return unit ⊲ ∅ ⦂⦂ ◻ ⟩
+    →ᶜ⟨ ∘push ⟩   (⟨ app (lam (sub (var (var h)) (return unit))) unit ╎ ∅ ╎ return unit ⊲ ∅ ⦂⦂ (return unit ⊲ ∅ ⦂⦂ ◻) ⟩
+    →ᶜ⟨ ∘app ⟩    (⟨ sub (var (var h)) (return unit) ╎ ∅ ، unitᵛ ╎ return unit ⊲ ∅ ⦂⦂ (return unit ⊲ ∅ ⦂⦂ ◻) ⟩
+    →ᶜ⟨ ∘sub ⟩    (⟨ var (var h) ╎ ∅ ، unitᵛ ، jumpᵛ (return unit) (∅ ، unitᵛ) (return unit ⊲ ∅ ⦂⦂ (return unit ⊲ ∅ ⦂⦂ ◻)) ╎ return unit ⊲ ∅ ⦂⦂ (return unit ⊲ ∅ ⦂⦂ ◻) ⟩
+    →ᶜ⟨ ∘var ⟩    (⟨ return unit ╎ ∅ ، unitᵛ ╎ return unit ⊲ ∅ ⦂⦂ (return unit ⊲ ∅ ⦂⦂ ◻) ⟩
+    →ᶜ⟨ ∘return ⟩ (⟨return unitᵛ ╎ return unit ⊲ ∅ ⦂⦂ (return unit ⊲ ∅ ⦂⦂ ◻) ⟩
+    →ᶜ⟨ ∙return ⟩ (⟨ return unit ╎ ∅ ، unitᵛ ╎ return unit ⊲ ∅ ⦂⦂ ◻ ⟩
+    →ᶜ⟨ ∘return ⟩ (⟨return unitᵛ ╎ return unit ⊲ ∅ ⦂⦂ ◻ ⟩
+    →ᶜ⟨ ∙return ⟩ (⟨ return unit ╎ ∅ ، unitᵛ ╎ ◻ ⟩
+    →ᶜ⟨ ∘return ⟩ (⟨return unitᵛ ╎ ◻ ⟩ ◼)))))))))))
+    , _)
+_ = refl
