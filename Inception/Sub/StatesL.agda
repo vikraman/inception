@@ -64,7 +64,7 @@ data TermWithHole {Z₀ : Ty} : (X : Ty) → Set where
 
     ⇡ᴿ  : (LHS : Value {Z₀ = Z₀} X) → (HOLE : Val Γ Y) → (Env {Z₀ = Z₀} Γ) → TermWithHole (X `× Y)
 
-infixr 25 _⊲_∷_
+--infixr 25 _⊲_∷_
 infix  20 ∘_
 infix  20 ∙_
 
@@ -142,6 +142,7 @@ botStackTerm ((x ⊲ γ ∷ ((x₁ ⊲ γ₁ ∷ xs) {↥ = ↥'})) {↥ = ↥})
 
 data CompState {Z₀ : Ty} : Set where
 
+      ⟨return_╎_⟩ : (W : Value {Z₀ = Z₀} X) → (k : CompStack {Z₀ = Z₀} X) → CompState {Z₀ = Z₀}
       ⟨_╎_╎_⟩ : (M : Comp Γ X) → (γ : Env {Z₀ = Z₀} Γ) → (k : CompStack {Z₀ = Z₀} X) → CompState {Z₀ = Z₀}
 
 {- XXX
