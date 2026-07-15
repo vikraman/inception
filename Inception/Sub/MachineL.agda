@@ -179,6 +179,9 @@ jump-to-state (jumpᵛ W γ k) = ⟨ W ╎ γ ╎ k ⟩
 clo-to-comp : {Z₀ : Ty} → Value {Z₀ = Z₀} (X `⇒ Y) → Σ[ Γ ∈ Ctx ] Comp (Γ ∙ X) Y × Env {Z₀ = Z₀} Γ
 clo-to-comp (cloᵛ M γ) = _ , M , γ
 
+clo-val : {Z₀ : Ty} → (W : Value {Z₀ = Z₀} (X `⇒ Y)) → (cloᵛ (proj₁ (proj₂ (clo-to-comp W))) (proj₂ (proj₂ (clo-to-comp W))) ≡ W)
+clo-val (cloᵛ W γ) = refl
+
 apply : {Z₀ : Ty} → Val Γ (X `⇒ Y) → Val Γ X → Env {Z₀ = Z₀} Γ → CompStack {Z₀ = Z₀} Y → CompState {Z₀ = Z₀}
 apply W₁ W₂ γ k = ⟨ proj₁ (proj₂ (clo-to-comp (result (run-val W₁ γ)))) ╎ proj₂ (proj₂ (clo-to-comp (result (run-val W₁ γ)))) ، result (run-val W₂ γ) ╎ k ⟩
 
@@ -208,7 +211,7 @@ data _→ᶜ_ {Z₀ : Ty} : CompState {Z₀ = Z₀} → CompState {Z₀ = Z₀} 
                 ----------------------------------------------------------------
                   → ⟨ pm W M ╎ γ ╎ k ⟩ →ᶜ ⟨ M ╎ γ ، proj₁-val (result (run-val W γ)) ، proj₂-val (result (run-val W γ)) ╎ k ⟩
 
-      ∘app         :   {W₁ : Val Γ (X `⇒ Y)} → {W₂ : Val Γ X} → {γ : Env Γ} → {k : CompStack Y}
+      ∘app     :   {W₁ : Val Γ (X `⇒ Y)} → {W₂ : Val Γ X} → {γ : Env Γ} → {k : CompStack Y}
                     ----------------------------------------------------------------
                   →  ⟨ app W₁ W₂ ╎ γ ╎ k ⟩ →ᶜ apply W₁ W₂ γ k
 
@@ -238,3 +241,89 @@ data CompHaltingState : CompState Z₀ → Set where
 
     ret : {M : V̲a̲l̲ Γ Z₀} → {γ : Env Γ Z₀} → {ϖ : EnvEq wk-wk-ε γ (topCsEnv ◻)} → CompHaltingState ((∙⟨ r̲e̲t̲u̲r̲n̲ M ⊰ γ ╎ ◻ ⟩) )
 -}
+
+data SN {Z₀ : Ty} (σ : CompState {Z₀ = Z₀}) : Set where
+  sn : (∀ {σ'} → σ →ᶜ σ' → SN σ') → SN σ
+
+Rᵛ : {Z₀ : Ty} → (X : Ty) → Value {Z₀ = Z₀} X → Set
+Rᵏ : {Z₀ : Ty} → (X : Ty) → CompStack {Z₀ = Z₀} X → Set
+
+Rᵛ `Unit unitᵛ = ⊤
+Rᵛ (X `× Y) (pairᵛ W₁ W₂) = Rᵛ X W₁ × Rᵛ Y W₂
+Rᵛ {Z₀ = Z₀} (X `⇒ Y) (cloᵛ M γ) = ∀ {W' : Value {Z₀ = Z₀} X} → Rᵛ X W' → ∀ {k : CompStack {Z₀ = Z₀} Y} → Rᵏ Y k → SN ⟨ M ╎ γ ، W' ╎ k ⟩
+Rᵛ `V (jumpᵛ M γ k) = SN ⟨ M ╎ γ ╎ k ⟩
+
+Rᵏ {Z₀ = Z₀} X k = ∀ {W : Value {Z₀ = Z₀} X} → Rᵛ X W → SN ⟨return W ╎ k ⟩
+
+Rᴱ : {Z₀ : Ty} → Env {Z₀ = Z₀} Γ → Set
+Rᴱ {Γ = Γ} γ = ∀ {X : Ty} → (i : Γ ∋ X) → Rᵛ X (lookup i γ)
+
+Rᴱ-⊘ : {Z₀ : Ty} → Rᴱ {Z₀ = Z₀} ∅
+Rᴱ-⊘ = λ ()
+
+Rᴱ-ext : {Z₀ : Ty} {γ : Env {Z₀ = Z₀} Γ} {W : Value {Z₀ = Z₀} X} → Rᴱ γ → Rᵛ X W → Rᴱ (γ ، W)
+Rᴱ-ext Rγ RW Cx.h = RW
+Rᴱ-ext Rγ RW (Cx.t i) = Rγ i
+
+Rᵏ-◻ : {Z₀ : Ty} → Rᵏ {Z₀ = Z₀} Z₀ ◻
+Rᵏ-◻ RW = sn λ {σ'} ()
+
+rv≡sn : {Z₀ : Ty} → (W : Val Γ `V) → (γ : Env {Z₀ = Z₀} Γ) → Rᵛ `V (result (run-val W γ)) ≡ SN (jump-to-state (result (run-val W γ)))
+rv≡sn (var Cx.h) (γ ، jumpᵛ _ _ _) = refl
+rv≡sn (var (Cx.t i)) (γ ، _) = rv≡sn (var i) γ
+rv≡sn (pm W W₁) ∅ = rv≡sn W₁ (∅ ، proj₁-val (result (run-val W ∅)) ، proj₂-val (result (run-val W ∅)))
+rv≡sn (pm W W₁) (γ ، x) = rv≡sn W₁ (γ ، x ، proj₁-val (result (run-val W (γ ، x))) ، proj₂-val (result (run-val W (γ ، x))))
+
+mutual
+
+  Rʲ : {Z₀ : Ty} {γ : Env {Z₀ = Z₀} Γ} → (W : Val Γ `V) → Rᴱ γ → Rᵛ _ (result (run-val W γ))
+  Rʲ {γ = γ} (var i) Rγ = Rγ i
+  Rʲ {γ = γ} (pm W₁ W₂) Rγ =
+    let
+      IH = fundamentalᵛ W₁ Rγ
+      W₁' = result (run-val W₁ γ)
+      IH' : Rᵛ _ (pairᵛ (proj₁-val W₁') (proj₂-val W₁'))
+      IH' = subst (λ x → Rᵛ _ x) (sym (pair-val W₁')) IH
+    in
+    Rʲ W₂ (Rᴱ-ext (Rᴱ-ext Rγ (proj₁ IH')) (proj₂ IH'))
+
+  fundamentalᵛ  : {Z₀ : Ty} → (W : Val Γ X) → {γ : Env {Z₀ = Z₀} Γ} → Rᴱ γ → Rᵛ X (result (run-val W γ))
+  fundamentalᵛ (var i) Rγ = Rγ i
+  fundamentalᵛ (lam M) Rγ RW Rk = fundamentalᶜ M (Rᴱ-ext Rγ RW) Rk
+  fundamentalᵛ (pair W₁ W₂) Rγ = (fundamentalᵛ W₁ Rγ) , (fundamentalᵛ W₂ Rγ)
+  fundamentalᵛ (pm W₁ W₂) {γ = γ} Rγ =
+    let
+      IH = fundamentalᵛ W₁ Rγ
+      W₁' = result (run-val W₁ γ)
+      IH' : Rᵛ _ (pairᵛ (proj₁-val W₁') (proj₂-val W₁'))
+      IH' = subst (λ x → Rᵛ _ x) (sym (pair-val W₁')) IH
+    in
+    fundamentalᵛ W₂ (Rᴱ-ext (Rᴱ-ext Rγ (proj₁ IH')) (proj₂ IH'))
+  fundamentalᵛ unit Rγ = tt
+
+  fundamentalᶜ : {Z₀ : Ty} → (M : Comp Γ X) → {γ : Env {Z₀ = Z₀} Γ} → Rᴱ γ → {k : CompStack {Z₀ = Z₀} X} → Rᵏ X k → SN ⟨ M ╎ γ ╎ k ⟩
+  fundamentalᶜ (return W) Rγ Rk = sn λ { ∘return → Rk (fundamentalᵛ W Rγ)}
+  fundamentalᶜ (pm W M) {γ = γ} Rγ Rk =
+    let
+      IH = fundamentalᵛ W Rγ
+      W' = result (run-val W γ)
+      IH' : Rᵛ _ (pairᵛ (proj₁-val W') (proj₂-val W'))
+      IH' = subst (λ x → Rᵛ _ x) (sym (pair-val W')) IH
+    in
+    sn λ { ∘pm → fundamentalᶜ M (Rᴱ-ext (Rᴱ-ext Rγ (proj₁ IH')) (proj₂ IH')) Rk }
+  fundamentalᶜ (push M₁ M₂) {γ = γ} Rγ {k = k} Rk =
+    let
+      Rk' : Rᵏ _ (M₂ ⊲ γ ⦂⦂ k)
+      Rk' RW = sn (λ { ∙return → fundamentalᶜ M₂ (Rᴱ-ext Rγ RW) Rk })
+    in
+    sn λ { ∘push → fundamentalᶜ M₁ Rγ Rk' }
+  fundamentalᶜ (app W₁ W₂) {γ = γ} Rγ {k = k} Rk =
+    let
+      IH = fundamentalᵛ W₁ Rγ
+      W₁' = result (run-val W₁ γ)
+      eq = sym (clo-val W₁')
+      IH' = subst (λ x → Rᵛ _ x) eq IH
+    in
+    sn λ { ∘app → IH' (fundamentalᵛ W₂ Rγ) Rk }
+  fundamentalᶜ (var W) {γ = γ} Rγ Rk = sn λ { ∘var → subst (λ x → x) (rv≡sn W γ) (Rʲ W Rγ)}
+  fundamentalᶜ (sub M₁ M₂) Rγ Rk = sn λ { ∘sub → fundamentalᶜ M₁ (Rᴱ-ext Rγ (fundamentalᶜ M₂ Rγ Rk)) Rk}
