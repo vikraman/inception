@@ -598,9 +598,10 @@ wk-merge {Γ = Γ Cx.∙ X} {Δ = Δ Cx.∙ x} {Δ' = Δ' Cx.∙ x₁} (wk-wk π
 
 
 
-infix  26 ⭭_
-infix  26 ⇡_
+--infix  26 ⭭_
+--infix  26 ⇡_
 
+{-
 data PartialTerm : (Γ : Ctx) → (X : Ty) → Set where
 
     ⭭_ : V̲a̲l̲ Γ X → PartialTerm Γ X
@@ -626,6 +627,7 @@ wk-pt-id (⇡ M) = cong ⇡_ (wk-val-id M)
 wk-pt-id (⇡ᴹ M N) = cong₂ ⇡ᴹ (wk-val-id M) (wk-val-id N)
 wk-pt-id (⇡ᴸ LHS RHS) = cong₂ ⇡ᴸ (wk-val-id LHS) (wk-val-id RHS)
 wk-pt-id (⇡ᴿ LHS RHS) = cong₂ ⇡ᴿ (wk-v̲a̲l̲-id LHS) (wk-val-id RHS)
+-}
 
 wk-wk-trans-id : {Δ Γ : Ctx} → {X Y : Ty} → (π : Wk Δ (Γ ∙ X)) → (i : Γ ∋ Y) → wk-mem (wk-trans π (wk-wk wk-id)) i ≡ wk-mem π (t i)
 wk-wk-trans-id (wk-cong (wk-cong π)) Cx.h = refl
