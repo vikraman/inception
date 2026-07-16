@@ -348,19 +348,31 @@ step? ⟨ app W₁ W₂ ╎ γ ╎ k ⟩ = step ∘app
 step? ⟨ var W ╎ γ ╎ k ⟩ = step ∘var
 step? ⟨ sub M₁ M₂ ╎ γ ╎ k ⟩ = step ∘sub
 
-eval-acc : {Z₀ : Ty} {σ : CompState {Z₀ = Z₀}} → SN σ → Σ[ σ' ∈ CompState ] (σ →ᶜ* σ') × Normal σ'
-eval-acc {σ = σ} (sn f) with step? σ
-... | done NF    = σ , (σ ◼) , NF
-... | step S→S' with eval-acc (f S→S')
-...   | (σ'' , S'→*S'' , NF) = σ'' , (_ →ᶜ⟨ S→S' ⟩ S'→*S'') , NF
+halting-state : (σ : CompState {Z₀ = Z₀}) → Normal σ → Σ[ W ∈ Value Z₀ ] σ ≡ ⟨return W ╎ ◻ ⟩
+halting-state ⟨return W ╎ ◻ ⟩ normal = W , refl
+halting-state ⟨return W ╎ x ⊲ γ ⦂⦂ k ⟩ normal = ql (normal ∙return) _
+halting-state ⟨ return x ╎ γ ╎ k ⟩ normal = ql (normal ∘return) _
+halting-state ⟨ pm x M ╎ γ ╎ k ⟩ normal = ql (normal ∘pm) _
+halting-state ⟨ push M M₁ ╎ γ ╎ k ⟩ normal = ql (normal ∘push) _
+halting-state ⟨ app x x₁ ╎ γ ╎ k ⟩ normal = ql (normal ∘app) _
+halting-state ⟨ var x ╎ γ ╎ k ⟩ normal = ql (normal ∘var) _
+halting-state ⟨ sub M M₁ ╎ γ ╎ k ⟩ normal = ql (normal ∘sub) _
 
-eval : {Z₀ : Ty} → (M : Comp ε Z₀) → Σ[ σ' ∈ CompState ] (⟨ M ╎ ∅ ╎ ◻ ⟩ →ᶜ* σ') × Normal σ'
+eval-acc : {Z₀ : Ty} {σ : CompState {Z₀ = Z₀}} → SN σ → Σ[ σ' ∈ CompState ] Σ[ W ∈ Value {Z₀ = Z₀} Z₀ ] Σ[ NF ∈ Normal σ' ] (σ →ᶜ* σ') × (W ≡ proj₁ (halting-state σ' NF))
+eval-acc {σ = σ} (sn f) with step? σ
+... | done NF    = σ , proj₁ (halting-state σ NF) , NF , (σ ◼) , refl
+... | step S→S' with eval-acc (f S→S')
+...   | (σ'' , W , NF , S'→*S'' , eq) = σ'' , W , NF , (_ →ᶜ⟨ S→S' ⟩ S'→*S'') , eq
+
+
+eval : {Z₀ : Ty} → (M : Comp ε Z₀) → Σ[ σ' ∈ CompState ] Σ[ W ∈ Value {Z₀ = Z₀} Z₀ ] Σ[ NF ∈ Normal σ' ] (⟨ M ╎ ∅ ╎ ◻ ⟩ →ᶜ* σ') × (W ≡ proj₁ (halting-state σ' NF))
 eval M = eval-acc (SN-theorem M)
+
 
 ex15 : ε ⊢ᶜ (`Unit)
 ex15 = push (push (app (lam {A = `Unit} (sub (var (var h)) (return unit))) unit) (return unit)) (return unit)
 
-_ : eval ex15 ≡ (_ ,
+_ : eval ex15 ≡ (_ , unitᵛ , _ ,
                   (⟨ push (push (app (lam (sub (var (var h)) (return unit))) unit) (return unit)) (return unit) ╎ ∅ ╎ ◻ ⟩
     →ᶜ⟨ ∘push ⟩   (⟨ push (app (lam (sub (var (var h)) (return unit))) unit) (return unit) ╎ ∅ ╎ return unit ⊲ ∅ ⦂⦂ ◻ ⟩
     →ᶜ⟨ ∘push ⟩   (⟨ app (lam (sub (var (var h)) (return unit))) unit ╎ ∅ ╎ return unit ⊲ ∅ ⦂⦂ (return unit ⊲ ∅ ⦂⦂ ◻) ⟩
