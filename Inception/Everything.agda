@@ -12,7 +12,6 @@ import Inception.LamPm
 import Inception.Sub.Syntax
 import Inception.Sub.CPS
 import Inception.Sub.Machine
-import Inception.Sub.Run
 
 -- inception calculus
 import Inception.Inc.Syntax

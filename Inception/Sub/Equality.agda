@@ -43,11 +43,6 @@ proj₁-d-eq : {a b : Level} {A : Set a} {x : A} {b : A → Set b} {p₁ p₂ : 
              → proj₁ p₁ ≡ proj₁ p₂
 proj₁-d-eq refl = refl
 
--- proj₁-d-inj : {a b : Level} {A : Set a} {x : A} {b : A → Set b} {p₁ p₂ : Σ[ x ∈ A ] b x}
---              → proj₁ p₁ ≡ proj₁ p₂
---              → p₁ ≡ p₂
--- proj₁-d-inj {p₁ = _ , snd} {p₂ = fst , snd₁} refl = {!!}
-
 data ⊥ : Set where
 
 ql : ⊥ → (A : Set) → A

@@ -12,8 +12,6 @@ open import Inception.Sub.Syntax
 open import Inception.Sub.CPS R
 open import Inception.Sub.Equality
 
-open import Inception.Sub.Env
-open import Inception.Sub.States
 open import Inception.Sub.Machine
 
 open import Function.Base using (const; _∘_; _$_)
