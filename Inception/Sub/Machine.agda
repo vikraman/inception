@@ -2,32 +2,26 @@
 
 module Inception.Sub.Machine where
 
-open import Data.Product using (proj₁; proj₂; _,_; <_,_>; curry; _×_; Σ; ∃; Σ-syntax; ∃-syntax)
-open import Function.Base using (const; _∘_; _$_)
-
-import Relation.Binary.PropositionalEquality as Eq
-open Eq using (_≡_; refl; cong; cong₂; cong-app; dcong₂; sym; trans; subst; subst₂)
-open Eq.≡-Reasoning
-
 open import Inception.Sub.Syntax
-
-open import Data.Unit
-open import Data.Nat
-open import Data.List using (List; _∷_; []; _++_)
-
---open import Inception.Sub.Equality
-open import Data.Empty using (⊥)
 open import Inception.Prelude
+
+open import Data.Product using (proj₁; proj₂; _,_; _×_; Σ-syntax)
+open import Data.Unit using (⊤; tt)
+open import Data.Empty using (⊥)
+
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; subst)
 
 -----------------------------------------------------------------------
 
 infixl 27 _،_
+infix  20 ⭭_
+infix  20 ∘_
+infix  20 ∙_
+infix  19 _∷_
 infixr 17 _→ᵛ⟨_⟩．
 infixr 15 _→ᵛ⟨_⟩_
 infix  15 _→ᵛ_
 infixr 10 _⨾_
-infix  20 ∘_
-infix  20 ∙_
 
 private
   variable
