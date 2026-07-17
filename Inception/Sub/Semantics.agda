@@ -2,23 +2,21 @@
 
 module Inception.Sub.Semantics (R : Set) where
 
-open import Data.Product using (proj₁; proj₂; _,_; <_,_>; curry; _×_; Σ; ∃; Σ-syntax; ∃-syntax; uncurry)
-
-import Relation.Binary.PropositionalEquality as Eq
-open Eq using (_≡_; refl; cong; cong₂; sym; trans; subst; subst₂)
-open Eq.≡-Reasoning using (step-≡-⟩; step-≡-∣; step-≡-⟨; _∎; step-≡)
-
+open import Inception.Prelude
 open import Inception.Sub.Syntax
---open import Inception.Sub.Equality
-
 open import Inception.Sub.Machine
 
-open import Function.Base using (const; _∘_; _$_)
-open import Data.Unit
+open import Data.Unit using (⊤; tt)
+open import Data.Sum using (_⊎_; inj₁; inj₂)
+open import Data.Product using (proj₁; proj₂; _,_; <_,_>; curry; _×_; Σ-syntax; uncurry)
 
-open import Function as F hiding (_∋_)
-open import Data.Sum as S
-open import Inception.Prelude
+open import Function.Base using (const; _∘_; id)
+
+import Relation.Binary.PropositionalEquality as Eq
+open Eq using (_≡_; refl; cong; cong₂; sym; trans; subst)
+open Eq.≡-Reasoning using (step-≡-⟩; step-≡-∣; step-≡-⟨; _∎; step-≡)
+
+---------------------------------------------------------------------------------
 
 infixr 4 _；_
 
@@ -316,11 +314,6 @@ module TL {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
   lookup-eq : (i : Γ ∋ X) → (γ : Env {Z₀ = R₀} Γ) → ⟦ i ⟧ᵐ ⟦ γ ⟧ᴱ ≡ ⟦ lookup i γ ⟧ⱽ
   lookup-eq Cx.h (γ ، x) = refl
   lookup-eq (Cx.t i) (γ ، x) = lookup-eq i γ
-
-  private
-    variable
-      Γ₀ : Ctx
-      Z₀ : Ty
 
   open ValSteps
 
