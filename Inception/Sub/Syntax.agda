@@ -10,7 +10,10 @@ open Eq.≡-Reasoning
 
 open import Data.Product using (proj₁; proj₂; _,_; <_,_>; curry; _×_; Σ; ∃; Σ-syntax; ∃-syntax)
 
-open import Inception.Sub.Equality
+--open import Inception.Sub.Equality
+
+open import Data.Empty using (⊥)
+open import Inception.Prelude
 
 infixr 40 _`×_
 infixr 25 _`⇒_

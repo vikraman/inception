@@ -9,7 +9,7 @@ open Eq using (_≡_; refl; cong; cong₂; sym; trans; subst; subst₂)
 open Eq.≡-Reasoning using (step-≡-⟩; step-≡-∣; step-≡-⟨; _∎; step-≡)
 
 open import Inception.Sub.Syntax
-open import Inception.Sub.Equality
+--open import Inception.Sub.Equality
 
 open import Inception.Sub.Machine
 

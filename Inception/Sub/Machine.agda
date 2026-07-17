@@ -15,7 +15,9 @@ open import Data.Unit
 open import Data.Nat
 open import Data.List using (List; _∷_; []; _++_)
 
-open import Inception.Sub.Equality
+--open import Inception.Sub.Equality
+open import Data.Empty using (⊥)
+open import Inception.Prelude
 
 -----------------------------------------------------------------------
 
