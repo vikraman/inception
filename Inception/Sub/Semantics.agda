@@ -264,7 +264,7 @@ private variable
     b b' : IsEmpty
     T◾ T◾' : Ty
 
-module TL {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
+module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
 
   mutual
     ⟦_⟧ᴱ : (W : Env {Z₀ = R₀} Γ) → ⟦ Γ ⟧ˣ
