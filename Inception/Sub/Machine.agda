@@ -20,6 +20,20 @@ open import Inception.Sub.Equality
 -----------------------------------------------------------------------
 
 infixl 27 _،_
+infixr 17 _→ᵛ⟨_⟩．
+infixr 15 _→ᵛ⟨_⟩_
+infix  15 _→ᵛ_
+infixr 10 _⨾_
+infix  20 ∘_
+infix  20 ∙_
+
+private
+  variable
+    Γ₀ : Ctx
+    Z₀ : Ty
+
+---------------------------------------------------------------------------------
+-- ENVIRONMENTS
 
 mutual
 
@@ -43,10 +57,13 @@ mutual
     ∅   : Env {Z₀ = Z₀} ε
     _،_ : Env {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X → Env {Z₀ = Z₀} (Γ ∙ X)
 
-infixr 17 _→ᵛ⟨_⟩．
-infixr 15 _→ᵛ⟨_⟩_
-infix  15 _→ᵛ_
-infixr 10 _⨾_
+
+lookup : (i : Γ ∋ X) → Env {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X
+lookup Cx.h (γ ، W) = W
+lookup (Cx.t i) (γ ، W) = lookup i γ
+
+---------------------------------------------------------------------------------
+-- MACHINE FOR PURE TERMS
 
 data TermWithHole {Z₀ : Ty} : (X : Ty) → Set where
 
@@ -60,8 +77,6 @@ data TermWithHole {Z₀ : Ty} : (X : Ty) → Set where
 
     ⇡ᴿ  : (LHS : Value {Z₀ = Z₀} X) → (HOLE : Val Γ Y) → (Env {Z₀ = Z₀} Γ) → TermWithHole (X `× Y)
 
-infix  20 ∘_
-infix  20 ∙_
 
 data IsEmpty : Set where
     non-empty : IsEmpty
@@ -97,21 +112,6 @@ _⧺_ : {Z₀ : Ty} → ValStack {Z₀ = Z₀} b T◾ → ValStack {Z₀ = Z₀}
 _⧻_ : {Z₀ : Ty} → (upper : ValState {Z₀ = Z₀} T◾) → ValStack {Z₀ = Z₀} non-empty T◾' → ValState {Z₀ = Z₀} T◾'
 (∘ upper) ⧻ lower = ∘ (upper ⧺ lower)
 (∙ upper) ⧻ lower = ∙ (upper ⧺ lower)
-
-
-data CompState {Z₀ : Ty} : Set where
-
-      ⟨return_╎_⟩ : (W : Value {Z₀ = Z₀} X) → (k : CompStack {Z₀ = Z₀} X) → CompState {Z₀ = Z₀}
-      ⟨_╎_╎_⟩ : (M : Comp Γ X) → (γ : Env {Z₀ = Z₀} Γ) → (k : CompStack {Z₀ = Z₀} X) → CompState {Z₀ = Z₀}
-
-private
-  variable
-    Γ₀ : Ctx
-    Z₀ : Ty
-
-lookup : (i : Γ ∋ X) → Env {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X
-lookup Cx.h (γ ، W) = W
-lookup (Cx.t i) (γ ، W) = lookup i γ
 
 data _→ᵛ_ {Z₀ : Ty} {T◾ : Ty} : ValState {Z₀ = Z₀} T◾ → ValState {Z₀ = Z₀} T◾ → Set where
 
@@ -218,6 +218,14 @@ determinismⱽ ∘unit ∘unit = refl
 determinismⱽ ∙M∷l ∙M∷l = refl
 determinismⱽ ∙M∷r ∙M∷r = refl
 determinismⱽ ∙pair∷pm ∙pair∷pm = refl
+
+---------------------------------------------------------------------------------
+-- MACHINE FOR EFFECTFUL TERMS / COMPUTATIONS
+
+data CompState {Z₀ : Ty} : Set where
+
+      ⟨return_╎_⟩ : (W : Value {Z₀ = Z₀} X) → (k : CompStack {Z₀ = Z₀} X) → CompState {Z₀ = Z₀}
+      ⟨_╎_╎_⟩ : (M : Comp Γ X) → (γ : Env {Z₀ = Z₀} Γ) → (k : CompStack {Z₀ = Z₀} X) → CompState {Z₀ = Z₀}
 
 jump-to-state : {Z₀ : Ty} → Value {Z₀ = Z₀} `V → CompState {Z₀ = Z₀}
 jump-to-state (jumpᵛ W γ k) = ⟨ W ╎ γ ╎ k ⟩
@@ -379,15 +387,15 @@ data Progress {Z₀ : Ty} (σ : CompState {Z₀ = Z₀}) : Set where
   done : Normal σ → Progress σ
   step : {σ' : CompState} → σ →ᶜ σ' → Progress σ
 
-step? : {Z₀ : Ty} (σ : CompState {Z₀ = Z₀}) → Progress σ
-step? ⟨return W ╎ ◻ ⟩ = done (λ ())
-step? ⟨return W ╎ M ⊲ γ ⦂⦂ k ⟩ = step ∙return
-step? ⟨ return W ╎ γ ╎ k ⟩ = step ∘return
-step? ⟨ pm W M ╎ γ ╎ k ⟩ = step ∘pm
-step? ⟨ push M₁ M₂ ╎ γ ╎ k ⟩ = step ∘push
-step? ⟨ app W₁ W₂ ╎ γ ╎ k ⟩ = step ∘app
-step? ⟨ var W ╎ γ ╎ k ⟩ = step ∘var
-step? ⟨ sub M₁ M₂ ╎ γ ╎ k ⟩ = step ∘sub
+progress : {Z₀ : Ty} (σ : CompState {Z₀ = Z₀}) → Progress σ
+progress ⟨return W ╎ ◻ ⟩ = done (λ ())
+progress ⟨return W ╎ M ⊲ γ ⦂⦂ k ⟩ = step ∙return
+progress ⟨ return W ╎ γ ╎ k ⟩ = step ∘return
+progress ⟨ pm W M ╎ γ ╎ k ⟩ = step ∘pm
+progress ⟨ push M₁ M₂ ╎ γ ╎ k ⟩ = step ∘push
+progress ⟨ app W₁ W₂ ╎ γ ╎ k ⟩ = step ∘app
+progress ⟨ var W ╎ γ ╎ k ⟩ = step ∘var
+progress ⟨ sub M₁ M₂ ╎ γ ╎ k ⟩ = step ∘sub
 
 halting-state : (σ : CompState {Z₀ = Z₀}) → Normal σ → Σ[ W ∈ Value Z₀ ] σ ≡ ⟨return W ╎ ◻ ⟩
 halting-state ⟨return W ╎ ◻ ⟩ normal = W , refl
@@ -400,7 +408,7 @@ halting-state ⟨ var x ╎ γ ╎ k ⟩ normal = ql (normal ∘var) _
 halting-state ⟨ sub M M₁ ╎ γ ╎ k ⟩ normal = ql (normal ∘sub) _
 
 eval-acc : {Z₀ : Ty} {σ : CompState {Z₀ = Z₀}} → SN σ → Σ[ σ' ∈ CompState ] Σ[ W ∈ Value {Z₀ = Z₀} Z₀ ] Σ[ NF ∈ Normal σ' ] (σ →ᶜ* σ') × (W ≡ proj₁ (halting-state σ' NF))
-eval-acc {σ = σ} (sn f) with step? σ
+eval-acc {σ = σ} (sn f) with progress σ
 ... | done NF    = σ , proj₁ (halting-state σ NF) , NF , (σ ◼) , refl
 ... | step S→S' with eval-acc (f S→S')
 ...   | (σ'' , W , NF , S'→*S'' , eq) = σ'' , W , NF , (_ →ᶜ⟨ S→S' ⟩ S'→*S'') , eq
@@ -409,6 +417,8 @@ eval-acc {σ = σ} (sn f) with step? σ
 eval : {Z₀ : Ty} → (M : Comp ε Z₀) → Σ[ σ' ∈ CompState ] Σ[ W ∈ Value {Z₀ = Z₀} Z₀ ] Σ[ NF ∈ Normal σ' ] (⟨ M ╎ ∅ ╎ ◻ ⟩ →ᶜ* σ') × (W ≡ proj₁ (halting-state σ' NF))
 eval M = eval-acc (SN-theorem M)
 
+---------------------------------------------------------------------------------
+-- EXAMPLES
 
 ex15 : ε ⊢ᶜ (`Unit)
 ex15 = push (push (app (lam {X = `Unit} (sub (var (var h)) (return unit))) unit) (return unit)) (return unit)
