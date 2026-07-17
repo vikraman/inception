@@ -10,8 +10,8 @@ import Inception.LamPm
 
 -- substitution calculus
 import Inception.Sub.Syntax
-import Inception.Sub.CPS
 import Inception.Sub.Machine
+import Inception.Sub.Semantics
 
 -- inception calculus
 import Inception.Inc.Syntax
