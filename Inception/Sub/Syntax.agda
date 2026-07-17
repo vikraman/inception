@@ -114,7 +114,7 @@ data C̲o̲m̲p : Ctx → Ty → Set where
 
     r̲e̲t̲u̲r̲n̲ : V̲a̲l̲ Γ X → C̲o̲m̲p Γ X
 
-    a̲pp    : Γ ⊢ᵛ X `⇒ Y -> V̲a̲l̲ Γ X -> C̲o̲m̲p Γ Y
+    --a̲pp    : Γ ⊢ᵛ X `⇒ Y -> V̲a̲l̲ Γ X -> C̲o̲m̲p Γ Y
 
 syntax Wk Γ Δ = Γ ⊇ Δ
 
@@ -465,7 +465,7 @@ wk-v̲a̲l̲ π (v̲a̲r̲ i) = v̲a̲r̲ (wk-mem π i)
 
 wk-c̲o̲m̲p : Wk Γ Δ → C̲o̲m̲p Δ X → C̲o̲m̲p Γ X
 wk-c̲o̲m̲p π (r̲e̲t̲u̲r̲n̲ M) = r̲e̲t̲u̲r̲n̲ (wk-v̲a̲l̲ π M)
-wk-c̲o̲m̲p π (a̲pp M N) = a̲pp (wk-val π M) (wk-v̲a̲l̲ π N)
+--wk-c̲o̲m̲p π (a̲pp M N) = a̲pp (wk-val π M) (wk-v̲a̲l̲ π N)
 
 toVal : V̲a̲l̲ Γ X → Γ ⊢ᵛ X
 toVal (l̲a̲m̲ W) = lam W
@@ -475,7 +475,7 @@ toVal (v̲a̲r̲ i) = var i
 
 toComp :  C̲o̲m̲p Γ X → Γ ⊢ᶜ X
 toComp (r̲e̲t̲u̲r̲n̲ M) = return (toVal M)
-toComp (a̲pp M N) = app M (toVal N)
+--toComp (a̲pp M N) = app M (toVal N)
 
 wk-comm : {M : V̲a̲l̲ Γ X} → {π : Wk Δ Γ} → wk-val π (toVal M) ≡ toVal (wk-v̲a̲l̲ π M)
 wk-comm {Γ = Γ} {Δ = Δ} {M = l̲a̲m̲ W} {π = π} = refl
@@ -497,7 +497,7 @@ wk-v̲a̲l̲-id (v̲a̲r̲ i) = cong v̲a̲r̲ (wk-mem-id)
 
 wk-c̲o̲m̲p-id : (W : C̲o̲m̲p Γ X) → wk-c̲o̲m̲p wk-id W ≡ W
 wk-c̲o̲m̲p-id (r̲e̲t̲u̲r̲n̲ M) = cong r̲e̲t̲u̲r̲n̲ (wk-v̲a̲l̲-id M)
-wk-c̲o̲m̲p-id (a̲pp M N) = cong₂ a̲pp (wk-val-id M) (wk-v̲a̲l̲-id N)
+--wk-c̲o̲m̲p-id (a̲pp M N) = cong₂ a̲pp (wk-val-id M) (wk-v̲a̲l̲-id N)
 
 wk-prev : Wk (Γ ∙ X) (Δ ∙ Y) → Wk Γ Δ
 wk-prev (wk-cong π) = π
@@ -598,9 +598,10 @@ wk-merge {Γ = Γ Cx.∙ X} {Δ = Δ Cx.∙ x} {Δ' = Δ' Cx.∙ x₁} (wk-wk π
 
 
 
-infix  26 ⭭_
-infix  26 ⇡_
+--infix  26 ⭭_
+--infix  26 ⇡_
 
+{-
 data PartialTerm : (Γ : Ctx) → (X : Ty) → Set where
 
     ⭭_ : V̲a̲l̲ Γ X → PartialTerm Γ X
@@ -626,6 +627,7 @@ wk-pt-id (⇡ M) = cong ⇡_ (wk-val-id M)
 wk-pt-id (⇡ᴹ M N) = cong₂ ⇡ᴹ (wk-val-id M) (wk-val-id N)
 wk-pt-id (⇡ᴸ LHS RHS) = cong₂ ⇡ᴸ (wk-val-id LHS) (wk-val-id RHS)
 wk-pt-id (⇡ᴿ LHS RHS) = cong₂ ⇡ᴿ (wk-v̲a̲l̲-id LHS) (wk-val-id RHS)
+-}
 
 wk-wk-trans-id : {Δ Γ : Ctx} → {X Y : Ty} → (π : Wk Δ (Γ ∙ X)) → (i : Γ ∋ Y) → wk-mem (wk-trans π (wk-wk wk-id)) i ≡ wk-mem π (t i)
 wk-wk-trans-id (wk-cong (wk-cong π)) Cx.h = refl
