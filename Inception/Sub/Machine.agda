@@ -19,9 +19,6 @@ open import Inception.Sub.Equality
 
 -----------------------------------------------------------------------
 
-private variable
-  X₁ X₂ : Ty
-
 infixl 27 _،_
 
 mutual
@@ -44,7 +41,7 @@ mutual
 
   data Env {Z₀ : Ty} : Ctx → Set where
     ∅   : Env {Z₀ = Z₀} ε
-    _،_ : Env {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} A → Env {Z₀ = Z₀} (Γ ∙ A)
+    _،_ : Env {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X → Env {Z₀ = Z₀} (Γ ∙ X)
 
 infixr 17 _→ᵛ⟨_⟩．
 infixr 15 _→ᵛ⟨_⟩_
@@ -414,7 +411,7 @@ eval M = eval-acc (SN-theorem M)
 
 
 ex15 : ε ⊢ᶜ (`Unit)
-ex15 = push (push (app (lam {A = `Unit} (sub (var (var h)) (return unit))) unit) (return unit)) (return unit)
+ex15 = push (push (app (lam {X = `Unit} (sub (var (var h)) (return unit))) unit) (return unit)) (return unit)
 
 _ : eval ex15 ≡ (_ , unitᵛ , _ ,
                   (⟨ push (push (app (lam (sub (var (var h)) (return unit))) unit) (return unit)) (return unit) ╎ ∅ ╎ ◻ ⟩
