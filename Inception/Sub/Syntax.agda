@@ -2,18 +2,16 @@
 
 module Inception.Sub.Syntax where
 
-open import Data.Nat
+open import Inception.Prelude
+
+open import Data.Product using (proj₁; proj₂; _,_; _×_; Σ-syntax)
+open import Data.Empty using (⊥)
 
 import Relation.Binary.PropositionalEquality as Eq
 open Eq using (_≡_; refl; cong; trans; cong₂)
 open Eq.≡-Reasoning
 
-open import Data.Product using (proj₁; proj₂; _,_; <_,_>; curry; _×_; Σ; ∃; Σ-syntax; ∃-syntax)
-
---open import Inception.Sub.Equality
-
-open import Data.Empty using (⊥)
-open import Inception.Prelude
+---------------------------------------------------------------------------------
 
 infixr 40 _`×_
 infixr 25 _`⇒_
@@ -33,8 +31,8 @@ module Cx (Ty : Set) where
     _∙_ : Ctx -> Ty -> Ctx
 
   variable
-    X X' Y Y' Z Z' X₁ X₂ : Ty
-    Γ Δ Ψ Γ' Γ'' Γ''' Δ' Γ₁ Γ₂ Γ₃ : Ctx
+    X X' Y Y' Z Z' Z₀ X₁ X₂ : Ty
+    Γ Δ Ψ Γ' Γ'' Γ''' Δ' Γ₀ Γ₁ Γ₂ Γ₃ : Ctx
 
   data _∋_ : Ctx -> Ty -> Set where
     h :

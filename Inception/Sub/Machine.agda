@@ -11,7 +11,7 @@ open import Data.Empty using (⊥)
 
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; subst)
 
------------------------------------------------------------------------
+---------------------------------------------------------------------------------
 
 infixl 27 _،_
 infix  20 ⭭_
@@ -22,11 +22,6 @@ infixr 17 _→ᵛ⟨_⟩．
 infixr 15 _→ᵛ⟨_⟩_
 infix  15 _→ᵛ_
 infixr 10 _⨾_
-
-private
-  variable
-    Γ₀ : Ctx
-    Z₀ : Ty
 
 ---------------------------------------------------------------------------------
 -- ENVIRONMENTS
