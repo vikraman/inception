@@ -3,7 +3,6 @@
 module Inception.Sub.CPS (R : Set) where
 
 open import Inception.Sub.Syntax
-open import Inception.Sub.Renaming
 
 open import Data.Unit
 open import Data.Product as P
@@ -254,10 +253,3 @@ wk-sem-trans (wk-wk π₁) (wk-cong π₂) γ =
       ≡⟨ refl ⟩
        ⟦ wk-wk (wk-trans π₁ (wk-cong π₂)) ⟧ʷ γ ∎
 wk-sem-trans (wk-wk π₁) (wk-wk π₂) γ = wk-sem-trans π₁ (wk-wk π₂) (proj₁ γ)
-
-
-⟦_⟧ᴾ : Γ ↭ Γ' → ⟦ Γ ⟧ˣ → ⟦ Γ' ⟧ˣ
-⟦ refl ⟧ᴾ = idf
-⟦ prep X Γ↭Γ' ⟧ᴾ = < proj₁ ； ⟦ Γ↭Γ' ⟧ᴾ , proj₂ >
-⟦ _↭_.swap X Y Γ↭Γ' ⟧ᴾ = < < proj₁ ； proj₁ ； ⟦ Γ↭Γ' ⟧ᴾ , (λ x → proj₂ x) > , (λ x → proj₂ (proj₁ x)) >
-⟦ _↭_.trans Γ↭Γ' Γ'↭Γ'' ⟧ᴾ = ⟦ Γ↭Γ' ⟧ᴾ ； ⟦ Γ'↭Γ'' ⟧ᴾ

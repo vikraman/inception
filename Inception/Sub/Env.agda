@@ -1,6 +1,6 @@
 {-# OPTIONS --no-postfix-projections #-}
 
-module Inception.Sub.ListEnv where
+module Inception.Sub.Env where
 
 open import Agda.Primitive using (Level)
 
@@ -12,8 +12,7 @@ import Relation.Binary.PropositionalEquality as Eq
 open Eq using (_≡_; refl; cong; cong₂; cong-app; icong; dcong₂; sym; trans; subst; subst₂)
 open Eq.≡-Reasoning
 
-open import Inception.Sub.SyntaxPS
-open import Inception.Sub.RenamingPS
+open import Inception.Sub.Syntax
 
 open import Data.Unit
 open import Data.Nat
