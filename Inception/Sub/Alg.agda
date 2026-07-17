@@ -14,7 +14,7 @@ record Alg[_] {v x} (V : Set v) (X : Set x) : Set (v ⊔ x) where
     weak : ∀ {M N : X} -> sub ((λ a -> M) , N) ≡ M
     subs : ∀ {N : X} -> sub (var , N) ≡ N
     ext : ∀ {M : V -> X} {b : V} -> sub (M , var b) ≡ M b
-    assoc : ∀ {M : V -> X} {N : X} {L : V -> V -> X} 
+    assoc : ∀ {M : V -> X} {N : X} {L : V -> V -> X}
           -> sub ((λ a -> sub ((λ b -> L a b) , M a)) , N) ≡ sub ((λ b -> sub ((λ a -> L a b) , N)) , sub (M , N))
 
 open Alg[_] public
