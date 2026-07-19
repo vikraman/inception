@@ -51,11 +51,11 @@ data Kont : Ty → Ty → Set where
 -- configurations, transitions
 
 infix 5 ⟨_∥_∥_⟩
-infix 5 ⟨_∥_⟩
+infix 5 [_∥_]
 
 data Cfg : Ty → Set where
   ⟨_∥_∥_⟩ : {Γ : Ctx} → Γ ⊢ᶜ A → Env Γ → Kont A B → Cfg B
-  ⟨_∥_⟩   : Value A → Kont A B → Cfg B
+  [_∥_]   : Value A → Kont A B → Cfg B
 
 apply : Value (A `⇒ B) → Value A → Kont B C → Cfg C
 apply (clo N ρ) w κ = ⟨ N ∥ ρ ∷ w ∥ κ ⟩
@@ -71,10 +71,10 @@ data _→ᵏ_ : {B : Ty} → Cfg B → Cfg B → Set where
               → ⟨ push M N ∥ ρ ∥ κ ⟩ →ᵏ ⟨ M ∥ ρ ∥ N ◂ ρ ∷ κ ⟩
 
   return-step : {Γ : Ctx} {V : Γ ⊢ᵛ A} {ρ : Env Γ} {κ : Kont A B}
-              → ⟨ return V ∥ ρ ∥ κ ⟩ →ᵏ ⟨ eval-val V ρ ∥ κ ⟩
+              → ⟨ return V ∥ ρ ∥ κ ⟩ →ᵏ [ eval-val V ρ ∥ κ ]
 
   resume-step : {Γ : Ctx} {v : Value A} {N : (Γ ∙ A) ⊢ᶜ B} {ρ : Env Γ} {κ : Kont B C}
-              → ⟨ v ∥ N ◂ ρ ∷ κ ⟩ →ᵏ ⟨ N ∥ ρ ∷ v ∥ κ ⟩
+              → [ v ∥ N ◂ ρ ∷ κ ] →ᵏ ⟨ N ∥ ρ ∷ v ∥ κ ⟩
 
   app-step    : {Γ : Ctx} {V : Γ ⊢ᵛ (A `⇒ B)} {W : Γ ⊢ᵛ A} {ρ : Env Γ} {κ : Kont B C}
               → ⟨ app V W ∥ ρ ∥ κ ⟩ →ᵏ apply (eval-val V ρ) (eval-val W ρ) κ
@@ -105,7 +105,7 @@ Redᵛ `Unit    v = ⊤
 Redᵛ (A `× B) v = Redᵛ A (fst-v v) × Redᵛ B (snd-v v)
 Redᵛ (A `⇒ B) v = ∀ {w} → Redᵛ A w → ∀ {C} {κ : Kont B C} → Redᵏ B κ → SN (apply v w κ)
 
-Redᵏ A κ = ∀ {v} → Redᵛ A v → SN ⟨ v ∥ κ ⟩
+Redᵏ A κ = ∀ {v} → Redᵛ A v → SN [ v ∥ κ ]
 
 record RedEnv (ρ : Env Γ) : Set where
   field red : (i : Γ ∋ A) → Redᵛ A (lookup ρ i)
@@ -163,8 +163,8 @@ step? ⟨ push M N ∥ ρ ∥ κ ⟩ = next push-step
 step? ⟨ return V ∥ ρ ∥ κ ⟩ = next return-step
 step? ⟨ app V W ∥ ρ ∥ κ ⟩  = next app-step
 step? ⟨ pm V M ∥ ρ ∥ κ ⟩   = next pm-step
-step? ⟨ v ∥ ε ⟩            = done (λ ())
-step? ⟨ v ∥ N ◂ ρ ∷ κ ⟩    = next resume-step
+step? [ v ∥ ε ]            = done (λ ())
+step? [ v ∥ N ◂ ρ ∷ κ ]    = next resume-step
 
 eval-acc : {σ : Cfg B} → SN σ → Σ[ σ' ∈ Cfg B ] (σ ↠ᵏ σ') × Normal σ'
 eval-acc {σ = σ} (sn f) with step? σ
@@ -174,3 +174,9 @@ eval-acc {σ = σ} (sn f) with step? σ
 
 eval : (M : ε ⊢ᶜ A) → Σ[ σ' ∈ Cfg A ] (⟨ M ∥ ∅ ∥ ε ⟩ ↠ᵏ σ') × Normal σ'
 eval M = eval-acc (SN-theorem M)
+
+open import Relation.Binary.PropositionalEquality
+
+_ : eval (pm (pair unit unit) (return (lam {A = `Unit} (return (var h)))))
+       ≡ ([ clo (return (var h)) (∅ ∷ unit ∷ unit) ∥ ε ] , pm-step ◅ return-step ◅ ◼ , (λ ()))
+_ = refl
