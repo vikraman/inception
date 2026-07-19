@@ -5,6 +5,23 @@ open import Inception.LamBarMuMuTilde.Syntax
 `efq : (ε ∙ `⊥) ⊢ (ε ∙ A)
 `efq = cut `⊥ (ret (var z)) tp
 
+`dne : ε ⊢ᵗ ¬ (¬ A) `⇒ A ∣ ε
+`dne {A = A} =
+  ret (lam (μ (cut (¬ (¬ A))
+                   (ret (var z))
+                   (app (lam (μ (cut A
+                                     (ret (var z))
+                                     (covar (s z)))))
+                        tp))))
+
+`lem : ε ⊢ᵗ (A `+ ¬ A) ∣ ε
+`lem {A = A} =
+  μ (cut (A `+ ¬ A)
+         (ret (inr (lam (μ (cut (A `+ ¬ A)
+                                (ret (inl (var z)))
+                                (covar (s z)))))))
+         (covar z))
+
 `peirce : ε ⊢ᵗ ((A `⇒ B) `⇒ A) `⇒ A ∣ ε
 `peirce {A = A} {B = B} =
   ret (lam (μ (cut ((A `⇒ B) `⇒ A)
@@ -65,22 +82,3 @@ open import Inception.LamBarMuMuTilde.Syntax
          (μ̃ (cut A
                  (wkᵗ (wk̃ᵗ t2))
                  (covar z))))
-
--- classical logic
-
-`dne : ε ⊢ᵗ ¬ (¬ A) `⇒ A ∣ ε
-`dne {A = A} =
-  ret (lam (μ (cut (¬ (¬ A))
-                   (ret (var z))
-                   (app (lam (μ (cut A
-                                     (ret (var z))
-                                     (covar (s z)))))
-                        tp))))
-
-`lem : ε ⊢ᵗ (A `+ ¬ A) ∣ ε
-`lem {A = A} =
-  μ (cut (A `+ ¬ A)
-         (ret (inr (lam (μ (cut (A `+ ¬ A)
-                                (ret (inl (var z)))
-                                (covar (s z)))))))
-         (covar z))
