@@ -31,7 +31,7 @@ module Cx (Ty : Set) where
     _∙_ : Ctx -> Ty -> Ctx
 
   variable
-    X X' Y Y' Z Z' Z₀ X₁ X₂ : Ty
+    X X' Y Y' Z Z' Z₀ Z₁ X₁ X₂ : Ty
     Γ Δ Ψ Γ' Γ'' Γ''' Δ' Γ₀ Γ₁ Γ₂ Γ₃ : Ctx
 
   data _∋_ : Ctx -> Ty -> Set where

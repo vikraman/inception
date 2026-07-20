@@ -50,23 +50,23 @@ mutual
 
 
 lookup : (i : Γ ∋ X) → Env {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X
-lookup Cx.h (γ ، W) = W
-lookup (Cx.t i) (γ ، W) = lookup i γ
+lookup Cx.h (γ ، W') = W'
+lookup (Cx.t i) (γ ، W') = lookup i γ
 
 ---------------------------------------------------------------------------------
 -- MACHINE FOR PURE TERMS
 
 data TermWithHole {Z₀ : Ty} : (X : Ty) → Set where
 
-    ⭭_ : Value {Z₀ = Z₀} X → TermWithHole X
+    ⭭_ : (W' : Value {Z₀ = Z₀} X) → TermWithHole X
 
-    ⇡ : (M : Val Γ X) → (Env {Z₀ = Z₀} Γ) → TermWithHole X
+    ⇡ : (W : Val Γ X) → (Env {Z₀ = Z₀} Γ) → TermWithHole X
 
-    ⇡ᴾᴹ : (HOLE : Val Γ (X `× Y)) → (N : Val (Γ ∙ X ∙ Y) Z) → (Env {Z₀ = Z₀} Γ) → TermWithHole Z
+    ⇡ᴾᴹ : (HOLE : Val Γ (X₁ `× X₂)) → (W : Val (Γ ∙ X₁ ∙ X₂) Y) → (Env {Z₀ = Z₀} Γ) → TermWithHole Y
 
-    ⇡ᴸ : (HOLE : Val Γ X) → (RHS : Val Γ Y) → (Env {Z₀ = Z₀} Γ) → TermWithHole (X `× Y)
+    ⇡ᴸ : (HOLE : Val Γ X₁) → (RHS : Val Γ X₂) → (Env {Z₀ = Z₀} Γ) → TermWithHole (X₁ `× X₂)
 
-    ⇡ᴿ  : (LHS : Value {Z₀ = Z₀} X) → (HOLE : Val Γ Y) → (Env {Z₀ = Z₀} Γ) → TermWithHole (X `× Y)
+    ⇡ᴿ  : (LHS : Value {Z₀ = Z₀} X₁) → (HOLE : Val Γ X₂) → (Env {Z₀ = Z₀} Γ) → TermWithHole (X₁ `× X₂)
 
 
 data IsEmpty : Set where
@@ -114,32 +114,32 @@ data _→ᵛ_ {Z₀ : Ty} {T◾ : Ty} : ValState {Z₀ = Z₀} T◾ → ValState
               ---------------------------------------------------------------------------
             →     ∘ ((⇡ (lam M) γ ∷ tail) {↥ = ↥}) →ᵛ ∙ ((⭭ (cloᵛ M γ) ∷ tail) {↥ = ↥})
 
-    ∘pair  :  {γ : Env {Z₀ = Z₀} Γ} {LHS : Val Γ X} → {RHS : Val Γ Y} → {tail : ValStack {Z₀ = Z₀} b T◾} → {↥ : BottomTypeEqualsNextType b (X `× Y) T◾}
+    ∘pair  :  {γ : Env {Z₀ = Z₀} Γ} {W₁ : Val Γ X₁} → {W₂ : Val Γ X₂} → {tail : ValStack {Z₀ = Z₀} b T◾} → {↥ : BottomTypeEqualsNextType b (X₁ `× X₂) T◾}
               ---------------------------------------------------------------------------
-            →     ∘ ((⇡ (pair LHS RHS) γ ∷ tail) {↥ = ↥}) →ᵛ ∘ ((⇡ LHS γ ∷ ((⇡ᴸ LHS RHS γ ∷ tail) {↥ = ↥})) {↥ = 🗇})
+            →     ∘ ((⇡ (pair W₁ W₂) γ ∷ tail) {↥ = ↥}) →ᵛ ∘ ((⇡ W₁ γ ∷ ((⇡ᴸ W₁ W₂ γ ∷ tail) {↥ = ↥})) {↥ = 🗇})
 
-    ∘pm    :  {γ : Env {Z₀ = Z₀} Γ} {M : Val Γ (X `× Y)} → {N : Val (Γ ∙ X ∙ Y) Z} → {tail : ValStack {Z₀ = Z₀} b T◾ } → {↥ : BottomTypeEqualsNextType b Z T◾}
+    ∘pm    :  {γ : Env {Z₀ = Z₀} Γ} {W₁ : Val Γ (X₁ `× X₂)} → {W₂ : Val (Γ ∙ X₁ ∙ X₂) Y} → {tail : ValStack {Z₀ = Z₀} b T◾ } → {↥ : BottomTypeEqualsNextType b Y T◾}
               ---------------------------------------------------------------------------
-            →     ∘ ((⇡ (pm M N) γ ∷ tail) {↥ = ↥}) →ᵛ ∘ ((⇡ M γ ∷ (⇡ᴾᴹ M N γ ∷ tail) {↥ = ↥}) {↥ = 🗇})
+            →     ∘ ((⇡ (pm W₁ W₂) γ ∷ tail) {↥ = ↥}) →ᵛ ∘ ((⇡ W₁ γ ∷ (⇡ᴾᴹ W₁ W₂ γ ∷ tail) {↥ = ↥}) {↥ = 🗇})
 
     ∘unit  :  {γ  : Env {Z₀ = Z₀} Γ} → {tail : ValStack {Z₀ = Z₀} b T◾} → {↥ : BottomTypeEqualsNextType b `Unit T◾}
               ---------------------------------------------------------------------------
             →     ∘ ((⇡ unit γ ∷ tail) {↥ = ↥}) →ᵛ ∙ ((⭭ unitᵛ ∷ tail) {↥ = ↥})
 
-    ∙M∷l   :  {γ : Env {Z₀ = Z₀} Γ} {M : Value X} → {LHS : Val Γ X} → {RHS : Val Γ Y}
-            → {tail : ValStack {Z₀ = Z₀} b T◾} → {↥ : BottomTypeEqualsNextType b (X `× Y) T◾}
+    ∙W∷l   :  {γ : Env {Z₀ = Z₀} Γ} {W₁' : Value X₁} → {W₁ : Val Γ X₁} → {W₂ : Val Γ X₂}
+            → {tail : ValStack {Z₀ = Z₀} b T◾} → {↥ : BottomTypeEqualsNextType b (X₁ `× X₂) T◾}
               ---------------------------------------------------------------------------
-            →     ∙ ((⭭ M ∷ ((⇡ᴸ LHS RHS γ ∷ tail) {↥ = ↥})) {↥ = 🗇}) →ᵛ ∘ ((⇡ RHS γ ∷ ((⇡ᴿ M RHS γ ∷ tail) {↥ = ↥})) {↥ = 🗇})
+            →     ∙ ((⭭ W₁' ∷ ((⇡ᴸ W₁ W₂ γ ∷ tail) {↥ = ↥})) {↥ = 🗇}) →ᵛ ∘ ((⇡ W₂ γ ∷ ((⇡ᴿ W₁' W₂ γ ∷ tail) {↥ = ↥})) {↥ = 🗇})
 
-    ∙M∷r   :  {γ : Env {Z₀ = Z₀} Γ} {M : Value Y} → {LHS : Value X} → {RHS : Val Γ Y}
-            → {tail : ValStack {Z₀ = Z₀} b T◾} → {↥ : BottomTypeEqualsNextType b (X `× Y) T◾}
+    ∙W∷r   :  {γ : Env {Z₀ = Z₀} Γ} {W₂' : Value X₂} → {W₁' : Value X₁} → {W₂ : Val Γ X₂}
+            → {tail : ValStack {Z₀ = Z₀} b T◾} → {↥ : BottomTypeEqualsNextType b (X₁ `× X₂) T◾}
               ---------------------------------------------------------------------------
-            → ∙ ((⭭ M ∷ ((⇡ᴿ LHS RHS γ ∷ tail) {↥ = ↥})) {↥ = 🗇}) →ᵛ ∙ ((⭭ pairᵛ LHS M ∷ tail) {↥ = ↥})
+            → ∙ ((⭭ W₂' ∷ ((⇡ᴿ W₁' W₂ γ ∷ tail) {↥ = ↥})) {↥ = 🗇}) →ᵛ ∙ ((⭭ pairᵛ W₁' W₂' ∷ tail) {↥ = ↥})
 
-    ∙pair∷pm  :  {γ : Env {Z₀ = Z₀} Γ} {LHS : Value X} → {RHS : Value Y} → {M : Val Γ (X `× Y)} → {N : Val (Γ ∙ X ∙ Y) Z}
-            → {tail : ValStack {Z₀ = Z₀} b T◾} → {↥ : BottomTypeEqualsNextType b Z T◾}
+    ∙pair∷pm  :  {γ : Env {Z₀ = Z₀} Γ} {W₁' : Value X₁} → {W₂' : Value X₂} → {W₀ : Val Γ (X₁ `× X₂)} → {W₃ : Val (Γ ∙ X₁ ∙ X₂) Y}
+            → {tail : ValStack {Z₀ = Z₀} b T◾} → {↥ : BottomTypeEqualsNextType b Y T◾}
               ---------------------------------------------------------------------------
-            →     ∙ ((⭭ pairᵛ LHS RHS ∷ ((⇡ᴾᴹ M N γ ∷ tail) {↥ = ↥})) {↥ = 🗇}) →ᵛ  ∘ ((⇡ N (γ ، LHS ، RHS) ∷ tail) {↥ = ↥})
+            →     ∙ ((⭭ pairᵛ W₁' W₂' ∷ ((⇡ᴾᴹ W₀ W₃ γ ∷ tail) {↥ = ↥})) {↥ = 🗇}) →ᵛ  ∘ ((⇡ W₃ (γ ، W₁' ، W₂') ∷ tail) {↥ = ↥})
 
 data _↠ᵛ_ {Z₀ T◾ : Ty} : ValState {Z₀ = Z₀} T◾ → ValState {Z₀ = Z₀} T◾ → Set where
 
@@ -157,18 +157,18 @@ _⨾_ (F →ᵛ⟨ F>S₁ ⟩ S₁>>S₂) S₂>>T = F →ᵛ⟨ F>S₁ ⟩ (S₁
 ⟨ ∘pair ⟩⧻ tail = ∘pair
 ⟨ ∘pm ⟩⧻ tail = ∘pm
 ⟨ ∘unit ⟩⧻ tail = ∘unit
-⟨ ∙M∷l ⟩⧻ tail = ∙M∷l
-⟨ ∙M∷r ⟩⧻ tail = ∙M∷r
+⟨ ∙W∷l ⟩⧻ tail = ∙W∷l
+⟨ ∙W∷r ⟩⧻ tail = ∙W∷r
 ⟨ ∙pair∷pm ⟩⧻ tail = ∙pair∷pm
 
 ⟪_⟫⧻_ : {from : ValState {Z₀ = Z₀} T◾} → {to : ValState {Z₀ = Z₀} T◾} → (F>T : from ↠ᵛ to) → (tail : ValStack {Z₀ = Z₀} non-empty T◾') → (from ⧻ tail) ↠ᵛ (to ⧻ tail)
 ⟪ _ →ᵛ⟨ F>T ⟩． ⟫⧻ tail =  _ →ᵛ⟨ ⟨ F>T ⟩⧻ tail ⟩．
 ⟪ _ →ᵛ⟨ F>T ⟩ F>>T ⟫⧻ tail =   _ →ᵛ⟨ ⟨ F>T ⟩⧻ tail ⟩ (⟪ F>>T ⟫⧻ tail)
 
-record ValSteps {Z₀ : Ty} (M : Val Γ X) (γ : Env {Z₀ = Z₀} Γ) : Set where
+record ValSteps {Z₀ : Ty} (W : Val Γ X) (γ : Env {Z₀ = Z₀} Γ) : Set where
   field
     result : Value {Z₀ = Z₀} X
-    steps  : (∘ ((⇡ M γ ∷ □) {↥ = 🗆})) ↠ᵛ (∙ ((⭭ result ∷ □) {↥ = 🗆}))
+    steps  : (∘ ((⇡ W γ ∷ □) {↥ = 🗆})) ↠ᵛ (∙ ((⭭ result ∷ □) {↥ = 🗆}))
 open ValSteps
 
 
@@ -181,14 +181,14 @@ proj₂-val (pairᵛ W₁ W₂) = W₂
 pair-val : {Z₀ : Ty} → (W : Value {Z₀ = Z₀} (X `× Y)) → (pairᵛ (proj₁-val W) (proj₂-val W) ≡ W)
 pair-val (pairᵛ W₁ W₂) = refl
 
-run-val : {Z₀ : Ty} → (M : Val Γ X) → (γ : Env {Z₀ = Z₀} Γ) → ValSteps M γ
+run-val : {Z₀ : Ty} → (W : Val Γ X) → (γ : Env {Z₀ = Z₀} Γ) → ValSteps W γ
 run-val (var i) γ = record { result = lookup i γ ; steps = ∘ (⇡ (var i) γ ∷ □) →ᵛ⟨ ∘var ⟩． }
 run-val (lam M) γ = record { result = cloᵛ M γ ; steps = ∘ (⇡ (lam M) γ ∷ □) →ᵛ⟨ ∘lam ⟩． }
 run-val (pair W₁ W₂) γ =
   let
     IH₁ = run-val W₁ γ
     IH₂ = run-val W₂ γ
-    trace = _ →ᵛ⟨ ∘pair ⟩． ⨾ ⟪ steps IH₁ ⟫⧻ _ ⨾ _ →ᵛ⟨ ∙M∷l ⟩． ⨾ (⟪ steps IH₂ ⟫⧻ _) ⨾ _ →ᵛ⟨ ∙M∷r ⟩．
+    trace = _ →ᵛ⟨ ∘pair ⟩． ⨾ ⟪ steps IH₁ ⟫⧻ _ ⨾ _ →ᵛ⟨ ∙W∷l ⟩． ⨾ (⟪ steps IH₂ ⟫⧻ _) ⨾ _ →ᵛ⟨ ∙W∷r ⟩．
   in
   record { result = pairᵛ (result IH₁) (result IH₂) ; steps = trace }
 run-val (pm W₁ W₂) γ =
@@ -206,8 +206,8 @@ determinismⱽ ∘lam ∘lam = refl
 determinismⱽ ∘pair ∘pair = refl
 determinismⱽ ∘pm ∘pm = refl
 determinismⱽ ∘unit ∘unit = refl
-determinismⱽ ∙M∷l ∙M∷l = refl
-determinismⱽ ∙M∷r ∙M∷r = refl
+determinismⱽ ∙W∷l ∙W∷l = refl
+determinismⱽ ∙W∷r ∙W∷r = refl
 determinismⱽ ∙pair∷pm ∙pair∷pm = refl
 
 ---------------------------------------------------------------------------------
@@ -215,20 +215,21 @@ determinismⱽ ∙pair∷pm ∙pair∷pm = refl
 
 data CompState {Z₀ : Ty} : Set where
 
-      ⟨return_╎_⟩ : (W : Value {Z₀ = Z₀} X) → (k : CompStack {Z₀ = Z₀} X) → CompState {Z₀ = Z₀}
+      ⟨return_╎_⟩ : (W' : Value {Z₀ = Z₀} X) → (k : CompStack {Z₀ = Z₀} X) → CompState {Z₀ = Z₀}
       ⟨_╎_╎_⟩ : (M : Comp Γ X) → (γ : Env {Z₀ = Z₀} Γ) → (k : CompStack {Z₀ = Z₀} X) → CompState {Z₀ = Z₀}
 
 jump-to-state : {Z₀ : Ty} → Value {Z₀ = Z₀} `V → CompState {Z₀ = Z₀}
-jump-to-state (jumpᵛ W γ k) = ⟨ W ╎ γ ╎ k ⟩
+jump-to-state (jumpᵛ M γ k) = ⟨ M ╎ γ ╎ k ⟩
 
 clo-to-comp : {Z₀ : Ty} → Value {Z₀ = Z₀} (X `⇒ Y) → Σ[ Γ ∈ Ctx ] Comp (Γ ∙ X) Y × Env {Z₀ = Z₀} Γ
 clo-to-comp (cloᵛ M γ) = _ , M , γ
 
 clo-val : {Z₀ : Ty} → (W : Value {Z₀ = Z₀} (X `⇒ Y)) → (cloᵛ (proj₁ (proj₂ (clo-to-comp W))) (proj₂ (proj₂ (clo-to-comp W))) ≡ W)
-clo-val (cloᵛ W γ) = refl
+clo-val (cloᵛ M γ) = refl
 
 apply : {Z₀ : Ty} → Val Γ (X `⇒ Y) → Val Γ X → Env {Z₀ = Z₀} Γ → CompStack {Z₀ = Z₀} Y → CompState {Z₀ = Z₀}
 apply W₁ W₂ γ k = ⟨ proj₁ (proj₂ (clo-to-comp (result (run-val W₁ γ)))) ╎ proj₂ (proj₂ (clo-to-comp (result (run-val W₁ γ)))) ، result (run-val W₂ γ) ╎ k ⟩
+
 
 data _→ᶜ_ {Z₀ : Ty} : CompState {Z₀ = Z₀} → CompState {Z₀ = Z₀} → Set where
 
@@ -236,17 +237,17 @@ data _→ᶜ_ {Z₀ : Ty} : CompState {Z₀ = Z₀} → CompState {Z₀ = Z₀} 
                     ----------------------------------------------------------------
                     → ⟨ return W ╎ γ ╎ k ⟩ →ᶜ ⟨return (result (run-val W γ)) ╎ k ⟩
 
-      ∙return  :    {W : Value X} → {N : Comp (Δ ∙ X) Y} → {γ : Env Δ} → {k : CompStack Y}
+      ∙return  :    {W' : Value X} → {M : Comp (Δ ∙ X) Y} → {γ : Env Δ} → {k : CompStack Y}
                 ----------------------------------------------------------------
-                  → ⟨return W ╎ N ⊲ γ ⦂⦂ k ⟩ →ᶜ ⟨ N ╎ γ ، W ╎ k ⟩
+                  → ⟨return W' ╎ M ⊲ γ ⦂⦂ k ⟩ →ᶜ ⟨ M ╎ γ ، W' ╎ k ⟩
 
-      ∘push    :    {M : Comp Γ X} → {N : Comp (Γ ∙ X) Y} → {γ : Env Γ} → {k : CompStack Y}
+      ∘push    :    {M₁ : Comp Γ X} → {M₂ : Comp (Γ ∙ X) Y} → {γ : Env Γ} → {k : CompStack Y}
                 ----------------------------------------------------------------
-                  → ⟨ push M N ╎ γ ╎ k ⟩ →ᶜ ⟨ M ╎ γ ╎ N ⊲ γ ⦂⦂ k ⟩
+                  → ⟨ push M₁ M₂ ╎ γ ╎ k ⟩ →ᶜ ⟨ M₁ ╎ γ ╎ M₂ ⊲ γ ⦂⦂ k ⟩
 
-      ∘sub     :    {M : Comp (Γ ∙ `V) X} → {N : Comp Γ X} → {γ : Env Γ} → {k : CompStack X}
+      ∘sub     :    {M₁ : Comp (Γ ∙ `V) X} → {M₂ : Comp Γ X} → {γ : Env Γ} → {k : CompStack X}
                 ----------------------------------------------------------------
-                  → ⟨ sub M N ╎ γ ╎ k ⟩ →ᶜ ⟨ M ╎ γ ، (jumpᵛ N γ k) ╎ k ⟩
+                  → ⟨ sub M₁ M₂ ╎ γ ╎ k ⟩ →ᶜ ⟨ M₁ ╎ γ ، (jumpᵛ M₂ γ k) ╎ k ⟩
 
       ∘var     :   {W : Val Γ `V} → {γ : Env Γ} → {k : CompStack X}
                -------------------------------------------------------------
@@ -259,6 +260,7 @@ data _→ᶜ_ {Z₀ : Ty} : CompState {Z₀ = Z₀} → CompState {Z₀ = Z₀} 
       ∘app     :   {W₁ : Val Γ (X `⇒ Y)} → {W₂ : Val Γ X} → {γ : Env Γ} → {k : CompStack Y}
                     ----------------------------------------------------------------
                   →  ⟨ app W₁ W₂ ╎ γ ╎ k ⟩ →ᶜ apply W₁ W₂ γ k
+
 
 
 determinismꟲ : {Z₀ : Ty} {S S' : CompState {Z₀ = Z₀}} (S→S'₁ S→S'₂ : S →ᶜ S') → (S→S'₁ ≡ S→S'₂)
@@ -305,8 +307,8 @@ Rᴱ-ext Rγ RW (Cx.t i) = Rγ i
 rv≡sn : {Z₀ : Ty} → (W : Val Γ `V) → (γ : Env {Z₀ = Z₀} Γ) → Rᵛ `V (result (run-val W γ)) ≡ SN (jump-to-state (result (run-val W γ)))
 rv≡sn (var Cx.h) (γ ، jumpᵛ _ _ _) = refl
 rv≡sn (var (Cx.t i)) (γ ، _) = rv≡sn (var i) γ
-rv≡sn (pm W W₁) ∅ = rv≡sn W₁ (∅ ، proj₁-val (result (run-val W ∅)) ، proj₂-val (result (run-val W ∅)))
-rv≡sn (pm W W₁) (γ ، x) = rv≡sn W₁ (γ ، x ، proj₁-val (result (run-val W (γ ، x))) ، proj₂-val (result (run-val W (γ ، x))))
+rv≡sn (pm W₁ W₂) ∅ = rv≡sn W₂ (∅ ، proj₁-val (result (run-val W₁ ∅)) ، proj₂-val (result (run-val W₁ ∅)))
+rv≡sn (pm W₁ W₂) (γ ، W') = rv≡sn W₂ (γ ، W' ، proj₁-val (result (run-val W₁ (γ ، W'))) ، proj₂-val (result (run-val W₁ (γ ، W'))))
 
 mutual
 
@@ -379,8 +381,8 @@ data Progress {Z₀ : Ty} (σ : CompState {Z₀ = Z₀}) : Set where
   step : {σ' : CompState} → σ →ᶜ σ' → Progress σ
 
 progress : {Z₀ : Ty} (σ : CompState {Z₀ = Z₀}) → Progress σ
-progress ⟨return W ╎ ◻ ⟩ = done (λ ())
-progress ⟨return W ╎ M ⊲ γ ⦂⦂ k ⟩ = step ∙return
+progress ⟨return W' ╎ ◻ ⟩ = done (λ ())
+progress ⟨return W' ╎ M ⊲ γ ⦂⦂ k ⟩ = step ∙return
 progress ⟨ return W ╎ γ ╎ k ⟩ = step ∘return
 progress ⟨ pm W M ╎ γ ╎ k ⟩ = step ∘pm
 progress ⟨ push M₁ M₂ ╎ γ ╎ k ⟩ = step ∘push
@@ -389,23 +391,23 @@ progress ⟨ var W ╎ γ ╎ k ⟩ = step ∘var
 progress ⟨ sub M₁ M₂ ╎ γ ╎ k ⟩ = step ∘sub
 
 halting-state : (σ : CompState {Z₀ = Z₀}) → Normal σ → Σ[ W ∈ Value Z₀ ] σ ≡ ⟨return W ╎ ◻ ⟩
-halting-state ⟨return W ╎ ◻ ⟩ normal = W , refl
-halting-state ⟨return W ╎ x ⊲ γ ⦂⦂ k ⟩ normal = ql (normal ∙return) _
-halting-state ⟨ return x ╎ γ ╎ k ⟩ normal = ql (normal ∘return) _
-halting-state ⟨ pm x M ╎ γ ╎ k ⟩ normal = ql (normal ∘pm) _
-halting-state ⟨ push M M₁ ╎ γ ╎ k ⟩ normal = ql (normal ∘push) _
-halting-state ⟨ app x x₁ ╎ γ ╎ k ⟩ normal = ql (normal ∘app) _
-halting-state ⟨ var x ╎ γ ╎ k ⟩ normal = ql (normal ∘var) _
-halting-state ⟨ sub M M₁ ╎ γ ╎ k ⟩ normal = ql (normal ∘sub) _
+halting-state ⟨return W' ╎ ◻ ⟩ normal = W' , refl
+halting-state ⟨return W' ╎ x ⊲ γ ⦂⦂ k ⟩ normal = ql (normal ∙return) _
+halting-state ⟨ return _ ╎ γ ╎ k ⟩ normal = ql (normal ∘return) _
+halting-state ⟨ pm _ _ ╎ γ ╎ k ⟩ normal = ql (normal ∘pm) _
+halting-state ⟨ push _ _ ╎ γ ╎ k ⟩ normal = ql (normal ∘push) _
+halting-state ⟨ app _ _ ╎ γ ╎ k ⟩ normal = ql (normal ∘app) _
+halting-state ⟨ var _ ╎ γ ╎ k ⟩ normal = ql (normal ∘var) _
+halting-state ⟨ sub _ _ ╎ γ ╎ k ⟩ normal = ql (normal ∘sub) _
 
-eval-acc : {Z₀ : Ty} {σ : CompState {Z₀ = Z₀}} → SN σ → Σ[ σ' ∈ CompState ] Σ[ W ∈ Value {Z₀ = Z₀} Z₀ ] Σ[ NF ∈ Normal σ' ] (σ →ᶜ* σ') × (W ≡ proj₁ (halting-state σ' NF))
+
+eval-acc : {Z₀ : Ty} {σ : CompState {Z₀ = Z₀}} → SN σ → Σ[ σ' ∈ CompState ] Σ[ W' ∈ Value {Z₀ = Z₀} Z₀ ] Σ[ NF ∈ Normal σ' ] (σ →ᶜ* σ') × (W' ≡ proj₁ (halting-state σ' NF))
 eval-acc {σ = σ} (sn f) with progress σ
 ... | done NF    = σ , proj₁ (halting-state σ NF) , NF , (σ ◼) , refl
 ... | step S→S' with eval-acc (f S→S')
-...   | (σ'' , W , NF , S'→*S'' , eq) = σ'' , W , NF , (_ →ᶜ⟨ S→S' ⟩ S'→*S'') , eq
+...   | (σ'' , W' , NF , S'→*S'' , eq) = σ'' , W' , NF , (_ →ᶜ⟨ S→S' ⟩ S'→*S'') , eq
 
-
-eval : {Z₀ : Ty} → (M : Comp ε Z₀) → Σ[ σ' ∈ CompState ] Σ[ W ∈ Value {Z₀ = Z₀} Z₀ ] Σ[ NF ∈ Normal σ' ] (⟨ M ╎ ∅ ╎ ◻ ⟩ →ᶜ* σ') × (W ≡ proj₁ (halting-state σ' NF))
+eval : {Z₀ : Ty} → (M : Comp ε Z₀) → Σ[ σ' ∈ CompState ] Σ[ W' ∈ Value {Z₀ = Z₀} Z₀ ] Σ[ NF ∈ Normal σ' ] (⟨ M ╎ ∅ ╎ ◻ ⟩ →ᶜ* σ') × (W' ≡ proj₁ (halting-state σ' NF))
 eval M = eval-acc (SN-theorem M)
 
 ---------------------------------------------------------------------------------
