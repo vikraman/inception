@@ -7,7 +7,7 @@ open import Data.Product using (Σ; Σ-syntax; _×_; _,_; proj₁; proj₂)
 open import Data.Unit using (⊤; tt)
 
 import Relation.Binary.PropositionalEquality as Eq
-open Eq using (_≡_; refl; cong; cong₂)
+open Eq using (_≡_; refl; cong; cong₂; sym)
 open Eq.≡-Reasoning
 
 open import Inception.LamPm.Syntax
@@ -167,7 +167,7 @@ wk-reflect π {σ = [ var i ∥ K ]} ()
 SN-wk : {Γ' : Ctx} (π : Γ' ⊇ Γ) {σ : Cfg Γ B} → SN σ → SN (wk-cfg π σ)
 SN-wk π (sn f) = sn (λ step →
   let (σ' , σ-step , eq) = wk-reflect π step
-  in Eq.subst SN (begin _ ≡˘⟨ eq ⟩ _ ∎) (SN-wk π (f σ-step)))
+  in Eq.subst SN (sym eq) (SN-wk π (f σ-step)))
 
 --------------------------------------------------------------------------
 -- reducibility candidates
@@ -490,7 +490,7 @@ Red-wk (A `⇒ B) π {V} (snV , f) = SN-wk π snV , harrow
   where
   harrow : ∀ {Γ''} (ρ : Γ'' ⊇ _) {W : Γ'' ⊢ᵛ A} → Redᵛ A W → Redᶜ B (app (wk-val ρ (wk-val π V)) W)
   harrow ρ {W = W} redW =
-    Eq.subst (Redᶜ B) (begin _ ≡˘⟨ cong (λ x → app x W) (wk-val-trans V ρ π) ⟩ _ ∎) (f (wk-trans ρ π) redW)
+    Eq.subst (Redᶜ B) (sym (cong (λ x → app x W) (wk-val-trans V ρ π))) (f (wk-trans ρ π) redW)
 
 sub-val-ins2-cancel : (L : Γ ⊢ᵛ X) (R : Γ ⊢ᵛ Y) (N : Γ ⊢ᵛ A)
                      → sub-val (sub-ex (sub-ex sub-id L) R) (wk-val (wk-wk (wk-wk wk-id)) N) ≡ N
@@ -534,7 +534,7 @@ exp-pm-val {Γ} {X} {Y} (C1 `⇒ C2) {V} {W} redV H =
       (exp-pm-comp (Red-wk (X `× Y) ρ redV)
         (λ {L} {R} redL redR →
           let redW1 = H ρ redL redR
-              redN' = Eq.subst (Redᵛ C1) (begin _ ≡˘⟨ sub-val-ins2-cancel L R N ⟩ _ ∎) redN
+              redN' = Eq.subst (Redᵛ C1) (sym (sub-val-ins2-cancel L R N)) redN
           in Eq.subst (Redᶜ C2)
                       (cong (λ w → app w (sub-val (sub-ex (sub-ex sub-id L) R) (wk-val (wk-wk (wk-wk wk-id)) N)))
                             (wk-val-id (sub-val (sub-ex (sub-ex sub-id L) R) (wk-val (wk-cong (wk-cong ρ)) W))))
@@ -546,13 +546,13 @@ open RedSub
 
 RedSub-wk : {Γ' : Ctx} (ρ : Γ' ⊇ Γ) {θ : Γ ⊢ Δ} → RedSub θ → RedSub (sub-wk ρ θ)
 RedSub-wk ρ {θ} rθ = record
-  { red = λ i → Eq.subst (Redᵛ _) (begin _ ≡˘⟨ sub-mem-wk ρ θ i ⟩ _ ∎) (Red-wk _ ρ (rθ .red i)) }
+  { red = λ i → Eq.subst (Redᵛ _) (sym (sub-mem-wk ρ θ i)) (Red-wk _ ρ (rθ .red i)) }
 
 RedSub-ext : {θ : Γ ⊢ Δ} {V : Γ ⊢ᵛ A} → RedSub θ → Redᵛ A V → RedSub (sub-ex θ V)
 RedSub-ext rθ rv = record { red = λ { h → rv ; (t i) → rθ .red i } }
 
 RedSub-id : RedSub (sub-id {Γ})
-RedSub-id {Γ} = record { red = λ i → Eq.subst (Redᵛ _) (begin _ ≡˘⟨ sub-mem-id i ⟩ _ ∎) (Red-varᵛ _ i) }
+RedSub-id {Γ} = record { red = λ i → Eq.subst (Redᵛ _) (sym (sub-mem-id i)) (Red-varᵛ _ i) }
 
 --------------------------------------------------------------------------
 -- Fundamental Lemma
@@ -565,7 +565,7 @@ Fundamental-val θ rθ unit    = sn (λ ())
 Fundamental-val θ rθ (lam M) =
   sn (λ ()) ,
   λ π {W} rw →
-    exp-app-lam (Eq.subst (Redᶜ _) (begin _ ≡˘⟨ fund-lam-eq θ π W M ⟩ _ ∎)
+    exp-app-lam (Eq.subst (Redᶜ _) (sym (fund-lam-eq θ π W M))
                           (Fundamental-comp (sub-ex (sub-wk π θ) W) (RedSub-ext (RedSub-wk π rθ) rw) M))
 Fundamental-val θ rθ (pair V1 V2) =
   sn (λ ()) , λ { ◼ → Fundamental-val θ rθ V1 , Fundamental-val θ rθ V2 ; (() ◅ _) }
@@ -600,12 +600,12 @@ Fundamental-comp θ rθ (app V W) =
            (proj₂ (Fundamental-val θ rθ V) wk-id (Fundamental-val θ rθ W))
 Fundamental-comp θ rθ (push M N) =
   exp-push (Fundamental-comp θ rθ M)
-           (λ {V} rv → Eq.subst (Redᶜ _) (begin _ ≡˘⟨ fund-push-eq θ V N ⟩ _ ∎)
+           (λ {V} rv → Eq.subst (Redᶜ _) (sym (fund-push-eq θ V N))
                           (Fundamental-comp (sub-ex θ V) (RedSub-ext rθ rv) N))
 Fundamental-comp θ rθ (pm {A = X} {B = Y} V M) =
   exp-pm-comp (Fundamental-val θ rθ V)
               (λ {L} {R} redL redR →
-                Eq.subst (Redᶜ _) (begin _ ≡˘⟨ fund-pm-eqᶜ θ L R M ⟩ _ ∎)
+                Eq.subst (Redᶜ _) (sym (fund-pm-eqᶜ θ L R M))
                          (Fundamental-comp (sub-ex (sub-ex θ L) R) (RedSub-ext (RedSub-ext rθ redL) redR) M))
 
 SN-theorem : (M : Γ ⊢ᶜ A) → SN ⟨ M ∥ ε ⟩

@@ -3,7 +3,7 @@
 module Inception.Lam.Syntax where
 
 import Relation.Binary.PropositionalEquality as Eq
-open Eq using (_≡_; refl; cong; trans; cong₂)
+open Eq using (_≡_; refl; cong; trans; cong₂; sym)
 open Eq.≡-Reasoning
 
 --------------------------------------------------------------------------
@@ -240,7 +240,7 @@ wk-cong-sub-wk-lemma π θ = begin
 
 mutual
   wk-sub-val : (π : Γ' ⊇ Γ) (θ : Γ ⊢ Δ) (V : Δ ⊢ᵛ A) -> wk-val π (sub-val θ V) ≡ sub-val (sub-wk π θ) V
-  wk-sub-val π θ (var i) = begin _ ≡˘⟨ sub-mem-wk π θ i ⟩ _ ∎
+  wk-sub-val π θ (var i) = sym (sub-mem-wk π θ i)
   wk-sub-val π θ (lam M) =
     cong lam (begin
       wk-comp (wk-cong π) (sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ) (var h)) M)
@@ -314,7 +314,7 @@ sub-wk-id-ren (wk-wk π) = begin
 
 mutual
   sub-val-wk-pre : (θ : Γ ⊢ Δ') (π : Δ' ⊇ Δ) (V : Δ ⊢ᵛ A) -> sub-val θ (wk-val π V) ≡ sub-val (sub-pre θ π) V
-  sub-val-wk-pre θ π (var i) = begin _ ≡˘⟨ sub-mem-pre θ π i ⟩ _ ∎
+  sub-val-wk-pre θ π (var i) = sym (sub-mem-pre θ π i)
   sub-val-wk-pre θ π (lam M) =
     cong lam (begin
       sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ) (var h)) (wk-comp (wk-cong π) M)
@@ -366,7 +366,7 @@ sub-comp-sub-wk-r θ1 π (sub-ex θ2 V) = cong₂ sub-ex (sub-comp-sub-wk-r θ1 
 
 sub-comp-sub-wk-l : (ρ : Γ' ⊇ Γ) (θ1 : Γ ⊢ Δ) (θ2 : Δ ⊢ Ψ) -> sub-comp-sub (sub-wk ρ θ1) θ2 ≡ sub-wk ρ (sub-comp-sub θ1 θ2)
 sub-comp-sub-wk-l ρ θ1 sub-ε        = refl
-sub-comp-sub-wk-l ρ θ1 (sub-ex θ2 V) = cong₂ sub-ex (sub-comp-sub-wk-l ρ θ1 θ2) (begin _ ≡˘⟨ wk-sub-val ρ θ1 V ⟩ _ ∎)
+sub-comp-sub-wk-l ρ θ1 (sub-ex θ2 V) = cong₂ sub-ex (sub-comp-sub-wk-l ρ θ1 θ2) (sym (wk-sub-val ρ θ1 V))
 
 sub-comp-sub-ext1 : (θ1 : Γ ⊢ Δ) (θ2 : Δ ⊢ Ψ)
   -> sub-comp-sub (sub-ex (sub-wk (wk-wk {A = A} wk-id) θ1) (var h)) (sub-ex (sub-wk (wk-wk wk-id) θ2) (var h))
@@ -385,7 +385,7 @@ sub-comp-sub-ext1 θ1 θ2 =
 
 mutual
   sub-sub-val : (θ1 : Γ ⊢ Δ) (θ2 : Δ ⊢ Ψ) (V : Ψ ⊢ᵛ A) -> sub-val θ1 (sub-val θ2 V) ≡ sub-val (sub-comp-sub θ1 θ2) V
-  sub-sub-val θ1 θ2 (var i) = begin _ ≡˘⟨ sub-mem-sub θ1 θ2 i ⟩ _ ∎
+  sub-sub-val θ1 θ2 (var i) = sym (sub-mem-sub θ1 θ2 i)
   sub-sub-val θ1 θ2 (lam M) =
     cong lam (begin
       sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ1) (var h)) (sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ2) (var h)) M)
@@ -449,7 +449,7 @@ sub-comp-sub-idl (sub-ex θ V) = cong₂ sub-ex (sub-comp-sub-idl θ) (sub-val-i
 
 sub-wk-as-comp-ren : (π : Γ' ⊇ Γ) (θ : Γ ⊢ Δ) -> sub-wk π θ ≡ sub-comp-sub (ren π) θ
 sub-wk-as-comp-ren π sub-ε        = refl
-sub-wk-as-comp-ren π (sub-ex θ V) = cong₂ sub-ex (sub-wk-as-comp-ren π θ) (begin _ ≡˘⟨ sub-val-ren π V ⟩ _ ∎)
+sub-wk-as-comp-ren π (sub-ex θ V) = cong₂ sub-ex (sub-wk-as-comp-ren π θ) (sym (sub-val-ren π V))
 
 --------------------------------------------------------------------------
 -- fundamental lemma
