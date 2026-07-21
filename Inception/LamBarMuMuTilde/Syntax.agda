@@ -9,7 +9,7 @@ infixr 25 _`⇒_
 
 data Ty : Set where
   `⊥ `Unit : Ty
-  _`×_ _`⇒_ _`+_ : Ty -> Ty -> Ty
+  _`×_ _`⇒_ _`+_ : (A : Ty) -> (B : Ty) -> Ty
 
 infixr 30 ¬_
 ¬_ : Ty -> Ty
@@ -22,7 +22,7 @@ module Cx (Ty : Set) where
 
   data Env : Set where
     ε : Env
-    _∙_ : Env -> Ty -> Env
+    _∙_ : (Γ : Env) -> (A : Ty) -> Env
 
   private
     variable
