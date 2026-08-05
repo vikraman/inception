@@ -44,6 +44,7 @@ open Cx Ty public
 
 variable
   A B : Ty
+  A₁ A₂ B₁ B₂ : Ty
 
 syntax Cmd Γ Δ = Γ ⊢ Δ
 
