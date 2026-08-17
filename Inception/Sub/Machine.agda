@@ -75,7 +75,6 @@ data IsEmpty : Set where
 
 private variable
     b b' : IsEmpty
-    T◾ T◾' : Ty
 
 data BottomTypeEqualsNextType : IsEmpty → Ty → Ty → Set where
 
@@ -85,73 +84,73 @@ data BottomTypeEqualsNextType : IsEmpty → Ty → Ty → Set where
 
 data ValStack {Z₀ : Ty} : IsEmpty → Ty → Set where
 
-    □ : ValStack {Z₀ = Z₀} empty T◾
+    □ : ValStack {Z₀ = Z₀} empty Z₁
 
-    _∷_ : TermWithHole {Z₀ = Z₀} X → (tail : ValStack {Z₀ = Z₀} b T◾) → {↥ : BottomTypeEqualsNextType b X T◾} → ValStack non-empty T◾
+    _∷_ : TermWithHole {Z₀ = Z₀} X → (tail : ValStack {Z₀ = Z₀} b Z₁) → {↥ : BottomTypeEqualsNextType b X Z₁} → ValStack non-empty Z₁
 
 
 data ValState {Z₀ : Ty} : Ty → Set where
 
-    ∘_ : ValStack {Z₀ = Z₀} non-empty T◾ → ValState {Z₀ = Z₀} T◾
+    ∘_ : ValStack {Z₀ = Z₀} non-empty Z₁ → ValState {Z₀ = Z₀} Z₁
 
-    ∙_ : ValStack {Z₀ = Z₀} non-empty T◾ → ValState {Z₀ = Z₀} T◾
+    ∙_ : ValStack {Z₀ = Z₀} non-empty Z₁ → ValState {Z₀ = Z₀} Z₁
 
-_⧺_ : {Z₀ : Ty} → ValStack {Z₀ = Z₀} b T◾ → ValStack {Z₀ = Z₀} non-empty T◾' → ValStack {Z₀ = Z₀} non-empty T◾'
+_⧺_ : {Z₀ : Ty} → ValStack {Z₀ = Z₀} b Z₁ → ValStack {Z₀ = Z₀} non-empty Z₁' → ValStack {Z₀ = Z₀} non-empty Z₁'
 □ ⧺ lower = lower
 (W ∷ upper) ⧺ lower = (W ∷ (upper ⧺ lower)) {↥ = 🗇}
 
-_⧻_ : {Z₀ : Ty} → (upper : ValState {Z₀ = Z₀} T◾) → ValStack {Z₀ = Z₀} non-empty T◾' → ValState {Z₀ = Z₀} T◾'
+_⧻_ : {Z₀ : Ty} → (upper : ValState {Z₀ = Z₀} Z₁) → ValStack {Z₀ = Z₀} non-empty Z₁' → ValState {Z₀ = Z₀} Z₁'
 (∘ upper) ⧻ lower = ∘ (upper ⧺ lower)
 (∙ upper) ⧻ lower = ∙ (upper ⧺ lower)
 
-data _→ᵛ_ {Z₀ : Ty} {T◾ : Ty} : ValState {Z₀ = Z₀} T◾ → ValState {Z₀ = Z₀} T◾ → Set where
+data _→ᵛ_ {Z₀ : Ty} {Z₁ : Ty} : ValState {Z₀ = Z₀} Z₁ → ValState {Z₀ = Z₀} Z₁ → Set where
 
-    ∘var  :    {i : Γ ∋ X} {γ : Env {Z₀ = Z₀} Γ} → {tail : ValStack {Z₀ = Z₀} b T◾} → {↥ : BottomTypeEqualsNextType b X T◾}
+    ∘var  :    {i : Γ ∋ X} {γ : Env {Z₀ = Z₀} Γ} → {tail : ValStack {Z₀ = Z₀} b Z₁} → {↥ : BottomTypeEqualsNextType b X Z₁}
               ----------------------------------------------------------------
                 → ∘ ((⇡ (var i) γ ∷ tail) {↥ = ↥}) →ᵛ ∙ ((⭭ (lookup i γ) ∷ tail) {↥ = ↥})
 
-    ∘lam   :  {M : Comp (Γ ∙ X) Y} → {γ  : Env {Z₀ = Z₀} Γ} → {tail : ValStack {Z₀ = Z₀} b T◾} → {↥ : BottomTypeEqualsNextType b (X `⇒ Y) T◾}
+    ∘lam   :  {M : Comp (Γ ∙ X) Y} → {γ  : Env {Z₀ = Z₀} Γ} → {tail : ValStack {Z₀ = Z₀} b Z₁} → {↥ : BottomTypeEqualsNextType b (X `⇒ Y) Z₁}
               ---------------------------------------------------------------------------
             →     ∘ ((⇡ (lam M) γ ∷ tail) {↥ = ↥}) →ᵛ ∙ ((⭭ (cloᵛ M γ) ∷ tail) {↥ = ↥})
 
-    ∘pair  :  {γ : Env {Z₀ = Z₀} Γ} {W₁ : Val Γ X₁} → {W₂ : Val Γ X₂} → {tail : ValStack {Z₀ = Z₀} b T◾} → {↥ : BottomTypeEqualsNextType b (X₁ `× X₂) T◾}
+    ∘pair  :  {γ : Env {Z₀ = Z₀} Γ} {W₁ : Val Γ X₁} → {W₂ : Val Γ X₂} → {tail : ValStack {Z₀ = Z₀} b Z₁} → {↥ : BottomTypeEqualsNextType b (X₁ `× X₂) Z₁}
               ---------------------------------------------------------------------------
             →     ∘ ((⇡ (pair W₁ W₂) γ ∷ tail) {↥ = ↥}) →ᵛ ∘ ((⇡ W₁ γ ∷ ((⇡ᴸ W₁ W₂ γ ∷ tail) {↥ = ↥})) {↥ = 🗇})
 
-    ∘pm    :  {γ : Env {Z₀ = Z₀} Γ} {W₁ : Val Γ (X₁ `× X₂)} → {W₂ : Val (Γ ∙ X₁ ∙ X₂) Y} → {tail : ValStack {Z₀ = Z₀} b T◾ } → {↥ : BottomTypeEqualsNextType b Y T◾}
+    ∘pm    :  {γ : Env {Z₀ = Z₀} Γ} {W₁ : Val Γ (X₁ `× X₂)} → {W₂ : Val (Γ ∙ X₁ ∙ X₂) Y} → {tail : ValStack {Z₀ = Z₀} b Z₁ } → {↥ : BottomTypeEqualsNextType b Y Z₁}
               ---------------------------------------------------------------------------
             →     ∘ ((⇡ (pm W₁ W₂) γ ∷ tail) {↥ = ↥}) →ᵛ ∘ ((⇡ W₁ γ ∷ (⇡ᴾᴹ W₁ W₂ γ ∷ tail) {↥ = ↥}) {↥ = 🗇})
 
-    ∘unit  :  {γ  : Env {Z₀ = Z₀} Γ} → {tail : ValStack {Z₀ = Z₀} b T◾} → {↥ : BottomTypeEqualsNextType b `Unit T◾}
+    ∘unit  :  {γ  : Env {Z₀ = Z₀} Γ} → {tail : ValStack {Z₀ = Z₀} b Z₁} → {↥ : BottomTypeEqualsNextType b `Unit Z₁}
               ---------------------------------------------------------------------------
             →     ∘ ((⇡ unit γ ∷ tail) {↥ = ↥}) →ᵛ ∙ ((⭭ unitᵛ ∷ tail) {↥ = ↥})
 
     ∙W∷l   :  {γ : Env {Z₀ = Z₀} Γ} {W₁' : Value X₁} → {W₁ : Val Γ X₁} → {W₂ : Val Γ X₂}
-            → {tail : ValStack {Z₀ = Z₀} b T◾} → {↥ : BottomTypeEqualsNextType b (X₁ `× X₂) T◾}
+            → {tail : ValStack {Z₀ = Z₀} b Z₁} → {↥ : BottomTypeEqualsNextType b (X₁ `× X₂) Z₁}
               ---------------------------------------------------------------------------
             →     ∙ ((⭭ W₁' ∷ ((⇡ᴸ W₁ W₂ γ ∷ tail) {↥ = ↥})) {↥ = 🗇}) →ᵛ ∘ ((⇡ W₂ γ ∷ ((⇡ᴿ W₁' W₂ γ ∷ tail) {↥ = ↥})) {↥ = 🗇})
 
     ∙W∷r   :  {γ : Env {Z₀ = Z₀} Γ} {W₂' : Value X₂} → {W₁' : Value X₁} → {W₂ : Val Γ X₂}
-            → {tail : ValStack {Z₀ = Z₀} b T◾} → {↥ : BottomTypeEqualsNextType b (X₁ `× X₂) T◾}
+            → {tail : ValStack {Z₀ = Z₀} b Z₁} → {↥ : BottomTypeEqualsNextType b (X₁ `× X₂) Z₁}
               ---------------------------------------------------------------------------
             → ∙ ((⭭ W₂' ∷ ((⇡ᴿ W₁' W₂ γ ∷ tail) {↥ = ↥})) {↥ = 🗇}) →ᵛ ∙ ((⭭ pairᵛ W₁' W₂' ∷ tail) {↥ = ↥})
 
     ∙pair∷pm  :  {γ : Env {Z₀ = Z₀} Γ} {W₁' : Value X₁} → {W₂' : Value X₂} → {W₀ : Val Γ (X₁ `× X₂)} → {W₃ : Val (Γ ∙ X₁ ∙ X₂) Y}
-            → {tail : ValStack {Z₀ = Z₀} b T◾} → {↥ : BottomTypeEqualsNextType b Y T◾}
+            → {tail : ValStack {Z₀ = Z₀} b Z₁} → {↥ : BottomTypeEqualsNextType b Y Z₁}
               ---------------------------------------------------------------------------
             →     ∙ ((⭭ pairᵛ W₁' W₂' ∷ ((⇡ᴾᴹ W₀ W₃ γ ∷ tail) {↥ = ↥})) {↥ = 🗇}) →ᵛ  ∘ ((⇡ W₃ (γ ، W₁' ، W₂') ∷ tail) {↥ = ↥})
 
-data _↠ᵛ_ {Z₀ T◾ : Ty} : ValState {Z₀ = Z₀} T◾ → ValState {Z₀ = Z₀} T◾ → Set where
+data _↠ᵛ_ {Z₀ Z₁ : Ty} : ValState {Z₀ = Z₀} Z₁ → ValState {Z₀ = Z₀} Z₁ → Set where
 
-  _→ᵛ⟨_⟩． : (S : ValState T◾) → {S' : ValState T◾} → (laststep : S →ᵛ S') → S ↠ᵛ S'
+  _→ᵛ⟨_⟩． : (S : ValState Z₁) → {S' : ValState Z₁} → (laststep : S →ᵛ S') → S ↠ᵛ S'
 
-  _→ᵛ⟨_⟩_ : (S : ValState T◾) → {S' S'' : ValState T◾} → S →ᵛ S' → S' ↠ᵛ S'' → S ↠ᵛ S''
+  _→ᵛ⟨_⟩_ : (S : ValState Z₁) → {S' S'' : ValState Z₁} → S →ᵛ S' → S' ↠ᵛ S'' → S ↠ᵛ S''
 
-_⨾_ : {Z₀ : Ty} {F S T : ValState {Z₀ = Z₀} T◾} → (F ↠ᵛ S) → (S ↠ᵛ T) → (F ↠ᵛ T)
+_⨾_ : {Z₀ : Ty} {F S T : ValState {Z₀ = Z₀} Z₁} → (F ↠ᵛ S) → (S ↠ᵛ T) → (F ↠ᵛ T)
 _⨾_ (F →ᵛ⟨ F>S ⟩．) S>>T = F →ᵛ⟨ F>S ⟩ S>>T
 _⨾_ (F →ᵛ⟨ F>S₁ ⟩ S₁>>S₂) S₂>>T = F →ᵛ⟨ F>S₁ ⟩ (S₁>>S₂ ⨾ S₂>>T)
 
-⟨_⟩⧻_ : {Z₀ : Ty} {from : ValState {Z₀ = Z₀} T◾} → {to : ValState {Z₀ = Z₀} T◾} → (F>T : from →ᵛ to) → (tail : ValStack {Z₀ = Z₀} non-empty T◾') → (from ⧻ tail) →ᵛ (to ⧻ tail)
+⟨_⟩⧻_ : {Z₀ : Ty} {from : ValState {Z₀ = Z₀} Z₁} → {to : ValState {Z₀ = Z₀} Z₁} → (F>T : from →ᵛ to) → (tail : ValStack {Z₀ = Z₀} non-empty Z₁') → (from ⧻ tail) →ᵛ (to ⧻ tail)
 ⟨ ∘var ⟩⧻ tail = ∘var
 ⟨ ∘lam ⟩⧻ tail = ∘lam
 ⟨ ∘pair ⟩⧻ tail = ∘pair
@@ -161,7 +160,7 @@ _⨾_ (F →ᵛ⟨ F>S₁ ⟩ S₁>>S₂) S₂>>T = F →ᵛ⟨ F>S₁ ⟩ (S₁
 ⟨ ∙W∷r ⟩⧻ tail = ∙W∷r
 ⟨ ∙pair∷pm ⟩⧻ tail = ∙pair∷pm
 
-⟪_⟫⧻_ : {from : ValState {Z₀ = Z₀} T◾} → {to : ValState {Z₀ = Z₀} T◾} → (F>T : from ↠ᵛ to) → (tail : ValStack {Z₀ = Z₀} non-empty T◾') → (from ⧻ tail) ↠ᵛ (to ⧻ tail)
+⟪_⟫⧻_ : {from : ValState {Z₀ = Z₀} Z₁} → {to : ValState {Z₀ = Z₀} Z₁} → (F>T : from ↠ᵛ to) → (tail : ValStack {Z₀ = Z₀} non-empty Z₁') → (from ⧻ tail) ↠ᵛ (to ⧻ tail)
 ⟪ _ →ᵛ⟨ F>T ⟩． ⟫⧻ tail =  _ →ᵛ⟨ ⟨ F>T ⟩⧻ tail ⟩．
 ⟪ _ →ᵛ⟨ F>T ⟩ F>>T ⟫⧻ tail =   _ →ᵛ⟨ ⟨ F>T ⟩⧻ tail ⟩ (⟪ F>>T ⟫⧻ tail)
 
@@ -200,7 +199,7 @@ run-val (pm W₁ W₂) γ =
   record { result = result IH₂ ; steps = _ →ᵛ⟨ ∘pm ⟩． ⨾ ⟪ steps IH₁ ⟫⧻ _ ⨾ _ →ᵛ⟨ ∙pair∷pm' ⟩． ⨾ steps IH₂ }
 run-val unit γ = record { result = unitᵛ ; steps = ∘ (⇡ unit γ ∷ □) →ᵛ⟨ ∘unit ⟩． }
 
-determinismⱽ : {Z₀ : Ty} {S S' : ValState {Z₀ = Z₀} T◾} → (S→S'₁ S→S'₂ : S →ᵛ S') → (S→S'₁ ≡ S→S'₂)
+determinismⱽ : {Z₀ : Ty} {S S' : ValState {Z₀ = Z₀} Z₁} → (S→S'₁ S→S'₂ : S →ᵛ S') → (S→S'₁ ≡ S→S'₂)
 determinismⱽ ∘var ∘var = refl
 determinismⱽ ∘lam ∘lam = refl
 determinismⱽ ∘pair ∘pair = refl

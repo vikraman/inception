@@ -31,7 +31,7 @@ module Cx (Ty : Set) where
     _∙_ : Ctx -> Ty -> Ctx
 
   variable
-    X X' Y Y' Z Z' Z₀ Z₁ X₁ X₂ : Ty
+    X X' Y Y' Z Z' Z₀ Z₁ Z₁' X₁ X₂ : Ty
     Γ Δ Ψ Γ' Γ'' Γ''' Δ' Γ₀ Γ₁ Γ₂ Γ₃ : Ctx
 
   data _∋_ : Ctx -> Ty -> Set where
@@ -184,11 +184,6 @@ letc W M = sub-comp (sub-ex sub-id W) M
 
 exchg : Sub (Γ ∙ X ∙ Y)(Γ ∙ Y ∙ X)
 exchg = sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) sub-id) (var h)) (var (t h))
-
--- variable
---   x : Γ ∋ A
---   V V1 V2 V3 V4 W W1 W2 W3 : Γ ⊢ᵛ A
---   M M1 M2 M3 M4 N N1 N2 N3 P P1 P2 P3 : Γ ⊢ᶜ A
 
 variable
   x : Γ ∋ X
