@@ -44,13 +44,19 @@ mutual
 
     jumpᵛ : {Γ : Ctx} → (M : Comp Γ X) → (γ : Env {Z₀ = Z₀} Γ) → (cs : CompStack {Z₀ = Z₀} X) → Value `V
 
+    pointerᵛ : {Γ : Ctx} → (i : Γ ∋ `V) → (γ : Env {Z₀ = Z₀} Γ) → Value `V
+
   data Env {Z₀ : Ty} : Ctx → Set where
     ∅   : Env {Z₀ = Z₀} ε
     _،_ : Env {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X → Env {Z₀ = Z₀} (Γ ∙ X)
 
 lookup : (i : Γ ∋ X) → Env {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X
-lookup Cx.h (γ ، W') = W'
-lookup (Cx.t i) (γ ، W') = lookup i γ
+lookup Cx.h (γ ، unitᵛ) = unitᵛ
+lookup Cx.h (γ ، pairᵛ 𝐖₁ 𝐖₂) = pairᵛ 𝐖₁ 𝐖₂
+lookup Cx.h (γ ، cloᵛ M γ₁) = cloᵛ M γ₁
+lookup Cx.h (γ ، jumpᵛ M γ₁ cs) = jumpᵛ M γ₁ cs
+lookup Cx.h (γ ، pointerᵛ i γ₁) = lookup i γ₁
+lookup (Cx.t i) (γ ، 𝐖) = lookup i γ
 
 ---------------------------------------------------------------------------------
 -- MACHINE FOR PURE TERMS
@@ -216,8 +222,14 @@ data CompState {Z₀ : Ty} : Set where
       ⟨return_╎_⟩ : (W' : Value {Z₀ = Z₀} X) → (k : CompStack {Z₀ = Z₀} X) → CompState {Z₀ = Z₀}
       ⟨_╎_╎_⟩ : (M : Comp Γ X) → (γ : Env {Z₀ = Z₀} Γ) → (k : CompStack {Z₀ = Z₀} X) → CompState {Z₀ = Z₀}
 
+lookup-pointer : (i : Γ ∋ `V) → Env {Z₀ = Z₀} Γ → CompState {Z₀ = Z₀}
+lookup-pointer Cx.h (γ ، jumpᵛ M γ₁ k) = ⟨ M ╎ γ₁ ╎ k ⟩
+lookup-pointer Cx.h (γ ، pointerᵛ i γ₁) = lookup-pointer i γ₁
+lookup-pointer (t i) (γ ، 𝐖) = lookup-pointer i γ
+
 jump-to-state : {Z₀ : Ty} → Value {Z₀ = Z₀} `V → CompState {Z₀ = Z₀}
 jump-to-state (jumpᵛ M γ k) = ⟨ M ╎ γ ╎ k ⟩
+jump-to-state (pointerᵛ i γ) = lookup-pointer i γ
 
 clo-to-comp : {Z₀ : Ty} → Value {Z₀ = Z₀} (X `⇒ Y) → Σ[ Γ ∈ Ctx ] Comp (Γ ∙ X) Y × Env {Z₀ = Z₀} Γ
 clo-to-comp (cloᵛ M γ) = _ , M , γ
@@ -292,21 +304,51 @@ Rᵛ `Unit unitᵛ = ⊤
 Rᵛ (X `× Y) (pairᵛ W₁ W₂) = Rᵛ X W₁ × Rᵛ Y W₂
 Rᵛ {Z₀ = Z₀} (X `⇒ Y) (cloᵛ M γ) = ∀ {W' : Value {Z₀ = Z₀} X} → Rᵛ X W' → ∀ {k : CompStack {Z₀ = Z₀} Y} → Rᵏ Y k → SN ⟨ M ╎ γ ، W' ╎ k ⟩
 Rᵛ `V (jumpᵛ M γ k) = SN ⟨ M ╎ γ ╎ k ⟩
+Rᵛ `V (pointerᵛ i γ) = SN (lookup-pointer i γ)
 
 Rᵏ {Z₀ = Z₀} X k = ∀ {W : Value {Z₀ = Z₀} X} → Rᵛ X W → SN ⟨return W ╎ k ⟩
 
 Rᴱ : {Z₀ : Ty} → Env {Z₀ = Z₀} Γ → Set
 Rᴱ {Γ = Γ} γ = ∀ {X : Ty} → (i : Γ ∋ X) → Rᵛ X (lookup i γ)
 
+RV-lemma : {Γ : Ctx} {γ : Env {Z₀ = Z₀} Γ} {i : Γ ∋ `V} →  Rᵛ `V (lookup i γ) ≡ SN (lookup-pointer i γ)
+RV-lemma {γ = ∅} {i = ()}
+RV-lemma {γ = γ ، jumpᵛ M γ₁ cs} {i = Cx.h} = refl
+RV-lemma {γ = γ ، pointerᵛ i γ₁} {i = Cx.h} = RV-lemma {γ = γ₁} {i = i}
+RV-lemma {γ = γ ، unitᵛ} {i = Cx.t i} = RV-lemma {γ = γ} {i = i}
+RV-lemma {γ = γ ، pairᵛ 𝐖 𝐖₁} {i = Cx.t i} = RV-lemma {γ = γ} {i = i}
+RV-lemma {γ = γ ، cloᵛ M γ₁} {i = Cx.t i} = RV-lemma {γ = γ} {i = i}
+RV-lemma {γ = γ ، jumpᵛ M γ₁ cs} {i = Cx.t i} = RV-lemma {γ = γ} {i = i}
+RV-lemma {γ = γ ، pointerᵛ i₁ γ₁} {i = Cx.t i} = RV-lemma {γ = γ} {i = i}
+
 Rᴱ-ext : {Z₀ : Ty} {γ : Env {Z₀ = Z₀} Γ} {W : Value {Z₀ = Z₀} X} → Rᴱ γ → Rᵛ X W → Rᴱ (γ ، W)
-Rᴱ-ext Rγ RW Cx.h = RW
-Rᴱ-ext Rγ RW (Cx.t i) = Rγ i
+Rᴱ-ext {W = unitᵛ} Rγ RW Cx.h = tt
+Rᴱ-ext {W = pairᵛ W₁ W₂} Rγ RW Cx.h = RW
+Rᴱ-ext {W = cloᵛ M γ} Rγ RW Cx.h = RW
+Rᴱ-ext {W = jumpᵛ M γ cs} Rγ RW Cx.h = RW
+Rᴱ-ext {W = pointerᵛ i γ} Rγ RW Cx.h rewrite RV-lemma {γ = γ} {i = i} = RW
+Rᴱ-ext {W = unitᵛ} Rγ RW (Cx.t i) = Rγ i
+Rᴱ-ext {W = pairᵛ W₁ W₂} Rγ RW (Cx.t i) = Rγ i
+Rᴱ-ext {W = cloᵛ M γ} Rγ RW (Cx.t i) = Rγ i
+Rᴱ-ext {W = jumpᵛ M γ cs} Rγ RW (Cx.t i) = Rγ i
+Rᴱ-ext {W = pointerᵛ i₁ γ} Rγ RW (Cx.t i) = Rγ i
+
+pointer-lemma : {Γ : Ctx} {γ : Env {Z₀ = Z₀} Γ} {i : Γ ∋ `V} → lookup-pointer i γ ≡ jump-to-state (lookup i γ)
+pointer-lemma {γ = ∅} {i = ()}
+pointer-lemma {γ = γ ، jumpᵛ M γ₁ cs} {i = Cx.h} = refl
+pointer-lemma {γ = γ ، pointerᵛ i γ₁} {i = Cx.h} = pointer-lemma {γ = γ₁} {i = i}
+pointer-lemma {γ = γ ، unitᵛ} {i = Cx.t i} = pointer-lemma {γ = γ} {i = i}
+pointer-lemma {γ = γ ، pairᵛ 𝐖 𝐖₁} {i = Cx.t i} = pointer-lemma {γ = γ} {i = i}
+pointer-lemma {γ = γ ، cloᵛ M γ₁} {i = Cx.t i} = pointer-lemma {γ = γ} {i = i}
+pointer-lemma {γ = γ ، jumpᵛ M γ₁ cs} {i = Cx.t i} = pointer-lemma {γ = γ} {i = i}
+pointer-lemma {γ = γ ، pointerᵛ i₁ γ₁} {i = Cx.t i} = pointer-lemma {γ = γ} {i = i}
 
 rv≡sn : {Z₀ : Ty} → (W : Val Γ `V) → (γ : Env {Z₀ = Z₀} Γ) → Rᵛ `V (result (run-val W γ)) ≡ SN (jump-to-state (result (run-val W γ)))
 rv≡sn (var Cx.h) (γ ، jumpᵛ _ _ _) = refl
 rv≡sn (var (Cx.t i)) (γ ، _) = rv≡sn (var i) γ
 rv≡sn (pm W₁ W₂) ∅ = rv≡sn W₂ (∅ ، proj₁-val (result (run-val W₁ ∅)) ، proj₂-val (result (run-val W₁ ∅)))
 rv≡sn (pm W₁ W₂) (γ ، W') = rv≡sn W₂ (γ ، W' ، proj₁-val (result (run-val W₁ (γ ، W'))) ، proj₂-val (result (run-val W₁ (γ ، W'))))
+rv≡sn (var h) (γ ، (pointerᵛ i γ')) rewrite RV-lemma {γ = γ'} {i = i} | pointer-lemma {γ = γ'} {i = i} = refl
 
 mutual
 

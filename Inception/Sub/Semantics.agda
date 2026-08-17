@@ -271,6 +271,9 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
     ⟦ pairᵛ W₁ W₂ ⟧ⱽ = ⟦ W₁ ⟧ⱽ , ⟦ W₂ ⟧ⱽ
     ⟦ cloᵛ M γ ⟧ⱽ = (curry ⟦ M ⟧ᶜ) ⟦ γ ⟧ᴱ
     ⟦ jumpᵛ M γ k ⟧ⱽ = ⟦ M ⟧ᶜ ⟦ γ ⟧ᴱ ⟦ k ⟧ᴷ
+    ⟦ pointerᵛ Cx.h (γ ، jumpᵛ M γ₁ k) ⟧ⱽ = ⟦ M ⟧ᶜ ⟦ γ₁ ⟧ᴱ ⟦ k ⟧ᴷ
+    ⟦ pointerᵛ Cx.h (γ ، pointerᵛ i γ₁) ⟧ⱽ = ⟦ pointerᵛ i γ₁ ⟧ⱽ
+    ⟦ pointerᵛ (Cx.t i) (γ ، _) ⟧ⱽ = ⟦ pointerᵛ i γ ⟧ⱽ
 
     ⟦_⟧ᶜˢ : (k : CompStack {Z₀ = R₀} X) → K ⟦ X ⟧ → K ⟦ R₀ ⟧
     ⟦ ◻ ⟧ᶜˢ = idf
@@ -307,9 +310,30 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
   ⟦ ⇡ᴸ Wₕₒₗₑ W₂ γ ⟧ᵀ = ⟦ pair Wₕₒₗₑ W₂ ⟧ᵛ ⟦ γ ⟧ᴱ
   ⟦ ⇡ᴿ W₁ Wₕₒₗₑ γ ⟧ᵀ = ⟦ W₁ ⟧ⱽ , ⟦ Wₕₒₗₑ ⟧ᵛ ⟦ γ ⟧ᴱ
 
+  pointer-eq : (i : Γ ∋ `V) → (γ : Env {Z₀ = R₀} Γ) → ⟦ pointerᵛ i γ ⟧ⱽ ≡ ⟦ i ⟧ᵐ ⟦ γ ⟧ᴱ
+  pointer-eq Cx.h (γ ، jumpᵛ M γ₁ cs) = refl
+  pointer-eq Cx.h (γ ، pointerᵛ i γ₁) = refl
+  pointer-eq (Cx.t i) (γ ، _) = pointer-eq i γ
+
   lookup-eq : (i : Γ ∋ X) → (γ : Env {Z₀ = R₀} Γ) → ⟦ i ⟧ᵐ ⟦ γ ⟧ᴱ ≡ ⟦ lookup i γ ⟧ⱽ
-  lookup-eq Cx.h (γ ، x) = refl
-  lookup-eq (Cx.t i) (γ ، x) = lookup-eq i γ
+  lookup-eq Cx.h (γ ، unitᵛ) = refl
+  lookup-eq Cx.h (γ ، pairᵛ 𝐖 𝐖₁) = refl
+  lookup-eq Cx.h (γ ، cloᵛ M γ₁) = refl
+  lookup-eq Cx.h (γ ، jumpᵛ M γ₁ cs) = refl
+  lookup-eq Cx.h (γ ، pointerᵛ i γ₁) = trans (pointer-eq i γ₁) (lookup-eq i γ₁)
+  lookup-eq (t i) (γ ، 𝐖) = lookup-eq i γ
+
+  lookup-h-eq : (𝐖 : Value X) → (γ : Env {Z₀ = R₀} Γ) → ⟦ 𝐖 ⟧ⱽ ≡ ⟦ lookup h (γ ، 𝐖) ⟧ⱽ
+  lookup-h-eq unitᵛ ∅ = refl
+  lookup-h-eq unitᵛ (γ ، x) = refl
+  lookup-h-eq (pairᵛ 𝐖 𝐖₁) ∅ = refl
+  lookup-h-eq (pairᵛ 𝐖 𝐖₁) (γ ، x) = refl
+  lookup-h-eq (cloᵛ M γ) ∅ = refl
+  lookup-h-eq (cloᵛ M γ) (γ₁ ، x) = refl
+  lookup-h-eq (jumpᵛ M γ cs) ∅ = refl
+  lookup-h-eq (jumpᵛ M γ cs) (γ₁ ، x) = refl
+  lookup-h-eq (pointerᵛ i γ) ∅ = trans (pointer-eq i γ) (lookup-eq i γ)
+  lookup-h-eq (pointerᵛ i γ) (γ₁ ، x) = trans (pointer-eq i γ) (lookup-eq i γ)
 
   open ValSteps
 
@@ -341,7 +365,11 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
       ∙[_] : {S : ValStack {Z₀ = R₀} non-empty Z₁} → ValStackGood S → ValStateGood (∙ S)
 
   lookup-good : (i : Γ ∋ X) → (γ : Env Γ) → ⟦ lookup i γ ⟧ⱽ ≡ ⟦ i ⟧ᵐ ⟦ γ ⟧ᴱ
-  lookup-good Cx.h (γ ، x) = refl
+  lookup-good Cx.h (γ ، unitᵛ) = refl
+  lookup-good Cx.h (γ ، pairᵛ _ _) = refl
+  lookup-good Cx.h (γ ، cloᵛ M γ₁) = refl
+  lookup-good Cx.h (γ ، jumpᵛ M γ₁ cs) = refl
+  lookup-good Cx.h (γ ، pointerᵛ i γ₁) = trans (lookup-good i γ₁) (sym (pointer-eq i γ₁))
   lookup-good (Cx.t i) (γ ، x) = lookup-good i γ
 
   valstate-good : {S S' : ValState {Z₀ = R₀} X} → ValStateGood S → S →ᵛ S' → ValStateGood S'
@@ -427,8 +455,14 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
                                       push-eq'' : (λ z → ⟦ W ⟧ᶜ (⟦ γ ⟧ᴱ , z) (λ y → ⟦ cs ⟧ᶜˢ (λ k → k y) k₀)) ≡ (λ z → ⟦ cs ⟧ᶜˢ (λ k → ⟦ W ⟧ᶜ (⟦ γ ⟧ᴱ , z) k) k₀)
                                       push-eq'' = extensionality push-eq'
 
+  lookup-pointer-eq : {Γ : Ctx} → (i : Γ ∋ `V) → (γ : Env Γ) → ⟦ pointerᵛ i γ ⟧ⱽ ≡ ⟦ lookup-pointer i γ ⟧ᶜꟴ
+  lookup-pointer-eq Cx.h (γ ، jumpᵛ M γ₁ cs) = refl
+  lookup-pointer-eq Cx.h (γ ، pointerᵛ i γ₁) = lookup-pointer-eq i γ₁
+  lookup-pointer-eq (Cx.t i) (γ ، _) = lookup-pointer-eq i γ
+
   jump-eq : (W : Value `V) → ⟦ W ⟧ⱽ ≡ ⟦ jump-to-state W ⟧ᶜꟴ
   jump-eq (jumpᵛ _ _ _) = refl
+  jump-eq (pointerᵛ i γ) = lookup-pointer-eq i γ
 
   jump-eq' : (W : Val Γ `V) → (γ : Env {Z₀ = R₀} Γ) → ⟦ result (run-val W γ) ⟧ⱽ ≡ ⟦ jump-to-state (result (run-val W γ)) ⟧ᶜꟴ
   jump-eq' W γ = jump-eq (result (run-val W γ))
@@ -444,7 +478,7 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
 
   mutual
     proj₂-val-eq' : (W : Val Γ (X `× Y)) → (γ : Env {Z₀ = R₀} Γ) → (proj₂ (⟦ W ⟧ᵛ ⟦ γ ⟧ᴱ)) ≡ ⟦ proj₂-val (result (run-val W γ)) ⟧ⱽ
-    proj₂-val-eq' (var h) (γ ، W) = proj₂-val-eq W
+    proj₂-val-eq' (var h) (γ ، W) = proj₂ ⟦ W ⟧ⱽ ≡⟨ cong proj₂ (lookup-h-eq W γ) ⟩ proj₂ ⟦ lookup h (γ ، W) ⟧ⱽ ≡⟨ proj₂-val-eq (lookup h (γ ، W)) ⟩ ⟦ proj₂-val (lookup h (γ ، W)) ⟧ⱽ ∎
     proj₂-val-eq' (var (t i)) (γ ، W) = proj₂-val-eq' (var i) γ
     proj₂-val-eq' (pair W₁ W₂) γ = value-machine-correct W₂ γ
     proj₂-val-eq' (pm W₁ W₂) γ =
@@ -460,7 +494,7 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
       ⟦ proj₂-val (result (run-val W₂ (γ ، proj₁-val (result (run-val W₁ γ)) ، proj₂-val (result (run-val W₁ γ))))) ⟧ⱽ ∎
 
     proj₁-val-eq' : (W : Val Γ (X `× Y)) → (γ : Env {Z₀ = R₀} Γ) → (proj₁ (⟦ W ⟧ᵛ ⟦ γ ⟧ᴱ)) ≡ ⟦ proj₁-val (result (run-val W γ)) ⟧ⱽ
-    proj₁-val-eq' (var h) (γ ، W) = proj₁-val-eq W
+    proj₁-val-eq' (var h) (γ ، W) = proj₁ ⟦ W ⟧ⱽ ≡⟨ cong proj₁ (lookup-h-eq W γ) ⟩ proj₁ ⟦ lookup h (γ ، W) ⟧ⱽ ≡⟨ proj₁-val-eq (lookup h (γ ، W)) ⟩ ⟦ proj₁-val (lookup h (γ ، W)) ⟧ⱽ ∎
     proj₁-val-eq' (var (t i)) (γ ، W) = proj₁-val-eq' (var i) γ
     proj₁-val-eq' (pair W₁ W₂) γ = value-machine-correct W₁ γ
     proj₁-val-eq' (pm W₁ W₂) γ =
