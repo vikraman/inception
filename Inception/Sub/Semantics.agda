@@ -283,14 +283,14 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
   ⟦_⟧ᵛˢ : (S : ValStack {Z₀ = R₀} non-empty Z₁) → ⟦ Z₁ ⟧
   ⟦ ((⭭ W) ∷ □) {↥ = 🗆} ⟧ᵛˢ = ⟦ W ⟧ⱽ
   ⟦ (⇡ W γ ∷ □) {↥ = 🗆} ⟧ᵛˢ = ⟦ W ⟧ᵛ ⟦ γ ⟧ᴱ
-  ⟦ (⇡ᴾᴹ Mₕₒₗₑ M₂ γ ∷ □) {↥ = 🗆} ⟧ᵛˢ = ⟦ pm Mₕₒₗₑ M₂ ⟧ᵛ ⟦ γ ⟧ᴱ
-  ⟦ (⇡ᴸ Mₕₒₗₑ M₂ γ ∷ □) {↥ = 🗆} ⟧ᵛˢ = ⟦ pair Mₕₒₗₑ M₂ ⟧ᵛ ⟦ γ ⟧ᴱ
-  ⟦ (⇡ᴿ M₁ Mₕₒₗₑ γ ∷ □) {↥ = 🗆} ⟧ᵛˢ = ⟦ M₁ ⟧ⱽ , ⟦ Mₕₒₗₑ ⟧ᵛ ⟦ γ ⟧ᴱ
+  ⟦ (⇡ᴾᴹ Wₕₒₗₑ W₂ γ ∷ □) {↥ = 🗆} ⟧ᵛˢ = ⟦ pm Wₕₒₗₑ W₂ ⟧ᵛ ⟦ γ ⟧ᴱ
+  ⟦ (⇡ᴸ Wₕₒₗₑ W₂ γ ∷ □) {↥ = 🗆} ⟧ᵛˢ = ⟦ pair Wₕₒₗₑ W₂ ⟧ᵛ ⟦ γ ⟧ᴱ
+  ⟦ (⇡ᴿ W₁ Wₕₒₗₑ γ ∷ □) {↥ = 🗆} ⟧ᵛˢ = ⟦ W₁ ⟧ⱽ , ⟦ Wₕₒₗₑ ⟧ᵛ ⟦ γ ⟧ᴱ
   ⟦ ((⭭ W) ∷ ((x ∷ S) {↥ = ↥})) {↥ = 🗇} ⟧ᵛˢ = ⟦ (x ∷ S) {↥ = ↥} ⟧ᵛˢ
   ⟦ (⇡ W γ ∷ ((x ∷ S) {↥ = ↥})) {↥ = 🗇} ⟧ᵛˢ = ⟦ (x ∷ S) {↥ = ↥} ⟧ᵛˢ
-  ⟦ (⇡ᴾᴹ Mₕₒₗₑ M₂ γ ∷ ((x ∷ S) {↥ = ↥})) {↥ = 🗇} ⟧ᵛˢ = ⟦ (x ∷ S) {↥ = ↥} ⟧ᵛˢ
-  ⟦ (⇡ᴸ Mₕₒₗₑ M₂ γ ∷ ((x ∷ S) {↥ = ↥})) {↥ = 🗇} ⟧ᵛˢ = ⟦ (x ∷ S) {↥ = ↥} ⟧ᵛˢ
-  ⟦ (⇡ᴿ M₁ Mₕₒₗₑ γ ∷ ((x ∷ S) {↥ = ↥})) {↥ = 🗇} ⟧ᵛˢ = ⟦ (x ∷ S) {↥ = ↥} ⟧ᵛˢ
+  ⟦ (⇡ᴾᴹ Wₕₒₗₑ W₂ γ ∷ ((x ∷ S) {↥ = ↥})) {↥ = 🗇} ⟧ᵛˢ = ⟦ (x ∷ S) {↥ = ↥} ⟧ᵛˢ
+  ⟦ (⇡ᴸ Wₕₒₗₑ W₂ γ ∷ ((x ∷ S) {↥ = ↥})) {↥ = 🗇} ⟧ᵛˢ = ⟦ (x ∷ S) {↥ = ↥} ⟧ᵛˢ
+  ⟦ (⇡ᴿ W₁ Wₕₒₗₑ γ ∷ ((x ∷ S) {↥ = ↥})) {↥ = 🗇} ⟧ᵛˢ = ⟦ (x ∷ S) {↥ = ↥} ⟧ᵛˢ
 
   ⟦_⟧ᵛꟴ : (S : ValState {Z₀ = R₀} Z₁) → ⟦ Z₁ ⟧
   ⟦ ∘ tail ⟧ᵛꟴ = ⟦ tail ⟧ᵛˢ
@@ -303,9 +303,9 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
   ⟦_⟧ᵀ : TermWithHole {Z₀ = R₀} X → ⟦ X ⟧
   ⟦ ⭭ W ⟧ᵀ = ⟦ W ⟧ⱽ
   ⟦ ⇡ W γ ⟧ᵀ = ⟦ W ⟧ᵛ ⟦ γ ⟧ᴱ
-  ⟦ ⇡ᴾᴹ Mₕₒₗₑ M₂ γ ⟧ᵀ = ⟦ pm Mₕₒₗₑ M₂ ⟧ᵛ ⟦ γ ⟧ᴱ
-  ⟦ ⇡ᴸ Mₕₒₗₑ M₂ γ ⟧ᵀ = ⟦ pair Mₕₒₗₑ M₂ ⟧ᵛ ⟦ γ ⟧ᴱ
-  ⟦ ⇡ᴿ M₁ Mₕₒₗₑ γ ⟧ᵀ = ⟦ M₁ ⟧ⱽ , ⟦ Mₕₒₗₑ ⟧ᵛ ⟦ γ ⟧ᴱ
+  ⟦ ⇡ᴾᴹ Wₕₒₗₑ W₂ γ ⟧ᵀ = ⟦ pm Wₕₒₗₑ W₂ ⟧ᵛ ⟦ γ ⟧ᴱ
+  ⟦ ⇡ᴸ Wₕₒₗₑ W₂ γ ⟧ᵀ = ⟦ pair Wₕₒₗₑ W₂ ⟧ᵛ ⟦ γ ⟧ᴱ
+  ⟦ ⇡ᴿ W₁ Wₕₒₗₑ γ ⟧ᵀ = ⟦ W₁ ⟧ⱽ , ⟦ Wₕₒₗₑ ⟧ᵛ ⟦ γ ⟧ᴱ
 
   lookup-eq : (i : Γ ∋ X) → (γ : Env {Z₀ = R₀} Γ) → ⟦ i ⟧ᵐ ⟦ γ ⟧ᴱ ≡ ⟦ lookup i γ ⟧ⱽ
   lookup-eq Cx.h (γ ، x) = refl
@@ -319,22 +319,22 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
     bottom : (W : TermWithHole X) → ValStackGood ((W ∷ □) {↥ = 🗆})
 
     pm-good :   {b : IsEmpty} {tail : ValStack b Z₁}
-              → {Mₕₒₗₑ : Val Γ (X `× Y)} {M₂ : Val (Γ ∙ X ∙ Y) Z} {γ : Env Γ} {W : TermWithHole (X `× Y)}
+              → {Wₕₒₗₑ : Val Γ (X `× Y)} {W₂ : Val (Γ ∙ X ∙ Y) Z} {γ : Env Γ} {W : TermWithHole (X `× Y)}
               → {↥ : BottomTypeEqualsNextType b Z Z₁}
-              → ValStackGood (((⇡ᴾᴹ Mₕₒₗₑ M₂ γ) ∷ tail) {↥ = ↥})
-              → (eq : ⟦ W ⟧ᵀ ≡ ⟦ Mₕₒₗₑ ⟧ᵛ ⟦ γ ⟧ᴱ) → ValStackGood ((W ∷ ((⇡ᴾᴹ Mₕₒₗₑ M₂ γ) ∷ tail) {↥ = ↥}) {↥ = 🗇})
+              → ValStackGood (((⇡ᴾᴹ Wₕₒₗₑ W₂ γ) ∷ tail) {↥ = ↥})
+              → (eq : ⟦ W ⟧ᵀ ≡ ⟦ Wₕₒₗₑ ⟧ᵛ ⟦ γ ⟧ᴱ) → ValStackGood ((W ∷ ((⇡ᴾᴹ Wₕₒₗₑ W₂ γ) ∷ tail) {↥ = ↥}) {↥ = 🗇})
 
     lhs-good :   {b : IsEmpty} {tail : ValStack b Z₁}
-              → {Mₕₒₗₑ : Val Γ X} {M₂ : Val Γ Y} {γ : Env Γ} {W : TermWithHole X}
+              → {Wₕₒₗₑ : Val Γ X} {W₂ : Val Γ Y} {γ : Env Γ} {W : TermWithHole X}
               → {↥ : BottomTypeEqualsNextType b (X `× Y) Z₁}
-              → ValStackGood (((⇡ᴸ Mₕₒₗₑ M₂ γ) ∷ tail) {↥ = ↥})
-              → (eq : ⟦ W ⟧ᵀ ≡ ⟦ Mₕₒₗₑ ⟧ᵛ ⟦ γ ⟧ᴱ) → ValStackGood ((W ∷ ((⇡ᴸ Mₕₒₗₑ M₂ γ) ∷ tail) {↥ = ↥}) {↥ = 🗇})
+              → ValStackGood (((⇡ᴸ Wₕₒₗₑ W₂ γ) ∷ tail) {↥ = ↥})
+              → (eq : ⟦ W ⟧ᵀ ≡ ⟦ Wₕₒₗₑ ⟧ᵛ ⟦ γ ⟧ᴱ) → ValStackGood ((W ∷ ((⇡ᴸ Wₕₒₗₑ W₂ γ) ∷ tail) {↥ = ↥}) {↥ = 🗇})
 
     rhs-good :   {b : IsEmpty} {tail : ValStack b Z₁}
-              → {M₁ : Value X} {Mₕₒₗₑ : Val Γ Y} {γ : Env Γ} {W : TermWithHole Y}
+              → {W₁ : Value X} {Wₕₒₗₑ : Val Γ Y} {γ : Env Γ} {W : TermWithHole Y}
               → {↥ : BottomTypeEqualsNextType b (X `× Y) Z₁}
-              → ValStackGood (((⇡ᴿ M₁ Mₕₒₗₑ γ) ∷ tail) {↥ = ↥})
-              → (eq : ⟦ W ⟧ᵀ ≡ ⟦ Mₕₒₗₑ ⟧ᵛ ⟦ γ ⟧ᴱ) → ValStackGood ((W ∷ ((⇡ᴿ M₁ Mₕₒₗₑ γ) ∷ tail) {↥ = ↥}) {↥ = 🗇})
+              → ValStackGood (((⇡ᴿ W₁ Wₕₒₗₑ γ) ∷ tail) {↥ = ↥})
+              → (eq : ⟦ W ⟧ᵀ ≡ ⟦ Wₕₒₗₑ ⟧ᵛ ⟦ γ ⟧ᴱ) → ValStackGood ((W ∷ ((⇡ᴿ W₁ Wₕₒₗₑ γ) ∷ tail) {↥ = ↥}) {↥ = 🗇})
 
   data ValStateGood : (S : ValState {Z₀ = R₀} X) → Set where
       ∘[_] : {S : ValStack {Z₀ = R₀} non-empty Z₁} → ValStackGood S → ValStateGood (∘ S)
@@ -365,21 +365,21 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
   valstate-good ∘[ rhs-good x eq ] ∘unit = ∙[ rhs-good x eq ]
   valstate-good ∙[ bottom W ] ()
   valstate-good ∙[ pm-good (bottom W) eq ] ∙pair∷pm = ∘[ bottom (⇡ _ (_ ، _ ، _)) ]
-  valstate-good ∙[ pm-good {Mₕₒₗₑ = Mₕₒₗₑ} {M₂ = M₂} {γ = γ} (pm-good {Mₕₒₗₑ = Mₕₒₗₑ'} {γ = γ'} x eq₁) eq ] (∙pair∷pm {W₁' = W₁'} {W₂' = W₂'}) =
-    ∘[ (pm-good x ((⟦ M₂ ⟧ᵛ ((⟦ γ ⟧ᴱ , ⟦ W₁' ⟧ⱽ) , ⟦ W₂' ⟧ⱽ) ≡⟨ cong (λ x → ⟦ M₂ ⟧ᵛ (assocl (⟦ γ ⟧ᴱ , x))) eq ⟩ ⟦ M₂ ⟧ᵛ (assocl (⟦ γ ⟧ᴱ , ⟦ Mₕₒₗₑ ⟧ᵛ ⟦ γ ⟧ᴱ)) ≡⟨ refl ⟩ ⟦ ⇡ᴾᴹ Mₕₒₗₑ M₂ γ ⟧ᵀ ≡⟨ eq₁ ⟩ ⟦ Mₕₒₗₑ' ⟧ᵛ ⟦ γ' ⟧ᴱ ∎))) ]
-  valstate-good ∙[ pm-good {Mₕₒₗₑ = Mₕₒₗₑ} {M₂ = M₂} {γ = γ} (lhs-good {Mₕₒₗₑ = Mₕₒₗₑ'} {γ = γ'} x eq₁) eq ] (∙pair∷pm {W₁' = W₁'} {W₂' = W₂'}) =
-    ∘[ (lhs-good x ((⟦ M₂ ⟧ᵛ ((⟦ γ ⟧ᴱ , ⟦ W₁' ⟧ⱽ) , ⟦ W₂' ⟧ⱽ) ≡⟨ cong (λ x → ⟦ M₂ ⟧ᵛ (assocl (⟦ γ ⟧ᴱ , x))) eq ⟩ ⟦ M₂ ⟧ᵛ (assocl (⟦ γ ⟧ᴱ , ⟦ Mₕₒₗₑ ⟧ᵛ ⟦ γ ⟧ᴱ)) ≡⟨ refl ⟩ ⟦ ⇡ᴾᴹ Mₕₒₗₑ M₂ γ ⟧ᵀ ≡⟨ eq₁ ⟩ ⟦ Mₕₒₗₑ' ⟧ᵛ ⟦ γ' ⟧ᴱ ∎))) ]
-  valstate-good ∙[ pm-good {Mₕₒₗₑ = Mₕₒₗₑ} {M₂ = M₂} {γ = γ} (rhs-good {Mₕₒₗₑ = Mₕₒₗₑ'} {γ = γ'} x eq₁) eq ] (∙pair∷pm {W₁' = W₁'} {W₂' = W₂'}) =
-    ∘[ (rhs-good x ((⟦ M₂ ⟧ᵛ ((⟦ γ ⟧ᴱ , ⟦ W₁' ⟧ⱽ) , ⟦ W₂' ⟧ⱽ) ≡⟨ cong (λ x → ⟦ M₂ ⟧ᵛ (assocl (⟦ γ ⟧ᴱ , x))) eq ⟩ ⟦ M₂ ⟧ᵛ (assocl (⟦ γ ⟧ᴱ , ⟦ Mₕₒₗₑ ⟧ᵛ ⟦ γ ⟧ᴱ)) ≡⟨ refl ⟩ ⟦ ⇡ᴾᴹ Mₕₒₗₑ M₂ γ ⟧ᵀ ≡⟨ eq₁ ⟩ ⟦ Mₕₒₗₑ' ⟧ᵛ ⟦ γ' ⟧ᴱ ∎))) ]
+  valstate-good ∙[ pm-good {Wₕₒₗₑ = Wₕₒₗₑ} {W₂ = W₂} {γ = γ} (pm-good {Wₕₒₗₑ = Wₕₒₗₑ'} {γ = γ'} x eq₁) eq ] (∙pair∷pm {W₁' = W₁'} {W₂' = W₂'}) =
+    ∘[ (pm-good x ((⟦ W₂ ⟧ᵛ ((⟦ γ ⟧ᴱ , ⟦ W₁' ⟧ⱽ) , ⟦ W₂' ⟧ⱽ) ≡⟨ cong (λ x → ⟦ W₂ ⟧ᵛ (assocl (⟦ γ ⟧ᴱ , x))) eq ⟩ ⟦ W₂ ⟧ᵛ (assocl (⟦ γ ⟧ᴱ , ⟦ Wₕₒₗₑ ⟧ᵛ ⟦ γ ⟧ᴱ)) ≡⟨ refl ⟩ ⟦ ⇡ᴾᴹ Wₕₒₗₑ W₂ γ ⟧ᵀ ≡⟨ eq₁ ⟩ ⟦ Wₕₒₗₑ' ⟧ᵛ ⟦ γ' ⟧ᴱ ∎))) ]
+  valstate-good ∙[ pm-good {Wₕₒₗₑ = Wₕₒₗₑ} {W₂ = W₂} {γ = γ} (lhs-good {Wₕₒₗₑ = Wₕₒₗₑ'} {γ = γ'} x eq₁) eq ] (∙pair∷pm {W₁' = W₁'} {W₂' = W₂'}) =
+    ∘[ (lhs-good x ((⟦ W₂ ⟧ᵛ ((⟦ γ ⟧ᴱ , ⟦ W₁' ⟧ⱽ) , ⟦ W₂' ⟧ⱽ) ≡⟨ cong (λ x → ⟦ W₂ ⟧ᵛ (assocl (⟦ γ ⟧ᴱ , x))) eq ⟩ ⟦ W₂ ⟧ᵛ (assocl (⟦ γ ⟧ᴱ , ⟦ Wₕₒₗₑ ⟧ᵛ ⟦ γ ⟧ᴱ)) ≡⟨ refl ⟩ ⟦ ⇡ᴾᴹ Wₕₒₗₑ W₂ γ ⟧ᵀ ≡⟨ eq₁ ⟩ ⟦ Wₕₒₗₑ' ⟧ᵛ ⟦ γ' ⟧ᴱ ∎))) ]
+  valstate-good ∙[ pm-good {Wₕₒₗₑ = Wₕₒₗₑ} {W₂ = W₂} {γ = γ} (rhs-good {Wₕₒₗₑ = Wₕₒₗₑ'} {γ = γ'} x eq₁) eq ] (∙pair∷pm {W₁' = W₁'} {W₂' = W₂'}) =
+    ∘[ (rhs-good x ((⟦ W₂ ⟧ᵛ ((⟦ γ ⟧ᴱ , ⟦ W₁' ⟧ⱽ) , ⟦ W₂' ⟧ⱽ) ≡⟨ cong (λ x → ⟦ W₂ ⟧ᵛ (assocl (⟦ γ ⟧ᴱ , x))) eq ⟩ ⟦ W₂ ⟧ᵛ (assocl (⟦ γ ⟧ᴱ , ⟦ Wₕₒₗₑ ⟧ᵛ ⟦ γ ⟧ᴱ)) ≡⟨ refl ⟩ ⟦ ⇡ᴾᴹ Wₕₒₗₑ W₂ γ ⟧ᵀ ≡⟨ eq₁ ⟩ ⟦ Wₕₒₗₑ' ⟧ᵛ ⟦ γ' ⟧ᴱ ∎))) ]
   valstate-good ∙[ lhs-good (bottom W) eq ] ∙W∷l = ∘[ rhs-good (bottom (⇡ᴿ _ _ _)) refl ]
-  valstate-good ∙[ lhs-good {Mₕₒₗₑ = Mₕₒₗₑ} {M₂ = M₂} {γ = γ} (pm-good {Mₕₒₗₑ = Mₕₒₗₑ'} {γ = γ'} x eq₁) eq ] (∙W∷l {W₁' = M}) = ∘[ (rhs-good (pm-good x ((⟦ M ⟧ⱽ , ⟦ M₂ ⟧ᵛ ⟦ γ ⟧ᴱ) ≡⟨ cong (λ x → x , ⟦ M₂ ⟧ᵛ ⟦ γ ⟧ᴱ) eq ⟩ ⟦ ⇡ᴸ Mₕₒₗₑ M₂ γ ⟧ᵀ ≡⟨ eq₁ ⟩ ⟦ Mₕₒₗₑ' ⟧ᵛ ⟦ γ' ⟧ᴱ ∎)) refl) ]
-  valstate-good ∙[ lhs-good {Mₕₒₗₑ = Mₕₒₗₑ} {M₂ = M₂} {γ = γ} (lhs-good {Mₕₒₗₑ = Mₕₒₗₑ'} {M₂ = M₂'} {γ = γ'} x eq₁) eq ] (∙W∷l {W₁' = M}) = ∘[ (rhs-good (lhs-good x ((⟦ M ⟧ⱽ , ⟦ M₂ ⟧ᵛ ⟦ γ ⟧ᴱ) ≡⟨ cong (λ x → x , ⟦ M₂ ⟧ᵛ ⟦ γ ⟧ᴱ) eq ⟩ ⟦ ⇡ᴸ Mₕₒₗₑ M₂ γ ⟧ᵀ ≡⟨ eq₁ ⟩ ⟦ Mₕₒₗₑ' ⟧ᵛ ⟦ γ' ⟧ᴱ ∎)) refl) ]
-  valstate-good ∙[ lhs-good {Mₕₒₗₑ = Mₕₒₗₑ} {M₂ = M₂} {γ = γ} (rhs-good {M₁ = M₁} {Mₕₒₗₑ = Mₕₒₗₑ'} {γ = γ'} x eq₁) eq ] (∙W∷l {W₁' = M}) = ∘[ (rhs-good (rhs-good x ((⟦ M ⟧ⱽ , ⟦ M₂ ⟧ᵛ ⟦ γ ⟧ᴱ) ≡⟨ cong (λ x → x , ⟦ M₂ ⟧ᵛ ⟦ γ ⟧ᴱ) eq ⟩ ⟦ ⇡ᴸ Mₕₒₗₑ M₂ γ ⟧ᵀ ≡⟨ eq₁ ⟩ ⟦ Mₕₒₗₑ' ⟧ᵛ ⟦ γ' ⟧ᴱ ∎)) refl) ]
+  valstate-good ∙[ lhs-good {Wₕₒₗₑ = Wₕₒₗₑ} {W₂ = W₂} {γ = γ} (pm-good {Wₕₒₗₑ = Wₕₒₗₑ'} {γ = γ'} x eq₁) eq ] (∙W∷l {W₁' = W₁'}) = ∘[ (rhs-good (pm-good x ((⟦ W₁' ⟧ⱽ , ⟦ W₂ ⟧ᵛ ⟦ γ ⟧ᴱ) ≡⟨ cong (λ x → x , ⟦ W₂ ⟧ᵛ ⟦ γ ⟧ᴱ) eq ⟩ ⟦ ⇡ᴸ Wₕₒₗₑ W₂ γ ⟧ᵀ ≡⟨ eq₁ ⟩ ⟦ Wₕₒₗₑ' ⟧ᵛ ⟦ γ' ⟧ᴱ ∎)) refl) ]
+  valstate-good ∙[ lhs-good {Wₕₒₗₑ = Wₕₒₗₑ} {W₂ = W₂} {γ = γ} (lhs-good {Wₕₒₗₑ = Wₕₒₗₑ'} {W₂ = W₂'} {γ = γ'} x eq₁) eq ] (∙W∷l {W₁' = W₁'}) = ∘[ (rhs-good (lhs-good x ((⟦ W₁' ⟧ⱽ , ⟦ W₂ ⟧ᵛ ⟦ γ ⟧ᴱ) ≡⟨ cong (λ x → x , ⟦ W₂ ⟧ᵛ ⟦ γ ⟧ᴱ) eq ⟩ ⟦ ⇡ᴸ Wₕₒₗₑ W₂ γ ⟧ᵀ ≡⟨ eq₁ ⟩ ⟦ Wₕₒₗₑ' ⟧ᵛ ⟦ γ' ⟧ᴱ ∎)) refl) ]
+  valstate-good ∙[ lhs-good {Wₕₒₗₑ = Wₕₒₗₑ} {W₂ = W₂} {γ = γ} (rhs-good {W₁ = W₁} {Wₕₒₗₑ = Wₕₒₗₑ'} {γ = γ'} x eq₁) eq ] (∙W∷l {W₁' = W₁'}) = ∘[ (rhs-good (rhs-good x ((⟦ W₁' ⟧ⱽ , ⟦ W₂ ⟧ᵛ ⟦ γ ⟧ᴱ) ≡⟨ cong (λ x → x , ⟦ W₂ ⟧ᵛ ⟦ γ ⟧ᴱ) eq ⟩ ⟦ ⇡ᴸ Wₕₒₗₑ W₂ γ ⟧ᵀ ≡⟨ eq₁ ⟩ ⟦ Wₕₒₗₑ' ⟧ᵛ ⟦ γ' ⟧ᴱ ∎)) refl) ]
 
-  valstate-good ∙[ rhs-good {M₁ = M₁} {Mₕₒₗₑ = Mₕₒₗₑ} {γ = γ} (bottom W) eq ] ∙W∷r = ∙[ bottom (⭭ pairᵛ _ _) ]
-  valstate-good ∙[ rhs-good {M₁ = M₁} {Mₕₒₗₑ = Mₕₒₗₑ} {γ = γ} (pm-good {Mₕₒₗₑ = Mₕₒₗₑ'} {γ = γ'} x eq₁) eq ] (∙W∷r {W₂' = M}) = ∙[ (pm-good x (trans (cong (λ x → ⟦ M₁ ⟧ⱽ , x) eq) eq₁)) ]
-  valstate-good ∙[ rhs-good {M₁ = M₁} {Mₕₒₗₑ = Mₕₒₗₑ} {γ = γ} (lhs-good {Mₕₒₗₑ = Mₕₒₗₑ'} {M₂ = M₂} {γ = γ'} x eq₁) eq ] (∙W∷r {W₂' = M}) = ∙[ (lhs-good x (trans (cong (λ x → ⟦ M₁ ⟧ⱽ , x) eq) eq₁)) ]
-  valstate-good ∙[ rhs-good {M₁ = M₁} {Mₕₒₗₑ = Mₕₒₗₑ} {γ = γ} (rhs-good {M₁ = M₁'} {Mₕₒₗₑ = Mₕₒₗₑ'} {γ = γ'} x eq₁) eq ] (∙W∷r {W₂' = M}) = ∙[ (rhs-good x (trans (cong (λ x → ⟦ M₁ ⟧ⱽ , x) eq) eq₁)) ]
+  valstate-good ∙[ rhs-good {W₁ = W₁} {Wₕₒₗₑ = Wₕₒₗₑ} {γ = γ} (bottom W) eq ] ∙W∷r = ∙[ bottom (⭭ pairᵛ _ _) ]
+  valstate-good ∙[ rhs-good {W₁ = W₁} {Wₕₒₗₑ = Wₕₒₗₑ} {γ = γ} (pm-good {Wₕₒₗₑ = Wₕₒₗₑ'} {γ = γ'} x eq₁) eq ] (∙W∷r {W₂' = W₂'}) = ∙[ (pm-good x (trans (cong (λ x → ⟦ W₁ ⟧ⱽ , x) eq) eq₁)) ]
+  valstate-good ∙[ rhs-good {W₁ = W₁} {Wₕₒₗₑ = Wₕₒₗₑ} {γ = γ} (lhs-good {Wₕₒₗₑ = Wₕₒₗₑ'} {W₂ = W₂} {γ = γ'} x eq₁) eq ] (∙W∷r {W₂' = W₂'}) = ∙[ (lhs-good x (trans (cong (λ x → ⟦ W₁ ⟧ⱽ , x) eq) eq₁)) ]
+  valstate-good ∙[ rhs-good {W₁ = W₁} {Wₕₒₗₑ = Wₕₒₗₑ} {γ = γ} (rhs-good {W₁ = W₁'} {Wₕₒₗₑ = Wₕₒₗₑ'} {γ = γ'} x eq₁) eq ] (∙W∷r {W₂' = W₂'}) = ∙[ (rhs-good x (trans (cong (λ x → ⟦ W₁ ⟧ⱽ , x) eq) eq₁)) ]
 
   valstate-eq : {S S' : ValState {Z₀ = R₀} X} → ValStateGood S → S →ᵛ S' → ⟦ S ⟧ᵛꟴ ≡ ⟦ S' ⟧ᵛꟴ
   valstate-eq {S = S} {S' = S'} good (∘var {i = i} {γ = γ} {tail = □} {↥ = 🗆}) = lookup-eq i γ
@@ -392,11 +392,11 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
   valstate-eq {S = S} {S' = S'} good (∘pm {tail = (x ∷ tail) {↥ = ↥}} {↥ = 🗇}) = refl
   valstate-eq {S = S} {S' = S'} good (∘unit {tail = □} {↥ = 🗆}) = refl
   valstate-eq {S = S} {S' = S'} good (∘unit {tail = (x ∷ tail) {↥ = ↥}} {↥ = 🗇}) = refl
-  valstate-eq {S = S} {S' = S'} ∙[ lhs-good {M₂ = M₂} {γ = γ} x eq ] (∙W∷l {tail = □} {↥ = 🗆}) = cong (λ x → x , ⟦ M₂ ⟧ᵛ ⟦ γ ⟧ᴱ) (sym eq)
+  valstate-eq {S = S} {S' = S'} ∙[ lhs-good {W₂ = W₂} {γ = γ} x eq ] (∙W∷l {tail = □} {↥ = 🗆}) = cong (λ x → x , ⟦ W₂ ⟧ᵛ ⟦ γ ⟧ᴱ) (sym eq)
   valstate-eq {S = S} {S' = S'} good (∙W∷l {tail = (x ∷ tail) {↥ = ↥}} {↥ = 🗇}) = refl
-  valstate-eq {S = S} {S' = S'} ∙[ rhs-good {M₁ = M₁} {γ = γ} x eq ] (∙W∷r {tail = □} {↥ = 🗆}) = cong (λ x → ⟦ M₁ ⟧ⱽ , x) (sym eq)
+  valstate-eq {S = S} {S' = S'} ∙[ rhs-good {W₁ = W₁} {γ = γ} x eq ] (∙W∷r {tail = □} {↥ = 🗆}) = cong (λ x → ⟦ W₁ ⟧ⱽ , x) (sym eq)
   valstate-eq {S = S} {S' = S'} good (∙W∷r {tail = (x ∷ tail) {↥ = ↥}} {↥ = 🗇}) = refl
-  valstate-eq {S = S} {S' = S'} ∙[ pm-good {Mₕₒₗₑ = Mₕₒₗₑ} {M₂ = M₂} x eq ] (∙pair∷pm {γ = γ} {tail = □} {↥ = 🗆}) = cong (λ x → ⟦ M₂ ⟧ᵛ (assocl (⟦ γ ⟧ᴱ , x))) (sym eq)
+  valstate-eq {S = S} {S' = S'} ∙[ pm-good {Wₕₒₗₑ = Wₕₒₗₑ} {W₂ = W₂} x eq ] (∙pair∷pm {γ = γ} {tail = □} {↥ = 🗆}) = cong (λ x → ⟦ W₂ ⟧ᵛ (assocl (⟦ γ ⟧ᴱ , x))) (sym eq)
   valstate-eq {S = S} {S' = S'} good (∙pair∷pm {tail = (x ∷ tail) {↥ = ↥}} {↥ = 🗇}) = refl
 
   valstate-trans-eq : {S S' : ValState {Z₀ = R₀} X} → ValStateGood S → S ↠ᵛ S' → ⟦ S ⟧ᵛꟴ ≡ ⟦ S' ⟧ᵛꟴ

@@ -38,16 +38,15 @@ mutual
 
     unitᵛ : Value {Z₀ = Z₀} `Unit
 
-    pairᵛ : Value {Z₀ = Z₀} X₁ → Value {Z₀ = Z₀} X₂ → Value (X₁ `× X₂)
+    pairᵛ : (𝐖₁ : Value {Z₀ = Z₀} X₁) → (𝐖₂ : Value {Z₀ = Z₀} X₂) → Value (X₁ `× X₂)
 
-    cloᵛ  : {Γ : Ctx} → Comp (Γ ∙ X) Y → Env {Z₀ = Z₀} Γ → Value (X `⇒ Y)
+    cloᵛ  : {Γ : Ctx} → (M : Comp (Γ ∙ X) Y) → (γ : Env {Z₀ = Z₀} Γ) → Value (X `⇒ Y)
 
-    jumpᵛ : {Γ : Ctx} → Comp Γ X → Env {Z₀ = Z₀} Γ → CompStack {Z₀ = Z₀} X → Value `V
+    jumpᵛ : {Γ : Ctx} → (M : Comp Γ X) → (γ : Env {Z₀ = Z₀} Γ) → (cs : CompStack {Z₀ = Z₀} X) → Value `V
 
   data Env {Z₀ : Ty} : Ctx → Set where
     ∅   : Env {Z₀ = Z₀} ε
     _،_ : Env {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X → Env {Z₀ = Z₀} (Γ ∙ X)
-
 
 lookup : (i : Γ ∋ X) → Env {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X
 lookup Cx.h (γ ، W') = W'
@@ -62,11 +61,11 @@ data TermWithHole {Z₀ : Ty} : (X : Ty) → Set where
 
     ⇡ : (W : Val Γ X) → (Env {Z₀ = Z₀} Γ) → TermWithHole X
 
-    ⇡ᴾᴹ : (HOLE : Val Γ (X₁ `× X₂)) → (W : Val (Γ ∙ X₁ ∙ X₂) Y) → (Env {Z₀ = Z₀} Γ) → TermWithHole Y
+    ⇡ᴾᴹ : (Wₕₒₗₑ : Val Γ (X₁ `× X₂)) → (W₂ : Val (Γ ∙ X₁ ∙ X₂) Y) → (Env {Z₀ = Z₀} Γ) → TermWithHole Y
 
-    ⇡ᴸ : (HOLE : Val Γ X₁) → (RHS : Val Γ X₂) → (Env {Z₀ = Z₀} Γ) → TermWithHole (X₁ `× X₂)
+    ⇡ᴸ : (Wₕₒₗₑ : Val Γ X₁) → (W₂ : Val Γ X₂) → (Env {Z₀ = Z₀} Γ) → TermWithHole (X₁ `× X₂)
 
-    ⇡ᴿ  : (LHS : Value {Z₀ = Z₀} X₁) → (HOLE : Val Γ X₂) → (Env {Z₀ = Z₀} Γ) → TermWithHole (X₁ `× X₂)
+    ⇡ᴿ  : (W₁ : Value {Z₀ = Z₀} X₁) → (Wₕₒₗₑ : Val Γ X₂) → (Env {Z₀ = Z₀} Γ) → TermWithHole (X₁ `× X₂)
 
 
 data IsEmpty : Set where
