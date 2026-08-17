@@ -14,8 +14,8 @@ open Eq.≡-Reasoning
 
 import Relation.Binary.HeterogeneousEquality as H
 
-postulate
-  TODO : ∀ {a} {A : Set a} -> A
+--postulate
+--  TODO : ∀ {a} {A : Set a} -> A
 
 {-# BUILTIN REWRITE _≡_ #-}
 
