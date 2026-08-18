@@ -18,9 +18,9 @@ infix  20 ⭭_
 infix  20 ∘_
 infix  20 ∙_
 infix  19 _∷_
-infixr 17 _→ᵛ⟨_⟩．
-infixr 15 _→ᵛ⟨_⟩_
-infix  15 _→ᵛ_
+infixr 17 _→ᵖ⟨_⟩．
+infixr 15 _→ᵖ⟨_⟩_
+infix  15 _→ᵖ_
 infixr 10 _⨾_
 
 ---------------------------------------------------------------------------------
@@ -59,13 +59,13 @@ data TermWithHole {Z₀ : Ty} : (X : Ty) → Set where
 
     ⭭_ : (W' : Value {Z₀ = Z₀} X) → TermWithHole X
 
-    ⇡ : (W : Val Γ X) → (Env {Z₀ = Z₀} Γ) → TermWithHole X
+    ⇡ : (W : Pure Γ X) → (Env {Z₀ = Z₀} Γ) → TermWithHole X
 
-    ⇡ᴾᴹ : (Wₕₒₗₑ : Val Γ (X₁ `× X₂)) → (W₂ : Val (Γ ∙ X₁ ∙ X₂) Y) → (Env {Z₀ = Z₀} Γ) → TermWithHole Y
+    ⇡ᴾᴹ : (Wₕₒₗₑ : Pure Γ (X₁ `× X₂)) → (W₂ : Pure (Γ ∙ X₁ ∙ X₂) Y) → (Env {Z₀ = Z₀} Γ) → TermWithHole Y
 
-    ⇡ᴸ : (Wₕₒₗₑ : Val Γ X₁) → (W₂ : Val Γ X₂) → (Env {Z₀ = Z₀} Γ) → TermWithHole (X₁ `× X₂)
+    ⇡ᴸ : (Wₕₒₗₑ : Pure Γ X₁) → (W₂ : Pure Γ X₂) → (Env {Z₀ = Z₀} Γ) → TermWithHole (X₁ `× X₂)
 
-    ⇡ᴿ  : (W₁ : Value {Z₀ = Z₀} X₁) → (Wₕₒₗₑ : Val Γ X₂) → (Env {Z₀ = Z₀} Γ) → TermWithHole (X₁ `× X₂)
+    ⇡ᴿ  : (W₁ : Value {Z₀ = Z₀} X₁) → (Wₕₒₗₑ : Pure Γ X₂) → (Env {Z₀ = Z₀} Γ) → TermWithHole (X₁ `× X₂)
 
 
 data IsEmpty : Set where
@@ -81,75 +81,75 @@ data BottomTypeEqualsNextType : IsEmpty → Ty → Ty → Set where
 
     🗇 : BottomTypeEqualsNextType non-empty X Y
 
-data ValStack {Z₀ : Ty} : IsEmpty → Ty → Set where
+data PureStack {Z₀ : Ty} : IsEmpty → Ty → Set where
 
-    □ : ValStack {Z₀ = Z₀} empty Z₁
+    □ : PureStack {Z₀ = Z₀} empty Z₁
 
-    _∷_ : TermWithHole {Z₀ = Z₀} X → (tail : ValStack {Z₀ = Z₀} b Z₁) → {↥ : BottomTypeEqualsNextType b X Z₁} → ValStack non-empty Z₁
+    _∷_ : TermWithHole {Z₀ = Z₀} X → (tail : PureStack {Z₀ = Z₀} b Z₁) → {↥ : BottomTypeEqualsNextType b X Z₁} → PureStack non-empty Z₁
 
 
-data ValState {Z₀ : Ty} : Ty → Set where
+data PureState {Z₀ : Ty} : Ty → Set where
 
-    ∘_ : ValStack {Z₀ = Z₀} non-empty Z₁ → ValState {Z₀ = Z₀} Z₁
+    ∘_ : PureStack {Z₀ = Z₀} non-empty Z₁ → PureState {Z₀ = Z₀} Z₁
 
-    ∙_ : ValStack {Z₀ = Z₀} non-empty Z₁ → ValState {Z₀ = Z₀} Z₁
+    ∙_ : PureStack {Z₀ = Z₀} non-empty Z₁ → PureState {Z₀ = Z₀} Z₁
 
-_⧺_ : {Z₀ : Ty} → ValStack {Z₀ = Z₀} b Z₁ → ValStack {Z₀ = Z₀} non-empty Z₁' → ValStack {Z₀ = Z₀} non-empty Z₁'
+_⧺_ : {Z₀ : Ty} → PureStack {Z₀ = Z₀} b Z₁ → PureStack {Z₀ = Z₀} non-empty Z₁' → PureStack {Z₀ = Z₀} non-empty Z₁'
 □ ⧺ lower = lower
 (W ∷ upper) ⧺ lower = (W ∷ (upper ⧺ lower)) {↥ = 🗇}
 
-_⧻_ : {Z₀ : Ty} → (upper : ValState {Z₀ = Z₀} Z₁) → ValStack {Z₀ = Z₀} non-empty Z₁' → ValState {Z₀ = Z₀} Z₁'
+_⧻_ : {Z₀ : Ty} → (upper : PureState {Z₀ = Z₀} Z₁) → PureStack {Z₀ = Z₀} non-empty Z₁' → PureState {Z₀ = Z₀} Z₁'
 (∘ upper) ⧻ lower = ∘ (upper ⧺ lower)
 (∙ upper) ⧻ lower = ∙ (upper ⧺ lower)
 
-data _→ᵛ_ {Z₀ : Ty} {Z₁ : Ty} : ValState {Z₀ = Z₀} Z₁ → ValState {Z₀ = Z₀} Z₁ → Set where
+data _→ᵖ_ {Z₀ : Ty} {Z₁ : Ty} : PureState {Z₀ = Z₀} Z₁ → PureState {Z₀ = Z₀} Z₁ → Set where
 
-    ∘var  :    {i : Γ ∋ X} {γ : Env {Z₀ = Z₀} Γ} → {tail : ValStack {Z₀ = Z₀} b Z₁} → {↥ : BottomTypeEqualsNextType b X Z₁}
+    ∘var  :    {i : Γ ∋ X} {γ : Env {Z₀ = Z₀} Γ} → {tail : PureStack {Z₀ = Z₀} b Z₁} → {↥ : BottomTypeEqualsNextType b X Z₁}
               ----------------------------------------------------------------
-                → ∘ ((⇡ (var i) γ ∷ tail) {↥ = ↥}) →ᵛ ∙ ((⭭ (lookup i γ) ∷ tail) {↥ = ↥})
+                → ∘ ((⇡ (var i) γ ∷ tail) {↥ = ↥}) →ᵖ ∙ ((⭭ (lookup i γ) ∷ tail) {↥ = ↥})
 
-    ∘lam   :  {M : Comp (Γ ∙ X) Y} → {γ  : Env {Z₀ = Z₀} Γ} → {tail : ValStack {Z₀ = Z₀} b Z₁} → {↥ : BottomTypeEqualsNextType b (X `⇒ Y) Z₁}
+    ∘lam   :  {M : Comp (Γ ∙ X) Y} → {γ  : Env {Z₀ = Z₀} Γ} → {tail : PureStack {Z₀ = Z₀} b Z₁} → {↥ : BottomTypeEqualsNextType b (X `⇒ Y) Z₁}
               ---------------------------------------------------------------------------
-            →     ∘ ((⇡ (lam M) γ ∷ tail) {↥ = ↥}) →ᵛ ∙ ((⭭ (cloᵛ M γ) ∷ tail) {↥ = ↥})
+            →     ∘ ((⇡ (lam M) γ ∷ tail) {↥ = ↥}) →ᵖ ∙ ((⭭ (cloᵛ M γ) ∷ tail) {↥ = ↥})
 
-    ∘pair  :  {γ : Env {Z₀ = Z₀} Γ} {W₁ : Val Γ X₁} → {W₂ : Val Γ X₂} → {tail : ValStack {Z₀ = Z₀} b Z₁} → {↥ : BottomTypeEqualsNextType b (X₁ `× X₂) Z₁}
+    ∘pair  :  {γ : Env {Z₀ = Z₀} Γ} {W₁ : Pure Γ X₁} → {W₂ : Pure Γ X₂} → {tail : PureStack {Z₀ = Z₀} b Z₁} → {↥ : BottomTypeEqualsNextType b (X₁ `× X₂) Z₁}
               ---------------------------------------------------------------------------
-            →     ∘ ((⇡ (pair W₁ W₂) γ ∷ tail) {↥ = ↥}) →ᵛ ∘ ((⇡ W₁ γ ∷ ((⇡ᴸ W₁ W₂ γ ∷ tail) {↥ = ↥})) {↥ = 🗇})
+            →     ∘ ((⇡ (pair W₁ W₂) γ ∷ tail) {↥ = ↥}) →ᵖ ∘ ((⇡ W₁ γ ∷ ((⇡ᴸ W₁ W₂ γ ∷ tail) {↥ = ↥})) {↥ = 🗇})
 
-    ∘pm    :  {γ : Env {Z₀ = Z₀} Γ} {W₁ : Val Γ (X₁ `× X₂)} → {W₂ : Val (Γ ∙ X₁ ∙ X₂) Y} → {tail : ValStack {Z₀ = Z₀} b Z₁ } → {↥ : BottomTypeEqualsNextType b Y Z₁}
+    ∘pm    :  {γ : Env {Z₀ = Z₀} Γ} {W₁ : Pure Γ (X₁ `× X₂)} → {W₂ : Pure (Γ ∙ X₁ ∙ X₂) Y} → {tail : PureStack {Z₀ = Z₀} b Z₁ } → {↥ : BottomTypeEqualsNextType b Y Z₁}
               ---------------------------------------------------------------------------
-            →     ∘ ((⇡ (pm W₁ W₂) γ ∷ tail) {↥ = ↥}) →ᵛ ∘ ((⇡ W₁ γ ∷ (⇡ᴾᴹ W₁ W₂ γ ∷ tail) {↥ = ↥}) {↥ = 🗇})
+            →     ∘ ((⇡ (pm W₁ W₂) γ ∷ tail) {↥ = ↥}) →ᵖ ∘ ((⇡ W₁ γ ∷ (⇡ᴾᴹ W₁ W₂ γ ∷ tail) {↥ = ↥}) {↥ = 🗇})
 
-    ∘unit  :  {γ  : Env {Z₀ = Z₀} Γ} → {tail : ValStack {Z₀ = Z₀} b Z₁} → {↥ : BottomTypeEqualsNextType b `Unit Z₁}
+    ∘unit  :  {γ  : Env {Z₀ = Z₀} Γ} → {tail : PureStack {Z₀ = Z₀} b Z₁} → {↥ : BottomTypeEqualsNextType b `Unit Z₁}
               ---------------------------------------------------------------------------
-            →     ∘ ((⇡ unit γ ∷ tail) {↥ = ↥}) →ᵛ ∙ ((⭭ unitᵛ ∷ tail) {↥ = ↥})
+            →     ∘ ((⇡ unit γ ∷ tail) {↥ = ↥}) →ᵖ ∙ ((⭭ unitᵛ ∷ tail) {↥ = ↥})
 
-    ∙W∷l   :  {γ : Env {Z₀ = Z₀} Γ} {W₁' : Value X₁} → {W₁ : Val Γ X₁} → {W₂ : Val Γ X₂}
-            → {tail : ValStack {Z₀ = Z₀} b Z₁} → {↥ : BottomTypeEqualsNextType b (X₁ `× X₂) Z₁}
+    ∙W∷l   :  {γ : Env {Z₀ = Z₀} Γ} {W₁' : Value X₁} → {W₁ : Pure Γ X₁} → {W₂ : Pure Γ X₂}
+            → {tail : PureStack {Z₀ = Z₀} b Z₁} → {↥ : BottomTypeEqualsNextType b (X₁ `× X₂) Z₁}
               ---------------------------------------------------------------------------
-            →     ∙ ((⭭ W₁' ∷ ((⇡ᴸ W₁ W₂ γ ∷ tail) {↥ = ↥})) {↥ = 🗇}) →ᵛ ∘ ((⇡ W₂ γ ∷ ((⇡ᴿ W₁' W₂ γ ∷ tail) {↥ = ↥})) {↥ = 🗇})
+            →     ∙ ((⭭ W₁' ∷ ((⇡ᴸ W₁ W₂ γ ∷ tail) {↥ = ↥})) {↥ = 🗇}) →ᵖ ∘ ((⇡ W₂ γ ∷ ((⇡ᴿ W₁' W₂ γ ∷ tail) {↥ = ↥})) {↥ = 🗇})
 
-    ∙W∷r   :  {γ : Env {Z₀ = Z₀} Γ} {W₂' : Value X₂} → {W₁' : Value X₁} → {W₂ : Val Γ X₂}
-            → {tail : ValStack {Z₀ = Z₀} b Z₁} → {↥ : BottomTypeEqualsNextType b (X₁ `× X₂) Z₁}
+    ∙W∷r   :  {γ : Env {Z₀ = Z₀} Γ} {W₂' : Value X₂} → {W₁' : Value X₁} → {W₂ : Pure Γ X₂}
+            → {tail : PureStack {Z₀ = Z₀} b Z₁} → {↥ : BottomTypeEqualsNextType b (X₁ `× X₂) Z₁}
               ---------------------------------------------------------------------------
-            → ∙ ((⭭ W₂' ∷ ((⇡ᴿ W₁' W₂ γ ∷ tail) {↥ = ↥})) {↥ = 🗇}) →ᵛ ∙ ((⭭ pairᵛ W₁' W₂' ∷ tail) {↥ = ↥})
+            → ∙ ((⭭ W₂' ∷ ((⇡ᴿ W₁' W₂ γ ∷ tail) {↥ = ↥})) {↥ = 🗇}) →ᵖ ∙ ((⭭ pairᵛ W₁' W₂' ∷ tail) {↥ = ↥})
 
-    ∙pair∷pm  :  {γ : Env {Z₀ = Z₀} Γ} {W₁' : Value X₁} → {W₂' : Value X₂} → {W₀ : Val Γ (X₁ `× X₂)} → {W₃ : Val (Γ ∙ X₁ ∙ X₂) Y}
-            → {tail : ValStack {Z₀ = Z₀} b Z₁} → {↥ : BottomTypeEqualsNextType b Y Z₁}
+    ∙pair∷pm  :  {γ : Env {Z₀ = Z₀} Γ} {W₁' : Value X₁} → {W₂' : Value X₂} → {W₀ : Pure Γ (X₁ `× X₂)} → {W₃ : Pure (Γ ∙ X₁ ∙ X₂) Y}
+            → {tail : PureStack {Z₀ = Z₀} b Z₁} → {↥ : BottomTypeEqualsNextType b Y Z₁}
               ---------------------------------------------------------------------------
-            →     ∙ ((⭭ pairᵛ W₁' W₂' ∷ ((⇡ᴾᴹ W₀ W₃ γ ∷ tail) {↥ = ↥})) {↥ = 🗇}) →ᵛ  ∘ ((⇡ W₃ (γ ، W₁' ، W₂') ∷ tail) {↥ = ↥})
+            →     ∙ ((⭭ pairᵛ W₁' W₂' ∷ ((⇡ᴾᴹ W₀ W₃ γ ∷ tail) {↥ = ↥})) {↥ = 🗇}) →ᵖ  ∘ ((⇡ W₃ (γ ، W₁' ، W₂') ∷ tail) {↥ = ↥})
 
-data _↠ᵛ_ {Z₀ Z₁ : Ty} : ValState {Z₀ = Z₀} Z₁ → ValState {Z₀ = Z₀} Z₁ → Set where
+data _↠ᵛ_ {Z₀ Z₁ : Ty} : PureState {Z₀ = Z₀} Z₁ → PureState {Z₀ = Z₀} Z₁ → Set where
 
-  _→ᵛ⟨_⟩． : (S : ValState Z₁) → {S' : ValState Z₁} → (laststep : S →ᵛ S') → S ↠ᵛ S'
+  _→ᵖ⟨_⟩． : (S : PureState Z₁) → {S' : PureState Z₁} → (laststep : S →ᵖ S') → S ↠ᵛ S'
 
-  _→ᵛ⟨_⟩_ : (S : ValState Z₁) → {S' S'' : ValState Z₁} → S →ᵛ S' → S' ↠ᵛ S'' → S ↠ᵛ S''
+  _→ᵖ⟨_⟩_ : (S : PureState Z₁) → {S' S'' : PureState Z₁} → S →ᵖ S' → S' ↠ᵛ S'' → S ↠ᵛ S''
 
-_⨾_ : {Z₀ : Ty} {F S T : ValState {Z₀ = Z₀} Z₁} → (F ↠ᵛ S) → (S ↠ᵛ T) → (F ↠ᵛ T)
-_⨾_ (F →ᵛ⟨ F>S ⟩．) S>>T = F →ᵛ⟨ F>S ⟩ S>>T
-_⨾_ (F →ᵛ⟨ F>S₁ ⟩ S₁>>S₂) S₂>>T = F →ᵛ⟨ F>S₁ ⟩ (S₁>>S₂ ⨾ S₂>>T)
+_⨾_ : {Z₀ : Ty} {F S T : PureState {Z₀ = Z₀} Z₁} → (F ↠ᵛ S) → (S ↠ᵛ T) → (F ↠ᵛ T)
+_⨾_ (F →ᵖ⟨ F>S ⟩．) S>>T = F →ᵖ⟨ F>S ⟩ S>>T
+_⨾_ (F →ᵖ⟨ F>S₁ ⟩ S₁>>S₂) S₂>>T = F →ᵖ⟨ F>S₁ ⟩ (S₁>>S₂ ⨾ S₂>>T)
 
-⟨_⟩⧻_ : {Z₀ : Ty} {from : ValState {Z₀ = Z₀} Z₁} → {to : ValState {Z₀ = Z₀} Z₁} → (F>T : from →ᵛ to) → (tail : ValStack {Z₀ = Z₀} non-empty Z₁') → (from ⧻ tail) →ᵛ (to ⧻ tail)
+⟨_⟩⧻_ : {Z₀ : Ty} {from : PureState {Z₀ = Z₀} Z₁} → {to : PureState {Z₀ = Z₀} Z₁} → (F>T : from →ᵖ to) → (tail : PureStack {Z₀ = Z₀} non-empty Z₁') → (from ⧻ tail) →ᵖ (to ⧻ tail)
 ⟨ ∘var ⟩⧻ tail = ∘var
 ⟨ ∘lam ⟩⧻ tail = ∘lam
 ⟨ ∘pair ⟩⧻ tail = ∘pair
@@ -159,15 +159,15 @@ _⨾_ (F →ᵛ⟨ F>S₁ ⟩ S₁>>S₂) S₂>>T = F →ᵛ⟨ F>S₁ ⟩ (S₁
 ⟨ ∙W∷r ⟩⧻ tail = ∙W∷r
 ⟨ ∙pair∷pm ⟩⧻ tail = ∙pair∷pm
 
-⟪_⟫⧻_ : {from : ValState {Z₀ = Z₀} Z₁} → {to : ValState {Z₀ = Z₀} Z₁} → (F>T : from ↠ᵛ to) → (tail : ValStack {Z₀ = Z₀} non-empty Z₁') → (from ⧻ tail) ↠ᵛ (to ⧻ tail)
-⟪ _ →ᵛ⟨ F>T ⟩． ⟫⧻ tail =  _ →ᵛ⟨ ⟨ F>T ⟩⧻ tail ⟩．
-⟪ _ →ᵛ⟨ F>T ⟩ F>>T ⟫⧻ tail =   _ →ᵛ⟨ ⟨ F>T ⟩⧻ tail ⟩ (⟪ F>>T ⟫⧻ tail)
+⟪_⟫⧻_ : {from : PureState {Z₀ = Z₀} Z₁} → {to : PureState {Z₀ = Z₀} Z₁} → (F>T : from ↠ᵛ to) → (tail : PureStack {Z₀ = Z₀} non-empty Z₁') → (from ⧻ tail) ↠ᵛ (to ⧻ tail)
+⟪ _ →ᵖ⟨ F>T ⟩． ⟫⧻ tail =  _ →ᵖ⟨ ⟨ F>T ⟩⧻ tail ⟩．
+⟪ _ →ᵖ⟨ F>T ⟩ F>>T ⟫⧻ tail =   _ →ᵖ⟨ ⟨ F>T ⟩⧻ tail ⟩ (⟪ F>>T ⟫⧻ tail)
 
-record ValSteps {Z₀ : Ty} (W : Val Γ X) (γ : Env {Z₀ = Z₀} Γ) : Set where
+record PureSteps {Z₀ : Ty} (W : Pure Γ X) (γ : Env {Z₀ = Z₀} Γ) : Set where
   field
     result : Value {Z₀ = Z₀} X
     steps  : (∘ ((⇡ W γ ∷ □) {↥ = 🗆})) ↠ᵛ (∙ ((⭭ result ∷ □) {↥ = 🗆}))
-open ValSteps
+open PureSteps
 
 
 proj₁-val : {Z₀ : Ty} → Value {Z₀ = Z₀} (X `× Y) → Value {Z₀ = Z₀} X
@@ -179,26 +179,26 @@ proj₂-val (pairᵛ W₁ W₂) = W₂
 pair-val : {Z₀ : Ty} → (W : Value {Z₀ = Z₀} (X `× Y)) → (pairᵛ (proj₁-val W) (proj₂-val W) ≡ W)
 pair-val (pairᵛ W₁ W₂) = refl
 
-run-val : {Z₀ : Ty} → (W : Val Γ X) → (γ : Env {Z₀ = Z₀} Γ) → ValSteps W γ
-run-val (var i) γ = record { result = lookup i γ ; steps = ∘ (⇡ (var i) γ ∷ □) →ᵛ⟨ ∘var ⟩． }
-run-val (lam M) γ = record { result = cloᵛ M γ ; steps = ∘ (⇡ (lam M) γ ∷ □) →ᵛ⟨ ∘lam ⟩． }
-run-val (pair W₁ W₂) γ =
+run-pure : {Z₀ : Ty} → (W : Pure Γ X) → (γ : Env {Z₀ = Z₀} Γ) → PureSteps W γ
+run-pure (var i) γ = record { result = lookup i γ ; steps = ∘ (⇡ (var i) γ ∷ □) →ᵖ⟨ ∘var ⟩． }
+run-pure (lam M) γ = record { result = cloᵛ M γ ; steps = ∘ (⇡ (lam M) γ ∷ □) →ᵖ⟨ ∘lam ⟩． }
+run-pure (pair W₁ W₂) γ =
   let
-    IH₁ = run-val W₁ γ
-    IH₂ = run-val W₂ γ
-    trace = _ →ᵛ⟨ ∘pair ⟩． ⨾ ⟪ steps IH₁ ⟫⧻ _ ⨾ _ →ᵛ⟨ ∙W∷l ⟩． ⨾ (⟪ steps IH₂ ⟫⧻ _) ⨾ _ →ᵛ⟨ ∙W∷r ⟩．
+    IH₁ = run-pure W₁ γ
+    IH₂ = run-pure W₂ γ
+    trace = _ →ᵖ⟨ ∘pair ⟩． ⨾ ⟪ steps IH₁ ⟫⧻ _ ⨾ _ →ᵖ⟨ ∙W∷l ⟩． ⨾ (⟪ steps IH₂ ⟫⧻ _) ⨾ _ →ᵖ⟨ ∙W∷r ⟩．
   in
   record { result = pairᵛ (result IH₁) (result IH₂) ; steps = trace }
-run-val (pm W₁ W₂) γ =
+run-pure (pm W₁ W₂) γ =
   let
-    IH₁ = run-val W₁ γ
-    IH₂ = run-val W₂ (γ ، proj₁-val (result IH₁) ، proj₂-val (result IH₁))
-    ∙pair∷pm' = subst (λ x → ∙ ((⭭ x) ∷ (⇡ᴾᴹ W₁ W₂ γ ∷ □)) →ᵛ ∘ (⇡ W₂ (γ ، proj₁-val (result IH₁) ، proj₂-val (result IH₁)) ∷ □)) (pair-val (result IH₁)) ∙pair∷pm
+    IH₁ = run-pure W₁ γ
+    IH₂ = run-pure W₂ (γ ، proj₁-val (result IH₁) ، proj₂-val (result IH₁))
+    ∙pair∷pm' = subst (λ x → ∙ ((⭭ x) ∷ (⇡ᴾᴹ W₁ W₂ γ ∷ □)) →ᵖ ∘ (⇡ W₂ (γ ، proj₁-val (result IH₁) ، proj₂-val (result IH₁)) ∷ □)) (pair-val (result IH₁)) ∙pair∷pm
   in
-  record { result = result IH₂ ; steps = _ →ᵛ⟨ ∘pm ⟩． ⨾ ⟪ steps IH₁ ⟫⧻ _ ⨾ _ →ᵛ⟨ ∙pair∷pm' ⟩． ⨾ steps IH₂ }
-run-val unit γ = record { result = unitᵛ ; steps = ∘ (⇡ unit γ ∷ □) →ᵛ⟨ ∘unit ⟩． }
+  record { result = result IH₂ ; steps = _ →ᵖ⟨ ∘pm ⟩． ⨾ ⟪ steps IH₁ ⟫⧻ _ ⨾ _ →ᵖ⟨ ∙pair∷pm' ⟩． ⨾ steps IH₂ }
+run-pure unit γ = record { result = unitᵛ ; steps = ∘ (⇡ unit γ ∷ □) →ᵖ⟨ ∘unit ⟩． }
 
-determinismⱽ : {Z₀ : Ty} {S S' : ValState {Z₀ = Z₀} Z₁} → (S→S'₁ S→S'₂ : S →ᵛ S') → (S→S'₁ ≡ S→S'₂)
+determinismⱽ : {Z₀ : Ty} {S S' : PureState {Z₀ = Z₀} Z₁} → (S→S'₁ S→S'₂ : S →ᵖ S') → (S→S'₁ ≡ S→S'₂)
 determinismⱽ ∘var ∘var = refl
 determinismⱽ ∘lam ∘lam = refl
 determinismⱽ ∘pair ∘pair = refl
@@ -225,15 +225,15 @@ clo-to-comp (cloᵛ M γ) = _ , M , γ
 clo-val : {Z₀ : Ty} → (W : Value {Z₀ = Z₀} (X `⇒ Y)) → (cloᵛ (proj₁ (proj₂ (clo-to-comp W))) (proj₂ (proj₂ (clo-to-comp W))) ≡ W)
 clo-val (cloᵛ M γ) = refl
 
-apply : {Z₀ : Ty} → Val Γ (X `⇒ Y) → Val Γ X → Env {Z₀ = Z₀} Γ → CompStack {Z₀ = Z₀} Y → CompState {Z₀ = Z₀}
-apply W₁ W₂ γ k = ⟨ proj₁ (proj₂ (clo-to-comp (result (run-val W₁ γ)))) ╎ proj₂ (proj₂ (clo-to-comp (result (run-val W₁ γ)))) ، result (run-val W₂ γ) ╎ k ⟩
+apply : {Z₀ : Ty} → Pure Γ (X `⇒ Y) → Pure Γ X → Env {Z₀ = Z₀} Γ → CompStack {Z₀ = Z₀} Y → CompState {Z₀ = Z₀}
+apply W₁ W₂ γ k = ⟨ proj₁ (proj₂ (clo-to-comp (result (run-pure W₁ γ)))) ╎ proj₂ (proj₂ (clo-to-comp (result (run-pure W₁ γ)))) ، result (run-pure W₂ γ) ╎ k ⟩
 
 
 data _→ᶜ_ {Z₀ : Ty} : CompState {Z₀ = Z₀} → CompState {Z₀ = Z₀} → Set where
 
-      ∘return  :      {W : Val Γ X} → {γ : Env Γ} {k : CompStack X}
+      ∘return  :      {W : Pure Γ X} → {γ : Env Γ} {k : CompStack X}
                     ----------------------------------------------------------------
-                    → ⟨ return W ╎ γ ╎ k ⟩ →ᶜ ⟨return (result (run-val W γ)) ╎ k ⟩
+                    → ⟨ return W ╎ γ ╎ k ⟩ →ᶜ ⟨return (result (run-pure W γ)) ╎ k ⟩
 
       ∙return  :    {W' : Value X} → {M : Comp (Δ ∙ X) Y} → {γ : Env Δ} → {k : CompStack Y}
                 ----------------------------------------------------------------
@@ -247,15 +247,15 @@ data _→ᶜ_ {Z₀ : Ty} : CompState {Z₀ = Z₀} → CompState {Z₀ = Z₀} 
                 ----------------------------------------------------------------
                   → ⟨ sub M₁ M₂ ╎ γ ╎ k ⟩ →ᶜ ⟨ M₁ ╎ γ ، (jumpᵛ M₂ γ k) ╎ k ⟩
 
-      ∘var     :   {W : Val Γ `V} → {γ : Env Γ} → {k : CompStack X}
+      ∘var     :   {W : Pure Γ `V} → {γ : Env Γ} → {k : CompStack X}
                -------------------------------------------------------------
-                  → ⟨ var W ╎ γ ╎ k ⟩ →ᶜ jump-to-state (result (run-val W γ))
+                  → ⟨ var W ╎ γ ╎ k ⟩ →ᶜ jump-to-state (result (run-pure W γ))
 
-      ∘pm      :    {W : Val Γ (X `× Y)} → {γ : Env Γ} → {M : Comp (Γ ∙ X ∙ Y) Z} → {k : CompStack Z}
+      ∘pm      :    {W : Pure Γ (X `× Y)} → {γ : Env Γ} → {M : Comp (Γ ∙ X ∙ Y) Z} → {k : CompStack Z}
                 ----------------------------------------------------------------
-                  → ⟨ pm W M ╎ γ ╎ k ⟩ →ᶜ ⟨ M ╎ γ ، proj₁-val (result (run-val W γ)) ، proj₂-val (result (run-val W γ)) ╎ k ⟩
+                  → ⟨ pm W M ╎ γ ╎ k ⟩ →ᶜ ⟨ M ╎ γ ، proj₁-val (result (run-pure W γ)) ، proj₂-val (result (run-pure W γ)) ╎ k ⟩
 
-      ∘app     :   {W₁ : Val Γ (X `⇒ Y)} → {W₂ : Val Γ X} → {γ : Env Γ} → {k : CompStack Y}
+      ∘app     :   {W₁ : Pure Γ (X `⇒ Y)} → {W₂ : Pure Γ X} → {γ : Env Γ} → {k : CompStack Y}
                     ----------------------------------------------------------------
                   →  ⟨ app W₁ W₂ ╎ γ ╎ k ⟩ →ᶜ apply W₁ W₂ γ k
 
@@ -302,45 +302,45 @@ Rᴱ-ext : {Z₀ : Ty} {γ : Env {Z₀ = Z₀} Γ} {W : Value {Z₀ = Z₀} X} �
 Rᴱ-ext Rγ RW Cx.h = RW
 Rᴱ-ext Rγ RW (Cx.t i) = Rγ i
 
-rv≡sn : {Z₀ : Ty} → (W : Val Γ `V) → (γ : Env {Z₀ = Z₀} Γ) → Rᵛ `V (result (run-val W γ)) ≡ SN (jump-to-state (result (run-val W γ)))
+rv≡sn : {Z₀ : Ty} → (W : Pure Γ `V) → (γ : Env {Z₀ = Z₀} Γ) → Rᵛ `V (result (run-pure W γ)) ≡ SN (jump-to-state (result (run-pure W γ)))
 rv≡sn (var Cx.h) (γ ، jumpᵛ _ _ _) = refl
 rv≡sn (var (Cx.t i)) (γ ، _) = rv≡sn (var i) γ
-rv≡sn (pm W₁ W₂) ∅ = rv≡sn W₂ (∅ ، proj₁-val (result (run-val W₁ ∅)) ، proj₂-val (result (run-val W₁ ∅)))
-rv≡sn (pm W₁ W₂) (γ ، W') = rv≡sn W₂ (γ ، W' ، proj₁-val (result (run-val W₁ (γ ، W'))) ، proj₂-val (result (run-val W₁ (γ ، W'))))
+rv≡sn (pm W₁ W₂) ∅ = rv≡sn W₂ (∅ ، proj₁-val (result (run-pure W₁ ∅)) ، proj₂-val (result (run-pure W₁ ∅)))
+rv≡sn (pm W₁ W₂) (γ ، W') = rv≡sn W₂ (γ ، W' ، proj₁-val (result (run-pure W₁ (γ ، W'))) ، proj₂-val (result (run-pure W₁ (γ ، W'))))
 
 mutual
 
-  Rʲ : {Z₀ : Ty} {γ : Env {Z₀ = Z₀} Γ} → (W : Val Γ `V) → Rᴱ γ → Rᵛ _ (result (run-val W γ))
+  Rʲ : {Z₀ : Ty} {γ : Env {Z₀ = Z₀} Γ} → (W : Pure Γ `V) → Rᴱ γ → Rᵛ _ (result (run-pure W γ))
   Rʲ {γ = γ} (var i) Rγ = Rγ i
   Rʲ {γ = γ} (pm W₁ W₂) Rγ =
     let
-      IH = fundamentalᵛ W₁ Rγ
-      W₁' = result (run-val W₁ γ)
+      IH = fundamentalᵖ W₁ Rγ
+      W₁' = result (run-pure W₁ γ)
       IH' : Rᵛ _ (pairᵛ (proj₁-val W₁') (proj₂-val W₁'))
       IH' = subst (λ x → Rᵛ _ x) (sym (pair-val W₁')) IH
     in
     Rʲ W₂ (Rᴱ-ext (Rᴱ-ext Rγ (proj₁ IH')) (proj₂ IH'))
 
-  fundamentalᵛ  : {Z₀ : Ty} → (W : Val Γ X) → {γ : Env {Z₀ = Z₀} Γ} → Rᴱ γ → Rᵛ X (result (run-val W γ))
-  fundamentalᵛ (var i) Rγ = Rγ i
-  fundamentalᵛ (lam M) Rγ RW Rk = fundamentalᶜ M (Rᴱ-ext Rγ RW) Rk
-  fundamentalᵛ (pair W₁ W₂) Rγ = (fundamentalᵛ W₁ Rγ) , (fundamentalᵛ W₂ Rγ)
-  fundamentalᵛ (pm W₁ W₂) {γ = γ} Rγ =
+  fundamentalᵖ  : {Z₀ : Ty} → (W : Pure Γ X) → {γ : Env {Z₀ = Z₀} Γ} → Rᴱ γ → Rᵛ X (result (run-pure W γ))
+  fundamentalᵖ (var i) Rγ = Rγ i
+  fundamentalᵖ (lam M) Rγ RW Rk = fundamentalᶜ M (Rᴱ-ext Rγ RW) Rk
+  fundamentalᵖ (pair W₁ W₂) Rγ = (fundamentalᵖ W₁ Rγ) , (fundamentalᵖ W₂ Rγ)
+  fundamentalᵖ (pm W₁ W₂) {γ = γ} Rγ =
     let
-      IH = fundamentalᵛ W₁ Rγ
-      W₁' = result (run-val W₁ γ)
+      IH = fundamentalᵖ W₁ Rγ
+      W₁' = result (run-pure W₁ γ)
       IH' : Rᵛ _ (pairᵛ (proj₁-val W₁') (proj₂-val W₁'))
       IH' = subst (λ x → Rᵛ _ x) (sym (pair-val W₁')) IH
     in
-    fundamentalᵛ W₂ (Rᴱ-ext (Rᴱ-ext Rγ (proj₁ IH')) (proj₂ IH'))
-  fundamentalᵛ unit Rγ = tt
+    fundamentalᵖ W₂ (Rᴱ-ext (Rᴱ-ext Rγ (proj₁ IH')) (proj₂ IH'))
+  fundamentalᵖ unit Rγ = tt
 
   fundamentalᶜ : {Z₀ : Ty} → (M : Comp Γ X) → {γ : Env {Z₀ = Z₀} Γ} → Rᴱ γ → {k : CompStack {Z₀ = Z₀} X} → Rᵏ X k → SN ⟨ M ╎ γ ╎ k ⟩
-  fundamentalᶜ (return W) Rγ Rk = sn λ { ∘return → Rk (fundamentalᵛ W Rγ)}
+  fundamentalᶜ (return W) Rγ Rk = sn λ { ∘return → Rk (fundamentalᵖ W Rγ)}
   fundamentalᶜ (pm W M) {γ = γ} Rγ Rk =
     let
-      IH = fundamentalᵛ W Rγ
-      W' = result (run-val W γ)
+      IH = fundamentalᵖ W Rγ
+      W' = result (run-pure W γ)
       IH' : Rᵛ _ (pairᵛ (proj₁-val W') (proj₂-val W'))
       IH' = subst (λ x → Rᵛ _ x) (sym (pair-val W')) IH
     in
@@ -353,12 +353,12 @@ mutual
     sn λ { ∘push → fundamentalᶜ M₁ Rγ Rk' }
   fundamentalᶜ (app W₁ W₂) {γ = γ} Rγ {k = k} Rk =
     let
-      IH = fundamentalᵛ W₁ Rγ
-      W₁' = result (run-val W₁ γ)
+      IH = fundamentalᵖ W₁ Rγ
+      W₁' = result (run-pure W₁ γ)
       eq = sym (clo-val W₁')
       IH' = subst (λ x → Rᵛ _ x) eq IH
     in
-    sn λ { ∘app → IH' (fundamentalᵛ W₂ Rγ) Rk }
+    sn λ { ∘app → IH' (fundamentalᵖ W₂ Rγ) Rk }
   fundamentalᶜ (var W) {γ = γ} Rγ Rk = sn λ { ∘var → subst (λ x → x) (rv≡sn W γ) (Rʲ W Rγ)}
   fundamentalᶜ (sub M₁ M₂) Rγ Rk = sn λ { ∘sub → fundamentalᶜ M₁ (Rᴱ-ext Rγ (fundamentalᶜ M₂ Rγ Rk)) Rk}
 

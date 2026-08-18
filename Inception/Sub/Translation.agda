@@ -58,7 +58,7 @@ varVal i = var ⟦ i ⟧ⁱ
 lamVal : (SΓ S.∙ SA) S.⊢ᶜ SB -> ⟦ SΓ ⟧ˣ ⊢ᵛ (⟦ SA ⟧ `⇒ ⟦ SB ⟧) ∣ L.Δ
 lamVal M = lam ⟦ M ⟧ᶜ
 
-⟦_⟧ᵗ : SΓ S.⊢ᵛ SA -> ⟦ SΓ ⟧ˣ ⊢ᵗ ⟦ SA ⟧ ∣ L.Δ
+⟦_⟧ᵗ : SΓ S.⊢ᵖ SA -> ⟦ SΓ ⟧ˣ ⊢ᵗ ⟦ SA ⟧ ∣ L.Δ
 ⟦ S.var i ⟧ᵗ    = ret (varVal i)
 ⟦ S.lam M ⟧ᵗ    = ret (lamVal M)
 ⟦ S.pair V W ⟧ᵗ = lett ⟦ V ⟧ᵗ (lett (wkᵗ ⟦ W ⟧ᵗ) (ret (pair (var (s z)) (var z))))
