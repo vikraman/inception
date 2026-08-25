@@ -87,7 +87,14 @@ proj₁-d-eq : {a b : Level} {A : Set a} {x : A} {b : A → Set b} {p₁ p₂ : 
              → proj₁ p₁ ≡ proj₁ p₂
 proj₁-d-eq refl = refl
 
---data ⊥ : Set where
-
 ql : ⊥ → (A : Set) → A
 ql () b
+
+-- generic reflexive and transitive closure
+module RTC {A : Set} (_~>_ : A → A → Set) where
+
+  data _~>*_ : A → A → Set where
+
+    _◼ : (a : A) → a ~>* a
+
+    _~>⟨_⟩_ : (a : A) → {a' a'' : A} → a ~> a' → a' ~>* a'' → a ~>* a''

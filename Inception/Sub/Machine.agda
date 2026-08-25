@@ -271,11 +271,10 @@ determinismꟲ ∘pm ∘pm = refl
 determinismꟲ ∘app ∘app = refl
 
 
-data _→ᶜ*_ {Z₀ : Ty} : CompState {Z₀ = Z₀} → CompState {Z₀ = Z₀} → Set where
+open Inception.Prelude.RTC renaming (_~>⟨_⟩_ to _→ᶜ⟨_⟩_)
 
-  _◼ : (S : CompState {Z₀ = Z₀}) → S →ᶜ* S
-
-  _→ᶜ⟨_⟩_ : (S : CompState {Z₀ = Z₀}) → {S' S'' : CompState {Z₀ = Z₀}} → S →ᶜ S' → S' →ᶜ* S'' → S →ᶜ* S''
+_→ᶜ*_ : {Z₀ : Ty} → CompState {Z₀ = Z₀} → CompState {Z₀ = Z₀} → Set
+_→ᶜ*_ {Z₀ = Z₀} = _~>*_ (_→ᶜ_ {Z₀ = Z₀})
 
 _⨾ᶜ_ : {Z₀ : Ty} → {F S T : CompState {Z₀ = Z₀}} → (F →ᶜ* S) → (S →ᶜ* T) → (F →ᶜ* T)
 _⨾ᶜ_ (S ◼) S>>T = S>>T

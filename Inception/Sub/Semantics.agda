@@ -3,6 +3,7 @@
 module Inception.Sub.Semantics (R : Set) where
 
 open import Inception.Prelude
+open Inception.Prelude.RTC
 open import Inception.Sub.Syntax
 open import Inception.Sub.Machine
 
@@ -529,7 +530,7 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
 
   compstate-eq* : {S S' : CompState {Z₀ = R₀}} → S →ᶜ* S' → ⟦ S ⟧ᶜꟴ ≡ ⟦ S' ⟧ᶜꟴ
   compstate-eq* (S ◼) = refl
-  compstate-eq* (S →ᶜ⟨ S→S' ⟩ S'→*S'') = trans (compstate-eq S→S') (compstate-eq* S'→*S'')
+  compstate-eq* (S ~>⟨ S→S' ⟩ S'→*S'') = trans (compstate-eq S→S') (compstate-eq* S'→*S'')
 
   comp-machine-transitions-correct : (M : Comp ε R₀) → ⟦ ⟨ M ╎ ∅ ╎ ◻ ⟩ ⟧ᶜꟴ ≡ ⟦ proj₁ (eval M) ⟧ᶜꟴ
   comp-machine-transitions-correct M = compstate-eq* (proj₁ (proj₂ (proj₂ (proj₂ (eval M)))))
