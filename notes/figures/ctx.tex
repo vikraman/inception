@@ -1,0 +1,65 @@
+\begin{figure}[h]
+\fbox{
+\begin{minipage}{0.97\textwidth} % TODO
+\vspace{10pt}
+\centering
+\begin{minipage}{0.9\textwidth}
+\centering
+\begin{subfigure}{0.4\textwidth}
+    \begin{align*}
+      \text{Types:} && \X \,,\, \Y \,,\, \Z  &:=\; \gls{1} \mid \X \glsop{Rightarrow} \Y \mid \X \glsop{times} \Y \mid \gls{L}\\
+      \text{Contexts:} && \GAMMA \,,\, \DELTA &:=\; \gls{varepsilon} \mid \GAMMA , \X\\
+      \text{Variables:} && \gls{ell} \,,\, \x \,,\, \y \,,\, \z &:=\; \gls{new} \mid \gls{old} ( \x )
+    \end{align*}
+    \caption{Grammar}
+    \label{fig:first}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.4\textwidth}
+    \begin{align*}
+      \\
+      \frac{}{\gls{new} \MEMi \X \MEMii \GAMMA , \X}
+      && \frac{\x \MEMi \X \MEMii \GAMMA}{\gls{old}(\x) \MEMi \X \MEMii \GAMMA , \Y}
+    \end{align*}
+    \caption{Typing rules for membership}
+    \label{fig:second}
+\end{subfigure}
+\hfill
+\vspace{20pt}
+\hfill
+\begin{subfigure}{0.3\textwidth}
+    \begin{align*}
+      {\LSEM \gls{1} \RSEM}_{\gls{T}} &= \gls{top}\\
+      {\LSEM \X \glsop{times} \Y \RSEM}_{\gls{T}} &= {\LSEM \X \RSEM}_{\gls{T}} \glsop{times} {\LSEM \Y \RSEM}_{\gls{T}}\\
+      {\LSEM \X \glsop{Rightarrow} \Y \RSEM}_{\gls{T}} &= {\LSEM \X \RSEM}_{\gls{T}} \glsop{Rightarrow} {\gls{T}}{\LSEM \Y \RSEM}_{\gls{T}}\\
+      {\LSEM \gls{L} \RSEM}_{\gls{T}} &= \gls{V}
+    \end{align*}
+    \caption{Interpretation of types as presheaves in ${\gls{Set}}^{\gls{bF}}$}
+    \label{fig:third}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.25\textwidth}
+    \begin{align*}
+      \\
+      {\LSEM \gls{varepsilon} \RSEM}_{\gls{T}} &= \gls{top}\\
+      {\LSEM \GAMMA, \X \RSEM}_{\gls{T}} &= {\LSEM \GAMMA \RSEM}_{\gls{T}} \glsop{times} {\LSEM \X \RSEM}_{\gls{T}}\\
+    \end{align*}
+    \caption{Interpretation of contexts as presheaves in ${\gls{Set}}^{\gls{bF}}$}
+    \label{fig:fourth}
+\end{subfigure}
+\hfill
+\begin{subfigure}{0.25\textwidth}
+    \begin{align*}
+      {\LSEM \gls{new} \RSEM}_{\gls{T}} &= \PIii\\
+      {\LSEM \gls{old}(\x) \RSEM}_{\gls{T}} &= {\LSEM \x \RSEM}_{\gls{T}} \glsop{circ} \PIi\\
+    \end{align*}
+    \caption{Interpretation of variables as morphisms ${\LSEM \GAMMA \RSEM}_{\gls{T}} \xrightarrow{{\LSEM \x \RSEM}_{\gls{T}}} {\LSEM \X \RSEM}_{\gls{T}}$ in ${\gls{Set}}^{\gls{bF}}$}
+    \label{fig:fifth}
+\end{subfigure}
+\end{minipage}
+\vspace{10pt}
+\end{minipage}
+}        
+\caption{Types, contexts and variables (with \gls{T} a monad on ${\gls{Set}}^{\gls{bF}}$)}
+\label{fig:ctx}
+\end{figure}

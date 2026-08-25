@@ -1,0 +1,97 @@
+\begin{figure}[h]
+\fbox{
+\begin{minipage}{0.97\textwidth}
+\vspace{10pt}
+\centering
+\begin{minipage}{0.95\textwidth}
+\centering
+\begin{subfigure}{0.95\textwidth}
+    \begin{align*}
+      \text{Pure terms:} && \gls{W} &:=\; \x \mid \gls{ast} \mid \gls{lam} ( \gls{M} ) \mid \gls{pair} ({\gls{W}}_1 , {\gls{W}}_2) \mid \gls{pmp} ( {\gls{W}}_1 , {\gls{W}}_2 ) \mid \gls{ell}\\
+      \text{Effectful terms / computations:} && \gls{M} &:=\; \gls{return} (\gls{W}) \mid \gls{push} ({\gls{M}}_1 , {\gls{M}}_2) \mid \gls{app} ({\gls{W}}_1 , {\gls{W}}_2) \mid \\
+                                             &&& \quad\quad \gls{var} (\gls{W}) \mid \gls{sub} ({\gls{M}}_1, {\gls{M}}_2) \mid \gls{pmc} ( {\gls{W}}_1 , {\gls{W}}_2 )
+    \end{align*}
+    \caption{Grammar for terms}
+    \label{fig:term-a}
+\end{subfigure}
+
+\hfill
+\begin{subfigure}{0.95\textwidth}
+    \begin{align*}
+       \frac{\x : \X \in \GAMMA}{\GAMMA \PDASHi \x \PDASHii \X}
+      && \frac{\GAMMA , \X \CDASHi \gls{M} \CDASHii \Y}{\GAMMA \PDASHi \gls{lam} ( \gls{M} ) \PDASHii \X \glsop{Rightarrow} \Y}
+      && \frac{\GAMMA \PDASHi {\gls{W}}_1 \PDASHii {\X}_1 \quad \GAMMA \PDASHi {\gls{W}}_2 \PDASHii {\X}_2}{\GAMMA \PDASHi \gls{pair} ( {\gls{W}}_1 , {\gls{W}}_2 ) \PDASHii {\X}_1 \glsop{times} {\X}_2}
+    \end{align*}
+    \begin{align*}
+      \frac{\GAMMA \PDASHi {\gls{W}}_1 \PDASHii \X \glsop{times} \Y \quad \GAMMA, \X , \Y \PDASHi {\gls{W}}_2 \PDASHii \Z}{\GAMMA \PDASHi \gls{pmp} ( {\gls{W}}_1 , {\gls{W}}_2 ) \PDASHii \Z}
+      && \frac{}{\GAMMA \PDASHi \gls{ast} \PDASHii \gls{1}}
+    \end{align*}
+    \caption{Typing rules for pure terms}
+    \label{fig:term-b}
+\end{subfigure}
+
+\hfill
+\begin{subfigure}{0.95\textwidth}
+    \begin{align*}
+      \frac{\GAMMA \PDASHi \gls{W} \PDASHii \X}{\GAMMA \CDASHi \gls{return} (\gls{W}) \CDASHii \X}
+      && \frac{\GAMMA \CDASHi {\gls{M}}_1 \CDASHii \X \quad \GAMMA, \X \CDASHi {\gls{M}}_2 \CDASHii \Y}{\GAMMA \CDASHi \gls{push} ({\gls{M}}_1 , {\gls{M}}_2) \CDASHii \Y}
+      && \frac{\GAMMA \PDASHi {\gls{W}}_1 \PDASHii \X \glsop{Rightarrow} \Y \quad \GAMMA \PDASHi {\gls{W}}_2 \PDASHii \X}{\GAMMA \CDASHi \gls{app}({\gls{W}}_1, {\gls{W}}_2) \CDASHii \Y}
+    \end{align*}
+    \begin{align*}
+      \frac{\GAMMA \PDASHi \gls{W} \PDASHii \gls{L}}{\GAMMA \CDASHi {\gls{var}}_X (\gls{W}) \CDASHii \X}
+      && \frac{\GAMMA , \gls{L} \CDASHi {\gls{M}}_1 \CDASHii \X \quad \GAMMA \CDASHi {\gls{M}}_2 \CDASHii \X}{\GAMMA \CDASHi {\gls{sub}}_{\X} ({\gls{M}}_1 , {\gls{M}}_2) \CDASHii \X}
+      && \frac{\GAMMA \PDASHi \gls{W} : \X \gls{times} \Y \quad \GAMMA, \X , \Y \CDASHi \gls{M} \CDASHii \Z}{\GAMMA \CDASHi \gls{pmc}(\gls{W}, \gls{M}) \CDASHii \Z}
+    \end{align*}
+    \caption{Typing rules for effectful terms / computations}
+    \label{fig:term-c}
+\end{subfigure}
+
+\hfill
+\begin{subfigure}{0.95\textwidth}
+  \begin{align*}
+    {\LSEM \GAMMA \PDASHi \x \PDASHii \X \RSEM}_{\gls{T}} &= {\LSEM \x \RSEM}_{\gls{T}} \\
+    {\LSEM \GAMMA \PDASHi \gls{lam} (\gls{M}) \PDASHii \X \glsop{Rightarrow} \Y \RSEM}_{\gls{T}} &= \gls{lambda} {\LSEM \gls{M} \RSEM}_{\gls{T}} \\
+    {\LSEM \GAMMA \PDASHi \gls{pair} ({\gls{W}}_1, {\gls{W}}_2) \PDASHii \X \gls{times} \Y \RSEM}_{\gls{T}} &= \LANGLE {\LSEM {\gls{W}}_1 \RSEM}_{\gls{T}} \CANGLE {\LSEM {\gls{W}}_2 \RSEM}_{\gls{T}} \RANGLE \\
+    {\LSEM \GAMMA \PDASHi \gls{pmp}({\gls{W}}_1 , {\gls{W}}_2) \PDASHii \X \RSEM}_{\gls{T}} &= {\LSEM {\gls{W}_2} \RSEM}_{\gls{T}} \glsop{circ} \gls{alpha} \glsop{circ} \LANGLE \gls{id} \CANGLE {\LSEM {\gls{W}}_1 \RSEM}_{\gls{T}} \RANGLE \\
+    {\LSEM \GAMMA \PDASHi \gls{ast} \PDASHii \gls{1} \RSEM}_{\gls{T}} &= \gls{top}
+  \end{align*}
+    \caption{Interpretation of pure terms $\GAMMA \PDASHi \gls{W} \PDASHii \X$ as morphisms ${\LSEM \GAMMA \RSEM}_{\gls{T}} \xrightarrow{{\LSEM \gls{W} \RSEM}_{\gls{T}}} {\LSEM \X \RSEM}_{\gls{T}}$ in ${\gls{Set}}^{\gls{bF}}$}
+    \label{fig:term-d}
+\end{subfigure}
+
+\hfill
+\begin{subfigure}{0.95\textwidth}
+    \begin{align*}
+      {\LSEM \GAMMA \CDASHi \gls{return} (\gls{W}) \CDASHii \X \RSEM}_{\gls{S}} &= \gls{eta} \glsop{circ} {\LSEM \gls{W} \RSEM}_{\gls{S}} \\
+      {\LSEM \GAMMA \CDASHi \gls{push} ({\gls{W}}_1, {\gls{W}}_2) \CDASHii \X\RSEM}_{\gls{S}} &= {\LSEM {\gls{W}}_2 \RSEM}_{\gls{S}}^{\gls{sharp}} \glsop{circ} \gls{str} \glsop{circ} \LANGLE \gls{id} \CANGLE {\LSEM {\gls{W}}_1 \RSEM}_{\gls{S}} \RANGLE\\
+      {\LSEM \GAMMA \CDASHi \gls{app}({\gls{W}}_1 , {\gls{W}}_2) \CDASHii \X \RSEM}_{\gls{S}} &= \gls{ev} \glsop{circ} \LANGLE {\LSEM {\gls{W}}_1 \RSEM}_{\gls{S}} \CANGLE {\LSEM {\gls{W}}_2 \RSEM}_{\gls{S}} \RANGLE\\
+      {\LSEM \GAMMA \CDASHi \gls{var}(\gls{W}) \CDASHii \X \RSEM}_{\gls{S}} &= {\gls{var}}_{\X} \glsop{circ} {\LSEM \gls{W} \RSEM}_{\gls{S}}\\
+      {\LSEM \GAMMA \CDASHi \gls{sub}({\gls{W}}_1 , {\gls{W}}_2) \CDASHii \X \RSEM}_{\gls{S}} &= \gls{sub}_{\X} \glsop{circ} \LANGLE \gls{lambda} {\LSEM {\gls{W}}_1 \RSEM}_{\gls{S}} \CANGLE {\LSEM {\gls{W}}_2 \RSEM}_{\gls{S}} \RANGLE\\
+      {\LSEM \GAMMA \CDASHi \CDASHi (\gls{W} , {\gls{M}}) \CDASHii \X \RSEM}_{\gls{S}} &= {\LSEM {\gls{M}} \RSEM}_{\gls{S}} \glsop{circ} \gls{alpha} \glsop{circ} \LANGLE \gls{id} \CANGLE \LSEM \gls{W} \RSEM \RANGLE
+    \end{align*}
+    \caption{Interpretation of computations $\GAMMA \CDASHi \gls{M} \CDASHii \X$ as morphisms ${\LSEM \GAMMA \RSEM}_{\gls{S}} \xrightarrow{{\LSEM \gls{M} \RSEM}_{\gls{S}}} \gls{S}\LSEM \X \RSEM$ in ${\gls{Set}}^{\gls{bF}}$}
+    \label{fig:term-e}
+\end{subfigure}
+
+\hfill
+\begin{subfigure}{\textwidth}
+    \begin{align*}
+      {\LSEM \GAMMA \CDASHi \gls{return} (\gls{W}) \CDASHii \X \RSEM}_{\gls{KV}} \;\sGAMMA\; \gls{k} &= \gls{k} \;({\LSEM \gls{W} \RSEM}_{\gls{KV}}\; \sGAMMA)\\
+      {\LSEM \GAMMA \CDASHi \gls{push} ({\gls{W}}_1, {\gls{W}}_2) : \X\RSEM}_{\gls{KV}} \;\sGAMMA \; {\gls{k}} &= ({\LSEM {\gls{W}}_2 \RSEM}_{\gls{KV}}^{\gls{sharp}} \glsop{circ} \gls{str} \glsop{circ} \LANGLE \sGAMMA \CANGLE {\LSEM {\gls{W}}_1 \RSEM}_{\gls{KV}} \;\sGAMMA \RANGLE) \; {\gls{k}}\\
+      {\LSEM \GAMMA \CDASHi \gls{app}({\gls{W}}_1 , {\gls{W}}_2) \CDASHii \X \RSEM}_{\gls{KV}} \; \sGAMMA \; \gls{k} &= (\gls{ev} \glsop{circ} \LANGLE {\LSEM {\gls{W}}_1 \RSEM}_{\gls{KV}} \CANGLE {\LSEM {\gls{W}}_2 \RSEM}_{\gls{KV}} \RANGLE) \; \sGAMMA \; \gls{k}\\
+      {\LSEM \GAMMA \CDASHi \gls{var}(\gls{W}) \CDASHii \X \RSEM}_{\gls{KV}} \; \sGAMMA \; \gls{k} &= {\LSEM \gls{W} \RSEM}_{\gls{KV}} \; \sGAMMA\\
+      {\LSEM \GAMMA \CDASHi \gls{sub}({\gls{M}}_1 , {\gls{M}}_2) \CDASHii \X \RSEM}_{\gls{KV}} &= {\LSEM {\gls{M}}_1 \RSEM}_{\gls{KV}} \; (\sGAMMA , {\LSEM {\gls{M}}_2 \RSEM}_{\gls{KV}} \, \sGAMMA \, \gls{k}) \; \gls{k}\\
+      {\LSEM \GAMMA \CDASHi \gls{pmc}({\gls{W}} , \gls{M}) \CDASHii \X \RSEM}_{\gls{KV}} \; \sGAMMA \; \gls{k} &= ({\LSEM \gls{M} \RSEM}_{\gls{KV}} \glsop{circ} \gls{alpha} \glsop{circ} \LANGLE \sGAMMA , {\LSEM \gls{W} \RSEM}_{\gls{KV}} \RANGLE) \; \gls{k}
+    \end{align*}
+    \caption{Interpretation of computations $\GAMMA \CDASHi \gls{M} \CDASHii \X$ as morphisms ${\LSEM \GAMMA \RSEM}_{\gls{KV}} \xrightarrow{{\LSEM \gls{M} \RSEM}_{\gls{KV}}} \gls{KV}\LSEM \X \RSEM$ in ${\gls{Set}}^{\gls{bF}}$}
+    \label{fig:term-f}
+\end{subfigure}
+
+\end{minipage}
+\vspace{10pt}
+\end{minipage}
+}
+
+\caption{Terms (with \gls{T} a monad on ${\gls{Set}}^{\gls{bF}}$)}
+\label{fig:ctx}
+\end{figure}

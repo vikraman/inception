@@ -1,0 +1,135 @@
+\usepackage{longtable}
+\usepackage[automake,xindy,nomain,symbols,sort=def]{glossaries-extra}
+
+\newglossarystyle{long0}{%
+% put the glossary in a longtable environment:
+\renewenvironment{theglossary}%
+{\begin{longtable}{lp{\glsdescwidth}p{\glspagelistwidth}}}%
+{\end{longtable}}%
+% Set the table's header:
+\renewcommand*{\glossaryheader}{%
+\bfseries Symbol & \bfseries Description & \bfseries Page List
+\\\endhead}%
+% No heading between groups:
+\renewcommand*{\glsgroupheading}[1]{}%
+% top level (level 0) entries displayed in a row optionally numb
+\renewcommand*{\glossentry}[2]{%
+%\glsentryitem{##1}% Entry number if required
+%\glstarget{##1}{\glossentryname{##1}}% Symbol
+\glstarget{##1}{\glossentrysymbol{##1}}
+& \glossentrydesc{##1}% Description
+& ##2% Page list
+\tabularnewline % end of row
+}%
+% Similarly for sub-entries (no sub-entry numbers)
+\renewcommand*{\subglossentry}[3]{%
+% ignoring first argument (sub-level)
+\glstarget{##2}{\glossentryname{##2}}% Symbol
+& \glossentrydesc{##2}% Description
+& ##3% Page list
+\tabularnewline % end of row
+}%
+% Nothing between groups:
+\renewcommand*{\glsgroupskip}{}%
+}
+
+\makeglossaries
+
+% Numbers
+\glsxtrnewsymbol[description={Unit type},symbol={$1$}]{1}{\ensuremath{1}}
+
+% Latin
+\glsxtrnewsymbol[description={Generic object of a category},symbol={$A$, $B$, $C$},user1={\ensuremath{A}},user2={\ensuremath{B}},user3={\ensuremath{C}}]{ABC}{\ensuremath{A}}
+\glsxtrnewsymbol[description={Category of finite cardinals and functions},symbol={$\mathbb{F}$}]{bF}{\ensuremath{\mathbb{F}}}
+\glsxtrnewsymbol[description={Continuation monad ${\gls{V}}^{{\gls{V}}^-}$},symbol={$K_V$}]{KV}{\ensuremath{K_V}}
+\glsxtrnewsymbol[description={Morphism $\gls{ABC} \to \gls{V}$ in ${\gls{Set}}^{\gls{bF}}$ for some object $\gls{ABC}$},symbol={$k$}]{k}{\ensuremath{k}}
+\glsxtrnewsymbol[description={Label type},symbol={$L$}]{L}{\ensuremath{L}}
+\glsxtrnewsymbol[description={Label variable},symbol={$\ell$}]{ell}{\ensuremath{\ell}}
+\glsxtrnewsymbol[description={Effectful term / Computation},symbol={$M$}]{M}{\ensuremath{M}}
+\glsxtrnewsymbol[description={Substitution monad},symbol={$S$}]{S}{\ensuremath{S}}
+\glsxtrnewsymbol[description={Generic monad},symbol={$T$}]{T}{\ensuremath{T}}
+\glsxtrnewsymbol[description={Variable presheaf $\gls{Y}(\gls{top})$ in ${\gls{Set}}^{\gls{bF}}$},symbol={$V$}]{V}{\ensuremath{V}}
+\glsxtrnewsymbol[description={Pure term},symbol={$W$}]{W}{\ensuremath{W}}
+\glsxtrnewsymbol[description={Type},symbol={$X$, $Y$, $Z$},user1={\ensuremath{X}},user2={\ensuremath{Y}},user3={\ensuremath{Z}}]{XYZ}{\ensuremath{X}}
+\glsxtrnewsymbol[description={Variable},symbol={$x$, $y$, $z$},user1={\ensuremath{x}},user2={\ensuremath{y}},user3={\ensuremath{z}}]{xyz}{\ensuremath{x}}
+\glsxtrnewsymbol[description={Yoneda embedding},symbol={$\mathcal{Y}$}]{Y}{\ensuremath{\mathcal{Y}}}
+
+% Greek
+\glsxtrnewsymbol[description={Associator for Cartesian products},symbol={$\alpha$}]{alpha}{\ensuremath{\alpha}}
+\glsxtrnewsymbol[description={Context},symbol={$\Gamma$, $\Delta$, $\Psi$},user1={\ensuremath{\Gamma}},user2={\ensuremath{\Delta}},user3={\ensuremath{\Psi}}]{CTX}{\ensuremath{\Gamma}}
+\glsxtrnewsymbol[description={Environment},symbol={$\gamma$, $\delta$, $\psi$},user1={\ensuremath{\gamma}},user2={\ensuremath{\delta}},user3={\ensuremath{\psi}}]{ENV}{\ensuremath{\gamma}}
+\glsxtrnewsymbol[description={Empty context},symbol={$\varepsilon$}]{varepsilon}{\ensuremath{\varepsilon}}
+\glsxtrnewsymbol[description={Currying of a morphism},symbol={$\lambda$}]{lambda}{\ensuremath{\lambda}}
+\glsxtrnewsymbol[description={Unit of a monad},symbol={$\eta$}]{eta}{\ensuremath{\eta}}
+
+% Words
+\glsxtrnewsymbol[description={Application operator},symbol={$\textsf{app}(\_,\_)$}]{app}{\textsf{app}}
+\glsxtrnewsymbol[description={Evaluation morphism},symbol={$\textsf{ev}$}]{ev}{\textsf{ev}}
+\glsxtrnewsymbol[description={Identity morphism},symbol={\textsf{id}}]{id}{\textsf{id}}
+\glsxtrnewsymbol[description={Lambda abstraction operator},symbol={$\textsf{lam}(\_)$}]{lam}{\textsf{lam}}
+\glsxtrnewsymbol[description={De Bruijn index $0$},symbol={\textsf{new}}]{new}{\textsf{new}}
+\glsxtrnewsymbol[description={Successor of a De Bruijn index},symbol={$\textsf{old}(\_)$}]{old}{\textsf{old}}
+\glsxtrnewsymbol[description={Pair of two pure terms},symbol={$\textsf{pair}(\_,\_)$}]{pair}{\textsf{pair}}
+\glsxtrnewsymbol[description={Pattern match operator for computations},symbol={${\textsf{pm}}^{\textsf{c}}(\_,\_)$}]{pmc}{{\textsf{pm}}^{\textsf{c}}}
+\glsxtrnewsymbol[description={Pattern match operator for pure terms},symbol={${\textsf{pm}}^{\textsf{p}}(\_,\_)$}]{pmp}{{\textsf{pm}}^{\textsf{p}}}
+\glsxtrnewsymbol[description={Push / sequencing operator},symbol={$\textsf{push}(\_,\_)$}]{push}{\textsf{push}}
+\glsxtrnewsymbol[description={Return operator},symbol={$\textsf{return}(\_)$}]{return}{\textsf{return}}
+\glsxtrnewsymbol[description={Category of sets},symbol={$\textsf{Set}$}]{Set}{\textsf{Set}}
+\glsxtrnewsymbol[description={Cartesian strength},symbol={$\textsf{str}$}]{str}{\textsf{str}}
+\glsxtrnewsymbol[description={Substitution / branch operator},symbol={${\textsf{sub}}_{\_}(\_,\_)$}]{sub}{\textsf{sub}}
+\glsxtrnewsymbol[description={Var / jump operator},symbol={${\textsf{var}}_{\_}(\_)$}]{var}{\textsf{var}}
+
+% Symbols
+\glsxtrnewsymbol[description={Pure term of unit type},symbol={$\ast$}]{ast}{\ensuremath{\ast}}
+\glsxtrnewsymbol[description={Terminal object},symbol={$\top$}]{top}{\ensuremath{\top}}
+\glsxtrnewsymbol[description={Composition of morphisms},symbol={$\_\circ\_$}]{circ}{\ensuremath{\circ}}
+\glsxtrnewsymbol[description={First and second projection, respectively},symbol={$\pi_1, \pi_2$},user1={\ensuremath{\pi_1}},user2={\ensuremath{\pi_2}}]{pi}{\ensuremath{\pi}}
+\glsxtrnewsymbol[description={Function type},symbol={$\_\Rightarrow\_$}]{Rightarrow}{\ensuremath{\Rightarrow}}
+\glsxtrnewsymbol[description={Product type},symbol={$\_\times\_$}]{times}{\ensuremath{\times}}
+\glsxtrnewsymbol[description={Typing judgement for pure terms},symbol={$\_\vdash^\textsf{p}\_:\_$}, user1={\ensuremath{\vdash^\textsf{p}}}, user2={\ensuremath{:}}]{pdash}{\ensuremath{\vdash^\textsf{p}}}
+\glsxtrnewsymbol[description={Typing judgement for computations},symbol={$\_\vdash^\textsf{c}\_:\_$}, user1={\ensuremath{\vdash^\textsf{c}}}, user2={\ensuremath{:}}]{cdash}{\ensuremath{\vdash^\textsf{c}}}
+\glsxtrnewsymbol[description={Membership judgement},symbol={$\_:\_\in\_$},user1={\ensuremath{:}},user2={\ensuremath{\in}}]{mem}{\ensuremath{\in}}
+\glsxtrnewsymbol[description={Interpretation of types, contexts and variables (\Cref{fig:ctx})},symbol={${\llbracket\_\rrbracket}_{\_}, \llbracket\_\rrbracket$}, user1={\ensuremath{\llbracket}},user2={\ensuremath{\rrbracket}}]{sem}{\ensuremath{\llbracket}}
+\glsxtrnewsymbol[description={Pairing of two morphisms},symbol={$\langle\_,\_\rangle$},user1={\ensuremath{\langle}},user2={\ensuremath{,}},user3={\ensuremath{\rangle}}]{angle}{\ensuremath{\langle\_,\_\rangle}}
+\glsxtrnewsymbol[description={Lifting of a monad morphism},symbol={${\_}^{\sharp}$}]{sharp}{\ensuremath{\sharp}}
+
+\newcommand\A{\glshyperlink[\glsentryuseri{ABC}]{ABC}\glsadd{ABC}}
+\newcommand\B{\glshyperlink[\glsentryuserii{ABC}]{ABC}\glsadd{ABC}}
+\newcommand\C{\glshyperlink[\glsentryuseriii{ABC}]{ABC}\glsadd{ABC}}
+
+\newcommand\X{\glshyperlink[\glsentryuseri{XYZ}]{XYZ}\glsadd{XYZ}}
+\newcommand\Y{\glshyperlink[\glsentryuserii{XYZ}]{XYZ}\glsadd{XYZ}}
+\newcommand\Z{\glshyperlink[\glsentryuseriii{XYZ}]{XYZ}\glsadd{XYZ}}
+
+\newcommand\x{\glshyperlink[\glsentryuseri{xyz}]{xyz}\glsadd{xyz}}
+\newcommand\y{\glshyperlink[\glsentryuserii{xyz}]{xyz}\glsadd{xyz}}
+\newcommand\z{\glshyperlink[\glsentryuseriii{xyz}]{xyz}\glsadd{xyz}}
+
+\newcommand\GAMMA{\glshyperlink[\glsentryuseri{CTX}]{CTX}\glsadd{CTX}}
+\newcommand\DELTA{\glshyperlink[\glsentryuserii{CTX}]{CTX}\glsadd{CTX}}
+\newcommand\PSI{\glshyperlink[\glsentryuseriii{CTX}]{CTX}\glsadd{CTX}}
+
+\newcommand\sGAMMA{\glshyperlink[\glsentryuseri{ENV}]{ENV}\glsadd{ENV}}
+\newcommand\sDELTA{\glshyperlink[\glsentryuserii{ENV}]{ENV}\glsadd{ENV}}
+\newcommand\sPSI{\glshyperlink[\glsentryuseriii{ENV}]{ENV}\glsadd{ENV}}
+
+\newcommand\LSEM{\glshyperlink[\glsentryuseri{sem}]{sem}\glsadd{sem}}
+\newcommand\RSEM{\glshyperlink[\glsentryuserii{sem}]{sem}\glsadd{sem}}
+
+\newcommand\PIi{\glshyperlink[\glsentryuseri{pi}]{pi}\glsadd{pi}}
+\newcommand\PIii{\glshyperlink[\glsentryuserii{pi}]{pi}\glsadd{pi}}
+
+\newcommand\MEMi{\mathop{\glshyperlink[\glsentryuseri{mem}]{mem}\glsadd{mem}}}
+\newcommand\MEMii{\mathop{\glshyperlink[\glsentryuserii{mem}]{mem}\glsadd{mem}}}
+
+\newcommand\PDASHi{\mathop{\glshyperlink[\glsentryuseri{pdash}]{pdash}\glsadd{pdash}}}
+\newcommand\PDASHii{\mathop{\glshyperlink[\glsentryuserii{pdash}]{pdash}\glsadd{pdash}}}
+
+\newcommand\CDASHi{\mathop{\glshyperlink[\glsentryuseri{cdash}]{cdash}\glsadd{cdash}}}
+\newcommand\CDASHii{\mathop{\glshyperlink[\glsentryuserii{cdash}]{cdash}\glsadd{cdash}}}
+
+\newcommand\LANGLE{\mathop{\glshyperlink[\glsentryuseri{angle}]{angle}\glsadd{angle}}}
+\newcommand\CANGLE{\mathop{\glshyperlink[\glsentryuserii{angle}]{angle}\glsadd{angle}}}
+\newcommand\RANGLE{\mathop{\glshyperlink[\glsentryuseriii{angle}]{angle}\glsadd{angle}}}
+
+\newcommand\glsop[1]{\mathop{\gls{#1}}}
