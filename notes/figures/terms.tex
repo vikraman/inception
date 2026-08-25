@@ -19,11 +19,11 @@
 \begin{subfigure}{0.95\textwidth}
     \begin{align*}
        \frac{\x : \X \in \GAMMA}{\GAMMA \PDASHi \x \PDASHii \X}
-      && \frac{\GAMMA , \X \CDASHi \gls{M} \CDASHii \Y}{\GAMMA \PDASHi \gls{lam} ( \gls{M} ) \PDASHii \X \glsop{Rightarrow} \Y}
+      && \frac{\GAMMA \glsbin{bullet} \X \CDASHi \gls{M} \CDASHii \Y}{\GAMMA \PDASHi \gls{lam} ( \gls{M} ) \PDASHii \X \glsop{Rightarrow} \Y}
       && \frac{\GAMMA \PDASHi {\gls{W}}_1 \PDASHii {\X}_1 \quad \GAMMA \PDASHi {\gls{W}}_2 \PDASHii {\X}_2}{\GAMMA \PDASHi \gls{pair} ( {\gls{W}}_1 , {\gls{W}}_2 ) \PDASHii {\X}_1 \glsop{times} {\X}_2}
     \end{align*}
     \begin{align*}
-      \frac{\GAMMA \PDASHi {\gls{W}}_1 \PDASHii \X \glsop{times} \Y \quad \GAMMA, \X , \Y \PDASHi {\gls{W}}_2 \PDASHii \Z}{\GAMMA \PDASHi \gls{pmp} ( {\gls{W}}_1 , {\gls{W}}_2 ) \PDASHii \Z}
+      \frac{\GAMMA \PDASHi {\gls{W}}_1 \PDASHii \X \glsop{times} \Y \quad \GAMMA \glsbin{bullet} \X \glsbin{bullet} \Y \PDASHi {\gls{W}}_2 \PDASHii \Z}{\GAMMA \PDASHi \gls{pmp} ( {\gls{W}}_1 , {\gls{W}}_2 ) \PDASHii \Z}
       && \frac{}{\GAMMA \PDASHi \gls{ast} \PDASHii \gls{1}}
     \end{align*}
     \caption{Typing rules for pure terms}
@@ -34,13 +34,13 @@
 \begin{subfigure}{0.95\textwidth}
     \begin{align*}
       \frac{\GAMMA \PDASHi \gls{W} \PDASHii \X}{\GAMMA \CDASHi \gls{return} (\gls{W}) \CDASHii \X}
-      && \frac{\GAMMA \CDASHi {\gls{M}}_1 \CDASHii \X \quad \GAMMA, \X \CDASHi {\gls{M}}_2 \CDASHii \Y}{\GAMMA \CDASHi \gls{push} ({\gls{M}}_1 , {\gls{M}}_2) \CDASHii \Y}
+      && \frac{\GAMMA \CDASHi {\gls{M}}_1 \CDASHii \X \quad \GAMMA \glsbin{bullet} \X \CDASHi {\gls{M}}_2 \CDASHii \Y}{\GAMMA \CDASHi \gls{push} ({\gls{M}}_1 , {\gls{M}}_2) \CDASHii \Y}
       && \frac{\GAMMA \PDASHi {\gls{W}}_1 \PDASHii \X \glsop{Rightarrow} \Y \quad \GAMMA \PDASHi {\gls{W}}_2 \PDASHii \X}{\GAMMA \CDASHi \gls{app}({\gls{W}}_1, {\gls{W}}_2) \CDASHii \Y}
     \end{align*}
     \begin{align*}
       \frac{\GAMMA \PDASHi \gls{W} \PDASHii \gls{L}}{\GAMMA \CDASHi {\gls{var}}_X (\gls{W}) \CDASHii \X}
-      && \frac{\GAMMA , \gls{L} \CDASHi {\gls{M}}_1 \CDASHii \X \quad \GAMMA \CDASHi {\gls{M}}_2 \CDASHii \X}{\GAMMA \CDASHi {\gls{sub}}_{\X} ({\gls{M}}_1 , {\gls{M}}_2) \CDASHii \X}
-      && \frac{\GAMMA \PDASHi \gls{W} : \X \gls{times} \Y \quad \GAMMA, \X , \Y \CDASHi \gls{M} \CDASHii \Z}{\GAMMA \CDASHi \gls{pmc}(\gls{W}, \gls{M}) \CDASHii \Z}
+      && \frac{\GAMMA \glsbin{bullet} \gls{L} \CDASHi {\gls{M}}_1 \CDASHii \X \quad \GAMMA \CDASHi {\gls{M}}_2 \CDASHii \X}{\GAMMA \CDASHi {\gls{sub}}_{\X} ({\gls{M}}_1 , {\gls{M}}_2) \CDASHii \X}
+      && \frac{\GAMMA \PDASHi \gls{W} : \X \gls{times} \Y \quad \GAMMA \glsbin{bullet} \X \glsbin{bullet} \Y \CDASHi \gls{M} \CDASHii \Z}{\GAMMA \CDASHi \gls{pmc}(\gls{W}, \gls{M}) \CDASHii \Z}
     \end{align*}
     \caption{Typing rules for effectful terms / computations}
     \label{fig:term-c}

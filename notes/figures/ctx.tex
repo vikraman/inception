@@ -8,7 +8,7 @@
 \begin{subfigure}{0.4\textwidth}
     \begin{align*}
       \text{Types:} && \X \,,\, \Y \,,\, \Z  &:=\; \gls{1} \mid \X \glsop{Rightarrow} \Y \mid \X \glsop{times} \Y \mid \gls{L}\\
-      \text{Contexts:} && \GAMMA \,,\, \DELTA &:=\; \gls{varepsilon} \mid \GAMMA , \X\\
+      \text{Contexts:} && \GAMMA \,,\, \DELTA &:=\; \gls{varepsilon} \mid \GAMMA \glsbin{bullet} \X\\
       \text{Variables:} && \gls{ell} \,,\, \x \,,\, \y \,,\, \z &:=\; \gls{new} \mid \gls{old} ( \x )
     \end{align*}
     \caption{Grammar}
@@ -19,7 +19,7 @@
     \begin{align*}
       \\
       \frac{}{\gls{new} \MEMi \X \MEMii \GAMMA , \X}
-      && \frac{\x \MEMi \X \MEMii \GAMMA}{\gls{old}(\x) \MEMi \X \MEMii \GAMMA , \Y}
+      && \frac{\x \MEMi \X \MEMii \GAMMA}{\gls{old}(\x) \MEMi \X \MEMii \GAMMA \glsbin{bullet} \Y}
     \end{align*}
     \caption{Typing rules for membership}
     \label{fig:second}
