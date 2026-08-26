@@ -15,8 +15,6 @@ open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; subst
 
 infixl 27 _،_
 infix  20 ⭭_
-infix  20 ∘_
-infix  20 ∙_
 infix  19 _∷_
 infixr 17 _→ᵖ⟨_⟩．
 infixr 15 _→ᵖ⟨_⟩_
@@ -67,7 +65,6 @@ data TermWithHole {Z₀ : Ty} : (X : Ty) → Set where
 
     ⇡ᴿ  : (W₁ : Value {Z₀ = Z₀} X₁) → (Wₕₒₗₑ : Pure Γ X₂) → (Env {Z₀ = Z₀} Γ) → TermWithHole (X₁ `× X₂)
 
-
 data IsEmpty : Set where
     non-empty : IsEmpty
     empty : IsEmpty
@@ -90,54 +87,51 @@ data PureStack {Z₀ : Ty} : IsEmpty → Ty → Set where
 
 data PureState {Z₀ : Ty} : Ty → Set where
 
-    ∘_ : PureStack {Z₀ = Z₀} non-empty Z₁ → PureState {Z₀ = Z₀} Z₁
-
-    ∙_ : PureStack {Z₀ = Z₀} non-empty Z₁ → PureState {Z₀ = Z₀} Z₁
+    ⟨_⟩ : PureStack {Z₀ = Z₀} non-empty Z₁ → PureState {Z₀ = Z₀} Z₁
 
 _⧺_ : {Z₀ : Ty} → PureStack {Z₀ = Z₀} b Z₁ → PureStack {Z₀ = Z₀} non-empty Z₁' → PureStack {Z₀ = Z₀} non-empty Z₁'
 □ ⧺ lower = lower
 (W ∷ upper) ⧺ lower = (W ∷ (upper ⧺ lower)) {↥ = 🗇}
 
 _⧻_ : {Z₀ : Ty} → (upper : PureState {Z₀ = Z₀} Z₁) → PureStack {Z₀ = Z₀} non-empty Z₁' → PureState {Z₀ = Z₀} Z₁'
-(∘ upper) ⧻ lower = ∘ (upper ⧺ lower)
-(∙ upper) ⧻ lower = ∙ (upper ⧺ lower)
+⟨ upper ⟩ ⧻ lower = ⟨ upper ⧺ lower ⟩
 
 data _→ᵖ_ {Z₀ : Ty} {Z₁ : Ty} : PureState {Z₀ = Z₀} Z₁ → PureState {Z₀ = Z₀} Z₁ → Set where
 
     ∘var  :    {i : Γ ∋ X} {γ : Env {Z₀ = Z₀} Γ} → {tail : PureStack {Z₀ = Z₀} b Z₁} → {↥ : BottomTypeEqualsNextType b X Z₁}
               ----------------------------------------------------------------
-                → ∘ ((⇡ (var i) γ ∷ tail) {↥ = ↥}) →ᵖ ∙ ((⭭ (lookup i γ) ∷ tail) {↥ = ↥})
+                → ⟨ (⇡ (var i) γ ∷ tail) {↥ = ↥} ⟩ →ᵖ ⟨ (⭭ (lookup i γ) ∷ tail) {↥ = ↥} ⟩
 
     ∘lam   :  {M : Comp (Γ ∙ X) Y} → {γ  : Env {Z₀ = Z₀} Γ} → {tail : PureStack {Z₀ = Z₀} b Z₁} → {↥ : BottomTypeEqualsNextType b (X `⇒ Y) Z₁}
               ---------------------------------------------------------------------------
-            →     ∘ ((⇡ (lam M) γ ∷ tail) {↥ = ↥}) →ᵖ ∙ ((⭭ (cloᵛ M γ) ∷ tail) {↥ = ↥})
+            →     ⟨ (⇡ (lam M) γ ∷ tail) {↥ = ↥} ⟩ →ᵖ ⟨ (⭭ (cloᵛ M γ) ∷ tail) {↥ = ↥} ⟩
 
     ∘pair  :  {γ : Env {Z₀ = Z₀} Γ} {W₁ : Pure Γ X₁} → {W₂ : Pure Γ X₂} → {tail : PureStack {Z₀ = Z₀} b Z₁} → {↥ : BottomTypeEqualsNextType b (X₁ `× X₂) Z₁}
               ---------------------------------------------------------------------------
-            →     ∘ ((⇡ (pair W₁ W₂) γ ∷ tail) {↥ = ↥}) →ᵖ ∘ ((⇡ W₁ γ ∷ ((⇡ᴸ W₁ W₂ γ ∷ tail) {↥ = ↥})) {↥ = 🗇})
+            →     ⟨ (⇡ (pair W₁ W₂) γ ∷ tail) {↥ = ↥} ⟩ →ᵖ ⟨ (⇡ W₁ γ ∷ ((⇡ᴸ W₁ W₂ γ ∷ tail) {↥ = ↥})) {↥ = 🗇} ⟩
 
     ∘pm    :  {γ : Env {Z₀ = Z₀} Γ} {W₁ : Pure Γ (X₁ `× X₂)} → {W₂ : Pure (Γ ∙ X₁ ∙ X₂) Y} → {tail : PureStack {Z₀ = Z₀} b Z₁ } → {↥ : BottomTypeEqualsNextType b Y Z₁}
               ---------------------------------------------------------------------------
-            →     ∘ ((⇡ (pm W₁ W₂) γ ∷ tail) {↥ = ↥}) →ᵖ ∘ ((⇡ W₁ γ ∷ (⇡ᴾᴹ W₁ W₂ γ ∷ tail) {↥ = ↥}) {↥ = 🗇})
+            →     ⟨ (⇡ (pm W₁ W₂) γ ∷ tail) {↥ = ↥} ⟩ →ᵖ ⟨ (⇡ W₁ γ ∷ (⇡ᴾᴹ W₁ W₂ γ ∷ tail) {↥ = ↥}) {↥ = 🗇} ⟩
 
     ∘unit  :  {γ  : Env {Z₀ = Z₀} Γ} → {tail : PureStack {Z₀ = Z₀} b Z₁} → {↥ : BottomTypeEqualsNextType b `Unit Z₁}
               ---------------------------------------------------------------------------
-            →     ∘ ((⇡ unit γ ∷ tail) {↥ = ↥}) →ᵖ ∙ ((⭭ unitᵛ ∷ tail) {↥ = ↥})
+            →     ⟨ (⇡ unit γ ∷ tail) {↥ = ↥} ⟩ →ᵖ ⟨ (⭭ unitᵛ ∷ tail) {↥ = ↥} ⟩
 
     ∙W∷l   :  {γ : Env {Z₀ = Z₀} Γ} {W₁' : Value X₁} → {W₁ : Pure Γ X₁} → {W₂ : Pure Γ X₂}
             → {tail : PureStack {Z₀ = Z₀} b Z₁} → {↥ : BottomTypeEqualsNextType b (X₁ `× X₂) Z₁}
               ---------------------------------------------------------------------------
-            →     ∙ ((⭭ W₁' ∷ ((⇡ᴸ W₁ W₂ γ ∷ tail) {↥ = ↥})) {↥ = 🗇}) →ᵖ ∘ ((⇡ W₂ γ ∷ ((⇡ᴿ W₁' W₂ γ ∷ tail) {↥ = ↥})) {↥ = 🗇})
+            →     ⟨ (⭭ W₁' ∷ ((⇡ᴸ W₁ W₂ γ ∷ tail) {↥ = ↥})) {↥ = 🗇} ⟩ →ᵖ ⟨ (⇡ W₂ γ ∷ ((⇡ᴿ W₁' W₂ γ ∷ tail) {↥ = ↥})) {↥ = 🗇} ⟩
 
     ∙W∷r   :  {γ : Env {Z₀ = Z₀} Γ} {W₂' : Value X₂} → {W₁' : Value X₁} → {W₂ : Pure Γ X₂}
             → {tail : PureStack {Z₀ = Z₀} b Z₁} → {↥ : BottomTypeEqualsNextType b (X₁ `× X₂) Z₁}
               ---------------------------------------------------------------------------
-            → ∙ ((⭭ W₂' ∷ ((⇡ᴿ W₁' W₂ γ ∷ tail) {↥ = ↥})) {↥ = 🗇}) →ᵖ ∙ ((⭭ pairᵛ W₁' W₂' ∷ tail) {↥ = ↥})
+            → ⟨ (⭭ W₂' ∷ ((⇡ᴿ W₁' W₂ γ ∷ tail) {↥ = ↥})) {↥ = 🗇} ⟩ →ᵖ ⟨ (⭭ pairᵛ W₁' W₂' ∷ tail) {↥ = ↥} ⟩
 
     ∙pair∷pm  :  {γ : Env {Z₀ = Z₀} Γ} {W₁' : Value X₁} → {W₂' : Value X₂} → {W₀ : Pure Γ (X₁ `× X₂)} → {W₃ : Pure (Γ ∙ X₁ ∙ X₂) Y}
             → {tail : PureStack {Z₀ = Z₀} b Z₁} → {↥ : BottomTypeEqualsNextType b Y Z₁}
               ---------------------------------------------------------------------------
-            →     ∙ ((⭭ pairᵛ W₁' W₂' ∷ ((⇡ᴾᴹ W₀ W₃ γ ∷ tail) {↥ = ↥})) {↥ = 🗇}) →ᵖ  ∘ ((⇡ W₃ (γ ، W₁' ، W₂') ∷ tail) {↥ = ↥})
+            →     ⟨ (⭭ pairᵛ W₁' W₂' ∷ ((⇡ᴾᴹ W₀ W₃ γ ∷ tail) {↥ = ↥})) {↥ = 🗇} ⟩ →ᵖ  ⟨ (⇡ W₃ (γ ، W₁' ، W₂') ∷ tail) {↥ = ↥} ⟩
 
 data _↠ᵛ_ {Z₀ Z₁ : Ty} : PureState {Z₀ = Z₀} Z₁ → PureState {Z₀ = Z₀} Z₁ → Set where
 
@@ -166,9 +160,8 @@ _⨾_ (F →ᵖ⟨ F>S₁ ⟩ S₁>>S₂) S₂>>T = F →ᵖ⟨ F>S₁ ⟩ (S₁
 record PureSteps {Z₀ : Ty} (W : Pure Γ X) (γ : Env {Z₀ = Z₀} Γ) : Set where
   field
     result : Value {Z₀ = Z₀} X
-    steps  : (∘ ((⇡ W γ ∷ □) {↥ = 🗆})) ↠ᵛ (∙ ((⭭ result ∷ □) {↥ = 🗆}))
+    steps  : ⟨ ((⇡ W γ ∷ □) {↥ = 🗆}) ⟩ ↠ᵛ ⟨ ((⭭ result ∷ □) {↥ = 🗆}) ⟩
 open PureSteps
-
 
 proj₁-val : {Z₀ : Ty} → Value {Z₀ = Z₀} (X `× Y) → Value {Z₀ = Z₀} X
 proj₁-val (pairᵛ W₁ W₂) = W₁
@@ -180,8 +173,8 @@ pair-val : {Z₀ : Ty} → (W : Value {Z₀ = Z₀} (X `× Y)) → (pairᵛ (pro
 pair-val (pairᵛ W₁ W₂) = refl
 
 run-pure : {Z₀ : Ty} → (W : Pure Γ X) → (γ : Env {Z₀ = Z₀} Γ) → PureSteps W γ
-run-pure (var i) γ = record { result = lookup i γ ; steps = ∘ (⇡ (var i) γ ∷ □) →ᵖ⟨ ∘var ⟩． }
-run-pure (lam M) γ = record { result = cloᵛ M γ ; steps = ∘ (⇡ (lam M) γ ∷ □) →ᵖ⟨ ∘lam ⟩． }
+run-pure (var i) γ = record { result = lookup i γ ; steps = ⟨ ⇡ (var i) γ ∷ □ ⟩ →ᵖ⟨ ∘var ⟩． }
+run-pure (lam M) γ = record { result = cloᵛ M γ ; steps = ⟨ ⇡ (lam M) γ ∷ □ ⟩ →ᵖ⟨ ∘lam ⟩． }
 run-pure (pair W₁ W₂) γ =
   let
     IH₁ = run-pure W₁ γ
@@ -193,10 +186,10 @@ run-pure (pm W₁ W₂) γ =
   let
     IH₁ = run-pure W₁ γ
     IH₂ = run-pure W₂ (γ ، proj₁-val (result IH₁) ، proj₂-val (result IH₁))
-    ∙pair∷pm' = subst (λ x → ∙ ((⭭ x) ∷ (⇡ᴾᴹ W₁ W₂ γ ∷ □)) →ᵖ ∘ (⇡ W₂ (γ ، proj₁-val (result IH₁) ، proj₂-val (result IH₁)) ∷ □)) (pair-val (result IH₁)) ∙pair∷pm
+    ∙pair∷pm' = subst (λ x → ⟨ (⭭ x) ∷ (⇡ᴾᴹ W₁ W₂ γ ∷ □) ⟩ →ᵖ ⟨ ⇡ W₂ (γ ، proj₁-val (result IH₁) ، proj₂-val (result IH₁)) ∷ □ ⟩) (pair-val (result IH₁)) ∙pair∷pm
   in
   record { result = result IH₂ ; steps = _ →ᵖ⟨ ∘pm ⟩． ⨾ ⟪ steps IH₁ ⟫⧻ _ ⨾ _ →ᵖ⟨ ∙pair∷pm' ⟩． ⨾ steps IH₂ }
-run-pure unit γ = record { result = unitᵛ ; steps = ∘ (⇡ unit γ ∷ □) →ᵖ⟨ ∘unit ⟩． }
+run-pure unit γ = record { result = unitᵛ ; steps = ⟨ ⇡ unit γ ∷ □ ⟩ →ᵖ⟨ ∘unit ⟩． }
 
 determinismⱽ : {Z₀ : Ty} {S S' : PureState {Z₀ = Z₀} Z₁} → (S→S'₁ S→S'₂ : S →ᵖ S') → (S→S'₁ ≡ S→S'₂)
 determinismⱽ ∘var ∘var = refl
@@ -269,7 +262,6 @@ determinismꟲ ∘sub ∘sub = refl
 determinismꟲ ∘var ∘var = refl
 determinismꟲ ∘pm ∘pm = refl
 determinismꟲ ∘app ∘app = refl
-
 
 open Inception.Prelude.RTC renaming (_~>⟨_⟩_ to _→ᶜ⟨_⟩_)
 
