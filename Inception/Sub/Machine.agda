@@ -70,7 +70,7 @@ data IsEmpty : Set where
     empty : IsEmpty
 
 private variable
-    b b' : IsEmpty
+    ∅? : IsEmpty
 
 data BottomTypeEqualsNextType : IsEmpty → Ty → Ty → Set where
 
@@ -82,14 +82,14 @@ data PureStack {Z₀ : Ty} : IsEmpty → Ty → Set where
 
     □ : PureStack {Z₀ = Z₀} empty Z₁
 
-    _∷_ : TermWithHole {Z₀ = Z₀} X → (tail : PureStack {Z₀ = Z₀} b Z₁) → {↥ : BottomTypeEqualsNextType b X Z₁} → PureStack non-empty Z₁
+    _∷_ : TermWithHole {Z₀ = Z₀} X → (tail : PureStack {Z₀ = Z₀} ∅? Z₁) → {↥ : BottomTypeEqualsNextType ∅? X Z₁} → PureStack non-empty Z₁
 
 
 data PureState {Z₀ : Ty} : Ty → Set where
 
     ⟨_⟩ : PureStack {Z₀ = Z₀} non-empty Z₁ → PureState {Z₀ = Z₀} Z₁
 
-_⧺_ : {Z₀ : Ty} → PureStack {Z₀ = Z₀} b Z₁ → PureStack {Z₀ = Z₀} non-empty Z₁' → PureStack {Z₀ = Z₀} non-empty Z₁'
+_⧺_ : {Z₀ : Ty} → PureStack {Z₀ = Z₀} ∅? Z₁ → PureStack {Z₀ = Z₀} non-empty Z₁' → PureStack {Z₀ = Z₀} non-empty Z₁'
 □ ⧺ lower = lower
 (W ∷ upper) ⧺ lower = (W ∷ (upper ⧺ lower)) {↥ = 🗇}
 
@@ -98,38 +98,38 @@ _⧻_ : {Z₀ : Ty} → (upper : PureState {Z₀ = Z₀} Z₁) → PureStack {Z�
 
 data _→ᵖ_ {Z₀ : Ty} {Z₁ : Ty} : PureState {Z₀ = Z₀} Z₁ → PureState {Z₀ = Z₀} Z₁ → Set where
 
-    ∘var  :    {i : Γ ∋ X} {γ : Env {Z₀ = Z₀} Γ} → {tail : PureStack {Z₀ = Z₀} b Z₁} → {↥ : BottomTypeEqualsNextType b X Z₁}
+    ∘var  :    {i : Γ ∋ X} {γ : Env {Z₀ = Z₀} Γ} → {tail : PureStack {Z₀ = Z₀} ∅? Z₁} → {↥ : BottomTypeEqualsNextType ∅? X Z₁}
               ----------------------------------------------------------------
                 → ⟨ (⇡ (var i) γ ∷ tail) {↥ = ↥} ⟩ →ᵖ ⟨ (⭭ (lookup i γ) ∷ tail) {↥ = ↥} ⟩
 
-    ∘lam   :  {M : Comp (Γ ∙ X) Y} → {γ  : Env {Z₀ = Z₀} Γ} → {tail : PureStack {Z₀ = Z₀} b Z₁} → {↥ : BottomTypeEqualsNextType b (X `⇒ Y) Z₁}
+    ∘lam   :  {M : Comp (Γ ∙ X) Y} → {γ  : Env {Z₀ = Z₀} Γ} → {tail : PureStack {Z₀ = Z₀} ∅? Z₁} → {↥ : BottomTypeEqualsNextType ∅? (X `⇒ Y) Z₁}
               ---------------------------------------------------------------------------
             →     ⟨ (⇡ (lam M) γ ∷ tail) {↥ = ↥} ⟩ →ᵖ ⟨ (⭭ (cloᵛ M γ) ∷ tail) {↥ = ↥} ⟩
 
-    ∘pair  :  {γ : Env {Z₀ = Z₀} Γ} {W₁ : Pure Γ X₁} → {W₂ : Pure Γ X₂} → {tail : PureStack {Z₀ = Z₀} b Z₁} → {↥ : BottomTypeEqualsNextType b (X₁ `× X₂) Z₁}
+    ∘pair  :  {γ : Env {Z₀ = Z₀} Γ} {W₁ : Pure Γ X₁} → {W₂ : Pure Γ X₂} → {tail : PureStack {Z₀ = Z₀} ∅? Z₁} → {↥ : BottomTypeEqualsNextType ∅? (X₁ `× X₂) Z₁}
               ---------------------------------------------------------------------------
             →     ⟨ (⇡ (pair W₁ W₂) γ ∷ tail) {↥ = ↥} ⟩ →ᵖ ⟨ (⇡ W₁ γ ∷ ((⇡ᴸ W₁ W₂ γ ∷ tail) {↥ = ↥})) {↥ = 🗇} ⟩
 
-    ∘pm    :  {γ : Env {Z₀ = Z₀} Γ} {W₁ : Pure Γ (X₁ `× X₂)} → {W₂ : Pure (Γ ∙ X₁ ∙ X₂) Y} → {tail : PureStack {Z₀ = Z₀} b Z₁ } → {↥ : BottomTypeEqualsNextType b Y Z₁}
+    ∘pm    :  {γ : Env {Z₀ = Z₀} Γ} {W₁ : Pure Γ (X₁ `× X₂)} → {W₂ : Pure (Γ ∙ X₁ ∙ X₂) Y} → {tail : PureStack {Z₀ = Z₀} ∅? Z₁ } → {↥ : BottomTypeEqualsNextType ∅? Y Z₁}
               ---------------------------------------------------------------------------
             →     ⟨ (⇡ (pm W₁ W₂) γ ∷ tail) {↥ = ↥} ⟩ →ᵖ ⟨ (⇡ W₁ γ ∷ (⇡ᴾᴹ W₁ W₂ γ ∷ tail) {↥ = ↥}) {↥ = 🗇} ⟩
 
-    ∘unit  :  {γ  : Env {Z₀ = Z₀} Γ} → {tail : PureStack {Z₀ = Z₀} b Z₁} → {↥ : BottomTypeEqualsNextType b `Unit Z₁}
+    ∘unit  :  {γ  : Env {Z₀ = Z₀} Γ} → {tail : PureStack {Z₀ = Z₀} ∅? Z₁} → {↥ : BottomTypeEqualsNextType ∅? `Unit Z₁}
               ---------------------------------------------------------------------------
             →     ⟨ (⇡ unit γ ∷ tail) {↥ = ↥} ⟩ →ᵖ ⟨ (⭭ unitᵛ ∷ tail) {↥ = ↥} ⟩
 
     ∙W∷l   :  {γ : Env {Z₀ = Z₀} Γ} {W₁' : Value X₁} → {W₁ : Pure Γ X₁} → {W₂ : Pure Γ X₂}
-            → {tail : PureStack {Z₀ = Z₀} b Z₁} → {↥ : BottomTypeEqualsNextType b (X₁ `× X₂) Z₁}
+            → {tail : PureStack {Z₀ = Z₀} ∅? Z₁} → {↥ : BottomTypeEqualsNextType ∅? (X₁ `× X₂) Z₁}
               ---------------------------------------------------------------------------
             →     ⟨ (⭭ W₁' ∷ ((⇡ᴸ W₁ W₂ γ ∷ tail) {↥ = ↥})) {↥ = 🗇} ⟩ →ᵖ ⟨ (⇡ W₂ γ ∷ ((⇡ᴿ W₁' W₂ γ ∷ tail) {↥ = ↥})) {↥ = 🗇} ⟩
 
     ∙W∷r   :  {γ : Env {Z₀ = Z₀} Γ} {W₂' : Value X₂} → {W₁' : Value X₁} → {W₂ : Pure Γ X₂}
-            → {tail : PureStack {Z₀ = Z₀} b Z₁} → {↥ : BottomTypeEqualsNextType b (X₁ `× X₂) Z₁}
+            → {tail : PureStack {Z₀ = Z₀} ∅? Z₁} → {↥ : BottomTypeEqualsNextType ∅? (X₁ `× X₂) Z₁}
               ---------------------------------------------------------------------------
             → ⟨ (⭭ W₂' ∷ ((⇡ᴿ W₁' W₂ γ ∷ tail) {↥ = ↥})) {↥ = 🗇} ⟩ →ᵖ ⟨ (⭭ pairᵛ W₁' W₂' ∷ tail) {↥ = ↥} ⟩
 
     ∙pair∷pm  :  {γ : Env {Z₀ = Z₀} Γ} {W₁' : Value X₁} → {W₂' : Value X₂} → {W₀ : Pure Γ (X₁ `× X₂)} → {W₃ : Pure (Γ ∙ X₁ ∙ X₂) Y}
-            → {tail : PureStack {Z₀ = Z₀} b Z₁} → {↥ : BottomTypeEqualsNextType b Y Z₁}
+            → {tail : PureStack {Z₀ = Z₀} ∅? Z₁} → {↥ : BottomTypeEqualsNextType ∅? Y Z₁}
               ---------------------------------------------------------------------------
             →     ⟨ (⭭ pairᵛ W₁' W₂' ∷ ((⇡ᴾᴹ W₀ W₃ γ ∷ tail) {↥ = ↥})) {↥ = 🗇} ⟩ →ᵖ  ⟨ (⇡ W₃ (γ ، W₁' ، W₂') ∷ tail) {↥ = ↥} ⟩
 
