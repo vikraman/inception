@@ -8,18 +8,18 @@ variable
   SA SB SC : S.Ty
 
 ⟦_⟧ : S.Ty -> L.Ty
-⟦ `Unit ⟧  = `Unit
+⟦ `𝟙 ⟧  = `Unit
 ⟦ A `× B ⟧ = ⟦ A ⟧ `× ⟦ B ⟧
 ⟦ A `⇒ B ⟧ = ⟦ A ⟧ `⇒ ⟦ B ⟧
-⟦ `V ⟧     = `Unit `⇒ `⊥
+⟦ `L ⟧     = `Unit `⇒ `⊥
 
 ⟦_⟧ˣ : S.Ctx -> L.Env
 ⟦ ε ⟧ˣ     = ε
 ⟦ Γ ∙ A ⟧ˣ = ⟦ Γ ⟧ˣ ∙ ⟦ A ⟧
 
 ⟦_⟧ⁱ : SΓ S.∋ SA -> ⟦ SΓ ⟧ˣ L.∋ ⟦ SA ⟧
-⟦ S.h ⟧ⁱ   = z
-⟦ S.t i ⟧ⁱ = s ⟦ i ⟧ⁱ
+⟦ S.new ⟧ⁱ   = z
+⟦ S.old i ⟧ⁱ = s ⟦ i ⟧ⁱ
 
 applyL : L.Γ ⊢ᵛ (L.A `⇒ L.B) ∣ L.Δ -> L.Γ ⊢ᵛ L.A ∣ L.Δ -> L.Γ ⊢ᵗ L.B ∣ L.Δ
 applyL f a = μ (cut _ (ret (wk̃ᵛ f)) (app (wk̃ᵛ a) (covar z)))
