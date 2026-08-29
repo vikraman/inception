@@ -295,8 +295,6 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
 
   ⟦_⟧ᵖꟴ : (S : PureState {Z₀ = R₀} Z₁) → ⟦ Z₁ ⟧
   ⟦ ⟨ tail ⟩ ⟧ᵖꟴ = ⟦ tail ⟧ᵖˢ
-  --⟦ ∘ tail ⟧ᵖꟴ = ⟦ tail ⟧ᵖˢ
-  --⟦ ∙ tail ⟧ᵖꟴ = ⟦ tail ⟧ᵖˢ
 
   ⟦_⟧ᶜꟴ : CompState {Z₀ = R₀} → R
   ⟦ ⟨return W ╎ k ⟩ ⟧ᶜꟴ = (η ⟦ W ⟧ⱽ) ⟦ k ⟧ᴷ
