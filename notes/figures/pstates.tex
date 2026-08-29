@@ -1,0 +1,61 @@
+\begin{figure}[h!]
+\fbox{
+\begin{minipage}{0.97\textwidth} % TODO
+\vspace{10pt}
+\parbox[c]{0.97\linewidth}{
+
+\begin{subfigure}{\linewidth}
+  \begin{ceqn}
+    \begin{align*}
+      \text{Emptiness flag:} && \gls{is-empty?} &:=\; \gls{empty} \mid \gls{non-empty}\\
+      \text{Bottom type equality:} && \gls{bot-eq} &:=\; \gls{bottom} \mid \gls{not-bottom}\\
+      \text{Stack of partially normalised pure terms:} && \gls{pstack} &:=\; \gls{boxtimes} \mid \gls{hatW} \glsop{pcons} \gls{pstack}\\
+      \text{State of pure term machine:} && \gls{pstate} &:=\; \PSTATEi \gls{pstack} \PSTATEii
+    \end{align*}
+  \end{ceqn}
+  \caption{Grammar}
+  \label{fig:first}
+\end{subfigure}
+
+\vspace{10pt}
+\begin{subfigure}{\linewidth}
+\begin{mathpar}
+  \inferrule
+    { }
+    {\gls{empty} \glsop{colon} \gls{IsEmpty}}
+
+  \inferrule
+    { }
+    {\gls{non-empty} \glsop{colon} \gls{IsEmpty}}
+
+  \inferrule
+    { }
+    {\gls{bottom} \glsop{colon} \gls{BotEq} \; \gls{empty} \; \X \; \X}
+
+  \inferrule
+    { }
+    {\gls{not-bottom} \glsop{colon} \gls{BotEq} \; \gls{non-empty} \; \X \; \Y}
+
+  \inferrule
+    { }
+    {\gls{boxtimes} \glsop{colon} {\gls{PStack}}_{{\Z}_0} \; \gls{empty} \; {{\Z}_1}}
+
+  \inferrule
+    {\mathop{{\HDASHi}_{{\Z}_0}} \gls{hatW} \HDASHii \X \\ \gls{pstack} \glsop{colon} {\gls{PStack}}_{{\Z}_0} \; \gls{is-empty?} \; {\Z}_1 \\ \gls{bot-eq} \glsop{colon} \gls{BotEq} \; \gls{is-empty?} \; \X \; {\Z}_1}
+    {\gls{hatW} \glsop{pcons} \gls{pstack} \glsop{colon} {\gls{PStack}}_{{\Z}_0} \; \gls{non-empty} \; {{\Z}_2}}
+
+  \inferrule
+    {\gls{pstack} \glsop{colon} {\gls{PStack}}_{{\Z}_0} \; \gls{non-empty} \; {{\Z}_1}}
+    {\PSTATEi \gls{pstack} \PSTATEii \glsop{colon} {\gls{PState}}_{{\Z}_0} \; {{\Z}_1}}
+\end{mathpar}
+
+  \vspace{5pt}
+  \caption{Typing rules}
+  \label{fig:first}
+\end{subfigure}
+
+\vspace{5pt}
+} \end{minipage} }        
+\caption{States of the machine for normalising pure terms}
+\label{fig:env}
+\end{figure}

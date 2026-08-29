@@ -1,39 +1,72 @@
-\documentclass[acmsmall,nonacm,natbib=false]{acmart}
+\documentclass[fleqn]{article}
 
-\usepackage{geometry}
-\geometry{top=0.5cm, bottom=0.5cm}
+\usepackage[shortlabels]{enumitem}
+\usepackage{stmaryrd, nccmath, amsmath, amssymb, parskip, geometry, xcolor, amsthm, mathrsfs, thmtools, tikz, mathpartir, mathtools}
 
-\settopmatter{printacmref=false, printccs=false, printfolios=false}
+%\usepackage{showframe}
+%\newcommand\debugbox[1]{\fbox{#1}}
+\newcommand\debugbox[1]{\makebox{#1}}
 
-\setcopyright{none}
+\input{thmstyles}
 
-\usepackage{vc-math}
-\usepackage{vc-macros}
-\usepackage{parskip}
-\usepackage{enumitem}
+\geometry{a4paper, left=25mm, right=25mm, top=20mm, bottom=25mm}
 
-\input{glossary}
+\usepackage{fancyhdr}
+\fancypagestyle{pstyle}
+{
+   \fancyhf{}
+   \fancyhead{}
+   \renewcommand{\headrulewidth}{0.0pt}
+   \renewcommand{\footrulewidth}{0.4pt}
+   \fancyfoot[C]{\footnotesize Page \thepage\ of \pageref*{pg:end}}
+   \fancyfoot[L]{}
+   \fancyfoot[R]{}
+}
+\pagestyle{pstyle}
 
 \usepackage{subcaption}
-\captionsetup[sub]{skip=2pt, belowskip=2pt} 
+\captionsetup[sub]{skip=0pt, belowskip=0pt} 
+\captionsetup{skip=4pt, belowskip=0pt} 
+
+\setlength{\mathindent}{10pt}
 
 \usepackage{hyperref}
 \usepackage{cleveref}
 
-\begin{document}
-\title{Abstract Machine}
-\author{Anonymous}
+\definecolor{mylinkcolour}{rgb}{0.44, 0.16, 0.39}
+\hypersetup{%
+  linkcolor  = mylinkcolour,
+  citecolor  = mylinkcolour,
+  urlcolor   = mylinkcolour,
+  colorlinks = true,
+  breaklinks = true,
+}
 
-\section{Abstract Machine}
-\pagestyle{empty}
-\thispagestyle{empty}
+\input{glossary}
+
+\begin{document}
 
 \input{figures/ctx}
-
 \input{figures/terms}
-
 \clearpage
-%% need to run "makeglossaries abstract-machine" for this to compile
+%
+\input{figures/termsem}
+\input{figures/env}
+\clearpage
+%
+\input{figures/termwithhole}
+\input{figures/pstates}
+\clearpage
+%
+\input{figures/ptrans}
+\clearpage
+%
+\input{figures/cstates}
+\input{figures/ctrans}
+\clearpage
+%
 \printglossary[type=symbols, title={Notation}, style={long0}]
+\label{pg:end}
+\clearpage
 
 \end{document}

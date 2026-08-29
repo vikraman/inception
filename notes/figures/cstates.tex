@@ -1,0 +1,37 @@
+\begin{figure}[h!]
+\fbox{
+\begin{minipage}{0.97\textwidth} % TODO
+\vspace{10pt}
+\parbox[c]{0.97\linewidth}{
+
+\begin{subfigure}{\linewidth}
+  \begin{ceqn}
+    \begin{align*}
+      \text{State of computation machine:} && \gls{cstate} &:=\; \CSTATEAi \gls{bfW} \CSTATEAii \gls{cstack} \CSTATEAiii \mid \CSTATEBi \gls{M} \CSTATEBii \sGAMMA \CSTATEBiii \gls{cstack} \CSTATEBiv
+    \end{align*}
+  \end{ceqn}
+  \caption{Grammar}
+  \label{fig:first}
+\end{subfigure}
+
+\vspace{10pt}
+\begin{subfigure}{\linewidth}
+  \begin{mathpar}
+    \inferrule
+      {\mathop{{\VDASHi}_{{\Z}_0}} \gls{bfW} \VDASHii \X \\ \gls{cstack} \glsop{colon} {\gls{CStack}}_{{\Z}_0} \; \X}
+      {\CSTATEAi \gls{bfW} \CSTATEAii \gls{cstack} \CSTATEAiii \glsop{colon} {\gls{CState}}_{{\Z}_0}}
+
+    \inferrule
+      {\GAMMA \CDASHi \gls{M} \CDASHii \X \\ \sGAMMA \glsop{colon} {\gls{Env}}_{{\Z}_0} \; \GAMMA \\ \gls{cstack} \glsop{colon} {\gls{CStack}}_{{\Z}_0} \; \X}
+      {\CSTATEBi \gls{M} \CSTATEBii \sGAMMA \CSTATEBiii \gls{cstack} \CSTATEBiv \glsop{colon} {\gls{CState}}_{{\Z}_0}}
+  \end{mathpar}
+  \vspace{5pt}
+  \caption{Typing rules}
+  \label{fig:first}
+\end{subfigure}
+
+\vspace{5pt}
+} \end{minipage} }        
+\caption{States of the machine for evaluating computations}
+\label{fig:env}
+\end{figure}

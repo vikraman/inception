@@ -1,0 +1,231 @@
+\begin{figure}[h!]
+\fbox{
+\begin{minipage}{0.97\textwidth} % TODO
+\vspace{10pt}
+\parbox[c]{0.97\linewidth}{
+
+\begin{mathpar}
+  \inferrule 
+    {
+      \x \MEMi \X \MEMii \GAMMA \\
+      \sGAMMA \glsop{colon} {\gls{Env}}_{{\Z}_0} \; \GAMMA \\
+      \gls{pstack} \glsop{colon} {\gls{PStack}}_{{\Z}_0} \empty \Z_1
+    }
+    {
+      \gls{lookup-trans} \; \gls{colon} \; \PSTATEi \gls{uparrow}(\x,\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{downarrow}(\gls{lookup}(\x , \sGAMMA)) \glsop{pcons} \gls{pstack} \PSTATEii
+    }
+
+  \inferrule 
+    {
+      \GAMMA \CDASHi \gls{M} \gls{bullet} \X \CDASHii \Y \\
+        \sGAMMA \glsop{colon} {\gls{Env}}_{{\Z}_0} \; \GAMMA \\
+        \gls{pstack} \glsop{colon} {\gls{PStack}}_{{\Z}_0} \empty \Z_1
+    }
+    {
+      \gls{lam-trans} \; \gls{colon} \; \PSTATEi \gls{uparrow}(\gls{lam}(\gls{M}),\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{downarrow}(\gls{bfclo}(\gls{M},\sGAMMA)) \glsop{pcons} \gls{pstack} \PSTATEii
+    }
+
+  \inferrule 
+    {
+      \GAMMA \PDASHi {\gls{W}}_1 \PDASHii {\X}_1 \\
+      \GAMMA \PDASHi {\gls{W}}_2 \PDASHii {\X}_2 \\
+      \sGAMMA \glsop{colon} {\gls{Env}}_{{\Z}_0} \; \GAMMA \\
+      \gls{pstack} \glsop{colon} {\gls{PStack}}_{{\Z}_0} \empty \Z_1
+    }
+    {
+      \gls{pair-trans} \; \gls{colon} \; \PSTATEi \gls{uparrow}(\gls{pair}({\gls{W}}_1,{\gls{W}}_2),\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{uparrow}({\gls{W}}_1,\sGAMMA) \glsop{pcons} \gls{upL}(\gls{pair}({\gls{W}}_1,{\gls{W}}_2),\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii
+    }
+
+  \inferrule 
+    {
+      \GAMMA \PDASHi {\gls{W}}_{\X} \PDASHii {\X}_1 \glsop{times} {\X}_2 \\
+      (\GAMMA \glsop{bullet} {\X}_1 \glsop{bullet} {\X}_2) \PDASHi {\gls{W}}_{\Y} \PDASHii \Y \\
+      \sGAMMA \glsop{colon} {\gls{Env}}_{{\Z}_0} \; \GAMMA \\
+      \gls{pstack} \glsop{colon} {\gls{PStack}}_{{\Z}_0} \empty \Z_1
+    }
+    {
+      \gls{pmp-trans} \; \gls{colon} \; \PSTATEi \gls{uparrow}(\gls{pmp}({\gls{W}}_{\X},{\gls{W}}_{\Y}),\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{uparrow}({\gls{W}}_{\X},\sGAMMA) \glsop{pcons} \gls{upPM}(\gls{pmp}({\gls{W}}_{\X},{\gls{W}}_{\Y}),\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii
+    }
+
+  \inferrule 
+    {
+      \sGAMMA \glsop{colon} {\gls{Env}}_{{\Z}_0} \; \GAMMA \\
+      \gls{pstack} \glsop{colon} {\gls{PStack}}_{{\Z}_0} \empty \Z_1
+    }
+    {
+      \gls{unit-trans} \; \gls{colon} \; \PSTATEi \gls{uparrow}(\gls{ast},\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{downarrow}(\gls{bfast}) \glsop{pcons} \gls{pstack} \PSTATEii
+    }
+
+  \inferrule 
+    {
+      \mathop{{\VDASHi}_{{\Z}_0}} {\gls{bfW}}_1 \VDASHii {\X}_1 \\
+      \GAMMA \PDASHi {\gls{W}}_2 \PDASHii {\X}_2 \\
+      \sGAMMA \glsop{colon} {\gls{Env}}_{{\Z}_0} \; \GAMMA \\
+      \gls{pstack} \glsop{colon} {\gls{PStack}}_{{\Z}_0} \empty \Z_1}
+    {
+      \gls{Wl-trans} \; \gls{colon} \; \PSTATEi \gls{downarrow}({\gls{bfW}}_1) \glsop{pcons} \gls{upL}({\gls{W}}_1,{\gls{W}}_2,\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{uparrow}({\gls{W}}_2,\sGAMMA) \glsop{pcons} \gls{upR}({\gls{bfW}}_1,{\gls{W}}_2,\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii
+    }
+
+  \inferrule 
+    {
+      \mathop{{\VDASHi}_{{\Z}_0}} {\gls{bfW}}_1 \VDASHii {\X}_1 \\
+      \mathop{{\VDASHi}_{{\Z}_0}} {\gls{bfW}}_2 \VDASHii {\X}_2 \\
+      \GAMMA \PDASHi {\gls{W}}_2 \PDASHii {\X}_2 \\
+      \sGAMMA \glsop{colon} {\gls{Env}}_{{\Z}_0} \; \GAMMA \\
+      \gls{pstack} \glsop{colon} {\gls{PStack}}_{{\Z}_0} \empty \Z_1
+    }
+    {
+      \gls{Wr-trans} \; \gls{colon} \; \PSTATEi \gls{downarrow}({\gls{bfW}}_2) \glsop{pcons} \gls{upR}({\gls{bfW}}_1,{\gls{W}}_2,\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{downarrow}(\gls{bfpair}({\gls{bfW}}_1,{\gls{bfW}}_2)) \glsop{pcons} \gls{pstack} \PSTATEii
+    }
+
+  \inferrule 
+    {
+     \mathop{{\VDASHi}_{{\Z}_0}} {\gls{bfW}}_1 \VDASHii {\X}_1 \\
+     \mathop{{\VDASHi}_{{\Z}_0}} {\gls{bfW}}_2 \VDASHii {\X}_2 \\
+     \GAMMA \PDASHi {\gls{W}}_{\X} \PDASHii {\X}_1 \glsop{times} {\X}_2 \\
+     \GAMMA \PDASHi {\gls{W}}_{\Y} \PDASHii {\Y} \\
+     \GAMMA \glsbin{bullet} {\X}_1 \glsbin{bullet} {\X}_2 \PDASHi {\gls{W}}_{\Y} \CDASHii \Y \\
+     \sGAMMA \glsop{colon} {\gls{Env}}_{{\Z}_0} \; \GAMMA \\
+     \gls{pstack} \glsop{colon} {\gls{PStack}}_{{\Z}_0} \empty \Z_1
+    }
+    {
+      \gls{pairpm-trans} \; \gls{colon} \; \PSTATEi \gls{downarrow}(\gls{bfpair}({\gls{bfW}}_1,{\gls{bfW}}_2)) \glsop{pcons} \gls{upPM}({\gls{W}}_{\X},{\gls{W}}_{\Y},\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{uparrow}({\gls{W}}_{\Y} , \sGAMMA \glsop{cdot} {\gls{bfW}}_1 \glsop{cdot} {\gls{bfW}}_2) \glsop{pcons} \gls{pstack} \PSTATEii
+    }
+\end{mathpar}
+
+%  \begin{mathpar}
+%    \inferrule 
+%      {}
+%      {\gls{lookup-trans} \; \gls{colon} \; \PSTATEi \gls{uparrow}(\x,\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{downarrow}(\gls{lookup}(\x , \sGAMMA)) \glsop{pcons} \gls{pstack} \PSTATEii}
+%
+%    \inferrule 
+%      {}
+%      {\gls{lam-trans} \; \gls{colon} \; \PSTATEi \gls{uparrow}(\gls{lam}(\gls{M}),\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{downarrow}(\gls{bfclo}(\gls{M},\sGAMMA)) \glsop{pcons} \gls{pstack} \PSTATEii}
+%
+%    \inferrule 
+%      {}
+%      {\gls{pair-trans} \; \gls{colon} \; \PSTATEi \gls{uparrow}(\gls{pair}({\gls{W}}_1,{\gls{W}}_2),\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{uparrow}({\gls{W}}_1,\sGAMMA) \glsop{pcons} \gls{upL}(\gls{pair}({\gls{W}}_1,{\gls{W}}_2),\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii}
+%
+%    \inferrule 
+%      {}
+%      {\gls{pmp-trans} \; \gls{colon} \; \PSTATEi \gls{uparrow}(\gls{pmp}({\gls{W}}_1,{\gls{W}}_2),\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{uparrow}({\gls{W}}_1,\sGAMMA) \glsop{pcons} \gls{upPM}(\gls{pmp}({\gls{W}}_1,{\gls{W}}_2),\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii}
+%
+%    \inferrule 
+%      {}
+%      {\gls{unit-trans} \; \gls{colon} \; \PSTATEi \gls{uparrow}(\gls{ast},\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{downarrow}(\gls{bfast}) \glsop{pcons} \gls{pstack} \PSTATEii}
+%
+%    \inferrule 
+%      {}
+%      {\gls{Wl-trans} \; \gls{colon} \; \PSTATEi \gls{downarrow}({\gls{bfW}}_1) \glsop{pcons} \gls{upL}({\gls{W}}_1,{\gls{W}}_2,\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{uparrow}({\gls{W}}_2,\sGAMMA) \glsop{pcons} \gls{upR}({\gls{bfW}}_1,{\gls{W}}_2,\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii}
+%
+%    \inferrule 
+%      {}
+%      {\gls{Wr-trans} \; \gls{colon} \; \PSTATEi \gls{downarrow}({\gls{bfW}}_2) \glsop{pcons} \gls{upR}({\gls{bfW}}_1,{\gls{W}}_2,\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{downarrow}(\gls{bfpair}({\gls{bfW}}_1,{\gls{bfW}}_2)) \glsop{pcons} \gls{pstack} \PSTATEii}
+%
+%    \inferrule 
+%      {}
+%      {\gls{pairpm-trans} \; \gls{colon} \; \PSTATEi \gls{downarrow}(\gls{bfpair}({\gls{bfW}}_1,{\gls{bfW}}_2)) \glsop{pcons} \gls{upPM}({\gls{W}}_0,{\gls{W}}_3,\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{uparrow}({\gls{W}}_3 , \sGAMMA \glsop{cdot} {\gls{bfW}}_1 \glsop{cdot} {\gls{bfW}}_2) \glsop{pcons} \gls{pstack} \PSTATEii}
+%  \end{mathpar}
+%
+%  \begin{ceqn}
+%    \begin{align*}
+%      \gls{lookup-trans} \; \gls{colon}& \; \PSTATEi \gls{uparrow}(\x,\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{downarrow}(\gls{lookup}(\x , \sGAMMA)) \glsop{pcons} \gls{pstack} \PSTATEii \\
+%      \gls{lam-trans} \; \gls{colon}& \; \PSTATEi \gls{uparrow}(\gls{lam}(\gls{M}),\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{downarrow}(\gls{bfclo}(\gls{M},\sGAMMA)) \glsop{pcons} \gls{pstack} \PSTATEii \\
+%      \gls{pair-trans} \; \gls{colon}& \; \PSTATEi \gls{uparrow}(\gls{pair}({\gls{W}}_1,{\gls{W}}_2),\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{uparrow}({\gls{W}}_1,\sGAMMA) \glsop{pcons} \gls{upL}(\gls{pair}({\gls{W}}_1,{\gls{W}}_2),\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \\
+%      \gls{pmp-trans} \; \gls{colon}& \; \PSTATEi \gls{uparrow}(\gls{pmp}({\gls{W}}_1,{\gls{W}}_2),\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{uparrow}({\gls{W}}_1,\sGAMMA) \glsop{pcons} \gls{upPM}(\gls{pmp}({\gls{W}}_1,{\gls{W}}_2),\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \\
+%      \gls{unit-trans} \; \gls{colon}& \; \PSTATEi \gls{uparrow}(\gls{ast},\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{downarrow}(\gls{bfast}) \glsop{pcons} \gls{pstack} \PSTATEii \\
+%      \gls{Wl-trans} \; \gls{colon}& \; \PSTATEi \gls{downarrow}({\gls{bfW}}_1) \glsop{pcons} \gls{upL}({\gls{W}}_1,{\gls{W}}_2,\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{uparrow}({\gls{W}}_2,\sGAMMA) \glsop{pcons} \gls{upR}({\gls{bfW}}_1,{\gls{W}}_2,\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \\
+%      \gls{Wr-trans} \; \gls{colon}& \; \PSTATEi \gls{downarrow}({\gls{bfW}}_2) \glsop{pcons} \gls{upR}({\gls{bfW}}_1,{\gls{W}}_2,\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{downarrow}(\gls{bfpair}({\gls{bfW}}_1,{\gls{bfW}}_2)) \glsop{pcons} \gls{pstack} \PSTATEii \\
+%      \gls{pairpm-trans} \; \gls{colon}& \; \PSTATEi \gls{downarrow}(\gls{bfpair}({\gls{bfW}}_1,{\gls{bfW}}_2)) \glsop{pcons} \gls{upPM}({\gls{W}}_0,{\gls{W}}_3,\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{uparrow}({\gls{W}}_3 , \sGAMMA \glsop{cdot} {\gls{bfW}}_1 \glsop{cdot} {\gls{bfW}}_2) \glsop{pcons} \gls{pstack} \PSTATEii
+%    \end{align*}
+%  \end{ceqn}
+%
+%  \begin{center}
+%
+%    \begin{minipage}[b]{0.9\linewidth}
+%      \centering
+%      \begin{prooftree}
+%        \AxiomC{}
+%        \LeftLabel{\gls{lookup-trans}}
+%        \UnaryInfC{$\PSTATEi \gls{uparrow}(\x,\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{downarrow}(\gls{lookup}(\x , \sGAMMA)) \glsop{pcons} \gls{pstack} \PSTATEii$}
+%      \end{prooftree}
+%      \vspace{10pt}
+%    \end{minipage}
+%
+%    \begin{minipage}[b]{0.9\linewidth}
+%      \centering
+%      \begin{prooftree}
+%        \AxiomC{}
+%        \LeftLabel{\gls{lam-trans}}
+%        \UnaryInfC{$\PSTATEi \gls{uparrow}(\gls{lam}(\gls{M}),\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{downarrow}(\gls{bfclo}(\gls{M},\sGAMMA)) \glsop{pcons} \gls{pstack} \PSTATEii$}
+%      \end{prooftree}
+%      \vspace{10pt}
+%    \end{minipage}
+%
+%    \begin{minipage}[b]{0.9\linewidth}
+%      \centering
+%      \begin{prooftree}
+%        \AxiomC{}
+%        \LeftLabel{\gls{pair-trans}}
+%        \UnaryInfC{$\PSTATEi \gls{uparrow}(\gls{pair}({\gls{W}}_1,{\gls{W}}_2),\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{uparrow}({\gls{W}}_1,\sGAMMA) \glsop{pcons} \gls{upL}(\gls{pair}({\gls{W}}_1,{\gls{W}}_2),\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii$}
+%      \end{prooftree}
+%      \vspace{10pt}
+%    \end{minipage}
+%
+%    \begin{minipage}[b]{0.9\linewidth}
+%      \centering
+%      \begin{prooftree}
+%        \AxiomC{}
+%        \LeftLabel{\gls{pmp-trans}}
+%        \UnaryInfC{$\PSTATEi \gls{uparrow}(\gls{pmp}({\gls{W}}_1,{\gls{W}}_2),\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{uparrow}({\gls{W}}_1,\sGAMMA) \glsop{pcons} \gls{upPM}(\gls{pmp}({\gls{W}}_1,{\gls{W}}_2),\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii$}
+%      \end{prooftree}
+%      \vspace{10pt}
+%    \end{minipage}
+%
+%    \begin{minipage}[b]{0.9\linewidth}
+%      \centering
+%      \begin{prooftree}
+%        \AxiomC{}
+%        \LeftLabel{\gls{unit-trans}}
+%        \UnaryInfC{$\PSTATEi \gls{uparrow}(\gls{ast},\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{downarrow}(\gls{bfast}) \glsop{pcons} \gls{pstack} \PSTATEii$}
+%      \end{prooftree}
+%      \vspace{10pt}
+%    \end{minipage}
+%
+%    \begin{minipage}[b]{0.9\linewidth}
+%      \centering
+%      \begin{prooftree}
+%        \AxiomC{}
+%        \LeftLabel{\gls{Wl-trans}}
+%        \UnaryInfC{$\PSTATEi \gls{downarrow}({\gls{bfW}}_1) \glsop{pcons} \gls{upL}({\gls{W}}_1,{\gls{W}}_2,\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{uparrow}({\gls{W}}_2,\sGAMMA) \glsop{pcons} \gls{upR}({\gls{bfW}}_1,{\gls{W}}_2,\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii$}
+%      \end{prooftree}
+%      \vspace{10pt}
+%    \end{minipage}
+%
+%    \begin{minipage}[b]{0.9\linewidth}
+%      \centering
+%      \begin{prooftree}
+%        \AxiomC{}
+%        \LeftLabel{\gls{Wr-trans}}
+%        \UnaryInfC{$\PSTATEi \gls{downarrow}({\gls{bfW}}_2) \glsop{pcons} \gls{upR}({\gls{bfW}}_1,{\gls{W}}_2,\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{downarrow}(\gls{bfpair}({\gls{bfW}}_1,{\gls{bfW}}_2)) \glsop{pcons} \gls{pstack} \PSTATEii$}
+%      \end{prooftree}
+%      \vspace{10pt}
+%    \end{minipage}
+%
+%    \begin{minipage}[b]{0.9\linewidth}
+%      \centering
+%      \begin{prooftree}
+%        \AxiomC{}
+%        \LeftLabel{\gls{pairpm-trans}}
+%        \UnaryInfC{$\PSTATEi \gls{downarrow}(\gls{bfpair}({\gls{bfW}}_1,{\gls{bfW}}_2)) \glsop{pcons} \gls{upPM}({\gls{W}}_0,{\gls{W}}_3,\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{uparrow}({\gls{W}}_3 , \sGAMMA \glsop{cdot} {\gls{bfW}}_1 \glsop{cdot} {\gls{bfW}}_2) \glsop{pcons} \gls{pstack} \PSTATEii$}
+%      \end{prooftree}
+%      \vspace{10pt}
+%    \end{minipage}
+%
+%  \end{center}
+
+\vspace{5pt}
+} \end{minipage} }        
+\caption{Transitions of the machine for normalising pure terms}
+\label{fig:env}
+\end{figure}

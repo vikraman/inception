@@ -1,0 +1,111 @@
+\declaretheoremstyle[
+  headpunct={},
+  headfont=\normalfont\bfseries,
+  numbered=yes,
+  bodyfont=\normalfont,
+  spaceabove=1em plus 0.75em minus 0.75em,
+  spacebelow=1em plus 0.75em minus 0.75em,
+  qed=\rule{0.6ex}{0.6ex}
+]{thstyle}
+
+\let\theorem\relax
+\let\endtheorem\relax
+
+\declaretheorem[
+  style=thstyle,
+  title=Theorem,
+  refname={theorem,theorems},
+  Refname={Theorem,Theorems}
+]{theorem}
+
+\declaretheorem[
+  style=thstyle,
+  title=Proposition,
+  numberlike=theorem,
+  refname={proposition,propositions},
+  Refname={Proposition,Propositions}
+]{proposition}
+
+\declaretheorem[
+  numberlike=theorem,
+  style=thstyle,
+  title=Lemma,
+  refname={lemma,lemmas},
+  Refname={Lemma,Lemmas}
+]{lemma}
+
+\declaretheorem[
+  numberlike=theorem,
+  style=thstyle,
+  title=Corollary,
+  refname={corollary,corollaries},
+  Refname={Corollary,Corollaries}
+]{corollary}
+
+\declaretheorem[
+  %numberwithin=section,
+  numbered=yes,
+  numberlike=theorem,
+  style=thstyle,
+  title=Definition,
+  refname={definition,definitions},
+  Refname={Definition,Definitions}
+]{definition}
+
+\declaretheorem[
+  %numberwithin=section,
+  numbered=no,
+  numberlike=theorem,
+  style=thstyle,
+  title=Notation,
+  refname={notation,notaions},
+  Refname={Notation,Notations}
+]{notation}
+
+\declaretheorem[
+  %numberwithin=section,
+  numberlike=theorem,
+  style=thstyle,
+  title=Remark,
+  refname={remark,remarks},
+  Refname={Remark,Remarks}
+]{remark}
+
+\declaretheoremstyle[
+  headfont=\normalfont\itshape,
+  headpunct=.\hspace{5pt},
+  numbered=no,
+  bodyfont=\normalfont,
+  spaceabove=1em plus 0.75em minus 0.25em,
+  spacebelow=1em plus 0.75em minus 0.25em,
+  qed={\footnotesize\textsc{q.\,e.\,d.}}
+]{proofstyle}
+
+\let\proof\relax
+\let\endproof\relax
+
+\declaretheorem[
+  style=proofstyle,
+  title=Proof,
+  refname={proof,proofs},
+  Refname={Proof,Proofs}
+]{proof}
+
+\declaretheoremstyle[
+  headfont=\normalfont\itshape,
+  headpunct=.\hspace{5pt},
+  numbered=no,
+  bodyfont=\normalfont,
+  spaceabove=1em plus 0.75em minus 0.25em,
+  spacebelow=1em plus 0.75em minus 0.25em,
+  qed=\rule{0.6ex}{0.6ex}
+]{examplestyle}
+
+\declaretheorem[
+  style=examplestyle,
+  title=Example,
+  refname={example,examples},
+  Refname={Example,Examples}
+]{example}
+
+\numberwithin{equation}{theorem}

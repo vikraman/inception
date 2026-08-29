@@ -1,0 +1,49 @@
+\begin{figure}[h!]
+\fbox{
+\begin{minipage}{0.97\textwidth} % TODO
+\vspace{10pt}
+\parbox[c]{0.97\linewidth}{
+
+\begin{subfigure}{\linewidth}
+  \begin{ceqn}
+    \begin{align*}
+      \text{Partially normalised term:} && \gls{hatW} &:=\; \gls{downarrow} (\gls{bfW}) \mid \gls{uparrow} (\gls{W},\sGAMMA) \mid \gls{upPM}({\gls{W}}_1,{\gls{W}}_2,\sGAMMA) \mid \\
+        &&& \quad\quad \gls{upL}({\gls{W}}_1,{\gls{W}}_2,\sGAMMA) \mid \gls{upR}({\gls{bfW}}_1,{\gls{W}}_2,\sGAMMA)
+    \end{align*}
+  \end{ceqn}
+  \caption{Grammar}
+  \label{fig:first}
+\end{subfigure}
+
+\vspace{10pt}
+\begin{subfigure}{\linewidth}
+  \begin{mathpar}
+    \inferrule
+      {\mathop{{\VDASHi}_{{\Z}_0}} \gls{bfW} \VDASHii \X}
+      {\mathop{{\HDASHi}_{{\Z}_0}} \gls{downarrow} (\gls{bfW}) \HDASHii \X}
+
+    \inferrule
+      {\GAMMA \PDASHi \gls{W} \PDASHii \X \\ \sGAMMA \glsop{colon} {\gls{Env}}_{{\Z}_0} \; \GAMMA}
+      {\mathop{{\HDASHi}_{{\Z}_0}} \gls{uparrow} (\gls{W} , \sGAMMA) \HDASHii \X}
+
+    \inferrule
+      {\GAMMA \PDASHi {\gls{W}}_1 \PDASHii {\X}_1 \glsop{times} {\X}_2 \\ \GAMMA \glsop{bullet} {\X}_1 \glsop{bullet} {\X}_2 \PDASHi {\gls{W}}_2 \PDASHii \Y \\ \sGAMMA \glsop{colon} {\gls{Env}}_{{\Z}_0} \; \GAMMA}
+      {\mathop{{\HDASHi}_{{\Z}_0}} \gls{upPM} ({\gls{W}}_1 , {\gls{W}}_2 , \sGAMMA) \HDASHii \Y}
+
+    \inferrule
+      {\GAMMA \PDASHi {\gls{W}}_1 \PDASHii {\X}_1 \\ \GAMMA \PDASHi {\gls{W}}_2 \PDASHii {\X}_2 \\ \sGAMMA \glsop{colon} {\gls{Env}}_{{\Z}_0} \; \GAMMA}
+      {\mathop{{\HDASHi}_{{\Z}_0}} \gls{upL} ({\gls{W}}_1 , {\gls{W}}_2 , \sGAMMA) \HDASHii {\X}_1 \glsop{times} {\X}_2}
+
+    \inferrule
+      {\mathop{{\VDASHi}_{{\Z}_0}} {\gls{bfW}}_1 \VDASHii {\X}_1 \\ \GAMMA \PDASHi {\gls{W}}_2 \PDASHii {\X}_2 \\ \sGAMMA \glsop{colon} {\gls{Env}}_{{\Z}_0} \; \GAMMA}
+      {\mathop{{\HDASHi}_{{\Z}_0}} \gls{upL} ({\gls{bfW}}_1 , {\gls{W}}_2 , \sGAMMA) \HDASHii {\X}_1 \glsop{times} {\X}_2}
+  \end{mathpar}
+  \caption{Typing rules (with \gls{T} a monad on ${\gls{Set}}^{\gls{bF}}$)}
+  \label{fig:first}
+\end{subfigure}
+
+\vspace{5pt}
+} \end{minipage} }        
+\caption{Partially normalised pure terms (with \gls{T} a monad on ${\gls{Set}}^{\gls{bF}}$)}
+\label{fig:env}
+\end{figure}

@@ -1,0 +1,88 @@
+\begin{figure}[h!]
+\fbox{
+\begin{minipage}{0.97\textwidth} % TODO
+\vspace{10pt}
+\parbox[c]{0.97\linewidth}{
+
+  \begin{mathpar}
+    \inferrule 
+      {
+        \GAMMA \PDASHi \gls{W} \PDASHii \X \\
+        \sGAMMA \glsop{colon} {\gls{Env}}_{{\Z}_0} \; \GAMMA \\
+        \gls{cstack} \glsop{colon} {\gls{CStack}}_{{\Z}_0} \; \X
+      }
+      {
+        \CSTATEBi \gls{return}(\gls{W}) \CSTATEBii \sGAMMA \CSTATEBiii \gls{cstack} \CSTATEBiv \; \glsop{ctrans} \; \CSTATEAi \gls{run}(\gls{W},\sGAMMA) \CSTATEAii \gls{cstack} \CSTATEAiii
+      }
+
+    \inferrule 
+      {
+        \mathop{{\VDASHi}_{{\Z}_0}} \gls{bfW} \VDASHii \X \\
+        \GAMMA \glsop{bullet} \X \CDASHi \gls{M} \CDASHii \Y \\
+        \sGAMMA \glsop{colon} {\gls{Env}}_{{\Z}_0} \; \GAMMA \\
+        \gls{cstack} \glsop{colon} {\gls{CStack}}_{{\Z}_0} \; \Y
+      }
+      {
+        \CSTATEAi \gls{bfW} \CSTATEAii \CCONSi \gls{M} \CCONSii \sGAMMA \CCONSiii \CCONSiv \gls{cstack} \CSTATEAiii \; \glsop{ctrans} \; \CSTATEBi \gls{M} \CSTATEBii \sGAMMA \glsop{cdot} \gls{bfW} \CSTATEBiii \gls{cstack} \CSTATEBiv
+      }
+
+    \inferrule 
+      {
+        \GAMMA \CDASHi {\gls{M}}_{\X} \CDASHii \X \\
+        (\GAMMA \glsop{bullet} \X) \CDASHi {\gls{M}}_{\Y} \CDASHii \Y \\
+        \sGAMMA \glsop{colon} {\gls{Env}}_{{\Z}_0} \; \GAMMA \\
+        \gls{cstack} \glsop{colon} {\gls{CStack}}_{{\Z}_0} \; \Y
+      }
+      {
+        \CSTATEBi \gls{push}({\gls{M}}_{\X},{\gls{M}}_{\Y}) \CSTATEBii \sGAMMA \CSTATEBiii \gls{cstack} \CSTATEBiv \; \glsop{ctrans} \; \CSTATEBi {\gls{M}}_{\X} \CSTATEBii \sGAMMA \CSTATEBiii \CCONSi {\gls{M}}_{\Y} \CCONSii \sGAMMA \CCONSiii \CCONSiv \gls{cstack} \CSTATEBiv
+      }
+
+    \inferrule 
+      {
+        (\GAMMA \glsop{bullet} \gls{L}) \CDASHi {\gls{M}}_1 \CDASHii \X \\
+        \GAMMA \CDASHi {\gls{M}}_2 \CDASHii \X \\
+        \sGAMMA \glsop{colon} {\gls{Env}}_{{\Z}_0} \; \GAMMA \\
+        \gls{cstack} \glsop{colon} {\gls{CStack}}_{{\Z}_0} \; \X
+      }
+      {
+        \CSTATEBi \gls{sub}({\gls{M}}_1,{\gls{M}}_2) \CSTATEBii \sGAMMA \CSTATEBiii \gls{cstack} \CSTATEBiv \; \glsop{ctrans} \; \CSTATEBi {\gls{M}}_1 \CSTATEBii \sGAMMA \glsop{cdot} \gls{bfjump}({\gls{M}}_2,\sGAMMA,\gls{cstack}) \CSTATEBiii \gls{cstack} \CSTATEBiv
+      }
+
+    \inferrule 
+      {
+        \GAMMA \PDASHi \gls{W} \PDASHii \gls{L} \\
+        \sGAMMA \glsop{colon} {\gls{Env}}_{{\Z}_0} \; \GAMMA \\
+        \gls{cstack} \glsop{colon} {\gls{CStack}}_{{\Z}_0} \; \X
+      }
+      {
+        \CSTATEBi \gls{var}(\gls{W}) \CSTATEBii \sGAMMA \CSTATEBiii \gls{cstack} \CSTATEBiv \; \glsop{ctrans} \; \gls{runjump}(\gls{W},\sGAMMA)
+      }
+
+    \inferrule 
+      {
+        \GAMMA \PDASHi \gls{W} \PDASHii {\X}_1 \glsop{times} {\X}_2 \\
+        \sGAMMA \glsop{colon} {\gls{Env}}_{{\Z}_0} \; \GAMMA \\
+        (\GAMMA \glsop{bullet} {\X}_1 \glsop{bullet} {\X}_2) \CDASHi \gls{M} \CDASHii \Y \\
+        \gls{cstack} \glsop{colon} {\gls{CStack}}_{{\Z}_0} \; \Y
+      }
+      {
+        \CSTATEBi \gls{pmc}(\gls{W},\gls{M}) \CSTATEBii \sGAMMA \CSTATEBiii \gls{cstack} \CSTATEBiv \; \glsop{ctrans} \; \CSTATEBi \gls{M} \CSTATEBii \sGAMMA \glsop{cdot} \gls{runi}(\gls{W},\sGAMMA) \glsop{cdot} \gls{runii}(\gls{W},\sGAMMA) \CSTATEBiii \gls{cstack} \CSTATEBiv
+      }
+
+    \inferrule 
+      {
+        \GAMMA \PDASHi {\gls{W}}_1 \PDASHii \X \glsop{Rightarrow} \Y \\
+        \GAMMA \PDASHi {\gls{W}}_2 \PDASHii \X \\
+        \sGAMMA \glsop{colon} {\gls{Env}}_{{\Z}_0} \; \GAMMA \\
+        \gls{cstack} \glsop{colon} {\gls{CStack}}_{{\Z}_0} \; \Y
+      }
+      {
+        \CSTATEBi \gls{app}({\gls{W}}_1,{\gls{W}}_2) \CSTATEBii \sGAMMA \CSTATEBiii \gls{cstack} \CSTATEBiv \; \glsop{ctrans} \; \gls{runclo}({\gls{W}}_1,{\gls{W}}_2,\sGAMMA,\gls{cstack})
+      }
+  \end{mathpar}
+
+\vspace{5pt}
+} \end{minipage} }        
+\caption{Transitions of the machine for normalising pure terms}
+\label{fig:env}
+\end{figure}
