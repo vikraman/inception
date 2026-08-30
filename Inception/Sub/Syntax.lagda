@@ -114,7 +114,7 @@ data Comp where
       -> Γ ⊢ᶜ X
 
 \end{code}
-%<*Terms>
+%</Terms>
 \begin{code}
 
 syntax Wk Γ Δ = Γ ⊇ Δ
