@@ -1,3 +1,5 @@
+\begin{code}
+
 {-# OPTIONS --no-postfix-projections #-}
 
 module Inception.Sub.Syntax where
@@ -44,6 +46,10 @@ module Cx (Ty : Set) where
       -> Γ ∙ Y ∋ X
 
 open Cx Ty public
+
+\end{code}
+%<*Terms>
+\begin{code}
 
 syntax Pure Γ X = Γ ⊢ᵖ X
 
@@ -100,6 +106,10 @@ data Comp where
   sub : (Γ ∙ `L) ⊢ᶜ X -> Γ ⊢ᶜ X
       ---------------------------
       -> Γ ⊢ᶜ X
+
+\end{code}
+%<*Terms>
+\begin{code}
 
 syntax Wk Γ Δ = Γ ⊇ Δ
 
@@ -575,3 +585,5 @@ mutual
 
 old-injective : {i i' : Γ ∋ X} → old {Y = Y} i ≡ old i' → i ≡ i'
 old-injective refl = refl
+
+\end{code}
