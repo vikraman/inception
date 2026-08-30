@@ -69,8 +69,7 @@
 \glsxtrnewsymbol[description={Application operator},symbol={$\textsf{app}(\_,\_)$}]{app}{\textsf{app}}
 \glsxtrnewsymbol[description={Application function},symbol={$\textsf{apply}(\_,\_,\_,\_)$}]{apply}{\textsf{apply}} %TODO
 \glsxtrnewsymbol[description={Type of bottom type equalities},symbol={$\textsf{BotEq}$}]{BotEq}{\textsf{BotEq}}
-\glsxtrnewsymbol[description={Bottom type equality},symbol={$\textsf{bot-eq}$}]{bot-eq}{\textsf{bot-eq}}
-\glsxtrnewsymbol[description={Constructor of bottom type equality},symbol={$\textsf{bottom}$}]{bottom}{\textsf{bottom}}
+\glsxtrnewsymbol[description={Bottom type equality},symbol={$\textsf{b}$}]{bot-eq}{\textsf{b}}
 \glsxtrnewsymbol[description={Closure constructor},symbol={$\textbf{\textsf{clo}}(\_,\_)$}]{bfclo}{\textbf{\textsf{clo}}}
 \glsxtrnewsymbol[description={Type of computation stacks},symbol={${\textsf{CStack}}_{\_}\;\_$}]{CStack}{\textsf{CStack}}
 \glsxtrnewsymbol[description={Computation stack},symbol={$\textsf{cstack}$}]{cstack}{\textsf{cstack}}
@@ -87,7 +86,6 @@
 \glsxtrnewsymbol[description={Lookup function},symbol={$\textsf{lookup}(\_ , \_)$}]{lookup}{\textsf{lookup}} %TODO
 \glsxtrnewsymbol[description={De Bruijn index $0$},symbol={\textsf{new}}]{new}{\textsf{new}}
 \glsxtrnewsymbol[description={Constructor of an emptiness flag},symbol={\textsf{non-empty}}]{non-empty}{\textsf{non-empty}}
-\glsxtrnewsymbol[description={Constructor of bottom type equality},symbol={$\textsf{not-bottom}$}]{not-bottom}{\textsf{not-bottom}}
 \glsxtrnewsymbol[description={Successor of a De Bruijn index},symbol={$\textsf{old}(\_)$}]{old}{\textsf{old}}
 \glsxtrnewsymbol[description={Pair of two pure terms},symbol={$\textsf{pair}(\_,\_)$}]{pair}{\textsf{pair}}
 \glsxtrnewsymbol[description={Pair of two values},symbol={$\textbf{\textsf{pair}}(\_,\_)$}]{bfpair}{\textbf{\textsf{pair}}}
@@ -127,6 +125,8 @@
 \glsxtrnewsymbol[description={Transition for the computation machine},symbol={$\xrightarrow{\textsf{app}}$}]{app-trans}{\ensuremath{\xrightarrow{\textsf{app}}}}
 
 % Symbols
+\glsxtrnewsymbol[description={Constructor of bottom type equality},symbol={$\triangledown$}]{bottom}{\ensuremath{\triangledown}}
+\glsxtrnewsymbol[description={Constructor of bottom type equality},symbol={$\raisebox{0.2ex}{\scalebox{0.7}{$\bigcirc$}}$},user1={\ensuremath{\circ}}]{not-bottom}{\raisebox{0.2ex}{\scalebox{0.7}{$\bigcirc$}}}
 \glsxtrnewsymbol[description={Pure term of unit type},symbol={$\ast$}]{ast}{\ensuremath{\ast}}
 \glsxtrnewsymbol[description={Value of unit type},symbol={$\boldsymbol{\ast}$}]{bfast}{\ensuremath{\boldsymbol{\ast}}}
 \glsxtrnewsymbol[description={Terminal object},symbol={$\top$}]{top}{\ensuremath{\top}}
@@ -228,6 +228,8 @@
 \newcommand\CSTATEBii{\mathop{\glshyperlink[\glsentryuserii{CSTATEB}]{CSTATEB}\glsadd{CSTATEB}}}
 \newcommand\CSTATEBiii{\mathop{\glshyperlink[\glsentryuseriii{CSTATEB}]{CSTATEB}\glsadd{CSTATEB}}}
 \newcommand\CSTATEBiv{\mathop{\glshyperlink[\glsentryuseriv{CSTATEB}]{CSTATEB}\glsadd{CSTATEB}}}
+
+\newcommand\NOTBOTi{\mathop{\glshyperlink[\glsentryuseri{not-bottom}]{not-bottom}\glsadd{not-bottom}}}
 
 \newcommand\glsop[1]{\mathop{\gls{#1}}}
 \newcommand\glsbin[1]{\mathbin{\gls{#1}}}

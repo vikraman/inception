@@ -9,20 +9,22 @@
     {
       \x \MEMi \X \MEMii \GAMMA \\
       \sGAMMA \glsop{colon} {\gls{Env}}_{{\Z}_0} \; \GAMMA \\
-      \gls{pstack} \glsop{colon} {\gls{PStack}}_{{\Z}_0} \empty \Z_1
+      \gls{pstack} \glsop{colon} {\gls{PStack}}_{{\Z}_0} \; \gls{is-empty?} \; \empty \Z_1 \\
+      \gls{bot-eq} \glsop{colon} \gls{BotEq} \; \gls{is-empty?} \; \X \; {\Z}_1
     }
     {
-      \gls{lookup-trans} \; \gls{colon} \; \PSTATEi \gls{uparrow}(\x,\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{downarrow}(\gls{lookup}(\x , \sGAMMA)) \glsop{pcons} \gls{pstack} \PSTATEii
+      \gls{lookup-trans} \; \gls{colon} \; \PSTATEi \gls{uparrow}(\x,\sGAMMA) \mathop{{\glsop{pcons}}_{\gls{bot-eq}}} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{downarrow}(\gls{lookup}(\x , \sGAMMA)) \mathop{{\glsop{pcons}}_{\gls{bot-eq}}} \gls{pstack} \PSTATEii
     }
 
   \inferrule 
     {
       \GAMMA \CDASHi \gls{M} \gls{bullet} \X \CDASHii \Y \\
         \sGAMMA \glsop{colon} {\gls{Env}}_{{\Z}_0} \; \GAMMA \\
-        \gls{pstack} \glsop{colon} {\gls{PStack}}_{{\Z}_0} \empty \Z_1
+        \gls{pstack} \glsop{colon} {\gls{PStack}}_{{\Z}_0} \; \gls{is-empty?} \; \empty \Z_1 \\
+      \gls{bot-eq} \glsop{colon} \gls{BotEq} \; \gls{is-empty?} \; (\X \glsop{Rightarrow} \Y) \; {\Z}_1
     }
     {
-      \gls{lam-trans} \; \gls{colon} \; \PSTATEi \gls{uparrow}(\gls{lam}(\gls{M}),\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{downarrow}(\gls{bfclo}(\gls{M},\sGAMMA)) \glsop{pcons} \gls{pstack} \PSTATEii
+      \gls{lam-trans} \; \gls{colon} \; \PSTATEi \gls{uparrow}(\gls{lam}(\gls{M}),\sGAMMA) \mathop{{\glsop{pcons}}_{\gls{bot-eq}}} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{downarrow}(\gls{bfclo}(\gls{M},\sGAMMA)) \mathop{{\glsop{pcons}}_{\gls{bot-eq}}} \gls{pstack} \PSTATEii
     }
 
   \inferrule 
@@ -30,10 +32,11 @@
       \GAMMA \PDASHi {\gls{W}}_1 \PDASHii {\X}_1 \\
       \GAMMA \PDASHi {\gls{W}}_2 \PDASHii {\X}_2 \\
       \sGAMMA \glsop{colon} {\gls{Env}}_{{\Z}_0} \; \GAMMA \\
-      \gls{pstack} \glsop{colon} {\gls{PStack}}_{{\Z}_0} \empty \Z_1
+      \gls{pstack} \glsop{colon} {\gls{PStack}}_{{\Z}_0} \; \gls{is-empty?} \; \empty \Z_1 \\
+      \gls{bot-eq} \glsop{colon} \gls{BotEq} \; \gls{is-empty?} \; ({\X}_1 \glsop{times} {\X}_2) \; {\Z}_1
     }
     {
-      \gls{pair-trans} \; \gls{colon} \; \PSTATEi \gls{uparrow}(\gls{pair}({\gls{W}}_1,{\gls{W}}_2),\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{uparrow}({\gls{W}}_1,\sGAMMA) \glsop{pcons} \gls{upL}(\gls{pair}({\gls{W}}_1,{\gls{W}}_2),\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii
+      \gls{pair-trans} \; \gls{colon} \; \PSTATEi \gls{uparrow}(\gls{pair}({\gls{W}}_1,{\gls{W}}_2),\sGAMMA) \mathop{{\glsop{pcons}}_{\gls{bot-eq}}} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{uparrow}({\gls{W}}_1,\sGAMMA) \mathop{{\glsop{pcons}}_{\NOTBOTi}} \gls{upL}(\gls{pair}({\gls{W}}_1,{\gls{W}}_2),\sGAMMA) \mathop{{\glsop{pcons}}_{\gls{bot-eq}}} \gls{pstack} \PSTATEii
     }
 
   \inferrule 
@@ -41,19 +44,21 @@
       \GAMMA \PDASHi {\gls{W}}_{\X} \PDASHii {\X}_1 \glsop{times} {\X}_2 \\
       (\GAMMA \glsop{bullet} {\X}_1 \glsop{bullet} {\X}_2) \PDASHi {\gls{W}}_{\Y} \PDASHii \Y \\
       \sGAMMA \glsop{colon} {\gls{Env}}_{{\Z}_0} \; \GAMMA \\
-      \gls{pstack} \glsop{colon} {\gls{PStack}}_{{\Z}_0} \empty \Z_1
+      \gls{pstack} \glsop{colon} {\gls{PStack}}_{{\Z}_0} \; \gls{is-empty?} \; \empty \Z_1 \\
+      \gls{bot-eq} \glsop{colon} \gls{BotEq} \; \gls{is-empty?} \; \Y \; {\Z}_1
     }
     {
-      \gls{pmp-trans} \; \gls{colon} \; \PSTATEi \gls{uparrow}(\gls{pmp}({\gls{W}}_{\X},{\gls{W}}_{\Y}),\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{uparrow}({\gls{W}}_{\X},\sGAMMA) \glsop{pcons} \gls{upPM}(\gls{pmp}({\gls{W}}_{\X},{\gls{W}}_{\Y}),\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii
+      \gls{pmp-trans} \; \gls{colon} \; \PSTATEi \gls{uparrow}(\gls{pmp}({\gls{W}}_{\X},{\gls{W}}_{\Y}),\sGAMMA) \mathop{{\glsop{pcons}}_{\gls{bot-eq}}} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{uparrow}({\gls{W}}_{\X},\sGAMMA) \mathop{{\glsop{pcons}}_{\NOTBOTi}} \gls{upPM}(\gls{pmp}({\gls{W}}_{\X},{\gls{W}}_{\Y}),\sGAMMA) \mathop{{\glsop{pcons}}_{\gls{bot-eq}}} \gls{pstack} \PSTATEii
     }
 
   \inferrule 
     {
       \sGAMMA \glsop{colon} {\gls{Env}}_{{\Z}_0} \; \GAMMA \\
-      \gls{pstack} \glsop{colon} {\gls{PStack}}_{{\Z}_0} \empty \Z_1
+      \gls{pstack} \glsop{colon} {\gls{PStack}}_{{\Z}_0} \; \gls{is-empty?} \; \empty \Z_1 \\
+      \gls{bot-eq} \glsop{colon} \gls{BotEq} \; \gls{is-empty?} \; \gls{1} \; {\Z}_1
     }
     {
-      \gls{unit-trans} \; \gls{colon} \; \PSTATEi \gls{uparrow}(\gls{ast},\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{downarrow}(\gls{bfast}) \glsop{pcons} \gls{pstack} \PSTATEii
+      \gls{unit-trans} \; \gls{colon} \; \PSTATEi \gls{uparrow}(\gls{ast},\sGAMMA) \mathop{{\glsop{pcons}}_{\gls{bot-eq}}} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{downarrow}(\gls{bfast}) \mathop{{\glsop{pcons}}_{\gls{bot-eq}}} \gls{pstack} \PSTATEii
     }
 
   \inferrule 
@@ -61,9 +66,11 @@
       \mathop{{\VDASHi}_{{\Z}_0}} {\gls{bfW}}_1 \VDASHii {\X}_1 \\
       \GAMMA \PDASHi {\gls{W}}_2 \PDASHii {\X}_2 \\
       \sGAMMA \glsop{colon} {\gls{Env}}_{{\Z}_0} \; \GAMMA \\
-      \gls{pstack} \glsop{colon} {\gls{PStack}}_{{\Z}_0} \empty \Z_1}
+      \gls{pstack} \glsop{colon} {\gls{PStack}}_{{\Z}_0} \; \gls{is-empty?} \; \empty \Z_1 \\
+      \gls{bot-eq} \glsop{colon} \gls{BotEq} \; \gls{is-empty?} \; ({\X}_1 \glsop{times} {\X}_2) \; {\Z}_1
+    }
     {
-      \gls{Wl-trans} \; \gls{colon} \; \PSTATEi \gls{downarrow}({\gls{bfW}}_1) \glsop{pcons} \gls{upL}({\gls{W}}_1,{\gls{W}}_2,\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{uparrow}({\gls{W}}_2,\sGAMMA) \glsop{pcons} \gls{upR}({\gls{bfW}}_1,{\gls{W}}_2,\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii
+      \gls{Wl-trans} \; \gls{colon} \; \PSTATEi \gls{downarrow}({\gls{bfW}}_1) \mathop{{\glsop{pcons}}_{\NOTBOTi}} \gls{upL}({\gls{W}}_1,{\gls{W}}_2,\sGAMMA) \mathop{{\glsop{pcons}}_{\gls{bot-eq}}} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{uparrow}({\gls{W}}_2,\sGAMMA) \mathop{{\glsop{pcons}}_{\NOTBOTi}} \gls{upR}({\gls{bfW}}_1,{\gls{W}}_2,\sGAMMA) \mathop{{\glsop{pcons}}_{\gls{bot-eq}}} \gls{pstack} \PSTATEii
     }
 
   \inferrule 
@@ -72,10 +79,11 @@
       \mathop{{\VDASHi}_{{\Z}_0}} {\gls{bfW}}_2 \VDASHii {\X}_2 \\
       \GAMMA \PDASHi {\gls{W}}_2 \PDASHii {\X}_2 \\
       \sGAMMA \glsop{colon} {\gls{Env}}_{{\Z}_0} \; \GAMMA \\
-      \gls{pstack} \glsop{colon} {\gls{PStack}}_{{\Z}_0} \empty \Z_1
+      \gls{pstack} \glsop{colon} {\gls{PStack}}_{{\Z}_0} \; \gls{is-empty?} \; \empty \Z_1 \\
+      \gls{bot-eq} \glsop{colon} \gls{BotEq} \; \gls{is-empty?} \; ({\X}_1 \glsop{times} {\X}_2) \; {\Z}_1
     }
     {
-      \gls{Wr-trans} \; \gls{colon} \; \PSTATEi \gls{downarrow}({\gls{bfW}}_2) \glsop{pcons} \gls{upR}({\gls{bfW}}_1,{\gls{W}}_2,\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{downarrow}(\gls{bfpair}({\gls{bfW}}_1,{\gls{bfW}}_2)) \glsop{pcons} \gls{pstack} \PSTATEii
+      \gls{Wr-trans} \; \gls{colon} \; \PSTATEi \gls{downarrow}({\gls{bfW}}_2) \mathop{{\glsop{pcons}}_{\NOTBOTi}} \gls{upR}({\gls{bfW}}_1,{\gls{W}}_2,\sGAMMA) \mathop{{\glsop{pcons}}_{\gls{bot-eq}}} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{downarrow}(\gls{bfpair}({\gls{bfW}}_1,{\gls{bfW}}_2)) \mathop{{\glsop{pcons}}_{\gls{bot-eq}}} \gls{pstack} \PSTATEii
     }
 
   \inferrule 
@@ -86,10 +94,11 @@
      \GAMMA \PDASHi {\gls{W}}_{\Y} \PDASHii {\Y} \\
      \GAMMA \glsbin{bullet} {\X}_1 \glsbin{bullet} {\X}_2 \PDASHi {\gls{W}}_{\Y} \CDASHii \Y \\
      \sGAMMA \glsop{colon} {\gls{Env}}_{{\Z}_0} \; \GAMMA \\
-     \gls{pstack} \glsop{colon} {\gls{PStack}}_{{\Z}_0} \empty \Z_1
+     \gls{pstack} \glsop{colon} {\gls{PStack}}_{{\Z}_0} \; \gls{is-empty?} \; \empty \Z_1 \\
+      \gls{bot-eq} \glsop{colon} \gls{BotEq} \; \gls{is-empty?} \; \Y \; {\Z}_1
     }
     {
-      \gls{pairpm-trans} \; \gls{colon} \; \PSTATEi \gls{downarrow}(\gls{bfpair}({\gls{bfW}}_1,{\gls{bfW}}_2)) \glsop{pcons} \gls{upPM}({\gls{W}}_{\X},{\gls{W}}_{\Y},\sGAMMA) \glsop{pcons} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{uparrow}({\gls{W}}_{\Y} , \sGAMMA \glsop{cdot} {\gls{bfW}}_1 \glsop{cdot} {\gls{bfW}}_2) \glsop{pcons} \gls{pstack} \PSTATEii
+      \gls{pairpm-trans} \; \gls{colon} \; \PSTATEi \gls{downarrow}(\gls{bfpair}({\gls{bfW}}_1,{\gls{bfW}}_2)) \mathop{{\glsop{pcons}}_{\NOTBOTi}} \gls{upPM}({\gls{W}}_{\X},{\gls{W}}_{\Y},\sGAMMA) \mathop{{\glsop{pcons}}_{\gls{bot-eq}}} \gls{pstack} \PSTATEii \; \glsop{ptrans} \; \PSTATEi \gls{uparrow}({\gls{W}}_{\Y} , \sGAMMA \glsop{cdot} {\gls{bfW}}_1 \glsop{cdot} {\gls{bfW}}_2) \mathop{{\glsop{pcons}}_{\gls{bot-eq}}} \gls{pstack} \PSTATEii
     }
 \end{mathpar}
 

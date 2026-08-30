@@ -9,7 +9,7 @@
     \begin{align*}
       \text{Emptiness flag:} && \gls{is-empty?} &:=\; \gls{empty} \mid \gls{non-empty}\\
       \text{Bottom type equality:} && \gls{bot-eq} &:=\; \gls{bottom} \mid \gls{not-bottom}\\
-      \text{Stack of partially normalised pure terms:} && \gls{pstack} &:=\; \gls{boxtimes} \mid \gls{hatW} \glsop{pcons} \gls{pstack}\\
+      \text{Stack of partially normalised pure terms:} && \gls{pstack} &:=\; \gls{boxtimes} \mid \gls{hatW} \mathop{{\glsop{pcons}}_{\gls{bot-eq}}} \gls{pstack}\\
       \text{State of pure term machine:} && \gls{pstate} &:=\; \PSTATEi \gls{pstack} \PSTATEii
     \end{align*}
   \end{ceqn}
@@ -42,7 +42,7 @@
 
   \inferrule
     {\mathop{{\HDASHi}_{{\Z}_0}} \gls{hatW} \HDASHii \X \\ \gls{pstack} \glsop{colon} {\gls{PStack}}_{{\Z}_0} \; \gls{is-empty?} \; {\Z}_1 \\ \gls{bot-eq} \glsop{colon} \gls{BotEq} \; \gls{is-empty?} \; \X \; {\Z}_1}
-    {\gls{hatW} \glsop{pcons} \gls{pstack} \glsop{colon} {\gls{PStack}}_{{\Z}_0} \; \gls{non-empty} \; {{\Z}_2}}
+    {\gls{hatW} \mathop{{\glsop{pcons}}_{\gls{bot-eq}}} \gls{pstack} \glsop{colon} {\gls{PStack}}_{{\Z}_0} \; \gls{non-empty} \; {{\Z}_2}}
 
   \inferrule
     {\gls{pstack} \glsop{colon} {\gls{PStack}}_{{\Z}_0} \; \gls{non-empty} \; {{\Z}_1}}

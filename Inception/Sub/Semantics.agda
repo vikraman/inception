@@ -282,16 +282,16 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
 
 
   ⟦_⟧ᵖˢ : (S : PStack {Z₀ = R₀} non-empty Z₁) → ⟦ Z₁ ⟧
-  ⟦ ((⭭ W) ∷ ⊠) {bot-eq = bottom} ⟧ᵖˢ = ⟦ W ⟧ⱽ
-  ⟦ (⇡ W γ ∷ ⊠) {bot-eq = bottom} ⟧ᵖˢ = ⟦ W ⟧ᵖ ⟦ γ ⟧ᴱ
-  ⟦ (⇡ᴾᴹ Wₕₒₗₑ W₂ γ ∷ ⊠) {bot-eq = bottom} ⟧ᵖˢ = ⟦ pm Wₕₒₗₑ W₂ ⟧ᵖ ⟦ γ ⟧ᴱ
-  ⟦ (⇡ᴸ Wₕₒₗₑ W₂ γ ∷ ⊠) {bot-eq = bottom} ⟧ᵖˢ = ⟦ pair Wₕₒₗₑ W₂ ⟧ᵖ ⟦ γ ⟧ᴱ
-  ⟦ (⇡ᴿ W₁ Wₕₒₗₑ γ ∷ ⊠) {bot-eq = bottom} ⟧ᵖˢ = ⟦ W₁ ⟧ⱽ , ⟦ Wₕₒₗₑ ⟧ᵖ ⟦ γ ⟧ᴱ
-  ⟦ ((⭭ W) ∷ ((x ∷ S) {bot-eq = bot-eq})) {bot-eq = not-bottom} ⟧ᵖˢ = ⟦ (x ∷ S) {bot-eq = bot-eq} ⟧ᵖˢ
-  ⟦ (⇡ W γ ∷ ((x ∷ S) {bot-eq = bot-eq})) {bot-eq = not-bottom} ⟧ᵖˢ = ⟦ (x ∷ S) {bot-eq = bot-eq} ⟧ᵖˢ
-  ⟦ (⇡ᴾᴹ Wₕₒₗₑ W₂ γ ∷ ((x ∷ S) {bot-eq = bot-eq})) {bot-eq = not-bottom} ⟧ᵖˢ = ⟦ (x ∷ S) {bot-eq = bot-eq} ⟧ᵖˢ
-  ⟦ (⇡ᴸ Wₕₒₗₑ W₂ γ ∷ ((x ∷ S) {bot-eq = bot-eq})) {bot-eq = not-bottom} ⟧ᵖˢ = ⟦ (x ∷ S) {bot-eq = bot-eq} ⟧ᵖˢ
-  ⟦ (⇡ᴿ W₁ Wₕₒₗₑ γ ∷ ((x ∷ S) {bot-eq = bot-eq})) {bot-eq = not-bottom} ⟧ᵖˢ = ⟦ (x ∷ S) {bot-eq = bot-eq} ⟧ᵖˢ
+  ⟦ ((⭭ W) ∷ ⊠) {bot-eq = ▿} ⟧ᵖˢ = ⟦ W ⟧ⱽ
+  ⟦ (⇡ W γ ∷ ⊠) {bot-eq = ▿} ⟧ᵖˢ = ⟦ W ⟧ᵖ ⟦ γ ⟧ᴱ
+  ⟦ (⇡ᴾᴹ Wₕₒₗₑ W₂ γ ∷ ⊠) {bot-eq = ▿} ⟧ᵖˢ = ⟦ pm Wₕₒₗₑ W₂ ⟧ᵖ ⟦ γ ⟧ᴱ
+  ⟦ (⇡ᴸ Wₕₒₗₑ W₂ γ ∷ ⊠) {bot-eq = ▿} ⟧ᵖˢ = ⟦ pair Wₕₒₗₑ W₂ ⟧ᵖ ⟦ γ ⟧ᴱ
+  ⟦ (⇡ᴿ W₁ Wₕₒₗₑ γ ∷ ⊠) {bot-eq = ▿} ⟧ᵖˢ = ⟦ W₁ ⟧ⱽ , ⟦ Wₕₒₗₑ ⟧ᵖ ⟦ γ ⟧ᴱ
+  ⟦ ((⭭ W) ∷ ((x ∷ S) {bot-eq = bot-eq})) {bot-eq = ○} ⟧ᵖˢ = ⟦ (x ∷ S) {bot-eq = bot-eq} ⟧ᵖˢ
+  ⟦ (⇡ W γ ∷ ((x ∷ S) {bot-eq = bot-eq})) {bot-eq = ○} ⟧ᵖˢ = ⟦ (x ∷ S) {bot-eq = bot-eq} ⟧ᵖˢ
+  ⟦ (⇡ᴾᴹ Wₕₒₗₑ W₂ γ ∷ ((x ∷ S) {bot-eq = bot-eq})) {bot-eq = ○} ⟧ᵖˢ = ⟦ (x ∷ S) {bot-eq = bot-eq} ⟧ᵖˢ
+  ⟦ (⇡ᴸ Wₕₒₗₑ W₂ γ ∷ ((x ∷ S) {bot-eq = bot-eq})) {bot-eq = ○} ⟧ᵖˢ = ⟦ (x ∷ S) {bot-eq = bot-eq} ⟧ᵖˢ
+  ⟦ (⇡ᴿ W₁ Wₕₒₗₑ γ ∷ ((x ∷ S) {bot-eq = bot-eq})) {bot-eq = ○} ⟧ᵖˢ = ⟦ (x ∷ S) {bot-eq = bot-eq} ⟧ᵖˢ
 
   ⟦_⟧ᵖꟴ : (S : PState {Z₀ = R₀} Z₁) → ⟦ Z₁ ⟧
   ⟦ ⟨ pstack ⟩ ⟧ᵖꟴ = ⟦ pstack ⟧ᵖˢ
@@ -316,25 +316,25 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
   data PStackGood : PStack {Z₀ = R₀} non-empty Z₁ → Set where
 
 
-    bottom : (W : Partial X) → PStackGood ((W ∷ ⊠) {bot-eq = bottom})
+    ▿ : (W : Partial X) → PStackGood ((W ∷ ⊠) {bot-eq = ▿})
 
     pm-good :   {b : IsEmpty} {pstack : PStack b Z₁}
               → {Wₕₒₗₑ : Pure Γ (X `× Y)} {W₂ : Pure (Γ ∙ X ∙ Y) Z} {γ : Env Γ} {W : Partial (X `× Y)}
               → {bot-eq : BotEq b Z Z₁}
               → PStackGood (((⇡ᴾᴹ Wₕₒₗₑ W₂ γ) ∷ pstack) {bot-eq = bot-eq})
-              → (eq : ⟦ W ⟧ᵀ ≡ ⟦ Wₕₒₗₑ ⟧ᵖ ⟦ γ ⟧ᴱ) → PStackGood ((W ∷ ((⇡ᴾᴹ Wₕₒₗₑ W₂ γ) ∷ pstack) {bot-eq = bot-eq}) {bot-eq = not-bottom})
+              → (eq : ⟦ W ⟧ᵀ ≡ ⟦ Wₕₒₗₑ ⟧ᵖ ⟦ γ ⟧ᴱ) → PStackGood ((W ∷ ((⇡ᴾᴹ Wₕₒₗₑ W₂ γ) ∷ pstack) {bot-eq = bot-eq}) {bot-eq = ○})
 
     lhs-good :   {b : IsEmpty} {pstack : PStack b Z₁}
               → {Wₕₒₗₑ : Pure Γ X} {W₂ : Pure Γ Y} {γ : Env Γ} {W : Partial X}
               → {bot-eq : BotEq b (X `× Y) Z₁}
               → PStackGood (((⇡ᴸ Wₕₒₗₑ W₂ γ) ∷ pstack) {bot-eq = bot-eq})
-              → (eq : ⟦ W ⟧ᵀ ≡ ⟦ Wₕₒₗₑ ⟧ᵖ ⟦ γ ⟧ᴱ) → PStackGood ((W ∷ ((⇡ᴸ Wₕₒₗₑ W₂ γ) ∷ pstack) {bot-eq = bot-eq}) {bot-eq = not-bottom})
+              → (eq : ⟦ W ⟧ᵀ ≡ ⟦ Wₕₒₗₑ ⟧ᵖ ⟦ γ ⟧ᴱ) → PStackGood ((W ∷ ((⇡ᴸ Wₕₒₗₑ W₂ γ) ∷ pstack) {bot-eq = bot-eq}) {bot-eq = ○})
 
     rhs-good :   {b : IsEmpty} {pstack : PStack b Z₁}
               → {W₁ : Value X} {Wₕₒₗₑ : Pure Γ Y} {γ : Env Γ} {W : Partial Y}
               → {bot-eq : BotEq b (X `× Y) Z₁}
               → PStackGood (((⇡ᴿ W₁ Wₕₒₗₑ γ) ∷ pstack) {bot-eq = bot-eq})
-              → (eq : ⟦ W ⟧ᵀ ≡ ⟦ Wₕₒₗₑ ⟧ᵖ ⟦ γ ⟧ᴱ) → PStackGood ((W ∷ ((⇡ᴿ W₁ Wₕₒₗₑ γ) ∷ pstack) {bot-eq = bot-eq}) {bot-eq = not-bottom})
+              → (eq : ⟦ W ⟧ᵀ ≡ ⟦ Wₕₒₗₑ ⟧ᵖ ⟦ γ ⟧ᴱ) → PStackGood ((W ∷ ((⇡ᴿ W₁ Wₕₒₗₑ γ) ∷ pstack) {bot-eq = bot-eq}) {bot-eq = ○})
 
   data PStateGood : (S : PState {Z₀ = R₀} X) → Set where
       g[_] : {S : PStack {Z₀ = R₀} non-empty Z₁} → PStackGood S → PStateGood ⟨ S ⟩
@@ -344,65 +344,65 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
   lookup-good (old i) (γ · x) = lookup-good i γ
 
   valstate-good : {S S' : PState {Z₀ = R₀} X} → PStateGood S → S →ᵖ S' → PStateGood S'
-  valstate-good g[ bottom W ] ∘var = g[ bottom (⭭ _) ]
-  valstate-good g[ bottom W ] ∘lam = g[ bottom (⭭ cloᵛ _ _) ]
-  valstate-good g[ bottom W ] ∘pair = g[ lhs-good (bottom (⇡ᴸ _ _ _)) refl ]
-  valstate-good g[ bottom W ] ∘pm = g[ pm-good (bottom (⇡ᴾᴹ _ _ _)) refl ]
-  valstate-good g[ bottom W ] ∘unit = g[ bottom (⭭ unitᵛ) ]
-  valstate-good g[ pm-good x eq ] (∘var {i = i} {γ = γ}) = g[ (pm-good x (trans (lookup-good i γ) eq)) ]
-  valstate-good g[ pm-good x eq ] ∘pair = g[ lhs-good (pm-good x eq) refl ]
-  valstate-good g[ pm-good x eq ] ∘pm = g[ pm-good (pm-good x eq) refl ]
-  valstate-good g[ lhs-good x eq ] (∘var {i = i} {γ = γ}) = g[ (lhs-good x (trans (lookup-good i γ) eq)) ]
-  valstate-good g[ lhs-good x eq ] ∘lam = g[ lhs-good x eq ]
-  valstate-good g[ lhs-good x eq ] ∘pair = g[ lhs-good (lhs-good x eq) refl ]
-  valstate-good g[ lhs-good x eq ] ∘pm = g[ pm-good (lhs-good x eq) refl ]
-  valstate-good g[ lhs-good x eq ] ∘unit = g[ lhs-good x eq ]
-  valstate-good g[ rhs-good x eq ] (∘var {i = i} {γ = γ}) = g[ (rhs-good x (trans (lookup-good i γ) eq)) ]
-  valstate-good g[ rhs-good x eq ] ∘lam = g[ rhs-good x eq ]
-  valstate-good g[ rhs-good x eq ] ∘pair = g[ lhs-good (rhs-good x eq) refl ]
-  valstate-good g[ rhs-good x eq ] ∘pm = g[ pm-good (rhs-good x eq) refl ]
-  valstate-good g[ rhs-good x eq ] ∘unit = g[ rhs-good x eq ]
-  valstate-good g[ pm-good (bottom W) eq ] ∙pair∷pm = g[ bottom (⇡ _ (_ · _ · _)) ]
-  valstate-good g[ pm-good {Wₕₒₗₑ = Wₕₒₗₑ} {W₂ = W₂} {γ = γ} (pm-good {Wₕₒₗₑ = Wₕₒₗₑ'} {γ = γ'} x eq₁) eq ] (∙pair∷pm {W₁' = W₁'} {W₂' = W₂'}) =
-    g[ (pm-good x ((⟦ W₂ ⟧ᵖ ((⟦ γ ⟧ᴱ , ⟦ W₁' ⟧ⱽ) , ⟦ W₂' ⟧ⱽ) ≡⟨ cong (λ x → ⟦ W₂ ⟧ᵖ (assocl (⟦ γ ⟧ᴱ , x))) eq ⟩ ⟦ W₂ ⟧ᵖ (assocl (⟦ γ ⟧ᴱ , ⟦ Wₕₒₗₑ ⟧ᵖ ⟦ γ ⟧ᴱ)) ≡⟨ refl ⟩ ⟦ ⇡ᴾᴹ Wₕₒₗₑ W₂ γ ⟧ᵀ ≡⟨ eq₁ ⟩ ⟦ Wₕₒₗₑ' ⟧ᵖ ⟦ γ' ⟧ᴱ ∎))) ]
-  valstate-good g[ pm-good {Wₕₒₗₑ = Wₕₒₗₑ} {W₂ = W₂} {γ = γ} (lhs-good {Wₕₒₗₑ = Wₕₒₗₑ'} {γ = γ'} x eq₁) eq ] (∙pair∷pm {W₁' = W₁'} {W₂' = W₂'}) =
-    g[ (lhs-good x ((⟦ W₂ ⟧ᵖ ((⟦ γ ⟧ᴱ , ⟦ W₁' ⟧ⱽ) , ⟦ W₂' ⟧ⱽ) ≡⟨ cong (λ x → ⟦ W₂ ⟧ᵖ (assocl (⟦ γ ⟧ᴱ , x))) eq ⟩ ⟦ W₂ ⟧ᵖ (assocl (⟦ γ ⟧ᴱ , ⟦ Wₕₒₗₑ ⟧ᵖ ⟦ γ ⟧ᴱ)) ≡⟨ refl ⟩ ⟦ ⇡ᴾᴹ Wₕₒₗₑ W₂ γ ⟧ᵀ ≡⟨ eq₁ ⟩ ⟦ Wₕₒₗₑ' ⟧ᵖ ⟦ γ' ⟧ᴱ ∎))) ]
-  valstate-good g[ pm-good {Wₕₒₗₑ = Wₕₒₗₑ} {W₂ = W₂} {γ = γ} (rhs-good {Wₕₒₗₑ = Wₕₒₗₑ'} {γ = γ'} x eq₁) eq ] (∙pair∷pm {W₁' = W₁'} {W₂' = W₂'}) =
-    g[ (rhs-good x ((⟦ W₂ ⟧ᵖ ((⟦ γ ⟧ᴱ , ⟦ W₁' ⟧ⱽ) , ⟦ W₂' ⟧ⱽ) ≡⟨ cong (λ x → ⟦ W₂ ⟧ᵖ (assocl (⟦ γ ⟧ᴱ , x))) eq ⟩ ⟦ W₂ ⟧ᵖ (assocl (⟦ γ ⟧ᴱ , ⟦ Wₕₒₗₑ ⟧ᵖ ⟦ γ ⟧ᴱ)) ≡⟨ refl ⟩ ⟦ ⇡ᴾᴹ Wₕₒₗₑ W₂ γ ⟧ᵀ ≡⟨ eq₁ ⟩ ⟦ Wₕₒₗₑ' ⟧ᵖ ⟦ γ' ⟧ᴱ ∎))) ]
-  valstate-good g[ lhs-good (bottom W) eq ] ∙W∷l = g[ rhs-good (bottom (⇡ᴿ _ _ _)) refl ]
-  valstate-good g[ lhs-good {Wₕₒₗₑ = Wₕₒₗₑ} {W₂ = W₂} {γ = γ} (pm-good {Wₕₒₗₑ = Wₕₒₗₑ'} {γ = γ'} x eq₁) eq ] (∙W∷l {W₁' = W₁'}) = g[ (rhs-good (pm-good x ((⟦ W₁' ⟧ⱽ , ⟦ W₂ ⟧ᵖ ⟦ γ ⟧ᴱ) ≡⟨ cong (λ x → x , ⟦ W₂ ⟧ᵖ ⟦ γ ⟧ᴱ) eq ⟩ ⟦ ⇡ᴸ Wₕₒₗₑ W₂ γ ⟧ᵀ ≡⟨ eq₁ ⟩ ⟦ Wₕₒₗₑ' ⟧ᵖ ⟦ γ' ⟧ᴱ ∎)) refl) ]
-  valstate-good g[ lhs-good {Wₕₒₗₑ = Wₕₒₗₑ} {W₂ = W₂} {γ = γ} (lhs-good {Wₕₒₗₑ = Wₕₒₗₑ'} {W₂ = W₂'} {γ = γ'} x eq₁) eq ] (∙W∷l {W₁' = W₁'}) = g[ (rhs-good (lhs-good x ((⟦ W₁' ⟧ⱽ , ⟦ W₂ ⟧ᵖ ⟦ γ ⟧ᴱ) ≡⟨ cong (λ x → x , ⟦ W₂ ⟧ᵖ ⟦ γ ⟧ᴱ) eq ⟩ ⟦ ⇡ᴸ Wₕₒₗₑ W₂ γ ⟧ᵀ ≡⟨ eq₁ ⟩ ⟦ Wₕₒₗₑ' ⟧ᵖ ⟦ γ' ⟧ᴱ ∎)) refl) ]
-  valstate-good g[ lhs-good {Wₕₒₗₑ = Wₕₒₗₑ} {W₂ = W₂} {γ = γ} (rhs-good {W₁ = W₁} {Wₕₒₗₑ = Wₕₒₗₑ'} {γ = γ'} x eq₁) eq ] (∙W∷l {W₁' = W₁'}) = g[ (rhs-good (rhs-good x ((⟦ W₁' ⟧ⱽ , ⟦ W₂ ⟧ᵖ ⟦ γ ⟧ᴱ) ≡⟨ cong (λ x → x , ⟦ W₂ ⟧ᵖ ⟦ γ ⟧ᴱ) eq ⟩ ⟦ ⇡ᴸ Wₕₒₗₑ W₂ γ ⟧ᵀ ≡⟨ eq₁ ⟩ ⟦ Wₕₒₗₑ' ⟧ᵖ ⟦ γ' ⟧ᴱ ∎)) refl) ]
+  valstate-good g[ ▿ W ] lookup→ = g[ ▿ (⭭ _) ]
+  valstate-good g[ ▿ W ] lam→ = g[ ▿ (⭭ cloᵛ _ _) ]
+  valstate-good g[ ▿ W ] pair→ = g[ lhs-good (▿ (⇡ᴸ _ _ _)) refl ]
+  valstate-good g[ ▿ W ] pmᵖ→ = g[ pm-good (▿ (⇡ᴾᴹ _ _ _)) refl ]
+  valstate-good g[ ▿ W ] unit→ = g[ ▿ (⭭ unitᵛ) ]
+  valstate-good g[ pm-good g eq ] (lookup→ {x = x} {γ = γ}) = g[ (pm-good g (trans (lookup-good x γ) eq)) ]
+  valstate-good g[ pm-good x eq ] pair→ = g[ lhs-good (pm-good x eq) refl ]
+  valstate-good g[ pm-good x eq ] pmᵖ→ = g[ pm-good (pm-good x eq) refl ]
+  valstate-good g[ lhs-good g eq ] (lookup→ {x = x} {γ = γ}) = g[ (lhs-good g (trans (lookup-good x γ) eq)) ]
+  valstate-good g[ lhs-good x eq ] lam→ = g[ lhs-good x eq ]
+  valstate-good g[ lhs-good x eq ] pair→ = g[ lhs-good (lhs-good x eq) refl ]
+  valstate-good g[ lhs-good x eq ] pmᵖ→ = g[ pm-good (lhs-good x eq) refl ]
+  valstate-good g[ lhs-good x eq ] unit→ = g[ lhs-good x eq ]
+  valstate-good g[ rhs-good g eq ] (lookup→ {x = x} {γ = γ}) = g[ (rhs-good g (trans (lookup-good x γ) eq)) ]
+  valstate-good g[ rhs-good x eq ] lam→ = g[ rhs-good x eq ]
+  valstate-good g[ rhs-good x eq ] pair→ = g[ lhs-good (rhs-good x eq) refl ]
+  valstate-good g[ rhs-good x eq ] pmᵖ→ = g[ pm-good (rhs-good x eq) refl ]
+  valstate-good g[ rhs-good x eq ] unit→ = g[ rhs-good x eq ]
+  valstate-good g[ pm-good (▿ W) eq ] pair∷pm→ = g[ ▿ (⇡ _ (_ · _ · _)) ]
+  valstate-good g[ pm-good {Wₕₒₗₑ = Wₕₒₗₑ} {W₂ = W₂} {γ = γ} (pm-good {Wₕₒₗₑ = Wₕₒₗₑ'} {γ = γ'} x eq₁) eq ] (pair∷pm→ {𝐖₁ = 𝐖₁} {𝐖₂ = 𝐖₂}) =
+    g[ (pm-good x ((⟦ W₂ ⟧ᵖ ((⟦ γ ⟧ᴱ , ⟦ 𝐖₁ ⟧ⱽ) , ⟦ 𝐖₂ ⟧ⱽ) ≡⟨ cong (λ x → ⟦ W₂ ⟧ᵖ (assocl (⟦ γ ⟧ᴱ , x))) eq ⟩ ⟦ W₂ ⟧ᵖ (assocl (⟦ γ ⟧ᴱ , ⟦ Wₕₒₗₑ ⟧ᵖ ⟦ γ ⟧ᴱ)) ≡⟨ refl ⟩ ⟦ ⇡ᴾᴹ Wₕₒₗₑ W₂ γ ⟧ᵀ ≡⟨ eq₁ ⟩ ⟦ Wₕₒₗₑ' ⟧ᵖ ⟦ γ' ⟧ᴱ ∎))) ]
+  valstate-good g[ pm-good {Wₕₒₗₑ = Wₕₒₗₑ} {W₂ = W₂} {γ = γ} (lhs-good {Wₕₒₗₑ = Wₕₒₗₑ'} {γ = γ'} x eq₁) eq ] (pair∷pm→ {𝐖₁ = 𝐖₁} {𝐖₂ = 𝐖₂}) =
+    g[ (lhs-good x ((⟦ W₂ ⟧ᵖ ((⟦ γ ⟧ᴱ , ⟦ 𝐖₁ ⟧ⱽ) , ⟦ 𝐖₂ ⟧ⱽ) ≡⟨ cong (λ x → ⟦ W₂ ⟧ᵖ (assocl (⟦ γ ⟧ᴱ , x))) eq ⟩ ⟦ W₂ ⟧ᵖ (assocl (⟦ γ ⟧ᴱ , ⟦ Wₕₒₗₑ ⟧ᵖ ⟦ γ ⟧ᴱ)) ≡⟨ refl ⟩ ⟦ ⇡ᴾᴹ Wₕₒₗₑ W₂ γ ⟧ᵀ ≡⟨ eq₁ ⟩ ⟦ Wₕₒₗₑ' ⟧ᵖ ⟦ γ' ⟧ᴱ ∎))) ]
+  valstate-good g[ pm-good {Wₕₒₗₑ = Wₕₒₗₑ} {W₂ = W₂} {γ = γ} (rhs-good {Wₕₒₗₑ = Wₕₒₗₑ'} {γ = γ'} x eq₁) eq ] (pair∷pm→ {𝐖₁ = 𝐖₁} {𝐖₂ = 𝐖₂}) =
+    g[ (rhs-good x ((⟦ W₂ ⟧ᵖ ((⟦ γ ⟧ᴱ , ⟦ 𝐖₁ ⟧ⱽ) , ⟦ 𝐖₂ ⟧ⱽ) ≡⟨ cong (λ x → ⟦ W₂ ⟧ᵖ (assocl (⟦ γ ⟧ᴱ , x))) eq ⟩ ⟦ W₂ ⟧ᵖ (assocl (⟦ γ ⟧ᴱ , ⟦ Wₕₒₗₑ ⟧ᵖ ⟦ γ ⟧ᴱ)) ≡⟨ refl ⟩ ⟦ ⇡ᴾᴹ Wₕₒₗₑ W₂ γ ⟧ᵀ ≡⟨ eq₁ ⟩ ⟦ Wₕₒₗₑ' ⟧ᵖ ⟦ γ' ⟧ᴱ ∎))) ]
+  valstate-good g[ lhs-good (▿ W) eq ] W∷l→ = g[ rhs-good (▿ (⇡ᴿ _ _ _)) refl ]
+  valstate-good g[ lhs-good {Wₕₒₗₑ = Wₕₒₗₑ} {W₂ = W₂} {γ = γ} (pm-good {Wₕₒₗₑ = Wₕₒₗₑ'} {γ = γ'} x eq₁) eq ] (W∷l→ {𝐖₁ = 𝐖₁}) = g[ (rhs-good (pm-good x ((⟦ 𝐖₁ ⟧ⱽ , ⟦ W₂ ⟧ᵖ ⟦ γ ⟧ᴱ) ≡⟨ cong (λ x → x , ⟦ W₂ ⟧ᵖ ⟦ γ ⟧ᴱ) eq ⟩ ⟦ ⇡ᴸ Wₕₒₗₑ W₂ γ ⟧ᵀ ≡⟨ eq₁ ⟩ ⟦ Wₕₒₗₑ' ⟧ᵖ ⟦ γ' ⟧ᴱ ∎)) refl) ]
+  valstate-good g[ lhs-good {Wₕₒₗₑ = Wₕₒₗₑ} {W₂ = W₂} {γ = γ} (lhs-good {Wₕₒₗₑ = Wₕₒₗₑ'} {W₂ = W₂'} {γ = γ'} x eq₁) eq ] (W∷l→ {𝐖₁ = 𝐖₁}) = g[ (rhs-good (lhs-good x ((⟦ 𝐖₁ ⟧ⱽ , ⟦ W₂ ⟧ᵖ ⟦ γ ⟧ᴱ) ≡⟨ cong (λ x → x , ⟦ W₂ ⟧ᵖ ⟦ γ ⟧ᴱ) eq ⟩ ⟦ ⇡ᴸ Wₕₒₗₑ W₂ γ ⟧ᵀ ≡⟨ eq₁ ⟩ ⟦ Wₕₒₗₑ' ⟧ᵖ ⟦ γ' ⟧ᴱ ∎)) refl) ]
+  valstate-good g[ lhs-good {Wₕₒₗₑ = Wₕₒₗₑ} {W₂ = W₂} {γ = γ} (rhs-good {W₁ = W₁} {Wₕₒₗₑ = Wₕₒₗₑ'} {γ = γ'} x eq₁) eq ] (W∷l→ {𝐖₁ = 𝐖₁}) = g[ (rhs-good (rhs-good x ((⟦ 𝐖₁ ⟧ⱽ , ⟦ W₂ ⟧ᵖ ⟦ γ ⟧ᴱ) ≡⟨ cong (λ x → x , ⟦ W₂ ⟧ᵖ ⟦ γ ⟧ᴱ) eq ⟩ ⟦ ⇡ᴸ Wₕₒₗₑ W₂ γ ⟧ᵀ ≡⟨ eq₁ ⟩ ⟦ Wₕₒₗₑ' ⟧ᵖ ⟦ γ' ⟧ᴱ ∎)) refl) ]
 
-  valstate-good g[ rhs-good {W₁ = W₁} {Wₕₒₗₑ = Wₕₒₗₑ} {γ = γ} (bottom W) eq ] ∙W∷r = g[ bottom (⭭ pairᵛ _ _) ]
-  valstate-good g[ rhs-good {W₁ = W₁} {Wₕₒₗₑ = Wₕₒₗₑ} {γ = γ} (pm-good {Wₕₒₗₑ = Wₕₒₗₑ'} {γ = γ'} x eq₁) eq ] (∙W∷r {W₂' = W₂'}) = g[ (pm-good x (trans (cong (λ x → ⟦ W₁ ⟧ⱽ , x) eq) eq₁)) ]
-  valstate-good g[ rhs-good {W₁ = W₁} {Wₕₒₗₑ = Wₕₒₗₑ} {γ = γ} (lhs-good {Wₕₒₗₑ = Wₕₒₗₑ'} {W₂ = W₂} {γ = γ'} x eq₁) eq ] (∙W∷r {W₂' = W₂'}) = g[ (lhs-good x (trans (cong (λ x → ⟦ W₁ ⟧ⱽ , x) eq) eq₁)) ]
-  valstate-good g[ rhs-good {W₁ = W₁} {Wₕₒₗₑ = Wₕₒₗₑ} {γ = γ} (rhs-good {W₁ = W₁'} {Wₕₒₗₑ = Wₕₒₗₑ'} {γ = γ'} x eq₁) eq ] (∙W∷r {W₂' = W₂'}) = g[ (rhs-good x (trans (cong (λ x → ⟦ W₁ ⟧ⱽ , x) eq) eq₁)) ]
+  valstate-good g[ rhs-good {W₁ = W₁} {Wₕₒₗₑ = Wₕₒₗₑ} {γ = γ} (▿ W) eq ] W∷r→ = g[ ▿ (⭭ pairᵛ _ _) ]
+  valstate-good g[ rhs-good {W₁ = W₁} {Wₕₒₗₑ = Wₕₒₗₑ} {γ = γ} (pm-good {Wₕₒₗₑ = Wₕₒₗₑ'} {γ = γ'} x eq₁) eq ] (W∷r→ {𝐖₂ = 𝐖₂}) = g[ (pm-good x (trans (cong (λ x → ⟦ W₁ ⟧ⱽ , x) eq) eq₁)) ]
+  valstate-good g[ rhs-good {W₁ = W₁} {Wₕₒₗₑ = Wₕₒₗₑ} {γ = γ} (lhs-good {Wₕₒₗₑ = Wₕₒₗₑ'} {W₂ = W₂} {γ = γ'} x eq₁) eq ] (W∷r→ {𝐖₂ = 𝐖₂}) = g[ (lhs-good x (trans (cong (λ x → ⟦ W₁ ⟧ⱽ , x) eq) eq₁)) ]
+  valstate-good g[ rhs-good {W₁ = W₁} {Wₕₒₗₑ = Wₕₒₗₑ} {γ = γ} (rhs-good {W₁ = W₁'} {Wₕₒₗₑ = Wₕₒₗₑ'} {γ = γ'} x eq₁) eq ] (W∷r→ {𝐖₂ = 𝐖₂}) = g[ (rhs-good x (trans (cong (λ x → ⟦ W₁ ⟧ⱽ , x) eq) eq₁)) ]
 
   valstate-eq : {S S' : PState {Z₀ = R₀} X} → PStateGood S → S →ᵖ S' → ⟦ S ⟧ᵖꟴ ≡ ⟦ S' ⟧ᵖꟴ
-  valstate-eq {S = S} {S' = S'} good (∘var {i = i} {γ = γ} {pstack = ⊠} {bot-eq = bottom}) = lookup-eq i γ
-  valstate-eq {S = S} {S' = S'} good (∘var {pstack = (x ∷ pstack) {bot-eq = bot-eq}} {bot-eq = not-bottom}) = refl
-  valstate-eq {S = S} {S' = S'} good (∘lam {pstack = ⊠} {bot-eq = bottom}) = refl
-  valstate-eq {S = S} {S' = S'} good (∘lam {pstack = (x ∷ pstack) {bot-eq = bot-eq}} {bot-eq = not-bottom}) = refl
-  valstate-eq {S = S} {S' = S'} good (∘pair {pstack = ⊠} {bot-eq = bottom}) = refl
-  valstate-eq {S = S} {S' = S'} good (∘pair {pstack = (x ∷ pstack) {bot-eq = bot-eq}} {bot-eq = not-bottom}) = refl
-  valstate-eq {S = S} {S' = S'} good (∘pm {pstack = ⊠} {bot-eq = bottom}) = refl
-  valstate-eq {S = S} {S' = S'} good (∘pm {pstack = (x ∷ pstack) {bot-eq = bot-eq}} {bot-eq = not-bottom}) = refl
-  valstate-eq {S = S} {S' = S'} good (∘unit {pstack = ⊠} {bot-eq = bottom}) = refl
-  valstate-eq {S = S} {S' = S'} good (∘unit {pstack = (x ∷ pstack) {bot-eq = bot-eq}} {bot-eq = not-bottom}) = refl
-  valstate-eq {S = S} {S' = S'} g[ lhs-good {W₂ = W₂} {γ = γ} x eq ] (∙W∷l {pstack = ⊠} {bot-eq = bottom}) = cong (λ x → x , ⟦ W₂ ⟧ᵖ ⟦ γ ⟧ᴱ) (sym eq)
-  valstate-eq {S = S} {S' = S'} good (∙W∷l {pstack = (x ∷ pstack) {bot-eq = bot-eq}} {bot-eq = not-bottom}) = refl
-  valstate-eq {S = S} {S' = S'} g[ rhs-good {W₁ = W₁} {γ = γ} x eq ] (∙W∷r {pstack = ⊠} {bot-eq = bottom}) = cong (λ x → ⟦ W₁ ⟧ⱽ , x) (sym eq)
-  valstate-eq {S = S} {S' = S'} good (∙W∷r {pstack = (x ∷ pstack) {bot-eq = bot-eq}} {bot-eq = not-bottom}) = refl
-  valstate-eq {S = S} {S' = S'} g[ pm-good {Wₕₒₗₑ = Wₕₒₗₑ} {W₂ = W₂} x eq ] (∙pair∷pm {γ = γ} {pstack = ⊠} {bot-eq = bottom}) = cong (λ x → ⟦ W₂ ⟧ᵖ (assocl (⟦ γ ⟧ᴱ , x))) (sym eq)
-  valstate-eq {S = S} {S' = S'} good (∙pair∷pm {pstack = (x ∷ pstack) {bot-eq = bot-eq}} {bot-eq = not-bottom}) = refl
+  valstate-eq {S = S} {S' = S'} good (lookup→ {x = x} {γ = γ} {pstack = ⊠} {bot-eq = ▿}) = lookup-eq x γ
+  valstate-eq {S = S} {S' = S'} good (lookup→ {pstack = (x ∷ pstack) {bot-eq = bot-eq}} {bot-eq = ○}) = refl
+  valstate-eq {S = S} {S' = S'} good (lam→ {pstack = ⊠} {bot-eq = ▿}) = refl
+  valstate-eq {S = S} {S' = S'} good (lam→ {pstack = (x ∷ pstack) {bot-eq = bot-eq}} {bot-eq = ○}) = refl
+  valstate-eq {S = S} {S' = S'} good (pair→ {pstack = ⊠} {bot-eq = ▿}) = refl
+  valstate-eq {S = S} {S' = S'} good (pair→ {pstack = (x ∷ pstack) {bot-eq = bot-eq}} {bot-eq = ○}) = refl
+  valstate-eq {S = S} {S' = S'} good (pmᵖ→ {pstack = ⊠} {bot-eq = ▿}) = refl
+  valstate-eq {S = S} {S' = S'} good (pmᵖ→ {pstack = (x ∷ pstack) {bot-eq = bot-eq}} {bot-eq = ○}) = refl
+  valstate-eq {S = S} {S' = S'} good (unit→ {pstack = ⊠} {bot-eq = ▿}) = refl
+  valstate-eq {S = S} {S' = S'} good (unit→ {pstack = (x ∷ pstack) {bot-eq = bot-eq}} {bot-eq = ○}) = refl
+  valstate-eq {S = S} {S' = S'} g[ lhs-good {W₂ = W₂} {γ = γ} x eq ] (W∷l→ {pstack = ⊠} {bot-eq = ▿}) = cong (λ x → x , ⟦ W₂ ⟧ᵖ ⟦ γ ⟧ᴱ) (sym eq)
+  valstate-eq {S = S} {S' = S'} good (W∷l→ {pstack = (x ∷ pstack) {bot-eq = bot-eq}} {bot-eq = ○}) = refl
+  valstate-eq {S = S} {S' = S'} g[ rhs-good {W₁ = W₁} {γ = γ} x eq ] (W∷r→ {pstack = ⊠} {bot-eq = ▿}) = cong (λ x → ⟦ W₁ ⟧ⱽ , x) (sym eq)
+  valstate-eq {S = S} {S' = S'} good (W∷r→ {pstack = (x ∷ pstack) {bot-eq = bot-eq}} {bot-eq = ○}) = refl
+  valstate-eq {S = S} {S' = S'} g[ pm-good {Wₕₒₗₑ = Wₕₒₗₑ} {W₂ = W₂} x eq ] (pair∷pm→ {γ = γ} {pstack = ⊠} {bot-eq = ▿}) = cong (λ x → ⟦ W₂ ⟧ᵖ (assocl (⟦ γ ⟧ᴱ , x))) (sym eq)
+  valstate-eq {S = S} {S' = S'} good (pair∷pm→ {pstack = (x ∷ pstack) {bot-eq = bot-eq}} {bot-eq = ○}) = refl
 
   valstate-trans-eq : {S S' : PState {Z₀ = R₀} X} → PStateGood S → S ↠ᵛ S' → ⟦ S ⟧ᵖꟴ ≡ ⟦ S' ⟧ᵖꟴ
   valstate-trans-eq good (S →ᵖ⟨ S→ᵖS' ⟩．) = valstate-eq good S→ᵖS'
   valstate-trans-eq good (S →ᵖ⟨ S→ᵖS' ⟩ S'↠ᵛS'') = trans (valstate-eq good S→ᵖS') (valstate-trans-eq (valstate-good good S→ᵖS') S'↠ᵛS'')
 
-  value-machine-correct : (W : Pure Γ X) → (γ : Env {Z₀ = R₀} Γ) → ⟦ W ⟧ᵖ ⟦ γ ⟧ᴱ ≡ ⟦ result (run-pure W γ) ⟧ⱽ
-  value-machine-correct W γ = valstate-trans-eq g[ bottom (⇡ W γ) ] (steps (run-pure W γ))
+  value-machine-correct : (W : Pure Γ X) → (γ : Env {Z₀ = R₀} Γ) → ⟦ W ⟧ᵖ ⟦ γ ⟧ᴱ ≡ ⟦ result (normalise-pure W γ) ⟧ⱽ
+  value-machine-correct W γ = valstate-trans-eq g[ ▿ (⇡ W γ) ] (steps (normalise-pure W γ))
 
   push-eq : (cs : CStack {Z₀ = R₀} X) → (KX : K ⟦ X ⟧) → ⟦ cs ⟧ᶜˢ (λ k → KX k) k₀ ≡ KX (λ y → ⟦ cs ⟧ᶜˢ (λ k → k y) k₀)
   push-eq ◻ KX = refl
@@ -428,8 +428,8 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
   jump-eq : (W : Value `L) → ⟦ W ⟧ⱽ ≡ ⟦ jump-to-state W ⟧ᶜꟴ
   jump-eq (jumpᵛ _ _ _) = refl
 
-  jump-eq' : (W : Pure Γ `L) → (γ : Env {Z₀ = R₀} Γ) → ⟦ result (run-pure W γ) ⟧ⱽ ≡ ⟦ jump-to-state (result (run-pure W γ)) ⟧ᶜꟴ
-  jump-eq' W γ = jump-eq (result (run-pure W γ))
+  jump-eq' : (W : Pure Γ `L) → (γ : Env {Z₀ = R₀} Γ) → ⟦ result (normalise-pure W γ) ⟧ⱽ ≡ ⟦ jump-to-state (result (normalise-pure W γ)) ⟧ᶜꟴ
+  jump-eq' W γ = jump-eq (result (normalise-pure W γ))
 
   clo-eq : (W : Value (X `⇒ Y)) → (T : ⟦ X ⟧) → (E : ⟦ proj₁ (clo-to-comp W) ⟧ˣ) → (eq : E ≡ ⟦ proj₂ (proj₂ (clo-to-comp W)) ⟧ᴱ) → ⟦ W ⟧ⱽ T ≡ ⟦ proj₁ (proj₂ (clo-to-comp W)) ⟧ᶜ (E , T)
   clo-eq (cloᵛ M γ) T E eq = cong (λ x → curry ⟦ M ⟧ᶜ x T) (sym eq)
@@ -441,7 +441,7 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
   proj₂-val-eq (pairᵛ W₁ W₂) = refl
 
   mutual
-    proj₂-val-eq' : (W : Pure Γ (X `× Y)) → (γ : Env {Z₀ = R₀} Γ) → (proj₂ (⟦ W ⟧ᵖ ⟦ γ ⟧ᴱ)) ≡ ⟦ proj₂-val (result (run-pure W γ)) ⟧ⱽ
+    proj₂-val-eq' : (W : Pure Γ (X `× Y)) → (γ : Env {Z₀ = R₀} Γ) → (proj₂ (⟦ W ⟧ᵖ ⟦ γ ⟧ᴱ)) ≡ ⟦ proj₂-val (result (normalise-pure W γ)) ⟧ⱽ
     proj₂-val-eq' (var new) (γ · W) = proj₂-val-eq W
     proj₂-val-eq' (var (old i)) (γ · W) = proj₂-val-eq' (var i) γ
     proj₂-val-eq' (pair W₁ W₂) γ = value-machine-correct W₂ γ
@@ -449,15 +449,15 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
       let
         eq₁ = proj₁-val-eq' W₁ γ
         eq₂ = proj₂-val-eq' W₁ γ
-        eq = proj₂-val-eq' W₂ (γ · proj₁-val (result (run-pure W₁ γ)) · proj₂-val (result (run-pure W₁ γ)))
+        eq = proj₂-val-eq' W₂ (γ · proj₁-val (result (normalise-pure W₁ γ)) · proj₂-val (result (normalise-pure W₁ γ)))
       in
       proj₂ (⟦ W₂ ⟧ᵖ ((⟦ γ ⟧ᴱ , proj₁ (⟦ W₁ ⟧ᵖ ⟦ γ ⟧ᴱ)) , proj₂ (⟦ W₁ ⟧ᵖ ⟦ γ ⟧ᴱ)))
       ≡⟨ cong₂ (λ x y → proj₂ (⟦ W₂ ⟧ᵖ ((⟦ γ ⟧ᴱ , x) , y))) eq₁ eq₂ ⟩
-      proj₂ (⟦ W₂ ⟧ᵖ ((⟦ γ ⟧ᴱ , ⟦ proj₁-val (result (run-pure W₁ γ)) ⟧ⱽ) , ⟦ proj₂-val (result (run-pure W₁ γ)) ⟧ⱽ))
+      proj₂ (⟦ W₂ ⟧ᵖ ((⟦ γ ⟧ᴱ , ⟦ proj₁-val (result (normalise-pure W₁ γ)) ⟧ⱽ) , ⟦ proj₂-val (result (normalise-pure W₁ γ)) ⟧ⱽ))
       ≡⟨ eq ⟩
-      ⟦ proj₂-val (result (run-pure W₂ (γ · proj₁-val (result (run-pure W₁ γ)) · proj₂-val (result (run-pure W₁ γ))))) ⟧ⱽ ∎
+      ⟦ proj₂-val (result (normalise-pure W₂ (γ · proj₁-val (result (normalise-pure W₁ γ)) · proj₂-val (result (normalise-pure W₁ γ))))) ⟧ⱽ ∎
 
-    proj₁-val-eq' : (W : Pure Γ (X `× Y)) → (γ : Env {Z₀ = R₀} Γ) → (proj₁ (⟦ W ⟧ᵖ ⟦ γ ⟧ᴱ)) ≡ ⟦ proj₁-val (result (run-pure W γ)) ⟧ⱽ
+    proj₁-val-eq' : (W : Pure Γ (X `× Y)) → (γ : Env {Z₀ = R₀} Γ) → (proj₁ (⟦ W ⟧ᵖ ⟦ γ ⟧ᴱ)) ≡ ⟦ proj₁-val (result (normalise-pure W γ)) ⟧ⱽ
     proj₁-val-eq' (var new) (γ · W) = proj₁-val-eq W
     proj₁-val-eq' (var (old i)) (γ · W) = proj₁-val-eq' (var i) γ
     proj₁-val-eq' (pair W₁ W₂) γ = value-machine-correct W₁ γ
@@ -465,33 +465,33 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
       let
         eq₁ = proj₁-val-eq' W₁ γ
         eq₂ = proj₂-val-eq' W₁ γ
-        eq = proj₁-val-eq' W₂ (γ · proj₁-val (result (run-pure W₁ γ)) · proj₂-val (result (run-pure W₁ γ)))
+        eq = proj₁-val-eq' W₂ (γ · proj₁-val (result (normalise-pure W₁ γ)) · proj₂-val (result (normalise-pure W₁ γ)))
       in
       proj₁ (⟦ W₂ ⟧ᵖ ((⟦ γ ⟧ᴱ , proj₁ (⟦ W₁ ⟧ᵖ ⟦ γ ⟧ᴱ)) , proj₂ (⟦ W₁ ⟧ᵖ ⟦ γ ⟧ᴱ)))
       ≡⟨ cong₂ (λ x y → proj₁ (⟦ W₂ ⟧ᵖ ((⟦ γ ⟧ᴱ , x) , y))) eq₁ eq₂ ⟩
-      proj₁ (⟦ W₂ ⟧ᵖ ((⟦ γ ⟧ᴱ , ⟦ proj₁-val (result (run-pure W₁ γ)) ⟧ⱽ) , ⟦ proj₂-val (result (run-pure W₁ γ)) ⟧ⱽ))
+      proj₁ (⟦ W₂ ⟧ᵖ ((⟦ γ ⟧ᴱ , ⟦ proj₁-val (result (normalise-pure W₁ γ)) ⟧ⱽ) , ⟦ proj₂-val (result (normalise-pure W₁ γ)) ⟧ⱽ))
       ≡⟨ eq ⟩
-      ⟦ proj₁-val (result (run-pure W₂ (γ · proj₁-val (result (run-pure W₁ γ)) · proj₂-val (result (run-pure W₁ γ))))) ⟧ⱽ ∎
+      ⟦ proj₁-val (result (normalise-pure W₂ (γ · proj₁-val (result (normalise-pure W₁ γ)) · proj₂-val (result (normalise-pure W₁ γ))))) ⟧ⱽ ∎
 
 
   compstate-eq : {S S' : CState {Z₀ = R₀}} → S →ᶜ S' → ⟦ S ⟧ᶜꟴ ≡ ⟦ S' ⟧ᶜꟴ
-  compstate-eq (∘return {W = W} {γ = γ} {cstack = cstack}) =
+  compstate-eq (pure→ {W = W} {γ = γ} {cstack = cstack}) =
     let
       eq = value-machine-correct W γ
     in
-    η (⟦ W ⟧ᵖ ⟦ γ ⟧ᴱ) ⟦ cstack ⟧ᴷ ≡⟨ cong (λ x → η x ⟦ cstack ⟧ᴷ) eq ⟩ η ⟦ result (run-pure W γ) ⟧ⱽ ⟦ cstack ⟧ᴷ ∎
-  compstate-eq (∙return {W' = W'} {M = M} {γ = γ} {cstack = cstack}) =
+    η (⟦ W ⟧ᵖ ⟦ γ ⟧ᴱ) ⟦ cstack ⟧ᴷ ≡⟨ cong (λ x → η x ⟦ cstack ⟧ᴷ) eq ⟩ η ⟦ result (normalise-pure W γ) ⟧ⱽ ⟦ cstack ⟧ᴷ ∎
+  compstate-eq (return→ {𝐖 = 𝐖} {M = M} {γ = γ} {cstack = cstack}) =
     let
-      eq = push-eq cstack (⟦ M ⟧ᶜ (⟦ γ ⟧ᴱ , ⟦ W' ⟧ⱽ))
+      eq = push-eq cstack (⟦ M ⟧ᶜ (⟦ γ ⟧ᴱ , ⟦ 𝐖 ⟧ⱽ))
     in
-      η ⟦ W' ⟧ⱽ ⟦ < M ； γ >∷ cstack ⟧ᴷ
+      η ⟦ 𝐖 ⟧ⱽ ⟦ < M ； γ >∷ cstack ⟧ᴷ
     ≡⟨ refl ⟩
-     ⟦ cstack ⟧ᶜˢ (λ k₁ → ⟦ M ⟧ᶜ (⟦ γ ⟧ᴱ , ⟦ W' ⟧ⱽ) k₁) k₀
+     ⟦ cstack ⟧ᶜˢ (λ k₁ → ⟦ M ⟧ᶜ (⟦ γ ⟧ᴱ , ⟦ 𝐖 ⟧ⱽ) k₁) k₀
     ≡⟨ eq ⟩
-     ⟦ M ⟧ᶜ (⟦ γ ⟧ᴱ , ⟦ W' ⟧ⱽ) (λ y → ⟦ cstack ⟧ᶜˢ (λ k₁ → k₁ y) k₀)
+     ⟦ M ⟧ᶜ (⟦ γ ⟧ᴱ , ⟦ 𝐖 ⟧ⱽ) (λ y → ⟦ cstack ⟧ᶜˢ (λ k₁ → k₁ y) k₀)
     ≡⟨ refl ⟩
-     ⟦ M ⟧ᶜ (⟦ γ ⟧ᴱ , ⟦ W' ⟧ⱽ) ⟦ cstack ⟧ᴷ ∎
-  compstate-eq (∘push {M₁ = M₁} {M₂ = M₂} {γ = γ} {cstack = cstack}) =
+     ⟦ M ⟧ᶜ (⟦ γ ⟧ᴱ , ⟦ 𝐖 ⟧ⱽ) ⟦ cstack ⟧ᴷ ∎
+  compstate-eq (push→ {M₁ = M₁} {M₂ = M₂} {γ = γ} {cstack = cstack}) =
     (< idf , ⟦ M₁ ⟧ᶜ > ； τ ； ⟦ M₂ ⟧ᶜ ♯) ⟦ γ ⟧ᴱ ⟦ cstack ⟧ᴷ
      ≡⟨ refl ⟩
      ⟦ M₁ ⟧ᶜ ⟦ γ ⟧ᴱ (λ z → ⟦ M₂ ⟧ᶜ (⟦ γ ⟧ᴱ , z) (λ y → ⟦ cstack ⟧ᶜˢ (λ k₁ → k₁ y) k₀))
@@ -499,31 +499,31 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
      ⟦ M₁ ⟧ᶜ ⟦ γ ⟧ᴱ (λ y → ⟦ cstack ⟧ᶜˢ (λ k₁ → ⟦ M₂ ⟧ᶜ (⟦ γ ⟧ᴱ , y) k₁) k₀)
      ≡⟨ refl ⟩
      ⟦ M₁ ⟧ᶜ ⟦ γ ⟧ᴱ ⟦ < M₂ ； γ >∷ cstack ⟧ᴷ ∎
-  compstate-eq ∘sub = refl
-  compstate-eq (∘var {W = W} {γ = γ} {cstack = cstack}) =
+  compstate-eq sub→ = refl
+  compstate-eq (var→ {W = W} {γ = γ} {cstack = cstack}) =
     let
       eq = value-machine-correct W γ
     in
-    (⟦ W ⟧ᵖ ； varK) ⟦ γ ⟧ᴱ ⟦ cstack ⟧ᴷ ≡⟨ refl ⟩ ⟦ W ⟧ᵖ ⟦ γ ⟧ᴱ ≡⟨ eq ⟩ ⟦ result (run-pure W γ) ⟧ⱽ ≡⟨ jump-eq' W γ ⟩ ⟦ jump-to-state (result (run-pure W γ)) ⟧ᶜꟴ ∎
-  compstate-eq (∘pm {W = W} {γ = γ} {M = M} {cstack = cstack}) =
+    (⟦ W ⟧ᵖ ； varK) ⟦ γ ⟧ᴱ ⟦ cstack ⟧ᴷ ≡⟨ refl ⟩ ⟦ W ⟧ᵖ ⟦ γ ⟧ᴱ ≡⟨ eq ⟩ ⟦ result (normalise-pure W γ) ⟧ⱽ ≡⟨ jump-eq' W γ ⟩ ⟦ jump-to-state (result (normalise-pure W γ)) ⟧ᶜꟴ ∎
+  compstate-eq (pmᶜ→ {W = W} {γ = γ} {M = M} {cstack = cstack}) =
     (< idf , ⟦ W ⟧ᵖ > ； assocl ； ⟦ M ⟧ᶜ) ⟦ γ ⟧ᴱ ⟦ cstack ⟧ᴷ
     ≡⟨ refl ⟩
       ⟦ M ⟧ᶜ (assocl ( ⟦ γ ⟧ᴱ , ⟦ W ⟧ᵖ ⟦ γ ⟧ᴱ )) ⟦ cstack ⟧ᴷ
     ≡⟨ cong (λ x → ⟦ M ⟧ᶜ (assocl ( ⟦ γ ⟧ᴱ , x )) ⟦ cstack ⟧ᴷ) (cong₂ _,_ (proj₁-val-eq' W γ) (proj₂-val-eq' W γ)) ⟩
-     ⟦ M ⟧ᶜ ((⟦ γ ⟧ᴱ , ⟦ proj₁-val (result (run-pure W γ)) ⟧ⱽ) , ⟦ proj₂-val (result (run-pure W γ)) ⟧ⱽ) ⟦ cstack ⟧ᴷ ∎
-  compstate-eq (∘app {W₁ = W₁} {W₂ = W₂} {γ = γ} {cstack = cstack}) =
+     ⟦ M ⟧ᶜ ((⟦ γ ⟧ᴱ , ⟦ proj₁-val (result (normalise-pure W γ)) ⟧ⱽ) , ⟦ proj₂-val (result (normalise-pure W γ)) ⟧ⱽ) ⟦ cstack ⟧ᴷ ∎
+  compstate-eq (app→ {W₁ = W₁} {W₂ = W₂} {γ = γ} {cstack = cstack}) =
     cong (λ x → x (λ y → ⟦ cstack ⟧ᶜˢ (λ cstack₁ → cstack₁ y) k₀))
       (⟦ W₁ ⟧ᵖ ⟦ γ ⟧ᴱ (⟦ W₂ ⟧ᵖ ⟦ γ ⟧ᴱ)
       ≡⟨ cong (λ x → x (⟦ W₂ ⟧ᵖ ⟦ γ ⟧ᴱ)) (value-machine-correct W₁ γ) ⟩
-      ⟦ result (run-pure W₁ γ) ⟧ⱽ (⟦ W₂ ⟧ᵖ ⟦ γ ⟧ᴱ)
-      ≡⟨ clo-eq (result (run-pure W₁ γ)) (⟦ W₂ ⟧ᵖ ⟦ γ ⟧ᴱ) ⟦ proj₂ (proj₂ (clo-to-comp (result (run-pure W₁ γ)))) ⟧ᴱ refl ⟩
-      ⟦ proj₁ (proj₂ (clo-to-comp (result (run-pure W₁ γ)))) ⟧ᶜ (⟦ proj₂ (proj₂ (clo-to-comp (result (run-pure W₁ γ)))) ⟧ᴱ , (⟦ W₂ ⟧ᵖ ⟦ γ ⟧ᴱ))
+      ⟦ result (normalise-pure W₁ γ) ⟧ⱽ (⟦ W₂ ⟧ᵖ ⟦ γ ⟧ᴱ)
+      ≡⟨ clo-eq (result (normalise-pure W₁ γ)) (⟦ W₂ ⟧ᵖ ⟦ γ ⟧ᴱ) ⟦ proj₂ (proj₂ (clo-to-comp (result (normalise-pure W₁ γ)))) ⟧ᴱ refl ⟩
+      ⟦ proj₁ (proj₂ (clo-to-comp (result (normalise-pure W₁ γ)))) ⟧ᶜ (⟦ proj₂ (proj₂ (clo-to-comp (result (normalise-pure W₁ γ)))) ⟧ᴱ , (⟦ W₂ ⟧ᵖ ⟦ γ ⟧ᴱ))
       ≡⟨ refl ⟩
-      curry ⟦ proj₁ (proj₂ (clo-to-comp (result (run-pure W₁ γ)))) ⟧ᶜ ⟦ proj₂ (proj₂ (clo-to-comp (result (run-pure W₁ γ)))) ⟧ᴱ (⟦ W₂ ⟧ᵖ ⟦ γ ⟧ᴱ)
-      ≡⟨ cong (λ x → curry ⟦ proj₁ (proj₂ (clo-to-comp (result (run-pure W₁ γ)))) ⟧ᶜ ⟦ proj₂ (proj₂ (clo-to-comp (result (run-pure W₁ γ)))) ⟧ᴱ x) (value-machine-correct W₂ γ) ⟩
-      curry ⟦ proj₁ (proj₂ (clo-to-comp (result (run-pure W₁ γ)))) ⟧ᶜ ⟦ proj₂ (proj₂ (clo-to-comp (result (run-pure W₁ γ)))) ⟧ᴱ ⟦ result (run-pure W₂ γ) ⟧ⱽ
-      ≡⟨ cong (λ x → curry ⟦ proj₁ (proj₂ (clo-to-comp (result (run-pure W₁ γ)))) ⟧ᶜ x ⟦ result (run-pure W₂ γ) ⟧ⱽ) refl ⟩
-      ⟦ proj₁ (proj₂ (clo-to-comp (result (run-pure W₁ γ)))) ⟧ᶜ (⟦ proj₂ (proj₂ (clo-to-comp (result (run-pure W₁ γ)))) ⟧ᴱ , ⟦ result (run-pure W₂ γ) ⟧ⱽ) ∎ )
+      curry ⟦ proj₁ (proj₂ (clo-to-comp (result (normalise-pure W₁ γ)))) ⟧ᶜ ⟦ proj₂ (proj₂ (clo-to-comp (result (normalise-pure W₁ γ)))) ⟧ᴱ (⟦ W₂ ⟧ᵖ ⟦ γ ⟧ᴱ)
+      ≡⟨ cong (λ x → curry ⟦ proj₁ (proj₂ (clo-to-comp (result (normalise-pure W₁ γ)))) ⟧ᶜ ⟦ proj₂ (proj₂ (clo-to-comp (result (normalise-pure W₁ γ)))) ⟧ᴱ x) (value-machine-correct W₂ γ) ⟩
+      curry ⟦ proj₁ (proj₂ (clo-to-comp (result (normalise-pure W₁ γ)))) ⟧ᶜ ⟦ proj₂ (proj₂ (clo-to-comp (result (normalise-pure W₁ γ)))) ⟧ᴱ ⟦ result (normalise-pure W₂ γ) ⟧ⱽ
+      ≡⟨ cong (λ x → curry ⟦ proj₁ (proj₂ (clo-to-comp (result (normalise-pure W₁ γ)))) ⟧ᶜ x ⟦ result (normalise-pure W₂ γ) ⟧ⱽ) refl ⟩
+      ⟦ proj₁ (proj₂ (clo-to-comp (result (normalise-pure W₁ γ)))) ⟧ᶜ (⟦ proj₂ (proj₂ (clo-to-comp (result (normalise-pure W₁ γ)))) ⟧ᴱ , ⟦ result (normalise-pure W₂ γ) ⟧ⱽ) ∎ )
 
   compstate-eq* : {S S' : CState {Z₀ = R₀}} → S →ᶜ* S' → ⟦ S ⟧ᶜꟴ ≡ ⟦ S' ⟧ᶜꟴ
   compstate-eq* (S ◼) = refl
