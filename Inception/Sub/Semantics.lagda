@@ -1,3 +1,5 @@
+\begin{code}
+
 {-# OPTIONS --no-postfix-projections #-}
 
 module Inception.Sub.Semantics (R : Set) where
@@ -547,3 +549,5 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
       k₀ ⟦ proj₁ (halting-state (proj₁ (eval M)) (proj₁ (proj₂ (proj₂ (eval M))))) ⟧ⱽ
     ≡⟨ cong (λ x → k₀ ⟦ x ⟧ⱽ) (sym (proj₂ (proj₂ (proj₂ (proj₂ (eval M)))))) ⟩
       k₀ ⟦ proj₁ (proj₂ (eval M)) ⟧ⱽ ∎
+
+\end{code}
