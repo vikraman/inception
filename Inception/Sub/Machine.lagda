@@ -1,3 +1,5 @@
+\begin{code}
+
 {-# OPTIONS --no-postfix-projections #-}
 
 module Inception.Sub.Machine where
@@ -433,3 +435,5 @@ _ : eval ex15 ≡ (_ , unitᵛ , _ ,
     →ᶜ⟨ pure→ ⟩ (⟨ unitᵛ ╎ ◻ ⟩ ◼)))))))))))
     , _)
 _ = refl
+
+\end{code}
