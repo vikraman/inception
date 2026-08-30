@@ -36,6 +36,9 @@ module Cx (Ty : Set) where
     X X' Y Y' Z Z' Z₀ Z₁ Z₁' X₁ X₂ : Ty
     Γ Δ Ψ Γ' Γ'' Γ''' Δ' Γ₀ Γ₁ Γ₂ Γ₃ : Ctx
 
+\end{code}
+%<*Ctx>
+\begin{code}
   data _∋_ : Ctx -> Ty -> Set where
     new :
       ---------
@@ -44,6 +47,9 @@ module Cx (Ty : Set) where
     old : Γ ∋ X
       -------------
       -> Γ ∙ Y ∋ X
+\end{code}
+%</Ctx>
+\begin{code}
 
 open Cx Ty public
 
