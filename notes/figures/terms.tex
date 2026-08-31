@@ -14,7 +14,7 @@
     \end{align*}
   \end{ceqn}
   \caption{Grammar for terms}
-  \label{fig:term-a}
+  \label{fig:terms-a}
 \end{subfigure}
 }
 
@@ -42,94 +42,42 @@
       {\GAMMA \PDASHi \gls{pmp} ( {\gls{W}}_1 , {\gls{W}}_2 ) \PDASHii \Z}
   \end{mathpar}
   \caption{Typing rules for pure terms}
-  \label{fig:term-b}
+  \label{fig:terms-b}
 \end{subfigure}
 
 \vspace{10pt}
 \begin{subfigure}{0.95\linewidth}
-\begin{mathpar}
-  \inferrule
-    {\GAMMA \PDASHi \gls{W} \PDASHii \X}
-    {\GAMMA \CDASHi \gls{return} (\gls{W}) \CDASHii \X}
+  \begin{mathpar}
+    \inferrule
+      {\GAMMA \PDASHi \gls{W} \PDASHii \X}
+      {\GAMMA \CDASHi \gls{return} (\gls{W}) \CDASHii \X}
 
-  \inferrule
-    {\GAMMA \CDASHi {\gls{M}}_1 \CDASHii \X \\ \GAMMA \glsbin{bullet} \X \CDASHi {\gls{M}}_2 \CDASHii \Y}
-    {\GAMMA \CDASHi \gls{push} ({\gls{M}}_1 , {\gls{M}}_2) \CDASHii \Y}
+    \inferrule
+      {\GAMMA \CDASHi {\gls{M}}_1 \CDASHii \X \\ \GAMMA \glsbin{bullet} \X \CDASHi {\gls{M}}_2 \CDASHii \Y}
+      {\GAMMA \CDASHi \gls{push} ({\gls{M}}_1 , {\gls{M}}_2) \CDASHii \Y}
 
-  \inferrule
-    {\GAMMA \PDASHi {\gls{W}}_1 \PDASHii \X \glsop{Rightarrow} \Y \\ \GAMMA \PDASHi {\gls{W}}_2 \PDASHii \X}
-    {\GAMMA \CDASHi \gls{app}({\gls{W}}_1, {\gls{W}}_2) \CDASHii \Y}
+    \inferrule
+      {\GAMMA \PDASHi {\gls{W}}_1 \PDASHii \X \glsop{Rightarrow} \Y \\ \GAMMA \PDASHi {\gls{W}}_2 \PDASHii \X}
+      {\GAMMA \CDASHi \gls{app}({\gls{W}}_1, {\gls{W}}_2) \CDASHii \Y}
 
-  \inferrule
-    {\GAMMA \PDASHi \gls{W} \PDASHii \gls{L}}
-    {\GAMMA \CDASHi {\gls{var}}_X (\gls{W}) \CDASHii \X}
+    \inferrule
+      {\GAMMA \PDASHi \gls{W} \PDASHii \gls{L}}
+      {\GAMMA \CDASHi {\gls{var}}_X (\gls{W}) \CDASHii \X}
 
-  \inferrule
-    {\GAMMA \glsbin{bullet} \gls{L} \CDASHi {\gls{M}}_1 \CDASHii \X \\ \GAMMA \CDASHi {\gls{M}}_2 \CDASHii \X}
-    {\GAMMA \CDASHi {\gls{sub}}_{\X} ({\gls{M}}_1 , {\gls{M}}_2) \CDASHii \X}
+    \inferrule
+      {\GAMMA \glsbin{bullet} \gls{L} \CDASHi {\gls{M}}_1 \CDASHii \X \\ \GAMMA \CDASHi {\gls{M}}_2 \CDASHii \X}
+      {\GAMMA \CDASHi {\gls{sub}}_{\X} ({\gls{M}}_1 , {\gls{M}}_2) \CDASHii \X}
 
-  \inferrule
-    {\GAMMA \PDASHi \gls{W} : \X \gls{times} \Y \\ \GAMMA \glsbin{bullet} \X \glsbin{bullet} \Y \CDASHi \gls{M} \CDASHii \Z}
-    {\GAMMA \CDASHi \gls{pmc}(\gls{W}, \gls{M}) \CDASHii \Z}
-\end{mathpar}
-%  \begin{center}
-%    \begin{minipage}[b]{0.4\linewidth}
-%      \centering
-%      \begin{prooftree}
-%        \AxiomC{$\GAMMA \PDASHi \gls{W} \PDASHii \X$}
-%        \UnaryInfC{$\GAMMA \CDASHi \gls{return} (\gls{W}) \CDASHii \X$}
-%      \end{prooftree}
-%      \vspace{10pt}
-%    \end{minipage}
-%    \begin{minipage}[b]{0.4\linewidth}
-%      \centering
-%      \begin{prooftree}
-%        \AxiomC{$\GAMMA \CDASHi {\gls{M}}_1 \CDASHii \X$}
-%        \AxiomC{$\GAMMA \glsbin{bullet} \X \CDASHi {\gls{M}}_2 \CDASHii \Y$}
-%        \BinaryInfC{$\GAMMA \CDASHi \gls{push} ({\gls{M}}_1 , {\gls{M}}_2) \CDASHii \Y$}
-%      \end{prooftree}
-%      \vspace{10pt}
-%    \end{minipage}
-%
-%    \begin{minipage}[b]{0.4\linewidth}
-%      \centering
-%      \begin{prooftree}
-%        \AxiomC{$\GAMMA \PDASHi {\gls{W}}_1 \PDASHii \X \glsop{Rightarrow} \Y$}
-%        \AxiomC{$\GAMMA \PDASHi {\gls{W}}_2 \PDASHii \X$}
-%        \BinaryInfC{$\GAMMA \CDASHi \gls{app}({\gls{W}}_1, {\gls{W}}_2) \CDASHii \Y$}
-%      \end{prooftree}
-%      \vspace{10pt}
-%    \end{minipage}
-%    \begin{minipage}[b]{0.4\linewidth}
-%      \centering
-%      \begin{prooftree}
-%        \AxiomC{$\GAMMA \PDASHi \gls{W} \PDASHii \gls{L}$}
-%        \UnaryInfC{$\GAMMA \CDASHi {\gls{var}}_X (\gls{W}) \CDASHii \X$}
-%      \end{prooftree}
-%      \vspace{10pt}
-%    \end{minipage}
-%
-%    \begin{minipage}[b]{0.45\linewidth}
-%      \centering
-%      \begin{prooftree}
-%        \AxiomC{$\GAMMA \glsbin{bullet} \gls{L} \CDASHi {\gls{M}}_1 \CDASHii \X$}
-%        \AxiomC{$\GAMMA \CDASHi {\gls{M}}_2 \CDASHii \X$}
-%        \BinaryInfC{$\GAMMA \CDASHi {\gls{sub}}_{\X} ({\gls{M}}_1 , {\gls{M}}_2) \CDASHii \X$}
-%      \end{prooftree}
-%      \vspace{10pt}
-%    \end{minipage}
-%    \begin{minipage}[b]{0.45\linewidth}
-%      \centering
-%      \begin{prooftree}
-%        \AxiomC{$\GAMMA \PDASHi \gls{W} : \X \gls{times} \Y$}
-%        \AxiomC{$\GAMMA \glsbin{bullet} \X \glsbin{bullet} \Y \CDASHi \gls{M} \CDASHii \Z$}
-%        \BinaryInfC{$\GAMMA \CDASHi \gls{pmc}(\gls{W}, \gls{M}) \CDASHii \Z$}
-%      \end{prooftree}
-%      \vspace{10pt}
-%    \end{minipage}
-%  \end{center}
+    \inferrule
+      {\GAMMA \PDASHi \gls{W} : \X \gls{times} \Y \\ \GAMMA \glsbin{bullet} \X \glsbin{bullet} \Y \CDASHi \gls{M} \CDASHii \Z}
+      {\GAMMA \CDASHi \gls{pmc}(\gls{W}, \gls{M}) \CDASHii \Z}
+  \end{mathpar}
+  \ifwithagda
+  \caption{Typing rules for effectful terms / computations (see \Cref{frm:terms})}
+  \else
   \caption{Typing rules for effectful terms / computations}
-  \label{fig:term-c}
+  \fi
+  \label{fig:terms-c}
 \end{subfigure}
 
 \vspace{5pt}
