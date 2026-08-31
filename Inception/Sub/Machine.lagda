@@ -29,6 +29,7 @@ infixr 10 _⨾_
 \end{code}
 %<*Env>
 \begin{code}
+
 mutual
 
   data CStack {Z₀ : Ty} : (X : Ty) → Set where
