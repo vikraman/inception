@@ -8,7 +8,7 @@ variable
   SA SB SC : S.Ty
 
 ⟦_⟧ : S.Ty -> L.Ty
-⟦ `𝟙 ⟧  = `Unit
+⟦ `Unit ⟧  = `Unit
 ⟦ A `× B ⟧ = ⟦ A ⟧ `× ⟦ B ⟧
 ⟦ A `⇒ B ⟧ = ⟦ A ⟧ `⇒ ⟦ B ⟧
 ⟦ `L ⟧     = `Unit `⇒ `⊥

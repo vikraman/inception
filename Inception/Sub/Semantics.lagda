@@ -59,7 +59,7 @@ subK : ∀ {ℓ} {X : Set ℓ} -> (R -> K X) × K X -> K X
 subK (f , n) k = f (n k) k
 
 ⟦_⟧ : Ty -> Set
-⟦ `𝟙 ⟧ = ⊤
+⟦ `Unit ⟧ = ⊤
 ⟦ A `× B ⟧ = ⟦ A ⟧ × ⟦ B ⟧
 ⟦ A `⇒ B ⟧ = ⟦ A ⟧ -> K ⟦ B ⟧
 ⟦ `L ⟧ = R

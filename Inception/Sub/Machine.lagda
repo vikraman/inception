@@ -36,7 +36,7 @@ mutual
 
   data Value {Z₀ : Ty} : Ty → Set where
 
-    unitᵛ : Value {Z₀ = Z₀} `𝟙
+    unitᵛ : Value {Z₀ = Z₀} `Unit
 
     pairᵛ : (𝐖₁ : Value {Z₀ = Z₀} X₁) → (𝐖₂ : Value {Z₀ = Z₀} X₂) → Value (X₁ `× X₂)
 
@@ -118,7 +118,7 @@ data _→ᵖ_ {Z₀ : Ty} {Z₁ : Ty} : PState {Z₀ = Z₀} Z₁ → PState {Z�
               ---------------------------------------------------------------------------
             →     ⟨ (⇡ (pm Wˣ Wʸ) γ ∷ pstack) {bot-eq = bot-eq} ⟩ →ᵖ ⟨ (⇡ Wˣ γ ∷ (⇡ᴾᴹ Wˣ Wʸ γ ∷ pstack) {bot-eq = bot-eq}) {bot-eq = ○} ⟩
 
-    unit→  :  {γ  : Env {Z₀ = Z₀} Γ} → {pstack : PStack {Z₀ = Z₀} ∅? Z₁} → {bot-eq : BotEq ∅? `𝟙 Z₁}
+    unit→  :  {γ  : Env {Z₀ = Z₀} Γ} → {pstack : PStack {Z₀ = Z₀} ∅? Z₁} → {bot-eq : BotEq ∅? `Unit Z₁}
               ---------------------------------------------------------------------------
             →     ⟨ (⇡ unit γ ∷ pstack) {bot-eq = bot-eq} ⟩ →ᵖ ⟨ (⭭ unitᵛ ∷ pstack) {bot-eq = bot-eq} ⟩
 
@@ -295,7 +295,7 @@ data SN {Z₀ : Ty} (σ : CState {Z₀ = Z₀}) : Set where
 Rᵛ : {Z₀ : Ty} → (X : Ty) → Value {Z₀ = Z₀} X → Set
 Rᵏ : {Z₀ : Ty} → (X : Ty) → CStack {Z₀ = Z₀} X → Set
 
-Rᵛ `𝟙 unitᵛ = ⊤
+Rᵛ `Unit unitᵛ = ⊤
 Rᵛ (X `× Y) (pairᵛ W₁ W₂) = Rᵛ X W₁ × Rᵛ Y W₂
 Rᵛ {Z₀ = Z₀} (X `⇒ Y) (cloᵛ M γ) = ∀ {W' : Value {Z₀ = Z₀} X} → Rᵛ X W' → ∀ {cstack : CStack {Z₀ = Z₀} Y} → Rᵏ Y cstack → SN ⟨ M ╎ γ · W' ╎ cstack ⟩
 Rᵛ `L (jumpᵛ M γ cstack) = SN ⟨ M ╎ γ ╎ cstack ⟩
@@ -418,8 +418,8 @@ eval M = eval-acc (SN-theorem M)
 ---------------------------------------------------------------------------------
 -- EXAMPLES
 
-ex15 : ε ⊢ᶜ (`𝟙)
-ex15 = push (push (app (lam {X = `𝟙} (sub (var (var new)) (return unit))) unit) (return unit)) (return unit)
+ex15 : ε ⊢ᶜ (`Unit)
+ex15 = push (push (app (lam {X = `Unit} (sub (var (var new)) (return unit))) unit) (return unit)) (return unit)
 
 _ : eval ex15 ≡ (_ , unitᵛ , _ ,
                   (⟨ push (push (app (lam (sub (var (var new)) (return unit))) unit) (return unit)) (return unit) ╎ ⋄ ╎ ◻ ⟩
