@@ -37,7 +37,7 @@ module Cx (Ty : Set) where
     Γ Δ Ψ Γ' Γ'' Γ''' Δ' Γ₀ Γ₁ Γ₂ Γ₃ : Ctx
 
 \end{code}
-%<*Ctx>
+%<*Mem>
 \begin{code}
   data _∋_ : Ctx -> Ty -> Set where
     new :
@@ -48,7 +48,7 @@ module Cx (Ty : Set) where
       -------------
       -> Γ ∙ Y ∋ X
 \end{code}
-%</Ctx>
+%</Mem>
 \begin{code}
 
 open Cx Ty public

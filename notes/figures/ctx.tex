@@ -14,7 +14,7 @@
     \end{align*}
   \end{ceqn}
   \caption{Grammar}
-  \label{fig:first}
+  \label{fig:ctx-a}
 \end{subfigure}
 }\hfill\debugbox{
 \begin{subfigure}{0.4\linewidth}
@@ -28,8 +28,12 @@
       {\gls{old}(\x) \MEMi \X \MEMii \GAMMA \glsbin{bullet} \Y}
   \end{mathpar}
   \vspace{5pt}
+  \ifwithagda
+  \caption{Typing rules for membership (\ref{frm:mem})}
+  \else
   \caption{Typing rules for membership}
-  \label{fig:second}
+  \fi
+  \label{fig:ctx-b}
 \end{subfigure}}
 
 \vspace{20pt}
@@ -43,7 +47,7 @@
     \end{align*}
   \end{ceqn}
   \caption{Interpretation of types as presheaves in ${\gls{Set}}^{\gls{bF}}$}
-  \label{fig:third}
+  \label{fig:ctx-c}
 \end{subfigure}
 \hfill
 \begin{subfigure}{0.25\linewidth}
@@ -55,7 +59,7 @@
     \end{align*}
   \end{ceqn}
   \caption{Interpretation of contexts as presheaves in ${\gls{Set}}^{\gls{bF}}$}
-  \label{fig:fourth}
+  \label{fig:ctx-d}
 \end{subfigure}
 \hfill
 \begin{subfigure}{0.25\linewidth}
@@ -66,7 +70,7 @@
     \end{align*}
   \end{ceqn}
   \caption{Interpretation of variables as morphisms ${\LSEM \GAMMA \RSEM}_{\gls{T}} \xrightarrow{{\LSEM \x \RSEM}_{\gls{T}}} {\LSEM \X \RSEM}_{\gls{T}}$ in ${\gls{Set}}^{\gls{bF}}$}
-  \label{fig:fifth}
+  \label{fig:ctx-e}
 \end{subfigure}
 
 \vspace{10pt}

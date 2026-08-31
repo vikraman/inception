@@ -26,6 +26,9 @@ infixr 10 _⨾_
 ---------------------------------------------------------------------------------
 -- ENVIRONMENTS
 
+\end{code}
+%<*Env>
+\begin{code}
 mutual
 
   data CStack {Z₀ : Ty} : (X : Ty) → Set where
@@ -47,6 +50,9 @@ mutual
   data Env {Z₀ : Ty} : Ctx → Set where
     ⋄   : Env {Z₀ = Z₀} ε
     _·_ : Env {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X → Env {Z₀ = Z₀} (Γ ∙ X)
+\end{code}
+%</Env>
+\begin{code}
 
 lookup : (i : Γ ∋ X) → Env {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X
 lookup new (γ · W') = W'
