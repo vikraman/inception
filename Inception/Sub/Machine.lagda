@@ -145,7 +145,7 @@ data PStack {Z₀ : Ty} : IsEmpty → Ty → Set where
            PStack {Z₀ = Z₀} empty Z₁
 
     _∷_ :  Partial {Z₀ = Z₀} X → (pstack : PStack {Z₀ = Z₀} ∅? Z₁)
-           → {bot-eq : BotEq ∅? X Z₁}
+           → {𝐛 : BotEq ∅? X Z₁}
            --------------------------------------------------
            → PStack non-empty Z₁
 
@@ -162,47 +162,69 @@ data PState {Z₀ : Ty} : Ty → Set where
 
 _⧺_ : {Z₀ : Ty} → PStack {Z₀ = Z₀} ∅? Z₁ → PStack {Z₀ = Z₀} non-empty Z₁' → PStack {Z₀ = Z₀} non-empty Z₁'
 ⊠ ⧺ lower = lower
-(W ∷ upper) ⧺ lower = (W ∷ (upper ⧺ lower)) {bot-eq = ○}
+(W ∷ upper) ⧺ lower = (W ∷ (upper ⧺ lower)) {𝐛 = ○}
 
 _⧻_ : {Z₀ : Ty} → (upper : PState {Z₀ = Z₀} Z₁) → PStack {Z₀ = Z₀} non-empty Z₁' → PState {Z₀ = Z₀} Z₁'
 ⟨ upper ⟩ ⧻ lower = ⟨ upper ⧺ lower ⟩
 
+\end{code}
+%<*PTrans>
+\begin{code}
+
 data _→ᵖ_ {Z₀ : Ty} {Z₁ : Ty} : PState {Z₀ = Z₀} Z₁ → PState {Z₀ = Z₀} Z₁ → Set where
 
-    lookup→  :    {x : Γ ∋ X} {γ : Env {Z₀ = Z₀} Γ} → {pstack : PStack {Z₀ = Z₀} ∅? Z₁} → {bot-eq : BotEq ∅? X Z₁}
-              ----------------------------------------------------------------
-                → ⟨ (⇡ (var x) γ ∷ pstack) {bot-eq = bot-eq} ⟩ →ᵖ ⟨ (⭭ (lookup x γ) ∷ pstack) {bot-eq = bot-eq} ⟩
+    lookup→ :   {x : Γ ∋ X} {γ : Env {Z₀ = Z₀} Γ}
+                {pstack : PStack {Z₀ = Z₀} ∅? Z₁} {𝐛 : BotEq ∅? X Z₁}
+                -------------------------------------------------
+                →  ⟨ (⇡ (var x) γ ∷ pstack) {𝐛 = 𝐛} ⟩
+                   →ᵖ ⟨ (⭭ (lookup x γ) ∷ pstack) {𝐛 = 𝐛} ⟩
 
-    lam→   :  {M : Comp (Γ ∙ X) Y} → {γ  : Env {Z₀ = Z₀} Γ} → {pstack : PStack {Z₀ = Z₀} ∅? Z₁} → {bot-eq : BotEq ∅? (X `⇒ Y) Z₁}
-              ---------------------------------------------------------------------------
-            →     ⟨ (⇡ (lam M) γ ∷ pstack) {bot-eq = bot-eq} ⟩ →ᵖ ⟨ (⭭ (cloᵛ M γ) ∷ pstack) {bot-eq = bot-eq} ⟩
+    lam→ :      {M : Comp (Γ ∙ X) Y} {γ  : Env {Z₀ = Z₀} Γ}
+                {pstack : PStack {Z₀ = Z₀} ∅? Z₁} {𝐛 : BotEq ∅? (X `⇒ Y) Z₁}
+                --------------------------------------------------------
+                →  ⟨ (⇡ (lam M) γ ∷ pstack) {𝐛 = 𝐛} ⟩
+                   →ᵖ ⟨ (⭭ (cloᵛ M γ) ∷ pstack) {𝐛 = 𝐛} ⟩
 
-    pair→  :  {γ : Env {Z₀ = Z₀} Γ} {W₁ : Pure Γ X₁} → {W₂ : Pure Γ X₂} → {pstack : PStack {Z₀ = Z₀} ∅? Z₁} → {bot-eq : BotEq ∅? (X₁ `× X₂) Z₁}
-              ---------------------------------------------------------------------------
-            →     ⟨ (⇡ (pair W₁ W₂) γ ∷ pstack) {bot-eq = bot-eq} ⟩ →ᵖ ⟨ (⇡ W₁ γ ∷ ((⇡ᴸ W₁ W₂ γ ∷ pstack) {bot-eq = bot-eq})) {bot-eq = ○} ⟩
+    pair→ :     {γ : Env {Z₀ = Z₀} Γ} {W₁ : Pure Γ X₁} {W₂ : Pure Γ X₂}
+                {pstack : PStack {Z₀ = Z₀} ∅? Z₁} {𝐛 : BotEq ∅? (X₁ `× X₂) Z₁}
+                ---------------------------------------------------------
+                →  ⟨ (⇡ (pair W₁ W₂) γ ∷ pstack) {𝐛 = 𝐛} ⟩
+                   →ᵖ ⟨ (⇡ W₁ γ ∷ ((⇡ᴸ W₁ W₂ γ ∷ pstack) {𝐛 = 𝐛})) {𝐛 = ○} ⟩
 
-    pmᵖ→    :  {γ : Env {Z₀ = Z₀} Γ} {Wˣ : Pure Γ (X₁ `× X₂)} → {Wʸ : Pure (Γ ∙ X₁ ∙ X₂) Y} → {pstack : PStack {Z₀ = Z₀} ∅? Z₁ } → {bot-eq : BotEq ∅? Y Z₁}
-              ---------------------------------------------------------------------------
-            →     ⟨ (⇡ (pm Wˣ Wʸ) γ ∷ pstack) {bot-eq = bot-eq} ⟩ →ᵖ ⟨ (⇡ Wˣ γ ∷ (⇡ᴾᴹ Wˣ Wʸ γ ∷ pstack) {bot-eq = bot-eq}) {bot-eq = ○} ⟩
+    pmᵖ→ :      {γ : Env {Z₀ = Z₀} Γ} {Wˣ : Pure Γ (X₁ `× X₂)} {Wʸ : Pure (Γ ∙ X₁ ∙ X₂) Y}
+                {pstack : PStack {Z₀ = Z₀} ∅? Z₁ } {𝐛 : BotEq ∅? Y Z₁}
+                --------------------------------------------------------------------
+                →  ⟨ (⇡ (pm Wˣ Wʸ) γ ∷ pstack) {𝐛 = 𝐛} ⟩
+                   →ᵖ ⟨ (⇡ Wˣ γ ∷ (⇡ᴾᴹ Wˣ Wʸ γ ∷ pstack) {𝐛 = 𝐛}) {𝐛 = ○} ⟩
 
-    unit→  :  {γ  : Env {Z₀ = Z₀} Γ} → {pstack : PStack {Z₀ = Z₀} ∅? Z₁} → {bot-eq : BotEq ∅? `Unit Z₁}
-              ---------------------------------------------------------------------------
-            →     ⟨ (⇡ unit γ ∷ pstack) {bot-eq = bot-eq} ⟩ →ᵖ ⟨ (⭭ unitᵛ ∷ pstack) {bot-eq = bot-eq} ⟩
+    unit→ :     {γ  : Env {Z₀ = Z₀} Γ}
+                {pstack : PStack {Z₀ = Z₀} ∅? Z₁} {𝐛 : BotEq ∅? `Unit Z₁}
+                ----------------------------------------------------
+                →  ⟨ (⇡ unit γ ∷ pstack) {𝐛 = 𝐛} ⟩
+                   →ᵖ ⟨ (⭭ unitᵛ ∷ pstack) {𝐛 = 𝐛} ⟩
 
-    W∷l→   :  {γ : Env {Z₀ = Z₀} Γ} {𝐖₁ : Value X₁} {W₁ : Pure Γ X₁} {W₂ : Pure Γ X₂}
-              {pstack : PStack {Z₀ = Z₀} ∅? Z₁} {bot-eq : BotEq ∅? (X₁ `× X₂) Z₁}
-              ---------------------------------------------------------------------------
-            →     ⟨ (⭭ 𝐖₁ ∷ ((⇡ᴸ W₁ W₂ γ ∷ pstack) {bot-eq = bot-eq})) {bot-eq = ○} ⟩ →ᵖ ⟨ (⇡ W₂ γ ∷ ((⇡ᴿ 𝐖₁ W₂ γ ∷ pstack) {bot-eq = bot-eq})) {bot-eq = ○} ⟩
+    W∷l→ :      {γ : Env {Z₀ = Z₀} Γ} {𝐖₁ : Value X₁} {W₁ : Pure Γ X₁} {W₂ : Pure Γ X₂}
+                {pstack : PStack {Z₀ = Z₀} ∅? Z₁} {𝐛 : BotEq ∅? (X₁ `× X₂) Z₁}
+                ------------------------------------------------------------------
+                →  ⟨ (⭭ 𝐖₁ ∷ ((⇡ᴸ W₁ W₂ γ ∷ pstack) {𝐛 = 𝐛})) {𝐛 = ○} ⟩
+                   →ᵖ ⟨ (⇡ W₂ γ ∷ ((⇡ᴿ 𝐖₁ W₂ γ ∷ pstack) {𝐛 = 𝐛})) {𝐛 = ○} ⟩
 
-    W∷r→   :  {γ : Env {Z₀ = Z₀} Γ} {𝐖₁ : Value X₁} {𝐖₂ : Value X₂}  {W₂ : Pure Γ X₂}
-              {pstack : PStack {Z₀ = Z₀} ∅? Z₁} {bot-eq : BotEq ∅? (X₁ `× X₂) Z₁}
-              ---------------------------------------------------------------------------
-            → ⟨ (⭭ 𝐖₂ ∷ ((⇡ᴿ 𝐖₁ W₂ γ ∷ pstack) {bot-eq = bot-eq})) {bot-eq = ○} ⟩ →ᵖ ⟨ (⭭ pairᵛ 𝐖₁ 𝐖₂ ∷ pstack) {bot-eq = bot-eq} ⟩
+    W∷r→ :      {γ : Env {Z₀ = Z₀} Γ} {𝐖₁ : Value X₁} {𝐖₂ : Value X₂} {W₂ : Pure Γ X₂}
+                {pstack : PStack {Z₀ = Z₀} ∅? Z₁} {𝐛 : BotEq ∅? (X₁ `× X₂) Z₁}
+                -----------------------------------------------------------------
+                →  ⟨ (⭭ 𝐖₂ ∷ ((⇡ᴿ 𝐖₁ W₂ γ ∷ pstack) {𝐛 = 𝐛})) {𝐛 = ○} ⟩
+                   →ᵖ ⟨ (⭭ pairᵛ 𝐖₁ 𝐖₂ ∷ pstack) {𝐛 = 𝐛} ⟩
 
-    pair∷pm→  :  {γ : Env {Z₀ = Z₀} Γ} {𝐖₁ : Value X₁} → {𝐖₂ : Value X₂} → {Wˣ : Pure Γ (X₁ `× X₂)} → {Wʸ : Pure (Γ ∙ X₁ ∙ X₂) Y}
-            → {pstack : PStack {Z₀ = Z₀} ∅? Z₁} → {bot-eq : BotEq ∅? Y Z₁}
-              ---------------------------------------------------------------------------
-            →     ⟨ (⭭ pairᵛ 𝐖₁ 𝐖₂ ∷ ((⇡ᴾᴹ Wˣ Wʸ γ ∷ pstack) {bot-eq = bot-eq})) {bot-eq = ○} ⟩ →ᵖ  ⟨ (⇡ Wʸ (γ · 𝐖₁ · 𝐖₂) ∷ pstack) {bot-eq = bot-eq} ⟩
+    pair∷pm→ :  {γ : Env {Z₀ = Z₀} Γ} {𝐖₁ : Value X₁} {𝐖₂ : Value X₂}
+                {Wˣ : Pure Γ (X₁ `× X₂)} {Wʸ : Pure (Γ ∙ X₁ ∙ X₂) Y}
+                {pstack : PStack {Z₀ = Z₀} ∅? Z₁} {𝐛 : BotEq ∅? Y Z₁}
+                -----------------------------------------------------------
+                →  ⟨ (⭭ pairᵛ 𝐖₁ 𝐖₂ ∷ ((⇡ᴾᴹ Wˣ Wʸ γ ∷ pstack) {𝐛 = 𝐛})) {𝐛 = ○} ⟩
+                   →ᵖ  ⟨ (⇡ Wʸ (γ · 𝐖₁ · 𝐖₂) ∷ pstack) {𝐛 = 𝐛} ⟩
+
+\end{code}
+%</PTrans>
+\begin{code}
 
 data _↠ᵛ_ {Z₀ Z₁ : Ty} : PState {Z₀ = Z₀} Z₁ → PState {Z₀ = Z₀} Z₁ → Set where
 
@@ -231,7 +253,7 @@ _⨾_ (F →ᵖ⟨ F>S₁ ⟩ S₁>>S₂) S₂>>T = F →ᵖ⟨ F>S₁ ⟩ (S₁
 record PureSteps {Z₀ : Ty} (W : Pure Γ X) (γ : Env {Z₀ = Z₀} Γ) : Set where
   field
     result : Value {Z₀ = Z₀} X
-    steps  : ⟨ ((⇡ W γ ∷ ⊠) {bot-eq = ▿}) ⟩ ↠ᵛ ⟨ ((⭭ result ∷ ⊠) {bot-eq = ▿}) ⟩
+    steps  : ⟨ ((⇡ W γ ∷ ⊠) {𝐛 = ▿}) ⟩ ↠ᵛ ⟨ ((⭭ result ∷ ⊠) {𝐛 = ▿}) ⟩
 open PureSteps
 
 proj₁-val : {Z₀ : Ty} → Value {Z₀ = Z₀} (X `× Y) → Value {Z₀ = Z₀} X
