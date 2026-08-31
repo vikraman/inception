@@ -72,16 +72,16 @@
       {\GAMMA \PDASHi \gls{W} : \X \gls{times} \Y \\ \GAMMA \glsbin{bullet} \X \glsbin{bullet} \Y \CDASHi \gls{M} \CDASHii \Z}
       {\GAMMA \CDASHi \gls{pmc}(\gls{W}, \gls{M}) \CDASHii \Z}
   \end{mathpar}
-  \ifwithagda
-  \caption{Typing rules for effectful terms / computations (see \Cref{frm:terms})}
-  \else
   \caption{Typing rules for effectful terms / computations}
-  \fi
   \label{fig:terms-c}
 \end{subfigure}
 
 \vspace{5pt}
 } \end{minipage} }        
-\caption{Terms (with \gls{T} a monad on ${\gls{Set}}^{\gls{bF}}$)}
+\ifwithagda
+\caption{Terms (see \Cref{frm:terms})}
+\else
+\caption{Terms}
+\fi
 \label{fig:terms}
 \end{figure}
