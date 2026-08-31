@@ -87,15 +87,25 @@ lookup (old i) (γ · W') = lookup i γ
 
 data Partial {Z₀ : Ty} : (X : Ty) → Set where
 
-    ⭭_ : (𝐖 : Value {Z₀ = Z₀} X) → Partial X
+    ⭭_ :   (𝐖 : Value {Z₀ = Z₀} X)
+           ----------------------
+           → Partial X
 
-    ⇡ : (W : Pure Γ X) → (Env {Z₀ = Z₀} Γ) → Partial X
+    ⇡ :    (W : Pure Γ X) → (Env {Z₀ = Z₀} Γ)
+           --------------------------------
+           → Partial X
 
-    ⇡ᴾᴹ : (W₁ : Pure Γ (X₁ `× X₂)) → (W₂ : Pure (Γ ∙ X₁ ∙ X₂) Y) → (Env {Z₀ = Z₀} Γ) → Partial Y
+    ⇡ᴾᴹ :  (W₁ : Pure Γ (X₁ `× X₂)) → (W₂ : Pure (Γ ∙ X₁ ∙ X₂) Y) → (Env {Z₀ = Z₀} Γ)
+           ---------------------------------------------------------------------
+           → Partial Y
 
-    ⇡ᴸ : (W₁ : Pure Γ X₁) → (W₂ : Pure Γ X₂) → (Env {Z₀ = Z₀} Γ) → Partial (X₁ `× X₂)
+    ⇡ᴸ :   (W₁ : Pure Γ X₁) → (W₂ : Pure Γ X₂) → (Env {Z₀ = Z₀} Γ)
+           ----------------------------------------------------
+           → Partial (X₁ `× X₂)
 
-    ⇡ᴿ  : (𝐖₁ : Value {Z₀ = Z₀} X₁) → (W₂ : Pure Γ X₂) → (Env {Z₀ = Z₀} Γ) → Partial (X₁ `× X₂)
+    ⇡ᴿ :   (𝐖₁ : Value {Z₀ = Z₀} X₁) → (W₂ : Pure Γ X₂) → (Env {Z₀ = Z₀} Γ)
+           ------------------------------------------------------------
+           → Partial (X₁ `× X₂)
 
 \end{code}
 %</Partial>
