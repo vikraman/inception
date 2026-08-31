@@ -62,7 +62,7 @@ syntax Comp Γ X = Γ ⊢ᶜ X
 data Comp : Ctx -> Ty -> Set
 
 \end{code}
-%<*Terms>
+%<*Pure>
 \begin{code}
 
 data Pure where
@@ -86,6 +86,14 @@ data Pure where
   unit :
        -----------
         Γ ⊢ᵖ `Unit
+
+\end{code}
+%</Pure>
+\begin{code}
+
+\end{code}
+%<*Comp>
+\begin{code}
 
 data Comp where
 
@@ -114,7 +122,7 @@ data Comp where
       -> Γ ⊢ᶜ X
 
 \end{code}
-%</Terms>
+%</Comp>
 \begin{code}
 
 syntax Wk Γ Δ = Γ ⊇ Δ
