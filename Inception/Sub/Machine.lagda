@@ -297,10 +297,23 @@ determinismⱽ pair∷pm→ pair∷pm→ = refl
 ---------------------------------------------------------------------------------
 -- MACHINE FOR EFFECTFUL TERMS / COMPUTATIONS
 
+\end{code}
+%<*CStates>
+\begin{code}
+
 data CState {Z₀ : Ty} : Set where
 
-      ⟨_╎_⟩ : (𝐖 : Value {Z₀ = Z₀} X) → (cstack : CStack {Z₀ = Z₀} X) → CState {Z₀ = Z₀}
-      ⟨_╎_╎_⟩ : (M : Comp Γ X) → (γ : Env {Z₀ = Z₀} Γ) → (cstack : CStack {Z₀ = Z₀} X) → CState {Z₀ = Z₀}
+      ⟨_╎_⟩ :    (𝐖 : Value {Z₀ = Z₀} X) → (cstack : CStack {Z₀ = Z₀} X)
+                 ---------------------------------------------------
+                 → CState {Z₀ = Z₀}
+
+      ⟨_╎_╎_⟩ :  (M : Comp Γ X) → (γ : Env {Z₀ = Z₀} Γ) → (cstack : CStack {Z₀ = Z₀} X)
+                 -----------------------------------------------------------------
+                 → CState {Z₀ = Z₀}
+
+\end{code}
+%</CStates>
+\begin{code}
 
 jump-to-state : {Z₀ : Ty} → Value {Z₀ = Z₀} `L → CState {Z₀ = Z₀}
 jump-to-state (jumpᵛ M γ k) = ⟨ M ╎ γ ╎ k ⟩
@@ -326,37 +339,44 @@ run₁ W γ = proj₁-val (result (normalise-pure W γ))
 run₂ : {Z₀ : Ty} → Pure Γ (X₁ `× X₂) → Env {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X₂
 run₂ W γ = proj₂-val (result (normalise-pure W γ))
 
+\end{code}
+%<*CTrans>
+\begin{code}
 
 data _→ᶜ_ {Z₀ : Ty} : CState {Z₀ = Z₀} → CState {Z₀ = Z₀} → Set where
 
-      pure→  :    {W : Pure Γ X} {γ : Env Γ} {cstack : CStack X}
-                    ----------------------------------------------------------------
-                    → ⟨ return W ╎ γ ╎ cstack ⟩ →ᶜ ⟨ run W γ ╎ cstack ⟩
+      pure→ :    {W : Pure Γ X} {γ : Env Γ} {cstack : CStack X}
+                 -------------------------------------------
+                 →  ⟨ return W ╎ γ ╎ cstack ⟩ →ᶜ ⟨ run W γ ╎ cstack ⟩
 
-      return→  :    {𝐖 : Value X} {M : Comp (Δ ∙ X) Y} {γ : Env Δ} {cstack : CStack Y}
-                ----------------------------------------------------------------
-                  → ⟨ 𝐖 ╎ < M ； γ >∷ cstack ⟩ →ᶜ ⟨ M ╎ γ · 𝐖 ╎ cstack ⟩
+      return→ :  {𝐖 : Value X} {M : Comp (Δ ∙ X) Y} {γ : Env Δ} {cstack : CStack Y}
+                 --------------------------------------------------------------
+                 →  ⟨ 𝐖 ╎ < M ； γ >∷ cstack ⟩ →ᶜ ⟨ M ╎ γ · 𝐖 ╎ cstack ⟩
 
-      push→    :    {M₁ : Comp Γ X} {M₂ : Comp (Γ ∙ X) Y} {γ : Env Γ} {cstack : CStack Y}
-                ----------------------------------------------------------------
-                  → ⟨ push M₁ M₂ ╎ γ ╎ cstack ⟩ →ᶜ ⟨ M₁ ╎ γ ╎ < M₂ ； γ >∷ cstack ⟩
+      push→ :    {M₁ : Comp Γ X} {M₂ : Comp (Γ ∙ X) Y} {γ : Env Γ} {cstack : CStack Y}
+                 ----------------------------------------------------------------
+                 →  ⟨ push M₁ M₂ ╎ γ ╎ cstack ⟩ →ᶜ ⟨ M₁ ╎ γ ╎ < M₂ ； γ >∷ cstack ⟩
 
-      sub→     :    {M₁ : Comp (Γ ∙ `L) X} {M₂ : Comp Γ X} {γ : Env Γ} {cstack : CStack X}
-                ----------------------------------------------------------------
-                  → ⟨ sub M₁ M₂ ╎ γ ╎ cstack ⟩ →ᶜ ⟨ M₁ ╎ γ · (jumpᵛ M₂ γ cstack) ╎ cstack ⟩
+      sub→ :     {M₁ : Comp (Γ ∙ `L) X} {M₂ : Comp Γ X} {γ : Env Γ} {cstack : CStack X}
+                 ----------------------------------------------------------------
+                 →  ⟨ sub M₁ M₂ ╎ γ ╎ cstack ⟩ →ᶜ ⟨ M₁ ╎ γ · (jumpᵛ M₂ γ cstack) ╎ cstack ⟩
 
-      var→  :    {W : Pure Γ `L} {γ : Env Γ} {cstack : CStack X}
-               -------------------------------------------------------------
-                  → ⟨ var W ╎ γ ╎ cstack ⟩ →ᶜ run-jump W γ
+      var→ :     {W : Pure Γ `L} {γ : Env Γ} {cstack : CStack X}
+                 ------------------------------------------
+                 →  ⟨ var W ╎ γ ╎ cstack ⟩ →ᶜ run-jump W γ
 
-      pmᶜ→      :   {W : Pure Γ (X `× Y)} {γ : Env Γ} {M : Comp (Γ ∙ X ∙ Y) Z} {cstack : CStack Z}
-                ----------------------------------------------------------------
-                  → ⟨ pm W M ╎ γ ╎ cstack ⟩ →ᶜ ⟨ M ╎ γ · run₁ W γ · run₂ W γ ╎ cstack ⟩
+      pmᶜ→ :     {W : Pure Γ (X `× Y)} {γ : Env Γ}
+                 {M : Comp (Γ ∙ X ∙ Y) Z} {cstack : CStack Z}
+                 -------------------------------------------------------------
+                 →  ⟨ pm W M ╎ γ ╎ cstack ⟩ →ᶜ ⟨ M ╎ γ · run₁ W γ · run₂ W γ ╎ cstack ⟩
 
-      app→     :   {W₁ : Pure Γ (X `⇒ Y)} {W₂ : Pure Γ X} {γ : Env Γ} {cstack : CStack Y}
-                    ----------------------------------------------------------------
-                  →  ⟨ app W₁ W₂ ╎ γ ╎ cstack ⟩ →ᶜ run-clo W₁ W₂ γ cstack
+      app→ :     {W₁ : Pure Γ (X `⇒ Y)} {W₂ : Pure Γ X} {γ : Env Γ} {cstack : CStack Y}
+                 ----------------------------------------------------------------
+                 →  ⟨ app W₁ W₂ ╎ γ ╎ cstack ⟩ →ᶜ run-clo W₁ W₂ γ cstack
 
+\end{code}
+%</CTrans>
+\begin{code}
 
 
 determinismꟲ : {Z₀ : Ty} {S S' : CState {Z₀ = Z₀}} (S→S'₁ S→S'₂ : S →ᶜ S') → (S→S'₁ ≡ S→S'₂)
