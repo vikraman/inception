@@ -67,7 +67,7 @@ data Comp : Ctx -> Ty -> Set
 
 data Pure where
 
-  var : (i : Γ ∋ X)
+  var : (x : Γ ∋ X)
       ---------
       -> Γ ⊢ᵖ X
 
