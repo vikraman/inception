@@ -53,10 +53,6 @@ module Cx (Ty : Set) where
 
 open Cx Ty public
 
-\end{code}
-%<*Terms>
-\begin{code}
-
 syntax Pure Γ X = Γ ⊢ᵖ X
 
 data Pure : Ctx -> Ty -> Set
@@ -64,6 +60,10 @@ data Pure : Ctx -> Ty -> Set
 syntax Comp Γ X = Γ ⊢ᶜ X
 
 data Comp : Ctx -> Ty -> Set
+
+\end{code}
+%<*Terms>
+\begin{code}
 
 data Pure where
 
