@@ -111,31 +111,54 @@ data Partial {Z₀ : Ty} : (X : Ty) → Set where
 %</Partial>
 \begin{code}
 
+\end{code}
+%<*PStates>
+\begin{code}
+
 data IsEmpty : Set where
-    non-empty : IsEmpty
-    empty : IsEmpty
+
+    non-empty :
+                 -------
+                 IsEmpty
+
+    empty :
+                 -------
+                 IsEmpty
 
 private variable
     ∅? : IsEmpty
 
--- The type of the bottom element of a stack should equal the type associated with the
--- empty stack below it.
 data BotEq : IsEmpty → Ty → Ty → Set where
 
-    ▿ : BotEq empty X X
+    ▿ :
+         ---------------
+         BotEq empty X X
 
-    ○ : BotEq non-empty X Y
+    ○ :
+         -------------------
+         BotEq non-empty X Y
 
 data PStack {Z₀ : Ty} : IsEmpty → Ty → Set where
 
-    ⊠ : PStack {Z₀ = Z₀} empty Z₁
+    ⊠ :
+           -----------------------
+           PStack {Z₀ = Z₀} empty Z₁
 
-    _∷_ : Partial {Z₀ = Z₀} X → (pstack : PStack {Z₀ = Z₀} ∅? Z₁) → {bot-eq : BotEq ∅? X Z₁} → PStack non-empty Z₁
+    _∷_ :  Partial {Z₀ = Z₀} X → (pstack : PStack {Z₀ = Z₀} ∅? Z₁)
+           → {bot-eq : BotEq ∅? X Z₁}
+           --------------------------------------------------
+           → PStack non-empty Z₁
 
 
 data PState {Z₀ : Ty} : Ty → Set where
 
-    ⟨_⟩ : PStack {Z₀ = Z₀} non-empty Z₁ → PState {Z₀ = Z₀} Z₁
+    ⟨_⟩ :  PStack {Z₀ = Z₀} non-empty Z₁
+           ---------------------------
+           → PState {Z₀ = Z₀} Z₁
+
+\end{code}
+%</PStates>
+\begin{code}
 
 _⧺_ : {Z₀ : Ty} → PStack {Z₀ = Z₀} ∅? Z₁ → PStack {Z₀ = Z₀} non-empty Z₁' → PStack {Z₀ = Z₀} non-empty Z₁'
 ⊠ ⧺ lower = lower

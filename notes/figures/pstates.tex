@@ -14,7 +14,7 @@
     \end{align*}
   \end{ceqn}
   \caption{Grammar}
-  \label{fig:first}
+  \label{fig:pstates-a}
 \end{subfigure}
 
 \vspace{10pt}
@@ -50,12 +50,16 @@
 \end{mathpar}
 
   \vspace{5pt}
+  \ifwithagda
+  \caption{Typing rules (see \Cref{frm:pstates})}
+  \else
   \caption{Typing rules}
-  \label{fig:first}
+  \fi
+  \label{fig:pstates-b}
 \end{subfigure}
 
 \vspace{5pt}
 } \end{minipage} }        
 \caption{States of the machine for normalising pure terms}
-\label{fig:env}
+\label{fig:pstates}
 \end{figure}
