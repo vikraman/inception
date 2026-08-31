@@ -47,7 +47,7 @@ mutual
               -------------------
               Value {Z₀ = Z₀} `Unit
 
-    pairᵛ :   (𝐖₁ : Value {Z₀ = Z₀} X₁) → (𝐖₂ : Value {Z₀ = Z₀} X₂)
+    pairᵛ :   (Ẇ₁ : Value {Z₀ = Z₀} X₁) → (Ẇ₂ : Value {Z₀ = Z₀} X₂)
               -------------------------------------------------
               → Value (X₁ `× X₂)
 
@@ -87,7 +87,7 @@ lookup (old i) (γ · W') = lookup i γ
 
 data Partial {Z₀ : Ty} : (X : Ty) → Set where
 
-    ⭭_ :   (𝐖 : Value {Z₀ = Z₀} X)
+    ⭭_ :   (Ẇ : Value {Z₀ = Z₀} X)
            ----------------------
            → Partial X
 
@@ -103,7 +103,7 @@ data Partial {Z₀ : Ty} : (X : Ty) → Set where
            ----------------------------------------------------
            → Partial (X₁ `× X₂)
 
-    ⇡ᴿ :   (𝐖₁ : Value {Z₀ = Z₀} X₁) → (W₂ : Pure Γ X₂) → (Env {Z₀ = Z₀} Γ)
+    ⇡ᴿ :   (Ẇ₁ : Value {Z₀ = Z₀} X₁) → (W₂ : Pure Γ X₂) → (Env {Z₀ = Z₀} Γ)
            ------------------------------------------------------------
            → Partial (X₁ `× X₂)
 
@@ -203,24 +203,24 @@ data _→ᵖ_ {Z₀ : Ty} {Z₁ : Ty} : PState {Z₀ = Z₀} Z₁ → PState {Z�
                 →  ⟨ (⇡ unit γ ∷ pstack) {𝐛 = 𝐛} ⟩
                    →ᵖ ⟨ (⭭ unitᵛ ∷ pstack) {𝐛 = 𝐛} ⟩
 
-    W∷l→ :      {γ : Env {Z₀ = Z₀} Γ} {𝐖₁ : Value X₁} {W₁ : Pure Γ X₁} {W₂ : Pure Γ X₂}
+    W∷l→ :      {γ : Env {Z₀ = Z₀} Γ} {Ẇ₁ : Value X₁} {W₁ : Pure Γ X₁} {W₂ : Pure Γ X₂}
                 {pstack : PStack {Z₀ = Z₀} ∅? Z₁} {𝐛 : BotEq ∅? (X₁ `× X₂) Z₁}
                 ------------------------------------------------------------------
-                →  ⟨ (⭭ 𝐖₁ ∷ ((⇡ᴸ W₁ W₂ γ ∷ pstack) {𝐛 = 𝐛})) {𝐛 = ○} ⟩
-                   →ᵖ ⟨ (⇡ W₂ γ ∷ ((⇡ᴿ 𝐖₁ W₂ γ ∷ pstack) {𝐛 = 𝐛})) {𝐛 = ○} ⟩
+                →  ⟨ (⭭ Ẇ₁ ∷ ((⇡ᴸ W₁ W₂ γ ∷ pstack) {𝐛 = 𝐛})) {𝐛 = ○} ⟩
+                   →ᵖ ⟨ (⇡ W₂ γ ∷ ((⇡ᴿ Ẇ₁ W₂ γ ∷ pstack) {𝐛 = 𝐛})) {𝐛 = ○} ⟩
 
-    W∷r→ :      {γ : Env {Z₀ = Z₀} Γ} {𝐖₁ : Value X₁} {𝐖₂ : Value X₂} {W₂ : Pure Γ X₂}
+    W∷r→ :      {γ : Env {Z₀ = Z₀} Γ} {Ẇ₁ : Value X₁} {Ẇ₂ : Value X₂} {W₂ : Pure Γ X₂}
                 {pstack : PStack {Z₀ = Z₀} ∅? Z₁} {𝐛 : BotEq ∅? (X₁ `× X₂) Z₁}
                 -----------------------------------------------------------------
-                →  ⟨ (⭭ 𝐖₂ ∷ ((⇡ᴿ 𝐖₁ W₂ γ ∷ pstack) {𝐛 = 𝐛})) {𝐛 = ○} ⟩
-                   →ᵖ ⟨ (⭭ pairᵛ 𝐖₁ 𝐖₂ ∷ pstack) {𝐛 = 𝐛} ⟩
+                →  ⟨ (⭭ Ẇ₂ ∷ ((⇡ᴿ Ẇ₁ W₂ γ ∷ pstack) {𝐛 = 𝐛})) {𝐛 = ○} ⟩
+                   →ᵖ ⟨ (⭭ pairᵛ Ẇ₁ Ẇ₂ ∷ pstack) {𝐛 = 𝐛} ⟩
 
-    pair∷pm→ :  {γ : Env {Z₀ = Z₀} Γ} {𝐖₁ : Value X₁} {𝐖₂ : Value X₂}
+    pair∷pm→ :  {γ : Env {Z₀ = Z₀} Γ} {Ẇ₁ : Value X₁} {Ẇ₂ : Value X₂}
                 {Wˣ : Pure Γ (X₁ `× X₂)} {Wʸ : Pure (Γ ∙ X₁ ∙ X₂) Y}
                 {pstack : PStack {Z₀ = Z₀} ∅? Z₁} {𝐛 : BotEq ∅? Y Z₁}
                 -----------------------------------------------------------
-                →  ⟨ (⭭ pairᵛ 𝐖₁ 𝐖₂ ∷ ((⇡ᴾᴹ Wˣ Wʸ γ ∷ pstack) {𝐛 = 𝐛})) {𝐛 = ○} ⟩
-                   →ᵖ  ⟨ (⇡ Wʸ (γ · 𝐖₁ · 𝐖₂) ∷ pstack) {𝐛 = 𝐛} ⟩
+                →  ⟨ (⭭ pairᵛ Ẇ₁ Ẇ₂ ∷ ((⇡ᴾᴹ Wˣ Wʸ γ ∷ pstack) {𝐛 = 𝐛})) {𝐛 = ○} ⟩
+                   →ᵖ  ⟨ (⇡ Wʸ (γ · Ẇ₁ · Ẇ₂) ∷ pstack) {𝐛 = 𝐛} ⟩
 
 \end{code}
 %</PTrans>
@@ -303,7 +303,7 @@ determinismⱽ pair∷pm→ pair∷pm→ = refl
 
 data CState {Z₀ : Ty} : Set where
 
-      ⟨_╎_⟩ :    (𝐖 : Value {Z₀ = Z₀} X) → (cstack : CStack {Z₀ = Z₀} X)
+      ⟨_╎_⟩ :    (Ẇ : Value {Z₀ = Z₀} X) → (cstack : CStack {Z₀ = Z₀} X)
                  ---------------------------------------------------
                  → CState {Z₀ = Z₀}
 
@@ -349,9 +349,9 @@ data _→ᶜ_ {Z₀ : Ty} : CState {Z₀ = Z₀} → CState {Z₀ = Z₀} → Se
                  -------------------------------------------
                  →  ⟨ return W ╎ γ ╎ cstack ⟩ →ᶜ ⟨ run W γ ╎ cstack ⟩
 
-      return→ :  {𝐖 : Value X} {M : Comp (Δ ∙ X) Y} {γ : Env Δ} {cstack : CStack Y}
+      return→ :  {Ẇ : Value X} {M : Comp (Δ ∙ X) Y} {γ : Env Δ} {cstack : CStack Y}
                  --------------------------------------------------------------
-                 →  ⟨ 𝐖 ╎ < M ； γ >∷ cstack ⟩ →ᶜ ⟨ M ╎ γ · 𝐖 ╎ cstack ⟩
+                 →  ⟨ Ẇ ╎ < M ； γ >∷ cstack ⟩ →ᶜ ⟨ M ╎ γ · Ẇ ╎ cstack ⟩
 
       push→ :    {M₁ : Comp Γ X} {M₂ : Comp (Γ ∙ X) Y} {γ : Env Γ} {cstack : CStack Y}
                  ----------------------------------------------------------------
