@@ -12,7 +12,7 @@
     \end{align*}
   \end{ceqn}
   \caption{Grammar}
-  \label{fig:first}
+  \label{fig:partial-a}
 \end{subfigure}
 
 \vspace{10pt}
@@ -38,12 +38,16 @@
       {\mathop{{\VDASHi}_{{\Z}_0}} {\gls{bfW}}_1 \VDASHii {\X}_1 \\ \GAMMA \PDASHi {\gls{W}}_2 \PDASHii {\X}_2 \\ \sGAMMA \glsop{colon} {\gls{Env}}_{{\Z}_0} \; \GAMMA}
       {\mathop{{\HDASHi}_{{\Z}_0}} \gls{upL} ({\gls{bfW}}_1 , {\gls{W}}_2 , \sGAMMA) \HDASHii {\X}_1 \glsop{times} {\X}_2}
   \end{mathpar}
-  \caption{Typing rules (with \gls{T} a monad on ${\gls{Set}}^{\gls{bF}}$)}
-  \label{fig:first}
+  \ifwithagda
+  \caption{Typing rules (see \Cref{frm:partial})}
+  \else
+  \caption{Typing rules}
+  \fi
+  \label{fig:partial-b}
 \end{subfigure}
 
 \vspace{5pt}
 } \end{minipage} }        
-\caption{Partially normalised pure terms (with \gls{T} a monad on ${\gls{Set}}^{\gls{bF}}$)}
-\label{fig:env}
+\caption{Partially normalised pure terms}
+\label{fig:partial}
 \end{figure}

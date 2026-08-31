@@ -81,6 +81,10 @@ lookup (old i) (γ · W') = lookup i γ
 ---------------------------------------------------------------------------------
 -- MACHINE FOR PURE TERMS
 
+\end{code}
+%<*Partial>
+\begin{code}
+
 data Partial {Z₀ : Ty} : (X : Ty) → Set where
 
     ⭭_ : (𝐖 : Value {Z₀ = Z₀} X) → Partial X
@@ -92,6 +96,10 @@ data Partial {Z₀ : Ty} : (X : Ty) → Set where
     ⇡ᴸ : (W₁ : Pure Γ X₁) → (W₂ : Pure Γ X₂) → (Env {Z₀ = Z₀} Γ) → Partial (X₁ `× X₂)
 
     ⇡ᴿ  : (𝐖₁ : Value {Z₀ = Z₀} X₁) → (W₂ : Pure Γ X₂) → (Env {Z₀ = Z₀} Γ) → Partial (X₁ `× X₂)
+
+\end{code}
+%</Partial>
+\begin{code}
 
 data IsEmpty : Set where
     non-empty : IsEmpty
