@@ -29,7 +29,7 @@
   \end{mathpar}
   \vspace{5pt}
   \ifwithagda
-  \caption{Typing rules for membership (\ref{frm:mem})}
+  \caption{Typing rules for membership (see \Cref{frm:mem})}
   \else
   \caption{Typing rules for membership}
   \fi
@@ -46,30 +46,42 @@
       {\LSEM \gls{L} \RSEM}_{\gls{T}} &= \gls{V}
     \end{align*}
   \end{ceqn}
+  \ifwithagda
+  \caption{Interpretation of types as presheaves in ${\gls{Set}}^{\gls{bF}}$ (see \Cref{frm:semty})}
+  \else
   \caption{Interpretation of types as presheaves in ${\gls{Set}}^{\gls{bF}}$}
+  \fi
   \label{fig:ctx-c}
-\end{subfigure}
-\hfill
-\begin{subfigure}{0.25\linewidth}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.25\linewidth}
   \begin{ceqn}
-    \begin{align*}
-      \\
-      {\LSEM \gls{varepsilon} \RSEM}_{\gls{T}} &= \gls{top}\\
-      {\LSEM \GAMMA, \X \RSEM}_{\gls{T}} &= {\LSEM \GAMMA \RSEM}_{\gls{T}} \glsop{times} {\LSEM \X \RSEM}_{\gls{T}}\\
-    \end{align*}
+  \begin{align*}
+  \\
+  {\LSEM \gls{varepsilon} \RSEM}_{\gls{T}} &= \gls{top}\\
+  {\LSEM \GAMMA, \X \RSEM}_{\gls{T}} &= {\LSEM \GAMMA \RSEM}_{\gls{T}} \glsop{times} {\LSEM \X \RSEM}_{\gls{T}}\\
+  \end{align*}
   \end{ceqn}
+  \ifwithagda
+  \caption{Interpretation of contexts as presheaves in ${\gls{Set}}^{\gls{bF}}$ (see \Cref{frm:semctx})}
+  \else
   \caption{Interpretation of contexts as presheaves in ${\gls{Set}}^{\gls{bF}}$}
+  \fi
   \label{fig:ctx-d}
-\end{subfigure}
-\hfill
-\begin{subfigure}{0.25\linewidth}
+	\end{subfigure}
+	\hfill
+	\begin{subfigure}{0.25\linewidth}
   \begin{ceqn}
-    \begin{align*}
-      {\LSEM \gls{new} \RSEM}_{\gls{T}} &= \PIii\\
-      {\LSEM \gls{old}(\x) \RSEM}_{\gls{T}} &= {\LSEM \x \RSEM}_{\gls{T}} \glsop{circ} \PIi\\
-    \end{align*}
+  \begin{align*}
+  {\LSEM \gls{new} \RSEM}_{\gls{T}} &= \PIii\\
+  {\LSEM \gls{old}(\x) \RSEM}_{\gls{T}} &= {\LSEM \x \RSEM}_{\gls{T}} \glsop{circ} \PIi\\
+  \end{align*}
   \end{ceqn}
+  \ifwithagda
+  \caption{Interpretation of variables as morphisms ${\LSEM \GAMMA \RSEM}_{\gls{T}} \xrightarrow{{\LSEM \x \RSEM}_{\gls{T}}} {\LSEM \X \RSEM}_{\gls{T}}$ in ${\gls{Set}}^{\gls{bF}}$ (see \Cref{frm:semmem})}
+  \else
   \caption{Interpretation of variables as morphisms ${\LSEM \GAMMA \RSEM}_{\gls{T}} \xrightarrow{{\LSEM \x \RSEM}_{\gls{T}}} {\LSEM \X \RSEM}_{\gls{T}}$ in ${\gls{Set}}^{\gls{bF}}$}
+  \fi
   \label{fig:ctx-e}
 \end{subfigure}
 

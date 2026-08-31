@@ -14,8 +14,12 @@
       {\LSEM \GAMMA \PDASHi \gls{ast} \PDASHii \gls{1} \RSEM}_{\gls{T}} &= \gls{top}
     \end{align*}
   \end{ceqn}
-  \caption{Interpretation of pure terms $\GAMMA \PDASHi \gls{W} \PDASHii \X$ as morphisms ${\LSEM \GAMMA \RSEM}_{\gls{T}} \xrightarrow{{\LSEM \gls{W} \RSEM}_{\gls{T}}} {\LSEM \X \RSEM}_{\gls{T}}$ in ${\gls{Set}}^{\gls{bF}}$}
-  \label{fig:term-d}
+  \ifwithagda
+  \caption{Pure terms $\GAMMA \PDASHi \gls{W} \PDASHii \X$ as morphisms ${\LSEM \GAMMA \RSEM}_{\gls{T}} \xrightarrow{{\LSEM \gls{W} \RSEM}_{\gls{T}}} {\LSEM \X \RSEM}_{\gls{T}}$ in ${\gls{Set}}^{\gls{bF}}$ (see \Cref{frm:sempure})}
+  \else
+  \caption{Pure terms $\GAMMA \PDASHi \gls{W} \PDASHii \X$ as morphisms ${\LSEM \GAMMA \RSEM}_{\gls{T}} \xrightarrow{{\LSEM \gls{W} \RSEM}_{\gls{T}}} {\LSEM \X \RSEM}_{\gls{T}}$ in ${\gls{Set}}^{\gls{bF}}$}
+  \fi
+  \label{fig:termsem-a}
 \end{subfigure}
 
 \vspace{15pt}
@@ -30,8 +34,12 @@
       {\LSEM \GAMMA \CDASHi \CDASHi (\gls{W} , {\gls{M}}) \CDASHii \X \RSEM}_{\gls{S}} &= {\LSEM {\gls{M}} \RSEM}_{\gls{S}} \glsop{circ} \gls{alpha} \glsop{circ} \LANGLE \gls{id} \CANGLE \LSEM \gls{W} \RSEM \RANGLE
     \end{align*}
   \end{ceqn}
-  \caption{Interpretation of computations $\GAMMA \CDASHi \gls{M} \CDASHii \X$ as morphisms ${\LSEM \GAMMA \RSEM}_{\gls{S}} \xrightarrow{{\LSEM \gls{M} \RSEM}_{\gls{S}}} \gls{S}\LSEM \X \RSEM$ in ${\gls{Set}}^{\gls{bF}}$}
-  \label{fig:term-e}
+  \ifwithagda
+  \caption{Computations $\GAMMA \CDASHi \gls{M} \CDASHii \X$ as morphisms ${\LSEM \GAMMA \RSEM}_{\gls{S}} \xrightarrow{{\LSEM \gls{M} \RSEM}_{\gls{S}}} \gls{S}\LSEM \X \RSEM$ in ${\gls{Set}}^{\gls{bF}}$ (see \Cref{frm:semcomp})}
+  \else
+  \caption{Computations $\GAMMA \CDASHi \gls{M} \CDASHii \X$ as morphisms ${\LSEM \GAMMA \RSEM}_{\gls{S}} \xrightarrow{{\LSEM \gls{M} \RSEM}_{\gls{S}}} \gls{S}\LSEM \X \RSEM$ in ${\gls{Set}}^{\gls{bF}}$}
+  \fi
+  \label{fig:termsem-b}
 \end{subfigure}
 
 \vspace{15pt}
@@ -46,12 +54,12 @@
       {\LSEM \GAMMA \CDASHi \gls{pmc}({\gls{W}} , \gls{M}) \CDASHii \X \RSEM}_{\gls{KV}} \; \sGAMMA \; \gls{k} &= ({\LSEM \gls{M} \RSEM}_{\gls{KV}} \glsop{circ} \gls{alpha} \glsop{circ} \LANGLE \sGAMMA , {\LSEM \gls{W} \RSEM}_{\gls{KV}} \RANGLE) \; \gls{k}
     \end{align*}
   \end{ceqn}
-  \caption{Interpretation of computations $\GAMMA \CDASHi \gls{M} \CDASHii \X$ as morphisms ${\LSEM \GAMMA \RSEM}_{\gls{KV}} \xrightarrow{{\LSEM \gls{M} \RSEM}_{\gls{KV}}} \gls{KV}\LSEM \X \RSEM$ in ${\gls{Set}}^{\gls{bF}}$}
-  \label{fig:term-f}
+  \caption{Computations $\GAMMA \CDASHi \gls{M} \CDASHii \X$ as morphisms ${\LSEM \GAMMA \RSEM}_{\gls{KV}} \xrightarrow{{\LSEM \gls{M} \RSEM}_{\gls{KV}}} \gls{KV}\LSEM \X \RSEM$ in ${\gls{Set}}^{\gls{bF}}$}
+  \label{fig:termsem-c}
 \end{subfigure}
 
 \vspace{5pt}
-} \end{minipage} }        
-\caption{Terms (with \gls{T} a monad on ${\gls{Set}}^{\gls{bF}}$)}
+} \end{minipage} }
+\caption{Interpretation of terms (with \gls{T} a monad on ${\gls{Set}}^{\gls{bF}}$)}
 \label{fig:ctx}
 \end{figure}

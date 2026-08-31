@@ -58,32 +58,66 @@ varK = const
 subK : ∀ {ℓ} {X : Set ℓ} -> (R -> K X) × K X -> K X
 subK (f , n) k = f (n k) k
 
+\end{code}
+%<*SemTy>
+\begin{code}
+
 ⟦_⟧ : Ty -> Set
 ⟦ `Unit ⟧ = ⊤
 ⟦ A `× B ⟧ = ⟦ A ⟧ × ⟦ B ⟧
 ⟦ A `⇒ B ⟧ = ⟦ A ⟧ -> K ⟦ B ⟧
 ⟦ `L ⟧ = R
 
+\end{code}
+%</SemTy>
+
+%<*SemCtx>
+\begin{code}
+
 ⟦_⟧ˣ : Ctx -> Set
 ⟦ ε ⟧ˣ = ⊤
 ⟦ Γ ∙ A ⟧ˣ = ⟦ Γ ⟧ˣ × ⟦ A ⟧
+
+\end{code}
+%</SemCtx>
+
+\begin{code}
 
 ⟦_⟧ʷ : Γ ⊇ Δ -> ⟦ Γ ⟧ˣ -> ⟦ Δ ⟧ˣ
 ⟦ wk-ε ⟧ʷ = idf
 ⟦ wk-cong π ⟧ʷ = < proj₁ ； ⟦ π ⟧ʷ , proj₂ >
 ⟦ wk-wk π ⟧ʷ = proj₁ ； ⟦ π ⟧ʷ
 
+\end{code}
+%<*SemMem>
+\begin{code}
+
 ⟦_⟧ᵐ : Γ ∋ X -> ⟦ Γ ⟧ˣ -> ⟦ X ⟧
 ⟦ new ⟧ᵐ = proj₂
 ⟦ old x ⟧ᵐ = proj₁ ； ⟦ x ⟧ᵐ
 
+\end{code}
+%</SemMem>
+\begin{code}
+
 mutual
+
+\end{code}
+%<*SemPure>
+\begin{code}
+
   ⟦_⟧ᵖ : Γ ⊢ᵖ X -> ⟦ Γ ⟧ˣ -> ⟦ X ⟧
   ⟦ var i ⟧ᵖ = ⟦ i ⟧ᵐ
   ⟦ lam M ⟧ᵖ = curry ⟦ M ⟧ᶜ
   ⟦ pair W₁ W₂ ⟧ᵖ = < ⟦ W₁ ⟧ᵖ , ⟦ W₂ ⟧ᵖ >
   ⟦ pm W₁ W₂ ⟧ᵖ = < idf , ⟦ W₁ ⟧ᵖ > ； assocl ； ⟦ W₂ ⟧ᵖ
   ⟦ unit ⟧ᵖ = const tt
+
+\end{code}
+%</SemPure>
+
+%<*SemComp>
+\begin{code}
 
   ⟦_⟧ᶜ : Γ ⊢ᶜ X -> ⟦ Γ ⟧ˣ -> K ⟦ X ⟧
   ⟦ return W ⟧ᶜ = ⟦ W ⟧ᵖ ； η
@@ -92,6 +126,10 @@ mutual
   ⟦ app W₁ W₂ ⟧ᶜ = < ⟦ W₁ ⟧ᵖ , ⟦ W₂ ⟧ᵖ > ； uncurry idf
   ⟦ var W ⟧ᶜ = ⟦ W ⟧ᵖ ； varK
   ⟦ sub M₁ M₂ ⟧ᶜ = < curry ⟦ M₁ ⟧ᶜ , ⟦ M₂ ⟧ᶜ > ； subK
+
+\end{code}
+%</SemComp>
+\begin{code}
 
 mutual
   evalPure : Γ ⊢ᵖ X -> ⟦ Γ ⟧ˣ -> ⟦ X ⟧
