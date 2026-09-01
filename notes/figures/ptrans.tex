@@ -1,8 +1,9 @@
 \begin{figure}[!ht]
-\fbox{
-\begin{minipage}{0.97\textwidth}
-\vspace{10pt}
-\parbox[c]{0.97\linewidth}{
+\fbox{%
+\begin{minipage}{\dimexpr\textwidth-2\fboxsep-2\fboxrule\relax}%
+\vspace{10pt}%
+\parbox[c]{\linewidth}{%
+\centering%
 
 \begin{mathpar}
   \inferrule
@@ -102,8 +103,8 @@
     }
 \end{mathpar}
 
-\vspace{5pt}
-} \end{minipage} }
+\vspace{5pt}%
+}\end{minipage}}%
 \ifwithagda
 \caption{Transitions of the machine for normalising pure terms (see \Cref{frm:ptrans})}
 \else

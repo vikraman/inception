@@ -1,8 +1,9 @@
 \begin{figure}[!ht]
-\fbox{
-\begin{minipage}{0.97\textwidth}
-\vspace{10pt}
-\parbox[c]{0.97\linewidth}{
+\fbox{%
+\begin{minipage}{\dimexpr\textwidth-2\fboxsep-2\fboxrule\relax}%
+\vspace{10pt}%
+\parbox[c]{\linewidth}{%
+\centering%
 
 \begin{subfigure}{0.95\linewidth}
   \begin{ceqn}
@@ -58,8 +59,8 @@
   \label{fig:termsem-c}
 \end{subfigure}
 
-\vspace{5pt}
-} \end{minipage} }
+\vspace{5pt}%
+}\end{minipage}}%
 \caption{Interpretation of terms (with \gls{T} a monad on ${\gls{Set}}^{\gls{bF}}$)}
 \label{fig:termsem}
 \end{figure}
