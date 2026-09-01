@@ -1,11 +1,11 @@
-\begin{figure}[h!]
+\begin{figure}[!ht]
 \fbox{
-\begin{minipage}{0.97\textwidth} % TODO
+\begin{minipage}{0.97\textwidth}
 \vspace{10pt}
 \parbox[c]{0.97\linewidth}{
 
   \begin{mathpar}
-    \inferrule 
+    \inferrule
       {
         \GAMMA \PDASHi \gls{W} \PDASHii \X \\
         \sGAMMA \glsop{colon} {\gls{Env}}_{{\Z}_0} \; \GAMMA \\
@@ -15,7 +15,7 @@
         \CSTATEBi \gls{return}(\gls{W}) \CSTATEBii \sGAMMA \CSTATEBiii \gls{cstack} \CSTATEBiv \; \glsop{ctrans} \; \CSTATEAi \gls{run}(\gls{W},\sGAMMA) \CSTATEAii \gls{cstack} \CSTATEAiii
       }
 
-    \inferrule 
+    \inferrule
       {
         \mathop{{\VDASHi}_{{\Z}_0}} \gls{bfW} \VDASHii \X \\
         \GAMMA \glsop{bullet} \X \CDASHi \gls{M} \CDASHii \Y \\
@@ -26,7 +26,7 @@
         \CSTATEAi \gls{bfW} \CSTATEAii \CCONSi \gls{M} \CCONSii \sGAMMA \CCONSiii \CCONSiv \gls{cstack} \CSTATEAiii \; \glsop{ctrans} \; \CSTATEBi \gls{M} \CSTATEBii \sGAMMA \glsop{cdot} \gls{bfW} \CSTATEBiii \gls{cstack} \CSTATEBiv
       }
 
-    \inferrule 
+    \inferrule
       {
         \GAMMA \CDASHi {\gls{M}}_{\X} \CDASHii \X \\
         (\GAMMA \glsop{bullet} \X) \CDASHi {\gls{M}}_{\Y} \CDASHii \Y \\
@@ -37,7 +37,7 @@
         \CSTATEBi \gls{push}({\gls{M}}_{\X},{\gls{M}}_{\Y}) \CSTATEBii \sGAMMA \CSTATEBiii \gls{cstack} \CSTATEBiv \; \glsop{ctrans} \; \CSTATEBi {\gls{M}}_{\X} \CSTATEBii \sGAMMA \CSTATEBiii \CCONSi {\gls{M}}_{\Y} \CCONSii \sGAMMA \CCONSiii \CCONSiv \gls{cstack} \CSTATEBiv
       }
 
-    \inferrule 
+    \inferrule
       {
         (\GAMMA \glsop{bullet} \gls{L}) \CDASHi {\gls{M}}_1 \CDASHii \X \\
         \GAMMA \CDASHi {\gls{M}}_2 \CDASHii \X \\
@@ -48,7 +48,7 @@
         \CSTATEBi \gls{sub}({\gls{M}}_1,{\gls{M}}_2) \CSTATEBii \sGAMMA \CSTATEBiii \gls{cstack} \CSTATEBiv \; \glsop{ctrans} \; \CSTATEBi {\gls{M}}_1 \CSTATEBii \sGAMMA \glsop{cdot} \gls{bfjump}({\gls{M}}_2,\sGAMMA,\gls{cstack}) \CSTATEBiii \gls{cstack} \CSTATEBiv
       }
 
-    \inferrule 
+    \inferrule
       {
         \GAMMA \PDASHi \gls{W} \PDASHii \gls{L} \\
         \sGAMMA \glsop{colon} {\gls{Env}}_{{\Z}_0} \; \GAMMA \\
@@ -58,7 +58,7 @@
         \CSTATEBi \gls{var}(\gls{W}) \CSTATEBii \sGAMMA \CSTATEBiii \gls{cstack} \CSTATEBiv \; \glsop{ctrans} \; \gls{runjump}(\gls{W},\sGAMMA)
       }
 
-    \inferrule 
+    \inferrule
       {
         \GAMMA \PDASHi \gls{W} \PDASHii {\X}_1 \glsop{times} {\X}_2 \\
         \sGAMMA \glsop{colon} {\gls{Env}}_{{\Z}_0} \; \GAMMA \\
@@ -69,7 +69,7 @@
         \CSTATEBi \gls{pmc}(\gls{W},\gls{M}) \CSTATEBii \sGAMMA \CSTATEBiii \gls{cstack} \CSTATEBiv \; \glsop{ctrans} \; \CSTATEBi \gls{M} \CSTATEBii \sGAMMA \glsop{cdot} \gls{runi}(\gls{W},\sGAMMA) \glsop{cdot} \gls{runii}(\gls{W},\sGAMMA) \CSTATEBiii \gls{cstack} \CSTATEBiv
       }
 
-    \inferrule 
+    \inferrule
       {
         \GAMMA \PDASHi {\gls{W}}_1 \PDASHii \X \glsop{Rightarrow} \Y \\
         \GAMMA \PDASHi {\gls{W}}_2 \PDASHii \X \\
@@ -82,7 +82,7 @@
   \end{mathpar}
 
 \vspace{5pt}
-} \end{minipage} }        
+} \end{minipage} }
 \ifwithagda
 \caption{Transitions of the computation machine (see \Cref{frm:ctrans})}
 \else
