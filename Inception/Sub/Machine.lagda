@@ -349,7 +349,7 @@ data _→ᶜ_ {Z₀ : Ty} : CState {Z₀ = Z₀} → CState {Z₀ = Z₀} → Se
                  -------------------------------------------
                  →  ⟨ return W ╎ γ ╎ cstack ⟩ →ᶜ ⟨ run W γ ╎ cstack ⟩
 
-      return→ :  {Ẇ : Value X} {M : Comp (Δ ∙ X) Y} {γ : Env Δ} {cstack : CStack Y}
+      return→ :  {Ẇ : Value X} {M : Comp (Γ ∙ X) Y} {γ : Env Γ} {cstack : CStack Y}
                  --------------------------------------------------------------
                  →  ⟨ Ẇ ╎ < M ； γ >∷ cstack ⟩ →ᶜ ⟨ M ╎ γ · Ẇ ╎ cstack ⟩
 
