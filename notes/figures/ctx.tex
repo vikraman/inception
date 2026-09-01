@@ -7,13 +7,12 @@
 
 \debugbox{
 \begin{subfigure}{0.55\linewidth}
-  \begin{ceqn}
-    \begin{align*}
-      \text{Types:} && \X \,,\, \Y \,,\, \Z  &:=\; \gls{1} \mid \X \glsop{Rightarrow} \Y \mid \X \glsop{times} \Y \mid \gls{L}\\
-      \text{Contexts:} && \GAMMA \,,\, \DELTA &:=\; \gls{varepsilon} \mid \GAMMA \glsbin{bullet} \X\\
-      \text{Variables:} && \gls{ell} \,,\, \x \,,\, \y \,,\, \z &:=\; \gls{new} \mid \gls{old} ( \x )
-    \end{align*}
-  \end{ceqn}
+	\setlength{\mathindent}{0pt}
+	\begin{align*}
+		\text{Types:} && \X \,,\, \Y \,,\, \Z  &:=\; \gls{1} \mid \X \glsop{Rightarrow} \Y \mid \X \glsop{times} \Y \mid \gls{L}\\
+		\text{Contexts:} && \GAMMA \,,\, \DELTA &:=\; \gls{varepsilon} \mid \GAMMA \glsbin{bullet} \X\\
+		\text{Variables:} && \gls{ell} \,,\, \x \,,\, \y \,,\, \z &:=\; \gls{new} \mid \gls{old} ( \x )
+	\end{align*}
   \caption{Grammar}
   \label{fig:ctx-a}
 \end{subfigure}
@@ -38,7 +37,7 @@
 \end{subfigure}}
 
 \vspace{20pt}
-\begin{subfigure}{0.3\linewidth}
+\debugbox{\begin{subfigure}{0.28\linewidth}
   \begin{ceqn}
     \begin{align*}
       {\LSEM \gls{1} \RSEM}_{\gls{T}} &= \gls{top}\\
@@ -53,9 +52,9 @@
   \caption{Interpretation of types as presheaves in ${\gls{Set}}^{\gls{bF}}$}
   \fi
   \label{fig:ctx-c}
-	\end{subfigure}
-	\hfill
-	\begin{subfigure}{0.25\linewidth}
+\end{subfigure}}
+\hfill
+\debugbox{\begin{subfigure}{0.25\linewidth}
   \begin{ceqn}
   \begin{align*}
   \\
@@ -69,9 +68,9 @@
   \caption{Interpretation of contexts as presheaves in ${\gls{Set}}^{\gls{bF}}$}
   \fi
   \label{fig:ctx-d}
-	\end{subfigure}
-	\hfill
-	\begin{subfigure}{0.25\linewidth}
+\end{subfigure}}
+\hfill
+\debugbox{\begin{subfigure}{0.29\linewidth}
   \begin{ceqn}
   \begin{align*}
   {\LSEM \gls{new} \RSEM}_{\gls{T}} &= \PIii\\
@@ -84,7 +83,7 @@
   \caption{Interpretation of variables as morphisms ${\LSEM \GAMMA \RSEM}_{\gls{T}} \xrightarrow{{\LSEM \x \RSEM}_{\gls{T}}} {\LSEM \X \RSEM}_{\gls{T}}$ in ${\gls{Set}}^{\gls{bF}}$}
   \fi
   \label{fig:ctx-e}
-\end{subfigure}
+\end{subfigure}}
 
 \vspace{10pt}%
 }\end{minipage}}%
