@@ -1,5 +1,6 @@
 \usepackage{longtable}
-\usepackage{dsfont} % for 1
+\usepackage{xspace}
+%\usepackage{dsfont} % for 1
 \usepackage[automake,xindy,nomain,symbols,sort=def]{glossaries-extra}
 
 \newglossarystyle{long0}{%
@@ -139,7 +140,7 @@
 \glsxtrnewsymbol[description={Typing judgement for values},symbol={${\vdash^\textsf{v}}_{\_}\_:\_$}, user1={\ensuremath{\vdash^\textsf{v}}}, user2={\ensuremath{:}}]{valuedash}{\ensuremath{\vdash^\textsf{v}}}
 \glsxtrnewsymbol[description={Typing judgement for partially normalised pure terms},symbol={${\vdash\hat{}}_{\_}\_:\_$}, user1={\ensuremath{{\vdash}^{\raisebox{-1.1ex}{\ensuremath{\hat{}}}}}}, user2={\ensuremath{:}}]{hdash}{\ensuremath{\vdash\hat{}}}
 \glsxtrnewsymbol[description={Membership judgement},symbol={$\_:\_\in\_$},user1={\ensuremath{:}},user2={\ensuremath{\in}}]{mem}{\ensuremath{\in}}
-\glsxtrnewsymbol[description={Interpretation of types, contexts and variables (\Cref{fig:ctx})},symbol={${\llbracket\_\rrbracket}_{\_}, \llbracket\_\rrbracket$}, user1={\ensuremath{\llbracket}},user2={\ensuremath{\rrbracket}}]{sem}{\ensuremath{\llbracket}}
+\glsxtrnewsymbol[description={Interpretation of types, contexts and variables (\Cref{fig:ctx})},symbol={$\llbracket\_\rrbracket$}, user1={\ensuremath{\llbracket}},user2={\ensuremath{\rrbracket}}]{sem}{\ensuremath{\llbracket}}
 \glsxtrnewsymbol[description={Pairing of two morphisms},symbol={$\langle\_,\_\rangle$},user1={\ensuremath{\langle}},user2={\ensuremath{,}},user3={\ensuremath{\rangle}}]{angle}{\ensuremath{\langle\_,\_\rangle}}
 \glsxtrnewsymbol[description={Lifting of a monad morphism},symbol={${\_}^{\sharp}$}]{sharp}{\ensuremath{\sharp}}
 \glsxtrnewsymbol[description={Empty computation stack},symbol={$\square$}]{square}{\ensuremath{\scriptstyle\square}}
@@ -178,7 +179,7 @@
 \newcommand\DELTA{\glshyperlink[\glsentryuserii{CTX}]{CTX}\glsadd{CTX}}
 \newcommand\PSI{\glshyperlink[\glsentryuseriii{CTX}]{CTX}\glsadd{CTX}}
 
-\newcommand\sGAMMA{\glshyperlink[\glsentryuseri{ENV}]{ENV}\glsadd{ENV}}
+\newcommand\sGAMMA{\glshyperlink[\glsentryuseri{ENV}]{ENV}\glsadd{ENV}\xspace}
 \newcommand\sDELTA{\glshyperlink[\glsentryuserii{ENV}]{ENV}\glsadd{ENV}}
 \newcommand\sPSI{\glshyperlink[\glsentryuseriii{ENV}]{ENV}\glsadd{ENV}}
 

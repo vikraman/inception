@@ -41,10 +41,10 @@
 \debugbox{\begin{subfigure}{0.30\linewidth}
   \begin{ceqn}
     \begin{align*}
-      {\LSEM \gls{1} \RSEM}_{\gls{T}} &= \gls{top}\\
-      {\LSEM \X \glsop{times} \Y \RSEM}_{\gls{T}} &= {\LSEM \X \RSEM}_{\gls{T}} \glsop{times} {\LSEM \Y \RSEM}_{\gls{T}}\\
-      {\LSEM \X \glsop{Rightarrow} \Y \RSEM}_{\gls{T}} &= {\LSEM \X \RSEM}_{\gls{T}} \glsop{Rightarrow} {\gls{T}}{\LSEM \Y \RSEM}_{\gls{T}}\\
-      {\LSEM \gls{L} \RSEM}_{\gls{T}} &= \gls{V}
+      {\LSEM \gls{1} \RSEM} &= \gls{top}\\
+      {\LSEM \X \glsop{times} \Y \RSEM} &= {\LSEM \X \RSEM} \glsop{times} {\LSEM \Y \RSEM}\\
+      {\LSEM \X \glsop{Rightarrow} \Y \RSEM} &= {\LSEM \X \RSEM} \glsop{Rightarrow} {\gls{KV}}{\LSEM \Y \RSEM}\\
+      {\LSEM \gls{L} \RSEM} &= \gls{V}
     \end{align*}
   \end{ceqn}
   \ifwithagda
@@ -59,8 +59,8 @@
   \begin{ceqn}
   \begin{align*}
   \\
-  {\LSEM \gls{varepsilon} \RSEM}_{\gls{T}} &= \gls{top}\\
-  {\LSEM \GAMMA, \X \RSEM}_{\gls{T}} &= {\LSEM \GAMMA \RSEM}_{\gls{T}} \glsop{times} {\LSEM \X \RSEM}_{\gls{T}}\\
+  {\LSEM \gls{varepsilon} \RSEM} &= \gls{top}\\
+  {\LSEM \GAMMA, \X \RSEM} &= {\LSEM \GAMMA \RSEM} \glsop{times} {\LSEM \X \RSEM}\\
   \end{align*}
   \end{ceqn}
   \ifwithagda
@@ -74,20 +74,20 @@
 \debugbox{\begin{subfigure}{0.29\linewidth}
   \begin{ceqn}
   \begin{align*}
-  {\LSEM \gls{new} \RSEM}_{\gls{T}} &= \PIii\\
-  {\LSEM \gls{old}(\x) \RSEM}_{\gls{T}} &= {\LSEM \x \RSEM}_{\gls{T}} \glsop{circ} \PIi\\
+  {\LSEM \gls{new} \RSEM} &= \PIii\\
+  {\LSEM \gls{old}(\x) \RSEM} &= {\LSEM \x \RSEM} \glsop{circ} \PIi\\
   \end{align*}
   \end{ceqn}
   \ifwithagda
-  \caption{Interpretation of variables as morphisms ${\LSEM \GAMMA \RSEM}_{\gls{T}} \xrightarrow{{\LSEM \x \RSEM}_{\gls{T}}} {\LSEM \X \RSEM}_{\gls{T}}$ in ${\gls{Set}}^{\gls{bF}}$ (see \Cref{frm:semmem})}
+  \caption{Interpretation of variables as morphisms ${\LSEM \GAMMA \RSEM} \xrightarrow{{\LSEM \x \RSEM}} {\LSEM \X \RSEM}$ in ${\gls{Set}}^{\gls{bF}}$ (see \Cref{frm:semmem})}
   \else
-  \caption{Interpretation of variables as morphisms ${\LSEM \GAMMA \RSEM}_{\gls{T}} \xrightarrow{{\LSEM \x \RSEM}_{\gls{T}}} {\LSEM \X \RSEM}_{\gls{T}}$ in ${\gls{Set}}^{\gls{bF}}$}
+  \caption{Interpretation of variables as morphisms ${\LSEM \GAMMA \RSEM} \xrightarrow{{\LSEM \x \RSEM}} {\LSEM \X \RSEM}$ in ${\gls{Set}}^{\gls{bF}}$}
   \fi
   \label{fig:ctx-e}
 \end{subfigure}}
 
 \vspace{10pt}%
 }\end{minipage}}%
-\caption{Types, contexts and variables (with \gls{T} a monad on ${\gls{Set}}^{\gls{bF}}$)}
+\caption{Types, contexts and variables}
 \label{fig:ctx}
 \end{figure}
