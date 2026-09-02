@@ -28,11 +28,11 @@
   \begin{ceqn}
     \begin{align*}
       {\LSEM \GAMMA \CDASHi \gls{return} (\gls{W}) \CDASHii \X \RSEM}_{\gls{S}} &= \gls{eta} \glsop{circ} {\LSEM \gls{W} \RSEM}_{\gls{S}} \\
+      {\LSEM \GAMMA \CDASHi \gls{pmc}(\gls{W} , {\gls{M}}) \CDASHii \X \RSEM}_{\gls{S}} &= {\LSEM {\gls{M}} \RSEM}_{\gls{S}} \glsop{circ} \gls{alpha} \glsop{circ} \LANGLE \gls{id} \CANGLE \LSEM \gls{W} \RSEM \RANGLE
       {\LSEM \GAMMA \CDASHi \gls{push} ({\gls{W}}_1, {\gls{W}}_2) \CDASHii \X\RSEM}_{\gls{S}} &= {\LSEM {\gls{W}}_2 \RSEM}_{\gls{S}}^{\gls{sharp}} \glsop{circ} \gls{str} \glsop{circ} \LANGLE \gls{id} \CANGLE {\LSEM {\gls{W}}_1 \RSEM}_{\gls{S}} \RANGLE\\
       {\LSEM \GAMMA \CDASHi \gls{app}({\gls{W}}_1 , {\gls{W}}_2) \CDASHii \X \RSEM}_{\gls{S}} &= \gls{ev} \glsop{circ} \LANGLE {\LSEM {\gls{W}}_1 \RSEM}_{\gls{S}} \CANGLE {\LSEM {\gls{W}}_2 \RSEM}_{\gls{S}} \RANGLE\\
       {\LSEM \GAMMA \CDASHi \gls{var}(\gls{W}) \CDASHii \X \RSEM}_{\gls{S}} &= {\gls{var}}_{\X} \glsop{circ} {\LSEM \gls{W} \RSEM}_{\gls{S}}\\
       {\LSEM \GAMMA \CDASHi \gls{sub}({\gls{W}}_1 , {\gls{W}}_2) \CDASHii \X \RSEM}_{\gls{S}} &= \gls{sub}_{\X} \glsop{circ} \LANGLE \gls{lambda} {\LSEM {\gls{W}}_1 \RSEM}_{\gls{S}} \CANGLE {\LSEM {\gls{W}}_2 \RSEM}_{\gls{S}} \RANGLE\\
-      {\LSEM \GAMMA \CDASHi \CDASHi (\gls{W} , {\gls{M}}) \CDASHii \X \RSEM}_{\gls{S}} &= {\LSEM {\gls{M}} \RSEM}_{\gls{S}} \glsop{circ} \gls{alpha} \glsop{circ} \LANGLE \gls{id} \CANGLE \LSEM \gls{W} \RSEM \RANGLE
     \end{align*}
   \end{ceqn}
   \ifwithagda
@@ -48,11 +48,11 @@
   \begin{ceqn}
     \begin{align*}
       {\LSEM \GAMMA \CDASHi \gls{return} (\gls{W}) \CDASHii \X \RSEM}_{\gls{KV}} \;\sGAMMA\; \gls{k} &= \gls{k} \;({\LSEM \gls{W} \RSEM}_{\gls{KV}}\; \sGAMMA)\\
+      {\LSEM \GAMMA \CDASHi \gls{pmc}({\gls{W}} , \gls{M}) \CDASHii \X \RSEM}_{\gls{KV}} \; \sGAMMA \; \gls{k} &= ({\LSEM \gls{M} \RSEM}_{\gls{KV}} \glsop{circ} \gls{alpha} \glsop{circ} \LANGLE \sGAMMA , {\LSEM \gls{W} \RSEM}_{\gls{KV}} \RANGLE) \; \gls{k}
       {\LSEM \GAMMA \CDASHi \gls{push} ({\gls{W}}_1, {\gls{W}}_2) : \X\RSEM}_{\gls{KV}} \;\sGAMMA \; {\gls{k}} &= ({\LSEM {\gls{W}}_2 \RSEM}_{\gls{KV}}^{\gls{sharp}} \glsop{circ} \gls{str} \glsop{circ} \LANGLE \sGAMMA \CANGLE {\LSEM {\gls{W}}_1 \RSEM}_{\gls{KV}} \;\sGAMMA \RANGLE) \; {\gls{k}}\\
       {\LSEM \GAMMA \CDASHi \gls{app}({\gls{W}}_1 , {\gls{W}}_2) \CDASHii \X \RSEM}_{\gls{KV}} \; \sGAMMA \; \gls{k} &= (\gls{ev} \glsop{circ} \LANGLE {\LSEM {\gls{W}}_1 \RSEM}_{\gls{KV}} \CANGLE {\LSEM {\gls{W}}_2 \RSEM}_{\gls{KV}} \RANGLE) \; \sGAMMA \; \gls{k}\\
       {\LSEM \GAMMA \CDASHi \gls{var}(\gls{W}) \CDASHii \X \RSEM}_{\gls{KV}} \; \sGAMMA \; \gls{k} &= {\LSEM \gls{W} \RSEM}_{\gls{KV}} \; \sGAMMA\\
       {\LSEM \GAMMA \CDASHi \gls{sub}({\gls{M}}_1 , {\gls{M}}_2) \CDASHii \X \RSEM}_{\gls{KV}} &= {\LSEM {\gls{M}}_1 \RSEM}_{\gls{KV}} \; (\sGAMMA , {\LSEM {\gls{M}}_2 \RSEM}_{\gls{KV}} \, \sGAMMA \, \gls{k}) \; \gls{k}\\
-      {\LSEM \GAMMA \CDASHi \gls{pmc}({\gls{W}} , \gls{M}) \CDASHii \X \RSEM}_{\gls{KV}} \; \sGAMMA \; \gls{k} &= ({\LSEM \gls{M} \RSEM}_{\gls{KV}} \glsop{circ} \gls{alpha} \glsop{circ} \LANGLE \sGAMMA , {\LSEM \gls{W} \RSEM}_{\gls{KV}} \RANGLE) \; \gls{k}
     \end{align*}
   \end{ceqn}
   \caption{Computations $\GAMMA \CDASHi \gls{M} \CDASHii \X$ as morphisms ${\LSEM \GAMMA \RSEM}_{\gls{KV}} \xrightarrow{{\LSEM \gls{M} \RSEM}_{\gls{KV}}} \gls{KV}\LSEM \X \RSEM$ in ${\gls{Set}}^{\gls{bF}}$}
