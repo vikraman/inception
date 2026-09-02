@@ -29,10 +29,10 @@
     \begin{align*}
       {\LSEM \GAMMA \CDASHi \gls{return} (\gls{W}) \CDASHii \X \RSEM} &= \gls{eta} \glsop{circ} {\LSEM \gls{W} \RSEM} \\
       {\LSEM \GAMMA \CDASHi \gls{pmc}(\gls{W} , {\gls{M}}) \CDASHii \X \RSEM} &= {\LSEM {\gls{M}} \RSEM} \glsop{circ} \gls{alpha} \glsop{circ} \LANGLE \gls{id} \CANGLE \LSEM \gls{W} \RSEM \RANGLE\\
-      {\LSEM \GAMMA \CDASHi \gls{push} ({\gls{W}}_1, {\gls{W}}_2) \CDASHii \X\RSEM} &= {\LSEM {\gls{W}}_2 \RSEM}^{\gls{sharp}} \glsop{circ} \gls{str} \glsop{circ} \LANGLE \gls{id} \CANGLE {\LSEM {\gls{W}}_1 \RSEM} \RANGLE\\
+      {\LSEM \GAMMA \CDASHi \gls{push} ({\gls{M}}_1, {\gls{M}}_2) \CDASHii \X\RSEM} &= {\LSEM {\gls{M}}_2 \RSEM}^{\gls{sharp}} \glsop{circ} \gls{str} \glsop{circ} \LANGLE \gls{id} \CANGLE {\LSEM {\gls{M}}_1 \RSEM} \RANGLE\\
       {\LSEM \GAMMA \CDASHi \gls{app}({\gls{W}}_1 , {\gls{W}}_2) \CDASHii \X \RSEM} &= \gls{ev} \glsop{circ} \LANGLE {\LSEM {\gls{W}}_1 \RSEM} \CANGLE {\LSEM {\gls{W}}_2 \RSEM} \RANGLE\\
-      {\LSEM \GAMMA \CDASHi \gls{var}(\gls{W}) \CDASHii \X \RSEM} &= {\gls{var}}_{\X} \glsop{circ} {\LSEM \gls{W} \RSEM}\\
-      {\LSEM \GAMMA \CDASHi \gls{sub}({\gls{W}}_1 , {\gls{W}}_2) \CDASHii \X \RSEM} &= \gls{sub}_{\X} \glsop{circ} \LANGLE \gls{lambda} {\LSEM {\gls{W}}_1 \RSEM} \CANGLE {\LSEM {\gls{W}}_2 \RSEM} \RANGLE
+      {\LSEM \GAMMA \CDASHi {\gls{var}}_{\X}(\gls{W}) \CDASHii \X \RSEM} &= {\gls{var}}_{\X} \glsop{circ} {\LSEM \gls{W} \RSEM}\\
+      {\LSEM \GAMMA \CDASHi {\gls{sub}}_{\X}({\gls{W}}_1 , {\gls{W}}_2) \CDASHii \X \RSEM} &= \gls{sub}_{\X} \glsop{circ} \LANGLE \gls{lambda} {\LSEM {\gls{W}}_1 \RSEM} \CANGLE {\LSEM {\gls{W}}_2 \RSEM} \RANGLE
     \end{align*}
   \end{ceqn}
   \ifwithagda
