@@ -325,11 +325,15 @@ data EqVal Γ Δ where
            -----------------------------------
            -> Γ ⊢ᵛ inr W1 ≈ inr W2 ∶ A `+ B ∣ Δ
 
-  -- eta rule
+  -- eta rules
 
   unit-eta : (V : Γ ⊢ᵛ `Unit ∣ Δ)
            --------------------------
            -> Γ ⊢ᵛ V ≈ unit ∶ `Unit ∣ Δ
+
+  lam-eta : (V : Γ ⊢ᵛ A `⇒ B ∣ Δ)
+          -----------------------------------------------------------------------------------
+          -> Γ ⊢ᵛ V ≈ lam (μ (cut (A `⇒ B) (ret (wk̃ᵛ (wkᵛ V))) (app (var z) (covar z)))) ∶ A `⇒ B ∣ Δ
 
 data EqTm Γ Δ where
 
@@ -360,6 +364,16 @@ data EqTm Γ Δ where
   μ-eta : (M : Γ ⊢ᵗ A ∣ Δ)
         ------------------------------------------
         -> Γ ⊢ᵗ M ≈ μ (cut A (wk̃ᵗ M) (covar z)) ∶ A ∣ Δ
+
+  -- surjective pairing
+
+  pair-eta : (V : Γ ⊢ᵛ A `× B ∣ Δ)
+           ---------------------------------------------------------------------------------
+           -> Γ ⊢ᵗ ret V
+              ≈ lett (μ (cut (A `× B) (ret (wk̃ᵛ V)) (fst (covar z))))
+                     (lett (μ (cut (A `× B) (ret (wk̃ᵛ (wkᵛ V))) (snd (covar z))))
+                           (ret (pair (var (s z)) (var z))))
+              ∶ A `× B ∣ Δ
 
 data EqCtx Γ Δ where
 
@@ -402,6 +416,11 @@ data EqCtx Γ Δ where
   μ̃-eta : (C : Γ ∣ A ⊢ᵉ Δ)
         --------------------------------------------
         -> Γ ∣ C ≈ μ̃ (cut A (ret (var z)) (wkᵉ C)) ∶ A ⊢ᵉ Δ
+
+  case-eta : (C : Γ ∣ A `+ B ⊢ᵉ Δ)
+           -----------------------------------------------------------------------------
+           -> Γ ∣ C ≈ case (μ̃ (cut (A `+ B) (ret (inl (var z))) (wkᵉ C)))
+                           (μ̃ (cut (A `+ B) (ret (inr (var z))) (wkᵉ C))) ∶ A `+ B ⊢ᵉ Δ
 
 data EqCmd Γ Δ where
 

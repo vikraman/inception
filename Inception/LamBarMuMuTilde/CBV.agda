@@ -252,6 +252,7 @@ mutual
   eqVal (inl-cong p) = cong (_； inj₁) (eqVal p)
   eqVal (inr-cong p) = cong (_； inj₂) (eqVal p)
   eqVal (unit-eta V) = refl
+  eqVal (lam-eta V) = refl
 
   eqTm : Γ ⊢ᵗ M1 ≈ M2 ∶ A ∣ Δ -> ⟦ M1 ⟧ᵗ ≡ ⟦ M2 ⟧ᵗ
   eqTm ≈-refl = refl
@@ -260,6 +261,7 @@ mutual
   eqTm (ret-cong p) = cong (_； η) (eqVal p)
   eqTm (μ-cong p) = cong (λ f → councurry (curry′ f)) (eqCmd p)
   eqTm (μ-eta M) = refl
+  eqTm (pair-eta V) = refl
 
   eqCtx : Γ ∣ C1 ≈ C2 ∶ A ⊢ᵉ Δ -> ⟦ C1 ⟧ᵉ ≡ ⟦ C2 ⟧ᵉ
   eqCtx ≈-refl = refl
@@ -271,6 +273,7 @@ mutual
   eqCtx (case-cong p q) = cong (_； uncurry′ S.[_,_]) (cong₂ <_,_> (eqCtx p) (eqCtx q))
   eqCtx (μ̃-cong p) = cong (λ f → curry′ (shuffle ； f)) (eqCmd p)
   eqCtx (μ̃-eta C) = refl
+  eqCtx (case-eta C) = funext λ env → funext λ { (inj₁ x) → refl ; (inj₂ y) → refl }
 
   eqCmd : Γ ⊢ M1' ≈ M2' ⊣ Δ -> ⟦ M1' ⟧ᶜ ≡ ⟦ M2' ⟧ᶜ
   eqCmd ≈-refl = refl
