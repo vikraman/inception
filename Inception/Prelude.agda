@@ -5,7 +5,7 @@ open import Function
 
 open import Agda.Primitive using (Level)
 
-open import Data.Product using (proj₁; proj₂; _,_; <_,_>; curry; _×_; Σ; ∃; Σ-syntax; ∃-syntax)
+open import Data.Product using (proj₁; proj₂; _,_; <_,_>; curry; _×_; Σ; ∃; Σ-syntax; ∃-syntax) public
 open import Data.Empty using (⊥)
 
 import Relation.Binary.PropositionalEquality as Eq
