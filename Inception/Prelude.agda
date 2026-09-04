@@ -98,3 +98,6 @@ module RTC {A : Set} (_~>_ : A → A → Set) where
     _◼ : (a : A) → a ~>* a
 
     _~>⟨_⟩_ : (a : A) → {a' a'' : A} → a ~> a' → a' ~>* a'' → a ~>* a''
+
+  infix  25 _◼
+  infixr 20 _~>⟨_⟩_
