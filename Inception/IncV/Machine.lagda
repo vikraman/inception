@@ -374,16 +374,6 @@ data _→ᶜ_ {Z₀ : Ty} : CState {Z₀ = Z₀} → CState {Z₀ = Z₀} → Se
              ----------------------------------------------------------------
              →  ⟨ push M₁ M₂ ╎ γ ╎ cstack ⟩ →ᶜ ⟨ M₁ ╎ γ ╎ < M₂ ； γ >∷ cstack ⟩
 
-{-
-  sub→ :     {M₁ : Comp (Γ ∙ `L) X} {M₂ : Comp Γ X} {γ : Env Γ} {cstack : CStack X}
-             ----------------------------------------------------------------
-             →  ⟨ sub M₁ M₂ ╎ γ ╎ cstack ⟩ →ᶜ ⟨ M₁ ╎ γ · (jumpᵛ M₂ γ cstack) ╎ cstack ⟩
-
-  var→ :     {W : Pure Γ `L} {γ : Env Γ} {cstack : CStack X}
-             ------------------------------------------
-             →  ⟨ var W ╎ γ ╎ cstack ⟩ →ᶜ run-jump W γ
--}
-
   inc→ :     {M₁ : Comp (Γ ∙ `L) X} {M₂ : Comp (Γ ∙ `P) X} {γ : Env Γ} {cstack : CStack X}
              ----------------------------------------------------------------
              →  ⟨ inc M₁ M₂ ╎ γ ╎ cstack ⟩ →ᶜ ⟨ M₁ ╎ γ · (jumpᵛ M₂ γ cstack) ╎ cstack ⟩
@@ -404,7 +394,6 @@ data _→ᶜ_ {Z₀ : Ty} : CState {Z₀ = Z₀} → CState {Z₀ = Z₀} → Se
 \end{code}
 %</CTrans>
 \begin{code}
-
 
 determinismꟲ : {Z₀ : Ty} {S S' : CState {Z₀ = Z₀}} (S→S'₁ S→S'₂ : S →ᶜ S') → (S→S'₁ ≡ S→S'₂)
 determinismꟲ pure→ pure→ = refl
@@ -445,16 +434,6 @@ Rᴱ {Γ = Γ} γ = ∀ {X : Ty} → (i : Γ ∋ X) → Rᵛ X (lookup i γ)
 Rᴱ-ext : {Z₀ : Ty} {γ : Env {Z₀ = Z₀} Γ} {W : Value {Z₀ = Z₀} X} → Rᴱ γ → Rᵛ X W → Rᴱ (γ · W)
 Rᴱ-ext Rγ RW new = RW
 Rᴱ-ext Rγ RW (old i) = Rγ i
-
---rvp≡sn :
-
--- rv≡sn : {Z₀ : Ty} → (W : Pure Γ `L) → (γ : Env {Z₀ = Z₀} Γ) → Rᵛ `L (result (normalise-pure W γ)) ≡ SN (jump-to-state (result (normalise-pure W γ)))
--- rv≡sn (var new) (γ · jumpᵛ _ _ _) = refl
--- rv≡sn (var (old i)) (γ · _) = rv≡sn (var i) γ
--- rv≡sn (pm W₁ W₂) ⋄ = rv≡sn W₂ (⋄ · proj₁-val (result (normalise-pure W₁ ⋄)) · proj₂-val (result (normalise-pure W₁ ⋄)))
--- rv≡sn (pm W₁ W₂) (γ · W') = rv≡sn W₂ (γ · W' · proj₁-val (result (normalise-pure W₁ (γ · W'))) · proj₂-val (result (normalise-pure W₁ (γ · W'))))
-
--- jump-to-state (jumpᵛ M γ k) W₂ γ₂
 
 rv≡sn : {Z₀ : Ty} → (W₁ : Pure Γ `L) → (γ : Env {Z₀ = Z₀} Γ) → Rᵛ `L (result (normalise-pure W₁ γ)) ≡ (∀ {W' : Value {Z₀ = Z₀} `P} → SN (jump-to-state (result (normalise-pure W₁ γ)) W'))
 rv≡sn (var new) (γ · jumpᵛ _ _ _) = refl
