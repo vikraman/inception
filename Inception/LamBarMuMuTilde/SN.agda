@@ -219,12 +219,11 @@ SN-theorem {Γ} {Δ} M = Eq.subst SN (sub-cmd-id M) (Fundamental-cmd sub-id cosu
 --------------------------------------------------------------------------
 -- eval
 
-infix  5 _↠_
-infixr 10 _◅_
+open import Inception.Prelude
+open Inception.Prelude.RTC
 
-data _↠_ {Γ Δ} : Γ ⊢ Δ → Γ ⊢ Δ → Set where
-  ◼   : {M : Γ ⊢ Δ} → M ↠ M
-  _◅_ : {M N P : Γ ⊢ Δ} → M ↦ N → N ↠ P → M ↠ P
+_↦*_ : {Γ Δ : Env} -> Γ ⊢ Δ -> Γ ⊢ Δ -> Set
+_↦*_ {Γ} {Δ} = _~>*_ (_↦_ {Γ = Γ} {Δ = Δ})
 
 Normal : {Γ Δ : Env} → Γ ⊢ Δ → Set
 Normal M = ∀ {N} → M ↦ N → ⊥
@@ -263,11 +262,11 @@ step? (cut (A `⇒ B) (ret (lam M)) (covar j)) = done (λ ())
 step? (cut (A `⇒ B) (ret (lam M)) (app V C)) = next app-step
 step? (cut (A `⇒ B) (ret (lam M)) (μ̃ M'))     = next μ̃-step
 
-eval-acc : {Γ Δ : Env} {M : Γ ⊢ Δ} → SN M → Σ[ N ∈ Γ ⊢ Δ ] (M ↠ N) × Normal N
+eval-acc : {Γ Δ : Env} {M : Γ ⊢ Δ} → SN M → Σ[ N ∈ Γ ⊢ Δ ] (M ↦* N) × Normal N
 eval-acc {M = M} (sn f) with step? M
-... | done normal    = M , ◼ , normal
+... | done normal = M , M ◼ , normal
 ... | next {N} step with eval-acc (f step)
-...   | (P , chain , normal) = P , step ◅ chain , normal
+... | (P , chain , normal) = P , M ~>⟨ step ⟩ chain , normal
 
-eval : {Γ Δ : Env} (M : Γ ⊢ Δ) → Σ[ N ∈ Γ ⊢ Δ ] (M ↠ N) × Normal N
+eval : {Γ Δ : Env} (M : Γ ⊢ Δ) → Σ[ N ∈ Γ ⊢ Δ ] (M ↦* N) × Normal N
 eval M = eval-acc (SN-theorem M)
