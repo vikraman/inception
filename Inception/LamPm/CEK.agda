@@ -5,6 +5,8 @@ open import Data.Product using (Σ; Σ-syntax; _×_; _,_; proj₁; proj₂)
 open import Data.Unit using (⊤; tt)
 
 open import Inception.LamPm.Syntax
+open import Inception.Prelude
+open Inception.Prelude.RTC
 
 --------------------------------------------------------------------------
 -- closures and environments
@@ -82,12 +84,10 @@ data _→ᵏ_ : {B : Ty} → Cfg B → Cfg B → Set where
   pm-step     : {Γ : Ctx} {V : Γ ⊢ᵛ (A `× B)} {M : (Γ ∙ A ∙ B) ⊢ᶜ C} {ρ : Env Γ} {κ : Kont C D}
               → ⟨ pm V M ∥ ρ ∥ κ ⟩ →ᵏ split (eval-val V ρ) M ρ κ
 
-infix  5 _↠ᵏ_
-infixr 10 _◅_
+infix 5 _↠ᵏ_
 
-data _↠ᵏ_ {B} : Cfg B → Cfg B → Set where
-  ◼   : {σ : Cfg B} → σ ↠ᵏ σ
-  _◅_ : {σ σ' σ'' : Cfg B} → σ →ᵏ σ' → σ' ↠ᵏ σ'' → σ ↠ᵏ σ''
+_↠ᵏ_ : {B : Ty} → Cfg B → Cfg B → Set
+_↠ᵏ_ {B} = _~>*_ (_→ᵏ_ {B = B})
 
 --------------------------------------------------------------------------
 -- accessibility
@@ -168,9 +168,9 @@ step? [ v ∥ N ◂ ρ ∷ κ ]    = next resume-step
 
 eval-acc : {σ : Cfg B} → SN σ → Σ[ σ' ∈ Cfg B ] (σ ↠ᵏ σ') × Normal σ'
 eval-acc {σ = σ} (sn f) with step? σ
-... | done normal    = σ , ◼ , normal
+... | done normal    = σ , σ ◼ , normal
 ... | next {σ'} step with eval-acc (f step)
-...   | (σ'' , chain , normal) = σ'' , step ◅ chain , normal
+...   | (σ'' , chain , normal) = σ'' , σ ~>⟨ step ⟩ chain , normal
 
 eval : (M : ε ⊢ᶜ A) → Σ[ σ' ∈ Cfg A ] (⟨ M ∥ ∅ ∥ ε ⟩ ↠ᵏ σ') × Normal σ'
 eval M = eval-acc (SN-theorem M)
@@ -178,5 +178,6 @@ eval M = eval-acc (SN-theorem M)
 open import Relation.Binary.PropositionalEquality
 
 _ : eval (pm (pair unit unit) (return (lam {A = `Unit} (return (var h)))))
-       ≡ ([ clo (return (var h)) (∅ ∷ unit ∷ unit) ∥ ε ] , pm-step ◅ return-step ◅ ◼ , (λ ()))
+       ≡ ([ clo (return (var h)) (∅ ∷ unit ∷ unit) ∥ ε ] ,
+          _ ~>⟨ pm-step ⟩ _ ~>⟨ return-step ⟩ _ ◼ , (λ ()))
 _ = refl
