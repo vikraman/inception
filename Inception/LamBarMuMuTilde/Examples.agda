@@ -82,3 +82,85 @@ open import Inception.LamBarMuMuTilde.Syntax
          (μ̃ (cut A
                  (wkᵗ (wk̃ᵗ t2))
                  (covar z))))
+
+
+---
+open import Inception.Sub.Machine using (ex15)
+open import Inception.Sub.Translation using (⟦_⟧ᶜ)
+open import Inception.LamBarMuMuTilde.SN
+open import Inception.Prelude
+open Inception.Prelude.RTC
+open import Relation.Binary.PropositionalEquality
+
+ex15-tr : ε ⊢ᵗ `Unit ∣ (ε ∙ `Unit)
+ex15-tr = ⟦ ex15 ⟧ᶜ
+
+ex15-cmd : ε ⊢ (ε ∙ `Unit)
+ex15-cmd = cut `Unit ex15-tr (covar z)
+
+ex15-trace : ex15-cmd ↦* cut `Unit (ret unit) (covar z)
+ex15-trace = eval ex15-cmd .proj₂ .proj₁
+
+_ : ex15-trace ≡ (
+    cut `Unit (μ (cut `Unit (μ (cut `Unit (μ (cut (`Unit `⇒ `Unit) (ret (lam (μ (cut `Unit (μ (cut (`Unit `⇒ `⊥) (ret (lam (μ (cut `Unit (ret unit) (covar (s (s z))))))) (μ̃ (cut `Unit (μ (cut `⊥ (μ (cut (`Unit `⇒ `⊥) (ret (var z)) (app unit (covar z)))) tp)) (covar z))))) (covar z))))) (μ̃ (cut `Unit (μ (cut `Unit (ret unit) (μ̃ (cut `Unit (μ (cut (`Unit `⇒ `Unit) (ret (var (s z))) (app (var z) (covar z)))) (covar z))))) (covar z))))) (μ̃ (cut `Unit (ret unit) (covar z))))) (μ̃ (cut `Unit (ret unit) (covar z))))) (covar z)
+  ~>⟨ μ-step ⟩
+    cut `Unit (μ (cut `Unit (μ (cut (`Unit `⇒ `Unit) (ret (lam (μ (cut `Unit (μ (cut (`Unit `⇒ `⊥) (ret (lam (μ (cut `Unit (ret unit) (covar (s (s z))))))) (μ̃ (cut `Unit (μ (cut `⊥ (μ (cut (`Unit `⇒ `⊥) (ret (var z)) (app unit (covar z)))) tp)) (covar z))))) (covar z))))) (μ̃ (cut `Unit (μ (cut `Unit (ret unit) (μ̃ (cut `Unit (μ (cut (`Unit `⇒ `Unit) (ret (var (s z))) (app (var z) (covar z)))) (covar z))))) (covar z))))) (μ̃ (cut `Unit (ret unit) (covar z))))) (μ̃ (cut `Unit (ret unit) (covar z)))
+  ~>⟨ μ-step ⟩
+    cut `Unit (μ (cut (`Unit `⇒ `Unit) (ret (lam (μ (cut `Unit (μ (cut (`Unit `⇒ `⊥) (ret (lam (μ (cut `Unit (ret unit) (covar (s (s z))))))) (μ̃ (cut `Unit (μ (cut `⊥ (μ (cut (`Unit `⇒ `⊥) (ret (var z)) (app unit (covar z)))) tp)) (covar z))))) (covar z))))) (μ̃ (cut `Unit (μ (cut `Unit (ret unit) (μ̃ (cut `Unit (μ (cut (`Unit `⇒ `Unit) (ret (var (s z))) (app (var z) (covar z)))) (covar z))))) (covar z))))) (μ̃ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (covar z)))))
+  ~>⟨ μ-step ⟩
+    cut (`Unit `⇒ `Unit) (ret (lam (μ (cut `Unit (μ (cut (`Unit `⇒ `⊥) (ret (lam (μ (cut `Unit (ret unit) (covar (s (s z))))))) (μ̃ (cut `Unit (μ (cut `⊥ (μ (cut (`Unit `⇒ `⊥) (ret (var z)) (app unit (covar z)))) tp)) (covar z))))) (covar z))))) (μ̃ (cut `Unit (μ (cut `Unit (ret unit) (μ̃ (cut `Unit (μ (cut (`Unit `⇒ `Unit) (ret (var (s z))) (app (var z) (covar z)))) (covar z))))) (μ̃ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (covar z)))))))
+  ~>⟨ μ̃-step ⟩
+    cut `Unit (μ (cut `Unit (ret unit) (μ̃ (cut `Unit (μ (cut (`Unit `⇒ `Unit) (ret (lam (μ (cut `Unit (μ (cut (`Unit `⇒ `⊥) (ret (lam (μ (cut `Unit (ret unit) (covar (s (s z))))))) (μ̃ (cut `Unit (μ (cut `⊥ (μ (cut (`Unit `⇒ `⊥) (ret (var z)) (app unit (covar z)))) tp)) (covar z))))) (covar z))))) (app (var z) (covar z)))) (covar z))))) (μ̃ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (covar z)))))
+  ~>⟨ μ-step ⟩
+    cut `Unit (ret unit) (μ̃ (cut `Unit (μ (cut (`Unit `⇒ `Unit) (ret (lam (μ (cut `Unit (μ (cut (`Unit `⇒ `⊥) (ret (lam (μ (cut `Unit (ret unit) (covar (s (s z))))))) (μ̃ (cut `Unit (μ (cut `⊥ (μ (cut (`Unit `⇒ `⊥) (ret (var z)) (app unit (covar z)))) tp)) (covar z))))) (covar z))))) (app (var z) (covar z)))) (μ̃ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (covar z)))))))
+  ~>⟨ μ̃-step ⟩
+    cut `Unit (μ (cut (`Unit `⇒ `Unit) (ret (lam (μ (cut `Unit (μ (cut (`Unit `⇒ `⊥) (ret (lam (μ (cut `Unit (ret unit) (covar (s (s z))))))) (μ̃ (cut `Unit (μ (cut `⊥ (μ (cut (`Unit `⇒ `⊥) (ret (var z)) (app unit (covar z)))) tp)) (covar z))))) (covar z))))) (app unit (covar z)))) (μ̃ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (covar z)))))
+  ~>⟨ μ-step ⟩
+    cut (`Unit `⇒ `Unit) (ret (lam (μ (cut `Unit (μ (cut (`Unit `⇒ `⊥) (ret (lam (μ (cut `Unit (ret unit) (covar (s (s z))))))) (μ̃ (cut `Unit (μ (cut `⊥ (μ (cut (`Unit `⇒ `⊥) (ret (var z)) (app unit (covar z)))) tp)) (covar z))))) (covar z))))) (app unit (μ̃ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (covar z))))))
+  ~>⟨ app-step ⟩
+    cut `Unit (μ (cut `Unit (μ (cut (`Unit `⇒ `⊥) (ret (lam (μ (cut `Unit (ret unit) (covar (s (s z))))))) (μ̃ (cut `Unit (μ (cut `⊥ (μ (cut (`Unit `⇒ `⊥) (ret (var z)) (app unit (covar z)))) tp)) (covar z))))) (covar z))) (μ̃ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (covar z)))))
+  ~>⟨ μ-step ⟩
+    cut `Unit (μ (cut (`Unit `⇒ `⊥) (ret (lam (μ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (covar (s (s z))))))))))) (μ̃ (cut `Unit (μ (cut `⊥ (μ (cut (`Unit `⇒ `⊥) (ret (var z)) (app unit (covar z)))) tp)) (covar z))))) (μ̃ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (covar z)))))
+  ~>⟨ μ-step ⟩
+    cut (`Unit `⇒ `⊥) (ret (lam (μ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (covar (s z)))))))))) (μ̃ (cut `Unit (μ (cut `⊥ (μ (cut (`Unit `⇒ `⊥) (ret (var z)) (app unit (covar z)))) tp)) (μ̃ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (covar z)))))))
+  ~>⟨ μ̃-step ⟩
+    cut `Unit (μ (cut `⊥ (μ (cut (`Unit `⇒ `⊥) (ret (lam (μ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (covar (s (s (s z)))))))))))) (app unit (covar z)))) tp)) (μ̃ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (covar z)))))
+  ~>⟨ μ-step ⟩
+    cut `⊥ (μ (cut (`Unit `⇒ `⊥) (ret (lam (μ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (covar (s (s z))))))))))) (app unit (covar z)))) tp
+  ~>⟨ μ-step ⟩
+    cut (`Unit `⇒ `⊥) (ret (lam (μ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (covar (s z)))))))))) (app unit tp)
+  ~>⟨ app-step ⟩
+    cut `⊥ (μ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (covar (s z)))))))) tp
+  ~>⟨ μ-step ⟩
+    cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (covar z)))))
+  ~>⟨ μ̃-step ⟩
+    cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (covar z)))
+  ~>⟨ μ̃-step ⟩
+    cut `Unit (ret unit) (covar z)
+  ◼)
+_ = refl
+
+
+---
+open import Inception.Sub.Syntax as S
+
+ex16 : ε ⊢ᶜ `Unit
+ex16 = push (return unit) (return unit)
+
+ex16-tr : ε ⊢ᵗ `Unit ∣ (ε ∙ `Unit)
+ex16-tr = ⟦ ex16 ⟧ᶜ
+
+ex16-cmd : ε ⊢ (ε ∙ `Unit)
+ex16-cmd = cut `Unit ex16-tr (covar z)
+
+ex16-trace : ex16-cmd ↦* cut `Unit (ret unit) (covar z)
+ex16-trace = eval ex16-cmd .proj₂ .proj₁
+
+_ : ex16-trace ≡ (
+    cut `Unit (μ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (covar z))))) (covar z)
+  ~>⟨ μ-step ⟩
+    cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (covar z)))
+  ~>⟨ μ̃-step ⟩
+    cut `Unit (ret unit) (covar z)
+  ◼)
+_ = refl

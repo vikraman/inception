@@ -5,7 +5,7 @@ open import Function
 
 open import Agda.Primitive using (Level)
 
-open import Data.Product using (proj₁; proj₂; _,_; <_,_>; curry; _×_; Σ; ∃; Σ-syntax; ∃-syntax)
+open import Data.Product using (proj₁; proj₂; _,_; <_,_>; curry; _×_; Σ; ∃; Σ-syntax; ∃-syntax) public
 open import Data.Empty using (⊥)
 
 import Relation.Binary.PropositionalEquality as Eq
@@ -98,3 +98,6 @@ module RTC {A : Set} (_~>_ : A → A → Set) where
     _◼ : (a : A) → a ~>* a
 
     _~>⟨_⟩_ : (a : A) → {a' a'' : A} → a ~> a' → a' ~>* a'' → a ~>* a''
+
+  infix  25 _◼
+  infixr 20 _~>⟨_⟩_
