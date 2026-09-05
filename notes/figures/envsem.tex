@@ -1,0 +1,64 @@
+\begin{figure}[!ht]
+\fbox{%
+\begin{minipage}{\dimexpr\textwidth-2\fboxsep-2\fboxrule\relax}%
+\vspace{10pt}%
+\parbox[c]{\linewidth}{%
+\centering%
+
+\begin{subfigure}{0.95\linewidth}
+  \begin{ceqn}
+    \begin{align*}
+      {\LSEM \gls{diamond} \RSEM} &= \gls{tt} \\
+      {\LSEM \sGAMMA \glsop{cdot} \gls{W} \RSEM} &= \LSEM \sGAMMA \RSEM , \LSEM \gls{W} \RSEM
+    \end{align*}
+  \end{ceqn}
+  \caption{Environments $\sGAMMA \glsop{colon} {\gls{Env}}_{\gls{Rzero}}\; \GAMMA$ as morphisms $\gls{top} \to \LSEM \GAMMA \RSEM$}
+  \label{fig:envsem-a}
+\end{subfigure}
+
+\vspace{15pt}
+\begin{subfigure}{0.95\linewidth}
+  \begin{ceqn}
+    \begin{align*}
+      {\LSEM \gls{ast} \RSEM} &= \gls{tt} \\
+      {\LSEM \gls{bfpair}({\gls{bfW}}_1 , {\gls{bfW}}_2) \RSEM} &= \LSEM {\gls{bfW}}_1 \RSEM , \LSEM {\gls{bfW}}_2 \RSEM \\
+      {\LSEM \gls{bfclo}(\gls{M} , \sGAMMA) \RSEM} &= (\gls{lambda} \LSEM \gls{M} \RSEM) \LSEM \sGAMMA \RSEM \\
+      {\LSEM \gls{bfjump}(\gls{M} , \sGAMMA, \gls{cstack}) \RSEM} &= \LSEM \gls{M} \RSEM \LSEM \sGAMMA \RSEM \LSEM \gls{cstack} \RSEM
+    \end{align*}
+  \end{ceqn}
+  \caption{Values ${\VDASHi}_{\gls{Rzero}} \gls{bfW} \VDASHii \X$ as morphisms $\gls{top} \to \LSEM \X \RSEM$}
+  \label{fig:envsem-b}
+\end{subfigure}
+
+\vspace{15pt}
+\begin{subfigure}{0.95\linewidth}
+  \begin{ceqn}
+    \begin{align*}
+      {\LSEM \gls{square} \RSEM}^{\textsf{cs}} &= \gls{id} \\
+      {\LSEM \CCONSi \gls{M} \CCONSii \sGAMMA \CCONSiii \CCONSiv \gls{cstack} \RSEM}^{\textsf{cs}} &= \LSEM \gls{cstack} \RSEM \glsbin{circ} ({\LSEM \gls{M} \RSEM}^{\gls{sharp}}) \glsbin{circ} \gls{str} \glsbin{circ} \LANGLE \LSEM \sGAMMA \RSEM \CANGLE \gls{id} \RANGLE
+    \end{align*}
+  \end{ceqn}
+  \caption{Helper function: Computation stacks $\gls{cstack} \glsop{colon} {\gls{CStack}}_{\gls{Rzero}} \; \X$ as morphisms $\gls{KV}\LSEM \X \RSEM \to \gls{KV}\LSEM \gls{Rzero} \RSEM$}
+  \label{fig:envsem-c}
+\end{subfigure}
+
+\vspace{15pt}
+\begin{subfigure}{0.95\linewidth}
+  \begin{ceqn}
+    \begin{align*}
+      {\LSEM \gls{cstack} \RSEM}(\gls{t}) &= {\LSEM \gls{cstack} \RSEM}^{\textsf{cs}} \,(\gls{eta} \,\gls{t})\, {\gls{k}}_0
+    \end{align*}
+  \end{ceqn}
+  \caption{Computation stacks $\gls{cstack} \glsop{colon} {\gls{CStack}}_{\gls{Rzero}} \; \X$ as morphisms $\LSEM \X \RSEM \to \gls{KV}\LSEM \gls{Rzero} \RSEM$ (with ${\gls{k}}_0 : \LSEM \gls{Rzero} \RSEM \to \gls{V}$ )}
+  \label{fig:envsem-d}
+\end{subfigure}
+
+\vspace{5pt}%
+}\end{minipage}}%
+\ifwithagda
+\caption{Interpretation of environments, values and computation stacks (see \Cref{frm:semenv})}
+\else
+\caption{Interpretation of environments, values and computation stacks}
+\fi
+\label{fig:envsem}
+\end{figure}
