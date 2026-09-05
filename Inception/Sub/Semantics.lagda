@@ -354,8 +354,8 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
 %<*SemCState>
 \begin{code}
   ⟦_⟧ᶜꟴ : CState {Z₀ = R₀} → R
-  ⟦ ⟨ W ╎ k ⟩ ⟧ᶜꟴ = (η ⟦ W ⟧ⱽ) ⟦ k ⟧ᴷ
-  ⟦ ⟨ W ╎ γ ╎ k ⟩ ⟧ᶜꟴ = ⟦ W ⟧ᶜ ⟦ γ ⟧ᴱ ⟦ k ⟧ᴷ
+  ⟦ ⟨ 𝐖 ╎ k ⟩ ⟧ᶜꟴ = (η ⟦ 𝐖 ⟧ⱽ) ⟦ k ⟧ᴷ
+  ⟦ ⟨ M ╎ γ ╎ k ⟩ ⟧ᶜꟴ = ⟦ M ⟧ᶜ ⟦ γ ⟧ᴱ ⟦ k ⟧ᴷ
 \end{code}
 %</SemCState>
 
