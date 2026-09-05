@@ -320,7 +320,7 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
 %<*SemPartial>
 \begin{code}
   ⟦_⟧ᵀ : Partial {Z₀ = R₀} X → ⟦ X ⟧
-  ⟦ ⭭ W ⟧ᵀ = ⟦ W ⟧ⱽ
+  ⟦ ⭭ 𝐖 ⟧ᵀ = ⟦ 𝐖 ⟧ⱽ
   ⟦ ⇡ W γ ⟧ᵀ = ⟦ W ⟧ᵖ ⟦ γ ⟧ᴱ
   ⟦ ⇡ᴾᴹ W₁ W₂ γ ⟧ᵀ = ⟦ pm W₁ W₂ ⟧ᵖ ⟦ γ ⟧ᴱ
   ⟦ ⇡ᴸ W₁ W₂ γ ⟧ᵀ = ⟦ pair W₁ W₂ ⟧ᵖ ⟦ γ ⟧ᴱ
