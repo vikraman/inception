@@ -15,11 +15,7 @@
       {\LSEM \GAMMA \PDASHi \gls{ast} \PDASHii \gls{1} \RSEM} &= \gls{top}
     \end{align*}
   \end{ceqn}
-  \ifwithagda
-  \caption{Pure terms $\GAMMA \PDASHi \gls{W} \PDASHii \X$ as morphisms ${\LSEM \GAMMA \RSEM} \xrightarrow{{\LSEM \gls{W} \RSEM}} {\LSEM \X \RSEM}$ in ${\gls{Set}}^{\gls{bF}}$ (see \Cref{frm:sempure})}
-  \else
   \caption{Pure terms $\GAMMA \PDASHi \gls{W} \PDASHii \X$ as morphisms ${\LSEM \GAMMA \RSEM} \xrightarrow{{\LSEM \gls{W} \RSEM}} {\LSEM \X \RSEM}$ in ${\gls{Set}}^{\gls{bF}}$}
-  \fi
   \label{fig:termsem-a}
 \end{subfigure}
 
@@ -35,16 +31,16 @@
       {\LSEM \GAMMA \CDASHi {\gls{sub}}_{\X}({\gls{W}}_1 , {\gls{W}}_2) \CDASHii \X \RSEM} &= \gls{subcps}_{\X} \glsop{circ} \LANGLE \gls{lambda} {\LSEM {\gls{W}}_1 \RSEM} \CANGLE {\LSEM {\gls{W}}_2 \RSEM} \RANGLE
     \end{align*}
   \end{ceqn}
-  \ifwithagda
-  \caption{Computations $\GAMMA \CDASHi \gls{M} \CDASHii \X$ as morphisms ${\LSEM \GAMMA \RSEM} \xrightarrow{{\LSEM \gls{M} \RSEM}} \gls{KV}\LSEM \X \RSEM$ in ${\gls{Set}}^{\gls{bF}}$ (see \Cref{frm:semcomp})}
-  \else
   \caption{Computations $\GAMMA \CDASHi \gls{M} \CDASHii \X$ as morphisms ${\LSEM \GAMMA \RSEM} \xrightarrow{{\LSEM \gls{M} \RSEM}} \gls{KV}\LSEM \X \RSEM$ in ${\gls{Set}}^{\gls{bF}}$}
-  \fi
   \label{fig:termsem-b}
 \end{subfigure}
 
 \vspace{5pt}%
 }\end{minipage}}%
+\ifwithagda
+\caption{Interpretation of terms (see \Cref{frm:semterms})}
+\else
 \caption{Interpretation of terms}
+\fi
 \label{fig:termsem}
 \end{figure}

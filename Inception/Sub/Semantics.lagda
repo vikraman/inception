@@ -100,11 +100,10 @@ subK (f , n) k = f (n k) k
 %</SemMem>
 \begin{code}
 
-mutual
-
 \end{code}
-%<*SemPure>
+%<*SemTerms>
 \begin{code}
+mutual
 
   ⟦_⟧ᵖ : Γ ⊢ᵖ X -> ⟦ Γ ⟧ˣ -> ⟦ X ⟧
   ⟦ var i ⟧ᵖ = ⟦ i ⟧ᵐ
@@ -113,12 +112,6 @@ mutual
   ⟦ pm W₁ W₂ ⟧ᵖ = < idf , ⟦ W₁ ⟧ᵖ > ； assocl ； ⟦ W₂ ⟧ᵖ
   ⟦ unit ⟧ᵖ = const tt
 
-\end{code}
-%</SemPure>
-
-%<*SemComp>
-\begin{code}
-
   ⟦_⟧ᶜ : Γ ⊢ᶜ X -> ⟦ Γ ⟧ˣ -> K ⟦ X ⟧
   ⟦ return W ⟧ᶜ = ⟦ W ⟧ᵖ ； η
   ⟦ pm W M ⟧ᶜ = < idf , ⟦ W ⟧ᵖ > ； assocl ； ⟦ M ⟧ᶜ
@@ -126,9 +119,8 @@ mutual
   ⟦ app W₁ W₂ ⟧ᶜ = < ⟦ W₁ ⟧ᵖ , ⟦ W₂ ⟧ᵖ > ； uncurry idf
   ⟦ var W ⟧ᶜ = ⟦ W ⟧ᵖ ； varK
   ⟦ sub M₁ M₂ ⟧ᶜ = < curry ⟦ M₁ ⟧ᶜ , ⟦ M₂ ⟧ᶜ > ； subK
-
 \end{code}
-%</SemComp>
+%</SemTerms>
 \begin{code}
 
 mutual
