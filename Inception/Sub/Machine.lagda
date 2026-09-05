@@ -401,8 +401,16 @@ _⨾ᶜ_ (S ◼) S>>T = S>>T
 _⨾ᶜ_ (F →ᶜ⟨ F>S₁ ⟩ S₁>>S₂) S₂>>T = F →ᶜ⟨ F>S₁ ⟩ (S₁>>S₂ ⨾ᶜ S₂>>T)
 
 
+\end{code}
+%<*SubVarSN>
+\begin{code}
+
 data SN {Z₀ : Ty} (σ : CState {Z₀ = Z₀}) : Set where
   sn : (∀ {σ'} → σ →ᶜ σ' → SN σ') → SN σ
+
+\end{code}
+%</SubVarSN>
+\begin{code}
 
 Rᵛ : {Z₀ : Ty} → (X : Ty) → Value {Z₀ = Z₀} X → Set
 Rᵏ : {Z₀ : Ty} → (X : Ty) → CStack {Z₀ = Z₀} X → Set
@@ -490,8 +498,17 @@ Rᵏ-◻ RW = sn λ {σ'} ()
 SN-theorem : {Z₀ : Ty} → (M : Comp ε Z₀) → SN {Z₀ = Z₀} ⟨ M ╎ ⋄ ╎ ◻ ⟩
 SN-theorem M = fundamentalᶜ M Rᴱ-⊘ Rᵏ-◻
 
+\end{code}
+%<*SubVarNormal>
+\begin{code}
+
+-- A CState is Normal, if there are no transitions from it.
 Normal : {Z₀ : Ty} → CState {Z₀ = Z₀} → Set
 Normal σ = ∀ {σ'} → σ →ᶜ σ' → ⊥
+
+\end{code}
+%</SubVarNormal>
+\begin{code}
 
 data Progress {Z₀ : Ty} (σ : CState {Z₀ = Z₀}) : Set where
   done : Normal σ → Progress σ
@@ -507,7 +524,18 @@ progress ⟨ app W₁ W₂ ╎ γ ╎ cstack ⟩ = step app→
 progress ⟨ var W ╎ γ ╎ cstack ⟩ = step var→
 progress ⟨ sub M₁ M₂ ╎ γ ╎ cstack ⟩ = step sub→
 
+\end{code}
+%<*SubVarHaltingState>
+\begin{code}
+
+-- A Normal CState is a halting state and of the form ⟨ W ╎ ◻ ⟩.
 halting-state : (σ : CState {Z₀ = Z₀}) → Normal σ → Σ[ W ∈ Value Z₀ ] σ ≡ ⟨ W ╎ ◻ ⟩
+-- ...
+
+\end{code}
+%</SubVarHaltingState>
+\begin{code}
+
 halting-state ⟨ W' ╎ ◻ ⟩ normal = W' , refl
 halting-state ⟨ W' ╎ < x ； γ >∷ cstack ⟩ normal = ql (normal return→) _
 halting-state ⟨ return _ ╎ γ ╎ cstack ⟩ normal = ql (normal pure→) _
@@ -524,7 +552,16 @@ eval-acc {σ = σ} (sn f) with progress σ
 ... | step S→S' with eval-acc (f S→S')
 ...   | (σ'' , W' , NF , S'→*S'' , eq) = σ'' , W' , NF , (_ →ᶜ⟨ S→S' ⟩ S'→*S'') , eq
 
+\end{code}
+%<*SubVarEval>
+\begin{code}
+
 eval : {Z₀ : Ty} → (M : Comp ε Z₀) → Σ[ σ' ∈ CState ] Σ[ W' ∈ Value {Z₀ = Z₀} Z₀ ] Σ[ NF ∈ Normal σ' ] (⟨ M ╎ ⋄ ╎ ◻ ⟩ →ᶜ* σ') × (W' ≡ proj₁ (halting-state σ' NF))
+
+\end{code}
+%<*SubVarEval>
+\begin{code}
+
 eval M = eval-acc (SN-theorem M)
 
 ---------------------------------------------------------------------------------
