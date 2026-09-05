@@ -302,6 +302,9 @@ wk-sem-trans (wk-wk π₁) (wk-wk π₂) γ = wk-sem-trans π₁ (wk-wk π₂) (
 
 module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
 
+\end{code}
+%<*SemEnv>
+\begin{code}
   mutual
     ⟦_⟧ᴱ : (W : Env {Z₀ = R₀} Γ) → ⟦ Γ ⟧ˣ
     ⟦ ⋄ ⟧ᴱ = tt
@@ -319,6 +322,9 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
 
     ⟦_⟧ᴷ : (cs : CStack {Z₀ = R₀} Y) → ⟦ Y ⟧ → R
     ⟦_⟧ᴷ cs y = ⟦ cs ⟧ᶜˢ (η y) k₀
+\end{code}
+%</SemEnv>
+\begin{code}
 
 
 \end{code}

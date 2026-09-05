@@ -404,10 +404,8 @@ _⨾ᶜ_ (F →ᶜ⟨ F>S₁ ⟩ S₁>>S₂) S₂>>T = F →ᶜ⟨ F>S₁ ⟩ (S
 \end{code}
 %<*SubVarSN>
 \begin{code}
-
 data SN {Z₀ : Ty} (σ : CState {Z₀ = Z₀}) : Set where
   sn : (∀ {σ'} → σ →ᶜ σ' → SN σ') → SN σ
-
 \end{code}
 %</SubVarSN>
 \begin{code}
@@ -501,11 +499,9 @@ SN-theorem M = fundamentalᶜ M Rᴱ-⊘ Rᵏ-◻
 \end{code}
 %<*SubVarNormal>
 \begin{code}
-
 -- A CState is Normal, if there are no transitions from it.
 Normal : {Z₀ : Ty} → CState {Z₀ = Z₀} → Set
-Normal σ = ∀ {σ'} → σ →ᶜ σ' → ⊥
-
+Normal cstate₁ = ∀ {cstate₂} → cstate₁ →ᶜ cstate₂ → ⊥
 \end{code}
 %</SubVarNormal>
 \begin{code}
@@ -527,11 +523,10 @@ progress ⟨ sub M₁ M₂ ╎ γ ╎ cstack ⟩ = step sub→
 \end{code}
 %<*SubVarHaltingState>
 \begin{code}
-
--- A Normal CState is a halting state and of the form ⟨ W ╎ ◻ ⟩.
-halting-state : (σ : CState {Z₀ = Z₀}) → Normal σ → Σ[ W ∈ Value Z₀ ] σ ≡ ⟨ W ╎ ◻ ⟩
+-- A Normal CState is a halting state and of the form ⟨ 𝐖 ╎ ◻ ⟩.
+halting-state :    (cstate : CState {Z₀ = Z₀}) → Normal cstate
+                 → Σ[ 𝐖 ∈ Value Z₀ ] cstate ≡ ⟨ 𝐖 ╎ ◻ ⟩
 -- ...
-
 \end{code}
 %</SubVarHaltingState>
 \begin{code}
@@ -555,11 +550,14 @@ eval-acc {σ = σ} (sn f) with progress σ
 \end{code}
 %<*SubVarEval>
 \begin{code}
-
-eval : {Z₀ : Ty} → (M : Comp ε Z₀) → Σ[ σ' ∈ CState ] Σ[ W' ∈ Value {Z₀ = Z₀} Z₀ ] Σ[ NF ∈ Normal σ' ] (⟨ M ╎ ⋄ ╎ ◻ ⟩ →ᶜ* σ') × (W' ≡ proj₁ (halting-state σ' NF))
-
+eval :    {Z₀ : Ty} → (M : Comp ε Z₀)
+        → Σ[ cstate ∈ CState ]
+          Σ[ 𝐖 ∈ Value {Z₀ = Z₀} Z₀ ]
+          Σ[ NF ∈ Normal cstate ]
+          (⟨ M ╎ ⋄ ╎ ◻ ⟩ →ᶜ* cstate) × (𝐖 ≡ proj₁ (halting-state cstate NF))
+-- ...
 \end{code}
-%<*SubVarEval>
+%</SubVarEval>
 \begin{code}
 
 eval M = eval-acc (SN-theorem M)
