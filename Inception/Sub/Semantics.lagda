@@ -320,8 +320,8 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
     ⟦ ◻ ⟧ᶜˢ = idf
     ⟦ < M ； γ >∷ cstack ⟧ᶜˢ = < const ⟦ γ ⟧ᴱ , idf > ； τ ； (⟦ M ⟧ᶜ ♯) ； ⟦ cstack ⟧ᶜˢ
 
-    ⟦_⟧ᴷ : CStack {Z₀ = R₀} Y → ⟦ Y ⟧ → R
-    ⟦_⟧ᴷ cstack y = ⟦ cstack ⟧ᶜˢ (η y) k₀
+    ⟦_⟧ᴷ : CStack {Z₀ = R₀} X → ⟦ X ⟧ → R
+    ⟦_⟧ᴷ cstack t = ⟦ cstack ⟧ᶜˢ (η t) k₀
 \end{code}
 %</SemEnv>
 
