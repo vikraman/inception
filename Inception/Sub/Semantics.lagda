@@ -306,22 +306,22 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
 %<*SemEnv>
 \begin{code}
   mutual
-    ⟦_⟧ᴱ : (W : Env {Z₀ = R₀} Γ) → ⟦ Γ ⟧ˣ
+    ⟦_⟧ᴱ : Env {Z₀ = R₀} Γ → ⟦ Γ ⟧ˣ
     ⟦ ⋄ ⟧ᴱ = tt
-    ⟦ γ · W ⟧ᴱ = ⟦ γ ⟧ᴱ , ⟦ W ⟧ⱽ
+    ⟦ γ · 𝐖 ⟧ᴱ = ⟦ γ ⟧ᴱ , ⟦ 𝐖 ⟧ⱽ
 
-    ⟦_⟧ⱽ : (W : Value {Z₀ = R₀} X) → ⟦ X ⟧
+    ⟦_⟧ⱽ : (𝐖 : Value {Z₀ = R₀} X) → ⟦ X ⟧
     ⟦ unitᵛ ⟧ⱽ = tt
-    ⟦ pairᵛ W₁ W₂ ⟧ⱽ = ⟦ W₁ ⟧ⱽ , ⟦ W₂ ⟧ⱽ
+    ⟦ pairᵛ 𝐖₁ 𝐖₂ ⟧ⱽ = ⟦ 𝐖₁ ⟧ⱽ , ⟦ 𝐖₂ ⟧ⱽ
     ⟦ cloᵛ M γ ⟧ⱽ = (curry ⟦ M ⟧ᶜ) ⟦ γ ⟧ᴱ
     ⟦ jumpᵛ M γ k ⟧ⱽ = ⟦ M ⟧ᶜ ⟦ γ ⟧ᴱ ⟦ k ⟧ᴷ
 
-    ⟦_⟧ᶜˢ : (k : CStack {Z₀ = R₀} X) → K ⟦ X ⟧ → K ⟦ R₀ ⟧
+    ⟦_⟧ᶜˢ : CStack {Z₀ = R₀} X → K ⟦ X ⟧ → K ⟦ R₀ ⟧
     ⟦ ◻ ⟧ᶜˢ = idf
-    ⟦ < W₁ ； γ₁ >∷ pstack ⟧ᶜˢ = < const ⟦ γ₁ ⟧ᴱ , idf > ； τ ； (⟦ W₁ ⟧ᶜ ♯) ； ⟦ pstack ⟧ᶜˢ
+    ⟦ < M ； γ >∷ cstack ⟧ᶜˢ = < const ⟦ γ ⟧ᴱ , idf > ； τ ； (⟦ M ⟧ᶜ ♯) ； ⟦ cstack ⟧ᶜˢ
 
-    ⟦_⟧ᴷ : (cs : CStack {Z₀ = R₀} Y) → ⟦ Y ⟧ → R
-    ⟦_⟧ᴷ cs y = ⟦ cs ⟧ᶜˢ (η y) k₀
+    ⟦_⟧ᴷ : CStack {Z₀ = R₀} Y → ⟦ Y ⟧ → R
+    ⟦_⟧ᴷ cstack y = ⟦ cstack ⟧ᶜˢ (η y) k₀
 \end{code}
 %</SemEnv>
 
