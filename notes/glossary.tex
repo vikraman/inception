@@ -87,16 +87,16 @@
 % Latin
 \glsxtrnewsymbol[description={Generic object of a category},symbol={$A$, $B$, $C$},user1={\ensuremath{A}},user2={\ensuremath{B}},user3={\ensuremath{C}}]{ABC}{\ensuremath{A}}
 \glsxtrnewsymbol[description={Category of finite cardinals and functions},symbol={$\mathbb{F}$}]{bF}{\ensuremath{\mathbb{F}}}
-\glsxtrnewsymbol[description={Continuation monad ${\gls{V}}^{{\gls{V}}^-}$},symbol={$K_V$}]{KV}{\ensuremath{K_V}}
-\glsxtrnewsymbol[description={Morphism $\gls{ABC} \to \gls{V}$ in ${\gls{Set}}^{\gls{bF}}$ for some object $\gls{ABC}$},symbol={$k$}]{k}{\ensuremath{k}}
+\glsxtrnewsymbol[description={Continuation monad ${\glspt{V}}^{{\glspt{V}}^-}$},symbol={$K_V$}]{KV}{\ensuremath{K_V}}
+\glsxtrnewsymbol[description={Morphism $\glspt{ABC} \to \glspt{V}$ in ${\glspt{Set}}^{\glspt{bF}}$ for some object $\glspt{ABC}$},symbol={$k$}]{k}{\ensuremath{k}}
 \glsxtrnewsymbol[description={Label type},symbol={$L$}]{L}{\ensuremath{L}}
 \glsxtrnewsymbol[description={Label variable},symbol={$\ell$}]{ell}{\ensuremath{\ell}}
 \glsxtrnewsymbol[description={Effectful term / Computation},symbol={$M$}]{M}{\ensuremath{M}}
 \glsxtrnewsymbol[description={Return type},symbol={$R_0$}]{Rzero}{\ensuremath{R_0}}
 \glsxtrnewsymbol[description={Substitution monad},symbol={$S$}]{S}{\ensuremath{S}}
 \glsxtrnewsymbol[description={Generic monad},symbol={$T$}]{T}{\ensuremath{T}}
-\glsxtrnewsymbol[description={Morphism $\gls{bF} \to \gls{Set}$},symbol={$t$}]{t}{\ensuremath{t}}
-\glsxtrnewsymbol[description={Variable presheaf $\gls{Y}(\gls{top})$ in ${\gls{Set}}^{\gls{bF}}$},symbol={$V$}]{V}{\ensuremath{V}}
+\glsxtrnewsymbol[description={Morphism $\glspt{bF} \to \glspt{Set}$},symbol={$t$}]{t}{\ensuremath{t}}
+\glsxtrnewsymbol[description={Variable presheaf $\glspt{Y}(\glspt{top})$ in ${\glspt{Set}}^{\glspt{bF}}$},symbol={$V$}]{V}{\ensuremath{V}}
 \glsxtrnewsymbol[description={Pure term},symbol={$W$}]{W}{\ensuremath{W}}
 \glsxtrnewsymbol[description={Partially normalised pure term},symbol={$\widehat{W}$}]{hatW}{\ensuremath{\widehat{W}}}
 \glsxtrnewsymbol[description={Value},symbol={$\mathbf{W}$}]{bfW}{\ensuremath{\mathbf{W}}}
@@ -146,7 +146,7 @@
 \glsxtrnewsymbol[description={Return operator},symbol={$\textsf{return}(\_)$}]{return}{\textsf{return}}
 \glsxtrnewsymbol[description={Normalises a pure term to a value},symbol={$\textsf{run}(\_)$}]{run}{\textsf{run}}
 \glsxtrnewsymbol[description={Normalises a pure term of function type to a value},symbol={${\textsf{run}}_{\textsf{clo}}(\_)$}]{runclo}{{\textsf{run}}_{\textsf{clo}}}
-\glsxtrnewsymbol[description={Normalises a pure term to a value and converts it to a \gls{CState}},symbol={${\textsf{run}}_{\textsf{jump}}(\_)$}]{runjump}{{\textsf{run}}_{\textsf{jump}}}
+\glsxtrnewsymbol[description={Normalises a pure term to a value and converts it to a \glspt{CState}},symbol={${\textsf{run}}_{\textsf{jump}}(\_)$}]{runjump}{{\textsf{run}}_{\textsf{jump}}}
 \glsxtrnewsymbol[description={Normalises a pure term of product type to a value and returns the first projection},symbol={${\textsf{run}}_{1}(\_)$}]{runi}{{\textsf{run}}_{1}}
 \glsxtrnewsymbol[description={Normalises a pure term of product type to a value and returns the second projection},symbol={${\textsf{run}}_{2}(\_)$}]{runii}{{\textsf{run}}_{2}}
 \glsxtrnewsymbol[description={Category of sets},symbol={$\textsf{Set}$}]{Set}{\textsf{Set}}
@@ -174,7 +174,7 @@
 \glsxtrnewsymbol[description={Transition for the computation machine},symbol={$\xrightarrow{\textsf{app}}$}]{app-trans}{\ensuremath{\xrightarrow{\textsf{app}}}}
 
 % Symbols
-\glsxtrnewsymbol[description={Unique element inhabiting \gls{top}},symbol={$\star$}]{tt}{\ensuremath{\star}}
+\glsxtrnewsymbol[description={Unique element inhabiting \glspt{top}},symbol={$\star$}]{tt}{\ensuremath{\star}}
 \glsxtrnewsymbol[description={Constructor of bottom type equality},symbol={$\triangledown$}]{bottom}{\ensuremath{\triangledown}}
 \glsxtrnewsymbol[description={Constructor of bottom type equality},symbol={$\raisebox{0.2ex}{\scalebox{0.7}{$\bigcirc$}}$},user1={\ensuremath{\circ}}]{not-bottom}{\raisebox{0.2ex}{\scalebox{0.7}{$\bigcirc$}}}
 \glsxtrnewsymbol[description={Pure term of unit type},symbol={$\ast$}]{ast}{\ensuremath{\ast}}
@@ -204,13 +204,13 @@
 \glsxtrnewsymbol[description={Partially normalised term constructor (pattern match)},symbol={${\uparrow}^{\textsf{PM}}(\_,\_,\_)$}]{upPM}{\ensuremath{{\uparrow}^{\textsf{PM}}}}
 \glsxtrnewsymbol[description={Partially normalised term constructor (LHS of pair)},symbol={${\uparrow}^{\textsf{L}}(\_,\_,\_)$}]{upL}{\ensuremath{{\uparrow}^{\textsf{L}}}}
 \glsxtrnewsymbol[description={Partially normalised term constructor (RHS of pair)},symbol={${\uparrow}^{\textsf{R}}(\_,\_,\_)$}]{upR}{\ensuremath{{\uparrow}^{\textsf{R}}}}
-\glsxtrnewsymbol[description={Appends a partially normalised term to a \gls{PStack}},symbol={$\_ \mathop{::} \_$}]{pcons}{\ensuremath{::}}
-\glsxtrnewsymbol[description={Empty \gls{PStack}},symbol={$\boxtimes$}]{boxtimes}{\ensuremath{\boxtimes}}
-\glsxtrnewsymbol[description={Constructor of a \gls{PState}},symbol={$\langle \_ \rangle$},user1={\ensuremath{\langle}},user2={\ensuremath{\rangle}}]{PSTATE}{\ensuremath{\langle \_ \rangle}}
-\glsxtrnewsymbol[description={Transition relation on \gls{PState}},symbol={$\_ \to^{\textsf{p}} \_$}]{ptrans}{\ensuremath{\to^{\textsf{p}}}}
-\glsxtrnewsymbol[description={Transition relation on \gls{CState}},symbol={$\_ \to^{\textsf{c}} \_$}]{ctrans}{\ensuremath{\to^{\textsf{c}}}}
-\glsxtrnewsymbol[description={Constructor of a \gls{CState} holding a value and a \gls{CStack}},symbol={$\langle \_ \textsf{\textbrokenbar} \_ \rangle$},user1={\ensuremath{\langle}},user2={\textsf{\textbrokenbar}},user3={\ensuremath{\rangle}}]{CSTATEA}{\ensuremath{\langle \_ \textsf{\textbrokenbar} \_\rangle}}
-\glsxtrnewsymbol[description={Constructor of a \gls{CState} holding a computation, an environment and a \gls{CStack}},symbol={$\langle \_ \textsf{\textbrokenbar} \_ \textsf{\textbrokenbar} \_ \rangle$},user1={\ensuremath{\langle}},user2={\textsf{\textbrokenbar}},user3={\textsf{\textbrokenbar}},user4={\ensuremath{\rangle}}]{CSTATEB}{\ensuremath{\langle \_ \textsf{\textbrokenbar} \_ \textsf{\textbrokenbar} \_ \rangle}}
+\glsxtrnewsymbol[description={Appends a partially normalised term to a \glspt{PStack}},symbol={$\_ \mathop{::} \_$}]{pcons}{\ensuremath{::}}
+\glsxtrnewsymbol[description={Empty \glspt{PStack}},symbol={$\boxtimes$}]{boxtimes}{\ensuremath{\boxtimes}}
+\glsxtrnewsymbol[description={Constructor of a \glspt{PState}},symbol={$\langle \_ \rangle$},user1={\ensuremath{\langle}},user2={\ensuremath{\rangle}}]{PSTATE}{\ensuremath{\langle \_ \rangle}}
+\glsxtrnewsymbol[description={Transition relation on \glspt{PState}},symbol={$\_ \to^{\textsf{p}} \_$}]{ptrans}{\ensuremath{\to^{\textsf{p}}}}
+\glsxtrnewsymbol[description={Transition relation on \glspt{CState}},symbol={$\_ \to^{\textsf{c}} \_$}]{ctrans}{\ensuremath{\to^{\textsf{c}}}}
+\glsxtrnewsymbol[description={Constructor of a \glspt{CState} holding a value and a \glspt{CStack}},symbol={$\langle \_ \textsf{\textbrokenbar} \_ \rangle$},user1={\ensuremath{\langle}},user2={\textsf{\textbrokenbar}},user3={\ensuremath{\rangle}}]{CSTATEA}{\ensuremath{\langle \_ \textsf{\textbrokenbar} \_\rangle}}
+\glsxtrnewsymbol[description={Constructor of a \glspt{CState} holding a computation, an environment and a \glspt{CStack}},symbol={$\langle \_ \textsf{\textbrokenbar} \_ \textsf{\textbrokenbar} \_ \rangle$},user1={\ensuremath{\langle}},user2={\textsf{\textbrokenbar}},user3={\textsf{\textbrokenbar}},user4={\ensuremath{\rangle}}]{CSTATEB}{\ensuremath{\langle \_ \textsf{\textbrokenbar} \_ \textsf{\textbrokenbar} \_ \rangle}}
 
 \newcommand\A{\glshyperlink[\glsentryuseri{ABC}]{ABC}\glsadd{ABC}}
 \newcommand\B{\glshyperlink[\glsentryuserii{ABC}]{ABC}\glsadd{ABC}}
