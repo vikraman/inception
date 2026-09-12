@@ -3,9 +3,9 @@
 %\usepackage{dsfont} % for 1
 \usepackage[automake,xindy,symbols,abbreviations,sort=def]{glossaries-extra}
 
-\newlength{\myglosssymbolwidth}\setlength{\myglosssymbolwidth}{0.15\textwidth}
+\newlength{\myglosssymbolwidth}\setlength{\myglosssymbolwidth}{0.20\textwidth}
 \newlength{\myglossdescwidth}\setlength{\myglossdescwidth}{0.60\textwidth}
-\newlength{\myglosspagewidth}\setlength{\myglosspagewidth}{0.20\textwidth}
+\newlength{\myglosspagewidth}\setlength{\myglosspagewidth}{0.15\textwidth}
 
 \newglossarystyle{long-symbols}{%
 % put the glossary in a longtable environment:
@@ -48,6 +48,36 @@
 % Set the table's header:
 \renewcommand*{\glossaryheader}{%
 \bfseries Abbreviation & \bfseries Description & \bfseries Page~List
+\\\endhead}%
+% No heading between groups:
+\renewcommand*{\glsgroupheading}[1]{}%
+% top level (level 0) entries displayed in a row optionally numb
+\renewcommand*{\glossentry}[2]{%
+\glstarget{##1}{\glossentryname{##1}}
+& \glossentrydesc{##1}% Description
+& ##2% Page list
+\tabularnewline % end of row
+}%
+% Similarly for sub-entries (no sub-entry numbers)
+\renewcommand*{\subglossentry}[3]{%
+% ignoring first argument (sub-level)
+\glstarget{##2}{\glossentryname{##2}}% Symbol
+& \glossentrydesc{##2}% Description
+& ##3% Page list
+\tabularnewline % end of row
+}%
+% Nothing between groups:
+\renewcommand*{\glsgroupskip}{}%
+}
+
+\newglossarystyle{long-term}{%
+% put the glossary in a longtable environment:
+\renewenvironment{theglossary}%
+{\begin{longtable}{p{\myglosssymbolwidth}p{\myglossdescwidth}p{\myglosspagewidth}}}%
+{\end{longtable}}%
+% Set the table's header:
+\renewcommand*{\glossaryheader}{%
+\bfseries Term & \bfseries Description & \bfseries Page~List
 \\\endhead}%
 % No heading between groups:
 \renewcommand*{\glsgroupheading}[1]{}%
