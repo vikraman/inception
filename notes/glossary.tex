@@ -1,12 +1,17 @@
 \usepackage{longtable}
 \usepackage{xspace}
 %\usepackage{dsfont} % for 1
-\usepackage[automake,xindy,nomain,symbols,sort=def]{glossaries-extra}
+\usepackage[automake,xindy,nomain,symbols,abbreviations,sort=def]{glossaries-extra}
 
-\newglossarystyle{long0}{%
+\newlength{\myglosssymbolwidth}\setlength{\myglosssymbolwidth}{0.15\textwidth}
+\newlength{\myglossdescwidth}\setlength{\myglossdescwidth}{0.60\textwidth}
+\newlength{\myglosspagewidth}\setlength{\myglosspagewidth}{0.20\textwidth}
+
+\newglossarystyle{long-symbols}{%
 % put the glossary in a longtable environment:
 \renewenvironment{theglossary}%
-{\begin{longtable}{lp{\glsdescwidth}p{\glspagelistwidth}}}%
+%% To determine width of colums automatically: {\begin{longtable}{lp{\glsdescwidth}p{\glspagelistwidth}}}%
+{\begin{longtable}{p{\myglosssymbolwidth}p{\myglossdescwidth}p{\myglosspagewidth}}}%
 {\end{longtable}}%
 % Set the table's header:
 \renewcommand*{\glossaryheader}{%
@@ -26,6 +31,36 @@
 % Similarly for sub-entries (no sub-entry numbers)
 \renewcommand*{\subglossentry}[3]{%
 % ignoring first argument (sub-level)
+\glstarget{##2}{\glossentrysymbol{##2}}% Symbol
+& \glossentrydesc{##2}% Description
+& ##3% Page list
+\tabularnewline % end of row
+}%
+% Nothing between groups:
+\renewcommand*{\glsgroupskip}{}%
+}
+
+\newglossarystyle{long-abbrev}{%
+% put the glossary in a longtable environment:
+\renewenvironment{theglossary}%
+{\begin{longtable}{p{\myglosssymbolwidth}p{\myglossdescwidth}p{\myglosspagewidth}}}%
+{\end{longtable}}%
+% Set the table's header:
+\renewcommand*{\glossaryheader}{%
+\bfseries Abbreviation & \bfseries Description & \bfseries Page~List
+\\\endhead}%
+% No heading between groups:
+\renewcommand*{\glsgroupheading}[1]{}%
+% top level (level 0) entries displayed in a row optionally numb
+\renewcommand*{\glossentry}[2]{%
+\glstarget{##1}{\glossentryname{##1}}
+& \glossentrydesc{##1}% Description
+& ##2% Page list
+\tabularnewline % end of row
+}%
+% Similarly for sub-entries (no sub-entry numbers)
+\renewcommand*{\subglossentry}[3]{%
+% ignoring first argument (sub-level)
 \glstarget{##2}{\glossentryname{##2}}% Symbol
 & \glossentrydesc{##2}% Description
 & ##3% Page list
@@ -35,7 +70,16 @@
 \renewcommand*{\glsgroupskip}{}%
 }
 
+\renewcommand*{\glossarysection}[2][]{\subsection*{#1}}
+
 \makeglossaries
+
+\newabbreviation{cps}{CPS}{Continuation-passing style}
+\newabbreviation{lics}{LICS}{ACM/IEEE Symposium on Logic in Computer Science}
+\newabbreviation{popl}{POPL}{ACM/SIGPLAN Symposium on Principles of Programming Languages}
+\newabbreviation{stlc}{STLC}{Simply Typed Lambda Calculus}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Numbers
 \glsxtrnewsymbol[description={Unit type},symbol={\textsf{Unit}}]{1}{\textsf{Unit}}
