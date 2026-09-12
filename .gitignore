@@ -118,6 +118,9 @@ acs-*.bib
 *.slg
 *.slo
 *.sls
+*.glo-abr
+*.glg-abr
+*.gls-abr
 
 # uncomment this for glossaries-extra (will ignore makeindex's style files!)
 # *.ist
