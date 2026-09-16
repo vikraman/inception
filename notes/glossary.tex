@@ -1,4 +1,5 @@
 \usepackage{longtable}
+\usepackage{hanging}
 \usepackage{xspace}
 %\usepackage{dsfont} % for 1
 \usepackage[automake,xindy,symbols,abbreviations,sort=def]{glossaries-extra}
@@ -83,7 +84,9 @@
 \renewcommand*{\glsgroupheading}[1]{}%
 % top level (level 0) entries displayed in a row optionally numb
 \renewcommand*{\glossentry}[2]{%
-\glstarget{##1}{\glossentryname{##1}}
+\begin{hangparas}{0.5em}{1}
+\RaggedRight\glstarget{##1}{\glossentryname{##1}}%
+\end{hangparas}
 & \glossentrydesc{##1}% Description
 & ##2% Page list
 \tabularnewline % end of row
@@ -91,7 +94,7 @@
 % Similarly for sub-entries (no sub-entry numbers)
 \renewcommand*{\subglossentry}[3]{%
 % ignoring first argument (sub-level)
-\glstarget{##2}{\glossentryname{##2}}% Symbol
+{\hangindent=1em\hangafter=1\glstarget{##1}{\glossentryname{##1}}}
 & \glossentrydesc{##2}% Description
 & ##3% Page list
 \tabularnewline % end of row
