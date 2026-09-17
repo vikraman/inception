@@ -327,20 +327,20 @@ clo-to-comp (cloᵛ M γ) = _ , M , γ
 clo-val : {Z₀ : Ty} → (W : Value {Z₀ = Z₀} (X `⇒ Y)) → (cloᵛ (proj₁ (proj₂ (clo-to-comp W))) (proj₂ (proj₂ (clo-to-comp W))) ≡ W)
 clo-val (cloᵛ M γ) = refl
 
-run : {Z₀ : Ty} → Pure Γ X → Env {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X
-run W γ = result (normalise-pure W γ)
+eval : {Z₀ : Ty} → Pure Γ X → Env {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X
+eval W γ = result (normalise-pure W γ)
 
-run-jump : {Z₀ : Ty} → Pure Γ `L → Env {Z₀ = Z₀} Γ → CState {Z₀ = Z₀}
-run-jump W γ = jump-to-state (result (normalise-pure W γ))
+eval-jump : {Z₀ : Ty} → Pure Γ `L → Env {Z₀ = Z₀} Γ → CState {Z₀ = Z₀}
+eval-jump W γ = jump-to-state (result (normalise-pure W γ))
 
-run-clo : {Z₀ : Ty} → Pure Γ (X `⇒ Y) → Pure Γ X → Env {Z₀ = Z₀} Γ → CStack {Z₀ = Z₀} Y → CState {Z₀ = Z₀}
-run-clo W₁ W₂ γ k = ⟨ proj₁ (proj₂ (clo-to-comp (result (normalise-pure W₁ γ)))) ╎ proj₂ (proj₂ (clo-to-comp (result (normalise-pure W₁ γ)))) · result (normalise-pure W₂ γ) ╎ k ⟩
+eval-clo : {Z₀ : Ty} → Pure Γ (X `⇒ Y) → Pure Γ X → Env {Z₀ = Z₀} Γ → CStack {Z₀ = Z₀} Y → CState {Z₀ = Z₀}
+eval-clo W₁ W₂ γ k = ⟨ proj₁ (proj₂ (clo-to-comp (result (normalise-pure W₁ γ)))) ╎ proj₂ (proj₂ (clo-to-comp (result (normalise-pure W₁ γ)))) · result (normalise-pure W₂ γ) ╎ k ⟩
 
-run₁ : {Z₀ : Ty} → Pure Γ (X₁ `× X₂) → Env {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X₁
-run₁ W γ = proj₁-val (result (normalise-pure W γ))
+eval₁ : {Z₀ : Ty} → Pure Γ (X₁ `× X₂) → Env {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X₁
+eval₁ W γ = proj₁-val (result (normalise-pure W γ))
 
-run₂ : {Z₀ : Ty} → Pure Γ (X₁ `× X₂) → Env {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X₂
-run₂ W γ = proj₂-val (result (normalise-pure W γ))
+eval₂ : {Z₀ : Ty} → Pure Γ (X₁ `× X₂) → Env {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X₂
+eval₂ W γ = proj₂-val (result (normalise-pure W γ))
 
 \end{code}
 %<*CTrans>
@@ -350,7 +350,7 @@ data _→ᶜ_ {Z₀ : Ty} : CState {Z₀ = Z₀} → CState {Z₀ = Z₀} → Se
 
   pure→ :    {W : Pure Γ X} {γ : Env Γ} {cstack : CStack X}
              -------------------------------------------
-             →  ⟨ return W ╎ γ ╎ cstack ⟩ →ᶜ ⟨ run W γ ╎ cstack ⟩
+             →  ⟨ return W ╎ γ ╎ cstack ⟩ →ᶜ ⟨ eval W γ ╎ cstack ⟩
 
   return→ :  {Ẇ : Value X} {M : Comp (Γ ∙ X) Y} {γ : Env Γ} {cstack : CStack Y}
              --------------------------------------------------------------
@@ -366,16 +366,16 @@ data _→ᶜ_ {Z₀ : Ty} : CState {Z₀ = Z₀} → CState {Z₀ = Z₀} → Se
 
   var→ :     {W : Pure Γ `L} {γ : Env Γ} {cstack : CStack X}
              ------------------------------------------
-             →  ⟨ var W ╎ γ ╎ cstack ⟩ →ᶜ run-jump W γ
+             →  ⟨ var W ╎ γ ╎ cstack ⟩ →ᶜ eval-jump W γ
 
   pmᶜ→ :     {W : Pure Γ (X `× Y)} {γ : Env Γ}
              {M : Comp (Γ ∙ X ∙ Y) Z} {cstack : CStack Z}
              -------------------------------------------------------------
-             →  ⟨ pm W M ╎ γ ╎ cstack ⟩ →ᶜ ⟨ M ╎ γ · run₁ W γ · run₂ W γ ╎ cstack ⟩
+             →  ⟨ pm W M ╎ γ ╎ cstack ⟩ →ᶜ ⟨ M ╎ γ · eval₁ W γ · eval₂ W γ ╎ cstack ⟩
 
   app→ :     {W₁ : Pure Γ (X `⇒ Y)} {W₂ : Pure Γ X} {γ : Env Γ} {cstack : CStack Y}
              ----------------------------------------------------------------
-             →  ⟨ app W₁ W₂ ╎ γ ╎ cstack ⟩ →ᶜ run-clo W₁ W₂ γ cstack
+             →  ⟨ app W₁ W₂ ╎ γ ╎ cstack ⟩ →ᶜ eval-clo W₁ W₂ γ cstack
 
 \end{code}
 %</CTrans>
@@ -541,16 +541,16 @@ halting-state ⟨ var _ ╎ γ ╎ cstack ⟩ normal = ql (normal var→) _
 halting-state ⟨ sub _ _ ╎ γ ╎ cstack ⟩ normal = ql (normal sub→) _
 
 
-eval-acc : {Z₀ : Ty} {σ : CState {Z₀ = Z₀}} → SN σ → Σ[ σ' ∈ CState ] Σ[ W' ∈ Value {Z₀ = Z₀} Z₀ ] Σ[ NF ∈ Normal σ' ] (σ →ᶜ* σ') × (W' ≡ proj₁ (halting-state σ' NF))
-eval-acc {σ = σ} (sn f) with progress σ
+exec-acc : {Z₀ : Ty} {σ : CState {Z₀ = Z₀}} → SN σ → Σ[ σ' ∈ CState ] Σ[ W' ∈ Value {Z₀ = Z₀} Z₀ ] Σ[ NF ∈ Normal σ' ] (σ →ᶜ* σ') × (W' ≡ proj₁ (halting-state σ' NF))
+exec-acc {σ = σ} (sn f) with progress σ
 ... | done NF    = σ , proj₁ (halting-state σ NF) , NF , (σ ◼) , refl
-... | step S→S' with eval-acc (f S→S')
+... | step S→S' with exec-acc (f S→S')
 ...   | (σ'' , W' , NF , S'→*S'' , eq) = σ'' , W' , NF , (_ →ᶜ⟨ S→S' ⟩ S'→*S'') , eq
 
 \end{code}
 %<*SubVarEval>
 \begin{code}
-eval :    {Z₀ : Ty} → (M : Comp ε Z₀)
+exec :    {Z₀ : Ty} → (M : Comp ε Z₀)
         → Σ[ cstate ∈ CState ]
           Σ[ 𝐖 ∈ Value {Z₀ = Z₀} Z₀ ]
           Σ[ NF ∈ Normal cstate ]
@@ -560,7 +560,7 @@ eval :    {Z₀ : Ty} → (M : Comp ε Z₀)
 %</SubVarEval>
 \begin{code}
 
-eval M = eval-acc (SN-theorem M)
+exec M = exec-acc (SN-theorem M)
 
 ---------------------------------------------------------------------------------
 -- EXAMPLES
@@ -568,7 +568,7 @@ eval M = eval-acc (SN-theorem M)
 ex15 : ε ⊢ᶜ (`Unit)
 ex15 = push (push (app (lam {X = `Unit} (sub (var (var new)) (return unit))) unit) (return unit)) (return unit)
 
-_ : eval ex15 ≡ (_ , unitᵛ , _ ,
+_ : exec ex15 ≡ (_ , unitᵛ , _ ,
                   (⟨ push (push (app (lam (sub (var (var new)) (return unit))) unit) (return unit)) (return unit) ╎ ⋄ ╎ ◻ ⟩
     →ᶜ⟨ push→ ⟩   (⟨ push (app (lam (sub (var (var new)) (return unit))) unit) (return unit) ╎ ⋄ ╎ < return unit ； ⋄ >∷ ◻ ⟩
     →ᶜ⟨ push→ ⟩   (⟨ app (lam (sub (var (var new)) (return unit))) unit ╎ ⋄ ╎ < return unit ； ⋄ >∷ < return unit ； ⋄ >∷ ◻ ⟩

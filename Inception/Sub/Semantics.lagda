@@ -583,13 +583,13 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
   compstate-eq* (S ◼) = refl
   compstate-eq* (S ~>⟨ S→S' ⟩ S'→*S'') = trans (compstate-eq S→S') (compstate-eq* S'→*S'')
 
-  comp-machine-transitions-correct : (M : Comp ε R₀) → ⟦ ⟨ M ╎ ⋄ ╎ ◻ ⟩ ⟧ᶜꟴ ≡ ⟦ proj₁ (eval M) ⟧ᶜꟴ
-  comp-machine-transitions-correct M = compstate-eq* (proj₁ (proj₂ (proj₂ (proj₂ (eval M)))))
+  comp-machine-transitions-correct : (M : Comp ε R₀) → ⟦ ⟨ M ╎ ⋄ ╎ ◻ ⟩ ⟧ᶜꟴ ≡ ⟦ proj₁ (exec M) ⟧ᶜꟴ
+  comp-machine-transitions-correct M = compstate-eq* (proj₁ (proj₂ (proj₂ (proj₂ (exec M)))))
 
 \end{code}
 %<*SubVarCorrect>
 \begin{code}
-  comp-machine-correct : (M : Comp ε R₀) → ⟦ M ⟧ᶜ tt k₀ ≡ k₀ ⟦ (proj₁ (proj₂ (eval M))) ⟧ⱽ
+  comp-machine-correct : (M : Comp ε R₀) → ⟦ M ⟧ᶜ tt k₀ ≡ k₀ ⟦ (proj₁ (proj₂ (exec M))) ⟧ⱽ
 \end{code}
 %</SubVarCorrect>
 \begin{code}
@@ -597,16 +597,16 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
   comp-machine-correct M =
     let
       eq = comp-machine-transitions-correct M
-      hs = proj₂ (halting-state (proj₁ (eval M)) (proj₁ (proj₂ (proj₂ (eval M)))))
+      hs = proj₂ (halting-state (proj₁ (exec M)) (proj₁ (proj₂ (proj₂ (exec M)))))
     in
       ⟦ M ⟧ᶜ tt k₀
     ≡⟨ eq ⟩
-      ⟦ proj₁ (eval M) ⟧ᶜꟴ
+      ⟦ proj₁ (exec M) ⟧ᶜꟴ
     ≡⟨ cong ⟦_⟧ᶜꟴ hs ⟩
-      ⟦ ⟨ proj₁ (halting-state (proj₁ (eval M)) (proj₁ (proj₂ (proj₂ (eval M))))) ╎ ◻ ⟩ ⟧ᶜꟴ
+      ⟦ ⟨ proj₁ (halting-state (proj₁ (exec M)) (proj₁ (proj₂ (proj₂ (exec M))))) ╎ ◻ ⟩ ⟧ᶜꟴ
     ≡⟨ refl ⟩
-      k₀ ⟦ proj₁ (halting-state (proj₁ (eval M)) (proj₁ (proj₂ (proj₂ (eval M))))) ⟧ⱽ
-    ≡⟨ cong (λ x → k₀ ⟦ x ⟧ⱽ) (sym (proj₂ (proj₂ (proj₂ (proj₂ (eval M)))))) ⟩
-      k₀ ⟦ proj₁ (proj₂ (eval M)) ⟧ⱽ ∎
+      k₀ ⟦ proj₁ (halting-state (proj₁ (exec M)) (proj₁ (proj₂ (proj₂ (exec M))))) ⟧ⱽ
+    ≡⟨ cong (λ x → k₀ ⟦ x ⟧ⱽ) (sym (proj₂ (proj₂ (proj₂ (proj₂ (exec M)))))) ⟩
+      k₀ ⟦ proj₁ (proj₂ (exec M)) ⟧ⱽ ∎
 
 \end{code}
