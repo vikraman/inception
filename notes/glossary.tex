@@ -125,11 +125,13 @@
 \glsxtrnewsymbol[description={Category of finite cardinals and functions},symbol={$\mathbb{F}$}]{bF}{\ensuremath{\mathbb{F}}}
 \glsxtrnewsymbol[description={Symbol for the presheaf category ${\glspt{Set}}^{\glspt{bF}}$},symbol={$\mathcal{F}$}]{cF}{\ensuremath{\mathcal{F}}}
 \glsxtrnewsymbol[description={Kleisli category of the monad $\glspt{S}$ over $\glspt{cF}$},symbol={$\mathcal{F}_S$}]{cFS}{\ensuremath{\mathcal{F}_S}}
+\glsxtrnewsymbol[description={Kleisli category of the monad $\glspt{S}$ over $\glspt{cF}$},symbol={$\mathcal{F}_{K_V}$}]{cFKV}{\ensuremath{\mathcal{F}_{K_V}}}
 \glsxtrnewsymbol[description={Continuation monad ${\glspt{V}}^{{\glspt{V}}^-}$ on ${\glspt{Set}}^{\glspt{bF}}$},symbol={$K_V$}]{KV}{\ensuremath{K_V}}
 \glsxtrnewsymbol[description={Morphism $\glspt{ABC} \to \glspt{V}$ in ${\glspt{Set}}^{\glspt{bF}}$ for some object $\glspt{ABC}$},symbol={$k$}]{k}{\ensuremath{k}}
 \glsxtrnewsymbol[description={Label type},symbol={$L$}]{L}{\ensuremath{L}}
 \glsxtrnewsymbol[description={Label variable},symbol={$\ell$}]{ell}{\ensuremath{\ell}}
 \glsxtrnewsymbol[description={Effectful term / Computation},symbol={$M$}]{M}{\ensuremath{M}}
+\glsxtrnewsymbol[description={TODO},symbol={$m$}]{m}{\ensuremath{m}}
 \glsxtrnewsymbol[description={Return type},symbol={$R_0$}]{Rzero}{\ensuremath{R_0}}
 \glsxtrnewsymbol[description={Free substitution monad ${\glspt{V}}^{{\glspt{V}}^-}$ on ${\glspt{Set}}^{\glspt{bF}}$},symbol={$S$}]{S}{\ensuremath{S}}
 \glsxtrnewsymbol[description={Generic monad},symbol={$T$}]{T}{\ensuremath{T}}
@@ -137,6 +139,7 @@
 \glsxtrnewsymbol[description={Variable presheaf $\glspt{Y}(\glspt{top})$ in ${\glspt{Set}}^{\glspt{bF}}$},symbol={$V$}]{V}{\ensuremath{V}}
 \glsxtrnewsymbol[description={Pure term},symbol={$W$}]{W}{\ensuremath{W}}
 \glsxtrnewsymbol[description={Partially normalised pure term},symbol={$\widehat{W}$}]{hatW}{\ensuremath{\widehat{W}}}
+\glsxtrnewsymbol[description={TODO},symbol={$v$}]{v}{\ensuremath{v}}
 \glsxtrnewsymbol[description={Value},symbol={$\mathbf{W}$}]{bfW}{\ensuremath{\mathbf{W}}}
 \glsxtrnewsymbol[description={Type},symbol={$X$, $Y$, $Z$},user1={\ensuremath{X}},user2={\ensuremath{Y}},user3={\ensuremath{Z}}]{XYZ}{\ensuremath{X}}
 \glsxtrnewsymbol[description={Variable},symbol={$x$, $y$, $z$},user1={\ensuremath{x}},user2={\ensuremath{y}},user3={\ensuremath{z}}]{xyz}{\ensuremath{x}}
@@ -148,6 +151,7 @@
 \glsxtrnewsymbol[description={Environment},symbol={$\gamma$, $\delta$, $\psi$},user1={\ensuremath{\gamma}},user2={\ensuremath{\delta}},user3={\ensuremath{\psi}}]{ENV}{\ensuremath{\gamma}}
 \glsxtrnewsymbol[description={Empty context},symbol={$\varepsilon$}]{varepsilon}{\ensuremath{\varepsilon}}
 \glsxtrnewsymbol[description={Currying of a morphism},symbol={$\lambda$}]{lambda}{\ensuremath{\lambda}}
+\glsxtrnewsymbol[description={Monad morphism from \glspt{cFS} to the Kleisli category of \glspt{KV} on ${\glspt{Set}}^{\glspt{bF}}$},symbol={$\phi$}]{phi}{\ensuremath{\phi}}
 \glsxtrnewsymbol[description={CPS-interpretation of the var / jump operator},symbol={${\nu}_{\_}$}]{nu}{\ensuremath{\nu}}
 \glsxtrnewsymbol[description={CPS-interpretation of the substitution / branch operator},symbol={${\sigma}_{\_}$}]{sigma}{\ensuremath{\sigma}}
 \glsxtrnewsymbol[description={Unit of a monad},symbol={$\eta$}]{eta}{\ensuremath{\eta}}
@@ -229,7 +233,8 @@
 \glsxtrnewsymbol[description={Typing judgement for values},symbol={${\vdash^\textsf{v}}_{\_}\_:\_$}, user1={\ensuremath{\vdash^\textsf{v}}}, user2={\ensuremath{:}}]{valuedash}{\ensuremath{\vdash^\textsf{v}}}
 \glsxtrnewsymbol[description={Typing judgement for partially normalised pure terms},symbol={${\vdash\hat{}}_{\_}\_:\_$}, user1={\ensuremath{{\vdash}^{\raisebox{-1.1ex}{\ensuremath{\hat{}}}}}}, user2={\ensuremath{:}}]{hdash}{\ensuremath{\vdash\hat{}}}
 \glsxtrnewsymbol[description={Membership judgement},symbol={$\_:\_\in\_$},user1={\ensuremath{:}},user2={\ensuremath{\in}}]{mem}{\ensuremath{\in}}
-\glsxtrnewsymbol[description={Interpretation of types, contexts and variables (\Cref{fig:ctx})},symbol={$\llbracket\_\rrbracket$}, user1={\ensuremath{\llbracket}},user2={\ensuremath{\rrbracket}}]{sem}{\ensuremath{\llbracket}}
+\glsxtrnewsymbol[description={Interpretation of types, contexts and variables (\Cref{fig:ctx}) - TODO: also terms},symbol={$\llbracket\_\rrbracket$}, user1={\ensuremath{\llbracket}},user2={\ensuremath{\rrbracket}}]{sem}{\ensuremath{\llbracket}}
+\glsxtrnewsymbol[description={Interpretation of computations in \glspt{cFS}},symbol={${\llbracket\_\rrbracket}_S$}, user1={\ensuremath{\llbracket}},user2={\ensuremath{{\rrbracket}_S}}]{semFS}{\ensuremath{\llbracket}}
 \glsxtrnewsymbol[description={Pairing of two morphisms},symbol={$\langle\_,\_\rangle$},user1={\ensuremath{\langle}},user2={\ensuremath{,}},user3={\ensuremath{\rangle}}]{angle}{\ensuremath{\langle\_,\_\rangle}}
 \glsxtrnewsymbol[description={Lifting of a monad morphism},symbol={${\_}^{\sharp}$}]{sharp}{\ensuremath{\sharp}}
 \glsxtrnewsymbol[description={Empty computation stack},symbol={$\square$}]{square}{\ensuremath{\scriptstyle\square}}
@@ -274,6 +279,9 @@
 
 \newcommand\LSEM{\glshyperlink[\glsentryuseri{sem}]{sem}\glsadd{sem}}
 \newcommand\RSEM{\glshyperlink[\glsentryuserii{sem}]{sem}\glsadd{sem}}
+
+\newcommand\LSEMFS{\glshyperlink[\glsentryuseri{semFS}]{semFS}\glsadd{semFS}}
+\newcommand\RSEMFS{\glshyperlink[\glsentryuserii{semFS}]{semFS}\glsadd{semFS}}
 
 \newcommand\PIi{\glshyperlink[\glsentryuseri{pi}]{pi}\glsadd{pi}}
 \newcommand\PIii{\glshyperlink[\glsentryuserii{pi}]{pi}\glsadd{pi}}
