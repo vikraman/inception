@@ -52,12 +52,6 @@ _♯ : ∀ {ℓ} {X Y : Set ℓ} -> (X -> K Y) -> K X -> K Y
 cocurry : ∀ {ℓ} -> {X Y Z : Set ℓ} -> (Z × (X -> R) -> K Y) -> Z -> K (X ⊎ Y)
 cocurry f z k = f (z , k ∘ inj₁) (k ∘ inj₂)
 
-varK : ∀ {ℓ} {X : Set ℓ} -> R -> K X
-varK = const
-
-subK : ∀ {ℓ} {X : Set ℓ} -> (R -> K X) × K X -> K X
-subK (f , n) k = f (n k) k
-
 \end{code}
 %<*SemTy>
 \begin{code}
@@ -103,6 +97,12 @@ subK (f , n) k = f (n k) k
 \end{code}
 %<*SemTerms>
 \begin{code}
+varK : ∀ {ℓ} {X : Set ℓ} -> R -> K X
+varK v k = v
+
+subK : ∀ {ℓ} {X : Set ℓ} -> (R -> K X) × K X -> K X
+subK (m₁ , m₂) k = m₁ (m₂ k) k
+
 mutual
 
   ⟦_⟧ᵖ : Γ ⊢ᵖ X -> ⟦ Γ ⟧ˣ -> ⟦ X ⟧
@@ -122,6 +122,15 @@ mutual
 \end{code}
 %</SemTerms>
 \begin{code}
+
+push-return-eq : (γ : ⟦ Γ ⟧ˣ) → (k : (⟦ X ⟧ -> R)) → (W : Pure Γ Z) → (M₂ : (Γ ∙ Z) ⊢ᶜ X) →
+      (< idf , ⟦ return W ⟧ᶜ > ； τ ； ⟦ M₂ ⟧ᶜ ♯) γ k ≡ ⟦ M₂ ⟧ᶜ (γ , ⟦ W ⟧ᵖ γ) k
+push-return-eq γ k W M₂ = refl
+
+push-return-eq' : (γ : ⟦ Γ ⟧ˣ) → (k : (⟦ X ⟧ -> R)) → (M₁ : Comp Γ Z) → (M₂ : (Γ ∙ Z) ⊢ᶜ X) →
+      --(< idf , ⟦ M₁ ⟧ᶜ > ； τ ； ⟦ M₂ ⟧ᶜ ♯) γ k ≡ ((⟦ M₂ ⟧ᶜ ♯) ∘ τ)  (γ , ⟦ M₁ ⟧ᶜ γ) k
+      (< idf , ⟦ M₁ ⟧ᶜ > ； τ ； ⟦ M₂ ⟧ᶜ ♯) γ k ≡ ⟦ M₁ ⟧ᶜ γ (λ t → ((⟦ M₂ ⟧ᶜ ♯) ∘ τ)  (γ , η t) k)
+push-return-eq' γ k W M₂ = refl
 
 mutual
   evalPure : Γ ⊢ᵖ X -> ⟦ Γ ⟧ˣ -> ⟦ X ⟧

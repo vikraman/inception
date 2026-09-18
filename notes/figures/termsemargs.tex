@@ -7,16 +7,16 @@
 
 \begin{ceqn}
   \begin{align*}
-    {\LSEM \GAMMA \CDASHi \gls{return} (\gls{W}) \CDASHii \X \RSEM} \;\sGAMMA\; \gls{k} &= \gls{k} \;({\LSEM \gls{W} \RSEM}\; \sGAMMA)\\
-    {\LSEM \GAMMA \CDASHi \gls{pmc}({\gls{W}} , \gls{M}) \CDASHii \X \RSEM} \; \sGAMMA \; \gls{k} &= ({\LSEM \gls{M} \RSEM} \glsop{circ} \gls{alpha} \glsop{circ} \LANGLE \sGAMMA , {\LSEM \gls{W} \RSEM} \RANGLE) \; \gls{k}\\
-    {\LSEM \GAMMA \CDASHi \gls{push} ({\gls{M}}_1, {\gls{M}}_2) : \X\RSEM} \;\sGAMMA \; {\gls{k}} &= ({\LSEM {\gls{M}}_2 \RSEM}^{\gls{sharp}} \glsop{circ} \gls{str} \glsop{circ} \LANGLE \sGAMMA \CANGLE {\LSEM {\gls{M}}_1 \RSEM} \;\sGAMMA \RANGLE) \; {\gls{k}}\\
-    {\LSEM \GAMMA \CDASHi \gls{app}({\gls{W}}_1 , {\gls{W}}_2) \CDASHii \X \RSEM} \; \sGAMMA \; \gls{k} &= (\gls{ev} \glsop{circ} \LANGLE {\LSEM {\gls{W}}_1 \RSEM} \CANGLE {\LSEM {\gls{W}}_2 \RSEM} \RANGLE) \; \sGAMMA \; \gls{k}\\
-    {\LSEM \GAMMA \CDASHi {\gls{var}}_{\X}(\gls{W}) \CDASHii \X \RSEM} \; \sGAMMA \; \gls{k} &= {\LSEM \gls{W} \RSEM} \; \sGAMMA\\
-    {\LSEM \GAMMA \CDASHi {\gls{sub}}_{\X}({\gls{M}}_1 , {\gls{M}}_2) \CDASHii \X \RSEM} \; \sGAMMA \; \gls{k} &= {\LSEM {\gls{M}}_1 \RSEM} \; (\sGAMMA , {\LSEM {\gls{M}}_2 \RSEM} \, \sGAMMA \, \gls{k}) \; \gls{k}
+    {\LSEM \GAMMA \CDASHi \gls{return} (\gls{W}) \CDASHii \X \RSEM} \;\gls{rho}\; \gls{k} &= \gls{k} \;({\LSEM \gls{W} \RSEM}\; \gls{rho})\\
+    {\LSEM \GAMMA \CDASHi \gls{pmc}({\gls{W}} , \gls{M}) \CDASHii \X \RSEM} \; \gls{rho} \; \gls{k} &= ({\LSEM \gls{M} \RSEM} \glsop{circ} \gls{alpha} \glsop{circ} \LANGLE \gls{rho} , {\LSEM \gls{W} \RSEM} \RANGLE) \; \gls{k}\\
+    {\LSEM \GAMMA \CDASHi \gls{push} ({\gls{M}}_1, {\gls{M}}_2) : \X\RSEM} \;\gls{rho} \; {\gls{k}} &= ({\LSEM {\gls{M}}_2 \RSEM}^{\gls{sharp}} \glsop{circ} \gls{str} \glsop{circ} \LANGLE \gls{rho} \CANGLE {\LSEM {\gls{M}}_1 \RSEM} \;\gls{rho} \RANGLE) \; {\gls{k}}\\
+    {\LSEM \GAMMA \CDASHi \gls{app}({\gls{W}}_1 , {\gls{W}}_2) \CDASHii \X \RSEM} \; \gls{rho} \; \gls{k} &= (\gls{ev} \glsop{circ} \LANGLE {\LSEM {\gls{W}}_1 \RSEM} \CANGLE {\LSEM {\gls{W}}_2 \RSEM} \RANGLE) \; \gls{rho} \; \gls{k}\\
+    {\LSEM \GAMMA \CDASHi {\gls{var}}_{\X}(\gls{W}) \CDASHii \X \RSEM} \; \gls{rho} \; \gls{k} &= {\LSEM \gls{W} \RSEM} \; \gls{rho}\\
+    {\LSEM \GAMMA \CDASHi {\gls{sub}}_{\X}({\gls{M}}_1 , {\gls{M}}_2) \CDASHii \X \RSEM} \; \gls{rho} \; \gls{k} &= {\LSEM {\gls{M}}_1 \RSEM} \; (\gls{rho} , {\LSEM {\gls{M}}_2 \RSEM} \, \gls{rho} \, \gls{k}) \; \gls{k}
   \end{align*}
 \end{ceqn}
 
 }\end{minipage}}%
-\caption{Interpretations from \Cref{fig:termsem-b} applied to arguments \sGAMMA and \gls{k}}
+\caption{Interpretations from \Cref{fig:termsem-b} applied to arguments \gls{rho} and \gls{k}}
 \label{fig:termsemargs}
 \end{figure}

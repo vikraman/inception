@@ -253,12 +253,6 @@ _⨾_ (F →ᵖ⟨ F>S₁ ⟩ S₁>>S₂) S₂>>T = F →ᵖ⟨ F>S₁ ⟩ (S₁
 ⟪ _ →ᵖ⟨ F>T ⟩． ⟫⧻ pstack =  _ →ᵖ⟨ ⟨ F>T ⟩⧻ pstack ⟩．
 ⟪ _ →ᵖ⟨ F>T ⟩ F>>T ⟫⧻ pstack =   _ →ᵖ⟨ ⟨ F>T ⟩⧻ pstack ⟩ (⟪ F>>T ⟫⧻ pstack)
 
-record PureSteps {Z₀ : Ty} (W : Pure Γ X) (γ : Env {Z₀ = Z₀} Γ) : Set where
-  field
-    result : Value {Z₀ = Z₀} X
-    steps  : ⟨ ((⇡ W γ ∷ ⊠) {𝐛 = ▿}) ⟩ ↠ᵛ ⟨ ((⭭ result ∷ ⊠) {𝐛 = ▿}) ⟩
-open PureSteps
-
 proj₁-val : {Z₀ : Ty} → Value {Z₀ = Z₀} (X `× Y) → Value {Z₀ = Z₀} X
 proj₁-val (pairᵛ W₁ W₂) = W₁
 
@@ -268,7 +262,21 @@ proj₂-val (pairᵛ W₁ W₂) = W₂
 pair-val : {Z₀ : Ty} → (W : Value {Z₀ = Z₀} (X `× Y)) → (pairᵛ (proj₁-val W) (proj₂-val W) ≡ W)
 pair-val (pairᵛ W₁ W₂) = refl
 
+\end{code}
+%<*PureSteps>
+\begin{code}
+record PureSteps {Z₀ : Ty} (W : Pure Γ X) (γ : Env {Z₀ = Z₀} Γ) : Set where
+  field
+    result : Value {Z₀ = Z₀} X
+    steps  : ⟨ ((⇡ W γ ∷ ⊠) {𝐛 = ▿}) ⟩ ↠ᵛ ⟨ ((⭭ result ∷ ⊠) {𝐛 = ▿}) ⟩
+open PureSteps
+
 normalise-pure : {Z₀ : Ty} → (W : Pure Γ X) → (γ : Env {Z₀ = Z₀} Γ) → PureSteps W γ
+-- ...
+\end{code}
+%</PureSteps>
+\begin{code}
+
 normalise-pure (var i) γ = record { result = lookup i γ ; steps = ⟨ ⇡ (var i) γ ∷ ⊠ ⟩ →ᵖ⟨ lookup→ ⟩． }
 normalise-pure (lam M) γ = record { result = cloᵛ M γ ; steps = ⟨ ⇡ (lam M) γ ∷ ⊠ ⟩ →ᵖ⟨ lam→ ⟩． }
 normalise-pure (pair W₁ W₂) γ =
@@ -316,16 +324,14 @@ data CState {Z₀ : Ty} : Set where
 
 \end{code}
 %</CStates>
-\begin{code}
 
+%<*Eval>
+\begin{code}
 jump-to-state : {Z₀ : Ty} → Value {Z₀ = Z₀} `L → CState {Z₀ = Z₀}
 jump-to-state (jumpᵛ M γ k) = ⟨ M ╎ γ ╎ k ⟩
 
 clo-to-comp : {Z₀ : Ty} → Value {Z₀ = Z₀} (X `⇒ Y) → Σ[ Γ ∈ Ctx ] Comp (Γ ∙ X) Y × Env {Z₀ = Z₀} Γ
 clo-to-comp (cloᵛ M γ) = _ , M , γ
-
-clo-val : {Z₀ : Ty} → (W : Value {Z₀ = Z₀} (X `⇒ Y)) → (cloᵛ (proj₁ (proj₂ (clo-to-comp W))) (proj₂ (proj₂ (clo-to-comp W))) ≡ W)
-clo-val (cloᵛ M γ) = refl
 
 eval : {Z₀ : Ty} → Pure Γ X → Env {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X
 eval W γ = result (normalise-pure W γ)
@@ -341,8 +347,15 @@ eval₁ W γ = proj₁-val (result (normalise-pure W γ))
 
 eval₂ : {Z₀ : Ty} → Pure Γ (X₁ `× X₂) → Env {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X₂
 eval₂ W γ = proj₂-val (result (normalise-pure W γ))
+\end{code}
+%</Eval>
+\begin{code}
+
+clo-val : {Z₀ : Ty} → (W : Value {Z₀ = Z₀} (X `⇒ Y)) → (cloᵛ (proj₁ (proj₂ (clo-to-comp W))) (proj₂ (proj₂ (clo-to-comp W))) ≡ W)
+clo-val (cloᵛ M γ) = refl
 
 \end{code}
+
 %<*CTrans>
 \begin{code}
 
