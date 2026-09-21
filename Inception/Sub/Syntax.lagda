@@ -54,76 +54,66 @@ module Cx (Ty : Set) where
 
 open Cx Ty public
 
+
+\end{code}
+%<*Terms>
+\begin{code}
+
 syntax Pure Γ X = Γ ⊢ᵖ X
-
-data Pure : Ctx -> Ty -> Set
-
 syntax Comp Γ X = Γ ⊢ᶜ X
 
-data Comp : Ctx -> Ty -> Set
+mutual
+
+  data Pure : Ctx -> Ty -> Set where
+
+    var :   (x : Γ ∋ X)
+            ----------
+            -> Γ ⊢ᵖ X
+
+    lam :   (Γ ∙ X) ⊢ᶜ Y
+            --------------
+            -> Γ ⊢ᵖ X `⇒ Y
+
+    pair :  Γ ⊢ᵖ X₁ -> Γ ⊢ᵖ X₂
+            -----------------
+            -> Γ ⊢ᵖ X₁ `× X₂
+
+    pm :    Γ ⊢ᵖ X₁ `× X₂ -> (Γ ∙ X₁ ∙ X₂) ⊢ᵖ Y
+            --------------------------------
+            -> Γ ⊢ᵖ Y
+
+    unit :
+            -----------
+            Γ ⊢ᵖ `Unit
+
+  data Comp : Ctx -> Ty -> Set where
+
+    return :  Γ ⊢ᵖ X
+              ---------
+              -> Γ ⊢ᶜ X
+
+    pm :      Γ ⊢ᵖ X₁ `× X₂ -> (Γ ∙ X₁ ∙ X₂) ⊢ᶜ Y
+              -------------------------------
+              -> Γ ⊢ᶜ Y
+
+    push :    Γ ⊢ᶜ X -> (Γ ∙ X) ⊢ᶜ Y
+              --------------------
+              -> Γ ⊢ᶜ Y
+
+    app :     Γ ⊢ᵖ X `⇒ Y -> Γ ⊢ᵖ X
+              ---------------------
+              -> Γ ⊢ᶜ Y
+
+    var :     Γ ⊢ᵖ `L
+              ---------
+              -> Γ ⊢ᶜ X
+
+    sub :     (Γ ∙ `L) ⊢ᶜ X -> Γ ⊢ᶜ X
+              --------------------
+              -> Γ ⊢ᶜ X
 
 \end{code}
-%<*Pure>
-\begin{code}
-
-data Pure where
-
-  var :   (x : Γ ∋ X)
-          ----------
-          -> Γ ⊢ᵖ X
-
-  lam :   (Γ ∙ X) ⊢ᶜ Y
-          --------------
-          -> Γ ⊢ᵖ X `⇒ Y
-
-  pair :  Γ ⊢ᵖ X₁ -> Γ ⊢ᵖ X₂
-          -----------------
-          -> Γ ⊢ᵖ X₁ `× X₂
-
-  pm :    Γ ⊢ᵖ X₁ `× X₂ -> (Γ ∙ X₁ ∙ X₂) ⊢ᵖ Y
-          --------------------------------
-          -> Γ ⊢ᵖ Y
-
-  unit :
-          -----------
-          Γ ⊢ᵖ `Unit
-
-\end{code}
-%</Pure>
-\begin{code}
-
-\end{code}
-%<*Comp>
-\begin{code}
-
-data Comp where
-
-  return :  Γ ⊢ᵖ X
-            ---------
-            -> Γ ⊢ᶜ X
-
-  pm :      Γ ⊢ᵖ X₁ `× X₂ -> (Γ ∙ X₁ ∙ X₂) ⊢ᶜ Y
-            -------------------------------
-            -> Γ ⊢ᶜ Y
-
-  push :    Γ ⊢ᶜ X -> (Γ ∙ X) ⊢ᶜ Y
-            --------------------
-            -> Γ ⊢ᶜ Y
-
-  app :     Γ ⊢ᵖ X `⇒ Y -> Γ ⊢ᵖ X
-            ---------------------
-            -> Γ ⊢ᶜ Y
-
-  var :     Γ ⊢ᵖ `L
-            ---------
-            -> Γ ⊢ᶜ X
-
-  sub :     (Γ ∙ `L) ⊢ᶜ X -> Γ ⊢ᶜ X
-            --------------------
-            -> Γ ⊢ᶜ X
-
-\end{code}
-%</Comp>
+%</Terms>
 \begin{code}
 
 syntax Wk Γ Δ = Γ ⊇ Δ

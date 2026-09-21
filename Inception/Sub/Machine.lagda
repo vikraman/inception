@@ -272,6 +272,7 @@ record PureSteps {Z₀ : Ty} (W : Pure Γ X) (γ : Env {Z₀ = Z₀} Γ) : Set w
 open PureSteps
 
 normalise-pure : {Z₀ : Ty} → (W : Pure Γ X) → (γ : Env {Z₀ = Z₀} Γ) → PureSteps W γ
+
 -- ...
 \end{code}
 %</PureSteps>
@@ -330,7 +331,8 @@ data CState {Z₀ : Ty} : Set where
 jump-to-state : {Z₀ : Ty} → Value {Z₀ = Z₀} `L → CState {Z₀ = Z₀}
 jump-to-state (jumpᵛ M γ k) = ⟨ M ╎ γ ╎ k ⟩
 
-clo-to-comp : {Z₀ : Ty} → Value {Z₀ = Z₀} (X `⇒ Y) → Σ[ Γ ∈ Ctx ] Comp (Γ ∙ X) Y × Env {Z₀ = Z₀} Γ
+clo-to-comp :  {Z₀ : Ty} → Value {Z₀ = Z₀} (X `⇒ Y)
+               → Σ[ Γ ∈ Ctx ] Comp (Γ ∙ X) Y × Env {Z₀ = Z₀} Γ
 clo-to-comp (cloᵛ M γ) = _ , M , γ
 
 eval : {Z₀ : Ty} → Pure Γ X → Env {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X
@@ -339,8 +341,14 @@ eval W γ = result (normalise-pure W γ)
 eval-jump : {Z₀ : Ty} → Pure Γ `L → Env {Z₀ = Z₀} Γ → CState {Z₀ = Z₀}
 eval-jump W γ = jump-to-state (result (normalise-pure W γ))
 
-eval-clo : {Z₀ : Ty} → Pure Γ (X `⇒ Y) → Pure Γ X → Env {Z₀ = Z₀} Γ → CStack {Z₀ = Z₀} Y → CState {Z₀ = Z₀}
-eval-clo W₁ W₂ γ k = ⟨ proj₁ (proj₂ (clo-to-comp (result (normalise-pure W₁ γ)))) ╎ proj₂ (proj₂ (clo-to-comp (result (normalise-pure W₁ γ)))) · result (normalise-pure W₂ γ) ╎ k ⟩
+eval-clo :  {Z₀ : Ty} → Pure Γ (X `⇒ Y) → Pure Γ X → Env {Z₀ = Z₀} Γ
+            → CStack {Z₀ = Z₀} Y → CState {Z₀ = Z₀}
+eval-clo W₁ W₂ γ k =
+  let
+    M  = proj₁ (proj₂ (clo-to-comp (result (normalise-pure W₁ γ))))
+    γ' = proj₂ (proj₂ (clo-to-comp (result (normalise-pure W₁ γ))))
+  in
+  ⟨ M ╎ γ' · result (normalise-pure W₂ γ) ╎ k  ⟩
 
 eval₁ : {Z₀ : Ty} → Pure Γ (X₁ `× X₂) → Env {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X₁
 eval₁ W γ = proj₁-val (result (normalise-pure W γ))
@@ -361,7 +369,7 @@ clo-val (cloᵛ M γ) = refl
 
 data _→ᶜ_ {Z₀ : Ty} : CState {Z₀ = Z₀} → CState {Z₀ = Z₀} → Set where
 
-  pure→ :    {W : Pure Γ X} {γ : Env Γ} {cstack : CStack X}
+  eval→ :    {W : Pure Γ X} {γ : Env Γ} {cstack : CStack X}
              -------------------------------------------
              →  ⟨ return W ╎ γ ╎ cstack ⟩ →ᶜ ⟨ eval W γ ╎ cstack ⟩
 
@@ -396,7 +404,7 @@ data _→ᶜ_ {Z₀ : Ty} : CState {Z₀ = Z₀} → CState {Z₀ = Z₀} → Se
 
 
 determinismꟲ : {Z₀ : Ty} {S S' : CState {Z₀ = Z₀}} (S→S'₁ S→S'₂ : S →ᶜ S') → (S→S'₁ ≡ S→S'₂)
-determinismꟲ pure→ pure→ = refl
+determinismꟲ eval→ eval→ = refl
 determinismꟲ return→ return→ = refl
 determinismꟲ push→ push→ = refl
 determinismꟲ sub→ sub→ = refl
@@ -474,7 +482,7 @@ mutual
   fundamentalᵖ unit Rγ = tt
 
   fundamentalᶜ : {Z₀ : Ty} → (M : Comp Γ X) → {γ : Env {Z₀ = Z₀} Γ} → Rᴱ γ → {cstack : CStack {Z₀ = Z₀} X} → Rᵏ X cstack → SN ⟨ M ╎ γ ╎ cstack ⟩
-  fundamentalᶜ (return W) Rγ Rk = sn λ { pure→ → Rk (fundamentalᵖ W Rγ)}
+  fundamentalᶜ (return W) Rγ Rk = sn λ { eval→ → Rk (fundamentalᵖ W Rγ)}
   fundamentalᶜ (pm W M) {γ = γ} Rγ Rk =
     let
       IH = fundamentalᵖ W Rγ
@@ -526,7 +534,7 @@ data Progress {Z₀ : Ty} (σ : CState {Z₀ = Z₀}) : Set where
 progress : {Z₀ : Ty} (σ : CState {Z₀ = Z₀}) → Progress σ
 progress ⟨ W' ╎ ◻ ⟩ = done (λ ())
 progress ⟨ W' ╎ < M ； γ >∷ cstack ⟩ = step return→
-progress ⟨ return W ╎ γ ╎ cstack ⟩ = step pure→
+progress ⟨ return W ╎ γ ╎ cstack ⟩ = step eval→
 progress ⟨ pm W M ╎ γ ╎ cstack ⟩ = step pmᶜ→
 progress ⟨ push M₁ M₂ ╎ γ ╎ cstack ⟩ = step push→
 progress ⟨ app W₁ W₂ ╎ γ ╎ cstack ⟩ = step app→
@@ -539,6 +547,7 @@ progress ⟨ sub M₁ M₂ ╎ γ ╎ cstack ⟩ = step sub→
 -- A Normal CState is a halting state and of the form ⟨ 𝐖 ╎ ◻ ⟩.
 halting-state :    (cstate : CState {Z₀ = Z₀}) → Normal cstate
                  → Σ[ 𝐖 ∈ Value Z₀ ] cstate ≡ ⟨ 𝐖 ╎ ◻ ⟩
+
 -- ...
 \end{code}
 %</SubVarHaltingState>
@@ -546,7 +555,7 @@ halting-state :    (cstate : CState {Z₀ = Z₀}) → Normal cstate
 
 halting-state ⟨ W' ╎ ◻ ⟩ normal = W' , refl
 halting-state ⟨ W' ╎ < x ； γ >∷ cstack ⟩ normal = ql (normal return→) _
-halting-state ⟨ return _ ╎ γ ╎ cstack ⟩ normal = ql (normal pure→) _
+halting-state ⟨ return _ ╎ γ ╎ cstack ⟩ normal = ql (normal eval→) _
 halting-state ⟨ pm _ _ ╎ γ ╎ cstack ⟩ normal = ql (normal pmᶜ→) _
 halting-state ⟨ push _ _ ╎ γ ╎ cstack ⟩ normal = ql (normal push→) _
 halting-state ⟨ app _ _ ╎ γ ╎ cstack ⟩ normal = ql (normal app→) _
@@ -568,6 +577,7 @@ exec :    {Z₀ : Ty} → (M : Comp ε Z₀)
           Σ[ 𝐖 ∈ Value {Z₀ = Z₀} Z₀ ]
           Σ[ NF ∈ Normal cstate ]
           (⟨ M ╎ ⋄ ╎ ◻ ⟩ →ᶜ* cstate) × (𝐖 ≡ proj₁ (halting-state cstate NF))
+
 -- ...
 \end{code}
 %</SubVarEval>
@@ -588,11 +598,11 @@ _ : exec ex15 ≡ (_ , unitᵛ , _ ,
     →ᶜ⟨ app→ ⟩    (⟨ sub (var (var new)) (return unit) ╎ ⋄ · unitᵛ ╎ < return unit ； ⋄ >∷ < return unit ； ⋄ >∷ ◻ ⟩
     →ᶜ⟨ sub→ ⟩    (⟨ var (var new) ╎ ⋄ · unitᵛ · jumpᵛ (return unit) (⋄ · unitᵛ) (< return unit ； ⋄ >∷ < return unit ； ⋄ >∷ ◻) ╎ < return unit ； ⋄ >∷ < return unit ； ⋄ >∷ ◻ ⟩
     →ᶜ⟨ var→ ⟩    (⟨ return unit ╎ ⋄ · unitᵛ ╎ < return unit ； ⋄ >∷ < return unit ； ⋄ >∷ ◻ ⟩
-    →ᶜ⟨ pure→ ⟩ (⟨ unitᵛ ╎ < return unit ； ⋄ >∷ < return unit ； ⋄ >∷ ◻ ⟩
+    →ᶜ⟨ eval→ ⟩ (⟨ unitᵛ ╎ < return unit ； ⋄ >∷ < return unit ； ⋄ >∷ ◻ ⟩
     →ᶜ⟨ return→ ⟩ (⟨ return unit ╎ ⋄ · unitᵛ ╎ < return unit ； ⋄ >∷ ◻ ⟩
-    →ᶜ⟨ pure→ ⟩ (⟨ unitᵛ ╎ < return unit ； ⋄ >∷ ◻ ⟩
+    →ᶜ⟨ eval→ ⟩ (⟨ unitᵛ ╎ < return unit ； ⋄ >∷ ◻ ⟩
     →ᶜ⟨ return→ ⟩ (⟨ return unit ╎ ⋄ · unitᵛ ╎ ◻ ⟩
-    →ᶜ⟨ pure→ ⟩ (⟨ unitᵛ ╎ ◻ ⟩ ◼)))))))))))
+    →ᶜ⟨ eval→ ⟩ (⟨ unitᵛ ╎ ◻ ⟩ ◼)))))))))))
     , _)
 _ = refl
 

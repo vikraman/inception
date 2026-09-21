@@ -128,11 +128,12 @@
 \glsxtrnewsymbol[description={Kleisli category of the monad $\glspt{S}$ over $\glspt{cF}$},symbol={$\mathcal{F}_{K_V}$}]{cFKV}{\ensuremath{\mathcal{F}_{K_V}}}
 \glsxtrnewsymbol[description={Continuation monad ${\glspt{V}}^{{\glspt{V}}^-}$ on ${\glspt{Set}}^{\glspt{bF}}$},symbol={$K_V$}]{KV}{\ensuremath{K_V}}
 \glsxtrnewsymbol[description={Morphism $\glspt{ABC} \to \glspt{V}$ in ${\glspt{Set}}^{\glspt{bF}}$ for some object $\glspt{ABC}$},symbol={$k$}]{k}{\ensuremath{k}}
+\glsxtrnewsymbol[description={Morphism $\LSEM \gls{Rzero} \RSEM \to \glspt{V}$ in ${\glspt{Set}}^{\glspt{bF}}$ for some type \gls{Rzero}, i.e.\ the top-level continuation},symbol={$k_0$}]{kzero}{\ensuremath{k_0}}
 \glsxtrnewsymbol[description={Label type},symbol={$L$}]{L}{\ensuremath{L}}
 \glsxtrnewsymbol[description={Label variable},symbol={$\ell$}]{ell}{\ensuremath{\ell}}
 \glsxtrnewsymbol[description={Effectful term / Computation},symbol={$M$}]{M}{\ensuremath{M}}
 \glsxtrnewsymbol[description={TODO},symbol={$m$}]{m}{\ensuremath{m}}
-\glsxtrnewsymbol[description={Return type},symbol={$R_0$}]{Rzero}{\ensuremath{R_0}}
+\glsxtrnewsymbol[description={overall return type of a computation},symbol={$R_0$}]{Rzero}{\ensuremath{R_0}}
 \glsxtrnewsymbol[description={Free substitution monad ${\glspt{V}}^{{\glspt{V}}^-}$ on ${\glspt{Set}}^{\glspt{bF}}$},symbol={$S$}]{S}{\ensuremath{S}}
 \glsxtrnewsymbol[description={Generic monad},symbol={$T$}]{T}{\ensuremath{T}}
 \glsxtrnewsymbol[description={Morphism $\glspt{bF} \to \glspt{Set}$},symbol={$t$}]{t}{\ensuremath{t}}
@@ -141,6 +142,7 @@
 \glsxtrnewsymbol[description={Partially normalised pure term},symbol={$\widehat{W}$}]{hatW}{\ensuremath{\widehat{W}}}
 \glsxtrnewsymbol[description={TODO},symbol={$v$}]{v}{\ensuremath{v}}
 \glsxtrnewsymbol[description={Value},symbol={$\mathbf{W}$}]{bfW}{\ensuremath{\mathbf{W}}}
+\glsxtrnewsymbol[description={Value},symbol={$w$}]{w}{\ensuremath{w}}
 \glsxtrnewsymbol[description={Type},symbol={$X$, $Y$, $Z$},user1={\ensuremath{X}},user2={\ensuremath{Y}},user3={\ensuremath{Z}}]{XYZ}{\ensuremath{X}}
 \glsxtrnewsymbol[description={Variable},symbol={$x$, $y$, $z$},user1={\ensuremath{x}},user2={\ensuremath{y}},user3={\ensuremath{z}}]{xyz}{\ensuremath{x}}
 \glsxtrnewsymbol[description={Yoneda embedding},symbol={$\mathcal{Y}$}]{Y}{\ensuremath{\mathcal{Y}}}
@@ -189,11 +191,11 @@
 \glsxtrnewsymbol[description={Type of states of pure term machine},symbol={${\textsf{PState}}_{\_}$}]{PState}{\textsf{PState}}
 \glsxtrnewsymbol[description={State of pure term machine},symbol={$\textsf{pstate}$}]{pstate}{\textsf{pstate}}
 \glsxtrnewsymbol[description={Return operator},symbol={$\textsf{return}(\_)$}]{return}{\textsf{return}}
-\glsxtrnewsymbol[description={Normalises a pure term to a value},symbol={$\textsf{run}(\_)$}]{run}{\textsf{run}}
-\glsxtrnewsymbol[description={Normalises a pure term of function type to a value},symbol={${\textsf{run}}_{\textsf{clo}}(\_)$}]{runclo}{{\textsf{run}}_{\textsf{clo}}}
-\glsxtrnewsymbol[description={Normalises a pure term to a value and converts it to a \glspt{CState}},symbol={${\textsf{run}}_{\textsf{jump}}(\_)$}]{runjump}{{\textsf{run}}_{\textsf{jump}}}
-\glsxtrnewsymbol[description={Normalises a pure term of product type to a value and returns the first projection},symbol={${\textsf{run}}_{1}(\_)$}]{runi}{{\textsf{run}}_{1}}
-\glsxtrnewsymbol[description={Normalises a pure term of product type to a value and returns the second projection},symbol={${\textsf{run}}_{2}(\_)$}]{runii}{{\textsf{run}}_{2}}
+\glsxtrnewsymbol[description={Normalises a pure term to a value},symbol={$\textsf{eval}(\_)$}]{sfeval}{\textsf{eval}}
+\glsxtrnewsymbol[description={Normalises a pure term of function type to a value},symbol={${\textsf{eval}}_{\textsf{clo}}(\_)$}]{sfevalclo}{\ensuremath{{\textsf{eval}}_{\textsf{clo}}}}
+\glsxtrnewsymbol[description={Normalises a pure term to a value and converts it to a \glspt{CState}},symbol={${\textsf{eval}}_{\textsf{jump}}(\_)$}]{sfevaljump}{\ensuremath{{\textsf{eval}}_{\textsf{jump}}}}
+\glsxtrnewsymbol[description={Normalises a pure term of product type to a value and returns the first projection},symbol={${\textsf{eval}}_{1}(\_)$}]{sfevali}{\ensuremath{{\textsf{eval}}_{1}}}
+\glsxtrnewsymbol[description={Normalises a pure term of product type to a value and returns the second projection},symbol={${\textsf{eval}}_{2}(\_)$}]{sfevalii}{\ensuremath{{\textsf{eval}}_{2}}}
 \glsxtrnewsymbol[description={Category of sets},symbol={$\textsf{Set}$}]{Set}{\textsf{Set}}
 \glsxtrnewsymbol[description={Cartesian strength},symbol={$\textsf{str}$}]{str}{\textsf{str}}
 \glsxtrnewsymbol[description={Substitution / branch operator},symbol={${\textsf{sub}}_{\_}(\_,\_)$}]{sub}{\textsf{sub}}

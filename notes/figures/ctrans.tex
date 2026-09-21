@@ -13,7 +13,7 @@
         \gls{cstack} \glsop{colon} {\gls{CStack}}_{{\Z}_0} \; \X
       }
       {
-        \CSTATEBi \gls{return}(\gls{W}) \CSTATEBii \sGAMMA \CSTATEBiii \gls{cstack} \CSTATEBiv \; \glsop{ctrans} \; \CSTATEAi \gls{run}(\gls{W},\sGAMMA) \CSTATEAii \gls{cstack} \CSTATEAiii
+        \CSTATEBi \gls{return}(\gls{W}) \CSTATEBii \sGAMMA \CSTATEBiii \gls{cstack} \CSTATEBiv \; \glsop{ctrans} \; \CSTATEAi \gls{sfeval}(\gls{W},\sGAMMA) \CSTATEAii \gls{cstack} \CSTATEAiii
       }
 
     \inferrule
@@ -56,7 +56,7 @@
         \gls{cstack} \glsop{colon} {\gls{CStack}}_{{\Z}_0} \; \X
       }
       {
-        \CSTATEBi \gls{var}(\gls{W}) \CSTATEBii \sGAMMA \CSTATEBiii \gls{cstack} \CSTATEBiv \; \glsop{ctrans} \; \gls{runjump}(\gls{W},\sGAMMA)
+        \CSTATEBi \gls{var}(\gls{W}) \CSTATEBii \sGAMMA \CSTATEBiii \gls{cstack} \CSTATEBiv \; \glsop{ctrans} \; \gls{sfevaljump}(\gls{W},\sGAMMA)
       }
 
     \inferrule
@@ -67,7 +67,7 @@
         \gls{cstack} \glsop{colon} {\gls{CStack}}_{{\Z}_0} \; \Y
       }
       {
-        \CSTATEBi \gls{pmc}(\gls{W},\gls{M}) \CSTATEBii \sGAMMA \CSTATEBiii \gls{cstack} \CSTATEBiv \; \glsop{ctrans} \; \CSTATEBi \gls{M} \CSTATEBii \sGAMMA \glsop{cdot} \gls{runi}(\gls{W},\sGAMMA) \glsop{cdot} \gls{runii}(\gls{W},\sGAMMA) \CSTATEBiii \gls{cstack} \CSTATEBiv
+        \CSTATEBi \gls{pmc}(\gls{W},\gls{M}) \CSTATEBii \sGAMMA \CSTATEBiii \gls{cstack} \CSTATEBiv \; \glsop{ctrans} \; \CSTATEBi \gls{M} \CSTATEBii \sGAMMA \glsop{cdot} \gls{sfevali}(\gls{W},\sGAMMA) \glsop{cdot} \gls{sfevalii}(\gls{W},\sGAMMA) \CSTATEBiii \gls{cstack} \CSTATEBiv
       }
 
     \inferrule
@@ -78,9 +78,11 @@
         \gls{cstack} \glsop{colon} {\gls{CStack}}_{{\Z}_0} \; \Y
       }
       {
-        \CSTATEBi \gls{app}({\gls{W}}_1,{\gls{W}}_2) \CSTATEBii \sGAMMA \CSTATEBiii \gls{cstack} \CSTATEBiv \; \glsop{ctrans} \; \gls{runclo}({\gls{W}}_1,{\gls{W}}_2,\sGAMMA,\gls{cstack})
+        \CSTATEBi \gls{app}({\gls{W}}_1,{\gls{W}}_2) \CSTATEBii \sGAMMA \CSTATEBiii \gls{cstack} \CSTATEBiv \; \glsop{ctrans} \; \gls{sfevalclo}({\gls{W}}_1,{\gls{W}}_2,\sGAMMA,\gls{cstack})
       }
   \end{mathpar}
+
+  \fbox{Halting state: $\CSTATEAi \gls{bfW} \CSTATEAii \gls{square} \CSTATEAiii$}
 
 \vspace{5pt}%
 }\end{minipage}}%
