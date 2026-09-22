@@ -1,5 +1,4 @@
 \begin{code}
-
 {-# OPTIONS --no-postfix-projections #-}
 
 module Inception.Sub.Machine where
