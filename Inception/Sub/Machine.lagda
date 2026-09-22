@@ -70,13 +70,13 @@ mutual
            ----------------------------------
            → Env {Z₀ = Z₀} (Γ ∙ X)
 
+lookup : Γ ∋ X → Env {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X
+lookup new (γ · Ẇ) = Ẇ
+lookup (old x) (γ · Ẇ) = lookup x γ
+
 \end{code}
 %</Env>
 \begin{code}
-
-lookup : (i : Γ ∋ X) → Env {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X
-lookup new (γ · W') = W'
-lookup (old i) (γ · W') = lookup i γ
 
 ---------------------------------------------------------------------------------
 -- MACHINE FOR PURE TERMS

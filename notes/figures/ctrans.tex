@@ -1,21 +1,11 @@
 \begin{figure}[!ht]
 \fbox{%
 \begin{minipage}{\dimexpr\textwidth-2\fboxsep-2\fboxrule\relax}%
-\vspace{10pt}%
+\vspace{0pt}%
 \parbox[c]{\linewidth}{%
 \centering%
 
   \begin{mathpar}
-    \inferrule
-      {
-        \GAMMA \PDASHi \gls{W} \PDASHii \X \\
-        \sGAMMA \glsop{colon} {\gls{Env}}_{{\Z}_0} \; \GAMMA \\
-        \gls{cstack} \glsop{colon} {\gls{CStack}}_{{\Z}_0} \; \X
-      }
-      {
-        \CSTATEBi \gls{return}(\gls{W}) \CSTATEBii \sGAMMA \CSTATEBiii \gls{cstack} \CSTATEBiv \; \glsop{ctrans} \; \CSTATEAi \gls{sfeval}(\gls{W},\sGAMMA) \CSTATEAii \gls{cstack} \CSTATEAiii
-      }
-
     \inferrule
       {
         \mathop{{\VDASHi}_{{\Z}_0}} \gls{bfW} \VDASHii \X \\
@@ -24,7 +14,17 @@
         \gls{cstack} \glsop{colon} {\gls{CStack}}_{{\Z}_0} \; \Y
       }
       {
-        \CSTATEAi \gls{bfW} \CSTATEAii \CCONSi \gls{M} \CCONSii \sGAMMA \CCONSiii \CCONSiv \gls{cstack} \CSTATEAiii \; \glsop{ctrans} \; \CSTATEBi \gls{M} \CSTATEBii \sGAMMA \glsop{cdot} \gls{bfW} \CSTATEBiii \gls{cstack} \CSTATEBiv
+        \gls{eval-trans} \; \gls{colon} \; \CSTATEAi \gls{bfW} \CSTATEAii \CCONSi \gls{M} \CCONSii \sGAMMA \CCONSiii \CCONSiv \gls{cstack} \CSTATEAiii \; \glsop{ctrans} \; \CSTATEBi \gls{M} \CSTATEBii \sGAMMA \glsop{cdot} \gls{bfW} \CSTATEBiii \gls{cstack} \CSTATEBiv
+      }
+
+    \inferrule
+      {
+        \GAMMA \PDASHi \gls{W} \PDASHii \X \\
+        \sGAMMA \glsop{colon} {\gls{Env}}_{{\Z}_0} \; \GAMMA \\
+        \gls{cstack} \glsop{colon} {\gls{CStack}}_{{\Z}_0} \; \X
+      }
+      {
+        \gls{return-trans} \; \gls{colon} \; \CSTATEBi \gls{return}(\gls{W}) \CSTATEBii \sGAMMA \CSTATEBiii \gls{cstack} \CSTATEBiv \; \glsop{ctrans} \; \CSTATEAi \gls{sfeval}(\gls{W},\sGAMMA) \CSTATEAii \gls{cstack} \CSTATEAiii
       }
 
     \inferrule
@@ -35,7 +35,7 @@
         \gls{cstack} \glsop{colon} {\gls{CStack}}_{{\Z}_0} \; \Y
       }
       {
-        \CSTATEBi \gls{push}({\gls{M}}_{\X},{\gls{M}}_{\Y}) \CSTATEBii \sGAMMA \CSTATEBiii \gls{cstack} \CSTATEBiv \; \glsop{ctrans} \; \CSTATEBi {\gls{M}}_{\X} \CSTATEBii \sGAMMA \CSTATEBiii \CCONSi {\gls{M}}_{\Y} \CCONSii \sGAMMA \CCONSiii \CCONSiv \gls{cstack} \CSTATEBiv
+        \gls{push-trans} \; \gls{colon} \; \CSTATEBi \gls{push}({\gls{M}}_{\X},{\gls{M}}_{\Y}) \CSTATEBii \sGAMMA \CSTATEBiii \gls{cstack} \CSTATEBiv \; \glsop{ctrans} \; \CSTATEBi {\gls{M}}_{\X} \CSTATEBii \sGAMMA \CSTATEBiii \CCONSi {\gls{M}}_{\Y} \CCONSii \sGAMMA \CCONSiii \CCONSiv \gls{cstack} \CSTATEBiv
       }
 
     \inferrule
@@ -46,7 +46,7 @@
         \gls{cstack} \glsop{colon} {\gls{CStack}}_{{\Z}_0} \; \X
       }
       {
-        \CSTATEBi \gls{sub}({\gls{M}}_1,{\gls{M}}_2) \CSTATEBii \sGAMMA \CSTATEBiii \gls{cstack} \CSTATEBiv \; \glsop{ctrans} \; \CSTATEBi {\gls{M}}_1 \CSTATEBii \sGAMMA \glsop{cdot} \gls{bfjump}({\gls{M}}_2,\sGAMMA,\gls{cstack}) \CSTATEBiii \gls{cstack} \CSTATEBiv
+        \gls{sub-trans} \; \gls{colon} \; \CSTATEBi \gls{sub}({\gls{M}}_1,{\gls{M}}_2) \CSTATEBii \sGAMMA \CSTATEBiii \gls{cstack} \CSTATEBiv \; \glsop{ctrans} \; \CSTATEBi {\gls{M}}_1 \CSTATEBii \sGAMMA \glsop{cdot} \gls{bfjump}({\gls{M}}_2,\sGAMMA,\gls{cstack}) \CSTATEBiii \gls{cstack} \CSTATEBiv
       }
 
     \inferrule
@@ -56,7 +56,7 @@
         \gls{cstack} \glsop{colon} {\gls{CStack}}_{{\Z}_0} \; \X
       }
       {
-        \CSTATEBi \gls{var}(\gls{W}) \CSTATEBii \sGAMMA \CSTATEBiii \gls{cstack} \CSTATEBiv \; \glsop{ctrans} \; \gls{sfevaljump}(\gls{W},\sGAMMA)
+        \gls{var-trans} \; \gls{colon} \; \CSTATEBi \gls{var}(\gls{W}) \CSTATEBii \sGAMMA \CSTATEBiii \gls{cstack} \CSTATEBiv \; \glsop{ctrans} \; \gls{sfevaljump}(\gls{W},\sGAMMA)
       }
 
     \inferrule
@@ -67,7 +67,7 @@
         \gls{cstack} \glsop{colon} {\gls{CStack}}_{{\Z}_0} \; \Y
       }
       {
-        \CSTATEBi \gls{pmc}(\gls{W},\gls{M}) \CSTATEBii \sGAMMA \CSTATEBiii \gls{cstack} \CSTATEBiv \; \glsop{ctrans} \; \CSTATEBi \gls{M} \CSTATEBii \sGAMMA \glsop{cdot} \gls{sfevali}(\gls{W},\sGAMMA) \glsop{cdot} \gls{sfevalii}(\gls{W},\sGAMMA) \CSTATEBiii \gls{cstack} \CSTATEBiv
+        \gls{pmc-trans} \; \gls{colon} \; \CSTATEBi \gls{pmc}(\gls{W},\gls{M}) \CSTATEBii \sGAMMA \CSTATEBiii \gls{cstack} \CSTATEBiv \; \glsop{ctrans} \; \CSTATEBi \gls{M} \CSTATEBii \sGAMMA \glsop{cdot} \gls{sfevali}(\gls{W},\sGAMMA) \glsop{cdot} \gls{sfevalii}(\gls{W},\sGAMMA) \CSTATEBiii \gls{cstack} \CSTATEBiv
       }
 
     \inferrule
@@ -78,7 +78,7 @@
         \gls{cstack} \glsop{colon} {\gls{CStack}}_{{\Z}_0} \; \Y
       }
       {
-        \CSTATEBi \gls{app}({\gls{W}}_1,{\gls{W}}_2) \CSTATEBii \sGAMMA \CSTATEBiii \gls{cstack} \CSTATEBiv \; \glsop{ctrans} \; \gls{sfevalclo}({\gls{W}}_1,{\gls{W}}_2,\sGAMMA,\gls{cstack})
+        \gls{app-trans} \; \gls{colon} \; \CSTATEBi \gls{app}({\gls{W}}_1,{\gls{W}}_2) \CSTATEBii \sGAMMA \CSTATEBiii \gls{cstack} \CSTATEBiv \; \glsop{ctrans} \; \gls{sfevalclo}({\gls{W}}_1,{\gls{W}}_2,\sGAMMA,\gls{cstack})
       }
   \end{mathpar}
 

@@ -11,7 +11,7 @@
       \text{Emptiness flag:} && \gls{is-empty?} &:=\; \gls{empty} \mid \gls{non-empty}\\
       \text{Bottom type equality:} && \gls{bot-eq} &:=\; \gls{bottom} \mid \gls{not-bottom}\\
       \text{Stack of partially evaluated pure terms:} && \gls{pstack} &:=\; \gls{boxtimes} \mid \gls{hatW} \mathop{{\glsop{pcons}}_{\gls{bot-eq}}} \gls{pstack}\\
-      \text{State of pure term machine:} && \gls{pstate} &:=\; \PSTATEi \gls{pstack} \PSTATEii
+      \text{State of p-machine:} && \gls{pstate} &:=\; \PSTATEi \gls{pstack} \PSTATEii
     \end{align*}
   \end{ceqn}
   \caption{Grammar}
@@ -61,6 +61,6 @@
 
 \vspace{5pt}%
 }\end{minipage}}%
-\caption{States of the machine for evaluating pure terms}
+\caption{States of the \gls{p-machine}}
 \label{fig:pstates}
 \end{figure}

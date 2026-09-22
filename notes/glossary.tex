@@ -4,9 +4,9 @@
 %\usepackage{dsfont} % for 1
 \usepackage[automake,xindy,symbols,abbreviations,sort=def]{glossaries-extra}
 
-\newlength{\myglosssymbolwidth}\setlength{\myglosssymbolwidth}{0.16\textwidth}
-\newlength{\myglossdescwidth}\setlength{\myglossdescwidth}{0.60\textwidth}
-\newlength{\myglosspagewidth}\setlength{\myglosspagewidth}{0.15\textwidth}
+\newlength{\myglosssymbolwidth}\setlength{\myglosssymbolwidth}{0.18\textwidth}
+\newlength{\myglossdescwidth}\setlength{\myglossdescwidth}{0.55\textwidth}
+\newlength{\myglosspagewidth}\setlength{\myglosspagewidth}{0.18\textwidth}
 
 \newglossarystyle{long-symbols}{%
 % put the glossary in a longtable environment:
@@ -85,6 +85,9 @@
 % top level (level 0) entries displayed in a row optionally numb
 \renewcommand*{\glossentry}[2]{%
 \begin{hangparas}{0.5em}{1}
+\hyphenpenalty=10000%
+\exhyphenpenalty=10000%
+\hbadness=2000%
 \RaggedRight\glstarget{##1}{\glossentryname{##1}}%
 \end{hangparas}
 & \glossentrydesc{##1}% Description
@@ -94,7 +97,12 @@
 % Similarly for sub-entries (no sub-entry numbers)
 \renewcommand*{\subglossentry}[3]{%
 % ignoring first argument (sub-level)
-{\hangindent=1em\hangafter=1\glstarget{##1}{\glossentryname{##1}}}
+\begin{hangparas}{0.5em}{1}
+\hyphenpenalty=10000%
+\exhyphenpenalty=10000%
+\hbadness=2000%
+\RaggedRight\glstarget{##1}{\glossentryname{##1}}%
+\end{hangparas}
 & \glossentrydesc{##2}% Description
 & ##3% Page list
 \tabularnewline % end of row
@@ -107,178 +115,208 @@
 
 \makeglossaries
 
+\newcommand\SetF{\ensuremath{{\gls{Set}}^{\gls{bF}}}\xspace}
+\newcommand\PURE{\glshyperlink[pure]{pure}\glsadd{pure}\xspace}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\newabbreviation{cps}{CPS}{continuation-passing style}
-\newabbreviation{cbv}{CBV}{call-by-value}
+\newglossaryentry{closed}{name={closed term}, description={a term living in the empty \glspt{context}}}
+\newglossaryentry{closure}{name={closure}, description={a pair of a term $\GAMMA \gls{bullet} \X \, \CDASHi \, \gls{M} \, \CDASHii \, \Y$ and an \gls{environment} for \GAMMA}}
+\newglossaryentry{computation}{name={computation}, description={an \glshyperlink[effectful]{effect} term $\GAMMA \, \CDASHi \, \gls{M} \, \CDASHii \, \X$}}
+\newglossaryentry{context}{name={context}, description={a list of types}}
+\newglossaryentry{c-machine}{name={c-machine}, description={the transition system defined in \Cref{fig:ctrans}}}
+\newglossaryentry{c-stack}{name={c-stack}, description={a stack of \glspt{computation}-\glspt{environment} pairs (\Cref{fig:env})}}
+\newglossaryentry{effect}{name={effect}, description={in the \glspt{svc}, the \emph{computational effect} of interest is the ability to jump using the \glspt{var} operator; an \emph{effectful term} (synonymously a \glspt{computation}) is a term $\gls{M}$ satisfying the judgement $\GAMMA \, \CDASHi \, \gls{M} \, \CDASHii \, \X$ for some \GAMMA and some \X}}
+\newglossaryentry{environment}{name={environment}, description={an environment \emph{for a \glspt{context}} is a list of \glshyperlink[values]{value}\glsadd{value}, each corresponding to a type in the \glspt{context}}}
+\newglossaryentry{eval}{name={evaluation}, text={eval}, description={running the \glspt{p-machine} on a \glspt{pure} to obtain a \glspt{value}}}
+\newglossaryentry{exec}{name={execution}, text={exec}, description={running the \glspt{c-machine} on a \glspt{computation} to obtain a \glspt{value}}}
+\newglossaryentry{scrutinee}{name={scrutinee}, description={first argument of the \glspt{pmp} and \glspt{pmc} operators}}
+\newglossaryentry{fine-grained}{name={fine-grained}, description={here: the distinction between \PURE and \glshyperlink[effectful]{effect}\glsadd{effect} terms in the type system}}
+\newglossaryentry{SubstMon}{name={free substitution monad}, description={monad on \SetF mapping each presheaf to the free substitution monoid over it (c.f.\ \citet{fioreAbstractSyntaxVariable1999})}}
+\newglossaryentry{label}{name={label}, description={variable bound in the first argument of the \glspt{sub} operator}}
+\newglossaryentry{p-machine}{name={p-machine}, description={the transition system defined in \Cref{fig:ptrans}}}
+\newglossaryentry{pure}{name={pure term}, description={a term \glspt{W} satisfying the judgement $\GAMMA \, \PDASHi \, \gls{W} \, \PDASHii \, \X$ for some \GAMMA and some \X}}
+\newglossaryentry{svc}{name={\textsf{sub}/\textsf{var}-calculus}, description={the \glspt{fine-grained} extension of \glspt{stlc} with operators \glspt{sub} and \glspt{var}  discussed in \Cref{sec:progress}}}
+\newglossaryentry{tlc}{name={top-level continuation}, description={the morphism \glspt{kzero}}}
+\newglossaryentry{value}{name={value}, description={fully \glshyperlink[evaluated]{eval}\glsadd{eval} term that does not depend on a \glspt{context}}}
+\newglossaryentry{variable presheaf}{name={variable presheaf}, description={see \glspt{V}}}
+
+\newcommand\cpst{\glsxtrshort{cps}-translation\xspace}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newabbreviation{ccc}{CCC}{Cartesian-Closed Category}
+\newabbreviation{cps}{CPS}{Continuation-Passing Style}
+\newabbreviation{cbv}{CBV}{Call-By-Value}
 \newabbreviation{lics}{LICS}{ACM/IEEE Symposium on Logic in Computer Science}
+\newabbreviation{lhs}{LHS}{Left Hand Side}
 \newabbreviation{popl}{POPL}{ACM/SIGPLAN Symposium on Principles of Programming Languages}
+\newabbreviation{rhs}{RHS}{Right Hand Side}
 \newabbreviation{stlc}{STLC}{Simply Typed Lambda Calculus}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Numbers
-\glsxtrnewsymbol[description={Unit type},symbol={\textsf{Unit}}]{1}{\textsf{Unit}}
+\glsxtrnewsymbol[description={unit type},symbol={\textsf{Unit}}]{1}{\textsf{Unit}}
 
 % Latin
-\glsxtrnewsymbol[description={Generic object of a category},symbol={$A$, $B$, $C$},user1={\ensuremath{A}},user2={\ensuremath{B}},user3={\ensuremath{C}}]{ABC}{\ensuremath{A}}
-\glsxtrnewsymbol[description={Category of finite cardinals and functions},symbol={$\mathbb{F}$}]{bF}{\ensuremath{\mathbb{F}}}
-\glsxtrnewsymbol[description={Symbol for the presheaf category ${\glspt{Set}}^{\glspt{bF}}$},symbol={$\mathcal{F}$}]{cF}{\ensuremath{\mathcal{F}}}
+\glsxtrnewsymbol[description={generic object of a category},symbol={$A$, $B$, $C$},user1={\ensuremath{A}},user2={\ensuremath{B}},user3={\ensuremath{C}}]{ABC}{\ensuremath{A}}
+\glsxtrnewsymbol[description={category of finite cardinals and functions},symbol={$\mathbb{F}$}]{bF}{\ensuremath{\mathbb{F}}}
+\glsxtrnewsymbol[description={symbol for the presheaf category ${\glspt{Set}}^{\glspt{bF}}$},symbol={$\mathcal{F}$}]{cF}{\ensuremath{\mathcal{F}}}
 \glsxtrnewsymbol[description={Kleisli category of the monad $\glspt{S}$ over $\glspt{cF}$},symbol={$\mathcal{F}_S$}]{cFS}{\ensuremath{\mathcal{F}_S}}
 \glsxtrnewsymbol[description={Kleisli category of the monad $\glspt{S}$ over $\glspt{cF}$},symbol={$\mathcal{F}_{K_V}$}]{cFKV}{\ensuremath{\mathcal{F}_{K_V}}}
-\glsxtrnewsymbol[description={Continuation monad ${\glspt{V}}^{{\glspt{V}}^-}$ on ${\glspt{Set}}^{\glspt{bF}}$},symbol={$K_V$}]{KV}{\ensuremath{K_V}}
-\glsxtrnewsymbol[description={Morphism $\glspt{ABC} \to \glspt{V}$ in ${\glspt{Set}}^{\glspt{bF}}$ for some object $\glspt{ABC}$},symbol={$k$}]{k}{\ensuremath{k}}
-\glsxtrnewsymbol[description={Morphism $\LSEM \gls{Rzero} \RSEM \to \glspt{V}$ in ${\glspt{Set}}^{\glspt{bF}}$ for some type \gls{Rzero}, i.e.\ the top-level continuation},symbol={$k_0$}]{kzero}{\ensuremath{k_0}}
-\glsxtrnewsymbol[description={Label type},symbol={$L$}]{L}{\ensuremath{L}}
-\glsxtrnewsymbol[description={Label variable},symbol={$\ell$}]{ell}{\ensuremath{\ell}}
-\glsxtrnewsymbol[description={Effectful term / Computation},symbol={$M$}]{M}{\ensuremath{M}}
-\glsxtrnewsymbol[description={TODO},symbol={$m$}]{m}{\ensuremath{m}}
-\glsxtrnewsymbol[description={overall return type of a computation},symbol={$R_0$}]{Rzero}{\ensuremath{R_0}}
-\glsxtrnewsymbol[description={Free substitution monad ${\glspt{V}}^{{\glspt{V}}^-}$ on ${\glspt{Set}}^{\glspt{bF}}$},symbol={$S$}]{S}{\ensuremath{S}}
-\glsxtrnewsymbol[description={Generic monad},symbol={$T$}]{T}{\ensuremath{T}}
-\glsxtrnewsymbol[description={Morphism $\glspt{bF} \to \glspt{Set}$},symbol={$t$}]{t}{\ensuremath{t}}
-\glsxtrnewsymbol[description={Variable presheaf $\glspt{Y}(\glspt{top})$ in ${\glspt{Set}}^{\glspt{bF}}$},symbol={$V$}]{V}{\ensuremath{V}}
-\glsxtrnewsymbol[description={Pure term},symbol={$W$}]{W}{\ensuremath{W}}
-\glsxtrnewsymbol[description={Partially normalised pure term},symbol={$\widehat{W}$}]{hatW}{\ensuremath{\widehat{W}}}
-\glsxtrnewsymbol[description={TODO},symbol={$v$}]{v}{\ensuremath{v}}
-\glsxtrnewsymbol[description={Value},symbol={$\mathbf{W}$}]{bfW}{\ensuremath{\mathbf{W}}}
-\glsxtrnewsymbol[description={Value},symbol={$w$}]{w}{\ensuremath{w}}
-\glsxtrnewsymbol[description={Type},symbol={$X$, $Y$, $Z$},user1={\ensuremath{X}},user2={\ensuremath{Y}},user3={\ensuremath{Z}}]{XYZ}{\ensuremath{X}}
-\glsxtrnewsymbol[description={Variable},symbol={$x$, $y$, $z$},user1={\ensuremath{x}},user2={\ensuremath{y}},user3={\ensuremath{z}}]{xyz}{\ensuremath{x}}
+\glsxtrnewsymbol[description={continuation monad ${\glspt{V}}^{{\glspt{V}}^-}$ on ${\glspt{Set}}^{\glspt{bF}}$},symbol={$K_V$}]{KV}{\ensuremath{K_V}}
+\glsxtrnewsymbol[description={morphism $\glspt{ABC} \to \glspt{V}$ in ${\glspt{Set}}^{\glspt{bF}}$ for some object $\glspt{ABC}$},symbol={$k$}]{k}{\ensuremath{k}}
+\glsxtrnewsymbol[description={morphism $\LSEM \glspt{Rzero} \RSEM \to \glspt{V}$ in ${\glspt{Set}}^{\glspt{bF}}$ for some type \glspt{Rzero}},symbol={$k_0$}]{kzero}{\ensuremath{k_0}}
+\glsxtrnewsymbol[description={label type},symbol={$L$}]{L}{\ensuremath{L}}
+\glsxtrnewsymbol[description={label variable},symbol={$\ell$}]{ell}{\ensuremath{\ell}}
+\glsxtrnewsymbol[description={\glshyperlink[effectful]{effect} term / \glspt{computation}},symbol={$M$}]{M}{\ensuremath{M}}
+\glsxtrnewsymbol[description={morphism corresponding to the interpretation of a \glspt{computation}},symbol={$m$}]{m}{\ensuremath{m}}
+\glsxtrnewsymbol[description={overall return type of a \glspt{computation}},symbol={$R_0$}]{Rzero}{\ensuremath{R_0}}
+\glsxtrnewsymbol[description={free substitution monad on ${\glspt{Set}}^{\glspt{bF}}$},symbol={$S$}]{S}{\ensuremath{S}}
+\glsxtrnewsymbol[description={generic monad},symbol={$T$}]{T}{\ensuremath{T}}
+\glsxtrnewsymbol[description={morphism $\glspt{bF} \to \glspt{Set}$},symbol={$t$}]{t}{\ensuremath{t}}
+\glsxtrnewsymbol[description={variable presheaf $\glspt{Y}(\glspt{top})$ in ${\glspt{Set}}^{\glspt{bF}}$},symbol={$V$}]{V}{\ensuremath{V}}
+\glsxtrnewsymbol[description={\glspt{pure}},symbol={$W$}]{W}{\ensuremath{W}}
+\glsxtrnewsymbol[description={partially \glshyperlink[evaluated]{eval} \glspt{pure}},symbol={$\widehat{W}$}]{hatW}{\ensuremath{\widehat{W}}}
+\glsxtrnewsymbol[description={morphism corresponding to the interpretation of a \glspt{pure} of type \glspt{L}},symbol={$v$}]{v}{\ensuremath{v}}
+\glsxtrnewsymbol[description={\glspt{value}},symbol={$\mathbf{W}$}]{bfW}{\ensuremath{\mathbf{W}}}
+\glsxtrnewsymbol[description={morphism corresponding to the interpretation of a \glspt{pure}},symbol={$w$}]{w}{\ensuremath{w}}
+\glsxtrnewsymbol[description={type},symbol={$X$, $Y$, $Z$},user1={\ensuremath{X}},user2={\ensuremath{Y}},user3={\ensuremath{Z}}]{XYZ}{\ensuremath{X}}
+\glsxtrnewsymbol[description={variable},symbol={$x$, $y$, $z$},user1={\ensuremath{x}},user2={\ensuremath{y}},user3={\ensuremath{z}}]{xyz}{\ensuremath{x}}
 \glsxtrnewsymbol[description={Yoneda embedding},symbol={$\mathcal{Y}$}]{Y}{\ensuremath{\mathcal{Y}}}
 
 % Greek
-\glsxtrnewsymbol[description={Associator for Cartesian products},symbol={$\alpha$}]{alpha}{\ensuremath{\alpha}}
-\glsxtrnewsymbol[description={Context},symbol={$\Gamma$, $\Delta$, $\Psi$},user1={\ensuremath{\Gamma}},user2={\ensuremath{\Delta}},user3={\ensuremath{\Psi}}]{CTX}{\ensuremath{\Gamma}}
-\glsxtrnewsymbol[description={Environment},symbol={$\gamma$, $\delta$, $\psi$},user1={\ensuremath{\gamma}},user2={\ensuremath{\delta}},user3={\ensuremath{\psi}}]{ENV}{\ensuremath{\gamma}}
-\glsxtrnewsymbol[description={Empty context},symbol={$\varepsilon$}]{varepsilon}{\ensuremath{\varepsilon}}
-\glsxtrnewsymbol[description={Currying of a morphism},symbol={$\lambda$}]{lambda}{\ensuremath{\lambda}}
-\glsxtrnewsymbol[description={Monad morphism from \glspt{cFS} to the Kleisli category of \glspt{KV} on ${\glspt{Set}}^{\glspt{bF}}$},symbol={$\varphi$}]{varphi}{\ensuremath{\varphi}}
-\glsxtrnewsymbol[description={CPS-interpretation of the var / jump operator},symbol={${\nu}_{\_}$}]{nu}{\ensuremath{\nu}}
-\glsxtrnewsymbol[description={TODO},symbol={$\rho$}]{rho}{\ensuremath{\rho}}
-\glsxtrnewsymbol[description={CPS-interpretation of the substitution / branch operator},symbol={${\sigma}_{\_}$}]{sigma}{\ensuremath{\sigma}}
-\glsxtrnewsymbol[description={Unit of a monad},symbol={$\eta$}]{eta}{\ensuremath{\eta}}
+\glsxtrnewsymbol[description={associator for Cartesian products},symbol={$\alpha$}]{alpha}{\ensuremath{\alpha}}
+\glsxtrnewsymbol[description={\glspt{context}},symbol={$\Gamma$, $\Delta$, $\Psi$},user1={\ensuremath{\Gamma}},user2={\ensuremath{\Delta}},user3={\ensuremath{\Psi}}]{CTX}{\ensuremath{\Gamma}}
+\glsxtrnewsymbol[description={\glspt{environment}},symbol={$\gamma$, $\delta$, $\psi$},user1={\ensuremath{\gamma}},user2={\ensuremath{\delta}},user3={\ensuremath{\psi}}]{ENV}{\ensuremath{\gamma}}
+\glsxtrnewsymbol[description={empty \glspt{context}},symbol={$\varepsilon$}]{varepsilon}{\ensuremath{\varepsilon}}
+\glsxtrnewsymbol[description={Currying of a morphism (with explicit arguments)},symbol={$\lambda$}]{lambda}{\ensuremath{\lambda}}
+\glsxtrnewsymbol[description={monad morphism from \glspt{cFS} to \glspt{cFKV}},symbol={$\varphi$}]{varphi}{\ensuremath{\varphi}}
+\glsxtrnewsymbol[description={\cpst of the var / jump operator},symbol={${\nu}_{\_}$}]{nu}{\ensuremath{\nu}}
+\glsxtrnewsymbol[description={interpretation of an \glspt{environment} as a presheaf in \SetF},symbol={$\rho$}]{rho}{\ensuremath{\rho}}
+\glsxtrnewsymbol[description={\cpst of the substitution / branch operator},symbol={${\sigma}_{\_}$}]{sigma}{\ensuremath{\sigma}}
+\glsxtrnewsymbol[description={unit of a monad},symbol={$\eta$}]{eta}{\ensuremath{\eta}}
 
 % Words
-\glsxtrnewsymbol[description={Application operator},symbol={$\textsf{app}(\_,\_)$}]{app}{\textsf{app}}
-\glsxtrnewsymbol[description={Application function},symbol={$\textsf{apply}(\_,\_,\_,\_)$}]{apply}{\textsf{apply}} %TODO
-\glsxtrnewsymbol[description={Type of bottom type equalities},symbol={$\textsf{BotEq}$}]{BotEq}{\textsf{BotEq}}
-\glsxtrnewsymbol[description={Bottom type equality},symbol={$\textsf{b}$}]{bot-eq}{\textsf{b}}
-\glsxtrnewsymbol[description={Closure constructor},symbol={$\textbf{\textsf{clo}}(\_,\_)$}]{bfclo}{\textbf{\textsf{clo}}}
-\glsxtrnewsymbol[description={Type of computation stacks},symbol={${\textsf{CStack}}_{\_}\;\_$}]{CStack}{\textsf{CStack}}
-\glsxtrnewsymbol[description={Computation stack},symbol={$\textsf{cstack}$}]{cstack}{\textsf{cstack}}
-\glsxtrnewsymbol[description={Type of states of computation machine},symbol={${\textsf{CState}}_{\_}$}]{CState}{\textsf{CState}}
-\glsxtrnewsymbol[description={State of computation machine},symbol={$\textsf{cstate}$}]{cstate}{\textsf{cstate}}
-\glsxtrnewsymbol[description={Type of environments},symbol={${\textsf{Env}}_{\_}\;\_$}]{Env}{\textsf{Env}}
-\glsxtrnewsymbol[description={Constructor of an emptiness flag},symbol={\textsf{empty}}]{empty}{\textsf{empty}}
-\glsxtrnewsymbol[description={Evaluation morphism},symbol={$\textsf{ev}$}]{ev}{\textsf{ev}}
-\glsxtrnewsymbol[description={Identity morphism},symbol={\textsf{id}}]{id}{\textsf{id}}
-\glsxtrnewsymbol[description={Type of emptiness flags},symbol={\textsf{IsEmpty}}]{IsEmpty}{\textsf{IsEmpty}}
-\glsxtrnewsymbol[description={Emptiness flag},symbol={$\varnothing\textsf{?}$}]{is-empty?}{\ensuremath{\varnothing\textsf{?}}}
-\glsxtrnewsymbol[description={Jump value constructor},symbol={$\textbf{\textsf{jump}}(\_,\_)$}]{bfjump}{\textbf{\textsf{jump}}}
-\glsxtrnewsymbol[description={Lambda abstraction operator},symbol={$\textsf{lam}(\_)$}]{lam}{\textsf{lam}}
-\glsxtrnewsymbol[description={Lookup function},symbol={$\textsf{lookup}(\_ , \_)$}]{lookup}{\textsf{lookup}} %TODO
+\glsxtrnewsymbol[description={application operator},symbol={$\textsf{app}(\_,\_)$}]{app}{\textsf{app}}
+\glsxtrnewsymbol[description={type of `bottom type equalities': the type of the bottom-most term of a \glspt{PStack} is equal the type of that \glspt{PStack}},symbol={$\textsf{BotEq}$}]{BotEq}{\textsf{BotEq}}
+\glsxtrnewsymbol[description={instance of a `bottom type equality' (\textit{see: }\glspt{BotEq})},symbol={$\textsf{b}$}]{bot-eq}{\textsf{b}}
+\glsxtrnewsymbol[description={closure constructor (an instance of a \glspt{value})},symbol={$\textbf{\textsf{clo}}(\_,\_)$}]{bfclo}{\textbf{\textsf{clo}}}
+\glsxtrnewsymbol[description={type of \glshyperlink[c-stacks]{c-stack}},symbol={${\textsf{CStack}}_{\_}\;\_$}]{CStack}{\textsf{CStack}}
+\glsxtrnewsymbol[description={stack of \glspt{computation}-\glspt{environment} pairs called a \glspt{c-stack}},symbol={$\textsf{cstack}$}]{cstack}{\textsf{cstack}}
+\glsxtrnewsymbol[description={type of states of the \glspt{c-machine}},symbol={${\textsf{CState}}_{\_}$}]{CState}{\textsf{CState}}
+\glsxtrnewsymbol[description={instance of a state of the \glspt{c-machine}},symbol={$\textsf{cstate}$}]{cstate}{\textsf{cstate}}
+\glsxtrnewsymbol[description={Currying of a morphism in a \glspt{ccc}\glsadd{ccc}},symbol={$\textsf{cur} \_$}]{cur}{\textsf{cur}}
+\glsxtrnewsymbol[description={type of environments},symbol={${\textsf{Env}}_{\_}\;\_$}]{Env}{\textsf{Env}}
+\glsxtrnewsymbol[description={constructor of an `emptiness flag' (\textit{see: }\glspt{IsEmpty})},symbol={\textsf{empty}}]{empty}{\textsf{empty}}
+\glsxtrnewsymbol[description={evaluation morphism in a \glspt{ccc}\glsadd{ccc}; not to be confused with \glshyperlink[evaluation]{eval} of a \glspt{pure} by the \glspt{p-machine}},symbol={$\textsf{ev}$}]{ev}{\textsf{ev}}
+\glsxtrnewsymbol[description={identity morphism},symbol={\textsf{id}}]{id}{\textsf{id}}
+\glsxtrnewsymbol[description={type of `emptiness flags'; this is essentially a Boolean indicating whether a \glspt{PStack} is empty or not},symbol={\textsf{IsEmpty}}]{IsEmpty}{\textsf{IsEmpty}}
+\glsxtrnewsymbol[description={instance of an `emptiness flag' (\textit{see: }\glspt{IsEmpty})},symbol={$\varnothing\textsf{?}$}]{is-empty?}{\ensuremath{\varnothing\textsf{?}}}
+\glsxtrnewsymbol[description={jump (constructor of a \glspt{value})},symbol={$\textbf{\textsf{jump}}(\_,\_)$}]{bfjump}{\textbf{\textsf{jump}}}
+\glsxtrnewsymbol[description={lambda abstraction (constructor of a \glspt{pure})},symbol={$\textsf{lam}(\_)$}]{lam}{\textsf{lam}}
+\glsxtrnewsymbol[description={lookup function},symbol={$\textsf{lookup}(\_ , \_)$}]{lookup}{\textsf{lookup}}
 \glsxtrnewsymbol[description={De Bruijn index $0$},symbol={\textsf{new}}]{new}{\textsf{new}}
-\glsxtrnewsymbol[description={Constructor of an emptiness flag},symbol={\textsf{non-empty}}]{non-empty}{\textsf{non-empty}}
-\glsxtrnewsymbol[description={Successor of a De Bruijn index},symbol={$\textsf{old}(\_)$}]{old}{\textsf{old}}
-\glsxtrnewsymbol[description={Pair of two pure terms},symbol={$\textsf{pair}(\_,\_)$}]{pair}{\textsf{pair}}
-\glsxtrnewsymbol[description={Pair of two values},symbol={$\textbf{\textsf{pair}}(\_,\_)$}]{bfpair}{\textbf{\textsf{pair}}}
-\glsxtrnewsymbol[description={Pattern match operator for computations},symbol={${\textsf{pm}}^{\textsf{c}}(\_,\_)$}]{pmc}{\ensuremath{{\textsf{pm}}^{\textsf{c}}}}
-\glsxtrnewsymbol[description={Pattern match operator for pure terms},symbol={${\textsf{pm}}^{\textsf{p}}(\_,\_)$}]{pmp}{\ensuremath{{\textsf{pm}}^{\textsf{p}}}}
-\glsxtrnewsymbol[description={Push / sequencing operator},symbol={$\textsf{push}(\_,\_)$}]{push}{\textsf{push}}
-\glsxtrnewsymbol[description={Type of stacks of partially normalised terms},symbol={${\textsf{PStack}}_{\_}$}]{PStack}{\textsf{PStack}}
-\glsxtrnewsymbol[description={Stack of partially normalised terms},symbol={$\textsf{pstack}$}]{pstack}{\textsf{pstack}}
-\glsxtrnewsymbol[description={Type of states of pure term machine},symbol={${\textsf{PState}}_{\_}$}]{PState}{\textsf{PState}}
-\glsxtrnewsymbol[description={State of pure term machine},symbol={$\textsf{pstate}$}]{pstate}{\textsf{pstate}}
-\glsxtrnewsymbol[description={Return operator},symbol={$\textsf{return}(\_)$}]{return}{\textsf{return}}
-\glsxtrnewsymbol[description={Normalises a pure term to a value},symbol={$\textsf{eval}(\_)$}]{sfeval}{\textsf{eval}}
-\glsxtrnewsymbol[description={Normalises a pure term of function type to a value},symbol={${\textsf{eval}}_{\textsf{clo}}(\_)$}]{sfevalclo}{\ensuremath{{\textsf{eval}}_{\textsf{clo}}}}
-\glsxtrnewsymbol[description={Normalises a pure term to a value and converts it to a \glspt{CState}},symbol={${\textsf{eval}}_{\textsf{jump}}(\_)$}]{sfevaljump}{\ensuremath{{\textsf{eval}}_{\textsf{jump}}}}
-\glsxtrnewsymbol[description={Normalises a pure term of product type to a value and returns the first projection},symbol={${\textsf{eval}}_{1}(\_)$}]{sfevali}{\ensuremath{{\textsf{eval}}_{1}}}
-\glsxtrnewsymbol[description={Normalises a pure term of product type to a value and returns the second projection},symbol={${\textsf{eval}}_{2}(\_)$}]{sfevalii}{\ensuremath{{\textsf{eval}}_{2}}}
-\glsxtrnewsymbol[description={Category of sets},symbol={$\textsf{Set}$}]{Set}{\textsf{Set}}
+\glsxtrnewsymbol[description={constructor of an `emptiness flag' (\textit{see: }\glspt{IsEmpty})},symbol={\textsf{non-empty}}]{non-empty}{\textsf{non-empty}}
+\glsxtrnewsymbol[description={successor of a De Bruijn index},symbol={$\textsf{old}(\_)$}]{old}{\textsf{old}}
+\glsxtrnewsymbol[description={pair of two \PURE terms},symbol={$\textsf{pair}(\_,\_)$}]{pair}{\textsf{pair}}
+\glsxtrnewsymbol[description={pair of two \glshyperlink[values]{value}},symbol={$\textbf{\textsf{pair}}(\_,\_)$}]{bfpair}{\textbf{\textsf{pair}}}
+\glsxtrnewsymbol[description={pattern match operator (constructs a \glspt{computation})},symbol={${\textsf{pm}}^{\textsf{c}}(\_,\_)$}]{pmc}{\ensuremath{{\textsf{pm}}^{\textsf{c}}}}
+\glsxtrnewsymbol[description={pattern match operator (constructs a \PURE term)},symbol={${\textsf{pm}}^{\textsf{p}}(\_,\_)$}]{pmp}{\ensuremath{{\textsf{pm}}^{\textsf{p}}}}
+\glsxtrnewsymbol[description={push / sequencing operator (constructs a \glspt{computation})},symbol={$\textsf{push}(\_,\_)$}]{push}{\textsf{push}}
+\glsxtrnewsymbol[description={type of stacks of partially \glshyperlink[evaluated]{eval} terms},symbol={${\textsf{PStack}}_{\_}$}]{PStack}{\textsf{PStack}}
+\glsxtrnewsymbol[description={instance of a \glspt{PStack}},symbol={$\textsf{pstack}$}]{pstack}{\textsf{pstack}}
+\glsxtrnewsymbol[description={type of states of the \glspt{p-machine}},symbol={${\textsf{PState}}_{\_}$}]{PState}{\textsf{PState}}
+\glsxtrnewsymbol[description={instance of a state of the \glspt{p-machine}},symbol={$\textsf{pstate}$}]{pstate}{\textsf{pstate}}
+\glsxtrnewsymbol[description={return operator (constructs a \glspt{computation})},symbol={$\textsf{return}(\_)$}]{return}{\textsf{return}}
+\glsxtrnewsymbol[description={\glshyperlink[evaluates]{eval} a \glspt{pure} to a \glspt{value}},symbol={$\textsf{eval}(\_)$}]{sfeval}{\textsf{eval}}
+\glsxtrnewsymbol[description={\glshyperlink[evaluates]{eval} a \glspt{pure} of function type to a \glspt{value}},symbol={${\textsf{eval}}_{\textsf{clo}}(\_)$}]{sfevalclo}{\ensuremath{{\textsf{eval}}_{\textsf{clo}}}}
+\glsxtrnewsymbol[description={\glshyperlink[evaluates]{eval} a \glspt{pure} to a \glspt{value} and converts it to a \glspt{CState}},symbol={${\textsf{eval}}_{\textsf{jump}}(\_)$}]{sfevaljump}{\ensuremath{{\textsf{eval}}_{\textsf{jump}}}}
+\glsxtrnewsymbol[description={\glshyperlink[evaluates]{eval} a \glspt{pure} of product type to a \glspt{value} and returns the first projection},symbol={${\textsf{eval}}_{1}(\_)$}]{sfevali}{\ensuremath{{\textsf{eval}}_{1}}}
+\glsxtrnewsymbol[description={\glshyperlink[evaluates]{eval} a \glspt{pure} of product type to a \glspt{value} and returns the second projection},symbol={${\textsf{eval}}_{2}(\_)$}]{sfevalii}{\ensuremath{{\textsf{eval}}_{2}}}
+\glsxtrnewsymbol[description={category of sets},symbol={$\textsf{Set}$}]{Set}{\textsf{Set}}
 \glsxtrnewsymbol[description={Cartesian strength},symbol={$\textsf{str}$}]{str}{\textsf{str}}
-\glsxtrnewsymbol[description={Substitution / branch operator},symbol={${\textsf{sub}}_{\_}(\_,\_)$}]{sub}{\textsf{sub}}
-\glsxtrnewsymbol[description={Interpretation of the substitution / branch operator in \glspt{cFS}},symbol={${\textsf{\underline{sub}}}_{\_}(\_,\_)$}]{subm}{\textsf{\underline{sub}}}
-\glsxtrnewsymbol[description={Var / jump operator},symbol={${\textsf{var}}_{\_}(\_)$}]{var}{\textsf{var}}
-\glsxtrnewsymbol[description={Interpretation of the var / jump operator in \glspt{cFS}},symbol={${\textsf{\underline{var}}}_{\_}(\_)$}]{varm}{\textsf{\underline{var}}}
+\glsxtrnewsymbol[description={substitution / branch operator (constructs a \glspt{computation})},symbol={${\textsf{sub}}_{\_}(\_,\_)$}]{sub}{\textsf{sub}}
+\glsxtrnewsymbol[description={interpretation of the substitution / branch operator in \glspt{cFS}},symbol={${\textsf{\underline{sub}}}_{\_}(\_,\_)$}]{subm}{\textsf{\underline{sub}}}
+\glsxtrnewsymbol[description={var / jump operator (constructs a \glspt{computation})},symbol={${\textsf{var}}_{\_}(\_)$}]{var}{\textsf{var}}
+\glsxtrnewsymbol[description={interpretation of the var / jump operator in \glspt{cFS}},symbol={${\textsf{\underline{var}}}_{\_}(\_)$}]{varm}{\textsf{\underline{var}}}
 
-\glsxtrnewsymbol[description={Transition for the pure term machine},symbol={$\xrightarrow{\textsf{lookup}}$}]{lookup-trans}{\ensuremath{\xrightarrow{\textsf{lookup}}}}
-\glsxtrnewsymbol[description={Transition for the pure term machine},symbol={$\xrightarrow{\textsf{lam}}$}]{lam-trans}{\ensuremath{\xrightarrow{\textsf{lam}}}}
-\glsxtrnewsymbol[description={Transition for the pure term machine},symbol={$\xrightarrow{\textsf{pair}}$}]{pair-trans}{\ensuremath{\xrightarrow{\textsf{pair}}}}
-\glsxtrnewsymbol[description={Transition for the pure term machine},symbol={$\xrightarrow{{\textsf{pm}}^{\textsf{p}}}$}]{pmp-trans}{\ensuremath{\xrightarrow{{\textsf{pm}}^{\textsf{p}}}}}
-\glsxtrnewsymbol[description={Transition for the pure term machine},symbol={$\xrightarrow{\textsf{unit}}$}]{unit-trans}{\ensuremath{\xrightarrow{\textsf{unit}}}}
-\glsxtrnewsymbol[description={Transition for the pure term machine},symbol={$\xrightarrow{\textsf{W}::\textsf{l}}$}]{Wl-trans}{\ensuremath{\xrightarrow{\textsf{W}::\textsf{l}}}}
-\glsxtrnewsymbol[description={Transition for the pure term machine},symbol={$\xrightarrow{\textsf{W}::\textsf{r}}$}]{Wr-trans}{\ensuremath{\xrightarrow{\textsf{W}::\textsf{r}}}}
-\glsxtrnewsymbol[description={Transition for the pure term machine},symbol={$\xrightarrow{\textsf{pair}::\textsf{pm}}$}]{pairpm-trans}{\ensuremath{\xrightarrow{\textsf{pair}::\textsf{pm}}}}
-
-\glsxtrnewsymbol[description={Transition for the computation machine},symbol={$\xrightarrow{\textsf{return-vc}}$}]{rvc-trans}{\ensuremath{\xrightarrow{\textsf{return-vc}}}}
-\glsxtrnewsymbol[description={Transition for the computation machine},symbol={$\xrightarrow{\textsf{return-cv}}$}]{rcv-trans}{\ensuremath{\xrightarrow{\textsf{return-cv}}}}
-\glsxtrnewsymbol[description={Transition for the computation machine},symbol={$\xrightarrow{\textsf{push}}$}]{push-trans}{\ensuremath{\xrightarrow{\textsf{push}}}}
-\glsxtrnewsymbol[description={Transition for the computation machine},symbol={$\xrightarrow{\textsf{sub}}$}]{sub-trans}{\ensuremath{\xrightarrow{\textsf{sub}}}}
-\glsxtrnewsymbol[description={Transition for the computation machine},symbol={$\xrightarrow{\textsf{var}}$}]{var-trans}{\ensuremath{\xrightarrow{\textsf{var}}}}
-\glsxtrnewsymbol[description={Transition for the computation machine},symbol={$\xrightarrow{{\textsf{pm}}^{\textsf{c}}}$}]{pmc-trans}{\ensuremath{\xrightarrow{{\textsf{pm}}^{\textsf{c}}}}}
-\glsxtrnewsymbol[description={Transition for the computation machine},symbol={$\xrightarrow{\textsf{app}}$}]{app-trans}{\ensuremath{\xrightarrow{\textsf{app}}}}
+\glsxtrnewsymbol[description={transition for the \glspt{p-machine}},symbol={$\xrightarrow{\textsf{lookup}}$}]{lookup-trans}{\ensuremath{\xrightarrow{\textsf{lookup}}}}
+\glsxtrnewsymbol[description={transition for the \glspt{p-machine}},symbol={$\xrightarrow{\textsf{lam}}$}]{lam-trans}{\ensuremath{\xrightarrow{\textsf{lam}}}}
+\glsxtrnewsymbol[description={transition for the \glspt{p-machine}},symbol={$\xrightarrow{\textsf{pair}}$}]{pair-trans}{\ensuremath{\xrightarrow{\textsf{pair}}}}
+\glsxtrnewsymbol[description={transition for the \glspt{p-machine}},symbol={$\xrightarrow{{\textsf{pm}}^{\textsf{p}}}$}]{pmp-trans}{\ensuremath{\xrightarrow{{\textsf{pm}}^{\textsf{p}}}}}
+\glsxtrnewsymbol[description={transition for the \glspt{p-machine}},symbol={$\xrightarrow{\textsf{unit}}$}]{unit-trans}{\ensuremath{\xrightarrow{\textsf{unit}}}}
+\glsxtrnewsymbol[description={transition for the \glspt{p-machine}},symbol={$\xrightarrow{\textsf{W}::\textsf{l}}$}]{Wl-trans}{\ensuremath{\xrightarrow{\textsf{W}::\textsf{l}}}}
+\glsxtrnewsymbol[description={transition for the \glspt{p-machine}},symbol={$\xrightarrow{\textsf{W}::\textsf{r}}$}]{Wr-trans}{\ensuremath{\xrightarrow{\textsf{W}::\textsf{r}}}}
+\glsxtrnewsymbol[description={transition for the \glspt{p-machine}},symbol={$\xrightarrow{\textsf{pair}::\textsf{pm}}$}]{pairpm-trans}{\ensuremath{\xrightarrow{\textsf{pair}::\textsf{pm}}}}
+\glsxtrnewsymbol[description={transition for the \glspt{c-machine}},symbol={$\xrightarrow{\textsf{eval}}$}]{eval-trans}{\ensuremath{\xrightarrow{\textsf{eval}}}}
+\glsxtrnewsymbol[description={transition for the \glspt{c-machine}},symbol={$\xrightarrow{\textsf{return}}$}]{return-trans}{\ensuremath{\xrightarrow{\textsf{return}}}}
+\glsxtrnewsymbol[description={transition for the \glspt{c-machine}},symbol={$\xrightarrow{\textsf{push}}$}]{push-trans}{\ensuremath{\xrightarrow{\textsf{push}}}}
+\glsxtrnewsymbol[description={transition for the \glspt{c-machine}},symbol={$\xrightarrow{\textsf{sub}}$}]{sub-trans}{\ensuremath{\xrightarrow{\textsf{sub}}}}
+\glsxtrnewsymbol[description={transition for the \glspt{c-machine}},symbol={$\xrightarrow{\textsf{var}}$}]{var-trans}{\ensuremath{\xrightarrow{\textsf{var}}}}
+\glsxtrnewsymbol[description={transition for the \glspt{c-machine}},symbol={$\xrightarrow{{\textsf{pm}}^{\textsf{c}}}$}]{pmc-trans}{\ensuremath{\xrightarrow{{\textsf{pm}}^{\textsf{c}}}}}
+\glsxtrnewsymbol[description={transition for the \glspt{c-machine}},symbol={$\xrightarrow{\textsf{app}}$}]{app-trans}{\ensuremath{\xrightarrow{\textsf{app}}}}
 
 % Symbols
-\glsxtrnewsymbol[description={Unique element inhabiting \glspt{top}},symbol={$\star$}]{tt}{\ensuremath{\star}}
-\glsxtrnewsymbol[description={Constructor of bottom type equality},symbol={$\triangledown$}]{bottom}{\ensuremath{\triangledown}}
-\glsxtrnewsymbol[description={Constructor of bottom type equality},symbol={$\raisebox{0.2ex}{\scalebox{0.7}{$\bigcirc$}}$},user1={\ensuremath{\circ}}]{not-bottom}{\raisebox{0.2ex}{\scalebox{0.7}{$\bigcirc$}}}
-\glsxtrnewsymbol[description={Pure term of unit type},symbol={$\ast$}]{ast}{\ensuremath{\ast}}
-\glsxtrnewsymbol[description={Value of unit type},symbol={$\boldsymbol{\ast}$}]{bfast}{\ensuremath{\boldsymbol{\ast}}}
-\glsxtrnewsymbol[description={Terminal object},symbol={$\top$}]{top}{\ensuremath{\top}}
-\glsxtrnewsymbol[description={Composition of morphisms},symbol={$\_\circ\_$}]{circ}{\ensuremath{\circ}}
-\glsxtrnewsymbol[description={First and second projection, respectively},symbol={$\pi_1, \pi_2$},user1={\ensuremath{\pi_1}},user2={\ensuremath{\pi_2}}]{pi}{\ensuremath{\pi}}
-\glsxtrnewsymbol[description={Function type},symbol={$\_\Rightarrow\_$}]{Rightarrow}{\ensuremath{\Rightarrow}}
-\glsxtrnewsymbol[description={Product type},symbol={$\_\times\_$}]{times}{\ensuremath{\times}}
-\glsxtrnewsymbol[description={Typing judgement for pure terms},symbol={$\_\vdash^\textsf{p}\_:\_$}, user1={\ensuremath{\vdash^\textsf{p}}}, user2={\ensuremath{:}}]{pdash}{\ensuremath{\vdash^\textsf{p}}}
-\glsxtrnewsymbol[description={Typing judgement for computations},symbol={$\_\vdash^\textsf{c}\_:\_$}, user1={\ensuremath{\vdash^\textsf{c}}}, user2={\ensuremath{:}}]{cdash}{\ensuremath{\vdash^\textsf{c}}}
-\glsxtrnewsymbol[description={Typing judgement for values},symbol={${\vdash^\textsf{v}}_{\_}\_:\_$}, user1={\ensuremath{\vdash^\textsf{v}}}, user2={\ensuremath{:}}]{valuedash}{\ensuremath{\vdash^\textsf{v}}}
-\glsxtrnewsymbol[description={Typing judgement for partially normalised pure terms},symbol={${\vdash\hat{}}_{\_}\_:\_$}, user1={\ensuremath{{\vdash}^{\raisebox{-1.1ex}{\ensuremath{\hat{}}}}}}, user2={\ensuremath{:}}]{hdash}{\ensuremath{\vdash\hat{}}}
-\glsxtrnewsymbol[description={Membership judgement},symbol={$\_:\_\in\_$},user1={\ensuremath{:}},user2={\ensuremath{\in}}]{mem}{\ensuremath{\in}}
-\glsxtrnewsymbol[description={Interpretation of types, contexts and variables (\Cref{fig:ctx}) - TODO: also terms},symbol={$\llbracket\_\rrbracket$}, user1={\ensuremath{\llbracket}},user2={\ensuremath{\rrbracket}}]{sem}{\ensuremath{\llbracket}}
-\glsxtrnewsymbol[description={Interpretation of computations in \glspt{cFS}},symbol={${\llbracket\_\rrbracket}_S$}, user1={\ensuremath{\llbracket}},user2={\ensuremath{{\rrbracket}_S}}]{semFS}{\ensuremath{\llbracket}}
-\glsxtrnewsymbol[description={Pairing of two morphisms},symbol={$\langle\_,\_\rangle$},user1={\ensuremath{\langle}},user2={\ensuremath{,}},user3={\ensuremath{\rangle}}]{angle}{\ensuremath{\langle\_,\_\rangle}}
-\glsxtrnewsymbol[description={Lifting of a monad morphism},symbol={${\_}^{\sharp}$}]{sharp}{\ensuremath{\sharp}}
-\glsxtrnewsymbol[description={Empty computation stack},symbol={$\square$}]{square}{\ensuremath{\scriptstyle\square}}
-\glsxtrnewsymbol[description={Stacking operator for computation stacks},symbol={$< \_ \mathop{;} \_ > \mathop{::} \_$},user1={\ensuremath{<}},user2={\ensuremath{;}},user3={\ensuremath{>}},user4={\ensuremath{::}}]{ccons}{}
-\glsxtrnewsymbol[description={Empty environment},symbol={$\diamond$}]{diamond}{\ensuremath{\diamond}}
-\glsxtrnewsymbol[description={Appends a type to a context},symbol={$\_ \raisebox{-0.5ex}{\scalebox{2}{\ensuremath{\cdot}}} \_$}]{bullet}{\raisebox{-0.5ex}{\scalebox{2}{\ensuremath{\cdot}}}}
-\glsxtrnewsymbol[description={Appending a value to an environment},symbol={$\_ \cdot \_$}]{cdot}{\ensuremath{\cdot}}
-\glsxtrnewsymbol[description={Appending a compuation and a computation stack to an environment},symbol={$\_ \cdot \, \mathop{[} \_ \mathop{;} \_ \mathop{]}$},user1={\ensuremath{\cdot}},user2={\ensuremath{[}},user3={\ensuremath{;}},user4={\ensuremath{]}}]{cdotb}{}
-\glsxtrnewsymbol[description={Generic typing judgement},symbol={$\_ \mathbin{:} \_$}]{colon}{\ensuremath{:}}
-\glsxtrnewsymbol[description={Partially normalised term constructor (normalisation completed)},symbol={$\downarrow(\_)$}]{downarrow}{\ensuremath{\downarrow}}
-\glsxtrnewsymbol[description={Partially normalised term constructor (normalisation initiated)},symbol={$\uparrow(\_,\_)$}]{uparrow}{\ensuremath{\uparrow}}
-\glsxtrnewsymbol[description={Partially normalised term constructor (pattern match)},symbol={${\uparrow}^{\textsf{PM}}(\_,\_,\_)$}]{upPM}{\ensuremath{{\uparrow}^{\textsf{PM}}}}
-\glsxtrnewsymbol[description={Partially normalised term constructor (LHS of pair)},symbol={${\uparrow}^{\textsf{L}}(\_,\_,\_)$}]{upL}{\ensuremath{{\uparrow}^{\textsf{L}}}}
-\glsxtrnewsymbol[description={Partially normalised term constructor (RHS of pair)},symbol={${\uparrow}^{\textsf{R}}(\_,\_,\_)$}]{upR}{\ensuremath{{\uparrow}^{\textsf{R}}}}
-\glsxtrnewsymbol[description={Appends a partially normalised term to a \glspt{PStack}},symbol={$\_ \mathop{::} \_$}]{pcons}{\ensuremath{::}}
-\glsxtrnewsymbol[description={Empty \glspt{PStack}},symbol={$\boxtimes$}]{boxtimes}{\ensuremath{\boxtimes}}
-\glsxtrnewsymbol[description={Constructor of a \glspt{PState}},symbol={$\langle \_ \rangle$},user1={\ensuremath{\langle}},user2={\ensuremath{\rangle}}]{PSTATE}{\ensuremath{\langle \_ \rangle}}
-\glsxtrnewsymbol[description={Transition relation on \glspt{PState}},symbol={$\_ \to^{\textsf{p}} \_$}]{ptrans}{\ensuremath{\to^{\textsf{p}}}}
-\glsxtrnewsymbol[description={Transition relation on \glspt{CState}},symbol={$\_ \to^{\textsf{c}} \_$}]{ctrans}{\ensuremath{\to^{\textsf{c}}}}
-\glsxtrnewsymbol[description={Constructor of a \glspt{CState} holding a value and a \glspt{CStack}},symbol={$\langle \_ \textsf{\textbrokenbar} \_ \rangle$},user1={\ensuremath{\langle}},user2={\textsf{\textbrokenbar}},user3={\ensuremath{\rangle}}]{CSTATEA}{\ensuremath{\langle \_ \textsf{\textbrokenbar} \_\rangle}}
-\glsxtrnewsymbol[description={Constructor of a \glspt{CState} holding a computation, an environment and a \glspt{CStack}},symbol={$\langle \_ \textsf{\textbrokenbar} \_ \textsf{\textbrokenbar} \_ \rangle$},user1={\ensuremath{\langle}},user2={\textsf{\textbrokenbar}},user3={\textsf{\textbrokenbar}},user4={\ensuremath{\rangle}}]{CSTATEB}{\ensuremath{\langle \_ \textsf{\textbrokenbar} \_ \textsf{\textbrokenbar} \_ \rangle}}
+\glsxtrnewsymbol[description={unique element inhabiting \glspt{top}},symbol={$\star$}]{tt}{\ensuremath{\star}}
+\glsxtrnewsymbol[description={constructor of a `bottom type equality' (\textit{see: }\glspt{BotEq})},symbol={$\triangledown$}]{bottom}{\ensuremath{\triangledown}}
+\glsxtrnewsymbol[description={constructor of a `bottom type equality' (\textit{see: }\glspt{BotEq})},symbol={$\raisebox{0.2ex}{\scalebox{0.7}{$\bigcirc$}}$},user1={\ensuremath{\circ}}]{not-bottom}{\raisebox{0.2ex}{\scalebox{0.7}{$\bigcirc$}}}
+\glsxtrnewsymbol[description={\glspt{pure} of unit type},symbol={$\ast$}]{ast}{\ensuremath{\ast}}
+\glsxtrnewsymbol[description={\glspt{value} of unit type},symbol={$\boldsymbol{\ast}$}]{bfast}{\ensuremath{\boldsymbol{\ast}}}
+\glsxtrnewsymbol[description={terminal object of a category},symbol={$\top$}]{top}{\ensuremath{\top}}
+\glsxtrnewsymbol[description={composition of morphisms in a category},symbol={$\_\circ\_$}]{circ}{\ensuremath{\circ}}
+\glsxtrnewsymbol[description={first and second projection in a \glspt{ccc}\glsadd{ccc}, respectively},symbol={$\pi_1, \pi_2$},user1={\ensuremath{\pi_1}},user2={\ensuremath{\pi_2}}]{pi}{\ensuremath{\pi}}
+\glsxtrnewsymbol[description={function type},symbol={$\_\Rightarrow\_$}]{Rightarrow}{\ensuremath{\Rightarrow}}
+\glsxtrnewsymbol[description={product type (also used to denote products in a \glspt{ccc}\glsadd{ccc})},symbol={$\_\times\_$}]{times}{\ensuremath{\times}}
+\glsxtrnewsymbol[description={typing judgement for \PURE terms},symbol={$\_\vdash^\textsf{p}\_:\_$}, user1={\ensuremath{\vdash^\textsf{p}}}, user2={\ensuremath{:}}]{pdash}{\ensuremath{\vdash^\textsf{p}}}
+\glsxtrnewsymbol[description={typing judgement for \glshyperlink[computations]{computation}},symbol={$\_\vdash^\textsf{c}\_:\_$}, user1={\ensuremath{\vdash^\textsf{c}}}, user2={\ensuremath{:}}]{cdash}{\ensuremath{\vdash^\textsf{c}}}
+\glsxtrnewsymbol[description={typing judgement for \glshyperlink[values]{value}},symbol={${\vdash^\textsf{v}}_{\_}\_:\_$}, user1={\ensuremath{\vdash^\textsf{v}}}, user2={\ensuremath{:}}]{valuedash}{\ensuremath{\vdash^\textsf{v}}}
+\glsxtrnewsymbol[description={typing judgement for partially \glshyperlink[evaluated]{eval} \PURE terms},symbol={${\vdash\hat{}}_{\_}\_:\_$}, user1={\ensuremath{{\vdash}^{\raisebox{-1.1ex}{\ensuremath{\hat{}}}}}}, user2={\ensuremath{:}}]{hdash}{\ensuremath{\vdash\hat{}}}
+\glsxtrnewsymbol[description={membership judgement},symbol={$\_:\_\in\_$},user1={\ensuremath{:}},user2={\ensuremath{\in}}]{mem}{\ensuremath{\in}}
+\glsxtrnewsymbol[description={interpretation of types, contexts, variables, terms, values and states (\Cref{fig:termsem,fig:envsem,fig:ctx,fig:partialsem,fig:cstatesem})},symbol={$\llbracket\_\rrbracket$}, user1={\ensuremath{\llbracket}},user2={\ensuremath{\rrbracket}}]{sem}{\ensuremath{\llbracket}}
+\glsxtrnewsymbol[description={interpretation of \glshyperlink[computations]{computation} in \glspt{cFS}},symbol={${\llbracket\_\rrbracket}_S$}, user1={\ensuremath{\llbracket}},user2={\ensuremath{{\rrbracket}_S}}]{semFS}{\ensuremath{\llbracket}}
+\glsxtrnewsymbol[description={pairing of two morphisms},symbol={$\langle\_,\_\rangle$},user1={\ensuremath{\langle}},user2={\ensuremath{,}},user3={\ensuremath{\rangle}}]{angle}{\ensuremath{\langle\_,\_\rangle}}
+\glsxtrnewsymbol[description={lifting of a monad morphism},symbol={${\_}^{\sharp}$}]{sharp}{\ensuremath{\sharp}}
+\glsxtrnewsymbol[description={empty \glspt{c-stack} (\textit{see: }\glspt{CStack})},symbol={$\square$}]{square}{\ensuremath{\scriptstyle\square}}
+\glsxtrnewsymbol[description={stacking operator for \glshyperlink[c-stacks]{c-stack} (constructs a \glspt{CStack})},symbol={$< \_ \mathop{;} \_ > \mathop{::} \_$},user1={\ensuremath{<}},user2={\ensuremath{;}},user3={\ensuremath{>}},user4={\ensuremath{::}}]{ccons}{}
+\glsxtrnewsymbol[description={empty \glspt{environment} (constructor)},symbol={$\diamond$}]{diamond}{\ensuremath{\diamond}}
+\glsxtrnewsymbol[description={appends a type to a \glspt{context} (constructs a larger \glspt{context})},symbol={$\_ \raisebox{-0.5ex}{\scalebox{2}{\ensuremath{\cdot}}} \_$}]{bullet}{\raisebox{-0.5ex}{\scalebox{2}{\ensuremath{\cdot}}}}
+\glsxtrnewsymbol[description={appends a \glspt{value} to an \glspt{environment} (constructs a larger \glspt{environment})},symbol={$\_ \cdot \_$}]{cdot}{\ensuremath{\cdot}}
+\glsxtrnewsymbol[description={appends a \glspt{compuation} and a \glspt{c-stack} to an \glspt{environment} (constructs a larger \glspt{environment})},symbol={$\_ \cdot \, \mathop{[} \_ \mathop{;} \_ \mathop{]}$},user1={\ensuremath{\cdot}},user2={\ensuremath{[}},user3={\ensuremath{;}},user4={\ensuremath{]}}]{cdotb}{}
+\glsxtrnewsymbol[description={generic typing judgement},symbol={$\_ \mathbin{:} \_$}]{colon}{\ensuremath{:}}
+\glsxtrnewsymbol[description={partially \glshyperlink[evaluated]{eval} term constructor (completed)},symbol={$\downarrow(\_)$}]{downarrow}{\ensuremath{\downarrow}}
+\glsxtrnewsymbol[description={partially \glshyperlink[evaluated]{eval} term constructor (initiated)},symbol={$\uparrow(\_,\_)$}]{uparrow}{\ensuremath{\uparrow}}
+\glsxtrnewsymbol[description={partially \glshyperlink[evaluated]{eval} term constructor (pattern match)},symbol={${\uparrow}^{\textsf{PM}}(\_,\_,\_)$}]{upPM}{\ensuremath{{\uparrow}^{\textsf{PM}}}}
+\glsxtrnewsymbol[description={partially \glshyperlink[evaluated]{eval} term constructor (\glspt{lhs}\glsadd{lhs} of pair)},symbol={${\uparrow}^{\textsf{L}}(\_,\_,\_)$}]{upL}{\ensuremath{{\uparrow}^{\textsf{L}}}}
+\glsxtrnewsymbol[description={partially \glshyperlink[evaluated]{eval} term constructor (\glspt{rhs}\glsadd{rhs} of pair)},symbol={${\uparrow}^{\textsf{R}}(\_,\_,\_)$}]{upR}{\ensuremath{{\uparrow}^{\textsf{R}}}}
+\glsxtrnewsymbol[description={pushes a partially \glshyperlink[evaluated]{eval} term onto a \glspt{PStack}},symbol={$\_ \mathop{::} \_$}]{pcons}{\ensuremath{::}}
+\glsxtrnewsymbol[description={empty \glspt{PStack}},symbol={$\boxtimes$}]{boxtimes}{\ensuremath{\boxtimes}}
+\glsxtrnewsymbol[description={constructor of a \glspt{PState}},symbol={$\langle \_ \rangle$},user1={\ensuremath{\langle}},user2={\ensuremath{\rangle}}]{PSTATE}{\ensuremath{\langle \_ \rangle}}
+\glsxtrnewsymbol[description={transition relation on \glspt{PState}},symbol={$\_ \to^{\textsf{p}} \_$}]{ptrans}{\ensuremath{\to^{\textsf{p}}}}
+\glsxtrnewsymbol[description={transition relation on \glspt{CState}},symbol={$\_ \to^{\textsf{c}} \_$}]{ctrans}{\ensuremath{\to^{\textsf{c}}}}
+\glsxtrnewsymbol[description={constructor of a \glspt{CState} holding a value and a \glspt{CStack}},symbol={$\langle \_ \textsf{\textbrokenbar} \_ \rangle$},user1={\ensuremath{\langle}},user2={\textsf{\textbrokenbar}},user3={\ensuremath{\rangle}}]{CSTATEA}{\ensuremath{\langle \_ \textsf{\textbrokenbar} \_\rangle}}
+\glsxtrnewsymbol[description={constructor of a \glspt{CState} holding a \glspt{computation}, an \glspt{environment} and a \glspt{CStack}},symbol={$\langle \_ \textsf{\textbrokenbar} \_ \textsf{\textbrokenbar} \_ \rangle$},user1={\ensuremath{\langle}},user2={\textsf{\textbrokenbar}},user3={\textsf{\textbrokenbar}},user4={\ensuremath{\rangle}}]{CSTATEB}{\ensuremath{\langle \_ \textsf{\textbrokenbar} \_ \textsf{\textbrokenbar} \_ \rangle}}
 
-\newcommand\A{\glshyperlink[\glsentryuseri{ABC}]{ABC}\glsadd{ABC}}
-\newcommand\B{\glshyperlink[\glsentryuserii{ABC}]{ABC}\glsadd{ABC}}
-\newcommand\C{\glshyperlink[\glsentryuseriii{ABC}]{ABC}\glsadd{ABC}}
+\newcommand\A{\glshyperlink[\glsentryuseri{ABC}]{ABC}\glsadd{ABC}\xspace}
+\newcommand\B{\glshyperlink[\glsentryuserii{ABC}]{ABC}\glsadd{ABC}\xspace}
+\newcommand\C{\glshyperlink[\glsentryuseriii{ABC}]{ABC}\glsadd{ABC}\xspace}
 
-\newcommand\X{\glshyperlink[\glsentryuseri{XYZ}]{XYZ}\glsadd{XYZ}}
-\newcommand\Y{\glshyperlink[\glsentryuserii{XYZ}]{XYZ}\glsadd{XYZ}}
-\newcommand\Z{\glshyperlink[\glsentryuseriii{XYZ}]{XYZ}\glsadd{XYZ}}
+\newcommand\X{\glshyperlink[\glsentryuseri{XYZ}]{XYZ}\glsadd{XYZ}\xspace}
+\newcommand\Y{\glshyperlink[\glsentryuserii{XYZ}]{XYZ}\glsadd{XYZ}\xspace}
+\newcommand\Z{\glshyperlink[\glsentryuseriii{XYZ}]{XYZ}\glsadd{XYZ}\xspace}
 
 \newcommand\x{\glshyperlink[\glsentryuseri{xyz}]{xyz}\glsadd{xyz}}
 \newcommand\y{\glshyperlink[\glsentryuserii{xyz}]{xyz}\glsadd{xyz}}
 \newcommand\z{\glshyperlink[\glsentryuseriii{xyz}]{xyz}\glsadd{xyz}}
 
-\newcommand\GAMMA{\glshyperlink[\glsentryuseri{CTX}]{CTX}\glsadd{CTX}}
-\newcommand\DELTA{\glshyperlink[\glsentryuserii{CTX}]{CTX}\glsadd{CTX}}
-\newcommand\PSI{\glshyperlink[\glsentryuseriii{CTX}]{CTX}\glsadd{CTX}}
+\newcommand\GAMMA{\glshyperlink[\glsentryuseri{CTX}]{CTX}\glsadd{CTX}\xspace}
+\newcommand\DELTA{\glshyperlink[\glsentryuserii{CTX}]{CTX}\glsadd{CTX}\xspace}
+\newcommand\PSI{\glshyperlink[\glsentryuseriii{CTX}]{CTX}\glsadd{CTX}\xspace}
 
 \newcommand\sGAMMA{\glshyperlink[\glsentryuseri{ENV}]{ENV}\glsadd{ENV}\xspace}
-\newcommand\sDELTA{\glshyperlink[\glsentryuserii{ENV}]{ENV}\glsadd{ENV}}
-\newcommand\sPSI{\glshyperlink[\glsentryuseriii{ENV}]{ENV}\glsadd{ENV}}
+\newcommand\sDELTA{\glshyperlink[\glsentryuserii{ENV}]{ENV}\glsadd{ENV}\xspace}
+\newcommand\sPSI{\glshyperlink[\glsentryuseriii{ENV}]{ENV}\glsadd{ENV}\xspace}
 
 \newcommand\LSEM{\glshyperlink[\glsentryuseri{sem}]{sem}\glsadd{sem}\xspace}
 \newcommand\RSEM{\glshyperlink[\glsentryuserii{sem}]{sem}\glsadd{sem}\xspace}
@@ -332,5 +370,5 @@
 
 \newcommand\NOTBOTi{\mathop{\glshyperlink[\glsentryuseri{not-bottom}]{not-bottom}\glsadd{not-bottom}}}
 
-\newcommand\glsop[1]{\mathop{\gls{#1}}}
-\newcommand\glsbin[1]{\mathbin{\gls{#1}}}
+\newcommand\glsop[1]{\mathop{\glspt{#1}}}
+\newcommand\glsbin[1]{\mathbin{\glspt{#1}}}
