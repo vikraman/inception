@@ -1,4 +1,4 @@
-module Inception.SystemL.CBV (R : Set) where
+module Inception.SystemL.CBV (P R : Set) where
 
 open import Inception.SystemL.Syntax
 
@@ -46,6 +46,7 @@ eval = uncurry′ idf
 ⟦_⟧ : Ty -> Set
 ⟦ `⊥ ⟧ = R
 ⟦ `Unit ⟧ = ⊤
+⟦ `P ⟧ = P
 ⟦ A `× B ⟧ = ⟦ A ⟧ × ⟦ B ⟧
 ⟦ A `⇒ B ⟧ = ⟦ A ⟧ -> K ⟦ B ⟧
 ⟦ A `+ B ⟧ = ⟦ A ⟧ ⊎ ⟦ B ⟧

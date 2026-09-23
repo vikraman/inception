@@ -8,7 +8,7 @@ open Eq.≡-Reasoning
 infixr 25 _`⇒_
 
 data Ty : Set where
-  `⊥ `Unit : Ty
+  `⊥ `Unit `P : Ty
   _`×_ _`⇒_ _`+_ : (A : Ty) -> (B : Ty) -> Ty
 
 infixr 30 ¬_

@@ -52,6 +52,7 @@ CoRedᵏ : (A : Ty) {Γ Δ : Ctx} → Γ ∣ A ⊢ᵏ Δ → Set
 
 Redᵛ `⊥        V              = ⊤
 Redᵛ `Unit     V              = ⊤
+Redᵛ `P       V              = ⊤
 Redᵛ (A `× B)  (var i)        = ⊤
 Redᵛ (A `× B)  (pair V W)     = Redᵛ A V × Redᵛ B W
 Redᵛ (A `+ B)  (var i)        = ⊤
@@ -79,6 +80,7 @@ Red-wk : (A : Ty) {Γ Δ Γ' Δ' : Ctx} (π : Γ' ⊇ Γ) (σ : Δ' ⊇ Δ) {V :
        → Redᵛ A V → Redᵛ A (wk-val π σ V)
 Red-wk `⊥        π σ r = tt
 Red-wk `Unit     π σ r = tt
+Red-wk `P       π σ r = tt
 Red-wk (A `× B) π σ {V = var i}    r        = tt
 Red-wk (A `× B) π σ {V = pair V W} (rv , rw) = Red-wk A π σ rv , Red-wk B π σ rw
 Red-wk (A `+ B) π σ {V = var i}  r  = tt
@@ -117,6 +119,7 @@ Ortho {`⊥} {V = var i} {C = tp} rv rc = sn λ ()
 Ortho {`Unit} {V = var i} {C = μ̃ M} rv rc = Ortho-μ̃ rv rc
 Ortho {`Unit} {V = unit} {C = covar i} rv rc = sn λ ()
 Ortho {`Unit} {V = unit} {C = μ̃ M} rv rc = Ortho-μ̃ rv rc
+Ortho {`P} {V = var i} {C = μ̃ M} rv rc = Ortho-μ̃ rv rc
 Ortho {A `× B} {V = var i} {C = fst C} rv rc = sn λ ()
 Ortho {A `× B} {V = var i} {C = snd C} rv rc = sn λ ()
 Ortho {A `× B} {V = var i} {C = μ̃ M} rv rc = Ortho-μ̃ rv rc
@@ -203,6 +206,7 @@ Fundamental-cotm θ φ rθ rφ tp          = tt
 Red-var-triv : (A : Ty) {Γ : Ctx} (Δ : Ctx) (i : Γ ∋ A) → Redᵛ A (var {Δ = Δ} i)
 Red-var-triv `⊥        Δ i = tt
 Red-var-triv `Unit     Δ i = tt
+Red-var-triv `P       Δ i = tt
 Red-var-triv (A `× B)  Δ i = tt
 Red-var-triv (A `+ B)  Δ i = tt
 Red-var-triv (A `⇒ B)  Δ i = tt
