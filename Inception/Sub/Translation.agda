@@ -30,15 +30,8 @@ projFst p = μ (cut _ (ret (wk̃ᵛ p)) (fst (covar z)))
 projSnd : L.Γ ⊢ᵛ (L.A `× L.B) ∣ L.Δ -> L.Γ ⊢ᵗ L.B ∣ L.Δ
 projSnd p = μ (cut _ (ret (wk̃ᵛ p)) (snd (covar z)))
 
-letpm : L.Γ ⊢ᵗ (L.A₁ `× L.A₂) ∣ L.Δ -> (L.Γ ∙ L.A₁ ∙ L.A₂) ⊢ᵗ L.B ∣ L.Δ -> L.Γ ⊢ᵗ L.B ∣ L.Δ
-letpm p cont =
-  lett p
-    (lett (projFst (var z))
-      (lett (projSnd (var (s z)))
-        (sub-tm (L.sub-ex (L.sub-ex (L.sub-wk (L.wk-wk (L.wk-wk (L.wk-wk L.wk-id))) L.wk-id L.sub-id) (var (s z))) (var z)) cosub-id cont)))
-
-letpv : L.Γ ⊢ᵛ L.A₁ `× L.A₂ ∣ L.Δ -> (L.Γ ∙ L.A₁ ∙ L.A₂) ⊢ᵛ L.B ∣ L.Δ -> L.Γ ⊢ᵗ L.B ∣ L.Δ
-letpv V W = lett (projFst V) (lett (projSnd (wkᵛ V)) (ret W))
+letpv : L.Γ ⊢ᵛ L.A₁ `× L.A₂ ∣ L.Δ -> (L.Γ ∙ L.A₁ ∙ L.A₂) ⊢ᵗ L.B ∣ L.Δ -> L.Γ ⊢ᵗ L.B ∣ L.Δ
+letpv V M = lett (projFst V) (lett (projSnd (wkᵛ V)) M)
 
 efq : L.Γ ⊢ᵗ `⊥ ∣ L.Δ -> L.Γ ⊢ᵗ L.A ∣ L.Δ
 efq u = μ (cut `⊥ (wk̃ᵗ u) tp)
@@ -52,22 +45,19 @@ handleVal {A = A} n =
 
 ⟦_⟧ᶜ : SΓ S.⊢ᶜ SA -> ⟦ SΓ ⟧ˣ ⊢ᵗ ⟦ SA ⟧ ∣ L.Δ
 
-varVal : SΓ S.∋ SA -> ⟦ SΓ ⟧ˣ ⊢ᵛ ⟦ SA ⟧ ∣ L.Δ
-varVal i = var ⟦ i ⟧ⁱ
+⟦_⟧ᵖ : SΓ S.⊢ᵖ SA -> ⟦ SΓ ⟧ˣ ⊢ᵛ ⟦ SA ⟧ ∣ L.Δ
+⟦ S.var i ⟧ᵖ    = var ⟦ i ⟧ⁱ
+⟦ S.lam M ⟧ᵖ    = lam ⟦ M ⟧ᶜ
+⟦ S.pair V W ⟧ᵖ = pair ⟦ V ⟧ᵖ ⟦ W ⟧ᵖ
+⟦ S.unit ⟧ᵖ     = unit
 
-lamVal : (SΓ S.∙ SA) S.⊢ᶜ SB -> ⟦ SΓ ⟧ˣ ⊢ᵛ (⟦ SA ⟧ `⇒ ⟦ SB ⟧) ∣ L.Δ
-lamVal M = lam ⟦ M ⟧ᶜ
+⟦_⟧ˢ : S.Sub SΓ SΔ -> L.Sub ⟦ SΓ ⟧ˣ L.Δ ⟦ SΔ ⟧ˣ
+⟦ S.sub-ε ⟧ˢ      = L.sub-ε
+⟦ S.sub-ex θ V ⟧ˢ = L.sub-ex ⟦ θ ⟧ˢ ⟦ V ⟧ᵖ
 
-⟦_⟧ᵗ : SΓ S.⊢ᵖ SA -> ⟦ SΓ ⟧ˣ ⊢ᵗ ⟦ SA ⟧ ∣ L.Δ
-⟦ S.var i ⟧ᵗ    = ret (varVal i)
-⟦ S.lam M ⟧ᵗ    = ret (lamVal M)
-⟦ S.pair V W ⟧ᵗ = lett ⟦ V ⟧ᵗ (lett (wkᵗ ⟦ W ⟧ᵗ) (ret (pair (var (s z)) (var z))))
-⟦ S.pm V W ⟧ᵗ   = letpm ⟦ V ⟧ᵗ ⟦ W ⟧ᵗ
-⟦ S.unit ⟧ᵗ     = ret unit
-
-⟦ S.return V ⟧ᶜ  = ⟦ V ⟧ᵗ
-⟦ S.pm V M ⟧ᶜ    = letpm ⟦ V ⟧ᵗ ⟦ M ⟧ᶜ
-⟦ S.push M N ⟧ᶜ  = lett ⟦ M ⟧ᶜ ⟦ N ⟧ᶜ
-⟦ S.app V W ⟧ᶜ   = lett ⟦ V ⟧ᵗ (lett (wkᵗ ⟦ W ⟧ᵗ) (applyL (var (s z)) (var z)))
-⟦ S.var V ⟧ᶜ     = lett ⟦ V ⟧ᵗ (raise (var z))
-⟦ S.sub M N ⟧ᶜ   = μ (cut _ (L.letv (handleVal ⟦ N ⟧ᶜ) ⟦ M ⟧ᶜ) (covar z))
+⟦ S.return V ⟧ᶜ = ret ⟦ V ⟧ᵖ
+⟦ S.pm V M ⟧ᶜ   = letpv ⟦ V ⟧ᵖ ⟦ M ⟧ᶜ
+⟦ S.push M N ⟧ᶜ = lett ⟦ M ⟧ᶜ ⟦ N ⟧ᶜ
+⟦ S.app V W ⟧ᶜ  = applyL ⟦ V ⟧ᵖ ⟦ W ⟧ᵖ
+⟦ S.var V ⟧ᶜ    = raise ⟦ V ⟧ᵖ
+⟦ S.sub M N ⟧ᶜ  = μ (cut _ (L.letv (handleVal ⟦ N ⟧ᶜ) ⟦ M ⟧ᶜ) (covar z))

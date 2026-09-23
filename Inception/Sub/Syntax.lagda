@@ -77,10 +77,6 @@ mutual
             -----------------
             -> Γ ⊢ᵖ X₁ `× X₂
 
-    pm :    Γ ⊢ᵖ X₁ `× X₂ -> (Γ ∙ X₁ ∙ X₂) ⊢ᵖ Y
-            --------------------------------
-            -> Γ ⊢ᵖ Y
-
     unit :
             -----------
             Γ ⊢ᵖ `Unit
@@ -138,7 +134,6 @@ mutual
   wk-pure π (lam M)         = lam (wk-comp (wk-cong π) M)
 
   wk-pure π (pair W₁ W₂)    = pair (wk-pure π W₁) (wk-pure π W₂)
-  wk-pure π (pm W₁ W₂)        = pm (wk-pure π W₁) (wk-pure (wk-cong (wk-cong π)) W₂)
   wk-pure π unit            = unit
 
   wk-comp : Wk Γ Δ -> Δ ⊢ᶜ X -> Γ ⊢ᶜ X
@@ -173,7 +168,6 @@ mutual
   sub-pure θ (var x) = sub-mem θ x
   sub-pure θ (lam M) = lam (sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ) (var new)) M)
   sub-pure θ (pair W₁ W₂) = pair (sub-pure θ W₁) (sub-pure θ W₂)
-  sub-pure θ (pm W₁ W₂) = pm (sub-pure θ W₁) (sub-pure (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) θ) (var (old new))) (var new)) W₂)
   sub-pure θ unit = unit
 
   sub-comp : Sub Γ Δ -> Δ ⊢ᶜ X -> Γ ⊢ᶜ X
@@ -236,23 +230,11 @@ data EqPure Γ where
             ----------------------------------------
             -> Γ ⊢ᵖ pair W₁ W₂ ≈ pair W₁' W₂' ∶ X₁ `× X₂
 
-  pm-cong : Γ ⊢ᵖ W₁ ≈ W₁' ∶ X₁ `× X₂ -> (Γ ∙ X₁ ∙ X₂) ⊢ᵖ W₂ ≈ W₂' ∶ Y
-          -------------------------------------------------------------------
-          -> Γ ⊢ᵖ pm W₁ W₂ ≈ pm W₁' W₂' ∶ Y
-
   -- beta/eta rules
 
   unit-eta : (W : Γ ⊢ᵖ `Unit)
            ------------------------
            -> Γ ⊢ᵖ W ≈ unit ∶ `Unit
-
-  pm-beta : (W₁ : Γ ⊢ᵖ X₁) -> (W₂ : Γ ⊢ᵖ X₂) -> (W : (Γ ∙ X₁ ∙ X₂) ⊢ᵖ Y)
-          ------------------------------------------------------------------------
-          -> Γ ⊢ᵖ pm (pair W₁ W₂) W ≈ sub-pure (sub-ex (sub-ex sub-id W₁) W₂) W ∶ Y
-
-  pm-eta : (W₁ : Γ ⊢ᵖ X₁ `× X₂) -> (W₂ : (Γ ∙ (X₁ `× X₂)) ⊢ᵖ Y)
-         -------------------------------------------------------------------------------------------
-         -> Γ ⊢ᵖ sub-pure (sub-ex sub-id W₁) W₂ ≈ pm W₁ (sub-pure (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) sub-id) (pair (var (old new)) (var new))) W₂) ∶ Y
 
   lam-eta : (W : Γ ⊢ᵖ X `⇒ Y)
           ---------------------------
@@ -381,12 +363,6 @@ mutual
                pair (wk-pure π₁ (wk-pure π₂ M₁)) (wk-pure (wk-trans π₁ π₂) M₂)
                ≡⟨ cong (λ x → pair x (wk-pure (wk-trans π₁ π₂) M₂)) (wk-pure-trans M₁ π₁ π₂) ⟩
                pair (wk-pure (wk-trans π₁ π₂) M₁) (wk-pure (wk-trans π₁ π₂) M₂) ∎
-  wk-pure-trans (pm M₁ M₂) π₁ π₂ =
-               pm (wk-pure π₁ (wk-pure π₂ M₁)) (wk-pure (wk-cong (wk-cong π₁)) (wk-pure (wk-cong (wk-cong π₂)) M₂))
-               ≡⟨ cong (λ x → pm x (wk-pure (wk-cong (wk-cong π₁)) (wk-pure (wk-cong (wk-cong π₂)) M₂))) (wk-pure-trans M₁ π₁ π₂) ⟩
-               pm (wk-pure (wk-trans π₁ π₂) M₁) (wk-pure (wk-cong (wk-cong π₁)) (wk-pure (wk-cong (wk-cong π₂)) M₂))
-               ≡⟨ cong (λ x → pm (wk-pure (wk-trans π₁ π₂) M₁) x) (wk-pure-trans M₂ (wk-cong (wk-cong π₁)) (wk-cong (wk-cong π₂)) ) ⟩
-               pm (wk-pure (wk-trans π₁ π₂) M₁) (wk-pure (wk-cong (wk-cong (wk-trans π₁ π₂))) M₂) ∎
   wk-pure-trans unit π₁ π₂ = refl
 
   wk-comp-trans : (W : Γ ⊢ᶜ X) → (π₁ : Wk Ψ Δ) → (π₂ : Wk Δ Γ) → wk-comp π₁ (wk-comp π₂ W) ≡ wk-comp (wk-trans π₁ π₂) W
@@ -427,7 +403,6 @@ mutual
   wk-pure-id (var i) = cong var wk-mem-id
   wk-pure-id (lam W) = cong lam (wk-comp-id W)
   wk-pure-id (pair W₁ W₂) = pair (wk-pure wk-id W₁) (wk-pure wk-id W₂) ≡⟨ cong (λ y → pair y (wk-pure wk-id W₂)) (wk-pure-id W₁) ⟩ pair W₁ (wk-pure wk-id W₂) ≡⟨ cong (λ y → pair W₁ y) (wk-pure-id W₂) ⟩ pair W₁ W₂ ∎
-  wk-pure-id (pm W₁ W₂) = pm (wk-pure wk-id W₁) (wk-pure (wk-cong (wk-cong wk-id)) W₂) ≡⟨ refl ⟩ pm (wk-pure wk-id W₁) (wk-pure wk-id W₂) ≡⟨ cong (λ y → pm y (wk-pure wk-id W₂)) (wk-pure-id W₁) ⟩ pm W₁ (wk-pure wk-id W₂) ≡⟨ cong (λ y → pm W₁ y) (wk-pure-id W₂) ⟩ pm W₁ W₂ ∎
   wk-pure-id unit = refl
 
   wk-comp-id : (W : Γ ⊢ᶜ X) → wk-comp wk-id W ≡ W

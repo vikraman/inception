@@ -102,28 +102,16 @@ ex15-trace : ex15-cmd ↦* cut `Unit (ret unit) (covar z)
 ex15-trace = eval ex15-cmd .proj₂ .proj₁
 
 _ : ex15-trace ≡ (
-    cut `Unit (μ (cut `Unit (μ (cut `Unit (μ (cut (`Unit `⇒ `Unit) (ret (lam (μ (cut `Unit (μ (cut (`Unit `⇒ `⊥) (ret (lam (μ (cut `Unit (ret unit) (covar (s (s z))))))) (μ̃ (cut `Unit (μ (cut `⊥ (μ (cut (`Unit `⇒ `⊥) (ret (var z)) (app unit (covar z)))) tp)) (covar z))))) (covar z))))) (μ̃ (cut `Unit (μ (cut `Unit (ret unit) (μ̃ (cut `Unit (μ (cut (`Unit `⇒ `Unit) (ret (var (s z))) (app (var z) (covar z)))) (covar z))))) (covar z))))) (μ̃ (cut `Unit (ret unit) (covar z))))) (μ̃ (cut `Unit (ret unit) (covar z))))) (covar z)
+    cut `Unit (μ (cut `Unit (μ (cut `Unit (μ (cut (`Unit `⇒ `Unit) (ret (lam (μ (cut `Unit (μ (cut `⊥ (μ (cut (`Unit `⇒ `⊥) (ret (lam (μ (cut `Unit (ret unit) (covar (s (s (s z)))))))) (app unit (covar z)))) tp)) (covar z))))) (app unit (covar z)))) (μ̃ (cut `Unit (ret unit) (covar z))))) (μ̃ (cut `Unit (ret unit) (covar z))))) (covar z)
   ~>⟨ μ-step ⟩
-    cut `Unit (μ (cut `Unit (μ (cut (`Unit `⇒ `Unit) (ret (lam (μ (cut `Unit (μ (cut (`Unit `⇒ `⊥) (ret (lam (μ (cut `Unit (ret unit) (covar (s (s z))))))) (μ̃ (cut `Unit (μ (cut `⊥ (μ (cut (`Unit `⇒ `⊥) (ret (var z)) (app unit (covar z)))) tp)) (covar z))))) (covar z))))) (μ̃ (cut `Unit (μ (cut `Unit (ret unit) (μ̃ (cut `Unit (μ (cut (`Unit `⇒ `Unit) (ret (var (s z))) (app (var z) (covar z)))) (covar z))))) (covar z))))) (μ̃ (cut `Unit (ret unit) (covar z))))) (μ̃ (cut `Unit (ret unit) (covar z)))
+    cut `Unit (μ (cut `Unit (μ (cut (`Unit `⇒ `Unit) (ret (lam (μ (cut `Unit (μ (cut `⊥ (μ (cut (`Unit `⇒ `⊥) (ret (lam (μ (cut `Unit (ret unit) (covar (s (s (s z)))))))) (app unit (covar z)))) tp)) (covar z))))) (app unit (covar z)))) (μ̃ (cut `Unit (ret unit) (covar z))))) (μ̃ (cut `Unit (ret unit) (covar z)))
   ~>⟨ μ-step ⟩
-    cut `Unit (μ (cut (`Unit `⇒ `Unit) (ret (lam (μ (cut `Unit (μ (cut (`Unit `⇒ `⊥) (ret (lam (μ (cut `Unit (ret unit) (covar (s (s z))))))) (μ̃ (cut `Unit (μ (cut `⊥ (μ (cut (`Unit `⇒ `⊥) (ret (var z)) (app unit (covar z)))) tp)) (covar z))))) (covar z))))) (μ̃ (cut `Unit (μ (cut `Unit (ret unit) (μ̃ (cut `Unit (μ (cut (`Unit `⇒ `Unit) (ret (var (s z))) (app (var z) (covar z)))) (covar z))))) (covar z))))) (μ̃ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (covar z)))))
+    cut `Unit (μ (cut (`Unit `⇒ `Unit) (ret (lam (μ (cut `Unit (μ (cut `⊥ (μ (cut (`Unit `⇒ `⊥) (ret (lam (μ (cut `Unit (ret unit) (covar (s (s (s z)))))))) (app unit (covar z)))) tp)) (covar z))))) (app unit (covar z)))) (μ̃ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (covar z)))))
   ~>⟨ μ-step ⟩
-    cut (`Unit `⇒ `Unit) (ret (lam (μ (cut `Unit (μ (cut (`Unit `⇒ `⊥) (ret (lam (μ (cut `Unit (ret unit) (covar (s (s z))))))) (μ̃ (cut `Unit (μ (cut `⊥ (μ (cut (`Unit `⇒ `⊥) (ret (var z)) (app unit (covar z)))) tp)) (covar z))))) (covar z))))) (μ̃ (cut `Unit (μ (cut `Unit (ret unit) (μ̃ (cut `Unit (μ (cut (`Unit `⇒ `Unit) (ret (var (s z))) (app (var z) (covar z)))) (covar z))))) (μ̃ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (covar z)))))))
-  ~>⟨ μ̃-step ⟩
-    cut `Unit (μ (cut `Unit (ret unit) (μ̃ (cut `Unit (μ (cut (`Unit `⇒ `Unit) (ret (lam (μ (cut `Unit (μ (cut (`Unit `⇒ `⊥) (ret (lam (μ (cut `Unit (ret unit) (covar (s (s z))))))) (μ̃ (cut `Unit (μ (cut `⊥ (μ (cut (`Unit `⇒ `⊥) (ret (var z)) (app unit (covar z)))) tp)) (covar z))))) (covar z))))) (app (var z) (covar z)))) (covar z))))) (μ̃ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (covar z)))))
-  ~>⟨ μ-step ⟩
-    cut `Unit (ret unit) (μ̃ (cut `Unit (μ (cut (`Unit `⇒ `Unit) (ret (lam (μ (cut `Unit (μ (cut (`Unit `⇒ `⊥) (ret (lam (μ (cut `Unit (ret unit) (covar (s (s z))))))) (μ̃ (cut `Unit (μ (cut `⊥ (μ (cut (`Unit `⇒ `⊥) (ret (var z)) (app unit (covar z)))) tp)) (covar z))))) (covar z))))) (app (var z) (covar z)))) (μ̃ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (covar z)))))))
-  ~>⟨ μ̃-step ⟩
-    cut `Unit (μ (cut (`Unit `⇒ `Unit) (ret (lam (μ (cut `Unit (μ (cut (`Unit `⇒ `⊥) (ret (lam (μ (cut `Unit (ret unit) (covar (s (s z))))))) (μ̃ (cut `Unit (μ (cut `⊥ (μ (cut (`Unit `⇒ `⊥) (ret (var z)) (app unit (covar z)))) tp)) (covar z))))) (covar z))))) (app unit (covar z)))) (μ̃ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (covar z)))))
-  ~>⟨ μ-step ⟩
-    cut (`Unit `⇒ `Unit) (ret (lam (μ (cut `Unit (μ (cut (`Unit `⇒ `⊥) (ret (lam (μ (cut `Unit (ret unit) (covar (s (s z))))))) (μ̃ (cut `Unit (μ (cut `⊥ (μ (cut (`Unit `⇒ `⊥) (ret (var z)) (app unit (covar z)))) tp)) (covar z))))) (covar z))))) (app unit (μ̃ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (covar z))))))
+    cut (`Unit `⇒ `Unit) (ret (lam (μ (cut `Unit (μ (cut `⊥ (μ (cut (`Unit `⇒ `⊥) (ret (lam (μ (cut `Unit (ret unit) (covar (s (s (s z)))))))) (app unit (covar z)))) tp)) (covar z))))) (app unit (μ̃ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (covar z))))))
   ~>⟨ app-step ⟩
-    cut `Unit (μ (cut `Unit (μ (cut (`Unit `⇒ `⊥) (ret (lam (μ (cut `Unit (ret unit) (covar (s (s z))))))) (μ̃ (cut `Unit (μ (cut `⊥ (μ (cut (`Unit `⇒ `⊥) (ret (var z)) (app unit (covar z)))) tp)) (covar z))))) (covar z))) (μ̃ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (covar z)))))
+    cut `Unit (μ (cut `Unit (μ (cut `⊥ (μ (cut (`Unit `⇒ `⊥) (ret (lam (μ (cut `Unit (ret unit) (covar (s (s (s z)))))))) (app unit (covar z)))) tp)) (covar z))) (μ̃ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (covar z)))))
   ~>⟨ μ-step ⟩
-    cut `Unit (μ (cut (`Unit `⇒ `⊥) (ret (lam (μ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (covar (s (s z))))))))))) (μ̃ (cut `Unit (μ (cut `⊥ (μ (cut (`Unit `⇒ `⊥) (ret (var z)) (app unit (covar z)))) tp)) (covar z))))) (μ̃ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (covar z)))))
-  ~>⟨ μ-step ⟩
-    cut (`Unit `⇒ `⊥) (ret (lam (μ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (covar (s z)))))))))) (μ̃ (cut `Unit (μ (cut `⊥ (μ (cut (`Unit `⇒ `⊥) (ret (var z)) (app unit (covar z)))) tp)) (μ̃ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (covar z)))))))
-  ~>⟨ μ̃-step ⟩
     cut `Unit (μ (cut `⊥ (μ (cut (`Unit `⇒ `⊥) (ret (lam (μ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (covar (s (s (s z)))))))))))) (app unit (covar z)))) tp)) (μ̃ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (covar z)))))
   ~>⟨ μ-step ⟩
     cut `⊥ (μ (cut (`Unit `⇒ `⊥) (ret (lam (μ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (μ̃ (cut `Unit (ret unit) (covar (s (s z))))))))))) (app unit (covar z)))) tp

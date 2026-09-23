@@ -56,10 +56,6 @@ data Val where
       -------------------
        -> Γ ⊢ᵛ A `× B
 
-  pm : Γ ⊢ᵛ A `× B -> (Γ ∙ A ∙ B) ⊢ᵛ C
-     -----------------------------------
-     -> Γ ⊢ᵛ C
-
   unit :
        -----------
         Γ ⊢ᵛ `Unit
@@ -113,7 +109,6 @@ mutual
   wk-val π (lam M)         = lam (wk-comp (wk-cong π) M)
 
   wk-val π (pair V1 V2)    = pair (wk-val π V1) (wk-val π V2)
-  wk-val π (pm V W)        = pm (wk-val π V) (wk-val (wk-cong (wk-cong π)) W)
   wk-val π unit            = unit
 
   wk-comp : Wk Γ Δ -> Δ ⊢ᶜ A -> Γ ⊢ᶜ A
@@ -148,7 +143,6 @@ mutual
   sub-val θ (var x) = sub-mem θ x
   sub-val θ (lam M) = lam (sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ) (var h)) M)
   sub-val θ (pair V W) = pair (sub-val θ V) (sub-val θ W)
-  sub-val θ (pm V W) = pm (sub-val θ V) (sub-val (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) θ) (var (t h))) (var h)) W)
   sub-val θ unit = unit
 
   sub-comp : Sub Γ Δ -> Δ ⊢ᶜ A -> Γ ⊢ᶜ A
@@ -212,23 +206,11 @@ data EqVal Γ where
             ----------------------------------------
             -> Γ ⊢ᵛ pair V1 W1 ≈ pair V2 W2 ∶ A `× B
 
-  pm-cong : Γ ⊢ᵛ V1 ≈ V2 ∶ A `× B -> (Γ ∙ A ∙ B) ⊢ᵛ V3 ≈ V4 ∶ C
-          -------------------------------------------------------------------
-          -> Γ ⊢ᵛ pm V1 V3 ≈ pm V2 V4 ∶ C
-
   -- beta/eta rules
 
   unit-eta : (V : Γ ⊢ᵛ `Unit)
            ------------------------
            -> Γ ⊢ᵛ V ≈ unit ∶ `Unit
-
-  pm-beta : (V1 : Γ ⊢ᵛ A) -> (V2 : Γ ⊢ᵛ B) -> (W : (Γ ∙ A ∙ B) ⊢ᵛ C)
-          ------------------------------------------------------------------------
-          -> Γ ⊢ᵛ pm (pair V1 V2) W ≈ sub-val (sub-ex (sub-ex sub-id V1) V2) W ∶ C
-
-  pm-eta : (V : Γ ⊢ᵛ A `× B) -> (W : (Γ ∙ (A `× B)) ⊢ᵛ C)
-         -------------------------------------------------------------------------------------------
-         -> Γ ⊢ᵛ sub-val (sub-ex sub-id V) W ≈ pm V (sub-val (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) sub-id) (pair (var (t h)) (var h))) W) ∶ C
 
   lam-eta : (V : Γ ⊢ᵛ A `⇒ B)
           ---------------------------

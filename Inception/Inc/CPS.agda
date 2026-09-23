@@ -71,7 +71,6 @@ mutual
   ⟦ var i ⟧ᵛ = ⟦ i ⟧ᵐ
   ⟦ lam M ⟧ᵛ = curry ⟦ M ⟧ᶜ
   ⟦ pair V W ⟧ᵛ = < ⟦ V ⟧ᵛ , ⟦ W ⟧ᵛ >
-  ⟦ pm V W ⟧ᵛ = < idf , ⟦ V ⟧ᵛ > ； assocl ； ⟦ W ⟧ᵛ
   ⟦ unit ⟧ᵛ = const tt
 
   ⟦_⟧ᶜ : Γ ⊢ᶜ A -> ⟦ Γ ⟧ˣ -> K ⟦ A ⟧
@@ -90,9 +89,6 @@ mutual
     curry (evalComp M) (γ , a)
   evalVal (pair V W) γ =
     evalVal V γ , evalVal W γ
-  evalVal (pm V W) γ =
-    let v = evalVal V γ in
-      evalVal W ((γ , v .proj₁) , v .proj₂)
   evalVal unit γ = tt
 
   evalComp :  Γ ⊢ᶜ A -> ⟦ Γ ⟧ˣ × (⟦ A ⟧ -> R) -> R
@@ -138,7 +134,6 @@ mutual
   wk-val-coh π (var i) rewrite wk-mem-coh π i = refl
   wk-val-coh π (lam M) rewrite wk-comp-coh (wk-cong π) M = refl
   wk-val-coh π (pair V W) rewrite wk-val-coh π V | wk-val-coh π W = refl
-  wk-val-coh π (pm V W) rewrite wk-val-coh π V | wk-val-coh (wk-cong (wk-cong π)) W = refl
   wk-val-coh π unit = refl
 
   wk-comp-coh : (π : Γ ⊇ Δ) (M : Δ ⊢ᶜ A) -> ⟦ wk-comp π M ⟧ᶜ ≡ (⟦ π ⟧ʷ ； ⟦ M ⟧ᶜ)
@@ -172,7 +167,6 @@ mutual
   sub-val-coh θ (var i) = refl
   sub-val-coh θ (lam M) rewrite sub-comp-coh (sub-ex (sub-wk (wk-wk wk-id) θ) (var h)) M = refl
   sub-val-coh θ (pair V W) rewrite sub-val-coh θ V | sub-val-coh θ W = refl
-  sub-val-coh θ (pm V M) rewrite sub-val-coh θ V | sub-val-coh (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) θ) (var (t h))) (var h)) M = refl
   sub-val-coh θ unit = refl
 
   sub-comp-coh : (θ : Sub Γ Δ) (M : Δ ⊢ᶜ A) -> ⟦ sub-comp θ M ⟧ᶜ ≡ (⟦ θ ⟧ˢ ； ⟦ M ⟧ᶜ)
@@ -193,10 +187,7 @@ mutual
   eqVal (≈-trans p q) = trans (eqVal p) (eqVal q)
   eqVal (lam-cong p) = cong curry (eqComp p)
   eqVal (pair-cong p q) = cong₂ <_,_> (eqVal p) (eqVal q)
-  eqVal (pm-cong p q) rewrite eqVal p | eqVal q = refl
   eqVal (unit-eta _) = refl
-  eqVal (pm-beta V1 V2 W) = refl
-  eqVal (pm-eta V W) = refl
   eqVal (lam-eta _) = refl
 
   eqComp : Γ ⊢ᶜ M ≈ N ∶ A -> ⟦ M ⟧ᶜ ≡ ⟦ N ⟧ᶜ

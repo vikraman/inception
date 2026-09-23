@@ -15,12 +15,6 @@ open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; subst
 ---------------------------------------------------------------------------------
 
 infixl 27 _·_
-infix  20 ⭭_
-infix  19 _∷_
-infixr 17 _→ᵖ⟨_⟩．
-infixr 15 _→ᵖ⟨_⟩_
-infix  15 _→ᵖ_
-infixr 10 _⨾_
 
 ---------------------------------------------------------------------------------
 -- ENVIRONMENTS
@@ -78,179 +72,7 @@ lookup (old x) (γ · Ẇ) = lookup x γ
 \begin{code}
 
 ---------------------------------------------------------------------------------
--- MACHINE FOR PURE TERMS
-
-\end{code}
-%<*Partial>
-\begin{code}
-
-data Partial {Z₀ : Ty} : (X : Ty) → Set where
-
-    ⭭_ :   (Ẇ : Value {Z₀ = Z₀} X)
-           ----------------------
-           → Partial X
-
-    ⇡ :    (W : Pure Γ X) → (Env {Z₀ = Z₀} Γ)
-           --------------------------------
-           → Partial X
-
-    ⇡ᴾᴹ :  (W₁ : Pure Γ (X₁ `× X₂)) → (W₂ : Pure (Γ ∙ X₁ ∙ X₂) Y) → (Env {Z₀ = Z₀} Γ)
-           ---------------------------------------------------------------------
-           → Partial Y
-
-    ⇡ᴸ :   (W₁ : Pure Γ X₁) → (W₂ : Pure Γ X₂) → (Env {Z₀ = Z₀} Γ)
-           ----------------------------------------------------
-           → Partial (X₁ `× X₂)
-
-    ⇡ᴿ :   (Ẇ₁ : Value {Z₀ = Z₀} X₁) → (W₂ : Pure Γ X₂) → (Env {Z₀ = Z₀} Γ)
-           ------------------------------------------------------------
-           → Partial (X₁ `× X₂)
-
-\end{code}
-%</Partial>
-\begin{code}
-
-\end{code}
-%<*PStates>
-\begin{code}
-
-data IsEmpty : Set where
-
-    non-empty :
-                 -------
-                 IsEmpty
-
-    empty :
-                 -------
-                 IsEmpty
-
-private variable
-    ∅? : IsEmpty
-
-data BotEq : IsEmpty → Ty → Ty → Set where
-
-    ▿ :
-         ---------------
-         BotEq empty X X
-
-    ○ :
-         -------------------
-         BotEq non-empty X Y
-
-data PStack {Z₀ : Ty} : IsEmpty → Ty → Set where
-
-    ⊠ :
-           -----------------------
-           PStack {Z₀ = Z₀} empty Z₁
-
-    _∷_ :  Partial {Z₀ = Z₀} X → (pstack : PStack {Z₀ = Z₀} ∅? Z₁)
-           → {𝐛 : BotEq ∅? X Z₁}
-           --------------------------------------------------
-           → PStack non-empty Z₁
-
-
-data PState {Z₀ : Ty} : Ty → Set where
-
-    ⟨_⟩ :  PStack {Z₀ = Z₀} non-empty Z₁
-           ---------------------------
-           → PState {Z₀ = Z₀} Z₁
-
-\end{code}
-%</PStates>
-\begin{code}
-
-_⧺_ : {Z₀ : Ty} → PStack {Z₀ = Z₀} ∅? Z₁ → PStack {Z₀ = Z₀} non-empty Z₁' → PStack {Z₀ = Z₀} non-empty Z₁'
-⊠ ⧺ lower = lower
-(W ∷ upper) ⧺ lower = (W ∷ (upper ⧺ lower)) {𝐛 = ○}
-
-_⧻_ : {Z₀ : Ty} → (upper : PState {Z₀ = Z₀} Z₁) → PStack {Z₀ = Z₀} non-empty Z₁' → PState {Z₀ = Z₀} Z₁'
-⟨ upper ⟩ ⧻ lower = ⟨ upper ⧺ lower ⟩
-
-\end{code}
-%<*PTrans>
-\begin{code}
-
-data _→ᵖ_ {Z₀ : Ty} {Z₁ : Ty} :
-        PState {Z₀ = Z₀} Z₁ → PState {Z₀ = Z₀} Z₁ → Set where
-
-    lookup→ :   {x : Γ ∋ X} {γ : Env {Z₀ = Z₀} Γ}
-                {pstack : PStack {Z₀ = Z₀} ∅? Z₁} {𝐛 : BotEq ∅? X Z₁}
-                -------------------------------------------------
-                →  ⟨ (⇡ (var x) γ ∷ pstack) {𝐛 = 𝐛} ⟩
-                   →ᵖ ⟨ (⭭ (lookup x γ) ∷ pstack) {𝐛 = 𝐛} ⟩
-
-    lam→ :      {M : Comp (Γ ∙ X) Y} {γ  : Env {Z₀ = Z₀} Γ}
-                {pstack : PStack {Z₀ = Z₀} ∅? Z₁} {𝐛 : BotEq ∅? (X `⇒ Y) Z₁}
-                --------------------------------------------------------
-                →  ⟨ (⇡ (lam M) γ ∷ pstack) {𝐛 = 𝐛} ⟩
-                   →ᵖ ⟨ (⭭ (cloᵛ M γ) ∷ pstack) {𝐛 = 𝐛} ⟩
-
-    pair→ :     {γ : Env {Z₀ = Z₀} Γ} {W₁ : Pure Γ X₁} {W₂ : Pure Γ X₂}
-                {pstack : PStack {Z₀ = Z₀} ∅? Z₁} {𝐛 : BotEq ∅? (X₁ `× X₂) Z₁}
-                ---------------------------------------------------------
-                →  ⟨ (⇡ (pair W₁ W₂) γ ∷ pstack) {𝐛 = 𝐛} ⟩
-                   →ᵖ ⟨ (⇡ W₁ γ ∷ ((⇡ᴸ W₁ W₂ γ ∷ pstack) {𝐛 = 𝐛})) {𝐛 = ○} ⟩
-
-    pmᵖ→ :      {γ : Env {Z₀ = Z₀} Γ} {Wˣ : Pure Γ (X₁ `× X₂)}
-                {Wʸ : Pure (Γ ∙ X₁ ∙ X₂) Y} {pstack : PStack {Z₀ = Z₀} ∅? Z₁ }
-                {𝐛 : BotEq ∅? Y Z₁}
-                ---------------------------------------------------------
-                →  ⟨ (⇡ (pm Wˣ Wʸ) γ ∷ pstack) {𝐛 = 𝐛} ⟩
-                   →ᵖ ⟨ (⇡ Wˣ γ ∷ (⇡ᴾᴹ Wˣ Wʸ γ ∷ pstack) {𝐛 = 𝐛}) {𝐛 = ○} ⟩
-
-    unit→ :     {γ  : Env {Z₀ = Z₀} Γ}
-                {pstack : PStack {Z₀ = Z₀} ∅? Z₁} {𝐛 : BotEq ∅? `Unit Z₁}
-                ----------------------------------------------------
-                →  ⟨ (⇡ unit γ ∷ pstack) {𝐛 = 𝐛} ⟩
-                   →ᵖ ⟨ (⭭ unitᵛ ∷ pstack) {𝐛 = 𝐛} ⟩
-
-    W∷l→ :      {γ : Env {Z₀ = Z₀} Γ} {Ẇ₁ : Value X₁} {W₁ : Pure Γ X₁}
-                {W₂ : Pure Γ X₂} {pstack : PStack {Z₀ = Z₀} ∅? Z₁}
-                {𝐛 : BotEq ∅? (X₁ `× X₂) Z₁}
-                ------------------------------------------------------
-                →  ⟨ (⭭ Ẇ₁ ∷ ((⇡ᴸ W₁ W₂ γ ∷ pstack) {𝐛 = 𝐛})) {𝐛 = ○} ⟩
-                   →ᵖ ⟨ (⇡ W₂ γ ∷ ((⇡ᴿ Ẇ₁ W₂ γ ∷ pstack) {𝐛 = 𝐛})) {𝐛 = ○} ⟩
-
-    W∷r→ :      {γ : Env {Z₀ = Z₀} Γ} {Ẇ₁ : Value X₁} {Ẇ₂ : Value X₂} {W₂ : Pure Γ X₂}
-                {pstack : PStack {Z₀ = Z₀} ∅? Z₁} {𝐛 : BotEq ∅? (X₁ `× X₂) Z₁}
-                -----------------------------------------------------------------
-                →  ⟨ (⭭ Ẇ₂ ∷ ((⇡ᴿ Ẇ₁ W₂ γ ∷ pstack) {𝐛 = 𝐛})) {𝐛 = ○} ⟩
-                   →ᵖ ⟨ (⭭ pairᵛ Ẇ₁ Ẇ₂ ∷ pstack) {𝐛 = 𝐛} ⟩
-
-    pair∷pm→ :  {γ : Env {Z₀ = Z₀} Γ} {Ẇ₁ : Value X₁} {Ẇ₂ : Value X₂}
-                {Wˣ : Pure Γ (X₁ `× X₂)} {Wʸ : Pure (Γ ∙ X₁ ∙ X₂) Y}
-                {pstack : PStack {Z₀ = Z₀} ∅? Z₁} {𝐛 : BotEq ∅? Y Z₁}
-                -----------------------------------------------------------
-                →  ⟨ (⭭ pairᵛ Ẇ₁ Ẇ₂ ∷ ((⇡ᴾᴹ Wˣ Wʸ γ ∷ pstack) {𝐛 = 𝐛})) {𝐛 = ○} ⟩
-                   →ᵖ  ⟨ (⇡ Wʸ (γ · Ẇ₁ · Ẇ₂) ∷ pstack) {𝐛 = 𝐛} ⟩
-
-\end{code}
-%</PTrans>
-\begin{code}
-
-data _↠ᵛ_ {Z₀ Z₁ : Ty} : PState {Z₀ = Z₀} Z₁ → PState {Z₀ = Z₀} Z₁ → Set where
-
-  _→ᵖ⟨_⟩． : (S : PState Z₁) → {S' : PState Z₁} → (laststep : S →ᵖ S') → S ↠ᵛ S'
-
-  _→ᵖ⟨_⟩_ : (S : PState Z₁) → {S' S'' : PState Z₁} → S →ᵖ S' → S' ↠ᵛ S'' → S ↠ᵛ S''
-
-_⨾_ : {Z₀ : Ty} {F S T : PState {Z₀ = Z₀} Z₁} → (F ↠ᵛ S) → (S ↠ᵛ T) → (F ↠ᵛ T)
-_⨾_ (F →ᵖ⟨ F>S ⟩．) S>>T = F →ᵖ⟨ F>S ⟩ S>>T
-_⨾_ (F →ᵖ⟨ F>S₁ ⟩ S₁>>S₂) S₂>>T = F →ᵖ⟨ F>S₁ ⟩ (S₁>>S₂ ⨾ S₂>>T)
-
-⟨_⟩⧻_ : {Z₀ : Ty} {from : PState {Z₀ = Z₀} Z₁} → {to : PState {Z₀ = Z₀} Z₁} → (F>T : from →ᵖ to) → (pstack : PStack {Z₀ = Z₀} non-empty Z₁') → (from ⧻ pstack) →ᵖ (to ⧻ pstack)
-⟨ lookup→ ⟩⧻ pstack = lookup→
-⟨ lam→ ⟩⧻ pstack = lam→
-⟨ pair→ ⟩⧻ pstack = pair→
-⟨ pmᵖ→ ⟩⧻ pstack = pmᵖ→
-⟨ unit→ ⟩⧻ pstack = unit→
-⟨ W∷l→ ⟩⧻ pstack = W∷l→
-⟨ W∷r→ ⟩⧻ pstack = W∷r→
-⟨ pair∷pm→ ⟩⧻ pstack = pair∷pm→
-
-⟪_⟫⧻_ : {from : PState {Z₀ = Z₀} Z₁} → {to : PState {Z₀ = Z₀} Z₁} → (F>T : from ↠ᵛ to) → (pstack : PStack {Z₀ = Z₀} non-empty Z₁') → (from ⧻ pstack) ↠ᵛ (to ⧻ pstack)
-⟪ _ →ᵖ⟨ F>T ⟩． ⟫⧻ pstack =  _ →ᵖ⟨ ⟨ F>T ⟩⧻ pstack ⟩．
-⟪ _ →ᵖ⟨ F>T ⟩ F>>T ⟫⧻ pstack =   _ →ᵖ⟨ ⟨ F>T ⟩⧻ pstack ⟩ (⟪ F>>T ⟫⧻ pstack)
+-- VALUE PROJECTIONS
 
 proj₁-val : {Z₀ : Ty} → Value {Z₀ = Z₀} (X `× Y) → Value {Z₀ = Z₀} X
 proj₁-val (pairᵛ W₁ W₂) = W₁
@@ -260,50 +82,6 @@ proj₂-val (pairᵛ W₁ W₂) = W₂
 
 pair-val : {Z₀ : Ty} → (W : Value {Z₀ = Z₀} (X `× Y)) → (pairᵛ (proj₁-val W) (proj₂-val W) ≡ W)
 pair-val (pairᵛ W₁ W₂) = refl
-
-\end{code}
-%<*PureSteps>
-\begin{code}
-record PureSteps {Z₀ : Ty} (W : Pure Γ X) (γ : Env {Z₀ = Z₀} Γ) : Set where
-  field
-    result : Value {Z₀ = Z₀} X
-    steps  : ⟨ ((⇡ W γ ∷ ⊠) {𝐛 = ▿}) ⟩ ↠ᵛ ⟨ ((⭭ result ∷ ⊠) {𝐛 = ▿}) ⟩
-open PureSteps
-
-normalise-pure : {Z₀ : Ty} → (W : Pure Γ X) → (γ : Env {Z₀ = Z₀} Γ) → PureSteps W γ
-
--- ...
-\end{code}
-%</PureSteps>
-\begin{code}
-
-normalise-pure (var i) γ = record { result = lookup i γ ; steps = ⟨ ⇡ (var i) γ ∷ ⊠ ⟩ →ᵖ⟨ lookup→ ⟩． }
-normalise-pure (lam M) γ = record { result = cloᵛ M γ ; steps = ⟨ ⇡ (lam M) γ ∷ ⊠ ⟩ →ᵖ⟨ lam→ ⟩． }
-normalise-pure (pair W₁ W₂) γ =
-  let
-    IH₁ = normalise-pure W₁ γ
-    IH₂ = normalise-pure W₂ γ
-    trace = _ →ᵖ⟨ pair→ ⟩． ⨾ ⟪ steps IH₁ ⟫⧻ _ ⨾ _ →ᵖ⟨ W∷l→ ⟩． ⨾ (⟪ steps IH₂ ⟫⧻ _) ⨾ _ →ᵖ⟨ W∷r→ ⟩．
-  in
-  record { result = pairᵛ (result IH₁) (result IH₂) ; steps = trace }
-normalise-pure (pm W₁ W₂) γ =
-  let
-    IH₁ = normalise-pure W₁ γ
-    IH₂ = normalise-pure W₂ (γ · proj₁-val (result IH₁) · proj₂-val (result IH₁))
-    pair∷pm→' = subst (λ x → ⟨ (⭭ x) ∷ (⇡ᴾᴹ W₁ W₂ γ ∷ ⊠) ⟩ →ᵖ ⟨ ⇡ W₂ (γ · proj₁-val (result IH₁) · proj₂-val (result IH₁)) ∷ ⊠ ⟩) (pair-val (result IH₁)) pair∷pm→
-  in
-  record { result = result IH₂ ; steps = _ →ᵖ⟨ pmᵖ→ ⟩． ⨾ ⟪ steps IH₁ ⟫⧻ _ ⨾ _ →ᵖ⟨ pair∷pm→' ⟩． ⨾ steps IH₂ }
-normalise-pure unit γ = record { result = unitᵛ ; steps = ⟨ ⇡ unit γ ∷ ⊠ ⟩ →ᵖ⟨ unit→ ⟩． }
-
-determinismⱽ : {Z₀ : Ty} {S S' : PState {Z₀ = Z₀} Z₁} → (S→S'₁ S→S'₂ : S →ᵖ S') → (S→S'₁ ≡ S→S'₂)
-determinismⱽ lookup→ lookup→ = refl
-determinismⱽ lam→ lam→ = refl
-determinismⱽ pair→ pair→ = refl
-determinismⱽ pmᵖ→ pmᵖ→ = refl
-determinismⱽ unit→ unit→ = refl
-determinismⱽ W∷l→ W∷l→ = refl
-determinismⱽ W∷r→ W∷r→ = refl
-determinismⱽ pair∷pm→ pair∷pm→ = refl
 
 ---------------------------------------------------------------------------------
 -- MACHINE FOR EFFECTFUL TERMS / COMPUTATIONS
@@ -335,25 +113,28 @@ clo-to-comp :  {Z₀ : Ty} → Value {Z₀ = Z₀} (X `⇒ Y)
 clo-to-comp (cloᵛ M γ) = _ , M , γ
 
 eval : {Z₀ : Ty} → Pure Γ X → Env {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X
-eval W γ = result (normalise-pure W γ)
+eval (var i) γ = lookup i γ
+eval (lam M) γ = cloᵛ M γ
+eval (pair W₁ W₂) γ = pairᵛ (eval W₁ γ) (eval W₂ γ)
+eval unit γ = unitᵛ
 
 eval-jump : {Z₀ : Ty} → Pure Γ `L → Env {Z₀ = Z₀} Γ → CState {Z₀ = Z₀}
-eval-jump W γ = jump-to-state (result (normalise-pure W γ))
+eval-jump W γ = jump-to-state (eval W γ)
 
 eval-clo :  {Z₀ : Ty} → Pure Γ (X `⇒ Y) → Pure Γ X → Env {Z₀ = Z₀} Γ
             → CStack {Z₀ = Z₀} Y → CState {Z₀ = Z₀}
 eval-clo W₁ W₂ γ k =
   let
-    M  = proj₁ (proj₂ (clo-to-comp (result (normalise-pure W₁ γ))))
-    γ' = proj₂ (proj₂ (clo-to-comp (result (normalise-pure W₁ γ))))
+    M  = proj₁ (proj₂ (clo-to-comp (eval W₁ γ)))
+    γ' = proj₂ (proj₂ (clo-to-comp (eval W₁ γ)))
   in
-  ⟨ M ╎ γ' · result (normalise-pure W₂ γ) ╎ k  ⟩
+  ⟨ M ╎ γ' · eval W₂ γ ╎ k  ⟩
 
 eval₁ : {Z₀ : Ty} → Pure Γ (X₁ `× X₂) → Env {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X₁
-eval₁ W γ = proj₁-val (result (normalise-pure W γ))
+eval₁ W γ = proj₁-val (eval W γ)
 
 eval₂ : {Z₀ : Ty} → Pure Γ (X₁ `× X₂) → Env {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X₂
-eval₂ W γ = proj₂-val (result (normalise-pure W γ))
+eval₂ W γ = proj₂-val (eval W γ)
 \end{code}
 %</Eval>
 \begin{code}
@@ -447,37 +228,15 @@ Rᴱ-ext : {Z₀ : Ty} {γ : Env {Z₀ = Z₀} Γ} {W : Value {Z₀ = Z₀} X} �
 Rᴱ-ext Rγ RW new = RW
 Rᴱ-ext Rγ RW (old i) = Rγ i
 
-rv≡sn : {Z₀ : Ty} → (W : Pure Γ `L) → (γ : Env {Z₀ = Z₀} Γ) → Rᵛ `L (result (normalise-pure W γ)) ≡ SN (jump-to-state (result (normalise-pure W γ)))
-rv≡sn (var new) (γ · jumpᵛ _ _ _) = refl
-rv≡sn (var (old i)) (γ · _) = rv≡sn (var i) γ
-rv≡sn (pm W₁ W₂) ⋄ = rv≡sn W₂ (⋄ · proj₁-val (result (normalise-pure W₁ ⋄)) · proj₂-val (result (normalise-pure W₁ ⋄)))
-rv≡sn (pm W₁ W₂) (γ · W') = rv≡sn W₂ (γ · W' · proj₁-val (result (normalise-pure W₁ (γ · W'))) · proj₂-val (result (normalise-pure W₁ (γ · W'))))
+rv≡sn : {Z₀ : Ty} → (Ẇ : Value {Z₀ = Z₀} `L) → Rᵛ `L Ẇ ≡ SN (jump-to-state Ẇ)
+rv≡sn (jumpᵛ _ _ _) = refl
 
 mutual
 
-  Rʲ : {Z₀ : Ty} {γ : Env {Z₀ = Z₀} Γ} → (W : Pure Γ `L) → Rᴱ γ → Rᵛ _ (result (normalise-pure W γ))
-  Rʲ {γ = γ} (var i) Rγ = Rγ i
-  Rʲ {γ = γ} (pm W₁ W₂) Rγ =
-    let
-      IH = fundamentalᵖ W₁ Rγ
-      W₁' = result (normalise-pure W₁ γ)
-      IH' : Rᵛ _ (pairᵛ (proj₁-val W₁') (proj₂-val W₁'))
-      IH' = subst (λ x → Rᵛ _ x) (sym (pair-val W₁')) IH
-    in
-    Rʲ W₂ (Rᴱ-ext (Rᴱ-ext Rγ (proj₁ IH')) (proj₂ IH'))
-
-  fundamentalᵖ  : {Z₀ : Ty} → (W : Pure Γ X) → {γ : Env {Z₀ = Z₀} Γ} → Rᴱ γ → Rᵛ X (result (normalise-pure W γ))
+  fundamentalᵖ  : {Z₀ : Ty} → (W : Pure Γ X) → {γ : Env {Z₀ = Z₀} Γ} → Rᴱ γ → Rᵛ X (eval W γ)
   fundamentalᵖ (var i) Rγ = Rγ i
   fundamentalᵖ (lam M) Rγ RW Rk = fundamentalᶜ M (Rᴱ-ext Rγ RW) Rk
   fundamentalᵖ (pair W₁ W₂) Rγ = (fundamentalᵖ W₁ Rγ) , (fundamentalᵖ W₂ Rγ)
-  fundamentalᵖ (pm W₁ W₂) {γ = γ} Rγ =
-    let
-      IH = fundamentalᵖ W₁ Rγ
-      W₁' = result (normalise-pure W₁ γ)
-      IH' : Rᵛ _ (pairᵛ (proj₁-val W₁') (proj₂-val W₁'))
-      IH' = subst (λ x → Rᵛ _ x) (sym (pair-val W₁')) IH
-    in
-    fundamentalᵖ W₂ (Rᴱ-ext (Rᴱ-ext Rγ (proj₁ IH')) (proj₂ IH'))
   fundamentalᵖ unit Rγ = tt
 
   fundamentalᶜ : {Z₀ : Ty} → (M : Comp Γ X) → {γ : Env {Z₀ = Z₀} Γ} → Rᴱ γ → {cstack : CStack {Z₀ = Z₀} X} → Rᵏ X cstack → SN ⟨ M ╎ γ ╎ cstack ⟩
@@ -485,7 +244,7 @@ mutual
   fundamentalᶜ (pm W M) {γ = γ} Rγ Rk =
     let
       IH = fundamentalᵖ W Rγ
-      W' = result (normalise-pure W γ)
+      W' = eval W γ
       IH' : Rᵛ _ (pairᵛ (proj₁-val W') (proj₂-val W'))
       IH' = subst (λ x → Rᵛ _ x) (sym (pair-val W')) IH
     in
@@ -499,12 +258,12 @@ mutual
   fundamentalᶜ (app W₁ W₂) {γ = γ} Rγ {cstack = k} Rk =
     let
       IH = fundamentalᵖ W₁ Rγ
-      W₁' = result (normalise-pure W₁ γ)
+      W₁' = eval W₁ γ
       eq = sym (clo-val W₁')
       IH' = subst (λ x → Rᵛ _ x) eq IH
     in
     sn λ { app→ → IH' (fundamentalᵖ W₂ Rγ) Rk }
-  fundamentalᶜ (var W) {γ = γ} Rγ Rk = sn λ { var→ → subst (λ x → x) (rv≡sn W γ) (Rʲ W Rγ)}
+  fundamentalᶜ (var W) {γ = γ} Rγ Rk = sn λ { var→ → subst (λ x → x) (rv≡sn (eval W γ)) (fundamentalᵖ W Rγ)}
   fundamentalᶜ (sub M₁ M₂) Rγ Rk = sn λ { sub→ → fundamentalᶜ M₁ (Rᴱ-ext Rγ (fundamentalᶜ M₂ Rγ Rk)) Rk}
 
 Rᴱ-⊘ : {Z₀ : Ty} → Rᴱ {Z₀ = Z₀} ⋄

@@ -31,12 +31,8 @@ projFst p = μ (cut _ (ret (wk̃ᵛ p)) (fst (covar z)))
 projSnd : L.Γ ⊢ᵛ (L.A `× L.B) ∣ L.Δ -> L.Γ ⊢ᵗ L.B ∣ L.Δ
 projSnd p = μ (cut _ (ret (wk̃ᵛ p)) (snd (covar z)))
 
-letpm : L.Γ ⊢ᵗ (L.A₁ `× L.A₂) ∣ L.Δ -> (L.Γ ∙ L.A₁ ∙ L.A₂) ⊢ᵗ L.B ∣ L.Δ -> L.Γ ⊢ᵗ L.B ∣ L.Δ
-letpm p cont =
-  lett p
-    (lett (projFst (var z))
-      (lett (projSnd (var (s z)))
-        (sub-tm (L.sub-ex (L.sub-ex (L.sub-wk (L.wk-wk (L.wk-wk (L.wk-wk L.wk-id))) L.wk-id L.sub-id) (var (s z))) (var z)) cosub-id cont)))
+letpv : L.Γ ⊢ᵛ L.A₁ `× L.A₂ ∣ L.Δ -> (L.Γ ∙ L.A₁ ∙ L.A₂) ⊢ᵗ L.B ∣ L.Δ -> L.Γ ⊢ᵗ L.B ∣ L.Δ
+letpv V M = lett (projFst V) (lett (projSnd (wkᵛ V)) M)
 
 efq : L.Γ ⊢ᵗ `⊥ ∣ L.Δ -> L.Γ ⊢ᵗ L.A ∣ L.Δ
 efq u = μ (cut `⊥ (wk̃ᵗ u) tp)
@@ -49,22 +45,19 @@ installV {A = A} n = lam (μ (cut A (wk̃ᵗ (wk̃ᵗ n)) (covar (s z))))
 
 ⟦_⟧ᶜ : IΓ I.⊢ᶜ IA -> ⟦ IΓ ⟧ˣ ⊢ᵗ ⟦ IA ⟧ ∣ L.Δ
 
-varVal : IΓ I.∋ IA -> ⟦ IΓ ⟧ˣ ⊢ᵛ ⟦ IA ⟧ ∣ L.Δ
-varVal i = var ⟦ i ⟧ⁱ
+⟦_⟧ᵛ : IΓ I.⊢ᵛ IA -> ⟦ IΓ ⟧ˣ ⊢ᵛ ⟦ IA ⟧ ∣ L.Δ
+⟦ I.var i ⟧ᵛ    = var ⟦ i ⟧ⁱ
+⟦ I.lam M ⟧ᵛ    = lam ⟦ M ⟧ᶜ
+⟦ I.pair V W ⟧ᵛ = pair ⟦ V ⟧ᵛ ⟦ W ⟧ᵛ
+⟦ I.unit ⟧ᵛ     = unit
 
-lamVal : (IΓ I.∙ IA) I.⊢ᶜ IB -> ⟦ IΓ ⟧ˣ ⊢ᵛ (⟦ IA ⟧ `⇒ ⟦ IB ⟧) ∣ L.Δ
-lamVal M = lam ⟦ M ⟧ᶜ
+⟦_⟧ˢ : I.Sub IΓ IΔ -> L.Sub ⟦ IΓ ⟧ˣ L.Δ ⟦ IΔ ⟧ˣ
+⟦ I.sub-ε ⟧ˢ      = L.sub-ε
+⟦ I.sub-ex θ V ⟧ˢ = L.sub-ex ⟦ θ ⟧ˢ ⟦ V ⟧ᵛ
 
-⟦_⟧ᵗ : IΓ I.⊢ᵛ IA -> ⟦ IΓ ⟧ˣ ⊢ᵗ ⟦ IA ⟧ ∣ L.Δ
-⟦ I.var i ⟧ᵗ    = ret (varVal i)
-⟦ I.lam M ⟧ᵗ    = ret (lamVal M)
-⟦ I.pair V W ⟧ᵗ = lett ⟦ V ⟧ᵗ (lett (wkᵗ ⟦ W ⟧ᵗ) (ret (pair (var (s z)) (var z))))
-⟦ I.pm V W ⟧ᵗ   = letpm ⟦ V ⟧ᵗ ⟦ W ⟧ᵗ
-⟦ I.unit ⟧ᵗ     = ret unit
-
-⟦ I.return V ⟧ᶜ   = ⟦ V ⟧ᵗ
-⟦ I.pm V M ⟧ᶜ     = letpm ⟦ V ⟧ᵗ ⟦ M ⟧ᶜ
-⟦ I.push M N ⟧ᶜ   = lett ⟦ M ⟧ᶜ ⟦ N ⟧ᶜ
-⟦ I.app V W ⟧ᶜ    = lett ⟦ V ⟧ᵗ (lett (wkᵗ ⟦ W ⟧ᵗ) (applyL (var (s z)) (var z)))
-⟦ I.rec V W ⟧ᶜ    = lett ⟦ V ⟧ᵗ (lett (wkᵗ ⟦ W ⟧ᵗ) (raiseP (var (s z)) (var z)))
-⟦ I.inc M N ⟧ᶜ    = μ (cut _ (L.letv (installV ⟦ N ⟧ᶜ) ⟦ M ⟧ᶜ) (covar z))
+⟦ I.return V ⟧ᶜ = ret ⟦ V ⟧ᵛ
+⟦ I.pm V M ⟧ᶜ   = letpv ⟦ V ⟧ᵛ ⟦ M ⟧ᶜ
+⟦ I.push M N ⟧ᶜ = lett ⟦ M ⟧ᶜ ⟦ N ⟧ᶜ
+⟦ I.app V W ⟧ᶜ  = applyL ⟦ V ⟧ᵛ ⟦ W ⟧ᵛ
+⟦ I.rec V W ⟧ᶜ  = raiseP ⟦ V ⟧ᵛ ⟦ W ⟧ᵛ
+⟦ I.inc M N ⟧ᶜ  = μ (cut _ (L.letv (installV ⟦ N ⟧ᶜ) ⟦ M ⟧ᶜ) (covar z))

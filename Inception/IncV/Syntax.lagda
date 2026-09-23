@@ -83,10 +83,6 @@ data Pure where
           -----------------
           -> Γ ⊢ᵖ X₁ `× X₂
 
-  pm :    Γ ⊢ᵖ X₁ `× X₂ -> (Γ ∙ X₁ ∙ X₂) ⊢ᵖ Y
-          --------------------------------
-          -> Γ ⊢ᵖ Y
-
   unit :
           -----------
           Γ ⊢ᵖ `Unit
@@ -156,7 +152,6 @@ mutual
   wk-pure π (var x)         = var (wk-mem π x)
   wk-pure π (lam M)         = lam (wk-comp (wk-cong π) M)
   wk-pure π (pair W₁ W₂)    = pair (wk-pure π W₁) (wk-pure π W₂)
-  wk-pure π (pm W₁ W₂)      = pm (wk-pure π W₁) (wk-pure (wk-cong (wk-cong π)) W₂)
   wk-pure π unit            = unit
   wk-pure π (dat N)         = dat N
 
