@@ -8,7 +8,7 @@
 \newif\ifwithagda
 %\withagdatrue
 \newif\ifdebug
-%\debugtrue
+\debugtrue
 
 \usepackage{ragged2e}
 
@@ -43,7 +43,7 @@
 \fi
 
 \usepackage[shortlabels]{enumitem}
-\usepackage{nccmath, amsmath, amssymb, parskip, geometry, xcolor, amsthm, mathrsfs, tikz, bussproofs, mathtools}
+\usepackage{nccmath, amsmath, amssymb, parskip, geometry, xcolor, amsthm}
 
 
 %TC:ignore 
@@ -64,30 +64,7 @@
 \makeatother
 
 \usepackage[T1]{fontenc}
-
-%AGDA
 \usepackage{fontspec, newunicodechar, stmaryrd, setspace, comment, scalerel, doi}
-\usepackage{silence}
-\WarningFilter{etex}{Extended allocation already in use.}
-\usepackage{catchfilebetweentags} %causes etex warning
-%\input{commands}
-%\input{unicode}
-%\input{macros}
-%\usepackage{agda-latex/agda}
-\newcommand{\fixgap}{\vspace*{-30pt}}
-%END AGDA
-
-\usepackage[titletoc, title, page]{appendix}
-
-\usetikzlibrary{cd}
-
-\tikzcdset{ diagrams={ column sep=60pt,
-					             row sep=30pt,
-					             arrows={shorten >=-0.5ex,shorten <=-0.5ex}
-                     }
-          }
-
-\usetikzlibrary{tikzmark, positioning}
 
 \geometry{a4paper, left=25mm, right=25mm, top=20mm, bottom=25mm}
 
@@ -119,46 +96,6 @@
 
 \makeatother
 
-\usepackage{titlesec}
-
-\titleformat{\section}[block]
-{\bfseries\Huge}
-{\thesection}{1em}{}
-\titlespacing{\section}{0pc}{*2}{*2}[5pc]
-
-\titleformat{\subsection}[block]
-{\bfseries\Large}
-{\thesubsection}{1em}{}
-\titlespacing{\subsection}{0pc}{20pt}{*2}
-
-\titleformat{\subsubsection}[block]
-{\bfseries\large}
-{\thesubsubsection}{1em}{}
-\titlespacing{\subsubsection}{0pc}{20pt}{*2}
-
-
-% https://tex.stackexchange.com/questions/171976/forcing-page-number-to-start-from-the-title-page
-\makeatletter
-\renewenvironment{titlepage}
- {%
-  \if@twocolumn
-    \@restonecoltrue\onecolumn
-  \else
-    \@restonecolfalse\newpage
-  \fi
-  \thispagestyle{empty}%
- }
- {%
-  \if@restonecol
-    \twocolumn
-  \else
-    \newpage
-  \fi
- }
-\makeatother
-
-\usepackage{texosquery}
-\usepackage[showzone=true]{datetime2}
 \usepackage{fancyhdr}
 \fancypagestyle{pstyle}
 {
@@ -235,9 +172,10 @@
 
 % Preamble >>>
 
-\begin{document}
-
-\section{Definitions}
+\begin{document}%
+%
+%\section{Definitions}
+\clearpage
 \input{figures/ctx}
 \input{figures/terms}
 \input{figures/termsem}
