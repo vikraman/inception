@@ -549,7 +549,7 @@ RedSub-wk ρ {θ} rθ = record
   { red = λ i → Eq.subst (Redᵛ _) (sym (sub-mem-wk ρ θ i)) (Red-wk _ ρ (rθ .red i)) }
 
 RedSub-ext : {θ : Γ ⊢ Δ} {V : Γ ⊢ᵛ A} → RedSub θ → Redᵛ A V → RedSub (sub-ex θ V)
-RedSub-ext rθ rv = record { red = λ { h → rv ; (t i) → rθ .red i } }
+RedSub-ext rθ rv = record { red = λ { here → rv ; (there i) → rθ .red i } }
 
 RedSub-id : RedSub (sub-id {Γ})
 RedSub-id {Γ} = record { red = λ i → Eq.subst (Redᵛ _) (sym (sub-mem-id i)) (Red-varᵛ _ i) }
@@ -577,20 +577,20 @@ Fundamental-val θ rθ (pm {A = X} {B = Y} V W) =
            sub-val (sub-ex (sub-ex (sub-wk π θ) L) R) W
          ≡˘⟨ fund-pm-eqᵛ (sub-wk π θ) L R W ⟩
            sub-val (sub-ex (sub-ex sub-id L) R)
-                   (sub-val (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) (sub-wk π θ)) (var (t h))) (var h)) W)
+                   (sub-val (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) (sub-wk π θ)) (var (there here))) (var here)) W)
          ≡˘⟨ cong (sub-val (sub-ex (sub-ex sub-id L) R))
                   (begin
                      wk-val (wk-cong (wk-cong π))
-                            (sub-val (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) θ) (var (t h))) (var h)) W)
-                   ≡⟨ wk-sub-val (wk-cong (wk-cong π)) (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) θ) (var (t h))) (var h)) W ⟩
-                     sub-val (sub-wk (wk-cong (wk-cong π)) (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) θ) (var (t h))) (var h))) W
+                            (sub-val (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) θ) (var (there here))) (var here)) W)
+                   ≡⟨ wk-sub-val (wk-cong (wk-cong π)) (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) θ) (var (there here))) (var here)) W ⟩
+                     sub-val (sub-wk (wk-cong (wk-cong π)) (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) θ) (var (there here))) (var here))) W
                    ≡⟨ cong (λ w → sub-val w W)
-                           (cong (λ w → sub-ex w (var h))
-                                 (cong (λ w → sub-ex w (var (t h))) (wk-cong2-sub-wk-lemma π θ))) ⟩
-                     sub-val (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) (sub-wk π θ)) (var (t h))) (var h)) W ∎) ⟩
+                           (cong (λ w → sub-ex w (var here))
+                                 (cong (λ w → sub-ex w (var (there here))) (wk-cong2-sub-wk-lemma π θ))) ⟩
+                     sub-val (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) (sub-wk π θ)) (var (there here))) (var here)) W ∎) ⟩
            sub-val (sub-ex (sub-ex sub-id L) R)
                    (wk-val (wk-cong (wk-cong π))
-                           (sub-val (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) θ) (var (t h))) (var h)) W)) ∎)
+                           (sub-val (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) θ) (var (there here))) (var here)) W)) ∎)
         (Fundamental-val (sub-ex (sub-ex (sub-wk π θ) L) R) (RedSub-ext (RedSub-ext (RedSub-wk π rθ) redL) redR) W))
 
 Fundamental-comp θ rθ (return V) =

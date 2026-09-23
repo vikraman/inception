@@ -74,8 +74,8 @@ mutual
 \begin{code}
 
 lookup : (i : Γ ∋ X) → Env {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X
-lookup new (γ · W') = W'
-lookup (old i) (γ · W') = lookup i γ
+lookup here (γ · W') = W'
+lookup (there i) (γ · W') = lookup i γ
 
 ---------------------------------------------------------------------------------
 -- VALUE PROJECTIONS
@@ -214,8 +214,8 @@ Rᴱ : {Z₀ : Ty} → Env {Z₀ = Z₀} Γ → Set
 Rᴱ {Γ = Γ} γ = ∀ {X : Ty} → (i : Γ ∋ X) → Rᵛ X (lookup i γ)
 
 Rᴱ-ext : {Z₀ : Ty} {γ : Env {Z₀ = Z₀} Γ} {W : Value {Z₀ = Z₀} X} → Rᴱ γ → Rᵛ X W → Rᴱ (γ · W)
-Rᴱ-ext Rγ RW new = RW
-Rᴱ-ext Rγ RW (old i) = Rγ i
+Rᴱ-ext Rγ RW here = RW
+Rᴱ-ext Rγ RW (there i) = Rγ i
 
 rv≡sn : {Z₀ : Ty} → (Ẇ : Value {Z₀ = Z₀} `L) → Rᵛ `L Ẇ ≡ (∀ {W' : Value {Z₀ = Z₀} `P} → SN (jump-to-state Ẇ W'))
 rv≡sn (jumpᵛ _ _ _) = refl

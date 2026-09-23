@@ -25,18 +25,7 @@ open Monad (K[_]-Monad {x = 0ℓ} R) using (η; _*)
 ⟦ A `× B ⟧ = ⟦ A ⟧ × ⟦ B ⟧
 ⟦ A `⇒ B ⟧ = ⟦ A ⟧ -> K ⟦ B ⟧
 
-⟦_⟧ˣ : Ctx -> Set
-⟦ ε ⟧ˣ     = ⊤
-⟦ Γ ∙ A ⟧ˣ = ⟦ Γ ⟧ˣ × ⟦ A ⟧
-
-⟦_⟧ʷ : Γ ⊇ Δ -> ⟦ Γ ⟧ˣ -> ⟦ Δ ⟧ˣ
-⟦ wk-ε ⟧ʷ      = idf
-⟦ wk-cong π ⟧ʷ = < proj₁ ； ⟦ π ⟧ʷ , proj₂ >
-⟦ wk-wk π ⟧ʷ   = proj₁ ； ⟦ π ⟧ʷ
-
-⟦_⟧ᵐ : Γ ∋ A -> ⟦ Γ ⟧ˣ -> ⟦ A ⟧
-⟦ h ⟧ᵐ   = proj₂
-⟦ t x ⟧ᵐ = proj₁ ； ⟦ x ⟧ᵐ
+open Sem ⟦_⟧
 
 mutual
   ⟦_⟧ᵛ : Γ ⊢ᵛ A -> ⟦ Γ ⟧ˣ -> ⟦ A ⟧
@@ -58,17 +47,6 @@ mutual
 
 -- coherences
 
-wk-id-coh : ⟦ wk-id {Γ} ⟧ʷ ≡ id
-wk-id-coh {ε}     = refl
-wk-id-coh {Γ ∙ A} rewrite wk-id-coh {Γ} = refl
-{-# REWRITE wk-id-coh #-}
-
-wk-mem-coh : (π : Γ ⊇ Δ) (i : Δ ∋ A) -> ⟦ wk-mem π i ⟧ᵐ ≡ (⟦ π ⟧ʷ ； ⟦ i ⟧ᵐ)
-wk-mem-coh (wk-cong π) h     = refl
-wk-mem-coh (wk-cong π) (t i) rewrite wk-mem-coh π i = refl
-wk-mem-coh (wk-wk π)   h     rewrite wk-mem-coh π h = refl
-wk-mem-coh (wk-wk π)   (t i) rewrite wk-mem-coh π (t i) = refl
-
 mutual
   wk-val-coh : (π : Γ ⊇ Δ) (V : Δ ⊢ᵛ A) -> ⟦ wk-val π V ⟧ᵛ ≡ (⟦ π ⟧ʷ ； ⟦ V ⟧ᵛ)
   wk-val-coh π (var i)      rewrite wk-mem-coh π i = refl
@@ -87,8 +65,8 @@ mutual
 {-# REWRITE wk-comp-coh #-}
 
 sub-mem-coh : (θ : Γ ⊢ Δ) (i : Δ ∋ A) -> ⟦ sub-mem θ i ⟧ᵛ ≡ (⟦ θ ⟧ˢ ； ⟦ i ⟧ᵐ)
-sub-mem-coh (sub-ex θ V) h     = refl
-sub-mem-coh (sub-ex θ V) (t i) rewrite sub-mem-coh θ i = refl
+sub-mem-coh (sub-ex θ V) here     = refl
+sub-mem-coh (sub-ex θ V) (there i) rewrite sub-mem-coh θ i = refl
 {-# REWRITE sub-mem-coh #-}
 
 sub-wk-coh : (π : Γ ⊇ Δ) (θ : Δ ⊢ Ψ) -> ⟦ sub-wk π θ ⟧ˢ ≡ (⟦ π ⟧ʷ ； ⟦ θ ⟧ˢ)
@@ -104,16 +82,16 @@ sub-id-coh {Γ ∙ A} = funext \(γ , a) -> cong₂ _,_ (happly sub-id-coh γ) r
 mutual
   sub-val-coh : (θ : Γ ⊢ Δ) (V : Δ ⊢ᵛ A) -> ⟦ sub-val θ V ⟧ᵛ ≡ (⟦ θ ⟧ˢ ； ⟦ V ⟧ᵛ)
   sub-val-coh θ (var i)      = refl
-  sub-val-coh θ (lam M)      rewrite sub-comp-coh (sub-ex (sub-wk (wk-wk wk-id) θ) (var h)) M = refl
+  sub-val-coh θ (lam M)      rewrite sub-comp-coh (sub-ex (sub-wk (wk-wk wk-id) θ) (var here)) M = refl
   sub-val-coh θ (pair V1 V2) rewrite sub-val-coh θ V1 | sub-val-coh θ V2 = refl
-  sub-val-coh θ (pm V W)     rewrite sub-val-coh θ V | sub-val-coh (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) θ) (var (t h))) (var h)) W = refl
+  sub-val-coh θ (pm V W)     rewrite sub-val-coh θ V | sub-val-coh (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) θ) (var (there here))) (var here)) W = refl
   sub-val-coh θ unit         = refl
 
   sub-comp-coh : (θ : Γ ⊢ Δ) (M : Δ ⊢ᶜ A) -> ⟦ sub-comp θ M ⟧ᶜ ≡ (⟦ θ ⟧ˢ ； ⟦ M ⟧ᶜ)
   sub-comp-coh θ (return V) rewrite sub-val-coh θ V = refl
-  sub-comp-coh θ (push M N) rewrite sub-comp-coh θ M | sub-comp-coh (sub-ex (sub-wk (wk-wk wk-id) θ) (var h)) N = refl
+  sub-comp-coh θ (push M N) rewrite sub-comp-coh θ M | sub-comp-coh (sub-ex (sub-wk (wk-wk wk-id) θ) (var here)) N = refl
   sub-comp-coh θ (app V W)  rewrite sub-val-coh θ V | sub-val-coh θ W = refl
-  sub-comp-coh θ (pm V M)   rewrite sub-val-coh θ V | sub-comp-coh (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) θ) (var (t h))) (var h)) M = refl
+  sub-comp-coh θ (pm V M)   rewrite sub-val-coh θ V | sub-comp-coh (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) θ) (var (there here))) (var here)) M = refl
 
 {-# REWRITE sub-val-coh #-}
 {-# REWRITE sub-comp-coh #-}

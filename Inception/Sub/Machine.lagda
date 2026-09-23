@@ -64,8 +64,8 @@ mutual
            → Env {Z₀ = Z₀} (Γ ∙ X)
 
 lookup : Γ ∋ X → Env {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X
-lookup new (γ · Ẇ) = Ẇ
-lookup (old x) (γ · Ẇ) = lookup x γ
+lookup here (γ · Ẇ) = Ẇ
+lookup (there x) (γ · Ẇ) = lookup x γ
 
 \end{code}
 %</Env>
@@ -225,8 +225,8 @@ Rᴱ : {Z₀ : Ty} → Env {Z₀ = Z₀} Γ → Set
 Rᴱ {Γ = Γ} γ = ∀ {X : Ty} → (i : Γ ∋ X) → Rᵛ X (lookup i γ)
 
 Rᴱ-ext : {Z₀ : Ty} {γ : Env {Z₀ = Z₀} Γ} {W : Value {Z₀ = Z₀} X} → Rᴱ γ → Rᵛ X W → Rᴱ (γ · W)
-Rᴱ-ext Rγ RW new = RW
-Rᴱ-ext Rγ RW (old i) = Rγ i
+Rᴱ-ext Rγ RW here = RW
+Rᴱ-ext Rγ RW (there i) = Rγ i
 
 rv≡sn : {Z₀ : Ty} → (Ẇ : Value {Z₀ = Z₀} `L) → Rᵛ `L Ẇ ≡ SN (jump-to-state Ẇ)
 rv≡sn (jumpᵛ _ _ _) = refl
@@ -347,14 +347,14 @@ exec M = exec-acc (SN-theorem M)
 -- EXAMPLES
 
 ex15 : ε ⊢ᶜ (`Unit)
-ex15 = push (push (app (lam {X = `Unit} (sub (var (var new)) (return unit))) unit) (return unit)) (return unit)
+ex15 = push (push (app (lam {X = `Unit} (sub (var (var here)) (return unit))) unit) (return unit)) (return unit)
 
 _ : exec ex15 ≡ (_ , unitᵛ , _ ,
-                  (⟨ push (push (app (lam (sub (var (var new)) (return unit))) unit) (return unit)) (return unit) ╎ ⋄ ╎ ◻ ⟩
-    →ᶜ⟨ push→ ⟩   (⟨ push (app (lam (sub (var (var new)) (return unit))) unit) (return unit) ╎ ⋄ ╎ < return unit ； ⋄ >∷ ◻ ⟩
-    →ᶜ⟨ push→ ⟩   (⟨ app (lam (sub (var (var new)) (return unit))) unit ╎ ⋄ ╎ < return unit ； ⋄ >∷ < return unit ； ⋄ >∷ ◻ ⟩
-    →ᶜ⟨ app→ ⟩    (⟨ sub (var (var new)) (return unit) ╎ ⋄ · unitᵛ ╎ < return unit ； ⋄ >∷ < return unit ； ⋄ >∷ ◻ ⟩
-    →ᶜ⟨ sub→ ⟩    (⟨ var (var new) ╎ ⋄ · unitᵛ · jumpᵛ (return unit) (⋄ · unitᵛ) (< return unit ； ⋄ >∷ < return unit ； ⋄ >∷ ◻) ╎ < return unit ； ⋄ >∷ < return unit ； ⋄ >∷ ◻ ⟩
+                  (⟨ push (push (app (lam (sub (var (var here)) (return unit))) unit) (return unit)) (return unit) ╎ ⋄ ╎ ◻ ⟩
+    →ᶜ⟨ push→ ⟩   (⟨ push (app (lam (sub (var (var here)) (return unit))) unit) (return unit) ╎ ⋄ ╎ < return unit ； ⋄ >∷ ◻ ⟩
+    →ᶜ⟨ push→ ⟩   (⟨ app (lam (sub (var (var here)) (return unit))) unit ╎ ⋄ ╎ < return unit ； ⋄ >∷ < return unit ； ⋄ >∷ ◻ ⟩
+    →ᶜ⟨ app→ ⟩    (⟨ sub (var (var here)) (return unit) ╎ ⋄ · unitᵛ ╎ < return unit ； ⋄ >∷ < return unit ； ⋄ >∷ ◻ ⟩
+    →ᶜ⟨ sub→ ⟩    (⟨ var (var here) ╎ ⋄ · unitᵛ · jumpᵛ (return unit) (⋄ · unitᵛ) (< return unit ； ⋄ >∷ < return unit ； ⋄ >∷ ◻) ╎ < return unit ； ⋄ >∷ < return unit ； ⋄ >∷ ◻ ⟩
     →ᶜ⟨ var→ ⟩    (⟨ return unit ╎ ⋄ · unitᵛ ╎ < return unit ； ⋄ >∷ < return unit ； ⋄ >∷ ◻ ⟩
     →ᶜ⟨ eval→ ⟩ (⟨ unitᵛ ╎ < return unit ； ⋄ >∷ < return unit ； ⋄ >∷ ◻ ⟩
     →ᶜ⟨ return→ ⟩ (⟨ return unit ╎ ⋄ · unitᵛ ╎ < return unit ； ⋄ >∷ ◻ ⟩

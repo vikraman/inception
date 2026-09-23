@@ -1,6 +1,6 @@
 module Inception.Sub.Translation where
 
-open import Inception.Sub.Syntax as S
+open import Inception.Sub.Syntax as S hiding (ε; _∙_; here; there)
 open import Inception.SystemL.Syntax as L
 
 variable
@@ -14,19 +14,19 @@ variable
 ⟦ `L ⟧     = `Unit `⇒ `⊥
 
 ⟦_⟧ˣ : S.Ctx -> L.Ctx
-⟦ ε ⟧ˣ     = ε
-⟦ Γ ∙ A ⟧ˣ = ⟦ Γ ⟧ˣ ∙ ⟦ A ⟧
+⟦ S.ε ⟧ˣ     = ε
+⟦ Γ S.∙ A ⟧ˣ = ⟦ Γ ⟧ˣ ∙ ⟦ A ⟧
 
 ⟦_⟧ⁱ : SΓ S.∋ SA -> ⟦ SΓ ⟧ˣ L.∋ ⟦ SA ⟧
-⟦ S.new ⟧ⁱ   = z
-⟦ S.old i ⟧ⁱ = s ⟦ i ⟧ⁱ
+⟦ S.here ⟧ⁱ   = here
+⟦ S.there i ⟧ⁱ = there ⟦ i ⟧ⁱ
 
 raise : L.Γ ⊢ᵛ (`Unit `⇒ `⊥) ∣ L.Δ -> L.Γ ⊢ᵗ L.A ∣ L.Δ
 raise ref = efq (applyL ref unit)
 
 handleVal : L.Γ ⊢ᵗ L.A ∣ L.Δ -> L.Γ ⊢ᵛ (`Unit `⇒ `⊥) ∣ (L.Δ ∙ L.A)
 handleVal {A = A} n =
-  lam (μ (cut A (wk-tm (L.wk-wk L.wk-id) (L.wk-wk (L.wk-wk L.wk-id)) n) (covar (s z))))
+  lam (μ (cut A (wk-tm (L.wk-wk L.wk-id) (L.wk-wk (L.wk-wk L.wk-id)) n) (covar (there here))))
 
 ⟦_⟧ᶜ : SΓ S.⊢ᶜ SA -> ⟦ SΓ ⟧ˣ ⊢ᵗ ⟦ SA ⟧ ∣ L.Δ
 
@@ -45,4 +45,4 @@ handleVal {A = A} n =
 ⟦ S.push M N ⟧ᶜ = lett ⟦ M ⟧ᶜ ⟦ N ⟧ᶜ
 ⟦ S.app V W ⟧ᶜ  = applyL ⟦ V ⟧ᵖ ⟦ W ⟧ᵖ
 ⟦ S.var V ⟧ᶜ    = raise ⟦ V ⟧ᵖ
-⟦ S.sub M N ⟧ᶜ  = μ (cut _ (L.letv (handleVal ⟦ N ⟧ᶜ) ⟦ M ⟧ᶜ) (covar z))
+⟦ S.sub M N ⟧ᶜ  = μ (cut _ (L.letv (handleVal ⟦ N ⟧ᶜ) ⟦ M ⟧ᶜ) (covar here))

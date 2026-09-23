@@ -51,30 +51,11 @@ open Monad (K[_]-Monad {x = 0ℓ} R) using (η; _*)
 %<*SemCtx>
 \begin{code}
 
-⟦_⟧ˣ : Ctx -> Set
-⟦ ε ⟧ˣ = ⊤
-⟦ Γ ∙ A ⟧ˣ = ⟦ Γ ⟧ˣ × ⟦ A ⟧
+open Sem ⟦_⟧
 
 \end{code}
 %</SemCtx>
 
-\begin{code}
-
-⟦_⟧ʷ : Γ ⊇ Δ -> ⟦ Γ ⟧ˣ -> ⟦ Δ ⟧ˣ
-⟦ wk-ε ⟧ʷ = idf
-⟦ wk-cong π ⟧ʷ = < proj₁ ； ⟦ π ⟧ʷ , proj₂ >
-⟦ wk-wk π ⟧ʷ = proj₁ ； ⟦ π ⟧ʷ
-
-\end{code}
-%<*SemMem>
-\begin{code}
-
-⟦_⟧ᵐ : Γ ∋ X -> ⟦ Γ ⟧ˣ -> ⟦ X ⟧
-⟦ new ⟧ᵐ = proj₂
-⟦ old x ⟧ᵐ = proj₁ ； ⟦ x ⟧ᵐ
-
-\end{code}
-%</SemMem>
 \begin{code}
 
 \end{code}
@@ -161,17 +142,6 @@ mutual
 ⟦ sub-ex θ W ⟧ˢ = < ⟦ θ ⟧ˢ , ⟦ W ⟧ᵖ >
 
 -- coherences
-wk-id-coh : ⟦ wk-id {Γ} ⟧ʷ ≡ id
-wk-id-coh {ε} = refl
-wk-id-coh {Γ ∙ A} rewrite wk-id-coh {Γ} = refl
-{-# REWRITE wk-id-coh #-}
-
-wk-mem-coh : (π : Γ ⊇ Δ) (i : Δ ∋ X) -> ⟦ wk-mem π i ⟧ᵐ ≡ (⟦ π ⟧ʷ ； ⟦ i ⟧ᵐ)
-wk-mem-coh (wk-cong π) new = refl
-wk-mem-coh (wk-cong π) (old i) rewrite wk-mem-coh π i = refl
-wk-mem-coh (wk-wk π) new rewrite wk-mem-coh π new = refl
-wk-mem-coh (wk-wk π) (old i) rewrite wk-mem-coh π (old i) = refl
-
 mutual
   wk-pure-coh : (π : Γ ⊇ Δ) (W : Δ ⊢ᵖ X) -> ⟦ wk-pure π W ⟧ᵖ ≡ (⟦ π ⟧ʷ ； ⟦ W ⟧ᵖ)
   wk-pure-coh π (var i) rewrite wk-mem-coh π i = refl
@@ -191,8 +161,8 @@ mutual
 {-# REWRITE wk-comp-coh #-}
 
 sub-mem-coh : (θ : Sub Γ Δ) (i : Δ ∋ X) -> ⟦ sub-mem θ i ⟧ᵖ ≡ (⟦ θ ⟧ˢ ； ⟦ i ⟧ᵐ)
-sub-mem-coh (sub-ex θ W) new = refl
-sub-mem-coh (sub-ex θ W) (old i) rewrite sub-mem-coh θ i = refl
+sub-mem-coh (sub-ex θ W) here = refl
+sub-mem-coh (sub-ex θ W) (there i) rewrite sub-mem-coh θ i = refl
 {-# REWRITE sub-mem-coh #-}
 
 sub-wk-coh : (π : Γ ⊇ Δ) (θ : Sub Δ Ψ) -> ⟦ sub-wk π θ ⟧ˢ ≡ (⟦ π ⟧ʷ ； ⟦ θ ⟧ˢ)
@@ -208,17 +178,17 @@ sub-id-coh {Γ ∙ X} = funext \(γ , x) -> cong₂ _,_ (happly sub-id-coh γ) r
 mutual
   sub-pure-coh : (θ : Sub Γ Δ) (W : Δ ⊢ᵖ X) -> ⟦ sub-pure θ W ⟧ᵖ ≡ (⟦ θ ⟧ˢ ； ⟦ W ⟧ᵖ)
   sub-pure-coh θ (var i) = refl
-  sub-pure-coh θ (lam M) rewrite sub-comp-coh (sub-ex (sub-wk (wk-wk wk-id) θ) (var new)) M = refl
+  sub-pure-coh θ (lam M) rewrite sub-comp-coh (sub-ex (sub-wk (wk-wk wk-id) θ) (var here)) M = refl
   sub-pure-coh θ (pair W₁ W₂) rewrite sub-pure-coh θ W₁ | sub-pure-coh θ W₂ = refl
   sub-pure-coh θ unit = refl
 
   sub-comp-coh : (θ : Sub Γ Δ) (M : Δ ⊢ᶜ X) -> ⟦ sub-comp θ M ⟧ᶜ ≡ (⟦ θ ⟧ˢ ； ⟦ M ⟧ᶜ)
   sub-comp-coh θ (return W) rewrite sub-pure-coh θ W = refl
-  sub-comp-coh θ (pm W M) rewrite sub-pure-coh θ W | sub-comp-coh (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) θ) (var (old new))) (var new)) M = refl
-  sub-comp-coh θ (push M₁ M₂) rewrite sub-comp-coh θ M₁ | sub-comp-coh (sub-ex (sub-wk (wk-wk wk-id) θ) (var new)) M₂ = refl
+  sub-comp-coh θ (pm W M) rewrite sub-pure-coh θ W | sub-comp-coh (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) θ) (var (there here))) (var here)) M = refl
+  sub-comp-coh θ (push M₁ M₂) rewrite sub-comp-coh θ M₁ | sub-comp-coh (sub-ex (sub-wk (wk-wk wk-id) θ) (var here)) M₂ = refl
   sub-comp-coh θ (app W₁ W₂) rewrite sub-pure-coh θ W₁ | sub-pure-coh θ W₂ = refl
   sub-comp-coh θ (var W) rewrite sub-pure-coh θ W = refl
-  sub-comp-coh θ (sub M₁ M₂) rewrite sub-comp-coh (sub-ex (sub-wk (wk-wk wk-id) θ) (var new)) M₁ | sub-comp-coh θ M₂ = refl
+  sub-comp-coh θ (sub M₁ M₂) rewrite sub-comp-coh (sub-ex (sub-wk (wk-wk wk-id) θ) (var here)) M₁ | sub-comp-coh θ M₂ = refl
 
 {-# REWRITE sub-pure-coh #-}
 {-# REWRITE sub-comp-coh #-}
@@ -322,8 +292,8 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
 \begin{code}
 
   lookup-eq : (i : Γ ∋ X) → (γ : Env {Z₀ = R₀} Γ) → ⟦ i ⟧ᵐ ⟦ γ ⟧ᴱ ≡ ⟦ lookup i γ ⟧ⱽ
-  lookup-eq new (γ · x) = refl
-  lookup-eq (old i) (γ · x) = lookup-eq i γ
+  lookup-eq here (γ · x) = refl
+  lookup-eq (there i) (γ · x) = lookup-eq i γ
 
   eval-correct : (W : Pure Γ X) → (γ : Env {Z₀ = R₀} Γ) → ⟦ W ⟧ᵖ ⟦ γ ⟧ᴱ ≡ ⟦ eval W γ ⟧ⱽ
   eval-correct (var i) γ = lookup-eq i γ

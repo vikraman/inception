@@ -24,8 +24,8 @@ mutual
     _∷_ : Env Γ → Value A → Env (Γ ∙ A)
 
 lookup : Env Γ → Γ ∋ A → Value A
-lookup (ρ ∷ v) h     = v
-lookup (ρ ∷ v) (t i) = lookup ρ i
+lookup (ρ ∷ v) here     = v
+lookup (ρ ∷ v) (there i) = lookup ρ i
 
 fst-v : Value (A `× B) → Value A
 fst-v (pair v w) = v
@@ -115,7 +115,7 @@ RedEnv-∅ : RedEnv ∅
 red RedEnv-∅ ()
 
 RedEnv-ext : {ρ : Env Γ} {v : Value A} → RedEnv ρ → Redᵛ A v → RedEnv (ρ ∷ v)
-RedEnv-ext redρ redv = record { red = λ { h → redv ; (t i) → redρ .red i } }
+RedEnv-ext redρ redv = record { red = λ { here → redv ; (there i) → redρ .red i } }
 
 Redᵏ-ε : Redᵏ A ε
 Redᵏ-ε redv = sn (λ ())
@@ -177,7 +177,7 @@ eval M = eval-acc (SN-theorem M)
 
 open import Relation.Binary.PropositionalEquality
 
-_ : eval (pm (pair unit unit) (return (lam {A = `Unit} (return (var h)))))
-       ≡ ([ clo (return (var h)) (∅ ∷ unit ∷ unit) ∥ ε ] ,
+_ : eval (pm (pair unit unit) (return (lam {A = `Unit} (return (var here)))))
+       ≡ ([ clo (return (var here)) (∅ ∷ unit ∷ unit) ∥ ε ] ,
           _ ~>⟨ pm-step ⟩ _ ~>⟨ return-step ⟩ _ ◼ , (λ ()))
 _ = refl

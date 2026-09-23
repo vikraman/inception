@@ -25,37 +25,7 @@ data Ty : Set where
   _`×_ _`⇒_ : Ty -> Ty -> Ty
   `L `P : Ty
 
-module Cx (Ty : Set) where
-
-  infixl 15 _∙_
-  infix 10 _∋_
-
-  data Ctx : Set where
-    ε : Ctx
-    _∙_ : Ctx -> Ty -> Ctx
-
-  variable
-    A B C D : Ty
-    X X' Y Y' Z Z' Z₀ Z₁ Z₁' X₁ X₂ : Ty
-    Γ Δ Ψ Γ' Γ'' Γ''' Δ' Γ₀ Γ₁ Γ₂ Γ₃ : Ctx
-
-\end{code}
-%<*Mem>
-\begin{code}
-  data _∋_ : Ctx -> Ty -> Set where
-
-    new :
-           ---------
-           Γ ∙ X ∋ X
-
-    old :  Γ ∋ X
-           -----------
-           -> Γ ∙ Y ∋ X
-\end{code}
-%</Mem>
-\begin{code}
-
-open Cx Ty public
+open import Inception.Ctx Ty public
 
 syntax Pure Γ X = Γ ⊢ᵖ X
 
@@ -129,23 +99,6 @@ data Comp where
 \end{code}
 %</Comp>
 \begin{code}
-
-syntax Wk Γ Δ = Γ ⊇ Δ
-
-data Wk : (Γ Δ : Ctx) -> Set where
-  wk-ε : ε ⊇ ε
-  wk-cong : (π : Wk Γ Δ) -> Wk (Γ ∙ X) (Δ ∙ X)
-  wk-wk : (π : Wk Γ Δ) -> Wk (Γ ∙ X) Δ
-
-wk-id : Wk Γ Γ
-wk-id {Γ = ε} = wk-ε
-wk-id {Γ = Γ ∙ A} = wk-cong wk-id
-
-wk-mem : Wk Γ Δ -> Δ ∋ X -> Γ ∋ X
-wk-mem (wk-cong π) new = new
-wk-mem (wk-wk π) new = old (wk-mem π new)
-wk-mem (wk-cong π) (old i) = old (wk-mem π i)
-wk-mem (wk-wk π) (old i) = old (wk-mem π (old i))
 
 mutual
   wk-pure : Wk Γ Δ -> Δ ⊢ᵖ X -> Γ ⊢ᵖ X

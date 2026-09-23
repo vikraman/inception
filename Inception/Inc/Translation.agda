@@ -1,6 +1,6 @@
 module Inception.Inc.Translation where
 
-open import Inception.Inc.Syntax as I
+open import Inception.Inc.Syntax as I hiding (ε; _∙_; here; there)
 open import Inception.SystemL.Syntax as L
 
 variable
@@ -15,18 +15,18 @@ variable
 ⟦ `V ⟧     = ⟦ `P ⟧ `⇒ `⊥
 
 ⟦_⟧ˣ : I.Ctx -> L.Ctx
-⟦ ε ⟧ˣ     = ε
-⟦ Γ ∙ A ⟧ˣ = ⟦ Γ ⟧ˣ ∙ ⟦ A ⟧
+⟦ I.ε ⟧ˣ     = ε
+⟦ Γ I.∙ A ⟧ˣ = ⟦ Γ ⟧ˣ ∙ ⟦ A ⟧
 
 ⟦_⟧ⁱ : IΓ I.∋ IA -> ⟦ IΓ ⟧ˣ L.∋ ⟦ IA ⟧
-⟦ I.h ⟧ⁱ   = z
-⟦ I.t i ⟧ⁱ = s ⟦ i ⟧ⁱ
+⟦ I.here ⟧ⁱ   = here
+⟦ I.there i ⟧ⁱ = there ⟦ i ⟧ⁱ
 
 raiseP : L.Γ ⊢ᵛ (⟦ `P ⟧ `⇒ `⊥) ∣ L.Δ -> L.Γ ⊢ᵛ ⟦ `P ⟧ ∣ L.Δ -> L.Γ ⊢ᵗ L.A ∣ L.Δ
 raiseP ref p = efq (applyL ref p)
 
 installV : (L.Γ ∙ ⟦ `P ⟧) ⊢ᵗ L.A ∣ L.Δ -> L.Γ ⊢ᵛ (⟦ `P ⟧ `⇒ `⊥) ∣ (L.Δ ∙ L.A)
-installV {A = A} n = lam (μ (cut A (wk̃ᵗ (wk̃ᵗ n)) (covar (s z))))
+installV {A = A} n = lam (μ (cut A (wk̃ᵗ (wk̃ᵗ n)) (covar (there here))))
 
 ⟦_⟧ᶜ : IΓ I.⊢ᶜ IA -> ⟦ IΓ ⟧ˣ ⊢ᵗ ⟦ IA ⟧ ∣ L.Δ
 
@@ -45,4 +45,4 @@ installV {A = A} n = lam (μ (cut A (wk̃ᵗ (wk̃ᵗ n)) (covar (s z))))
 ⟦ I.push M N ⟧ᶜ = lett ⟦ M ⟧ᶜ ⟦ N ⟧ᶜ
 ⟦ I.app V W ⟧ᶜ  = applyL ⟦ V ⟧ᵛ ⟦ W ⟧ᵛ
 ⟦ I.rec V W ⟧ᶜ  = raiseP ⟦ V ⟧ᵛ ⟦ W ⟧ᵛ
-⟦ I.inc M N ⟧ᶜ  = μ (cut _ (L.letv (installV ⟦ N ⟧ᶜ) ⟦ M ⟧ᶜ) (covar z))
+⟦ I.inc M N ⟧ᶜ  = μ (cut _ (L.letv (installV ⟦ N ⟧ᶜ) ⟦ M ⟧ᶜ) (covar here))

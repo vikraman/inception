@@ -10,29 +10,7 @@ data Ty : Set where
   _`×_ _`⇒_ : Ty -> Ty -> Ty
   `V `P : Ty
 
-module Cx (Ty : Set) where
-
-  infixl 15 _∙_
-  infix 10 _∋_
-
-  data Ctx : Set where
-    ε : Ctx
-    _∙_ : Ctx -> Ty -> Ctx
-
-  variable
-    A B C D : Ty
-    Γ Δ Ψ : Ctx
-
-  data _∋_ : Ctx -> Ty -> Set where
-    h :
-      ---------
-      Γ ∙ A ∋ A
-
-    t : Γ ∋ A
-      -------------
-      -> Γ ∙ B ∋ A
-
-open Cx Ty public
+open import Inception.Ctx Ty public
 
 syntax Val Γ A = Γ ⊢ᵛ A
 
@@ -86,23 +64,6 @@ data Comp where
       -----------------------------------
       -> Γ ⊢ᶜ A
 
-syntax Wk Γ Δ = Γ ⊇ Δ
-
-data Wk : (Γ Δ : Ctx) -> Set where
-  wk-ε : ε ⊇ ε
-  wk-cong : (π : Wk Γ Δ) -> Wk (Γ ∙ A) (Δ ∙ A)
-  wk-wk : (π : Wk Γ Δ) -> Wk (Γ ∙ A) Δ
-
-wk-id : Wk Γ Γ
-wk-id {Γ = ε} = wk-ε
-wk-id {Γ = Γ ∙ A} = wk-cong wk-id
-
-wk-mem : Wk Γ Δ -> Δ ∋ A -> Γ ∋ A
-wk-mem (wk-cong π) h = h
-wk-mem (wk-wk π) h = t (wk-mem π h)
-wk-mem (wk-cong π) (t i) = t (wk-mem π i)
-wk-mem (wk-wk π) (t i) = t (wk-mem π (t i))
-
 mutual
   wk-val : Wk Γ Δ -> Δ ⊢ᵛ A -> Γ ⊢ᵛ A
   wk-val π (var x)         = var (wk-mem π x)
@@ -127,8 +88,8 @@ data Sub (Γ : Ctx) : (Δ : Ctx) -> Set where
   sub-ex : (θ : Sub Γ Δ) -> (V : Val Γ A) -> Sub Γ (Δ ∙ A)
 
 sub-mem : Sub Γ Δ -> Δ ∋ A -> Val Γ A
-sub-mem (sub-ex θ V) h = V
-sub-mem (sub-ex θ V) (t i) = sub-mem θ i
+sub-mem (sub-ex θ V) here = V
+sub-mem (sub-ex θ V) (there i) = sub-mem θ i
 
 sub-wk : Wk Γ Δ -> Sub Δ Ψ -> Sub Γ Ψ
 sub-wk π sub-ε = sub-ε
@@ -136,22 +97,22 @@ sub-wk π (sub-ex θ V) = sub-ex (sub-wk π θ) (wk-val π V)
 
 sub-id : Sub Γ Γ
 sub-id {Γ = ε} = sub-ε
-sub-id {Γ = Γ ∙ A} = sub-ex (sub-wk (wk-wk wk-id) sub-id) (var h)
+sub-id {Γ = Γ ∙ A} = sub-ex (sub-wk (wk-wk wk-id) sub-id) (var here)
 
 mutual
   sub-val : Sub Γ Δ -> Δ ⊢ᵛ A -> Γ ⊢ᵛ A
   sub-val θ (var x) = sub-mem θ x
-  sub-val θ (lam M) = lam (sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ) (var h)) M)
+  sub-val θ (lam M) = lam (sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ) (var here)) M)
   sub-val θ (pair V W) = pair (sub-val θ V) (sub-val θ W)
   sub-val θ unit = unit
 
   sub-comp : Sub Γ Δ -> Δ ⊢ᶜ A -> Γ ⊢ᶜ A
   sub-comp θ (return V) = return (sub-val θ V)
-  sub-comp θ (pm V M) = pm (sub-val θ V) (sub-comp (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) θ) (var (t h))) (var h)) M)
-  sub-comp θ (push M N) = push (sub-comp θ M) (sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ) (var h)) N)
+  sub-comp θ (pm V M) = pm (sub-val θ V) (sub-comp (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) θ) (var (there here))) (var here)) M)
+  sub-comp θ (push M N) = push (sub-comp θ M) (sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ) (var here)) N)
   sub-comp θ (app V W) = app (sub-val θ V) (sub-val θ W)
   sub-comp θ (rec V W) = rec (sub-val θ V) (sub-val θ W)
-  sub-comp θ (inc M N) = inc (sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ) (var h)) M) (sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ) (var h)) N)
+  sub-comp θ (inc M N) = inc (sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ) (var here)) M) (sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ) (var here)) N)
 
 -- syntactic sugar
 
@@ -166,7 +127,7 @@ letc : Γ ⊢ᵛ A -> (Γ ∙ A) ⊢ᶜ B
 letc V M = sub-comp (sub-ex sub-id V) M
 
 exchg : Sub (Γ ∙ A ∙ B)(Γ ∙ B ∙ A)
-exchg = sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) sub-id) (var h)) (var (t h))
+exchg = sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) sub-id) (var here)) (var (there here))
 
 variable
   n : ℕ
@@ -214,7 +175,7 @@ data EqVal Γ where
 
   lam-eta : (V : Γ ⊢ᵛ A `⇒ B)
           ---------------------------
-          -> Γ ⊢ᵛ V ≈ lam (app (wk V) (var h)) ∶ A `⇒ B
+          -> Γ ⊢ᵛ V ≈ lam (app (wk V) (var here)) ∶ A `⇒ B
 
 data EqComp Γ where
 
@@ -264,7 +225,7 @@ data EqComp Γ where
 
   pm-eta : (V : Γ ⊢ᵛ A `× B) -> (M : (Γ ∙ (A `× B)) ⊢ᶜ C)
          -------------------------------------------------------------------------------------------
-         -> Γ ⊢ᶜ sub-comp (sub-ex sub-id V) M ≈ pm V (sub-comp (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) sub-id) (pair (var (t h)) (var h))) M) ∶ C
+         -> Γ ⊢ᶜ sub-comp (sub-ex sub-id V) M ≈ pm V (sub-comp (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) sub-id) (pair (var (there here)) (var here))) M) ∶ C
 
   return-beta : (V : Γ ⊢ᵛ A) -> (M : (Γ ∙ A) ⊢ᶜ B)
                ---------------------------------------------------------------
@@ -272,7 +233,7 @@ data EqComp Γ where
 
   return-eta : (M : Γ ⊢ᶜ A)
               -----------------------
-              -> Γ ⊢ᶜ M ≈ push M (return (var h)) ∶ A
+              -> Γ ⊢ᶜ M ≈ push M (return (var here)) ∶ A
 
   push-eta : (M : Γ ⊢ᶜ A) -> (N : (Γ ∙ A) ⊢ᶜ B) -> (P : (Γ ∙ B) ⊢ᶜ C)
            ----------------------------------------------------------------
@@ -290,11 +251,11 @@ data EqComp Γ where
 
   inc-subst : (M : (Γ ∙ `P) ⊢ᶜ A) -> (V : Γ ⊢ᵛ `P)
             -----------------------------------------------------------------------
-            -> Γ ⊢ᶜ inc (rec (var h) (wk V)) M ≈ sub-comp (sub-ex sub-id V) M ∶ A
+            -> Γ ⊢ᶜ inc (rec (var here) (wk V)) M ≈ sub-comp (sub-ex sub-id V) M ∶ A
 
   inc-ext : (M : (Γ ∙ `V) ⊢ᶜ A) -> (V : Γ ⊢ᵛ `V)
           ----------------------------------------------------------------------------------------
-          -> Γ ⊢ᶜ inc (sub-comp sub-id M) (rec (wk V) (var h)) ≈ sub-comp (sub-ex sub-id V) M ∶ A
+          -> Γ ⊢ᶜ inc (sub-comp sub-id M) (rec (wk V) (var here)) ≈ sub-comp (sub-ex sub-id V) M ∶ A
 
   inc-assoc : (L : (Γ ∙ `V ∙ `V) ⊢ᶜ A) -> (M : (Γ ∙ `V ∙ `P) ⊢ᶜ A) -> (N : (Γ ∙ `P) ⊢ᶜ A)
             ------------------------------------------------------------------------------------------------------------------------------------------------------------

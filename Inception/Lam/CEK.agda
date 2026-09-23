@@ -21,8 +21,8 @@ mutual
     _∷_ : Env Γ → Value A → Env (Γ ∙ A)
 
 lookup : Env Γ → Γ ∋ A → Value A
-lookup (ρ ∷ v) h     = v
-lookup (ρ ∷ v) (t i) = lookup ρ i
+lookup (ρ ∷ v) here     = v
+lookup (ρ ∷ v) (there i) = lookup ρ i
 
 eval-val : Γ ⊢ᵛ A → Env Γ → Value A
 eval-val (var i) ρ = lookup ρ i
@@ -97,7 +97,7 @@ RedEnv-∅ : RedEnv ∅
 red RedEnv-∅ ()
 
 RedEnv-ext : {ρ : Env Γ} {v : Value A} → RedEnv ρ → Redᵛ A v → RedEnv (ρ ∷ v)
-RedEnv-ext redρ redv = record { red = λ { h → redv ; (t i) → redρ .red i } }
+RedEnv-ext redρ redv = record { red = λ { here → redv ; (there i) → redρ .red i } }
 
 Redᵏ-ε : Redᵏ A ε
 Redᵏ-ε redv = sn (λ ())

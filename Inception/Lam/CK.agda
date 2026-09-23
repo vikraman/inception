@@ -166,7 +166,7 @@ red (RedSub-wk ρ {θ} rθ) {A = A} i =
            (Red-wk A ρ (rθ .red i))
 
 RedSub-ext : {θ : Γ ⊢ Δ} {V : Γ ⊢ᵛ A} → RedSub θ → Redᵛ A V → RedSub (sub-ex θ V)
-RedSub-ext rθ rv = record { red = λ { h → rv ; (t i) → rθ .red i } }
+RedSub-ext rθ rv = record { red = λ { here → rv ; (there i) → rθ .red i } }
 
 RedSub-id : RedSub (sub-id {Γ})
 red (RedSub-id {Γ}) {A = A} i =
@@ -192,7 +192,7 @@ Fundamental-val θ rθ (lam M) π {W} rw =
               (begin
                 sub-comp (sub-ex (sub-wk π θ) W) M
               ≡˘⟨ fund-lam-eq θ π W M ⟩
-                sub-comp (sub-ex sub-id W) (wk-comp (wk-cong π) (sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ) (var h)) M))
+                sub-comp (sub-ex sub-id W) (wk-comp (wk-cong π) (sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ) (var here)) M))
               ∎)
               (Fundamental-comp (sub-ex (sub-wk π θ) W) (RedSub-ext (RedSub-wk π rθ) rw) M))
 
@@ -208,7 +208,7 @@ Fundamental-comp θ rθ (push M N) =
                       (begin
                         sub-comp (sub-ex θ V) N
                       ≡˘⟨ fund-push-eq θ V N ⟩
-                        sub-comp (sub-ex sub-id V) (sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ) (var h)) N)
+                        sub-comp (sub-ex sub-id V) (sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ) (var here)) N)
                       ∎)
                       (Fundamental-comp (sub-ex θ V) (RedSub-ext rθ rv) N))
 
