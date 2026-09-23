@@ -14,26 +14,26 @@ open Inception.Prelude.RTC
 infixl 20 _∷_
 
 mutual
-  data Value : Ty → Set where
-    unit : Value `Unit
-    pair : Value A → Value B → Value (A `× B)
-    clo  : {Γ : Ctx} → (Γ ∙ A) ⊢ᶜ B → Env Γ → Value (A `⇒ B)
+  data MVal : Ty → Set where
+    unit : MVal `Unit
+    pair : MVal A → MVal B → MVal (A `× B)
+    clo  : {Γ : Ctx} → (Γ ∙ A) ⊢ᶜ B → Env Γ → MVal (A `⇒ B)
 
   data Env : Ctx → Set where
     ∅   : Env ε
-    _∷_ : Env Γ → Value A → Env (Γ ∙ A)
+    _∷_ : Env Γ → MVal A → Env (Γ ∙ A)
 
-lookup : Env Γ → Γ ∋ A → Value A
+lookup : Env Γ → Γ ∋ A → MVal A
 lookup (ρ ∷ v) here     = v
 lookup (ρ ∷ v) (there i) = lookup ρ i
 
-fst-v : Value (A `× B) → Value A
+fst-v : MVal (A `× B) → MVal A
 fst-v (pair v w) = v
 
-snd-v : Value (A `× B) → Value B
+snd-v : MVal (A `× B) → MVal B
 snd-v (pair v w) = w
 
-eval-val : Γ ⊢ᵛ A → Env Γ → Value A
+eval-val : Γ ⊢ᵛ A → Env Γ → MVal A
 eval-val (var i)    ρ = lookup ρ i
 eval-val (lam M)    ρ = clo M ρ
 eval-val (pair V W) ρ = pair (eval-val V ρ) (eval-val W ρ)
@@ -57,12 +57,12 @@ infix 5 [_∥_]
 
 data Cfg : Ty → Set where
   ⟨_∥_∥_⟩ : {Γ : Ctx} → Γ ⊢ᶜ A → Env Γ → Kont A B → Cfg B
-  [_∥_]   : Value A → Kont A B → Cfg B
+  [_∥_]   : MVal A → Kont A B → Cfg B
 
-apply : Value (A `⇒ B) → Value A → Kont B C → Cfg C
+apply : MVal (A `⇒ B) → MVal A → Kont B C → Cfg C
 apply (clo N ρ) w κ = ⟨ N ∥ ρ ∷ w ∥ κ ⟩
 
-split : Value (A `× B) → (Γ ∙ A ∙ B) ⊢ᶜ C → Env Γ → Kont C D → Cfg D
+split : MVal (A `× B) → (Γ ∙ A ∙ B) ⊢ᶜ C → Env Γ → Kont C D → Cfg D
 split v M ρ κ = ⟨ M ∥ ρ ∷ fst-v v ∷ snd-v v ∥ κ ⟩
 
 infix 5 _→ᵏ_
@@ -75,7 +75,7 @@ data _→ᵏ_ : {B : Ty} → Cfg B → Cfg B → Set where
   return-step : {Γ : Ctx} {V : Γ ⊢ᵛ A} {ρ : Env Γ} {κ : Kont A B}
               → ⟨ return V ∥ ρ ∥ κ ⟩ →ᵏ [ eval-val V ρ ∥ κ ]
 
-  resume-step : {Γ : Ctx} {v : Value A} {N : (Γ ∙ A) ⊢ᶜ B} {ρ : Env Γ} {κ : Kont B C}
+  resume-step : {Γ : Ctx} {v : MVal A} {N : (Γ ∙ A) ⊢ᶜ B} {ρ : Env Γ} {κ : Kont B C}
               → [ v ∥ N ◂ ρ ∷ κ ] →ᵏ ⟨ N ∥ ρ ∷ v ∥ κ ⟩
 
   app-step    : {Γ : Ctx} {V : Γ ⊢ᵛ (A `⇒ B)} {W : Γ ⊢ᵛ A} {ρ : Env Γ} {κ : Kont B C}
@@ -98,7 +98,7 @@ data SN {B} (σ : Cfg B) : Set where
 --------------------------------------------------------------------------
 -- reducibility candidates
 
-Redᵛ : (A : Ty) → Value A → Set
+Redᵛ : (A : Ty) → MVal A → Set
 Redᵏ : (A : Ty) → Kont A B → Set
 
 Redᵛ `Unit    v = ⊤
@@ -114,7 +114,7 @@ open RedEnv
 RedEnv-∅ : RedEnv ∅
 red RedEnv-∅ ()
 
-RedEnv-ext : {ρ : Env Γ} {v : Value A} → RedEnv ρ → Redᵛ A v → RedEnv (ρ ∷ v)
+RedEnv-ext : {ρ : Env Γ} {v : MVal A} → RedEnv ρ → Redᵛ A v → RedEnv (ρ ∷ v)
 RedEnv-ext redρ redv = record { red = λ { here → redv ; (there i) → redρ .red i } }
 
 Redᵏ-ε : Redᵏ A ε
