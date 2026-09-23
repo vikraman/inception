@@ -11,20 +11,6 @@ open import Data.Sum as S
 open import Relation.Binary.PropositionalEquality
 open import Inception.Prelude
 
-infixr 4 _；_
-
-_；_ : ∀ {ℓ} {A B C : Set ℓ} -> (A -> B) -> (B -> C) -> (A -> C)
-f ； g = g ∘ f
-
-idf : ∀ {ℓ} {A : Set ℓ} -> A -> A
-idf a = a
-
-assocl : ∀ {ℓ} {A B C : Set ℓ} -> A × (B × C) -> (A × B) × C
-assocl (a , (b , c)) = (a , b) , c
-
-shuffle : ∀ {ℓ} {A B C : Set ℓ} -> (A × B) × C -> (A × C) × B
-shuffle ((a , b) , c) = (a , c) , b
-
 open import Inception.Cont.Base
 
 K : Set -> Set
@@ -33,15 +19,6 @@ T = K[_]-Monad {x = zero} R
 
 open import Inception.Monad.Base using (Monad)
 open Monad T public
-
-τ : {X Y : Set} -> X × K Y -> K (X × Y)
-τ (x , ky) k = ky \z -> k (x , z)
-
-cbv : {X Y : Set} -> (X -> K Y) -> R ^ (R ^ Y × X)
-cbv f (k , x) = f x k
-
-eval : {X Y : Set} -> Y ^ X × X -> Y
-eval = uncurry′ idf
 
 ⟦_⟧ : Ty -> Set
 ⟦ `⊥ ⟧ = R
@@ -80,7 +57,7 @@ eval = uncurry′ idf
 
 mutual
   ⟦_⟧ᶜ : Γ ⊢ Δ -> ⟦ Γ ⟧ⁿ × R ^ ⟦ Δ ⟧ⁿ̃ -> R
-  ⟦ cut _ M C ⟧ᶜ = < ⟦ M ⟧ᵗ , ⟦ C ⟧ᵏ > ； eval
+  ⟦ cut _ M C ⟧ᶜ = < ⟦ M ⟧ᵗ , ⟦ C ⟧ᵏ > ； ev
 
   ⟦_⟧ᵛ : Γ ⊢ᵛ A ∣ Δ -> ⟦ Γ ⟧ⁿ × R ^ ⟦ Δ ⟧ⁿ̃ -> ⟦ A ⟧
   ⟦ var i ⟧ᵛ = proj₁ ； ⟦ i ⟧ᵐ
@@ -97,8 +74,8 @@ mutual
   ⟦_⟧ᵏ : Γ ∣ A ⊢ᵏ Δ -> ⟦ Γ ⟧ⁿ × R ^ ⟦ Δ ⟧ⁿ̃ -> R ^ ⟦ A ⟧
   ⟦ covar i ⟧ᵏ = proj₂ ； ([ R ]^ ⟦ i ⟧ᵐ̃)
   ⟦ app V C ⟧ᵏ = < ⟦ C ⟧ᵏ , ⟦ V ⟧ᵛ > ； η ； [ R ]^ cbv
-  ⟦ fst C ⟧ᵏ = ⟦ C ⟧ᵏ ； curry′ (assocl ； proj₁ ； eval)
-  ⟦ snd C ⟧ᵏ = ⟦ C ⟧ᵏ ； curry′ (assocl ； P.map proj₁ id ； eval)
+  ⟦ fst C ⟧ᵏ = ⟦ C ⟧ᵏ ； curry′ (assocl ； proj₁ ； ev)
+  ⟦ snd C ⟧ᵏ = ⟦ C ⟧ᵏ ； curry′ (assocl ； P.map proj₁ id ； ev)
   ⟦ case C1 C2 ⟧ᵏ = < ⟦ C1 ⟧ᵏ , ⟦ C2 ⟧ᵏ > ； uncurry′ S.[_,_]
   ⟦ μ̃ M ⟧ᵏ = curry′ (shuffle ； ⟦ M ⟧ᶜ)
   ⟦ tp ⟧ᵏ = const idf
@@ -269,8 +246,8 @@ mutual
   eqCoTm (≈-sym p) = sym (eqCoTm p)
   eqCoTm (≈-trans p q) = trans (eqCoTm p) (eqCoTm q)
   eqCoTm (app-cong p q) = cong (_； η ； [ R ]^ cbv) (cong₂ <_,_> (eqCoTm q) (eqVal p))
-  eqCoTm (fst-cong p) = cong (_； curry′ (assocl ； proj₁ ； eval)) (eqCoTm p)
-  eqCoTm (snd-cong p) = cong (_； curry′ (assocl ； P.map proj₁ id ； eval)) (eqCoTm p)
+  eqCoTm (fst-cong p) = cong (_； curry′ (assocl ； proj₁ ； ev)) (eqCoTm p)
+  eqCoTm (snd-cong p) = cong (_； curry′ (assocl ； P.map proj₁ id ； ev)) (eqCoTm p)
   eqCoTm (case-cong p q) = cong (_； uncurry′ S.[_,_]) (cong₂ <_,_> (eqCoTm p) (eqCoTm q))
   eqCoTm (μ̃-cong p) = cong (λ f → curry′ (shuffle ； f)) (eqCmd p)
   eqCoTm (μ̃-eta C) = refl
@@ -280,7 +257,7 @@ mutual
   eqCmd ≈-refl = refl
   eqCmd (≈-sym p) = sym (eqCmd p)
   eqCmd (≈-trans p q) = trans (eqCmd p) (eqCmd q)
-  eqCmd (cut-cong p q) = cong (_； eval) (cong₂ <_,_> (eqTm p) (eqCoTm q))
+  eqCmd (cut-cong p q) = cong (_； ev) (cong₂ <_,_> (eqTm p) (eqCoTm q))
   eqCmd (μ-beta M C) = refl
   eqCmd (μ̃-beta V M) = refl
   eqCmd (app-beta M V C) = refl

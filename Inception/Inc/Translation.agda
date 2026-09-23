@@ -22,21 +22,6 @@ variable
 ⟦ I.h ⟧ⁱ   = z
 ⟦ I.t i ⟧ⁱ = s ⟦ i ⟧ⁱ
 
-applyL : L.Γ ⊢ᵛ (L.A `⇒ L.B) ∣ L.Δ -> L.Γ ⊢ᵛ L.A ∣ L.Δ -> L.Γ ⊢ᵗ L.B ∣ L.Δ
-applyL f a = μ (cut _ (ret (wk̃ᵛ f)) (app (wk̃ᵛ a) (covar z)))
-
-projFst : L.Γ ⊢ᵛ (L.A `× L.B) ∣ L.Δ -> L.Γ ⊢ᵗ L.A ∣ L.Δ
-projFst p = μ (cut _ (ret (wk̃ᵛ p)) (fst (covar z)))
-
-projSnd : L.Γ ⊢ᵛ (L.A `× L.B) ∣ L.Δ -> L.Γ ⊢ᵗ L.B ∣ L.Δ
-projSnd p = μ (cut _ (ret (wk̃ᵛ p)) (snd (covar z)))
-
-letpv : L.Γ ⊢ᵛ L.A₁ `× L.A₂ ∣ L.Δ -> (L.Γ ∙ L.A₁ ∙ L.A₂) ⊢ᵗ L.B ∣ L.Δ -> L.Γ ⊢ᵗ L.B ∣ L.Δ
-letpv V M = lett (projFst V) (lett (projSnd (wkᵛ V)) M)
-
-efq : L.Γ ⊢ᵗ `⊥ ∣ L.Δ -> L.Γ ⊢ᵗ L.A ∣ L.Δ
-efq u = μ (cut `⊥ (wk̃ᵗ u) tp)
-
 raiseP : L.Γ ⊢ᵛ (⟦ `P ⟧ `⇒ `⊥) ∣ L.Δ -> L.Γ ⊢ᵛ ⟦ `P ⟧ ∣ L.Δ -> L.Γ ⊢ᵗ L.A ∣ L.Δ
 raiseP ref p = efq (applyL ref p)
 

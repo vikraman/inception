@@ -20,38 +20,17 @@ open Eq.≡-Reasoning using (step-≡-⟩; step-≡-∣; step-≡-⟨; _∎; ste
 
 ---------------------------------------------------------------------------------
 
-infixr 4 _；_
-infix 5 _♯
-
 \end{code}
 %<*Helpers>
 \begin{code}
-K : ∀ {ℓ} -> Set ℓ -> Set ℓ
-K X = (X -> R) -> R
+open import Level using (0ℓ)
+open import Inception.Cont.Base
+open import Inception.Monad.Base using (Monad)
 
-_♯ : ∀ {ℓ} {X Y : Set ℓ} -> (X -> K Y) -> K X -> K Y
-(f ♯) kx k = kx \x -> f x k
+K : Set -> Set
+K = K[ R ]
 
-η : ∀ {ℓ} -> {X : Set ℓ} -> X -> K X
-η x k = k x
-
-μ : ∀ {ℓ} -> {X : Set ℓ} -> K (K X) -> K X
-μ kkx k = kkx \kx -> kx k
-
-str : ∀ {ℓ} -> {X Y : Set ℓ} -> X × K Y -> K (X × Y)
-str (x , ky) k = ky \z -> k (x , z)
-
-cocurry : ∀ {ℓ} -> {X Y Z : Set ℓ} -> (Z × (X -> R) -> K Y) -> Z -> K (X ⊎ Y)
-cocurry f z k = f (z , k ∘ inj₁) (k ∘ inj₂)
-
-_；_ : ∀ {ℓ} {A B C : Set ℓ} -> (A -> B) -> (B -> C) -> (A -> C)
-f ； g = g ∘ f
-
-idf : ∀ {ℓ} {A : Set ℓ} -> A -> A
-idf a = a
-
-α : ∀ {ℓ} {A B C : Set ℓ} -> A × (B × C) -> (A × B) × C
-α (a , (b , c)) = (a , b) , c
+open Monad (K[_]-Monad {x = 0ℓ} R) using (η; _*)
 \end{code}
 %</Helpers>
 \begin{code}
@@ -101,10 +80,10 @@ idf a = a
 \end{code}
 %<*SemTerms>
 \begin{code}
-varK : ∀ {ℓ} {X : Set ℓ} -> R -> K X
+varK : {X : Set} -> R -> K X
 varK v k = v
 
-subK : ∀ {ℓ} {X : Set ℓ} -> (R -> K X) × K X -> K X
+subK : {X : Set} -> (R -> K X) × K X -> K X
 subK (m₁ , m₂) k = m₁ (m₂ k) k
 
 mutual
@@ -117,9 +96,9 @@ mutual
 
   ⟦_⟧ᶜ : Γ ⊢ᶜ X -> ⟦ Γ ⟧ˣ -> K ⟦ X ⟧
   ⟦ return W ⟧ᶜ = ⟦ W ⟧ᵖ ； η
-  ⟦ pm W M ⟧ᶜ = < idf , ⟦ W ⟧ᵖ > ； α ； ⟦ M ⟧ᶜ
-  ⟦ push M₁ M₂ ⟧ᶜ = < idf , ⟦ M₁ ⟧ᶜ > ； str ； ⟦ M₂ ⟧ᶜ ♯
-  ⟦ app W₁ W₂ ⟧ᶜ = < ⟦ W₁ ⟧ᵖ , ⟦ W₂ ⟧ᵖ > ； uncurry idf
+  ⟦ pm W M ⟧ᶜ = < idf , ⟦ W ⟧ᵖ > ； assocl ； ⟦ M ⟧ᶜ
+  ⟦ push M₁ M₂ ⟧ᶜ = < idf , ⟦ M₁ ⟧ᶜ > ； τ ； ⟦ M₂ ⟧ᶜ *
+  ⟦ app W₁ W₂ ⟧ᶜ = < ⟦ W₁ ⟧ᵖ , ⟦ W₂ ⟧ᵖ > ； ev
   ⟦ var W ⟧ᶜ = ⟦ W ⟧ᵖ ； varK
   ⟦ sub M₁ M₂ ⟧ᶜ = < curry ⟦ M₁ ⟧ᶜ , ⟦ M₂ ⟧ᶜ > ； subK
 \end{code}
@@ -127,23 +106,23 @@ mutual
 \begin{code}
 
 push-return-sem-eq : (γ : ⟦ Γ ⟧ˣ) → (k : (⟦ X ⟧ -> R)) → (W : Pure Γ Z) → (M₂ : (Γ ∙ Z) ⊢ᶜ X) →
-      (< idf , ⟦ return W ⟧ᶜ > ； str ； ⟦ M₂ ⟧ᶜ ♯) γ k ≡ ⟦ M₂ ⟧ᶜ (γ , ⟦ W ⟧ᵖ γ) k
+      (< idf , ⟦ return W ⟧ᶜ > ； τ ； ⟦ M₂ ⟧ᶜ *) γ k ≡ ⟦ M₂ ⟧ᶜ (γ , ⟦ W ⟧ᵖ γ) k
 push-return-sem-eq γ k W M₂ = refl
 
 push-sem-eq : (γ : ⟦ Γ ⟧ˣ) → (k : (⟦ X ⟧ -> R)) → (M₁ : Comp Γ Z) → (M₂ : (Γ ∙ Z) ⊢ᶜ X) →
-      (< idf , ⟦ M₁ ⟧ᶜ > ； str ； ⟦ M₂ ⟧ᶜ ♯) γ k ≡ ⟦ M₁ ⟧ᶜ γ (λ t → ((⟦ M₂ ⟧ᶜ ♯) ∘ str)  (γ , η t) k)
+      (< idf , ⟦ M₁ ⟧ᶜ > ； τ ； ⟦ M₂ ⟧ᶜ *) γ k ≡ ⟦ M₁ ⟧ᶜ γ (λ t → ((⟦ M₂ ⟧ᶜ *) ∘ τ)  (γ , η t) k)
 push-sem-eq γ k W M₂ = refl
 
 pm-sem-eq : (γ : ⟦ Γ ⟧ˣ) → (k : (⟦ X ⟧ -> R)) → (W : Pure Γ (X₁ `× X₂)) → (M : (Γ ∙ X₁ ∙ X₂) ⊢ᶜ X) →
-      (< idf , ⟦ W ⟧ᵖ > ； α ； ⟦ M ⟧ᶜ) γ k ≡ ⟦ M ⟧ᶜ ((γ , proj₁ (⟦ W ⟧ᵖ γ)) , proj₂ (⟦ W ⟧ᵖ γ)) k
+      (< idf , ⟦ W ⟧ᵖ > ； assocl ； ⟦ M ⟧ᶜ) γ k ≡ ⟦ M ⟧ᶜ ((γ , proj₁ (⟦ W ⟧ᵖ γ)) , proj₂ (⟦ W ⟧ᵖ γ)) k
 pm-sem-eq γ k W M = refl
 
 app-sem-eq : (γ : ⟦ Γ ⟧ˣ) → (k : (⟦ Y ⟧ -> R)) → (W₁ : Pure Γ (X `⇒ Y)) → (W₂ : Pure Γ X) →
-      (< ⟦ W₁ ⟧ᵖ , ⟦ W₂ ⟧ᵖ > ； uncurry idf) γ k ≡ (⟦ W₁ ⟧ᵖ γ) (⟦ W₂ ⟧ᵖ γ) k
+      (< ⟦ W₁ ⟧ᵖ , ⟦ W₂ ⟧ᵖ > ； ev) γ k ≡ (⟦ W₁ ⟧ᵖ γ) (⟦ W₂ ⟧ᵖ γ) k
 app-sem-eq γ k W₁ W₂ = refl
 
 app-lam-sem-eq : (γ : ⟦ Γ ⟧ˣ) → (k : (⟦ Y ⟧ -> R)) → (M : Comp (Γ ∙ X) Y) → (W₂ : Pure Γ X) →
-      (< ⟦ lam M ⟧ᵖ , ⟦ W₂ ⟧ᵖ > ； uncurry idf) γ k ≡ ⟦ M ⟧ᶜ (γ , (⟦ W₂ ⟧ᵖ γ)) k
+      (< ⟦ lam M ⟧ᵖ , ⟦ W₂ ⟧ᵖ > ； ev) γ k ≡ ⟦ M ⟧ᶜ (γ , (⟦ W₂ ⟧ᵖ γ)) k
 app-lam-sem-eq γ k M W₂ = refl
 
 mutual
@@ -325,7 +304,7 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
 
     ⟦_⟧ᶜˢ : CStack {Z₀ = R₀} X → K ⟦ X ⟧ → K ⟦ R₀ ⟧
     ⟦ ◻ ⟧ᶜˢ = idf
-    ⟦ < M ； γ >∷ cstack ⟧ᶜˢ = < const ⟦ γ ⟧ᴱ , idf > ； str ； (⟦ M ⟧ᶜ ♯) ； ⟦ cstack ⟧ᶜˢ
+    ⟦ < M ； γ >∷ cstack ⟧ᶜˢ = < const ⟦ γ ⟧ᴱ , idf > ； τ ； (⟦ M ⟧ᶜ *) ； ⟦ cstack ⟧ᶜˢ
 
     ⟦_⟧ᴷ : CStack {Z₀ = R₀} X → ⟦ X ⟧ → R
     ⟦_⟧ᴷ cstack t = ⟦ cstack ⟧ᶜˢ (η t) k₀
@@ -412,7 +391,7 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
     ≡⟨ refl ⟩
      ⟦ M ⟧ᶜ (⟦ γ ⟧ᴱ , ⟦ Ẇ ⟧ⱽ) ⟦ cstack ⟧ᴷ ∎
   compstate-eq (push→ {M₁ = M₁} {M₂ = M₂} {γ = γ} {cstack = cstack}) =
-    (< idf , ⟦ M₁ ⟧ᶜ > ； str ； ⟦ M₂ ⟧ᶜ ♯) ⟦ γ ⟧ᴱ ⟦ cstack ⟧ᴷ
+    (< idf , ⟦ M₁ ⟧ᶜ > ； τ ； ⟦ M₂ ⟧ᶜ *) ⟦ γ ⟧ᴱ ⟦ cstack ⟧ᴷ
      ≡⟨ refl ⟩
      ⟦ M₁ ⟧ᶜ ⟦ γ ⟧ᴱ (λ z → ⟦ M₂ ⟧ᶜ (⟦ γ ⟧ᴱ , z) (λ y → ⟦ cstack ⟧ᶜˢ (λ k₁ → k₁ y) k₀))
      ≡⟨ cong (⟦ M₁ ⟧ᶜ ⟦ γ ⟧ᴱ) (extensionality (λ x → sym (push-eq cstack (⟦ M₂ ⟧ᶜ (⟦ γ ⟧ᴱ , x))))) ⟩
@@ -426,10 +405,10 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
     in
     (⟦ W ⟧ᵖ ； varK) ⟦ γ ⟧ᴱ ⟦ cstack ⟧ᴷ ≡⟨ refl ⟩ ⟦ W ⟧ᵖ ⟦ γ ⟧ᴱ ≡⟨ eq ⟩ ⟦ eval W γ ⟧ⱽ ≡⟨ jump-eq' W γ ⟩ ⟦ jump-to-state (eval W γ) ⟧ᶜꟴ ∎
   compstate-eq (pmᶜ→ {W = W} {γ = γ} {M = M} {cstack = cstack}) =
-    (< idf , ⟦ W ⟧ᵖ > ； α ； ⟦ M ⟧ᶜ) ⟦ γ ⟧ᴱ ⟦ cstack ⟧ᴷ
+    (< idf , ⟦ W ⟧ᵖ > ； assocl ； ⟦ M ⟧ᶜ) ⟦ γ ⟧ᴱ ⟦ cstack ⟧ᴷ
     ≡⟨ refl ⟩
-      ⟦ M ⟧ᶜ (α ( ⟦ γ ⟧ᴱ , ⟦ W ⟧ᵖ ⟦ γ ⟧ᴱ )) ⟦ cstack ⟧ᴷ
-    ≡⟨ cong (λ x → ⟦ M ⟧ᶜ (α ( ⟦ γ ⟧ᴱ , x )) ⟦ cstack ⟧ᴷ) (cong₂ _,_ (proj₁-val-eq' W γ) (proj₂-val-eq' W γ)) ⟩
+      ⟦ M ⟧ᶜ (assocl ( ⟦ γ ⟧ᴱ , ⟦ W ⟧ᵖ ⟦ γ ⟧ᴱ )) ⟦ cstack ⟧ᴷ
+    ≡⟨ cong (λ x → ⟦ M ⟧ᶜ (assocl ( ⟦ γ ⟧ᴱ , x )) ⟦ cstack ⟧ᴷ) (cong₂ _,_ (proj₁-val-eq' W γ) (proj₂-val-eq' W γ)) ⟩
      ⟦ M ⟧ᶜ ((⟦ γ ⟧ᴱ , ⟦ proj₁-val (eval W γ) ⟧ⱽ) , ⟦ proj₂-val (eval W γ) ⟧ⱽ) ⟦ cstack ⟧ᴷ ∎
   compstate-eq (app→ {W₁ = W₁} {W₂ = W₂} {γ = γ} {cstack = cstack}) =
     cong (λ x → x (λ y → ⟦ cstack ⟧ᶜˢ (λ cstack₁ → cstack₁ y) k₀))

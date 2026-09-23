@@ -9,41 +9,19 @@ open import Data.Sum as S
 open import Relation.Binary.PropositionalEquality
 open import Inception.Prelude
 
-infixr 4 _；_
+open import Level using (0ℓ)
+open import Inception.Cont.Base
+open import Inception.Monad.Base using (Monad)
 
-_；_ : ∀ {ℓ} {A B C : Set ℓ} -> (A -> B) -> (B -> C) -> (A -> C)
-f ； g = g ∘ f
+K : Set -> Set
+K = K[ R ]
 
-idf : ∀ {ℓ} {A : Set ℓ} -> A -> A
-idf a = a
+open Monad (K[_]-Monad {x = 0ℓ} R) using (η; _*)
 
-assocl : ∀ {ℓ} {A B C : Set ℓ} -> A × (B × C) -> (A × B) × C
-assocl (a , (b , c)) = (a , b) , c
-
-K : ∀ {ℓ} -> Set ℓ -> Set ℓ
-K X = (X -> R) -> R
-
-infix 5 _♯
-
-_♯ : ∀ {ℓ} {X Y : Set ℓ} -> (X -> K Y) -> K X -> K Y
-(f ♯) kx k = kx \x -> f x k
-
-η : ∀ {ℓ} -> {X : Set ℓ} -> X -> K X
-η x k = k x
-
-μ : ∀ {ℓ} -> {X : Set ℓ} -> K (K X) -> K X
-μ kkx k = kkx \kx -> kx k
-
-τ : ∀ {ℓ} -> {X Y : Set ℓ} -> X × K Y -> K (X × Y)
-τ (x , ky) k = ky \z -> k (x , z)
-
-cocurry : ∀ {ℓ} -> {X Y Z : Set ℓ} -> (Z × (X -> R) -> K Y) -> Z -> K (X ⊎ Y)
-cocurry f z k = f (z , k ∘ inj₁) (k ∘ inj₂)
-
-recK : ∀ {ℓ} {X : Set ℓ} -> R ^ ℙ × ℙ -> K X
+recK : {X : Set} -> R ^ ℙ × ℙ -> K X
 recK (k , p) _ = k p
 
-incK : ∀ {ℓ} {X : Set ℓ} -> (R ^ ℙ -> K X) × (ℙ -> K X) -> K X
+incK : {X : Set} -> (R ^ ℙ -> K X) × (ℙ -> K X) -> K X
 incK (f , g) k = f (\p -> g p k) k
 
 ⟦_⟧ : Ty -> Set
@@ -76,8 +54,8 @@ mutual
   ⟦_⟧ᶜ : Γ ⊢ᶜ A -> ⟦ Γ ⟧ˣ -> K ⟦ A ⟧
   ⟦ return V ⟧ᶜ = ⟦ V ⟧ᵛ ； η
   ⟦ pm V M ⟧ᶜ = < idf , ⟦ V ⟧ᵛ > ； assocl ； ⟦ M ⟧ᶜ
-  ⟦ push M N ⟧ᶜ = < idf , ⟦ M ⟧ᶜ > ； τ ； ⟦ N ⟧ᶜ ♯
-  ⟦ app V W ⟧ᶜ = < ⟦ V ⟧ᵛ , ⟦ W ⟧ᵛ > ； uncurry idf
+  ⟦ push M N ⟧ᶜ = < idf , ⟦ M ⟧ᶜ > ； τ ； ⟦ N ⟧ᶜ *
+  ⟦ app V W ⟧ᶜ = < ⟦ V ⟧ᵛ , ⟦ W ⟧ᵛ > ； ev
   ⟦ rec V W ⟧ᶜ = < ⟦ V ⟧ᵛ , ⟦ W ⟧ᵛ > ； recK
   ⟦ inc M N ⟧ᶜ = < curry ⟦ M ⟧ᶜ , curry ⟦ N ⟧ᶜ > ； incK
 

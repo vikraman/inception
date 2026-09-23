@@ -271,6 +271,21 @@ letc C M = sub-cmd sub-id (cosub-ex cosub-id C) M
 letvc : Γ ⊢ᵛ A ∣ Δ -> (Γ ∙ A) ⊢ Δ -> Γ ⊢ Δ
 letvc V M' = sub-cmd (sub-ex sub-id V) cosub-id M'
 
+applyL : Γ ⊢ᵛ (A `⇒ B) ∣ Δ -> Γ ⊢ᵛ A ∣ Δ -> Γ ⊢ᵗ B ∣ Δ
+applyL f a = μ (cut _ (ret (wk̃ᵛ f)) (app (wk̃ᵛ a) (covar z)))
+
+projFst : Γ ⊢ᵛ (A `× B) ∣ Δ -> Γ ⊢ᵗ A ∣ Δ
+projFst p = μ (cut _ (ret (wk̃ᵛ p)) (fst (covar z)))
+
+projSnd : Γ ⊢ᵛ (A `× B) ∣ Δ -> Γ ⊢ᵗ B ∣ Δ
+projSnd p = μ (cut _ (ret (wk̃ᵛ p)) (snd (covar z)))
+
+letpv : Γ ⊢ᵛ A₁ `× A₂ ∣ Δ -> (Γ ∙ A₁ ∙ A₂) ⊢ᵗ B ∣ Δ -> Γ ⊢ᵗ B ∣ Δ
+letpv V M = lett (projFst V) (lett (projSnd (wkᵛ V)) M)
+
+efq : Γ ⊢ᵗ `⊥ ∣ Δ -> Γ ⊢ᵗ A ∣ Δ
+efq u = μ (cut `⊥ (wk̃ᵗ u) tp)
+
 variable
   V V1 V2 V3 W W1 W2 : Γ ⊢ᵛ A ∣ Δ
   M M1 M2 M3 N N1 N2 : Γ ⊢ᵗ A ∣ Δ

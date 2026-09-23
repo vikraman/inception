@@ -47,6 +47,21 @@ happly-funext {f = f} {g = g} H x = let open Eq.≡-Reasoning in
   cong ((_$ x) ∘ (flip \a -> I-rec (f a) (g a) (H a))) seg    ≡⟨ I-rec-seg ⟩
   H x ∎
 
+-- categorical combinators
+infixr 4 _；_
+
+_；_ : ∀ {ℓ} {A B C : Set ℓ} -> (A -> B) -> (B -> C) -> (A -> C)
+f ； g = g ∘ f
+
+idf : ∀ {ℓ} {A : Set ℓ} -> A -> A
+idf a = a
+
+assocl : ∀ {ℓ} {A B C : Set ℓ} -> A × (B × C) -> (A × B) × C
+assocl (a , (b , c)) = (a , b) , c
+
+shuffle : ∀ {ℓ} {A B C : Set ℓ} -> (A × B) × C -> (A × C) × B
+shuffle ((a , b) , c) = (a , c) , b
+
 -- functions
 infixr 20 _^_
 
@@ -56,6 +71,10 @@ R ^ A = A -> R
 [_]^_ : ∀ {r a b} (R : Set r) {A : Set a} {B : Set b} -> (A -> B) -> (R ^ B) -> (R ^ A)
 [ R ]^ f = \k a -> k (f a)
 
+ev : ∀ {r a} {R : Set r} {A : Set a} -> R ^ A × A -> R
+ev (f , a) = f a
+
+-- use the funext above
 postulate
   extensionality : ∀ {A B : Set} {f g : A → B}
     → (∀ (x : A) → f x ≡ g x)

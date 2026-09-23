@@ -21,6 +21,12 @@ K[ V ]-Monad .unitl a = refl
 K[ V ]-Monad .unitr f = refl
 K[ V ]-Monad .assoc f g = refl
 
+τ : ∀ {v x} -> {V : Set v} {X Y : Set x} -> X × K[ V ] Y -> K[ V ] (X × Y)
+τ (x , ky) k = ky \z -> k (x , z)
+
+cbv : ∀ {v x} -> {V : Set v} {X Y : Set x} -> (X -> K[ V ] Y) -> V ^ (V ^ Y × X)
+cbv f (k , x) = f x k
+
 cocurry : ∀ {v x} -> {V : Set v} {X Y Z : Set x} -> (Z × V ^ X -> K[ V ] Y) -> Z -> K[ V ] (X ⊎ Y)
 cocurry f z k = f (z , k ∘ inj₁) (k ∘ inj₂)
 

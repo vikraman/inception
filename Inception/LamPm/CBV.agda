@@ -11,30 +11,14 @@ open import Relation.Binary.PropositionalEquality
 open Relation.Binary.PropositionalEquality.≡-Reasoning
 open import Inception.Prelude
 
-infixr 4 _；_
-
-_；_ : ∀ {ℓ} {A B C : Set ℓ} -> (A -> B) -> (B -> C) -> (A -> C)
-f ； g = g ∘ f
-
-idf : ∀ {ℓ} {A : Set ℓ} -> A -> A
-idf a = a
-
-assocl : ∀ {ℓ} {A B C : Set ℓ} -> A × (B × C) -> (A × B) × C
-assocl (a , (b , c)) = (a , b) , c
+open import Level using (0ℓ)
+open import Inception.Cont.Base
+open import Inception.Monad.Base using (Monad)
 
 K : Set -> Set
-K X = (X -> R) -> R
+K = K[ R ]
 
-infix 5 _♯
-
-_♯ : {X Y : Set} -> (X -> K Y) -> K X -> K Y
-(f ♯) kx k = kx \x -> f x k
-
-η : {X : Set} -> X -> K X
-η x k = k x
-
-τ : {X Y : Set} -> X × K Y -> K (X × Y)
-τ (x , ky) k = ky \z -> k (x , z)
+open Monad (K[_]-Monad {x = 0ℓ} R) using (η; _*)
 
 ⟦_⟧ : Ty -> Set
 ⟦ `Unit ⟧  = ⊤
@@ -64,8 +48,8 @@ mutual
 
   ⟦_⟧ᶜ : Γ ⊢ᶜ A -> ⟦ Γ ⟧ˣ -> K ⟦ A ⟧
   ⟦ return V ⟧ᶜ = ⟦ V ⟧ᵛ ； η
-  ⟦ push M N ⟧ᶜ = < idf , ⟦ M ⟧ᶜ > ； τ ； ⟦ N ⟧ᶜ ♯
-  ⟦ app V W ⟧ᶜ  = < ⟦ V ⟧ᵛ , ⟦ W ⟧ᵛ > ； uncurry idf
+  ⟦ push M N ⟧ᶜ = < idf , ⟦ M ⟧ᶜ > ； τ ； ⟦ N ⟧ᶜ *
+  ⟦ app V W ⟧ᶜ  = < ⟦ V ⟧ᵛ , ⟦ W ⟧ᵛ > ； ev
   ⟦ pm V M ⟧ᶜ   = < idf , ⟦ V ⟧ᵛ > ； assocl ； ⟦ M ⟧ᶜ
 
 ⟦_⟧ˢ : Γ ⊢ Δ -> ⟦ Γ ⟧ˣ -> ⟦ Δ ⟧ˣ
