@@ -1,6 +1,6 @@
-module Inception.LamBarMuMuTilde.CBV (R : Set) where
+module Inception.SystemL.CBV (R : Set) where
 
-open import Inception.LamBarMuMuTilde.Syntax
+open import Inception.SystemL.Syntax
 
 open import Level
 open import Data.Unit
@@ -50,11 +50,11 @@ eval = uncurry′ idf
 ⟦ A `⇒ B ⟧ = ⟦ A ⟧ -> K ⟦ B ⟧
 ⟦ A `+ B ⟧ = ⟦ A ⟧ ⊎ ⟦ B ⟧
 
-⟦_⟧ⁿ : Env -> Set
+⟦_⟧ⁿ : Ctx -> Set
 ⟦ ε ⟧ⁿ = ⊤
 ⟦ Γ ∙ A ⟧ⁿ = ⟦ Γ ⟧ⁿ × ⟦ A ⟧
 
-⟦_⟧ⁿ̃ : Env -> Set
+⟦_⟧ⁿ̃ : Ctx -> Set
 ⟦ ε ⟧ⁿ̃ = ⊥
 ⟦ Δ ∙ A ⟧ⁿ̃ = ⟦ Δ ⟧ⁿ̃ ⊎ ⟦ A ⟧
 
@@ -79,7 +79,7 @@ eval = uncurry′ idf
 
 mutual
   ⟦_⟧ᶜ : Γ ⊢ Δ -> ⟦ Γ ⟧ⁿ × R ^ ⟦ Δ ⟧ⁿ̃ -> R
-  ⟦ cut _ M C ⟧ᶜ = < ⟦ M ⟧ᵗ , ⟦ C ⟧ᵉ > ； eval
+  ⟦ cut _ M C ⟧ᶜ = < ⟦ M ⟧ᵗ , ⟦ C ⟧ᵏ > ； eval
 
   ⟦_⟧ᵛ : Γ ⊢ᵛ A ∣ Δ -> ⟦ Γ ⟧ⁿ × R ^ ⟦ Δ ⟧ⁿ̃ -> ⟦ A ⟧
   ⟦ var i ⟧ᵛ = proj₁ ； ⟦ i ⟧ᵐ
@@ -93,22 +93,22 @@ mutual
   ⟦ ret V ⟧ᵗ = ⟦ V ⟧ᵛ ； η
   ⟦ μ M ⟧ᵗ = councurry (curry′ ⟦ M ⟧ᶜ)
 
-  ⟦_⟧ᵉ : Γ ∣ A ⊢ᵉ Δ -> ⟦ Γ ⟧ⁿ × R ^ ⟦ Δ ⟧ⁿ̃ -> R ^ ⟦ A ⟧
-  ⟦ covar i ⟧ᵉ = proj₂ ； ([ R ]^ ⟦ i ⟧ᵐ̃)
-  ⟦ app V C ⟧ᵉ = < ⟦ C ⟧ᵉ , ⟦ V ⟧ᵛ > ； η ； [ R ]^ cbv
-  ⟦ fst C ⟧ᵉ = ⟦ C ⟧ᵉ ； curry′ (assocl ； proj₁ ； eval)
-  ⟦ snd C ⟧ᵉ = ⟦ C ⟧ᵉ ； curry′ (assocl ； P.map proj₁ id ； eval)
-  ⟦ case C1 C2 ⟧ᵉ = < ⟦ C1 ⟧ᵉ , ⟦ C2 ⟧ᵉ > ； uncurry′ S.[_,_]
-  ⟦ μ̃ M ⟧ᵉ = curry′ (shuffle ； ⟦ M ⟧ᶜ)
-  ⟦ tp ⟧ᵉ = const idf
+  ⟦_⟧ᵏ : Γ ∣ A ⊢ᵏ Δ -> ⟦ Γ ⟧ⁿ × R ^ ⟦ Δ ⟧ⁿ̃ -> R ^ ⟦ A ⟧
+  ⟦ covar i ⟧ᵏ = proj₂ ； ([ R ]^ ⟦ i ⟧ᵐ̃)
+  ⟦ app V C ⟧ᵏ = < ⟦ C ⟧ᵏ , ⟦ V ⟧ᵛ > ； η ； [ R ]^ cbv
+  ⟦ fst C ⟧ᵏ = ⟦ C ⟧ᵏ ； curry′ (assocl ； proj₁ ； eval)
+  ⟦ snd C ⟧ᵏ = ⟦ C ⟧ᵏ ； curry′ (assocl ； P.map proj₁ id ； eval)
+  ⟦ case C1 C2 ⟧ᵏ = < ⟦ C1 ⟧ᵏ , ⟦ C2 ⟧ᵏ > ； uncurry′ S.[_,_]
+  ⟦ μ̃ M ⟧ᵏ = curry′ (shuffle ； ⟦ M ⟧ᶜ)
+  ⟦ tp ⟧ᵏ = const idf
 
 ⟦_⟧ˢ : Sub Γ Δ Γ' -> ⟦ Γ ⟧ⁿ × R ^ ⟦ Δ ⟧ⁿ̃ -> ⟦ Γ' ⟧ⁿ
 ⟦ sub-ε ⟧ˢ = const tt
 ⟦ sub-ex θ V ⟧ˢ = < ⟦ θ ⟧ˢ , ⟦ V ⟧ᵛ >
 
-⟦_⟧ᵏ : CoSub Γ Δ Δ' -> ⟦ Γ ⟧ⁿ × R ^ ⟦ Δ ⟧ⁿ̃ -> R ^ ⟦ Δ' ⟧ⁿ̃
-⟦ cosub-ε ⟧ᵏ = const λ ()
-⟦ cosub-ex φ C ⟧ᵏ env = S.[ ⟦ φ ⟧ᵏ env , ⟦ C ⟧ᵉ env ]
+⟦_⟧ˢ̃ : CoSub Γ Δ Δ' -> ⟦ Γ ⟧ⁿ × R ^ ⟦ Δ ⟧ⁿ̃ -> R ^ ⟦ Δ' ⟧ⁿ̃
+⟦ cosub-ε ⟧ˢ̃ = const λ ()
+⟦ cosub-ex φ C ⟧ˢ̃ env = S.[ ⟦ φ ⟧ˢ̃ env , ⟦ C ⟧ᵏ env ]
 
 -- coherences
 
@@ -144,7 +144,7 @@ wkenv ρ σ = P.map ⟦ ρ ⟧ʷ ([ R ]^ ⟦ σ ⟧ʷ̃)
 
 mutual
   wk-cmd-coh : (ρ : Γ ⊇ Γ') (σ : Δ ⊇ Δ') (M : Γ' ⊢ Δ') -> ⟦ wk-cmd ρ σ M ⟧ᶜ ≡ (wkenv ρ σ ； ⟦ M ⟧ᶜ)
-  wk-cmd-coh ρ σ (cut A M C) rewrite wk-tm-coh ρ σ M | wk-ctx-coh ρ σ C = refl
+  wk-cmd-coh ρ σ (cut A M C) rewrite wk-tm-coh ρ σ M | wk-cotm-coh ρ σ C = refl
 
   wk-val-coh : (ρ : Γ ⊇ Γ') (σ : Δ ⊇ Δ') (V : Γ' ⊢ᵛ A ∣ Δ') -> ⟦ wk-val ρ σ V ⟧ᵛ ≡ (wkenv ρ σ ； ⟦ V ⟧ᵛ)
   wk-val-coh ρ σ (var i) = refl
@@ -160,18 +160,18 @@ mutual
     funext λ { (γ , k) → funext λ k₂ →
       cong (λ x → ⟦ M ⟧ᶜ (⟦ ρ ⟧ʷ γ , x)) (funext λ { (inj₁ x) → refl ; (inj₂ y) → refl }) }
 
-  wk-ctx-coh : (ρ : Γ ⊇ Γ') (σ : Δ ⊇ Δ') (C : Γ' ∣ A ⊢ᵉ Δ') -> ⟦ wk-ctx ρ σ C ⟧ᵉ ≡ (wkenv ρ σ ； ⟦ C ⟧ᵉ)
-  wk-ctx-coh ρ σ (covar i) = refl
-  wk-ctx-coh ρ σ (app V C) rewrite wk-val-coh ρ σ V | wk-ctx-coh ρ σ C = refl
-  wk-ctx-coh ρ σ (fst C) rewrite wk-ctx-coh ρ σ C = refl
-  wk-ctx-coh ρ σ (snd C) rewrite wk-ctx-coh ρ σ C = refl
-  wk-ctx-coh ρ σ (case C1 C2) rewrite wk-ctx-coh ρ σ C1 | wk-ctx-coh ρ σ C2 = refl
-  wk-ctx-coh ρ σ (μ̃ M) rewrite wk-cmd-coh (wk-cong ρ) σ M = refl
-  wk-ctx-coh ρ σ tp = refl
+  wk-cotm-coh : (ρ : Γ ⊇ Γ') (σ : Δ ⊇ Δ') (C : Γ' ∣ A ⊢ᵏ Δ') -> ⟦ wk-cotm ρ σ C ⟧ᵏ ≡ (wkenv ρ σ ； ⟦ C ⟧ᵏ)
+  wk-cotm-coh ρ σ (covar i) = refl
+  wk-cotm-coh ρ σ (app V C) rewrite wk-val-coh ρ σ V | wk-cotm-coh ρ σ C = refl
+  wk-cotm-coh ρ σ (fst C) rewrite wk-cotm-coh ρ σ C = refl
+  wk-cotm-coh ρ σ (snd C) rewrite wk-cotm-coh ρ σ C = refl
+  wk-cotm-coh ρ σ (case C1 C2) rewrite wk-cotm-coh ρ σ C1 | wk-cotm-coh ρ σ C2 = refl
+  wk-cotm-coh ρ σ (μ̃ M) rewrite wk-cmd-coh (wk-cong ρ) σ M = refl
+  wk-cotm-coh ρ σ tp = refl
 
 {-# REWRITE wk-val-coh #-}
 {-# REWRITE wk-tm-coh #-}
-{-# REWRITE wk-ctx-coh #-}
+{-# REWRITE wk-cotm-coh #-}
 {-# REWRITE wk-cmd-coh #-}
 
 sub-mem-coh : (θ : Sub Γ Δ Γ') (i : Γ' ∋ A) -> ⟦ sub-mem θ i ⟧ᵛ ≡ (⟦ θ ⟧ˢ ； ⟦ i ⟧ᵐ)
@@ -179,7 +179,7 @@ sub-mem-coh (sub-ex θ V) z = refl
 sub-mem-coh (sub-ex θ V) (s i) rewrite sub-mem-coh θ i = refl
 {-# REWRITE sub-mem-coh #-}
 
-cosub-mem-coh : (φ : CoSub Γ Δ Δ') (i : Δ' ∋ A) -> ⟦ cosub-mem φ i ⟧ᵉ ≡ (⟦ φ ⟧ᵏ ； ([ R ]^ ⟦ i ⟧ᵐ̃))
+cosub-mem-coh : (φ : CoSub Γ Δ Δ') (i : Δ' ∋ A) -> ⟦ cosub-mem φ i ⟧ᵏ ≡ (⟦ φ ⟧ˢ̃ ； ([ R ]^ ⟦ i ⟧ᵐ̃))
 cosub-mem-coh (cosub-ex φ C) z = refl
 cosub-mem-coh (cosub-ex φ C) (s i) rewrite cosub-mem-coh φ i = refl
 {-# REWRITE cosub-mem-coh #-}
@@ -189,9 +189,9 @@ sub-wk-coh ρ σ sub-ε = refl
 sub-wk-coh ρ σ (sub-ex θ V) rewrite sub-wk-coh ρ σ θ | wk-val-coh ρ σ V = refl
 {-# REWRITE sub-wk-coh #-}
 
-cosub-wk-coh : (ρ : Γ₁ ⊇ Γ) (σ : Δ₁ ⊇ Δ) (φ : CoSub Γ Δ Δ') -> ⟦ cosub-wk ρ σ φ ⟧ᵏ ≡ (wkenv ρ σ ； ⟦ φ ⟧ᵏ)
+cosub-wk-coh : (ρ : Γ₁ ⊇ Γ) (σ : Δ₁ ⊇ Δ) (φ : CoSub Γ Δ Δ') -> ⟦ cosub-wk ρ σ φ ⟧ˢ̃ ≡ (wkenv ρ σ ； ⟦ φ ⟧ˢ̃)
 cosub-wk-coh ρ σ cosub-ε = refl
-cosub-wk-coh ρ σ (cosub-ex φ C) rewrite cosub-wk-coh ρ σ φ | wk-ctx-coh ρ σ C = refl
+cosub-wk-coh ρ σ (cosub-ex φ C) rewrite cosub-wk-coh ρ σ φ | wk-cotm-coh ρ σ C = refl
 {-# REWRITE cosub-wk-coh #-}
 
 sub-id-coh : ⟦ sub-id {Γ} {Δ} ⟧ˢ ≡ proj₁
@@ -200,7 +200,7 @@ sub-id-coh {Γ = Γ ∙ A} {Δ} = funext λ
   { ((γ , a) , k) → cong₂ _,_ (happly (sub-id-coh {Γ = Γ} {Δ}) (γ , k)) refl }
 {-# REWRITE sub-id-coh #-}
 
-cosub-id-coh : ⟦ cosub-id {Γ} {Δ} ⟧ᵏ ≡ proj₂
+cosub-id-coh : ⟦ cosub-id {Γ} {Δ} ⟧ˢ̃ ≡ proj₂
 cosub-id-coh {Γ} {Δ = ε} = funext λ { (γ , k) → funext λ () }
 cosub-id-coh {Γ} {Δ = Δ ∙ A} = funext λ
   { (γ , k) → trans (cong (λ x → S.[ x , k ∘ inj₂ ]) (happly (cosub-id-coh {Γ} {Δ = Δ}) (γ , k ∘ inj₁)))
@@ -208,11 +208,11 @@ cosub-id-coh {Γ} {Δ = Δ ∙ A} = funext λ
 {-# REWRITE cosub-id-coh #-}
 
 subenv : Sub Γ Δ Γ' -> CoSub Γ Δ Δ' -> ⟦ Γ ⟧ⁿ × R ^ ⟦ Δ ⟧ⁿ̃ -> ⟦ Γ' ⟧ⁿ × R ^ ⟦ Δ' ⟧ⁿ̃
-subenv θ φ = < ⟦ θ ⟧ˢ , ⟦ φ ⟧ᵏ >
+subenv θ φ = < ⟦ θ ⟧ˢ , ⟦ φ ⟧ˢ̃ >
 
 mutual
   sub-cmd-coh : (θ : Sub Γ Δ Γ') (φ : CoSub Γ Δ Δ') (M : Γ' ⊢ Δ') -> ⟦ sub-cmd θ φ M ⟧ᶜ ≡ (subenv θ φ ； ⟦ M ⟧ᶜ)
-  sub-cmd-coh θ φ (cut A M C) rewrite sub-tm-coh θ φ M | sub-ctx-coh θ φ C = refl
+  sub-cmd-coh θ φ (cut A M C) rewrite sub-tm-coh θ φ M | sub-cotm-coh θ φ C = refl
 
   sub-val-coh : (θ : Sub Γ Δ Γ') (φ : CoSub Γ Δ Δ') (V : Γ' ⊢ᵛ A ∣ Δ') -> ⟦ sub-val θ φ V ⟧ᵛ ≡ (subenv θ φ ； ⟦ V ⟧ᵛ)
   sub-val-coh θ φ (var i) = refl
@@ -226,18 +226,18 @@ mutual
   sub-tm-coh θ φ (ret V) rewrite sub-val-coh θ φ V = refl
   sub-tm-coh θ φ (μ M) rewrite sub-cmd-coh (sub-wk wk-id (wk-wk wk-id) θ) (cosub-ex (cosub-wk wk-id (wk-wk wk-id) φ) (covar z)) M = refl
 
-  sub-ctx-coh : (θ : Sub Γ Δ Γ') (φ : CoSub Γ Δ Δ') (C : Γ' ∣ A ⊢ᵉ Δ') -> ⟦ sub-ctx θ φ C ⟧ᵉ ≡ (subenv θ φ ； ⟦ C ⟧ᵉ)
-  sub-ctx-coh θ φ (covar i) = refl
-  sub-ctx-coh θ φ (app V C) rewrite sub-val-coh θ φ V | sub-ctx-coh θ φ C = refl
-  sub-ctx-coh θ φ (fst C) rewrite sub-ctx-coh θ φ C = refl
-  sub-ctx-coh θ φ (snd C) rewrite sub-ctx-coh θ φ C = refl
-  sub-ctx-coh θ φ (case C1 C2) rewrite sub-ctx-coh θ φ C1 | sub-ctx-coh θ φ C2 = refl
-  sub-ctx-coh θ φ (μ̃ M) rewrite sub-cmd-coh (sub-ex (sub-wk (wk-wk wk-id) wk-id θ) (var z)) (cosub-wk (wk-wk wk-id) wk-id φ) M = refl
-  sub-ctx-coh θ φ tp = refl
+  sub-cotm-coh : (θ : Sub Γ Δ Γ') (φ : CoSub Γ Δ Δ') (C : Γ' ∣ A ⊢ᵏ Δ') -> ⟦ sub-cotm θ φ C ⟧ᵏ ≡ (subenv θ φ ； ⟦ C ⟧ᵏ)
+  sub-cotm-coh θ φ (covar i) = refl
+  sub-cotm-coh θ φ (app V C) rewrite sub-val-coh θ φ V | sub-cotm-coh θ φ C = refl
+  sub-cotm-coh θ φ (fst C) rewrite sub-cotm-coh θ φ C = refl
+  sub-cotm-coh θ φ (snd C) rewrite sub-cotm-coh θ φ C = refl
+  sub-cotm-coh θ φ (case C1 C2) rewrite sub-cotm-coh θ φ C1 | sub-cotm-coh θ φ C2 = refl
+  sub-cotm-coh θ φ (μ̃ M) rewrite sub-cmd-coh (sub-ex (sub-wk (wk-wk wk-id) wk-id θ) (var z)) (cosub-wk (wk-wk wk-id) wk-id φ) M = refl
+  sub-cotm-coh θ φ tp = refl
 
 {-# REWRITE sub-val-coh #-}
 {-# REWRITE sub-tm-coh #-}
-{-# REWRITE sub-ctx-coh #-}
+{-# REWRITE sub-cotm-coh #-}
 {-# REWRITE sub-cmd-coh #-}
 
 -- soundness of the equational theory
@@ -263,23 +263,23 @@ mutual
   eqTm (μ-eta M) = refl
   eqTm (pair-eta V) = refl
 
-  eqCtx : Γ ∣ C1 ≈ C2 ∶ A ⊢ᵉ Δ -> ⟦ C1 ⟧ᵉ ≡ ⟦ C2 ⟧ᵉ
-  eqCtx ≈-refl = refl
-  eqCtx (≈-sym p) = sym (eqCtx p)
-  eqCtx (≈-trans p q) = trans (eqCtx p) (eqCtx q)
-  eqCtx (app-cong p q) = cong (_； η ； [ R ]^ cbv) (cong₂ <_,_> (eqCtx q) (eqVal p))
-  eqCtx (fst-cong p) = cong (_； curry′ (assocl ； proj₁ ； eval)) (eqCtx p)
-  eqCtx (snd-cong p) = cong (_； curry′ (assocl ； P.map proj₁ id ； eval)) (eqCtx p)
-  eqCtx (case-cong p q) = cong (_； uncurry′ S.[_,_]) (cong₂ <_,_> (eqCtx p) (eqCtx q))
-  eqCtx (μ̃-cong p) = cong (λ f → curry′ (shuffle ； f)) (eqCmd p)
-  eqCtx (μ̃-eta C) = refl
-  eqCtx (case-eta C) = funext λ env → funext λ { (inj₁ x) → refl ; (inj₂ y) → refl }
+  eqCoTm : Γ ∣ C1 ≈ C2 ∶ A ⊢ᵏ Δ -> ⟦ C1 ⟧ᵏ ≡ ⟦ C2 ⟧ᵏ
+  eqCoTm ≈-refl = refl
+  eqCoTm (≈-sym p) = sym (eqCoTm p)
+  eqCoTm (≈-trans p q) = trans (eqCoTm p) (eqCoTm q)
+  eqCoTm (app-cong p q) = cong (_； η ； [ R ]^ cbv) (cong₂ <_,_> (eqCoTm q) (eqVal p))
+  eqCoTm (fst-cong p) = cong (_； curry′ (assocl ； proj₁ ； eval)) (eqCoTm p)
+  eqCoTm (snd-cong p) = cong (_； curry′ (assocl ； P.map proj₁ id ； eval)) (eqCoTm p)
+  eqCoTm (case-cong p q) = cong (_； uncurry′ S.[_,_]) (cong₂ <_,_> (eqCoTm p) (eqCoTm q))
+  eqCoTm (μ̃-cong p) = cong (λ f → curry′ (shuffle ； f)) (eqCmd p)
+  eqCoTm (μ̃-eta C) = refl
+  eqCoTm (case-eta C) = funext λ env → funext λ { (inj₁ x) → refl ; (inj₂ y) → refl }
 
   eqCmd : Γ ⊢ M1' ≈ M2' ⊣ Δ -> ⟦ M1' ⟧ᶜ ≡ ⟦ M2' ⟧ᶜ
   eqCmd ≈-refl = refl
   eqCmd (≈-sym p) = sym (eqCmd p)
   eqCmd (≈-trans p q) = trans (eqCmd p) (eqCmd q)
-  eqCmd (cut-cong p q) = cong (_； eval) (cong₂ <_,_> (eqTm p) (eqCtx q))
+  eqCmd (cut-cong p q) = cong (_； eval) (cong₂ <_,_> (eqTm p) (eqCoTm q))
   eqCmd (μ-beta M C) = refl
   eqCmd (μ̃-beta V M) = refl
   eqCmd (app-beta M V C) = refl

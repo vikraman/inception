@@ -1,7 +1,7 @@
 module Inception.Inc.Translation where
 
 open import Inception.Inc.Syntax as I
-open import Inception.LamBarMuMuTilde.Syntax as L
+open import Inception.SystemL.Syntax as L
 
 variable
   IΓ IΔ : I.Ctx
@@ -14,7 +14,7 @@ variable
 ⟦ `P ⟧     = `Unit
 ⟦ `V ⟧     = ⟦ `P ⟧ `⇒ `⊥
 
-⟦_⟧ˣ : I.Ctx -> L.Env
+⟦_⟧ˣ : I.Ctx -> L.Ctx
 ⟦ ε ⟧ˣ     = ε
 ⟦ Γ ∙ A ⟧ˣ = ⟦ Γ ⟧ˣ ∙ ⟦ A ⟧
 

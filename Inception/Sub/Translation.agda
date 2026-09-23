@@ -1,7 +1,7 @@
 module Inception.Sub.Translation where
 
 open import Inception.Sub.Syntax as S
-open import Inception.LamBarMuMuTilde.Syntax as L
+open import Inception.SystemL.Syntax as L
 
 variable
   SΓ SΔ : S.Ctx
@@ -13,7 +13,7 @@ variable
 ⟦ A `⇒ B ⟧ = ⟦ A ⟧ `⇒ ⟦ B ⟧
 ⟦ `L ⟧     = `Unit `⇒ `⊥
 
-⟦_⟧ˣ : S.Ctx -> L.Env
+⟦_⟧ˣ : S.Ctx -> L.Ctx
 ⟦ ε ⟧ˣ     = ε
 ⟦ Γ ∙ A ⟧ˣ = ⟦ Γ ⟧ˣ ∙ ⟦ A ⟧
 

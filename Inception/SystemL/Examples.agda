@@ -1,6 +1,6 @@
-module Inception.LamBarMuMuTilde.Examples where
+module Inception.SystemL.Examples where
 
-open import Inception.LamBarMuMuTilde.Syntax
+open import Inception.SystemL.Syntax
 
 `efq : (ε ∙ `⊥) ⊢ (ε ∙ A)
 `efq = cut `⊥ (ret (var z)) tp
@@ -87,7 +87,7 @@ open import Inception.LamBarMuMuTilde.Syntax
 ---
 open import Inception.Sub.Machine using (ex15)
 open import Inception.Sub.Translation using (⟦_⟧ᶜ)
-open import Inception.LamBarMuMuTilde.SN
+open import Inception.SystemL.SN
 open import Inception.Prelude
 open Inception.Prelude.RTC
 open import Relation.Binary.PropositionalEquality

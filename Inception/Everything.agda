@@ -17,6 +17,6 @@ import Inception.Sub.Semantics
 import Inception.Inc.Syntax
 import Inception.Inc.CPS
 
--- fine-grained CBV λƛμμ̃ calculus
-import Inception.LamBarMuMuTilde.Syntax
-import Inception.LamBarMuMuTilde.CBV
+-- system L
+import Inception.SystemL.Syntax
+import Inception.SystemL.CBV
