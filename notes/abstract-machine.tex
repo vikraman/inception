@@ -1,19 +1,164 @@
-\documentclass[fleqn]{article}
+% vim:fileencoding=utf-8:foldmethod=marker:fmr=<<<,>>>
 
+\documentclass[fleqn,british]{article}
+
+% Preamble <<<
+\newif\ifdraft
+\drafttrue
 \newif\ifwithagda
-\withagdafalse
+%\withagdatrue
+\newif\ifdebug
+%\debugtrue
+
+\usepackage{ragged2e}
+
+\ifdebug
+\usepackage{showframe}
+\newcommand\debugbox[1]{\fbox{#1}}
+\overfullrule=5pt
+\usepackage[notcite]{showkeys}
+% https://tex.stackexchange.com/questions/200415/showkeys-package-with-very-small-margins
+\usepackage[obeyspaces,hyphens,spaces]{url}
+\renewcommand*{\showkeyslabelformat}[1]{%
+\expandafter\def\expandafter\UrlBreaks\expandafter{\UrlBreaks%  save the current one
+\do\a\do\b\do\c\do\d\do\e\do\f\do\g\do\h\do\i\do\j%
+\do\k\do\l\do\m\do\n\do\o\do\p\do\q\do\r\do\s\do\t%
+\do\u\do\v\do\w\do\x\do\y\do\z\do\A\do\B\do\C\do\D%
+\do\E\do\F\do\G\do\H\do\I\do\J\do\K\do\L\do\M\do\N%
+\do\O\do\P\do\Q\do\R\do\S\do\T\do\U\do\V\do\W\do\X%
+\do\Y\do\Z}%
+\fcolorbox{black}{green!50}{\parbox[t]{15mm}{\RaggedRight\noindent\normalfont\small\url{#1}\par}}}
+\else
+\newcommand\debugbox[1]{\makebox{#1}}
+\fi
+
+\ifdraft
+\usepackage{lipsum}
+\setlipsum{auto-lang=false}
+\usepackage[textsize=footnotesize,textwidth=20mm]{todonotes}
+\newcommand{\td}[1]{\todo[color=green!40]{#1}}
+\else
+\newcommand{\td}[1]{}
+\newcommand{\lipsum}[1][]{}
+\fi
 
 \usepackage[shortlabels]{enumitem}
-\usepackage{stmaryrd, nccmath, amsmath, amssymb, parskip, geometry, xcolor, amsthm, mathrsfs, thmtools, tikz, mathpartir, mathtools}
+\usepackage{nccmath, amsmath, amssymb, parskip, geometry, xcolor, amsthm, mathrsfs, tikz, bussproofs, mathtools}
 
-%\usepackage{showframe}
-%\newcommand\debugbox[1]{\fbox{#1}}
-\newcommand\debugbox[1]{\makebox{#1}}
 
-\input{thmstyles}
+%TC:ignore 
+\usepackage{stmaryrd}
+% \llbracket and \rrbracket don't have bold versions; use the medium ones instead:
+\makeatletter
+\input{Ustmry.fd}
+\makeatother
+\DeclareFontShape{U}{stmry}{b}{n}{<-> ssub * stmry/m/n}{}
+%TC:endignore 
+
+\usepackage{subcaption}
+\captionsetup[sub]{skip=0pt, belowskip=0pt} 
+
+% https://tex.stackexchange.com/questions/265/fonts-larger-than-huge
+\makeatletter
+\newcommand\HUGE{\@setfontsize\Huge{35}{45}}
+\makeatother
+
+\usepackage[T1]{fontenc}
+
+%AGDA
+\usepackage{fontspec, newunicodechar, stmaryrd, setspace, comment, scalerel, doi}
+\usepackage{silence}
+\WarningFilter{etex}{Extended allocation already in use.}
+\usepackage{catchfilebetweentags} %causes etex warning
+%\input{commands}
+%\input{unicode}
+%\input{macros}
+%\usepackage{agda-latex/agda}
+\newcommand{\fixgap}{\vspace*{-30pt}}
+%END AGDA
+
+\usepackage[titletoc, title, page]{appendix}
+
+\usetikzlibrary{cd}
+
+\tikzcdset{ diagrams={ column sep=60pt,
+					             row sep=30pt,
+					             arrows={shorten >=-0.5ex,shorten <=-0.5ex}
+                     }
+          }
+
+\usetikzlibrary{tikzmark, positioning}
 
 \geometry{a4paper, left=25mm, right=25mm, top=20mm, bottom=25mm}
 
+\definecolor{mygrey}{rgb}{0.35, 0.35, 0.35}
+
+\usepackage{mathpartir}
+
+\usepackage[authoryear]{natbib}
+\bibliographystyle{plainnat}
+
+\usepackage{etoolbox}
+%https://tex.stackexchange.com/questions/125690/bibtex-and-genitive-possessive-s-the-proper-way-to-obtain-kurans-1989-mo
+\makeatletter
+
+% make numeric styles use name format
+\patchcmd{\NAT@test}{\else \NAT@nm}{\else \NAT@nmfmt{\NAT@nm}}{}{}
+
+% define \citepos just like \citet
+\DeclareRobustCommand\citepos
+  {\begingroup
+   \let\NAT@nmfmt\NAT@posfmt% ...except with a different name format
+   \NAT@swafalse\let\NAT@ctype\z@\NAT@partrue
+   \@ifstar{\NAT@fulltrue\NAT@citetp}{\NAT@fullfalse\NAT@citetp}}
+
+\let\NAT@orig@nmfmt\NAT@nmfmt
+\def\NAT@posfmt#1{\NAT@orig@nmfmt{#1's}}
+
+\def\NAT@spacechar{~} % to avoid linebreaks within names
+
+\makeatother
+
+\usepackage{titlesec}
+
+\titleformat{\section}[block]
+{\bfseries\Huge}
+{\thesection}{1em}{}
+\titlespacing{\section}{0pc}{*2}{*2}[5pc]
+
+\titleformat{\subsection}[block]
+{\bfseries\Large}
+{\thesubsection}{1em}{}
+\titlespacing{\subsection}{0pc}{20pt}{*2}
+
+\titleformat{\subsubsection}[block]
+{\bfseries\large}
+{\thesubsubsection}{1em}{}
+\titlespacing{\subsubsection}{0pc}{20pt}{*2}
+
+
+% https://tex.stackexchange.com/questions/171976/forcing-page-number-to-start-from-the-title-page
+\makeatletter
+\renewenvironment{titlepage}
+ {%
+  \if@twocolumn
+    \@restonecoltrue\onecolumn
+  \else
+    \@restonecolfalse\newpage
+  \fi
+  \thispagestyle{empty}%
+ }
+ {%
+  \if@restonecol
+    \twocolumn
+  \else
+    \newpage
+  \fi
+ }
+\makeatother
+
+\usepackage{texosquery}
+\usepackage[showzone=true]{datetime2}
 \usepackage{fancyhdr}
 \fancypagestyle{pstyle}
 {
@@ -21,58 +166,109 @@
    \fancyhead{}
    \renewcommand{\headrulewidth}{0.0pt}
    \renewcommand{\footrulewidth}{0.4pt}
+   %\fancyfoot[L]{\footnotesize \DTMnow }
    \fancyfoot[C]{\footnotesize Page \thepage\ of \pageref*{pg:end}}
+	 \ifdraft
+   %\fancyfoot[L]{\footnotesize \COMMITDATE {\color{red}\DIRTY}}
    \fancyfoot[L]{}
+   %\fancyfoot[R]{\footnotesize DRAFT - \gitrevision }
    \fancyfoot[R]{}
+	 \fi
 }
 \pagestyle{pstyle}
 
-\usepackage{subcaption}
-\captionsetup[sub]{skip=0pt, belowskip=0pt} 
-\captionsetup{skip=4pt, belowskip=0pt} 
-
 \setlength{\mathindent}{10pt}
 
+\usepackage{chngcntr}
+\counterwithout{equation}{section}
+
+\setlist[enumerate]{wide=0pt}
+\setenumerate[1]{leftmargin={\dimexpr\parindent+10pt\relax}}
+\setenumerate[2]{leftmargin={\dimexpr\parindent+20pt\relax}}
+
+\newcommand{\college}{Trinity Hall}
+\newcommand{\topic}{Category-Theoretical Modelling of Control Effects and their Sequentialisation}
+\newcommand{\supervisor}{Marcelo Fiore}
+\newcommand{\tit}{Second Year Report}
+\newcommand{\aut}{Gregor Feierabend}
+
+%\ifdraft
+%\newcommand{\subject}{DRAFT - git commit \HEAD}
+%\else
+\newcommand{\subject}{}
+%\fi
+
+\usepackage[normalem]{ulem}
+
+\input{glossary.tex}
+
+\usepackage{xstring}
 \usepackage{hyperref}
 \usepackage{cleveref}
 
+\newenvironment{gloss}{}{}
+\Crefname{glossary}{Glossary}{Glossaries}
+\crefname{glossary}{glossary}{glossaries}
+\AtBeginEnvironment{gloss}{\crefalias{section*}{glossary}}
+\AtBeginEnvironment{gloss}{\crefalias{section}{glossary}}
+\AtBeginEnvironment{gloss}{\crefalias{subsection}{glossary}}
+\AtBeginEnvironment{gloss}{\crefalias{subsubsection}{glossary}}
+
 \definecolor{mylinkcolour}{rgb}{0.44, 0.16, 0.39}
-\hypersetup{%
-  linkcolor  = mylinkcolour,
-  citecolor  = mylinkcolour,
-  urlcolor   = mylinkcolour,
-  colorlinks = true,
-  breaklinks = true,
+
+\hypersetup{
+    pdftitle={\tit: \topic},
+		pdfsubject={\subject},
+    pdfauthor={\aut},
+    pdflang={en-GB},
+    pdfmoddate={},
+    %pdfmoddate={\PDFDATE},
+    %pdfkeywords={control effects, algebraic effects, computational effects, substitution, sequentialisation, abstract machines, continuations, CPS}
+    linkcolor  = mylinkcolour,
+    citecolor  = mylinkcolour,
+    urlcolor   = mylinkcolour,
+    colorlinks = true,
+    breaklinks = true,
 }
 
-\input{glossary}
+\linespread{1.25}
+
+% Preamble >>>
 
 \begin{document}
 
 \section{Definitions}
 \input{figures/ctx}
 \input{figures/terms}
-\clearpage
-%
 \input{figures/termsem}
-%\input{figures/termsemargs}
+\input{figures/termsemargs}
 \input{figures/env}
-\clearpage
-%
+\input{figures/envsem}
+\input{figures/partialsem}
 \input{figures/termwithhole}
 \input{figures/pstates}
-\clearpage
-%
 \input{figures/ptrans}
-\clearpage
-%
 \input{figures/cstates}
+\input{figures/cstatesem}
 \input{figures/ctrans}
+
 \clearpage
-%
-\section*{Glossary}\phantomsection\addcontentsline{toc}{section}{Glossary}
+% Glossary <<<
+\begin{gloss}
+\section*{Glossary}\phantomsection\addcontentsline{toc}{section}{Glossary}\label{glossary}
+{
+%\renewcommand{\arraystretch}{1.3}
+\printglossary[type=main, title={Terminology}, style={long-term}]
+\printglossary[type=\glsxtrabbrvtype, title={Abbreviations}, style={long-abbrev}]
+%\clearpage
 \printglossary[type=symbols, title={Notation}, style={long-symbols}]
+}
+\end{gloss}
+% >>>
+
+\thispagestyle{pstyle}
 \label{pg:end}
-\clearpage
 
 \end{document}
+
+%%% reftex-default-bibliography: ("./references.bib")
