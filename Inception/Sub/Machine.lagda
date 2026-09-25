@@ -51,7 +51,7 @@ mutual
     jumpᵛ :   {Γ : Ctx} → (M : Comp Γ X) → (γ : Env {Z₀ = Z₀} Γ)
               → (cs : CStack {Z₀ = Z₀} X)
               -----------------------------------------------
-              → Value `L
+              → Value `ℓ
 
   data Env {Z₀ : Ty} : Ctx → Set where
 
@@ -105,7 +105,7 @@ data CState {Z₀ : Ty} : Set where
 
 %<*Eval>
 \begin{code}
-jump-to-state : {Z₀ : Ty} → Value {Z₀ = Z₀} `L → CState {Z₀ = Z₀}
+jump-to-state : {Z₀ : Ty} → Value {Z₀ = Z₀} `ℓ → CState {Z₀ = Z₀}
 jump-to-state (jumpᵛ M γ k) = ⟨ M ╎ γ ╎ k ⟩
 
 clo-to-comp :  {Z₀ : Ty} → Value {Z₀ = Z₀} (X `⇒ Y)
@@ -118,7 +118,7 @@ eval (lam M) γ = cloᵛ M γ
 eval (pair W₁ W₂) γ = pairᵛ (eval W₁ γ) (eval W₂ γ)
 eval unit γ = unitᵛ
 
-eval-jump : {Z₀ : Ty} → Pure Γ `L → Env {Z₀ = Z₀} Γ → CState {Z₀ = Z₀}
+eval-jump : {Z₀ : Ty} → Pure Γ `ℓ → Env {Z₀ = Z₀} Γ → CState {Z₀ = Z₀}
 eval-jump W γ = jump-to-state (eval W γ)
 
 eval-clo :  {Z₀ : Ty} → Pure Γ (X `⇒ Y) → Pure Γ X → Env {Z₀ = Z₀} Γ
@@ -161,11 +161,11 @@ data _→ᶜ_ {Z₀ : Ty} : CState {Z₀ = Z₀} → CState {Z₀ = Z₀} → Se
              ----------------------------------------------------------------
              →  ⟨ push M₁ M₂ ╎ γ ╎ cstack ⟩ →ᶜ ⟨ M₁ ╎ γ ╎ < M₂ ； γ >∷ cstack ⟩
 
-  sub→ :     {M₁ : Comp (Γ ∙ `L) X} {M₂ : Comp Γ X} {γ : Env Γ} {cstack : CStack X}
+  sub→ :     {M₁ : Comp (Γ ∙ `ℓ) X} {M₂ : Comp Γ X} {γ : Env Γ} {cstack : CStack X}
              ----------------------------------------------------------------
              →  ⟨ sub M₁ M₂ ╎ γ ╎ cstack ⟩ →ᶜ ⟨ M₁ ╎ γ · (jumpᵛ M₂ γ cstack) ╎ cstack ⟩
 
-  var→ :     {W : Pure Γ `L} {γ : Env Γ} {cstack : CStack X}
+  var→ :     {W : Pure Γ `ℓ} {γ : Env Γ} {cstack : CStack X}
              ------------------------------------------
              →  ⟨ var W ╎ γ ╎ cstack ⟩ →ᶜ eval-jump W γ
 
@@ -217,7 +217,7 @@ Rᵏ : {Z₀ : Ty} → (X : Ty) → CStack {Z₀ = Z₀} X → Set
 Rᵛ `𝟙 unitᵛ = ⊤
 Rᵛ (X `× Y) (pairᵛ W₁ W₂) = Rᵛ X W₁ × Rᵛ Y W₂
 Rᵛ {Z₀ = Z₀} (X `⇒ Y) (cloᵛ M γ) = ∀ {W' : Value {Z₀ = Z₀} X} → Rᵛ X W' → ∀ {cstack : CStack {Z₀ = Z₀} Y} → Rᵏ Y cstack → SN ⟨ M ╎ γ · W' ╎ cstack ⟩
-Rᵛ `L (jumpᵛ M γ cstack) = SN ⟨ M ╎ γ ╎ cstack ⟩
+Rᵛ `ℓ (jumpᵛ M γ cstack) = SN ⟨ M ╎ γ ╎ cstack ⟩
 
 Rᵏ {Z₀ = Z₀} X cstack = ∀ {W : Value {Z₀ = Z₀} X} → Rᵛ X W → SN ⟨ W ╎ cstack ⟩
 
@@ -228,7 +228,7 @@ Rᴱ-ext : {Z₀ : Ty} {γ : Env {Z₀ = Z₀} Γ} {W : Value {Z₀ = Z₀} X} �
 Rᴱ-ext Rγ RW here = RW
 Rᴱ-ext Rγ RW (there i) = Rγ i
 
-rv≡sn : {Z₀ : Ty} → (Ẇ : Value {Z₀ = Z₀} `L) → Rᵛ `L Ẇ ≡ SN (jump-to-state Ẇ)
+rv≡sn : {Z₀ : Ty} → (Ẇ : Value {Z₀ = Z₀} `ℓ) → Rᵛ `ℓ Ẇ ≡ SN (jump-to-state Ẇ)
 rv≡sn (jumpᵛ _ _ _) = refl
 
 mutual

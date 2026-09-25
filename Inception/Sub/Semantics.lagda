@@ -43,7 +43,7 @@ open Monad (K[_]-Monad {x = 0ℓ} R) using (η; _*)
 ⟦ `𝟙 ⟧ = ⊤
 ⟦ A `× B ⟧ = ⟦ A ⟧ × ⟦ B ⟧
 ⟦ A `⇒ B ⟧ = ⟦ A ⟧ -> K ⟦ B ⟧
-⟦ `L ⟧ = R
+⟦ `ℓ ⟧ = R
 
 \end{code}
 %</SemTy>
@@ -322,10 +322,10 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
                                       push-eq'' : (λ z → ⟦ W ⟧ᶜ (⟦ γ ⟧ᴱ , z) (λ y → ⟦ cs ⟧ᶜˢ (λ k → k y) k₀)) ≡ (λ z → ⟦ cs ⟧ᶜˢ (λ k → ⟦ W ⟧ᶜ (⟦ γ ⟧ᴱ , z) k) k₀)
                                       push-eq'' = extensionality push-eq'
 
-  jump-eq : (W : Value `L) → ⟦ W ⟧ⱽ ≡ ⟦ jump-to-state W ⟧ᶜꟴ
+  jump-eq : (W : Value `ℓ) → ⟦ W ⟧ⱽ ≡ ⟦ jump-to-state W ⟧ᶜꟴ
   jump-eq (jumpᵛ _ _ _) = refl
 
-  jump-eq' : (W : Pure Γ `L) → (γ : Env {Z₀ = R₀} Γ) → ⟦ eval W γ ⟧ⱽ ≡ ⟦ jump-to-state (eval W γ) ⟧ᶜꟴ
+  jump-eq' : (W : Pure Γ `ℓ) → (γ : Env {Z₀ = R₀} Γ) → ⟦ eval W γ ⟧ⱽ ≡ ⟦ jump-to-state (eval W γ) ⟧ᶜꟴ
   jump-eq' W γ = jump-eq (eval W γ)
 
   clo-eq : (W : Value (X `⇒ Y)) → (T : ⟦ X ⟧) → (E : ⟦ proj₁ (clo-to-comp W) ⟧ˣ) → (eq : E ≡ ⟦ proj₂ (proj₂ (clo-to-comp W)) ⟧ᴱ) → ⟦ W ⟧ⱽ T ≡ ⟦ proj₁ (proj₂ (clo-to-comp W)) ⟧ᶜ (E , T)
