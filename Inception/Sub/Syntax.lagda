@@ -18,7 +18,7 @@ infixr 40 _`×_
 infixr 25 _`⇒_
 
 data Ty : Set where
-  `Unit : Ty
+  `𝟙 : Ty
   _`×_ _`⇒_ : Ty -> Ty -> Ty
   `L : Ty
 
@@ -50,7 +50,7 @@ mutual
 
     unit :
             -----------
-            Γ ⊢ᵖ `Unit
+            Γ ⊢ᵖ `𝟙
 
   data Comp : Ctx -> Ty -> Set where
 
@@ -186,9 +186,9 @@ data EqPure Γ where
 
   -- beta/eta rules
 
-  unit-eta : (W : Γ ⊢ᵖ `Unit)
+  unit-eta : (W : Γ ⊢ᵖ `𝟙)
            ------------------------
-           -> Γ ⊢ᵖ W ≈ unit ∶ `Unit
+           -> Γ ⊢ᵖ W ≈ unit ∶ `𝟙
 
   lam-eta : (W : Γ ⊢ᵖ X `⇒ Y)
           ---------------------------
