@@ -349,17 +349,17 @@ module TopLevel {ℛ : Ty} {k₀ : ⟦ ℛ ⟧ → R} where
       eq = eval-correct W γ
     in
     η (⟦ W ⟧ᵖ ⟦ γ ⟧ᴱ) ⟦ cstack ⟧ᴷ ≡⟨ cong (λ x → η x ⟦ cstack ⟧ᴷ) eq ⟩ η ⟦ eval W γ ⟧ⱽ ⟦ cstack ⟧ᴷ ∎
-  compstate-eq (return→ {Ẇ = Ẇ} {M = M} {γ = γ} {cstack = cstack}) =
+  compstate-eq (return→ {𝐖 = 𝐖} {M = M} {γ = γ} {cstack = cstack}) =
     let
-      eq = push-eq cstack (⟦ M ⟧ᶜ (⟦ γ ⟧ᴱ , ⟦ Ẇ ⟧ⱽ))
+      eq = push-eq cstack (⟦ M ⟧ᶜ (⟦ γ ⟧ᴱ , ⟦ 𝐖 ⟧ⱽ))
     in
-      η ⟦ Ẇ ⟧ⱽ ⟦ < M ； γ >∷ cstack ⟧ᴷ
+      η ⟦ 𝐖 ⟧ⱽ ⟦ < M ； γ >∷ cstack ⟧ᴷ
     ≡⟨ refl ⟩
-     ⟦ cstack ⟧ᶜˢ (λ k₁ → ⟦ M ⟧ᶜ (⟦ γ ⟧ᴱ , ⟦ Ẇ ⟧ⱽ) k₁) k₀
+     ⟦ cstack ⟧ᶜˢ (λ k₁ → ⟦ M ⟧ᶜ (⟦ γ ⟧ᴱ , ⟦ 𝐖 ⟧ⱽ) k₁) k₀
     ≡⟨ eq ⟩
-     ⟦ M ⟧ᶜ (⟦ γ ⟧ᴱ , ⟦ Ẇ ⟧ⱽ) (λ y → ⟦ cstack ⟧ᶜˢ (λ k₁ → k₁ y) k₀)
+     ⟦ M ⟧ᶜ (⟦ γ ⟧ᴱ , ⟦ 𝐖 ⟧ⱽ) (λ y → ⟦ cstack ⟧ᶜˢ (λ k₁ → k₁ y) k₀)
     ≡⟨ refl ⟩
-     ⟦ M ⟧ᶜ (⟦ γ ⟧ᴱ , ⟦ Ẇ ⟧ⱽ) ⟦ cstack ⟧ᴷ ∎
+     ⟦ M ⟧ᶜ (⟦ γ ⟧ᴱ , ⟦ 𝐖 ⟧ⱽ) ⟦ cstack ⟧ᴷ ∎
   compstate-eq (push→ {M₁ = M₁} {M₂ = M₂} {γ = γ} {cstack = cstack}) =
     (< idf , ⟦ M₁ ⟧ᶜ > ； τ ； ⟦ M₂ ⟧ᶜ *) ⟦ γ ⟧ᴱ ⟦ cstack ⟧ᴷ
      ≡⟨ refl ⟩
