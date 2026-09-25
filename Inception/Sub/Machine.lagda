@@ -40,7 +40,7 @@ mutual
               -------------------
               Value {ℛ = ℛ} `𝟙
 
-    pairᵛ :   (Ẇ₁ : Value {ℛ = ℛ} X₁) → (Ẇ₂ : Value {ℛ = ℛ} X₂)
+    pairᵛ :   (𝐖₁ : Value {ℛ = ℛ} X₁) → (𝐖₂ : Value {ℛ = ℛ} X₂)
               -------------------------------------------------
               → Value (X₁ `× X₂)
 
@@ -64,8 +64,8 @@ mutual
            → MEnv {ℛ = ℛ} (Γ ∙ X)
 
 lookup : Γ ∋ X → MEnv {ℛ = ℛ} Γ → Value {ℛ = ℛ} X
-lookup here (γ · Ẇ) = Ẇ
-lookup (there x) (γ · Ẇ) = lookup x γ
+lookup here (γ · 𝐖) = 𝐖
+lookup (there x) (γ · 𝐖) = lookup x γ
 
 \end{code}
 %</MEnv>
@@ -92,7 +92,7 @@ pair-val (pairᵛ W₁ W₂) = refl
 
 data CState {ℛ : Ty} : Set where
 
-  ⟨_╎_⟩ :    (Ẇ : Value {ℛ = ℛ} X) → (cstack : CStack {ℛ = ℛ} X)
+  ⟨_╎_⟩ :    (𝐖 : Value {ℛ = ℛ} X) → (cstack : CStack {ℛ = ℛ} X)
              ---------------------------------------------------
              → CState {ℛ = ℛ}
 
@@ -153,9 +153,9 @@ data _→ᶜ_ {ℛ : Ty} : CState {ℛ = ℛ} → CState {ℛ = ℛ} → Set whe
              -------------------------------------------
              →  ⟨ return W ╎ γ ╎ cstack ⟩ →ᶜ ⟨ eval W γ ╎ cstack ⟩
 
-  return→ :  {Ẇ : Value X} {M : Comp (Γ ∙ X) Y} {γ : MEnv Γ} {cstack : CStack Y}
+  return→ :  {𝐖 : Value X} {M : Comp (Γ ∙ X) Y} {γ : MEnv Γ} {cstack : CStack Y}
              --------------------------------------------------------------
-             →  ⟨ Ẇ ╎ < M ； γ >∷ cstack ⟩ →ᶜ ⟨ M ╎ γ · Ẇ ╎ cstack ⟩
+             →  ⟨ 𝐖 ╎ < M ； γ >∷ cstack ⟩ →ᶜ ⟨ M ╎ γ · 𝐖 ╎ cstack ⟩
 
   push→ :    {M₁ : Comp Γ X} {M₂ : Comp (Γ ∙ X) Y} {γ : MEnv Γ} {cstack : CStack Y}
              ----------------------------------------------------------------
@@ -228,7 +228,7 @@ Rᴱ-ext : {ℛ : Ty} {γ : MEnv {ℛ = ℛ} Γ} {W : Value {ℛ = ℛ} X} → R
 Rᴱ-ext Rγ RW here = RW
 Rᴱ-ext Rγ RW (there i) = Rγ i
 
-rv≡sn : {ℛ : Ty} → (Ẇ : Value {ℛ = ℛ} `ℓ) → Rᵛ `ℓ Ẇ ≡ SN (jump-to-state Ẇ)
+rv≡sn : {ℛ : Ty} → (𝐖 : Value {ℛ = ℛ} `ℓ) → Rᵛ `ℓ 𝐖 ≡ SN (jump-to-state 𝐖)
 rv≡sn (jumpᵛ _ _ _) = refl
 
 mutual
