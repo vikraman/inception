@@ -22,18 +22,18 @@ infixr 25 _`⇒_
 
 data Ty : Set where
   `Unit : Ty
-  _`×_ _`⇒_ : Ty -> Ty -> Ty
+  _`×_ _`⇒_ : Ty → Ty → Ty
   `L `P : Ty
 
 open import Inception.Ctx Ty public
 
 syntax Val Γ X = Γ ⊢ᵛ X
 
-data Val : Ctx -> Ty -> Set
+data Val : Ctx → Ty → Set
 
 syntax Comp Γ X = Γ ⊢ᶜ X
 
-data Comp : Ctx -> Ty -> Set
+data Comp : Ctx → Ty → Set
 
 \end{code}
 %<*Val>
@@ -43,15 +43,15 @@ data Val where
 
   var :   (x : Γ ∋ X)
           ----------
-          -> Γ ⊢ᵛ X
+          → Γ ⊢ᵛ X
 
   lam :   (Γ ∙ X) ⊢ᶜ Y
           --------------
-          -> Γ ⊢ᵛ X `⇒ Y
+          → Γ ⊢ᵛ X `⇒ Y
 
-  pair :  Γ ⊢ᵛ X₁ -> Γ ⊢ᵛ X₂
+  pair :  Γ ⊢ᵛ X₁ → Γ ⊢ᵛ X₂
           -----------------
-          -> Γ ⊢ᵛ X₁ `× X₂
+          → Γ ⊢ᵛ X₁ `× X₂
 
   unit :
           -----------
@@ -60,7 +60,7 @@ data Val where
 
   dat :   (N : ℕ)
           -----------
-          -> Γ ⊢ᵛ `P
+          → Γ ⊢ᵛ `P
 
 \end{code}
 %</Val>
@@ -74,41 +74,41 @@ data Comp where
 
   return :  Γ ⊢ᵛ X
             ---------
-            -> Γ ⊢ᶜ X
+            → Γ ⊢ᶜ X
 
-  pm :      Γ ⊢ᵛ X₁ `× X₂ -> (Γ ∙ X₁ ∙ X₂) ⊢ᶜ Y
+  pm :      Γ ⊢ᵛ X₁ `× X₂ → (Γ ∙ X₁ ∙ X₂) ⊢ᶜ Y
             -------------------------------
-            -> Γ ⊢ᶜ Y
+            → Γ ⊢ᶜ Y
 
-  push :    Γ ⊢ᶜ X -> (Γ ∙ X) ⊢ᶜ Y
+  push :    Γ ⊢ᶜ X → (Γ ∙ X) ⊢ᶜ Y
             --------------------
-            -> Γ ⊢ᶜ Y
+            → Γ ⊢ᶜ Y
 
-  app :     Γ ⊢ᵛ X `⇒ Y -> Γ ⊢ᵛ X
+  app :     Γ ⊢ᵛ X `⇒ Y → Γ ⊢ᵛ X
             ---------------------
-            -> Γ ⊢ᶜ Y
+            → Γ ⊢ᶜ Y
 
-  rec :     Γ ⊢ᵛ `L -> Γ ⊢ᵛ `P
+  rec :     Γ ⊢ᵛ `L → Γ ⊢ᵛ `P
             ------------------
-            -> Γ ⊢ᶜ X
+            → Γ ⊢ᶜ X
 
-  inc :     (Γ ∙ `L) ⊢ᶜ X -> (Γ ∙ `P) ⊢ᶜ X
+  inc :     (Γ ∙ `L) ⊢ᶜ X → (Γ ∙ `P) ⊢ᶜ X
             -------------------------------
-            -> Γ ⊢ᶜ X
+            → Γ ⊢ᶜ X
 
 \end{code}
 %</Comp>
 \begin{code}
 
 mutual
-  wk-val : Wk Γ Δ -> Δ ⊢ᵛ X -> Γ ⊢ᵛ X
+  wk-val : Wk Γ Δ → Δ ⊢ᵛ X → Γ ⊢ᵛ X
   wk-val π (var x)         = var (wk-mem π x)
   wk-val π (lam M)         = lam (wk-comp (wk-cong π) M)
   wk-val π (pair W₁ W₂)    = pair (wk-val π W₁) (wk-val π W₂)
   wk-val π unit            = unit
   wk-val π (dat N)         = dat N
 
-  wk-comp : Wk Γ Δ -> Δ ⊢ᶜ X -> Γ ⊢ᶜ X
+  wk-comp : Wk Γ Δ → Δ ⊢ᶜ X → Γ ⊢ᶜ X
   wk-comp π (return W)      = return (wk-val π W)
   wk-comp π (pm W M)        = pm (wk-val π W) (wk-comp (wk-cong (wk-cong π)) M)
   wk-comp π (push M₁ M₂)    = push (wk-comp π M₁) (wk-comp (wk-cong π) M₂)
@@ -116,7 +116,7 @@ mutual
   wk-comp π (rec W₁ W₂)     = rec (wk-val π W₁) (wk-val π W₂)
   wk-comp π (inc M₁ M₂)     = inc (wk-comp (wk-cong π) M₁) (wk-comp (wk-cong π) M₂)
 
-wk : Val Γ X -> Val (Γ ∙ Y) X
+wk : Val Γ X → Val (Γ ∙ Y) X
 wk = wk-val (wk-wk wk-id)
 
 \end{code}

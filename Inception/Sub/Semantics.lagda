@@ -27,7 +27,7 @@ open import Level using (0ℓ)
 open import Inception.Cont.Base
 open import Inception.Monad.Base using (Monad)
 
-K : Set -> Set
+K : Set → Set
 K = K[ R ]
 
 open Monad (K[_]-Monad {x = 0ℓ} R) using (η; _*)
@@ -39,10 +39,10 @@ open Monad (K[_]-Monad {x = 0ℓ} R) using (η; _*)
 %<*SemTy>
 \begin{code}
 
-⟦_⟧ : Ty -> Set
+⟦_⟧ : Ty → Set
 ⟦ `𝟙 ⟧ = ⊤
 ⟦ A `× B ⟧ = ⟦ A ⟧ × ⟦ B ⟧
-⟦ A `⇒ B ⟧ = ⟦ A ⟧ -> K ⟦ B ⟧
+⟦ A `⇒ B ⟧ = ⟦ A ⟧ → K ⟦ B ⟧
 ⟦ `ℓ ⟧ = R
 
 \end{code}
@@ -61,21 +61,21 @@ open Sem ⟦_⟧
 \end{code}
 %<*SemTerms>
 \begin{code}
-varK : {X : Set} -> R -> K X
+varK : {X : Set} → R → K X
 varK v k = v
 
-subK : {X : Set} -> (R -> K X) × K X -> K X
+subK : {X : Set} → (R → K X) × K X → K X
 subK (m₁ , m₂) k = m₁ (m₂ k) k
 
 mutual
 
-  ⟦_⟧ᵛ : Γ ⊢ᵛ X -> ⟦ Γ ⟧ˣ -> ⟦ X ⟧
+  ⟦_⟧ᵛ : Γ ⊢ᵛ X → ⟦ Γ ⟧ˣ → ⟦ X ⟧
   ⟦ var i ⟧ᵛ = ⟦ i ⟧ᵐ
   ⟦ lam M ⟧ᵛ = curry ⟦ M ⟧ᶜ
   ⟦ pair W₁ W₂ ⟧ᵛ = < ⟦ W₁ ⟧ᵛ , ⟦ W₂ ⟧ᵛ >
   ⟦ unit ⟧ᵛ = const tt
 
-  ⟦_⟧ᶜ : Γ ⊢ᶜ X -> ⟦ Γ ⟧ˣ -> K ⟦ X ⟧
+  ⟦_⟧ᶜ : Γ ⊢ᶜ X → ⟦ Γ ⟧ˣ → K ⟦ X ⟧
   ⟦ return W ⟧ᶜ = ⟦ W ⟧ᵛ ； η
   ⟦ pm W M ⟧ᶜ = < idf , ⟦ W ⟧ᵛ > ； assocl ； ⟦ M ⟧ᶜ
   ⟦ push M₁ M₂ ⟧ᶜ = < idf , ⟦ M₁ ⟧ᶜ > ； τ ； ⟦ M₂ ⟧ᶜ *
@@ -86,28 +86,28 @@ mutual
 %</SemTerms>
 \begin{code}
 
-push-return-sem-eq : (γ : ⟦ Γ ⟧ˣ) → (k : (⟦ X ⟧ -> R)) → (W : Val Γ Z) → (M₂ : (Γ ∙ Z) ⊢ᶜ X) →
+push-return-sem-eq : (γ : ⟦ Γ ⟧ˣ) → (k : (⟦ X ⟧ → R)) → (W : Val Γ Z) → (M₂ : (Γ ∙ Z) ⊢ᶜ X) →
       (< idf , ⟦ return W ⟧ᶜ > ； τ ； ⟦ M₂ ⟧ᶜ *) γ k ≡ ⟦ M₂ ⟧ᶜ (γ , ⟦ W ⟧ᵛ γ) k
 push-return-sem-eq γ k W M₂ = refl
 
-push-sem-eq : (γ : ⟦ Γ ⟧ˣ) → (k : (⟦ X ⟧ -> R)) → (M₁ : Comp Γ Z) → (M₂ : (Γ ∙ Z) ⊢ᶜ X) →
+push-sem-eq : (γ : ⟦ Γ ⟧ˣ) → (k : (⟦ X ⟧ → R)) → (M₁ : Comp Γ Z) → (M₂ : (Γ ∙ Z) ⊢ᶜ X) →
       (< idf , ⟦ M₁ ⟧ᶜ > ； τ ； ⟦ M₂ ⟧ᶜ *) γ k ≡ ⟦ M₁ ⟧ᶜ γ (λ t → ((⟦ M₂ ⟧ᶜ *) ∘ τ)  (γ , η t) k)
 push-sem-eq γ k W M₂ = refl
 
-pm-sem-eq : (γ : ⟦ Γ ⟧ˣ) → (k : (⟦ X ⟧ -> R)) → (W : Val Γ (X₁ `× X₂)) → (M : (Γ ∙ X₁ ∙ X₂) ⊢ᶜ X) →
+pm-sem-eq : (γ : ⟦ Γ ⟧ˣ) → (k : (⟦ X ⟧ → R)) → (W : Val Γ (X₁ `× X₂)) → (M : (Γ ∙ X₁ ∙ X₂) ⊢ᶜ X) →
       (< idf , ⟦ W ⟧ᵛ > ； assocl ； ⟦ M ⟧ᶜ) γ k ≡ ⟦ M ⟧ᶜ ((γ , proj₁ (⟦ W ⟧ᵛ γ)) , proj₂ (⟦ W ⟧ᵛ γ)) k
 pm-sem-eq γ k W M = refl
 
-app-sem-eq : (γ : ⟦ Γ ⟧ˣ) → (k : (⟦ Y ⟧ -> R)) → (W₁ : Val Γ (X `⇒ Y)) → (W₂ : Val Γ X) →
+app-sem-eq : (γ : ⟦ Γ ⟧ˣ) → (k : (⟦ Y ⟧ → R)) → (W₁ : Val Γ (X `⇒ Y)) → (W₂ : Val Γ X) →
       (< ⟦ W₁ ⟧ᵛ , ⟦ W₂ ⟧ᵛ > ； ev) γ k ≡ (⟦ W₁ ⟧ᵛ γ) (⟦ W₂ ⟧ᵛ γ) k
 app-sem-eq γ k W₁ W₂ = refl
 
-app-lam-sem-eq : (γ : ⟦ Γ ⟧ˣ) → (k : (⟦ Y ⟧ -> R)) → (M : Comp (Γ ∙ X) Y) → (W₂ : Val Γ X) →
+app-lam-sem-eq : (γ : ⟦ Γ ⟧ˣ) → (k : (⟦ Y ⟧ → R)) → (M : Comp (Γ ∙ X) Y) → (W₂ : Val Γ X) →
       (< ⟦ lam M ⟧ᵛ , ⟦ W₂ ⟧ᵛ > ； ev) γ k ≡ ⟦ M ⟧ᶜ (γ , (⟦ W₂ ⟧ᵛ γ)) k
 app-lam-sem-eq γ k M W₂ = refl
 
 mutual
-  evalVal : Γ ⊢ᵛ X -> ⟦ Γ ⟧ˣ -> ⟦ X ⟧
+  evalVal : Γ ⊢ᵛ X → ⟦ Γ ⟧ˣ → ⟦ X ⟧
   evalVal (var i) γ =
     ⟦ i ⟧ᵐ γ
   evalVal (lam M) γ a =
@@ -116,7 +116,7 @@ mutual
     evalVal W₁ γ , evalVal W₂ γ
   evalVal unit γ = tt
 
-  evalComp :  Γ ⊢ᶜ X -> ⟦ Γ ⟧ˣ × (⟦ X ⟧ -> R) -> R
+  evalComp :  Γ ⊢ᶜ X → ⟦ Γ ⟧ˣ × (⟦ X ⟧ → R) → R
   evalComp (return W) (γ , k) =
     let w = evalVal W γ in
       k w
@@ -124,7 +124,7 @@ mutual
     let w = evalVal W γ in
       evalComp M (((γ , proj₁ w) , proj₂ w) , k)
   evalComp (push M₁ M₂) (γ , k) =
-    evalComp M₁ (γ , \a ->
+    evalComp M₁ (γ , \a →
       evalComp M₂ ((γ , a) , k))
   evalComp (app W₁ W₂) (γ , k) =
     let w₁ = evalVal W₁ γ in
@@ -137,19 +137,19 @@ mutual
     let m₂ = evalComp M₂ (γ , k) in
       evalComp M₁ ((γ , m₂) , k)
 
-⟦_⟧ˢ : Sub Γ Δ -> ⟦ Γ ⟧ˣ -> ⟦ Δ ⟧ˣ
+⟦_⟧ˢ : Sub Γ Δ → ⟦ Γ ⟧ˣ → ⟦ Δ ⟧ˣ
 ⟦ sub-ε ⟧ˢ = const tt
 ⟦ sub-ex θ W ⟧ˢ = < ⟦ θ ⟧ˢ , ⟦ W ⟧ᵛ >
 
 -- coherences
 mutual
-  wk-val-coh : (π : Γ ⊇ Δ) (W : Δ ⊢ᵛ X) -> ⟦ wk-val π W ⟧ᵛ ≡ (⟦ π ⟧ʷ ； ⟦ W ⟧ᵛ)
+  wk-val-coh : (π : Γ ⊇ Δ) (W : Δ ⊢ᵛ X) → ⟦ wk-val π W ⟧ᵛ ≡ (⟦ π ⟧ʷ ； ⟦ W ⟧ᵛ)
   wk-val-coh π (var i) rewrite wk-mem-coh π i = refl
   wk-val-coh π (lam M) rewrite wk-comp-coh (wk-cong π) M = refl
   wk-val-coh π (pair W₁ W₂) rewrite wk-val-coh π W₁ | wk-val-coh π W₂ = refl
   wk-val-coh π unit = refl
 
-  wk-comp-coh : (π : Γ ⊇ Δ) (M : Δ ⊢ᶜ X) -> ⟦ wk-comp π M ⟧ᶜ ≡ (⟦ π ⟧ʷ ； ⟦ M ⟧ᶜ)
+  wk-comp-coh : (π : Γ ⊇ Δ) (M : Δ ⊢ᶜ X) → ⟦ wk-comp π M ⟧ᶜ ≡ (⟦ π ⟧ʷ ； ⟦ M ⟧ᶜ)
   wk-comp-coh π (return W) rewrite wk-val-coh π W = refl
   wk-comp-coh π (pm W M) rewrite wk-val-coh π W | wk-comp-coh (wk-cong (wk-cong π)) M = refl
   wk-comp-coh π (push M₁ M₂) rewrite wk-comp-coh π M₁ | wk-comp-coh (wk-cong π) M₂ = refl
@@ -160,29 +160,29 @@ mutual
 {-# REWRITE wk-val-coh #-}
 {-# REWRITE wk-comp-coh #-}
 
-sub-mem-coh : (θ : Sub Γ Δ) (i : Δ ∋ X) -> ⟦ sub-mem θ i ⟧ᵛ ≡ (⟦ θ ⟧ˢ ； ⟦ i ⟧ᵐ)
+sub-mem-coh : (θ : Sub Γ Δ) (i : Δ ∋ X) → ⟦ sub-mem θ i ⟧ᵛ ≡ (⟦ θ ⟧ˢ ； ⟦ i ⟧ᵐ)
 sub-mem-coh (sub-ex θ W) here = refl
 sub-mem-coh (sub-ex θ W) (there i) rewrite sub-mem-coh θ i = refl
 {-# REWRITE sub-mem-coh #-}
 
-sub-wk-coh : (π : Γ ⊇ Δ) (θ : Sub Δ Ψ) -> ⟦ sub-wk π θ ⟧ˢ ≡ (⟦ π ⟧ʷ ； ⟦ θ ⟧ˢ)
+sub-wk-coh : (π : Γ ⊇ Δ) (θ : Sub Δ Ψ) → ⟦ sub-wk π θ ⟧ˢ ≡ (⟦ π ⟧ʷ ； ⟦ θ ⟧ˢ)
 sub-wk-coh π sub-ε = refl
 sub-wk-coh π (sub-ex θ W) rewrite sub-wk-coh π θ | wk-val-coh π W = refl
 {-# REWRITE sub-wk-coh #-}
 
 sub-id-coh : ⟦ sub-id {Γ} ⟧ˢ ≡ id
 sub-id-coh {ε} = refl
-sub-id-coh {Γ ∙ X} = funext \(γ , x) -> cong₂ _,_ (happly sub-id-coh γ) refl
+sub-id-coh {Γ ∙ X} = funext \(γ , x) → cong₂ _,_ (happly sub-id-coh γ) refl
 {-# REWRITE sub-id-coh #-}
 
 mutual
-  sub-val-coh : (θ : Sub Γ Δ) (W : Δ ⊢ᵛ X) -> ⟦ sub-val θ W ⟧ᵛ ≡ (⟦ θ ⟧ˢ ； ⟦ W ⟧ᵛ)
+  sub-val-coh : (θ : Sub Γ Δ) (W : Δ ⊢ᵛ X) → ⟦ sub-val θ W ⟧ᵛ ≡ (⟦ θ ⟧ˢ ； ⟦ W ⟧ᵛ)
   sub-val-coh θ (var i) = refl
   sub-val-coh θ (lam M) rewrite sub-comp-coh (sub-ex (sub-wk (wk-wk wk-id) θ) (var here)) M = refl
   sub-val-coh θ (pair W₁ W₂) rewrite sub-val-coh θ W₁ | sub-val-coh θ W₂ = refl
   sub-val-coh θ unit = refl
 
-  sub-comp-coh : (θ : Sub Γ Δ) (M : Δ ⊢ᶜ X) -> ⟦ sub-comp θ M ⟧ᶜ ≡ (⟦ θ ⟧ˢ ； ⟦ M ⟧ᶜ)
+  sub-comp-coh : (θ : Sub Γ Δ) (M : Δ ⊢ᶜ X) → ⟦ sub-comp θ M ⟧ᶜ ≡ (⟦ θ ⟧ˢ ； ⟦ M ⟧ᶜ)
   sub-comp-coh θ (return W) rewrite sub-val-coh θ W = refl
   sub-comp-coh θ (pm W M) rewrite sub-val-coh θ W | sub-comp-coh (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) θ) (var (there here))) (var here)) M = refl
   sub-comp-coh θ (push M₁ M₂) rewrite sub-comp-coh θ M₁ | sub-comp-coh (sub-ex (sub-wk (wk-wk wk-id) θ) (var here)) M₂ = refl
@@ -194,7 +194,7 @@ mutual
 {-# REWRITE sub-comp-coh #-}
 
 mutual
-  eqVal : Γ ⊢ᵛ W ≈ W' ∶ X -> ⟦ W ⟧ᵛ ≡ ⟦ W' ⟧ᵛ
+  eqVal : Γ ⊢ᵛ W ≈ W' ∶ X → ⟦ W ⟧ᵛ ≡ ⟦ W' ⟧ᵛ
   eqVal ≈-refl = refl
   eqVal (≈-sym p) = sym (eqVal p)
   eqVal (≈-trans p q) = Eq.trans (eqVal p) (eqVal q)
@@ -203,7 +203,7 @@ mutual
   eqVal (unit-eta _) = refl
   eqVal (lam-eta _) = refl
 
-  eqComp : Γ ⊢ᶜ M ≈ M' ∶ X -> ⟦ M ⟧ᶜ ≡ ⟦ M' ⟧ᶜ
+  eqComp : Γ ⊢ᶜ M ≈ M' ∶ X → ⟦ M ⟧ᶜ ≡ ⟦ M' ⟧ᶜ
   eqComp ≈-refl = refl
   eqComp (≈-sym p) = sym (eqComp p)
   eqComp (≈-trans p q) = Eq.trans (eqComp p) (eqComp q)
