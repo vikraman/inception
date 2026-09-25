@@ -11,7 +11,7 @@ variable
 ⟦ `𝟙 ⟧  = `Unit
 ⟦ A `× B ⟧ = ⟦ A ⟧ `× ⟦ B ⟧
 ⟦ A `⇒ B ⟧ = ⟦ A ⟧ `⇒ ⟦ B ⟧
-⟦ `L ⟧     = `Unit `⇒ `⊥
+⟦ `ℓ ⟧     = `Unit `⇒ `⊥
 
 ⟦_⟧ˣ : S.Ctx -> L.Ctx
 ⟦ S.ε ⟧ˣ     = ε
