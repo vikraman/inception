@@ -11,6 +11,7 @@ import Inception.LamPm
 -- substitution calculus
 import Inception.Sub.Syntax
 import Inception.Sub.Machine
+import Inception.Sub.Examples
 import Inception.Sub.Semantics
 
 -- inception calculus
