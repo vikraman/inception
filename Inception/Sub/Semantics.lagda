@@ -259,10 +259,10 @@ wk-sem-trans (wk-wk π₁) (wk-wk π₂) γ = wk-sem-trans π₁ (wk-wk π₂) (
 module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
 
 \end{code}
-%<*SemEnv>
+%<*SemMEnv>
 \begin{code}
   mutual
-    ⟦_⟧ᴱ : Env {Z₀ = R₀} Γ → ⟦ Γ ⟧ˣ
+    ⟦_⟧ᴱ : MEnv {Z₀ = R₀} Γ → ⟦ Γ ⟧ˣ
     ⟦ ⋄ ⟧ᴱ = tt
     ⟦ γ · 𝐖 ⟧ᴱ = ⟦ γ ⟧ᴱ , ⟦ 𝐖 ⟧ⱽ
 
@@ -279,7 +279,7 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
     ⟦_⟧ᴷ : CStack {Z₀ = R₀} X → ⟦ X ⟧ → R
     ⟦_⟧ᴷ cstack t = ⟦ cstack ⟧ᶜˢ (η t) k₀
 \end{code}
-%</SemEnv>
+%</SemMEnv>
 
 %<*SemCState>
 \begin{code}
@@ -291,11 +291,11 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
 
 \begin{code}
 
-  lookup-eq : (i : Γ ∋ X) → (γ : Env {Z₀ = R₀} Γ) → ⟦ i ⟧ᵐ ⟦ γ ⟧ᴱ ≡ ⟦ lookup i γ ⟧ⱽ
+  lookup-eq : (i : Γ ∋ X) → (γ : MEnv {Z₀ = R₀} Γ) → ⟦ i ⟧ᵐ ⟦ γ ⟧ᴱ ≡ ⟦ lookup i γ ⟧ⱽ
   lookup-eq here (γ · x) = refl
   lookup-eq (there i) (γ · x) = lookup-eq i γ
 
-  eval-correct : (W : Pure Γ X) → (γ : Env {Z₀ = R₀} Γ) → ⟦ W ⟧ᵖ ⟦ γ ⟧ᴱ ≡ ⟦ eval W γ ⟧ⱽ
+  eval-correct : (W : Pure Γ X) → (γ : MEnv {Z₀ = R₀} Γ) → ⟦ W ⟧ᵖ ⟦ γ ⟧ᴱ ≡ ⟦ eval W γ ⟧ⱽ
   eval-correct (var i) γ = lookup-eq i γ
   eval-correct (lam M) γ = refl
   eval-correct (pair W₁ W₂) γ = cong₂ _,_ (eval-correct W₁ γ) (eval-correct W₂ γ)
@@ -325,7 +325,7 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
   jump-eq : (W : Value `ℓ) → ⟦ W ⟧ⱽ ≡ ⟦ jump-to-state W ⟧ᶜꟴ
   jump-eq (jumpᵛ _ _ _) = refl
 
-  jump-eq' : (W : Pure Γ `ℓ) → (γ : Env {Z₀ = R₀} Γ) → ⟦ eval W γ ⟧ⱽ ≡ ⟦ jump-to-state (eval W γ) ⟧ᶜꟴ
+  jump-eq' : (W : Pure Γ `ℓ) → (γ : MEnv {Z₀ = R₀} Γ) → ⟦ eval W γ ⟧ⱽ ≡ ⟦ jump-to-state (eval W γ) ⟧ᶜꟴ
   jump-eq' W γ = jump-eq (eval W γ)
 
   clo-eq : (W : Value (X `⇒ Y)) → (T : ⟦ X ⟧) → (E : ⟦ proj₁ (clo-to-comp W) ⟧ˣ) → (eq : E ≡ ⟦ proj₂ (proj₂ (clo-to-comp W)) ⟧ᴱ) → ⟦ W ⟧ⱽ T ≡ ⟦ proj₁ (proj₂ (clo-to-comp W)) ⟧ᶜ (E , T)
@@ -337,10 +337,10 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
   proj₂-val-eq : (W : Value (X `× Y)) → proj₂ ⟦ W ⟧ⱽ ≡ ⟦ proj₂-val W ⟧ⱽ
   proj₂-val-eq (pairᵛ W₁ W₂) = refl
 
-  proj₁-val-eq' : (W : Pure Γ (X `× Y)) → (γ : Env {Z₀ = R₀} Γ) → (proj₁ (⟦ W ⟧ᵖ ⟦ γ ⟧ᴱ)) ≡ ⟦ proj₁-val (eval W γ) ⟧ⱽ
+  proj₁-val-eq' : (W : Pure Γ (X `× Y)) → (γ : MEnv {Z₀ = R₀} Γ) → (proj₁ (⟦ W ⟧ᵖ ⟦ γ ⟧ᴱ)) ≡ ⟦ proj₁-val (eval W γ) ⟧ⱽ
   proj₁-val-eq' W γ = trans (cong proj₁ (eval-correct W γ)) (proj₁-val-eq (eval W γ))
 
-  proj₂-val-eq' : (W : Pure Γ (X `× Y)) → (γ : Env {Z₀ = R₀} Γ) → (proj₂ (⟦ W ⟧ᵖ ⟦ γ ⟧ᴱ)) ≡ ⟦ proj₂-val (eval W γ) ⟧ⱽ
+  proj₂-val-eq' : (W : Pure Γ (X `× Y)) → (γ : MEnv {Z₀ = R₀} Γ) → (proj₂ (⟦ W ⟧ᵖ ⟦ γ ⟧ᴱ)) ≡ ⟦ proj₂-val (eval W γ) ⟧ⱽ
   proj₂-val-eq' W γ = trans (cong proj₂ (eval-correct W γ)) (proj₂-val-eq (eval W γ))
 
   compstate-eq : {S S' : CState {Z₀ = R₀}} → S →ᶜ S' → ⟦ S ⟧ᶜꟴ ≡ ⟦ S' ⟧ᶜꟴ

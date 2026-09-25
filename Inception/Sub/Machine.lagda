@@ -29,7 +29,7 @@ mutual
 
     ◻ :        CStack Z₀
 
-    <_；_>∷_ :  Comp (Γ ∙ Y) X → (γ : Env {Z₀ = Z₀} Γ)
+    <_；_>∷_ :  Comp (Γ ∙ Y) X → (γ : MEnv {Z₀ = Z₀} Γ)
                 → (pstack : CStack {Z₀ = Z₀} X)
                 ------------------------------------
                 → CStack Y
@@ -44,31 +44,31 @@ mutual
               -------------------------------------------------
               → Value (X₁ `× X₂)
 
-    cloᵛ :    {Γ : Ctx} → (M : Comp (Γ ∙ X) Y) → (γ : Env {Z₀ = Z₀} Γ)
+    cloᵛ :    {Γ : Ctx} → (M : Comp (Γ ∙ X) Y) → (γ : MEnv {Z₀ = Z₀} Γ)
               ----------------------------------------------------
               → Value (X `⇒ Y)
 
-    jumpᵛ :   {Γ : Ctx} → (M : Comp Γ X) → (γ : Env {Z₀ = Z₀} Γ)
+    jumpᵛ :   {Γ : Ctx} → (M : Comp Γ X) → (γ : MEnv {Z₀ = Z₀} Γ)
               → (cs : CStack {Z₀ = Z₀} X)
               -----------------------------------------------
               → Value `ℓ
 
-  data Env {Z₀ : Ty} : Ctx → Set where
+  data MEnv {Z₀ : Ty} : Ctx → Set where
 
     ⋄ :
            --------------
-           Env {Z₀ = Z₀} ε
+           MEnv {Z₀ = Z₀} ε
 
-    _·_ :  Env {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X
+    _·_ :  MEnv {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X
            ----------------------------------
-           → Env {Z₀ = Z₀} (Γ ∙ X)
+           → MEnv {Z₀ = Z₀} (Γ ∙ X)
 
-lookup : Γ ∋ X → Env {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X
+lookup : Γ ∋ X → MEnv {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X
 lookup here (γ · Ẇ) = Ẇ
 lookup (there x) (γ · Ẇ) = lookup x γ
 
 \end{code}
-%</Env>
+%</MEnv>
 \begin{code}
 
 ---------------------------------------------------------------------------------
@@ -96,7 +96,7 @@ data CState {Z₀ : Ty} : Set where
              ---------------------------------------------------
              → CState {Z₀ = Z₀}
 
-  ⟨_╎_╎_⟩ :  (M : Comp Γ X) → (γ : Env {Z₀ = Z₀} Γ) → (cstack : CStack {Z₀ = Z₀} X)
+  ⟨_╎_╎_⟩ :  (M : Comp Γ X) → (γ : MEnv {Z₀ = Z₀} Γ) → (cstack : CStack {Z₀ = Z₀} X)
              -----------------------------------------------------------------
              → CState {Z₀ = Z₀}
 
@@ -109,19 +109,19 @@ jump-to-state : {Z₀ : Ty} → Value {Z₀ = Z₀} `ℓ → CState {Z₀ = Z₀
 jump-to-state (jumpᵛ M γ k) = ⟨ M ╎ γ ╎ k ⟩
 
 clo-to-comp :  {Z₀ : Ty} → Value {Z₀ = Z₀} (X `⇒ Y)
-               → Σ[ Γ ∈ Ctx ] Comp (Γ ∙ X) Y × Env {Z₀ = Z₀} Γ
+               → Σ[ Γ ∈ Ctx ] Comp (Γ ∙ X) Y × MEnv {Z₀ = Z₀} Γ
 clo-to-comp (cloᵛ M γ) = _ , M , γ
 
-eval : {Z₀ : Ty} → Pure Γ X → Env {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X
+eval : {Z₀ : Ty} → Pure Γ X → MEnv {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X
 eval (var i) γ = lookup i γ
 eval (lam M) γ = cloᵛ M γ
 eval (pair W₁ W₂) γ = pairᵛ (eval W₁ γ) (eval W₂ γ)
 eval unit γ = unitᵛ
 
-eval-jump : {Z₀ : Ty} → Pure Γ `ℓ → Env {Z₀ = Z₀} Γ → CState {Z₀ = Z₀}
+eval-jump : {Z₀ : Ty} → Pure Γ `ℓ → MEnv {Z₀ = Z₀} Γ → CState {Z₀ = Z₀}
 eval-jump W γ = jump-to-state (eval W γ)
 
-eval-clo :  {Z₀ : Ty} → Pure Γ (X `⇒ Y) → Pure Γ X → Env {Z₀ = Z₀} Γ
+eval-clo :  {Z₀ : Ty} → Pure Γ (X `⇒ Y) → Pure Γ X → MEnv {Z₀ = Z₀} Γ
             → CStack {Z₀ = Z₀} Y → CState {Z₀ = Z₀}
 eval-clo W₁ W₂ γ k =
   let
@@ -130,10 +130,10 @@ eval-clo W₁ W₂ γ k =
   in
   ⟨ M ╎ γ' · eval W₂ γ ╎ k  ⟩
 
-eval₁ : {Z₀ : Ty} → Pure Γ (X₁ `× X₂) → Env {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X₁
+eval₁ : {Z₀ : Ty} → Pure Γ (X₁ `× X₂) → MEnv {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X₁
 eval₁ W γ = proj₁-val (eval W γ)
 
-eval₂ : {Z₀ : Ty} → Pure Γ (X₁ `× X₂) → Env {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X₂
+eval₂ : {Z₀ : Ty} → Pure Γ (X₁ `× X₂) → MEnv {Z₀ = Z₀} Γ → Value {Z₀ = Z₀} X₂
 eval₂ W γ = proj₂-val (eval W γ)
 \end{code}
 %</Eval>
@@ -149,32 +149,32 @@ clo-val (cloᵛ M γ) = refl
 
 data _→ᶜ_ {Z₀ : Ty} : CState {Z₀ = Z₀} → CState {Z₀ = Z₀} → Set where
 
-  eval→ :    {W : Pure Γ X} {γ : Env Γ} {cstack : CStack X}
+  eval→ :    {W : Pure Γ X} {γ : MEnv Γ} {cstack : CStack X}
              -------------------------------------------
              →  ⟨ return W ╎ γ ╎ cstack ⟩ →ᶜ ⟨ eval W γ ╎ cstack ⟩
 
-  return→ :  {Ẇ : Value X} {M : Comp (Γ ∙ X) Y} {γ : Env Γ} {cstack : CStack Y}
+  return→ :  {Ẇ : Value X} {M : Comp (Γ ∙ X) Y} {γ : MEnv Γ} {cstack : CStack Y}
              --------------------------------------------------------------
              →  ⟨ Ẇ ╎ < M ； γ >∷ cstack ⟩ →ᶜ ⟨ M ╎ γ · Ẇ ╎ cstack ⟩
 
-  push→ :    {M₁ : Comp Γ X} {M₂ : Comp (Γ ∙ X) Y} {γ : Env Γ} {cstack : CStack Y}
+  push→ :    {M₁ : Comp Γ X} {M₂ : Comp (Γ ∙ X) Y} {γ : MEnv Γ} {cstack : CStack Y}
              ----------------------------------------------------------------
              →  ⟨ push M₁ M₂ ╎ γ ╎ cstack ⟩ →ᶜ ⟨ M₁ ╎ γ ╎ < M₂ ； γ >∷ cstack ⟩
 
-  sub→ :     {M₁ : Comp (Γ ∙ `ℓ) X} {M₂ : Comp Γ X} {γ : Env Γ} {cstack : CStack X}
+  sub→ :     {M₁ : Comp (Γ ∙ `ℓ) X} {M₂ : Comp Γ X} {γ : MEnv Γ} {cstack : CStack X}
              ----------------------------------------------------------------
              →  ⟨ sub M₁ M₂ ╎ γ ╎ cstack ⟩ →ᶜ ⟨ M₁ ╎ γ · (jumpᵛ M₂ γ cstack) ╎ cstack ⟩
 
-  var→ :     {W : Pure Γ `ℓ} {γ : Env Γ} {cstack : CStack X}
+  var→ :     {W : Pure Γ `ℓ} {γ : MEnv Γ} {cstack : CStack X}
              ------------------------------------------
              →  ⟨ var W ╎ γ ╎ cstack ⟩ →ᶜ eval-jump W γ
 
-  pmᶜ→ :     {W : Pure Γ (X `× Y)} {γ : Env Γ}
+  pmᶜ→ :     {W : Pure Γ (X `× Y)} {γ : MEnv Γ}
              {M : Comp (Γ ∙ X ∙ Y) Z} {cstack : CStack Z}
              -------------------------------------------------------------
              →  ⟨ pm W M ╎ γ ╎ cstack ⟩ →ᶜ ⟨ M ╎ γ · eval₁ W γ · eval₂ W γ ╎ cstack ⟩
 
-  app→ :     {W₁ : Pure Γ (X `⇒ Y)} {W₂ : Pure Γ X} {γ : Env Γ} {cstack : CStack Y}
+  app→ :     {W₁ : Pure Γ (X `⇒ Y)} {W₂ : Pure Γ X} {γ : MEnv Γ} {cstack : CStack Y}
              ----------------------------------------------------------------
              →  ⟨ app W₁ W₂ ╎ γ ╎ cstack ⟩ →ᶜ eval-clo W₁ W₂ γ cstack
 
@@ -221,10 +221,10 @@ Rᵛ `ℓ (jumpᵛ M γ cstack) = SN ⟨ M ╎ γ ╎ cstack ⟩
 
 Rᵏ {Z₀ = Z₀} X cstack = ∀ {W : Value {Z₀ = Z₀} X} → Rᵛ X W → SN ⟨ W ╎ cstack ⟩
 
-Rᴱ : {Z₀ : Ty} → Env {Z₀ = Z₀} Γ → Set
+Rᴱ : {Z₀ : Ty} → MEnv {Z₀ = Z₀} Γ → Set
 Rᴱ {Γ = Γ} γ = ∀ {X : Ty} → (i : Γ ∋ X) → Rᵛ X (lookup i γ)
 
-Rᴱ-ext : {Z₀ : Ty} {γ : Env {Z₀ = Z₀} Γ} {W : Value {Z₀ = Z₀} X} → Rᴱ γ → Rᵛ X W → Rᴱ (γ · W)
+Rᴱ-ext : {Z₀ : Ty} {γ : MEnv {Z₀ = Z₀} Γ} {W : Value {Z₀ = Z₀} X} → Rᴱ γ → Rᵛ X W → Rᴱ (γ · W)
 Rᴱ-ext Rγ RW here = RW
 Rᴱ-ext Rγ RW (there i) = Rγ i
 
@@ -233,13 +233,13 @@ rv≡sn (jumpᵛ _ _ _) = refl
 
 mutual
 
-  fundamentalᵖ  : {Z₀ : Ty} → (W : Pure Γ X) → {γ : Env {Z₀ = Z₀} Γ} → Rᴱ γ → Rᵛ X (eval W γ)
+  fundamentalᵖ  : {Z₀ : Ty} → (W : Pure Γ X) → {γ : MEnv {Z₀ = Z₀} Γ} → Rᴱ γ → Rᵛ X (eval W γ)
   fundamentalᵖ (var i) Rγ = Rγ i
   fundamentalᵖ (lam M) Rγ RW Rk = fundamentalᶜ M (Rᴱ-ext Rγ RW) Rk
   fundamentalᵖ (pair W₁ W₂) Rγ = (fundamentalᵖ W₁ Rγ) , (fundamentalᵖ W₂ Rγ)
   fundamentalᵖ unit Rγ = tt
 
-  fundamentalᶜ : {Z₀ : Ty} → (M : Comp Γ X) → {γ : Env {Z₀ = Z₀} Γ} → Rᴱ γ → {cstack : CStack {Z₀ = Z₀} X} → Rᵏ X cstack → SN ⟨ M ╎ γ ╎ cstack ⟩
+  fundamentalᶜ : {Z₀ : Ty} → (M : Comp Γ X) → {γ : MEnv {Z₀ = Z₀} Γ} → Rᴱ γ → {cstack : CStack {Z₀ = Z₀} X} → Rᵏ X cstack → SN ⟨ M ╎ γ ╎ cstack ⟩
   fundamentalᶜ (return W) Rγ Rk = sn λ { eval→ → Rk (fundamentalᵖ W Rγ)}
   fundamentalᶜ (pm W M) {γ = γ} Rγ Rk =
     let
