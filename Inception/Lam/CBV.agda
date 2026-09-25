@@ -106,7 +106,7 @@ module CEK where
   open import Inception.Lam.CEK
 
   mutual
-    ⟦_⟧ⱽ : Value A -> ⟦ A ⟧
+    ⟦_⟧ⱽ : MVal A -> ⟦ A ⟧
     ⟦ unit ⟧ⱽ    = tt
     ⟦ clo N ρ ⟧ⱽ = \a -> ⟦ N ⟧ᶜ (⟦ ρ ⟧ᴱ , a)
 

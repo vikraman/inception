@@ -34,24 +34,24 @@ mutual
                 ------------------------------------
                 → CStack Y
 
-  data Value {ℛ : Ty} : Ty → Set where
+  data MVal {ℛ : Ty} : Ty → Set where
 
     unitᵛ :
               -------------------
-              Value {ℛ = ℛ} `𝟙
+              MVal {ℛ = ℛ} `𝟙
 
-    pairᵛ :   (𝐖₁ : Value {ℛ = ℛ} X₁) → (𝐖₂ : Value {ℛ = ℛ} X₂)
+    pairᵛ :   (𝐖₁ : MVal {ℛ = ℛ} X₁) → (𝐖₂ : MVal {ℛ = ℛ} X₂)
               -------------------------------------------------
-              → Value (X₁ `× X₂)
+              → MVal (X₁ `× X₂)
 
     cloᵛ :    {Γ : Ctx} → (M : Comp (Γ ∙ X) Y) → (γ : MEnv {ℛ = ℛ} Γ)
               ----------------------------------------------------
-              → Value (X `⇒ Y)
+              → MVal (X `⇒ Y)
 
     jumpᵛ :   {Γ : Ctx} → (M : Comp Γ X) → (γ : MEnv {ℛ = ℛ} Γ)
               → (cs : CStack {ℛ = ℛ} X)
               -----------------------------------------------
-              → Value `ℓ
+              → MVal `ℓ
 
   data MEnv {ℛ : Ty} : Ctx → Set where
 
@@ -59,11 +59,11 @@ mutual
            --------------
            MEnv {ℛ = ℛ} ε
 
-    _·_ :  MEnv {ℛ = ℛ} Γ → Value {ℛ = ℛ} X
+    _·_ :  MEnv {ℛ = ℛ} Γ → MVal {ℛ = ℛ} X
            ----------------------------------
            → MEnv {ℛ = ℛ} (Γ ∙ X)
 
-lookup : Γ ∋ X → MEnv {ℛ = ℛ} Γ → Value {ℛ = ℛ} X
+lookup : Γ ∋ X → MEnv {ℛ = ℛ} Γ → MVal {ℛ = ℛ} X
 lookup here (γ · 𝐖) = 𝐖
 lookup (there x) (γ · 𝐖) = lookup x γ
 
@@ -74,13 +74,13 @@ lookup (there x) (γ · 𝐖) = lookup x γ
 ---------------------------------------------------------------------------------
 -- VALUE PROJECTIONS
 
-proj₁-val : {ℛ : Ty} → Value {ℛ = ℛ} (X `× Y) → Value {ℛ = ℛ} X
+proj₁-val : {ℛ : Ty} → MVal {ℛ = ℛ} (X `× Y) → MVal {ℛ = ℛ} X
 proj₁-val (pairᵛ W₁ W₂) = W₁
 
-proj₂-val : {ℛ : Ty} → Value {ℛ = ℛ} (X `× Y) → Value {ℛ = ℛ} Y
+proj₂-val : {ℛ : Ty} → MVal {ℛ = ℛ} (X `× Y) → MVal {ℛ = ℛ} Y
 proj₂-val (pairᵛ W₁ W₂) = W₂
 
-pair-val : {ℛ : Ty} → (W : Value {ℛ = ℛ} (X `× Y)) → (pairᵛ (proj₁-val W) (proj₂-val W) ≡ W)
+pair-val : {ℛ : Ty} → (W : MVal {ℛ = ℛ} (X `× Y)) → (pairᵛ (proj₁-val W) (proj₂-val W) ≡ W)
 pair-val (pairᵛ W₁ W₂) = refl
 
 ---------------------------------------------------------------------------------
@@ -92,7 +92,7 @@ pair-val (pairᵛ W₁ W₂) = refl
 
 data CState {ℛ : Ty} : Set where
 
-  ⟨_╎_⟩ :    (𝐖 : Value {ℛ = ℛ} X) → (cstack : CStack {ℛ = ℛ} X)
+  ⟨_╎_⟩ :    (𝐖 : MVal {ℛ = ℛ} X) → (cstack : CStack {ℛ = ℛ} X)
              ---------------------------------------------------
              → CState {ℛ = ℛ}
 
@@ -105,23 +105,23 @@ data CState {ℛ : Ty} : Set where
 
 %<*Eval>
 \begin{code}
-jump-to-state : {ℛ : Ty} → Value {ℛ = ℛ} `ℓ → CState {ℛ = ℛ}
+jump-to-state : {ℛ : Ty} → MVal {ℛ = ℛ} `ℓ → CState {ℛ = ℛ}
 jump-to-state (jumpᵛ M γ k) = ⟨ M ╎ γ ╎ k ⟩
 
-clo-to-comp :  {ℛ : Ty} → Value {ℛ = ℛ} (X `⇒ Y)
+clo-to-comp :  {ℛ : Ty} → MVal {ℛ = ℛ} (X `⇒ Y)
                → Σ[ Γ ∈ Ctx ] Comp (Γ ∙ X) Y × MEnv {ℛ = ℛ} Γ
 clo-to-comp (cloᵛ M γ) = _ , M , γ
 
-eval : {ℛ : Ty} → Pure Γ X → MEnv {ℛ = ℛ} Γ → Value {ℛ = ℛ} X
+eval : {ℛ : Ty} → Val Γ X → MEnv {ℛ = ℛ} Γ → MVal {ℛ = ℛ} X
 eval (var i) γ = lookup i γ
 eval (lam M) γ = cloᵛ M γ
 eval (pair W₁ W₂) γ = pairᵛ (eval W₁ γ) (eval W₂ γ)
 eval unit γ = unitᵛ
 
-eval-jump : {ℛ : Ty} → Pure Γ `ℓ → MEnv {ℛ = ℛ} Γ → CState {ℛ = ℛ}
+eval-jump : {ℛ : Ty} → Val Γ `ℓ → MEnv {ℛ = ℛ} Γ → CState {ℛ = ℛ}
 eval-jump W γ = jump-to-state (eval W γ)
 
-eval-clo :  {ℛ : Ty} → Pure Γ (X `⇒ Y) → Pure Γ X → MEnv {ℛ = ℛ} Γ
+eval-clo :  {ℛ : Ty} → Val Γ (X `⇒ Y) → Val Γ X → MEnv {ℛ = ℛ} Γ
             → CStack {ℛ = ℛ} Y → CState {ℛ = ℛ}
 eval-clo W₁ W₂ γ k =
   let
@@ -130,16 +130,16 @@ eval-clo W₁ W₂ γ k =
   in
   ⟨ M ╎ γ' · eval W₂ γ ╎ k  ⟩
 
-eval₁ : {ℛ : Ty} → Pure Γ (X₁ `× X₂) → MEnv {ℛ = ℛ} Γ → Value {ℛ = ℛ} X₁
+eval₁ : {ℛ : Ty} → Val Γ (X₁ `× X₂) → MEnv {ℛ = ℛ} Γ → MVal {ℛ = ℛ} X₁
 eval₁ W γ = proj₁-val (eval W γ)
 
-eval₂ : {ℛ : Ty} → Pure Γ (X₁ `× X₂) → MEnv {ℛ = ℛ} Γ → Value {ℛ = ℛ} X₂
+eval₂ : {ℛ : Ty} → Val Γ (X₁ `× X₂) → MEnv {ℛ = ℛ} Γ → MVal {ℛ = ℛ} X₂
 eval₂ W γ = proj₂-val (eval W γ)
 \end{code}
 %</Eval>
 \begin{code}
 
-clo-val : {ℛ : Ty} → (W : Value {ℛ = ℛ} (X `⇒ Y)) → (cloᵛ (proj₁ (proj₂ (clo-to-comp W))) (proj₂ (proj₂ (clo-to-comp W))) ≡ W)
+clo-val : {ℛ : Ty} → (W : MVal {ℛ = ℛ} (X `⇒ Y)) → (cloᵛ (proj₁ (proj₂ (clo-to-comp W))) (proj₂ (proj₂ (clo-to-comp W))) ≡ W)
 clo-val (cloᵛ M γ) = refl
 
 \end{code}
@@ -149,11 +149,11 @@ clo-val (cloᵛ M γ) = refl
 
 data _→ᶜ_ {ℛ : Ty} : CState {ℛ = ℛ} → CState {ℛ = ℛ} → Set where
 
-  eval→ :    {W : Pure Γ X} {γ : MEnv Γ} {cstack : CStack X}
+  eval→ :    {W : Val Γ X} {γ : MEnv Γ} {cstack : CStack X}
              -------------------------------------------
              →  ⟨ return W ╎ γ ╎ cstack ⟩ →ᶜ ⟨ eval W γ ╎ cstack ⟩
 
-  return→ :  {𝐖 : Value X} {M : Comp (Γ ∙ X) Y} {γ : MEnv Γ} {cstack : CStack Y}
+  return→ :  {𝐖 : MVal X} {M : Comp (Γ ∙ X) Y} {γ : MEnv Γ} {cstack : CStack Y}
              --------------------------------------------------------------
              →  ⟨ 𝐖 ╎ < M ； γ >∷ cstack ⟩ →ᶜ ⟨ M ╎ γ · 𝐖 ╎ cstack ⟩
 
@@ -165,16 +165,16 @@ data _→ᶜ_ {ℛ : Ty} : CState {ℛ = ℛ} → CState {ℛ = ℛ} → Set whe
              ----------------------------------------------------------------
              →  ⟨ sub M₁ M₂ ╎ γ ╎ cstack ⟩ →ᶜ ⟨ M₁ ╎ γ · (jumpᵛ M₂ γ cstack) ╎ cstack ⟩
 
-  var→ :     {W : Pure Γ `ℓ} {γ : MEnv Γ} {cstack : CStack X}
+  var→ :     {W : Val Γ `ℓ} {γ : MEnv Γ} {cstack : CStack X}
              ------------------------------------------
              →  ⟨ var W ╎ γ ╎ cstack ⟩ →ᶜ eval-jump W γ
 
-  pmᶜ→ :     {W : Pure Γ (X `× Y)} {γ : MEnv Γ}
+  pmᶜ→ :     {W : Val Γ (X `× Y)} {γ : MEnv Γ}
              {M : Comp (Γ ∙ X ∙ Y) Z} {cstack : CStack Z}
              -------------------------------------------------------------
              →  ⟨ pm W M ╎ γ ╎ cstack ⟩ →ᶜ ⟨ M ╎ γ · eval₁ W γ · eval₂ W γ ╎ cstack ⟩
 
-  app→ :     {W₁ : Pure Γ (X `⇒ Y)} {W₂ : Pure Γ X} {γ : MEnv Γ} {cstack : CStack Y}
+  app→ :     {W₁ : Val Γ (X `⇒ Y)} {W₂ : Val Γ X} {γ : MEnv Γ} {cstack : CStack Y}
              ----------------------------------------------------------------
              →  ⟨ app W₁ W₂ ╎ γ ╎ cstack ⟩ →ᶜ eval-clo W₁ W₂ γ cstack
 
@@ -211,39 +211,39 @@ data SN {ℛ : Ty} (σ : CState {ℛ = ℛ}) : Set where
 %</SubVarSN>
 \begin{code}
 
-Rᵛ : {ℛ : Ty} → (X : Ty) → Value {ℛ = ℛ} X → Set
+Rᵛ : {ℛ : Ty} → (X : Ty) → MVal {ℛ = ℛ} X → Set
 Rᵏ : {ℛ : Ty} → (X : Ty) → CStack {ℛ = ℛ} X → Set
 
 Rᵛ `𝟙 unitᵛ = ⊤
 Rᵛ (X `× Y) (pairᵛ W₁ W₂) = Rᵛ X W₁ × Rᵛ Y W₂
-Rᵛ {ℛ = ℛ} (X `⇒ Y) (cloᵛ M γ) = ∀ {W' : Value {ℛ = ℛ} X} → Rᵛ X W' → ∀ {cstack : CStack {ℛ = ℛ} Y} → Rᵏ Y cstack → SN ⟨ M ╎ γ · W' ╎ cstack ⟩
+Rᵛ {ℛ = ℛ} (X `⇒ Y) (cloᵛ M γ) = ∀ {W' : MVal {ℛ = ℛ} X} → Rᵛ X W' → ∀ {cstack : CStack {ℛ = ℛ} Y} → Rᵏ Y cstack → SN ⟨ M ╎ γ · W' ╎ cstack ⟩
 Rᵛ `ℓ (jumpᵛ M γ cstack) = SN ⟨ M ╎ γ ╎ cstack ⟩
 
-Rᵏ {ℛ = ℛ} X cstack = ∀ {W : Value {ℛ = ℛ} X} → Rᵛ X W → SN ⟨ W ╎ cstack ⟩
+Rᵏ {ℛ = ℛ} X cstack = ∀ {W : MVal {ℛ = ℛ} X} → Rᵛ X W → SN ⟨ W ╎ cstack ⟩
 
 Rᴱ : {ℛ : Ty} → MEnv {ℛ = ℛ} Γ → Set
 Rᴱ {Γ = Γ} γ = ∀ {X : Ty} → (i : Γ ∋ X) → Rᵛ X (lookup i γ)
 
-Rᴱ-ext : {ℛ : Ty} {γ : MEnv {ℛ = ℛ} Γ} {W : Value {ℛ = ℛ} X} → Rᴱ γ → Rᵛ X W → Rᴱ (γ · W)
+Rᴱ-ext : {ℛ : Ty} {γ : MEnv {ℛ = ℛ} Γ} {W : MVal {ℛ = ℛ} X} → Rᴱ γ → Rᵛ X W → Rᴱ (γ · W)
 Rᴱ-ext Rγ RW here = RW
 Rᴱ-ext Rγ RW (there i) = Rγ i
 
-rv≡sn : {ℛ : Ty} → (𝐖 : Value {ℛ = ℛ} `ℓ) → Rᵛ `ℓ 𝐖 ≡ SN (jump-to-state 𝐖)
+rv≡sn : {ℛ : Ty} → (𝐖 : MVal {ℛ = ℛ} `ℓ) → Rᵛ `ℓ 𝐖 ≡ SN (jump-to-state 𝐖)
 rv≡sn (jumpᵛ _ _ _) = refl
 
 mutual
 
-  fundamentalᵖ  : {ℛ : Ty} → (W : Pure Γ X) → {γ : MEnv {ℛ = ℛ} Γ} → Rᴱ γ → Rᵛ X (eval W γ)
-  fundamentalᵖ (var i) Rγ = Rγ i
-  fundamentalᵖ (lam M) Rγ RW Rk = fundamentalᶜ M (Rᴱ-ext Rγ RW) Rk
-  fundamentalᵖ (pair W₁ W₂) Rγ = (fundamentalᵖ W₁ Rγ) , (fundamentalᵖ W₂ Rγ)
-  fundamentalᵖ unit Rγ = tt
+  fundamentalᵛ  : {ℛ : Ty} → (W : Val Γ X) → {γ : MEnv {ℛ = ℛ} Γ} → Rᴱ γ → Rᵛ X (eval W γ)
+  fundamentalᵛ (var i) Rγ = Rγ i
+  fundamentalᵛ (lam M) Rγ RW Rk = fundamentalᶜ M (Rᴱ-ext Rγ RW) Rk
+  fundamentalᵛ (pair W₁ W₂) Rγ = (fundamentalᵛ W₁ Rγ) , (fundamentalᵛ W₂ Rγ)
+  fundamentalᵛ unit Rγ = tt
 
   fundamentalᶜ : {ℛ : Ty} → (M : Comp Γ X) → {γ : MEnv {ℛ = ℛ} Γ} → Rᴱ γ → {cstack : CStack {ℛ = ℛ} X} → Rᵏ X cstack → SN ⟨ M ╎ γ ╎ cstack ⟩
-  fundamentalᶜ (return W) Rγ Rk = sn λ { eval→ → Rk (fundamentalᵖ W Rγ)}
+  fundamentalᶜ (return W) Rγ Rk = sn λ { eval→ → Rk (fundamentalᵛ W Rγ)}
   fundamentalᶜ (pm W M) {γ = γ} Rγ Rk =
     let
-      IH = fundamentalᵖ W Rγ
+      IH = fundamentalᵛ W Rγ
       W' = eval W γ
       IH' : Rᵛ _ (pairᵛ (proj₁-val W') (proj₂-val W'))
       IH' = subst (λ x → Rᵛ _ x) (sym (pair-val W')) IH
@@ -257,13 +257,13 @@ mutual
     sn λ { push→ → fundamentalᶜ M₁ Rγ Rk' }
   fundamentalᶜ (app W₁ W₂) {γ = γ} Rγ {cstack = k} Rk =
     let
-      IH = fundamentalᵖ W₁ Rγ
+      IH = fundamentalᵛ W₁ Rγ
       W₁' = eval W₁ γ
       eq = sym (clo-val W₁')
       IH' = subst (λ x → Rᵛ _ x) eq IH
     in
-    sn λ { app→ → IH' (fundamentalᵖ W₂ Rγ) Rk }
-  fundamentalᶜ (var W) {γ = γ} Rγ Rk = sn λ { var→ → subst (λ x → x) (rv≡sn (eval W γ)) (fundamentalᵖ W Rγ)}
+    sn λ { app→ → IH' (fundamentalᵛ W₂ Rγ) Rk }
+  fundamentalᶜ (var W) {γ = γ} Rγ Rk = sn λ { var→ → subst (λ x → x) (rv≡sn (eval W γ)) (fundamentalᵛ W Rγ)}
   fundamentalᶜ (sub M₁ M₂) Rγ Rk = sn λ { sub→ → fundamentalᶜ M₁ (Rᴱ-ext Rγ (fundamentalᶜ M₂ Rγ Rk)) Rk}
 
 Rᴱ-⊘ : {ℛ : Ty} → Rᴱ {ℛ = ℛ} ⋄
@@ -304,7 +304,7 @@ progress ⟨ sub M₁ M₂ ╎ γ ╎ cstack ⟩ = step sub→
 \begin{code}
 -- A Normal CState is a halting state and of the form ⟨ 𝐖 ╎ ◻ ⟩.
 halting-state :    (cstate : CState {ℛ = ℛ}) → Normal cstate
-                 → Σ[ 𝐖 ∈ Value ℛ ] cstate ≡ ⟨ 𝐖 ╎ ◻ ⟩
+                 → Σ[ 𝐖 ∈ MVal ℛ ] cstate ≡ ⟨ 𝐖 ╎ ◻ ⟩
 \end{code}
 %</SubVarHaltingState>
 \begin{code}
@@ -319,7 +319,7 @@ halting-state ⟨ var _ ╎ γ ╎ cstack ⟩ normal = ql (normal var→) _
 halting-state ⟨ sub _ _ ╎ γ ╎ cstack ⟩ normal = ql (normal sub→) _
 
 
-exec-acc : {ℛ : Ty} {σ : CState {ℛ = ℛ}} → SN σ → Σ[ σ' ∈ CState ] Σ[ W' ∈ Value {ℛ = ℛ} ℛ ] Σ[ NF ∈ Normal σ' ] (σ →ᶜ* σ') × (W' ≡ proj₁ (halting-state σ' NF))
+exec-acc : {ℛ : Ty} {σ : CState {ℛ = ℛ}} → SN σ → Σ[ σ' ∈ CState ] Σ[ W' ∈ MVal {ℛ = ℛ} ℛ ] Σ[ NF ∈ Normal σ' ] (σ →ᶜ* σ') × (W' ≡ proj₁ (halting-state σ' NF))
 exec-acc {σ = σ} (sn f) with progress σ
 ... | done NF    = σ , proj₁ (halting-state σ NF) , NF , (σ ◼) , refl
 ... | step S→S' with exec-acc (f S→S')
@@ -330,7 +330,7 @@ exec-acc {σ = σ} (sn f) with progress σ
 \begin{code}
 exec :    {ℛ : Ty} → (M : Comp ε ℛ)
         → Σ[ cstate ∈ CState ]
-          Σ[ 𝐖 ∈ Value {ℛ = ℛ} ℛ ]
+          Σ[ 𝐖 ∈ MVal {ℛ = ℛ} ℛ ]
           Σ[ NF ∈ Normal cstate ]
           (⟨ M ╎ ⋄ ╎ ◻ ⟩ →ᶜ* cstate) × (𝐖 ≡ proj₁ (halting-state cstate NF))
 \end{code}
