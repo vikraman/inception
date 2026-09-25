@@ -52,5 +52,10 @@ import Inception.Translation.LamLamBar.SystemL
 import Inception.Translation.Sub.Triangle
 import Inception.Translation.Inc.Triangle
 
+-- bisimulations
+-- Bisim.Src.Tgt relates Src's machine to Tgt's
+import Inception.Bisim.Sub.SystemL
+import Inception.Bisim.Sub.Triangle
+
 -- all modules
 import Inception.Everything
