@@ -38,7 +38,7 @@ mutual
 
     unitᵛ :
               -------------------
-              Value {Z₀ = Z₀} `Unit
+              Value {Z₀ = Z₀} `𝟙
 
     pairᵛ :   (Ẇ₁ : Value {Z₀ = Z₀} X₁) → (Ẇ₂ : Value {Z₀ = Z₀} X₂)
               -------------------------------------------------
@@ -214,7 +214,7 @@ data SN {Z₀ : Ty} (σ : CState {Z₀ = Z₀}) : Set where
 Rᵛ : {Z₀ : Ty} → (X : Ty) → Value {Z₀ = Z₀} X → Set
 Rᵏ : {Z₀ : Ty} → (X : Ty) → CStack {Z₀ = Z₀} X → Set
 
-Rᵛ `Unit unitᵛ = ⊤
+Rᵛ `𝟙 unitᵛ = ⊤
 Rᵛ (X `× Y) (pairᵛ W₁ W₂) = Rᵛ X W₁ × Rᵛ Y W₂
 Rᵛ {Z₀ = Z₀} (X `⇒ Y) (cloᵛ M γ) = ∀ {W' : Value {Z₀ = Z₀} X} → Rᵛ X W' → ∀ {cstack : CStack {Z₀ = Z₀} Y} → Rᵏ Y cstack → SN ⟨ M ╎ γ · W' ╎ cstack ⟩
 Rᵛ `L (jumpᵛ M γ cstack) = SN ⟨ M ╎ γ ╎ cstack ⟩
@@ -346,8 +346,8 @@ exec M = exec-acc (SN-theorem M)
 ---------------------------------------------------------------------------------
 -- EXAMPLES
 
-ex15 : ε ⊢ᶜ (`Unit)
-ex15 = push (push (app (lam {X = `Unit} (sub (var (var here)) (return unit))) unit) (return unit)) (return unit)
+ex15 : ε ⊢ᶜ (`𝟙)
+ex15 = push (push (app (lam {X = `𝟙} (sub (var (var here)) (return unit))) unit) (return unit)) (return unit)
 
 _ : exec ex15 ≡ (_ , unitᵛ , _ ,
                   (⟨ push (push (app (lam (sub (var (var here)) (return unit))) unit) (return unit)) (return unit) ╎ ⋄ ╎ ◻ ⟩
