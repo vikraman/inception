@@ -40,7 +40,7 @@ open Monad (K[_]-Monad {x = 0ℓ} R) using (η; _*)
 \begin{code}
 
 ⟦_⟧ : Ty -> Set
-⟦ `Unit ⟧ = ⊤
+⟦ `𝟙 ⟧ = ⊤
 ⟦ A `× B ⟧ = ⟦ A ⟧ × ⟦ B ⟧
 ⟦ A `⇒ B ⟧ = ⟦ A ⟧ -> K ⟦ B ⟧
 ⟦ `L ⟧ = R
