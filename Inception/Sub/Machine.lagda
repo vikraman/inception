@@ -305,8 +305,6 @@ progress ⟨ sub M₁ M₂ ╎ γ ╎ cstack ⟩ = step sub→
 -- A Normal CState is a halting state and of the form ⟨ 𝐖 ╎ ◻ ⟩.
 halting-state :    (cstate : CState {Z₀ = Z₀}) → Normal cstate
                  → Σ[ 𝐖 ∈ Value Z₀ ] cstate ≡ ⟨ 𝐖 ╎ ◻ ⟩
-
--- ...
 \end{code}
 %</SubVarHaltingState>
 \begin{code}
@@ -335,8 +333,6 @@ exec :    {Z₀ : Ty} → (M : Comp ε Z₀)
           Σ[ 𝐖 ∈ Value {Z₀ = Z₀} Z₀ ]
           Σ[ NF ∈ Normal cstate ]
           (⟨ M ╎ ⋄ ╎ ◻ ⟩ →ᶜ* cstate) × (𝐖 ≡ proj₁ (halting-state cstate NF))
-
--- ...
 \end{code}
 %</SubVarEval>
 \begin{code}
