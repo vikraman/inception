@@ -256,34 +256,34 @@ wk-sem-trans (wk-wk π₁) (wk-cong π₂) γ =
        ⟦ wk-wk (wk-trans π₁ (wk-cong π₂)) ⟧ʷ γ ∎
 wk-sem-trans (wk-wk π₁) (wk-wk π₂) γ = wk-sem-trans π₁ (wk-wk π₂) (proj₁ γ)
 
-module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
+module TopLevel {ℛ : Ty} {k₀ : ⟦ ℛ ⟧ → R} where
 
 \end{code}
 %<*SemMEnv>
 \begin{code}
   mutual
-    ⟦_⟧ᴱ : MEnv {Z₀ = R₀} Γ → ⟦ Γ ⟧ˣ
+    ⟦_⟧ᴱ : MEnv {ℛ = ℛ} Γ → ⟦ Γ ⟧ˣ
     ⟦ ⋄ ⟧ᴱ = tt
     ⟦ γ · 𝐖 ⟧ᴱ = ⟦ γ ⟧ᴱ , ⟦ 𝐖 ⟧ⱽ
 
-    ⟦_⟧ⱽ : (𝐖 : Value {Z₀ = R₀} X) → ⟦ X ⟧
+    ⟦_⟧ⱽ : (𝐖 : Value {ℛ = ℛ} X) → ⟦ X ⟧
     ⟦ unitᵛ ⟧ⱽ = tt
     ⟦ pairᵛ 𝐖₁ 𝐖₂ ⟧ⱽ = ⟦ 𝐖₁ ⟧ⱽ , ⟦ 𝐖₂ ⟧ⱽ
     ⟦ cloᵛ M γ ⟧ⱽ = (curry ⟦ M ⟧ᶜ) ⟦ γ ⟧ᴱ
     ⟦ jumpᵛ M γ cstack ⟧ⱽ = ⟦ M ⟧ᶜ ⟦ γ ⟧ᴱ ⟦ cstack ⟧ᴷ
 
-    ⟦_⟧ᶜˢ : CStack {Z₀ = R₀} X → K ⟦ X ⟧ → K ⟦ R₀ ⟧
+    ⟦_⟧ᶜˢ : CStack {ℛ = ℛ} X → K ⟦ X ⟧ → K ⟦ ℛ ⟧
     ⟦ ◻ ⟧ᶜˢ = idf
     ⟦ < M ； γ >∷ cstack ⟧ᶜˢ = < const ⟦ γ ⟧ᴱ , idf > ； τ ； (⟦ M ⟧ᶜ *) ； ⟦ cstack ⟧ᶜˢ
 
-    ⟦_⟧ᴷ : CStack {Z₀ = R₀} X → ⟦ X ⟧ → R
+    ⟦_⟧ᴷ : CStack {ℛ = ℛ} X → ⟦ X ⟧ → R
     ⟦_⟧ᴷ cstack t = ⟦ cstack ⟧ᶜˢ (η t) k₀
 \end{code}
 %</SemMEnv>
 
 %<*SemCState>
 \begin{code}
-  ⟦_⟧ᶜꟴ : CState {Z₀ = R₀} → R
+  ⟦_⟧ᶜꟴ : CState {ℛ = ℛ} → R
   ⟦ ⟨ 𝐖 ╎ cstack ⟩ ⟧ᶜꟴ = (η ⟦ 𝐖 ⟧ⱽ) ⟦ cstack ⟧ᴷ
   ⟦ ⟨ M ╎ γ ╎ cstack ⟩ ⟧ᶜꟴ = ⟦ M ⟧ᶜ ⟦ γ ⟧ᴱ ⟦ cstack ⟧ᴷ
 \end{code}
@@ -291,17 +291,17 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
 
 \begin{code}
 
-  lookup-eq : (i : Γ ∋ X) → (γ : MEnv {Z₀ = R₀} Γ) → ⟦ i ⟧ᵐ ⟦ γ ⟧ᴱ ≡ ⟦ lookup i γ ⟧ⱽ
+  lookup-eq : (i : Γ ∋ X) → (γ : MEnv {ℛ = ℛ} Γ) → ⟦ i ⟧ᵐ ⟦ γ ⟧ᴱ ≡ ⟦ lookup i γ ⟧ⱽ
   lookup-eq here (γ · x) = refl
   lookup-eq (there i) (γ · x) = lookup-eq i γ
 
-  eval-correct : (W : Pure Γ X) → (γ : MEnv {Z₀ = R₀} Γ) → ⟦ W ⟧ᵖ ⟦ γ ⟧ᴱ ≡ ⟦ eval W γ ⟧ⱽ
+  eval-correct : (W : Pure Γ X) → (γ : MEnv {ℛ = ℛ} Γ) → ⟦ W ⟧ᵖ ⟦ γ ⟧ᴱ ≡ ⟦ eval W γ ⟧ⱽ
   eval-correct (var i) γ = lookup-eq i γ
   eval-correct (lam M) γ = refl
   eval-correct (pair W₁ W₂) γ = cong₂ _,_ (eval-correct W₁ γ) (eval-correct W₂ γ)
   eval-correct unit γ = refl
 
-  push-eq : (cs : CStack {Z₀ = R₀} X) → (KX : K ⟦ X ⟧) → ⟦ cs ⟧ᶜˢ (λ k → KX k) k₀ ≡ KX (λ y → ⟦ cs ⟧ᶜˢ (λ k → k y) k₀)
+  push-eq : (cs : CStack {ℛ = ℛ} X) → (KX : K ⟦ X ⟧) → ⟦ cs ⟧ᶜˢ (λ k → KX k) k₀ ≡ KX (λ y → ⟦ cs ⟧ᶜˢ (λ k → k y) k₀)
   push-eq ◻ KX = refl
   push-eq {X = X} ((< W ； γ >∷ cs)) KX =           ⟦ < W ； γ >∷ cs ⟧ᶜˢ KX k₀
                                     ≡⟨ refl ⟩
@@ -325,7 +325,7 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
   jump-eq : (W : Value `ℓ) → ⟦ W ⟧ⱽ ≡ ⟦ jump-to-state W ⟧ᶜꟴ
   jump-eq (jumpᵛ _ _ _) = refl
 
-  jump-eq' : (W : Pure Γ `ℓ) → (γ : MEnv {Z₀ = R₀} Γ) → ⟦ eval W γ ⟧ⱽ ≡ ⟦ jump-to-state (eval W γ) ⟧ᶜꟴ
+  jump-eq' : (W : Pure Γ `ℓ) → (γ : MEnv {ℛ = ℛ} Γ) → ⟦ eval W γ ⟧ⱽ ≡ ⟦ jump-to-state (eval W γ) ⟧ᶜꟴ
   jump-eq' W γ = jump-eq (eval W γ)
 
   clo-eq : (W : Value (X `⇒ Y)) → (T : ⟦ X ⟧) → (E : ⟦ proj₁ (clo-to-comp W) ⟧ˣ) → (eq : E ≡ ⟦ proj₂ (proj₂ (clo-to-comp W)) ⟧ᴱ) → ⟦ W ⟧ⱽ T ≡ ⟦ proj₁ (proj₂ (clo-to-comp W)) ⟧ᶜ (E , T)
@@ -337,13 +337,13 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
   proj₂-val-eq : (W : Value (X `× Y)) → proj₂ ⟦ W ⟧ⱽ ≡ ⟦ proj₂-val W ⟧ⱽ
   proj₂-val-eq (pairᵛ W₁ W₂) = refl
 
-  proj₁-val-eq' : (W : Pure Γ (X `× Y)) → (γ : MEnv {Z₀ = R₀} Γ) → (proj₁ (⟦ W ⟧ᵖ ⟦ γ ⟧ᴱ)) ≡ ⟦ proj₁-val (eval W γ) ⟧ⱽ
+  proj₁-val-eq' : (W : Pure Γ (X `× Y)) → (γ : MEnv {ℛ = ℛ} Γ) → (proj₁ (⟦ W ⟧ᵖ ⟦ γ ⟧ᴱ)) ≡ ⟦ proj₁-val (eval W γ) ⟧ⱽ
   proj₁-val-eq' W γ = trans (cong proj₁ (eval-correct W γ)) (proj₁-val-eq (eval W γ))
 
-  proj₂-val-eq' : (W : Pure Γ (X `× Y)) → (γ : MEnv {Z₀ = R₀} Γ) → (proj₂ (⟦ W ⟧ᵖ ⟦ γ ⟧ᴱ)) ≡ ⟦ proj₂-val (eval W γ) ⟧ⱽ
+  proj₂-val-eq' : (W : Pure Γ (X `× Y)) → (γ : MEnv {ℛ = ℛ} Γ) → (proj₂ (⟦ W ⟧ᵖ ⟦ γ ⟧ᴱ)) ≡ ⟦ proj₂-val (eval W γ) ⟧ⱽ
   proj₂-val-eq' W γ = trans (cong proj₂ (eval-correct W γ)) (proj₂-val-eq (eval W γ))
 
-  compstate-eq : {S S' : CState {Z₀ = R₀}} → S →ᶜ S' → ⟦ S ⟧ᶜꟴ ≡ ⟦ S' ⟧ᶜꟴ
+  compstate-eq : {S S' : CState {ℛ = ℛ}} → S →ᶜ S' → ⟦ S ⟧ᶜꟴ ≡ ⟦ S' ⟧ᶜꟴ
   compstate-eq (eval→ {W = W} {γ = γ} {cstack = cstack}) =
     let
       eq = eval-correct W γ
@@ -394,17 +394,17 @@ module TopLevel {R₀ : Ty} {k₀ : ⟦ R₀ ⟧ → R} where
       ≡⟨ cong (λ x → curry ⟦ proj₁ (proj₂ (clo-to-comp (eval W₁ γ))) ⟧ᶜ x ⟦ eval W₂ γ ⟧ⱽ) refl ⟩
       ⟦ proj₁ (proj₂ (clo-to-comp (eval W₁ γ))) ⟧ᶜ (⟦ proj₂ (proj₂ (clo-to-comp (eval W₁ γ))) ⟧ᴱ , ⟦ eval W₂ γ ⟧ⱽ) ∎ )
 
-  compstate-eq* : {S S' : CState {Z₀ = R₀}} → S →ᶜ* S' → ⟦ S ⟧ᶜꟴ ≡ ⟦ S' ⟧ᶜꟴ
+  compstate-eq* : {S S' : CState {ℛ = ℛ}} → S →ᶜ* S' → ⟦ S ⟧ᶜꟴ ≡ ⟦ S' ⟧ᶜꟴ
   compstate-eq* (S ◼) = refl
   compstate-eq* (S ~>⟨ S→S' ⟩ S'→*S'') = trans (compstate-eq S→S') (compstate-eq* S'→*S'')
 
-  comp-machine-transitions-correct : (M : Comp ε R₀) → ⟦ ⟨ M ╎ ⋄ ╎ ◻ ⟩ ⟧ᶜꟴ ≡ ⟦ proj₁ (exec M) ⟧ᶜꟴ
+  comp-machine-transitions-correct : (M : Comp ε ℛ) → ⟦ ⟨ M ╎ ⋄ ╎ ◻ ⟩ ⟧ᶜꟴ ≡ ⟦ proj₁ (exec M) ⟧ᶜꟴ
   comp-machine-transitions-correct M = compstate-eq* (proj₁ (proj₂ (proj₂ (proj₂ (exec M)))))
 
 \end{code}
 %<*SubVarCorrect>
 \begin{code}
-  comp-machine-correct : (M : Comp ε R₀) → ⟦ M ⟧ᶜ tt k₀ ≡ k₀ ⟦ (proj₁ (proj₂ (exec M))) ⟧ⱽ
+  comp-machine-correct : (M : Comp ε ℛ) → ⟦ M ⟧ᶜ tt k₀ ≡ k₀ ⟦ (proj₁ (proj₂ (exec M))) ⟧ⱽ
 \end{code}
 %</SubVarCorrect>
 \begin{code}
