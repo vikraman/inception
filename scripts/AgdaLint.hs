@@ -8,7 +8,7 @@ build-depends:
   , generic-data          >=1.1
   , Glob                  >=0.10
   , megaparsec            >=9.6
-  , optparse-applicative  >=0.18
+  , optparse-generic      >=1.5
   , text                  >=2.1.2
   , toml-parser           >=2.0
 default-language: GHC2024
@@ -45,7 +45,9 @@ import qualified Data.Set                   as Set
 import           Data.Text                  (Text)
 import qualified Data.Text                  as T
 import qualified Data.Text.IO               as TIO
-import qualified Options.Applicative        as Opt
+import           Options.Generic            (ParseRecord, Wrapped,
+                                             unwrapRecord, type (:::),
+                                             type (<?>))
 import           Data.Void                  (Void)
 import           System.Directory           (doesFileExist, getCurrentDirectory)
 import           Generic.Data                (Constructors, gconName)
@@ -167,20 +169,22 @@ data Fix
   | ReplaceLine Int Text
   | InsertLineAfter Int Text
   | DeleteLine Int
-  deriving (Eq, Show)
+  deriving (Eq, Ord, Show)
 
 data Finding = Finding
   { findingPos     :: Pos
   , findingMessage :: Text
   , findingFix     :: Maybe Fix
   }
+  deriving (Eq, Ord)
 
 data Diagnostic = Diagnostic
   { diagFile    :: FilePath
+  , diagFinding :: Finding
   , diagRule    :: RuleId
   , diagLevel   :: Level
-  , diagFinding :: Finding
   }
+  deriving (Eq, Ord)
 
 finding :: Pos -> Text -> Finding
 finding p m = Finding p m Nothing
@@ -334,9 +338,6 @@ resolveConfig RawConfig {sources, exclude, allowlist, rules, bannedNames, fixBan
         (fromMaybe (styleSectionWidth defaultStyle) sectionWidth)
         (fromMaybe (styleSectionTitle defaultStyle) sectionTitle)
 
-emptyConfig :: RawConfig
-emptyConfig = RawConfig Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing Nothing
-
 -- config in current directory
 configFile :: FilePath
 configFile = "AgdaLint.toml"
@@ -345,17 +346,13 @@ loadConfig :: Maybe FilePath -> IO Config
 loadConfig explicit = do
   let p = fromMaybe configFile explicit
   exists <- doesFileExist p
-  raw <- case (exists, explicit) of
-    (False, Nothing) -> pure emptyConfig
-    (False, Just _)  -> failWith (p <> ": no such config file")
-    (True, _) -> do
-      src <- TIO.readFile p
-      case Toml.decode src of
-        Toml.Failure es -> failWith (p <> ": " <> unlines es)
-        Toml.Success ws c -> do
-          unless (null ws) $ failWith (p <> ": " <> unlines ws)
-          pure c
-  either (failWith . ((p <> ": ") <>)) pure (resolveConfig raw)
+  when (not exists && isJust explicit) $ failWith (p <> ": no such config file")
+  src <- if exists then TIO.readFile p else pure ""
+  case Toml.decode src of
+    Toml.Failure es -> failWith (p <> ": " <> unlines es)
+    Toml.Success ws raw -> do
+      unless (null ws) $ failWith (p <> ": " <> unlines ws)
+      either (failWith . ((p <> ": ") <>)) pure (resolveConfig raw)
 
 failWith :: String -> IO a
 failWith msg = hPutStrLn stderr ("AgdaLint: " <> msg) >> exitWith (ExitFailure 2)
@@ -1095,23 +1092,16 @@ checkBotElim _ f = [finding (tokPos t) "prefer contradiction to ⊥-elim" | l <-
 ------------------------------------------------------------------------
 -- running
 
-data Options = Options
-  { optFix       :: Bool
-  , optWarnings  :: Bool
-  , optListRules :: Bool
-  , optConfig    :: Maybe FilePath
+-- command line, flags named after the fields
+data Options w = Options
+  { fix       :: w ::: Bool <?> "rewrite fixable findings in place"
+  , noWarn    :: w ::: Bool <?> "only report errors"
+  , listRules :: w ::: Bool <?> "list rules with their configured level"
+  , config    :: w ::: Maybe FilePath <?> "config file (default: AgdaLint.toml)"
   }
+  deriving (Generic)
 
-options :: Opt.ParserInfo Options
-options =
-  Opt.info (parser Opt.<**> Opt.helper) (Opt.fullDesc <> Opt.progDesc "Lint agda sources, configured by AgdaLint.toml in the current directory")
-  where
-    parser =
-      Options
-        <$> Opt.switch (Opt.long "fix" <> Opt.help "rewrite fixable findings in place")
-        <*> (not <$> Opt.switch (Opt.long "no-warn" <> Opt.help "only report errors"))
-        <*> Opt.switch (Opt.long "list-rules" <> Opt.help "list rules with their configured level")
-        <*> Opt.optional (Opt.strOption (Opt.long "config" <> Opt.metavar "FILE" <> Opt.help "config file (default: AgdaLint.toml)"))
+instance ParseRecord (Options Wrapped)
 
 loadSources :: FilePath -> Config -> IO [SourceFile]
 loadSources root cfg = do
@@ -1129,7 +1119,7 @@ enabled cfg f r =
 
 lintAll :: Config -> Set Text -> [SourceFile] -> [Diagnostic]
 lintAll cfg allow files =
-  [ Diagnostic (srcPath f) (ruleId r) lvl fd
+  [ Diagnostic (srcPath f) fd (ruleId r) lvl
   | f <- files
   , r <- allRules
   , Just lvl <- [enabled cfg f (ruleId r)]
@@ -1189,10 +1179,10 @@ report d =
 
 main :: IO ()
 main = do
-  opts <- withProgName "AgdaLint.hs" (Opt.execParser options)
-  cfg <- loadConfig (optConfig opts)
+  Options {fix, noWarn, listRules, config} <- withProgName "AgdaLint.hs" (unwrapRecord "Lint agda sources, configured by AgdaLint.toml in the current directory")
+  cfg <- loadConfig config
   root <- getCurrentDirectory
-  when (optListRules opts) $ do
+  when listRules $ do
     forM_ allRules $ \r -> do
       let lvl = settingLevel (cfgRules cfg Map.! ruleId r)
       TIO.putStrLn (T.justifyLeft 24 ' ' (ruleName (ruleId r)) <> T.justifyLeft 9 ' ' (camelName lvl) <> ruleSummary r)
@@ -1202,10 +1192,10 @@ main = do
     ok <- doesFileExist p
     if ok then TIO.readFile p else pure ""
   let allow = Set.fromList [l | l <- map T.strip (T.lines allowText), not (T.null l), not ("#" `T.isPrefixOf` l)]
-  when (optFix opts) $ fixLoop root cfg allow (5 :: Int)
+  when fix $ fixLoop root cfg allow (5 :: Int)
   files <- loadSources root cfg
-  let diags = sortOn (\d -> (diagFile d, findingPos (diagFinding d))) (lintAll cfg allow files)
-      shown = if optWarnings opts then diags else filter ((== Error) . diagLevel) diags
+  let diags = List.sort (lintAll cfg allow files)
+      shown = if noWarn then filter ((== Error) . diagLevel) diags else diags
       errors = length (filter ((== Error) . diagLevel) diags)
   mapM_ (TIO.putStrLn . report) shown
   hPutStrLn stderr (show errors <> " error(s), " <> show (length shown - errors) <> " warning(s)")
