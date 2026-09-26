@@ -51,7 +51,7 @@ mutual
   wk-val-coh : (π : Γ ⊇ Δ) (V : Δ ⊢ᵛ A) -> ⟦ wk-val π V ⟧ᵛ ≡ (⟦ π ⟧ʷ ； ⟦ V ⟧ᵛ)
   wk-val-coh π (var i)      rewrite wk-mem-coh π i = refl
   wk-val-coh π (lam M)      rewrite wk-comp-coh (wk-cong π) M = refl
-  wk-val-coh π (pair V1 V2) rewrite wk-val-coh π V1 | wk-val-coh π V2 = refl
+  wk-val-coh π (pair V W) rewrite wk-val-coh π V | wk-val-coh π W = refl
   wk-val-coh π (pm V W)     rewrite wk-val-coh π V | wk-val-coh (wk-cong (wk-cong π)) W = refl
   wk-val-coh π unit         = refl
 
@@ -83,7 +83,7 @@ mutual
   sub-val-coh : (θ : Γ ⊢ Δ) (V : Δ ⊢ᵛ A) -> ⟦ sub-val θ V ⟧ᵛ ≡ (⟦ θ ⟧ˢ ； ⟦ V ⟧ᵛ)
   sub-val-coh θ (var i)      = refl
   sub-val-coh θ (lam M)      rewrite sub-comp-coh (sub-ex (sub-wk (wk-wk wk-id) θ) (var here)) M = refl
-  sub-val-coh θ (pair V1 V2) rewrite sub-val-coh θ V1 | sub-val-coh θ V2 = refl
+  sub-val-coh θ (pair V W) rewrite sub-val-coh θ V | sub-val-coh θ W = refl
   sub-val-coh θ (pm V W)     rewrite sub-val-coh θ V | sub-val-coh (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) θ) (var (there here))) (var here)) W = refl
   sub-val-coh θ unit         = refl
 
@@ -121,17 +121,17 @@ module CEK where
   mutual
     ⟦_⟧ⱽ : MVal A -> ⟦ A ⟧
     ⟦ unit ⟧ⱽ     = tt
-    ⟦ pair v w ⟧ⱽ = ⟦ v ⟧ⱽ , ⟦ w ⟧ⱽ
-    ⟦ clo N ρ ⟧ⱽ  = \a -> ⟦ N ⟧ᶜ (⟦ ρ ⟧ᴱ , a)
+    ⟦ pair 𝐕 𝐖 ⟧ⱽ = ⟦ 𝐕 ⟧ⱽ , ⟦ 𝐖 ⟧ⱽ
+    ⟦ clo N γ ⟧ⱽ  = \a -> ⟦ N ⟧ᶜ (⟦ γ ⟧ᴱ , a)
 
     ⟦_⟧ᴱ : Env Γ -> ⟦ Γ ⟧ˣ
     ⟦ ∅ ⟧ᴱ     = tt
-    ⟦ ρ ∷ v ⟧ᴱ = ⟦ ρ ⟧ᴱ , ⟦ v ⟧ⱽ
+    ⟦ γ ∷ 𝐕 ⟧ᴱ = ⟦ γ ⟧ᴱ , ⟦ 𝐕 ⟧ⱽ
 
     ⟦_⟧ᴷ : Kont A B -> (R ^ ⟦ B ⟧) -> (R ^ ⟦ A ⟧)
     ⟦ ε ⟧ᴷ         k = k
-    ⟦ N ◂ ρ ∷ κ ⟧ᴷ k = \a -> ⟦ N ⟧ᶜ (⟦ ρ ⟧ᴱ , a) (⟦ κ ⟧ᴷ k)
+    ⟦ N ◂ γ ∷ K ⟧ᴷ k = \a -> ⟦ N ⟧ᶜ (⟦ γ ⟧ᴱ , a) (⟦ K ⟧ᴷ k)
 
   ⟦_⟧ᶜᶠᵍ : Cfg B -> (R ^ ⟦ B ⟧) -> R
-  ⟦ ⟨ M ∥ ρ ∥ κ ⟩ ⟧ᶜᶠᵍ k = ⟦ M ⟧ᶜ ⟦ ρ ⟧ᴱ (⟦ κ ⟧ᴷ k)
-  ⟦ [ v ∥ κ ] ⟧ᶜᶠᵍ     k = ⟦ κ ⟧ᴷ k ⟦ v ⟧ⱽ
+  ⟦ ⟨ M ∥ γ ∥ K ⟩ ⟧ᶜᶠᵍ k = ⟦ M ⟧ᶜ ⟦ γ ⟧ᴱ (⟦ K ⟧ᴷ k)
+  ⟦ [ 𝐕 ∥ K ] ⟧ᶜᶠᵍ     k = ⟦ K ⟧ᴷ k ⟦ 𝐕 ⟧ⱽ

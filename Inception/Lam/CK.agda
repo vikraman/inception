@@ -54,7 +54,7 @@ data _→ᵏ_ {Γ} : {B : Ty} → Cfg Γ B → Cfg Γ B → Set where
 -- accessibility
 
 data SN {Γ B} (σ : Cfg Γ B) : Set where
-  sn : (∀ {σ'} → σ →ᵏ σ' → SN σ') → SN σ
+  sn : (∀ {σ₁} → σ →ᵏ σ₁ → SN σ₁) → SN σ
 
 infix 5 _↠ᵏ_
 
@@ -64,11 +64,11 @@ _↠ᵏ_ {Γ} {B} = _~>*_ (_→ᵏ_ {Γ = Γ} {B = B})
 --------------------------------------------------------------------------
 -- weakening a configuration
 
-wk-stk : {Γ' : Ctx} → Γ' ⊇ Γ → Γ ⊢ᵏ A ⇒ B → Γ' ⊢ᵏ A ⇒ B
+wk-stk : {Γ₁ : Ctx} → Γ₁ ⊇ Γ → Γ ⊢ᵏ A ⇒ B → Γ₁ ⊢ᵏ A ⇒ B
 wk-stk π ε       = ε
 wk-stk π (N ∷ K) = wk-comp (wk-cong π) N ∷ wk-stk π K
 
-wk-cfg : {Γ' : Ctx} → Γ' ⊇ Γ → Cfg Γ B → Cfg Γ' B
+wk-cfg : {Γ₁ : Ctx} → Γ₁ ⊇ Γ → Cfg Γ B → Cfg Γ₁ B
 wk-cfg π ⟨ M ∥ K ⟩ = ⟨ wk-comp π M ∥ wk-stk π K ⟩
 
 --------------------------------------------------------------------------
@@ -76,13 +76,13 @@ wk-cfg π ⟨ M ∥ K ⟩ = ⟨ wk-comp π M ∥ wk-stk π K ⟩
 
 graft : Γ ⊢ᵏ A ⇒ D → Γ ⊢ᵏ D ⇒ C → Γ ⊢ᵏ A ⇒ C
 graft ε        K = K
-graft (N ∷ K₀) K = N ∷ graft K₀ K
+graft (N ∷ L) K  = N ∷ graft L K
 
 Redᵛ : (A : Ty) → Γ ⊢ᵛ A → Set
 Redᶜ : (A : Ty) → Γ ⊢ᶜ A → Set
 
 Redᵛ `Unit        V = ⊤
-Redᵛ {Γ} (A `⇒ B) V = ∀ {Γ'} (π : Γ' ⊇ Γ) {W : Γ' ⊢ᵛ A} → Redᵛ A W → Redᶜ B (app (wk-val π V) W)
+Redᵛ {Γ} (A `⇒ B) V = ∀ {Γ₁} (π : Γ₁ ⊇ Γ) {W : Γ₁ ⊢ᵛ A} → Redᵛ A W → Redᶜ B (app (wk-val π V) W)
 
 Redᶜ A M = SN ⟨ M ∥ ε ⟩ × (∀ {V} → ⟨ M ∥ ε ⟩ ↠ᵏ ⟨ return V ∥ ε ⟩ → Redᵛ A V)
 
@@ -92,33 +92,33 @@ Red→SNᶜ A M (snM , ret) = snM
 Red→RTNᶜ : (A : Ty) (M : Γ ⊢ᶜ A) → Redᶜ A M → (∀ {V} → ⟨ M ∥ ε ⟩ ↠ᵏ ⟨ return V ∥ ε ⟩ → Redᵛ A V)
 Red→RTNᶜ A M (snM , ret) = ret
 
-SN-ext∷-C : {E : Ty} {M : Γ ⊢ᶜ A} {K₀ : Γ ⊢ᵏ A ⇒ D} {N : (Γ ∙ D) ⊢ᶜ E} {K : Γ ⊢ᵏ E ⇒ C}
-          → SN ⟨ M ∥ K₀ ⟩
-          → (∀ {V} → ⟨ M ∥ K₀ ⟩ ↠ᵏ ⟨ return V ∥ ε ⟩ → Redᵛ D V)
+SN-ext∷-C : {E : Ty} {M : Γ ⊢ᶜ A} {L : Γ ⊢ᵏ A ⇒ D} {N : (Γ ∙ D) ⊢ᶜ E} {K : Γ ⊢ᵏ E ⇒ C}
+          → SN ⟨ M ∥ L ⟩
+          → (∀ {V} → ⟨ M ∥ L ⟩ ↠ᵏ ⟨ return V ∥ ε ⟩ → Redᵛ D V)
           → (∀ {V} → Redᵛ D V → SN ⟨ sub-comp (sub-ex sub-id V) N ∥ K ⟩)
-          → SN ⟨ M ∥ graft K₀ (N ∷ K) ⟩
-SN-ext∷-C {M = push M₀ N₀} (sn f) rtn H =
+          → SN ⟨ M ∥ graft L (N ∷ K) ⟩
+SN-ext∷-C {M = push M N} (sn f) rtn H =
   sn (λ { push-step → SN-ext∷-C (f push-step) (λ ch → rtn (_ ~>⟨ push-step ⟩ ch)) H })
 SN-ext∷-C {M = app (var i) V} (sn f) rtn H = sn (λ ())
-SN-ext∷-C {M = app (lam N₀) V} (sn f) rtn H =
+SN-ext∷-C {M = app (lam N) V} (sn f) rtn H =
   sn (λ { app-lam-step → SN-ext∷-C (f app-lam-step) (λ ch → rtn (_ ~>⟨ app-lam-step ⟩ ch)) H })
-SN-ext∷-C {M = return V} {K₀ = ε} (sn f) rtn H =
+SN-ext∷-C {M = return V} {L = ε} (sn f) rtn H =
   sn (λ { return-step → H (rtn (_ ◼)) })
-SN-ext∷-C {M = return V} {K₀ = N₀ ∷ K₀} (sn f) rtn H =
+SN-ext∷-C {M = return V} {L = N ∷ L} (sn f) rtn H =
   sn (λ { return-step → SN-ext∷-C (f return-step) (λ ch → rtn (_ ~>⟨ return-step ⟩ ch)) H })
 
-RTN-ext∷-C : {E : Ty} {M : Γ ⊢ᶜ A} {K₀ : Γ ⊢ᵏ A ⇒ D} {N : (Γ ∙ D) ⊢ᶜ E} {K : Γ ⊢ᵏ E ⇒ C}
-           → (∀ {V} → ⟨ M ∥ K₀ ⟩ ↠ᵏ ⟨ return V ∥ ε ⟩ → Redᵛ D V)
-           → (∀ {V} → Redᵛ D V → ∀ {V'} → ⟨ sub-comp (sub-ex sub-id V) N ∥ K ⟩ ↠ᵏ ⟨ return V' ∥ ε ⟩ → Redᵛ C V')
-           → {V' : Γ ⊢ᵛ C} → ⟨ M ∥ graft K₀ (N ∷ K) ⟩ ↠ᵏ ⟨ return V' ∥ ε ⟩ → Redᵛ C V'
-RTN-ext∷-C {M = push M₀ N₀} rtn H2 (_ ~>⟨ push-step ⟩ rest) =
-  RTN-ext∷-C (λ ch → rtn (_ ~>⟨ push-step ⟩ ch)) H2 rest
-RTN-ext∷-C {M = app (var i) V} rtn H2 (_ ~>⟨ () ⟩ rest)
-RTN-ext∷-C {M = app (lam N₀) V} rtn H2 (_ ~>⟨ app-lam-step ⟩ rest) =
-  RTN-ext∷-C (λ ch → rtn (_ ~>⟨ app-lam-step ⟩ ch)) H2 rest
-RTN-ext∷-C {M = return V} {K₀ = ε} rtn H2 (_ ~>⟨ return-step ⟩ rest) = H2 (rtn (_ ◼)) rest
-RTN-ext∷-C {M = return V} {K₀ = N₀ ∷ K₀} rtn H2 (_ ~>⟨ return-step ⟩ rest) =
-  RTN-ext∷-C (λ ch → rtn (_ ~>⟨ return-step ⟩ ch)) H2 rest
+RTN-ext∷-C : {E : Ty} {M : Γ ⊢ᶜ A} {L : Γ ⊢ᵏ A ⇒ D} {N : (Γ ∙ D) ⊢ᶜ E} {K : Γ ⊢ᵏ E ⇒ C}
+           → (∀ {V} → ⟨ M ∥ L ⟩ ↠ᵏ ⟨ return V ∥ ε ⟩ → Redᵛ D V)
+           → (∀ {V} → Redᵛ D V → ∀ {W} → ⟨ sub-comp (sub-ex sub-id V) N ∥ K ⟩ ↠ᵏ ⟨ return W ∥ ε ⟩ → Redᵛ C W)
+           → {W : Γ ⊢ᵛ C} → ⟨ M ∥ graft L (N ∷ K) ⟩ ↠ᵏ ⟨ return W ∥ ε ⟩ → Redᵛ C W
+RTN-ext∷-C {M = push M N} rtn H (_ ~>⟨ push-step ⟩ rest) =
+  RTN-ext∷-C (λ ch → rtn (_ ~>⟨ push-step ⟩ ch)) H rest
+RTN-ext∷-C {M = app (var i) V} rtn H (_ ~>⟨ () ⟩ rest)
+RTN-ext∷-C {M = app (lam N) V} rtn H (_ ~>⟨ app-lam-step ⟩ rest) =
+  RTN-ext∷-C (λ ch → rtn (_ ~>⟨ app-lam-step ⟩ ch)) H rest
+RTN-ext∷-C {M = return V} {L = ε} rtn H (_ ~>⟨ return-step ⟩ rest) = H (rtn (_ ◼)) rest
+RTN-ext∷-C {M = return V} {L = N ∷ L} rtn H (_ ~>⟨ return-step ⟩ rest) =
+  RTN-ext∷-C (λ ch → rtn (_ ~>⟨ return-step ⟩ ch)) H rest
 
 exp-push : {M : Γ ⊢ᶜ A} {N : (Γ ∙ A) ⊢ᶜ B}
          → Redᶜ A M → (∀ {V : Γ ⊢ᵛ A} → Redᵛ A V → Redᶜ B (sub-comp (sub-ex sub-id V) N))
@@ -140,22 +140,22 @@ Red-varᵛ (A `⇒ B) i = λ π {W} rw → sn (λ ()) , λ { (_ ~>⟨ () ⟩ s) 
 --------------------------------------------------------------------------
 -- weakening/substitution preserves reducibility
 
-Red-wk : (A : Ty) {Γ' : Ctx} (π : Γ' ⊇ Γ) {V : Γ ⊢ᵛ A} → Redᵛ A V → Redᵛ A (wk-val π V)
+Red-wk : (A : Ty) {Γ₁ : Ctx} (π : Γ₁ ⊇ Γ) {V : Γ ⊢ᵛ A} → Redᵛ A V → Redᵛ A (wk-val π V)
 Red-wk `Unit    π r = tt
-Red-wk (A `⇒ B) π {V} f ρ {W} redW =
+Red-wk (A `⇒ B) π {V} f δ {W} redW =
   Eq.subst (Redᶜ B)
            (begin
-             app (wk-val (wk-trans ρ π) V) W
-           ≡˘⟨ cong (λ x → app x W) (wk-val-trans V ρ π) ⟩
-             app (wk-val ρ (wk-val π V)) W
+             app (wk-val (wk-trans δ π) V) W
+           ≡˘⟨ cong (λ x → app x W) (wk-val-trans V δ π) ⟩
+             app (wk-val δ (wk-val π V)) W
            ∎)
-           (f (wk-trans ρ π) redW)
+           (f (wk-trans δ π) redW)
 
 record RedSub (θ : Γ ⊢ Δ) : Set where
   field red : (i : Δ ∋ A) → Redᵛ A (sub-mem θ i)
 open RedSub
 
-RedSub-wk : {Γ' : Ctx} (ρ : Γ' ⊇ Γ) {θ : Γ ⊢ Δ} → RedSub θ → RedSub (sub-wk ρ θ)
+RedSub-wk : {Γ₁ : Ctx} (ρ : Γ₁ ⊇ Γ) {θ : Γ ⊢ Δ} → RedSub θ → RedSub (sub-wk ρ θ)
 red (RedSub-wk ρ {θ} rθ) {A = A} i =
   Eq.subst (Redᵛ A)
            (begin
@@ -221,11 +221,11 @@ SN-theorem {Γ} {A} M =
 -- eval
 
 Normal : Cfg Γ B → Set
-Normal σ = ∀ {σ'} → σ →ᵏ σ' → ⊥
+Normal σ = ∀ {σ₁} → σ →ᵏ σ₁ → ⊥
 
 data Step? (σ : Cfg Γ B) : Set where
   done : Normal σ → Step? σ
-  next : {σ' : Cfg Γ B} → σ →ᵏ σ' → Step? σ
+  next : {σ₁ : Cfg Γ B} → σ →ᵏ σ₁ → Step? σ
 
 step? : (σ : Cfg Γ B) → Step? σ
 step? ⟨ push M N ∥ K ⟩      = next push-step
@@ -234,11 +234,11 @@ step? ⟨ return V ∥ N ∷ K ⟩  = next return-step
 step? ⟨ app (var i) V ∥ K ⟩ = done (λ ())
 step? ⟨ app (lam N) V ∥ K ⟩ = next app-lam-step
 
-eval-acc : {σ : Cfg Γ B} → SN σ → Σ[ σ' ∈ Cfg Γ B ] (σ ↠ᵏ σ') × Normal σ'
+eval-acc : {σ : Cfg Γ B} → SN σ → Σ[ σ₁ ∈ Cfg Γ B ] (σ ↠ᵏ σ₁) × Normal σ₁
 eval-acc {σ = σ} (sn f) with step? σ
 ... | done normal    = σ , σ ◼ , normal
-... | next {σ'} step with eval-acc (f step)
-...   | (σ'' , chain , normal) = σ'' , σ ~>⟨ step ⟩ chain , normal
+... | next {σ₁} step with eval-acc (f step)
+...   | (σ₂ , chain , normal) = σ₂ , σ ~>⟨ step ⟩ chain , normal
 
-eval : (M : Γ ⊢ᶜ A) → Σ[ σ' ∈ Cfg Γ A ] (⟨ M ∥ ε ⟩ ↠ᵏ σ') × Normal σ'
+eval : (M : Γ ⊢ᶜ A) → Σ[ σ ∈ Cfg Γ A ] (⟨ M ∥ ε ⟩ ↠ᵏ σ) × Normal σ
 eval M = eval-acc (SN-theorem M)

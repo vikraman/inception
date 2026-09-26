@@ -102,19 +102,19 @@ data Comp where
 
 mutual
   wk-val : Wk Γ Δ → Δ ⊢ᵛ X → Γ ⊢ᵛ X
-  wk-val π (var x)         = var (wk-mem π x)
-  wk-val π (lam M)         = lam (wk-comp (wk-cong π) M)
-  wk-val π (pair W₁ W₂)    = pair (wk-val π W₁) (wk-val π W₂)
-  wk-val π unit            = unit
-  wk-val π (dat N)         = dat N
+  wk-val π (var x)    = var (wk-mem π x)
+  wk-val π (lam M)    = lam (wk-comp (wk-cong π) M)
+  wk-val π (pair V W) = pair (wk-val π V) (wk-val π W)
+  wk-val π unit       = unit
+  wk-val π (dat N)    = dat N
 
   wk-comp : Wk Γ Δ → Δ ⊢ᶜ X → Γ ⊢ᶜ X
-  wk-comp π (return W)      = return (wk-val π W)
-  wk-comp π (pm W M)        = pm (wk-val π W) (wk-comp (wk-cong (wk-cong π)) M)
-  wk-comp π (push M₁ M₂)    = push (wk-comp π M₁) (wk-comp (wk-cong π) M₂)
-  wk-comp π (app W₁ W₂)     = app (wk-val π W₁) (wk-val π W₂)
-  wk-comp π (rec W₁ W₂)     = rec (wk-val π W₁) (wk-val π W₂)
-  wk-comp π (inc M₁ M₂)     = inc (wk-comp (wk-cong π) M₁) (wk-comp (wk-cong π) M₂)
+  wk-comp π (return W) = return (wk-val π W)
+  wk-comp π (pm W M)   = pm (wk-val π W) (wk-comp (wk-cong (wk-cong π)) M)
+  wk-comp π (push M N) = push (wk-comp π M) (wk-comp (wk-cong π) N)
+  wk-comp π (app V W)  = app (wk-val π V) (wk-val π W)
+  wk-comp π (rec V W)  = rec (wk-val π V) (wk-val π W)
+  wk-comp π (inc M N)  = inc (wk-comp (wk-cong π) M) (wk-comp (wk-cong π) N)
 
 wk : Val Γ X → Val (Γ ∙ Y) X
 wk = wk-val (wk-wk wk-id)

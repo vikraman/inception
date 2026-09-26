@@ -5,7 +5,7 @@ open import Inception.SystemL.Syntax as L
 
 variable
   IΓ IΔ : I.Ctx
-  IA IB IC : I.Ty
+  IA : I.Ty
 
 ⟦_⟧ : I.Ty -> L.Ty
 ⟦ `Unit ⟧  = `Unit

@@ -69,8 +69,8 @@ mutual
   wk-val π (var x)         = var (wk-mem π x)
   wk-val π (lam M)         = lam (wk-comp (wk-cong π) M)
 
-  wk-val π (pair V1 V2)    = pair (wk-val π V1) (wk-val π V2)
-  wk-val π unit            = unit
+  wk-val π (pair V W) = pair (wk-val π V) (wk-val π W)
+  wk-val π unit       = unit
 
   wk-comp : Wk Γ Δ -> Δ ⊢ᶜ A -> Γ ⊢ᶜ A
   wk-comp π (return V)     = return (wk-val π V)
@@ -130,14 +130,12 @@ exchg : Sub (Γ ∙ A ∙ B)(Γ ∙ B ∙ A)
 exchg = sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) sub-id) (var here)) (var (there here))
 
 variable
-  n : ℕ
-  x : Γ ∋ A
-  V V1 V2 V3 V4 W W1 W2 W3 : Γ ⊢ᵛ A
-  M M1 M2 M3 M4 N N1 N2 N3 P P1 P2 P3 : Γ ⊢ᶜ A
+  V V₁ V₂ V₃ W W₁ W₂ : Γ ⊢ᵛ A
+  M M₁ M₂ M₃ N N₁ N₂ : Γ ⊢ᶜ A
 
-syntax EqVal Γ A e1 e2 = Γ ⊢ᵛ e1 ≈ e2 ∶ A
+syntax EqVal Γ A e₁ e₂ = Γ ⊢ᵛ e₁ ≈ e₂ ∶ A
 
-syntax EqComp Γ A e1 e2 = Γ ⊢ᶜ e1 ≈ e2 ∶ A
+syntax EqComp Γ A e₁ e₂ = Γ ⊢ᶜ e₁ ≈ e₂ ∶ A
 
 data EqVal (Γ : Ctx) : (A : Ty) -> Γ ⊢ᵛ A -> Γ ⊢ᵛ A -> Set
 
@@ -150,22 +148,22 @@ data EqVal Γ where
           -------------
           Γ ⊢ᵛ V ≈ V ∶ A
 
-  ≈-sym   : Γ ⊢ᵛ V1 ≈ V2 ∶ A
+  ≈-sym   : Γ ⊢ᵛ V₁ ≈ V₂ ∶ A
           ------------------
-          -> Γ ⊢ᵛ V2 ≈ V1 ∶ A
+          -> Γ ⊢ᵛ V₂ ≈ V₁ ∶ A
 
-  ≈-trans : Γ ⊢ᵛ V1 ≈ V2 ∶ A -> Γ ⊢ᵛ V2 ≈ V3 ∶ A
+  ≈-trans : Γ ⊢ᵛ V₁ ≈ V₂ ∶ A -> Γ ⊢ᵛ V₂ ≈ V₃ ∶ A
           -------------------------------------
-          -> Γ ⊢ᵛ V1 ≈ V3 ∶ A
+          -> Γ ⊢ᵛ V₁ ≈ V₃ ∶ A
 
   -- congruence rules
-  lam-cong : (Γ ∙ A) ⊢ᶜ M1 ≈ M2 ∶ B
+  lam-cong : (Γ ∙ A) ⊢ᶜ M₁ ≈ M₂ ∶ B
            ---------------------------------
-           -> Γ ⊢ᵛ lam M1 ≈ lam M2 ∶ A `⇒ B
+           -> Γ ⊢ᵛ lam M₁ ≈ lam M₂ ∶ A `⇒ B
 
-  pair-cong : Γ ⊢ᵛ V1 ≈ V2 ∶ A -> Γ ⊢ᵛ W1 ≈ W2 ∶ B
+  pair-cong : Γ ⊢ᵛ V₁ ≈ V₂ ∶ A -> Γ ⊢ᵛ W₁ ≈ W₂ ∶ B
             ----------------------------------------
-            -> Γ ⊢ᵛ pair V1 W1 ≈ pair V2 W2 ∶ A `× B
+            -> Γ ⊢ᵛ pair V₁ W₁ ≈ pair V₂ W₂ ∶ A `× B
 
   -- beta/eta rules
 
@@ -184,44 +182,44 @@ data EqComp Γ where
           -------------
           Γ ⊢ᶜ M ≈ M ∶ A
 
-  ≈-sym   : Γ ⊢ᶜ M1 ≈ M2 ∶ A
+  ≈-sym   : Γ ⊢ᶜ M₁ ≈ M₂ ∶ A
           -------------------
-          -> Γ ⊢ᶜ M2 ≈ M1 ∶ A
+          -> Γ ⊢ᶜ M₂ ≈ M₁ ∶ A
 
-  ≈-trans : Γ ⊢ᶜ M1 ≈ M2 ∶ A -> Γ ⊢ᶜ M2 ≈ M3 ∶ A
+  ≈-trans : Γ ⊢ᶜ M₁ ≈ M₂ ∶ A -> Γ ⊢ᶜ M₂ ≈ M₃ ∶ A
           -------------------------------------
-          -> Γ ⊢ᶜ M1 ≈ M3 ∶ A
+          -> Γ ⊢ᶜ M₁ ≈ M₃ ∶ A
 
   -- congruence rules
-  return-cong : Γ ⊢ᵛ V1 ≈ V2 ∶ A
+  return-cong : Γ ⊢ᵛ V₁ ≈ V₂ ∶ A
              -----------------------------
-             -> Γ ⊢ᶜ return V1 ≈ return V2 ∶ A
+             -> Γ ⊢ᶜ return V₁ ≈ return V₂ ∶ A
 
-  pm-cong : Γ ⊢ᵛ V1 ≈ V2 ∶ A `× B -> (Γ ∙ A ∙ B) ⊢ᶜ M1 ≈ M2 ∶ C
+  pm-cong : Γ ⊢ᵛ V₁ ≈ V₂ ∶ A `× B -> (Γ ∙ A ∙ B) ⊢ᶜ M₁ ≈ M₂ ∶ C
             -------------------------------------------------------------------
-            -> Γ ⊢ᶜ pm V1 M1 ≈ pm V2 M2 ∶ C
+            -> Γ ⊢ᶜ pm V₁ M₁ ≈ pm V₂ M₂ ∶ C
 
-  push-cong : Γ ⊢ᶜ M1 ≈ M2 ∶ A -> (Γ ∙ A) ⊢ᶜ N1 ≈ N2 ∶ B
+  push-cong : Γ ⊢ᶜ M₁ ≈ M₂ ∶ A -> (Γ ∙ A) ⊢ᶜ N₁ ≈ N₂ ∶ B
             ---------------------------------------------------
-            -> Γ ⊢ᶜ push M1 N1 ≈ push M2 N2 ∶ B
+            -> Γ ⊢ᶜ push M₁ N₁ ≈ push M₂ N₂ ∶ B
 
-  app-cong : Γ ⊢ᵛ V1 ≈ V2 ∶ A `⇒ B -> Γ ⊢ᵛ W1 ≈ W2 ∶ A
+  app-cong : Γ ⊢ᵛ V₁ ≈ V₂ ∶ A `⇒ B -> Γ ⊢ᵛ W₁ ≈ W₂ ∶ A
             ------------------------------------------------
-            -> Γ ⊢ᶜ app V1 W1 ≈ app V2 W2 ∶ B
+            -> Γ ⊢ᶜ app V₁ W₁ ≈ app V₂ W₂ ∶ B
 
-  rec-cong : Γ ⊢ᵛ V1 ≈ V2 ∶ `V -> Γ ⊢ᵛ W1 ≈ W2 ∶ `P
+  rec-cong : Γ ⊢ᵛ V₁ ≈ V₂ ∶ `V -> Γ ⊢ᵛ W₁ ≈ W₂ ∶ `P
             ----------------------------------------
-            -> Γ ⊢ᶜ rec V1 W1 ≈ rec V2 W2 ∶ A
+            -> Γ ⊢ᶜ rec V₁ W₁ ≈ rec V₂ W₂ ∶ A
 
-  inc-cong : (Γ ∙ `V) ⊢ᶜ M1 ≈ M2 ∶ A -> (Γ ∙ `P) ⊢ᶜ N1 ≈ N2 ∶ A
+  inc-cong : (Γ ∙ `V) ⊢ᶜ M₁ ≈ M₂ ∶ A -> (Γ ∙ `P) ⊢ᶜ N₁ ≈ N₂ ∶ A
             ----------------------------------------------------
-            -> Γ ⊢ᶜ inc M1 N1 ≈ inc M2 N2 ∶ A
+            -> Γ ⊢ᶜ inc M₁ N₁ ≈ inc M₂ N₂ ∶ A
 
   -- beta/eta rules
 
-  pm-beta : (V1 : Γ ⊢ᵛ A) -> (V2 : Γ ⊢ᵛ B) -> (M : (Γ ∙ A ∙ B) ⊢ᶜ C)
+  pm-beta : (V : Γ ⊢ᵛ A) -> (W : Γ ⊢ᵛ B) -> (M : (Γ ∙ A ∙ B) ⊢ᶜ C)
           ------------------------------------------------------------------------
-          -> Γ ⊢ᶜ pm (pair V1 V2) M ≈ sub-comp (sub-ex (sub-ex sub-id V1) V2) M ∶ C
+          -> Γ ⊢ᶜ pm (pair V₁ V₂) M ≈ sub-comp (sub-ex (sub-ex sub-id V₁) V₂) M ∶ C
 
   pm-eta : (V : Γ ⊢ᵛ A `× B) -> (M : (Γ ∙ (A `× B)) ⊢ᶜ C)
          -------------------------------------------------------------------------------------------
@@ -257,9 +255,9 @@ data EqComp Γ where
           ----------------------------------------------------------------------------------------
           -> Γ ⊢ᶜ inc (sub-comp sub-id M) (rec (wk V) (var here)) ≈ sub-comp (sub-ex sub-id V) M ∶ A
 
-  inc-assoc : (L : (Γ ∙ `V ∙ `V) ⊢ᶜ A) -> (M : (Γ ∙ `V ∙ `P) ⊢ᶜ A) -> (N : (Γ ∙ `P) ⊢ᶜ A)
+  inc-assoc : (M : (Γ ∙ `V ∙ `V) ⊢ᶜ A) -> (N : (Γ ∙ `V ∙ `P) ⊢ᶜ A) -> (P : (Γ ∙ `P) ⊢ᶜ A)
             ------------------------------------------------------------------------------------------------------------------------------------------------------------
-            -> Γ ⊢ᶜ inc (inc L M) N ≈ inc (inc (sub-comp exchg L) (wk-comp (wk-cong (wk-wk wk-id)) N)) (inc (sub-comp exchg M) (wk-comp (wk-cong (wk-wk wk-id)) N)) ∶ A
+            -> Γ ⊢ᶜ inc (inc M N) P ≈ inc (inc (sub-comp exchg M) (wk-comp (wk-cong (wk-wk wk-id)) P)) (inc (sub-comp exchg N) (wk-comp (wk-cong (wk-wk wk-id)) P)) ∶ A
 
   -- algebraicity rules
 
@@ -267,6 +265,6 @@ data EqComp Γ where
            --------------------------------------------------------
            -> Γ ⊢ᶜ push (rec V W) M ≈ rec V W ∶ A
 
-  inc-push : (M : (Γ ∙ `V) ⊢ᶜ A) -> (N : (Γ ∙ `P) ⊢ᶜ A) -> (L : (Γ ∙ A) ⊢ᶜ B)
+  inc-push : (M : (Γ ∙ `V) ⊢ᶜ A) -> (N : (Γ ∙ `P) ⊢ᶜ A) -> (P : (Γ ∙ A) ⊢ᶜ B)
            -------------------------------------------------------------------------------------------------------------------------------
-           -> Γ ⊢ᶜ push (inc M N) L ≈ inc (push M (wk-comp (wk-cong (wk-wk wk-id)) L)) (push N (wk-comp (wk-cong (wk-wk wk-id)) L)) ∶ B
+           -> Γ ⊢ᶜ push (inc M N) P ≈ inc (push M (wk-comp (wk-cong (wk-wk wk-id)) P)) (push N (wk-comp (wk-cong (wk-wk wk-id)) P)) ∶ B
