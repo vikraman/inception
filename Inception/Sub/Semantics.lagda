@@ -6,7 +6,6 @@ module Inception.Sub.Semantics (R : Set) where
 open import Inception.Prelude
 open Inception.Prelude.RTC
 open import Inception.Sub.Syntax
-open import Inception.Sub.Machine
 
 open import Data.Unit using (⊤; tt)
 open import Data.Sum using (_⊎_; inj₁; inj₂)
@@ -258,32 +257,34 @@ wk-sem-trans (wk-wk π₁) (wk-wk π₂) γ = wk-sem-trans π₁ (wk-wk π₂) (
 
 module TopLevel {ℛ : Ty} {k₀ : ⟦ ℛ ⟧ → R} where
 
+  open import Inception.Sub.Machine ℛ
+
 \end{code}
 %<*SemMEnv>
 \begin{code}
   mutual
-    ⟦_⟧ᴱ : MEnv {ℛ = ℛ} Γ → ⟦ Γ ⟧ˣ
+    ⟦_⟧ᴱ : MEnv Γ → ⟦ Γ ⟧ˣ
     ⟦ ⋄ ⟧ᴱ = tt
     ⟦ γ · 𝐖 ⟧ᴱ = ⟦ γ ⟧ᴱ , ⟦ 𝐖 ⟧ⱽ
 
-    ⟦_⟧ⱽ : (𝐖 : MVal {ℛ = ℛ} X) → ⟦ X ⟧
+    ⟦_⟧ⱽ : (𝐖 : MVal X) → ⟦ X ⟧
     ⟦ unitᵛ ⟧ⱽ = tt
     ⟦ pairᵛ 𝐖₁ 𝐖₂ ⟧ⱽ = ⟦ 𝐖₁ ⟧ⱽ , ⟦ 𝐖₂ ⟧ⱽ
     ⟦ cloᵛ M γ ⟧ⱽ = (curry ⟦ M ⟧ᶜ) ⟦ γ ⟧ᴱ
     ⟦ jumpᵛ M γ cstack ⟧ⱽ = ⟦ M ⟧ᶜ ⟦ γ ⟧ᴱ ⟦ cstack ⟧ᴷ
 
-    ⟦_⟧ᶜˢ : CStack {ℛ = ℛ} X → K ⟦ X ⟧ → K ⟦ ℛ ⟧
+    ⟦_⟧ᶜˢ : CStack X → K ⟦ X ⟧ → K ⟦ ℛ ⟧
     ⟦ ◻ ⟧ᶜˢ = idf
     ⟦ < M ； γ >∷ cstack ⟧ᶜˢ = < const ⟦ γ ⟧ᴱ , idf > ； τ ； (⟦ M ⟧ᶜ *) ； ⟦ cstack ⟧ᶜˢ
 
-    ⟦_⟧ᴷ : CStack {ℛ = ℛ} X → ⟦ X ⟧ → R
+    ⟦_⟧ᴷ : CStack X → ⟦ X ⟧ → R
     ⟦_⟧ᴷ cstack t = ⟦ cstack ⟧ᶜˢ (η t) k₀
 \end{code}
 %</SemMEnv>
 
 %<*SemCState>
 \begin{code}
-  ⟦_⟧ᶜꟴ : CState {ℛ = ℛ} → R
+  ⟦_⟧ᶜꟴ : CState → R
   ⟦ ⟨ 𝐖 ╎ cstack ⟩ ⟧ᶜꟴ = (η ⟦ 𝐖 ⟧ⱽ) ⟦ cstack ⟧ᴷ
   ⟦ ⟨ M ╎ γ ╎ cstack ⟩ ⟧ᶜꟴ = ⟦ M ⟧ᶜ ⟦ γ ⟧ᴱ ⟦ cstack ⟧ᴷ
 \end{code}
@@ -291,17 +292,17 @@ module TopLevel {ℛ : Ty} {k₀ : ⟦ ℛ ⟧ → R} where
 
 \begin{code}
 
-  lookup-eq : (i : Γ ∋ X) → (γ : MEnv {ℛ = ℛ} Γ) → ⟦ i ⟧ᵐ ⟦ γ ⟧ᴱ ≡ ⟦ lookup i γ ⟧ⱽ
+  lookup-eq : (i : Γ ∋ X) → (γ : MEnv Γ) → ⟦ i ⟧ᵐ ⟦ γ ⟧ᴱ ≡ ⟦ lookup i γ ⟧ⱽ
   lookup-eq here (γ · x) = refl
   lookup-eq (there i) (γ · x) = lookup-eq i γ
 
-  eval-correct : (W : Val Γ X) → (γ : MEnv {ℛ = ℛ} Γ) → ⟦ W ⟧ᵛ ⟦ γ ⟧ᴱ ≡ ⟦ eval W γ ⟧ⱽ
+  eval-correct : (W : Val Γ X) → (γ : MEnv Γ) → ⟦ W ⟧ᵛ ⟦ γ ⟧ᴱ ≡ ⟦ eval W γ ⟧ⱽ
   eval-correct (var i) γ = lookup-eq i γ
   eval-correct (lam M) γ = refl
   eval-correct (pair W₁ W₂) γ = cong₂ _,_ (eval-correct W₁ γ) (eval-correct W₂ γ)
   eval-correct unit γ = refl
 
-  push-eq : (cs : CStack {ℛ = ℛ} X) → (KX : K ⟦ X ⟧) → ⟦ cs ⟧ᶜˢ (λ k → KX k) k₀ ≡ KX (λ y → ⟦ cs ⟧ᶜˢ (λ k → k y) k₀)
+  push-eq : (cs : CStack X) → (KX : K ⟦ X ⟧) → ⟦ cs ⟧ᶜˢ (λ k → KX k) k₀ ≡ KX (λ y → ⟦ cs ⟧ᶜˢ (λ k → k y) k₀)
   push-eq ◻ KX = refl
   push-eq {X = X} ((< W ； γ >∷ cs)) KX =           ⟦ < W ； γ >∷ cs ⟧ᶜˢ KX k₀
                                     ≡⟨ refl ⟩
@@ -325,7 +326,7 @@ module TopLevel {ℛ : Ty} {k₀ : ⟦ ℛ ⟧ → R} where
   jump-eq : (W : MVal `ℓ) → ⟦ W ⟧ⱽ ≡ ⟦ jump-to-state W ⟧ᶜꟴ
   jump-eq (jumpᵛ _ _ _) = refl
 
-  jump-eq' : (W : Val Γ `ℓ) → (γ : MEnv {ℛ = ℛ} Γ) → ⟦ eval W γ ⟧ⱽ ≡ ⟦ jump-to-state (eval W γ) ⟧ᶜꟴ
+  jump-eq' : (W : Val Γ `ℓ) → (γ : MEnv Γ) → ⟦ eval W γ ⟧ⱽ ≡ ⟦ jump-to-state (eval W γ) ⟧ᶜꟴ
   jump-eq' W γ = jump-eq (eval W γ)
 
   clo-eq : (W : MVal (X `⇒ Y)) → (T : ⟦ X ⟧) → (E : ⟦ proj₁ (clo-to-comp W) ⟧ˣ) → (eq : E ≡ ⟦ proj₂ (proj₂ (clo-to-comp W)) ⟧ᴱ) → ⟦ W ⟧ⱽ T ≡ ⟦ proj₁ (proj₂ (clo-to-comp W)) ⟧ᶜ (E , T)
@@ -337,13 +338,13 @@ module TopLevel {ℛ : Ty} {k₀ : ⟦ ℛ ⟧ → R} where
   proj₂-val-eq : (W : MVal (X `× Y)) → proj₂ ⟦ W ⟧ⱽ ≡ ⟦ proj₂-val W ⟧ⱽ
   proj₂-val-eq (pairᵛ W₁ W₂) = refl
 
-  proj₁-val-eq' : (W : Val Γ (X `× Y)) → (γ : MEnv {ℛ = ℛ} Γ) → (proj₁ (⟦ W ⟧ᵛ ⟦ γ ⟧ᴱ)) ≡ ⟦ proj₁-val (eval W γ) ⟧ⱽ
+  proj₁-val-eq' : (W : Val Γ (X `× Y)) → (γ : MEnv Γ) → (proj₁ (⟦ W ⟧ᵛ ⟦ γ ⟧ᴱ)) ≡ ⟦ proj₁-val (eval W γ) ⟧ⱽ
   proj₁-val-eq' W γ = trans (cong proj₁ (eval-correct W γ)) (proj₁-val-eq (eval W γ))
 
-  proj₂-val-eq' : (W : Val Γ (X `× Y)) → (γ : MEnv {ℛ = ℛ} Γ) → (proj₂ (⟦ W ⟧ᵛ ⟦ γ ⟧ᴱ)) ≡ ⟦ proj₂-val (eval W γ) ⟧ⱽ
+  proj₂-val-eq' : (W : Val Γ (X `× Y)) → (γ : MEnv Γ) → (proj₂ (⟦ W ⟧ᵛ ⟦ γ ⟧ᴱ)) ≡ ⟦ proj₂-val (eval W γ) ⟧ⱽ
   proj₂-val-eq' W γ = trans (cong proj₂ (eval-correct W γ)) (proj₂-val-eq (eval W γ))
 
-  compstate-eq : {S S' : CState {ℛ = ℛ}} → S →ᶜ S' → ⟦ S ⟧ᶜꟴ ≡ ⟦ S' ⟧ᶜꟴ
+  compstate-eq : {S S' : CState} → S →ᶜ S' → ⟦ S ⟧ᶜꟴ ≡ ⟦ S' ⟧ᶜꟴ
   compstate-eq (eval→ {W = W} {γ = γ} {cstack = cstack}) =
     let
       eq = eval-correct W γ
@@ -394,7 +395,7 @@ module TopLevel {ℛ : Ty} {k₀ : ⟦ ℛ ⟧ → R} where
       ≡⟨ cong (λ x → curry ⟦ proj₁ (proj₂ (clo-to-comp (eval W₁ γ))) ⟧ᶜ x ⟦ eval W₂ γ ⟧ⱽ) refl ⟩
       ⟦ proj₁ (proj₂ (clo-to-comp (eval W₁ γ))) ⟧ᶜ (⟦ proj₂ (proj₂ (clo-to-comp (eval W₁ γ))) ⟧ᴱ , ⟦ eval W₂ γ ⟧ⱽ) ∎ )
 
-  compstate-eq* : {S S' : CState {ℛ = ℛ}} → S →ᶜ* S' → ⟦ S ⟧ᶜꟴ ≡ ⟦ S' ⟧ᶜꟴ
+  compstate-eq* : {S S' : CState} → S →ᶜ* S' → ⟦ S ⟧ᶜꟴ ≡ ⟦ S' ⟧ᶜꟴ
   compstate-eq* (S ◼) = refl
   compstate-eq* (S ~>⟨ S→S' ⟩ S'→*S'') = trans (compstate-eq S→S') (compstate-eq* S'→*S'')
 

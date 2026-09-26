@@ -24,7 +24,7 @@ data Ctx : Set where
 
 variable
   A B C D A₁ A₂ B₁ B₂ : Ty
-  X X' X₁ X₂ Y Y' Z Z' Z₀ Z₁ Z₁' ℛ : Ty
+  X X' X₁ X₂ Y Y' Z Z' Z₀ Z₁ Z₁' : Ty
   Γ Δ Ψ Γ' Γ'' Γ''' Δ' Δ'' Ψ' Γ₀ Γ₁ Γ₂ Γ₃ Δ₁ : Ctx
 
 data _∋_ : Ctx -> Ty -> Set where
