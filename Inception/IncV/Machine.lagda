@@ -34,7 +34,7 @@ mutual
     ◻ :        CStack ℛ
 
     <_；_>∷_ :  (Γ ∙ Y) ⊢ᶜ X → (γ : Env Γ)
-                → (pstack : CStack X)
+                → (K : CStack X)
                 ------------------------------------
                 → CStack Y
 
@@ -88,7 +88,7 @@ proj₁-val (pairᵛ 𝐕 𝐖) = 𝐕
 proj₂-val : MVal (X `× Y) → MVal Y
 proj₂-val (pairᵛ 𝐕 𝐖) = 𝐖
 
-pair-val : (W : MVal (X `× Y)) → (pairᵛ (proj₁-val W) (proj₂-val W) ≡ W)
+pair-val : (𝐖 : MVal (X `× Y)) → (pairᵛ (proj₁-val 𝐖) (proj₂-val 𝐖) ≡ 𝐖)
 pair-val (pairᵛ 𝐕 𝐖) = refl
 
 ---------------------------------------------------------------------------------
@@ -125,7 +125,7 @@ jump-to-state (jumpᵛ M γ K) 𝐖 = ⟨ M ╎ γ · 𝐖 ╎ K ⟩
 clo-to-comp : MVal (X `⇒ Y) → Σ[ Γ ∈ Ctx ] (Γ ∙ X) ⊢ᶜ Y × Env Γ
 clo-to-comp (cloᵛ M γ) = _ , M , γ
 
-clo-val : (W : MVal (X `⇒ Y)) → (cloᵛ (proj₁ (proj₂ (clo-to-comp W))) (proj₂ (proj₂ (clo-to-comp W))) ≡ W)
+clo-val : (𝐖 : MVal (X `⇒ Y)) → (cloᵛ (proj₁ (proj₂ (clo-to-comp 𝐖))) (proj₂ (proj₂ (clo-to-comp 𝐖))) ≡ 𝐖)
 clo-val (cloᵛ M γ) = refl
 
 run-jump : Γ ⊢ᵛ `ℓ → Γ ⊢ᵛ `𝓅 → Env Γ → CState
