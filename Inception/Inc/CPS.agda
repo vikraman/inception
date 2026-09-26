@@ -22,7 +22,7 @@ recK : {X : Set} → R ^ ℙ × ℙ → K X
 recK (k , p) _ = k p
 
 incK : {X : Set} → (R ^ ℙ → K X) × (ℙ → K X) → K X
-incK (f , g) k = f (\p → g p k) k
+incK (f , g) k = f (λ p → g p k) k
 
 ⟦_⟧ : Ty → Set
 ⟦ `𝟙 ⟧ = ⊤
@@ -66,7 +66,7 @@ mutual
     let v = evalVal V γ in
       evalComp M (((γ , v .proj₁) , v .proj₂) , k)
   evalComp (push M N) (γ , k) =
-    evalComp M (γ , \a →
+    evalComp M (γ , λ a →
       evalComp N ((γ , a) , k))
   evalComp (app V W) (γ , k) =
     let v = evalVal V γ in
@@ -77,7 +77,7 @@ mutual
       let w = evalVal W γ in
         v w
   evalComp (inc M N) (γ , k) =
-    evalComp M ((γ , \p →
+    evalComp M ((γ , λ p →
       evalComp N ((γ , p) , k)) , k)
 
 ⟦_⟧ˢ : Γ ⊢ Δ → ⟦ Γ ⟧ˣ → ⟦ Δ ⟧ˣ
@@ -115,7 +115,7 @@ sub-wk-coh π (sub-ex θ V) rewrite sub-wk-coh π θ | wk-val-coh π V = refl
 
 sub-id-coh : ⟦ sub-id {Γ} ⟧ˢ ≡ id
 sub-id-coh {ε} = refl
-sub-id-coh {Γ ∙ X} = funext \(γ , a) → cong₂ _,_ (happly sub-id-coh γ) refl
+sub-id-coh {Γ ∙ X} = funext λ { (γ , a) → cong₂ _,_ (happly sub-id-coh γ) refl }
 {-# REWRITE sub-id-coh #-}
 
 mutual

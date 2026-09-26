@@ -69,7 +69,7 @@ sub-wk-coh π (sub-ex θ V) rewrite sub-wk-coh π θ | wk-val-coh π V = refl
 
 sub-id-coh : ⟦ sub-id {Γ} ⟧ˢ ≡ id
 sub-id-coh {ε}     = refl
-sub-id-coh {Γ ∙ X} = funext \(γ , a) → cong₂ _,_ (happly sub-id-coh γ) refl
+sub-id-coh {Γ ∙ X} = funext λ { (γ , a) → cong₂ _,_ (happly sub-id-coh γ) refl }
 {-# REWRITE sub-id-coh #-}
 
 mutual
@@ -94,7 +94,7 @@ module CK where
 
   ⟦_⟧ᵏ : Γ ⊢ᵏ X ⇒ Y → ⟦ Γ ⟧ˣ → (R ^ ⟦ Y ⟧) → (R ^ ⟦ X ⟧)
   ⟦ ε ⟧ᵏ     γ k = k
-  ⟦ N ∷ K ⟧ᵏ γ k = \a → ⟦ N ⟧ᶜ (γ , a) (⟦ K ⟧ᵏ γ k)
+  ⟦ N ∷ K ⟧ᵏ γ k = λ a → ⟦ N ⟧ᶜ (γ , a) (⟦ K ⟧ᵏ γ k)
 
   ⟦_⟧ᶜᶠᵍ : Cfg Γ X → ⟦ Γ ⟧ˣ → (R ^ ⟦ X ⟧) → R
   ⟦ ⟨ M ∥ K ⟩ ⟧ᶜᶠᵍ γ k = ⟦ M ⟧ᶜ γ (⟦ K ⟧ᵏ γ k)
@@ -108,7 +108,7 @@ module CEK where
   mutual
     ⟦_⟧ⱽ : MVal X → ⟦ X ⟧
     ⟦ unit ⟧ⱽ    = tt
-    ⟦ clo N γ ⟧ⱽ = \a → ⟦ N ⟧ᶜ (⟦ γ ⟧ᴱ , a)
+    ⟦ clo N γ ⟧ⱽ = λ a → ⟦ N ⟧ᶜ (⟦ γ ⟧ᴱ , a)
 
     ⟦_⟧ᴱ : Env Γ → ⟦ Γ ⟧ˣ
     ⟦ ∅ ⟧ᴱ     = tt
@@ -116,7 +116,7 @@ module CEK where
 
     ⟦_⟧ᴷ : Kont X Y → (R ^ ⟦ Y ⟧) → (R ^ ⟦ X ⟧)
     ⟦ ε ⟧ᴷ           k = k
-    ⟦ N ◂ γ ∷ K ⟧ᴷ k = \a → ⟦ N ⟧ᶜ (⟦ γ ⟧ᴱ , a) (⟦ K ⟧ᴷ k)
+    ⟦ N ◂ γ ∷ K ⟧ᴷ k = λ a → ⟦ N ⟧ᶜ (⟦ γ ⟧ᴱ , a) (⟦ K ⟧ᴷ k)
 
   ⟦_⟧ᶜᶠᵍ : Cfg X → (R ^ ⟦ X ⟧) → R
   ⟦ ⟨ M ∥ γ ∥ K ⟩ ⟧ᶜᶠᵍ k = ⟦ M ⟧ᶜ ⟦ γ ⟧ᴱ (⟦ K ⟧ᴷ k)

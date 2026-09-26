@@ -16,13 +16,13 @@ open import Inception.Monad.Base
 
 K[_]-Monad : ∀ {v x} → (V : Set v) → Monad {x = x} {y = v ⊔ x} K[ V ]
 K[ V ]-Monad .η a k = k a
-K[ V ]-Monad ._* f m k = m \a → f a k
+K[ V ]-Monad ._* f m k = m λ a → f a k
 K[ V ]-Monad .unitl a = refl
 K[ V ]-Monad .unitr f = refl
 K[ V ]-Monad .assoc f g = refl
 
 τ : ∀ {v x} → {V : Set v} {X Y : Set x} → X × K[ V ] Y → K[ V ] (X × Y)
-τ (x , ky) k = ky \z → k (x , z)
+τ (x , ky) k = ky λ z → k (x , z)
 
 cbv : ∀ {v x} → {V : Set v} {X Y : Set x} → (X → K[ V ] Y) → V ^ (V ^ Y × X)
 cbv f (k , x) = f x k

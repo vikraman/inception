@@ -17,6 +17,8 @@ pairs = ["VW", "MN", "KL", "𝐕𝐖", "θφ", "πδ", "XY", "ΓΔ"]
 # rule levels
 [rules]
 asciiArrow = "error"
+asciiLambda = "error"
+patternLambda = "error"
 asciiSubscript = "error"
 prime = "error"
 prefixType = "error"

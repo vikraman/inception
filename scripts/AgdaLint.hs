@@ -76,6 +76,8 @@ data Level = Error | Warning | Off
 
 data RuleId
   = AsciiArrow
+  | AsciiLambda
+  | PatternLambda
   | AsciiSubscript
   | Prime
   | PrefixType
@@ -126,6 +128,8 @@ ruleName = camelName
 rule :: RuleId -> Rule
 rule r = case r of
   AsciiArrow -> Rule r Error "use → instead of ->" checkAsciiArrow
+  AsciiLambda -> Rule r Error "use λ instead of \\" checkAsciiLambda
+  PatternLambda -> Rule r Error "lambdas that match on patterns use λ { (…) → … }" checkPatternLambda
   AsciiSubscript -> Rule r Error "use unicode subscripts (V₁) instead of ascii digits (V1)" checkAsciiSubscript
   Prime -> Rule r Error "no primes on single-letter variables (Γ', σ'')" checkPrime
   PrefixType -> Rule r Error "write types that have a syntax declaration in their notation" checkPrefixType
@@ -708,6 +712,41 @@ replaceTok t = ReplaceSpan (tokPos t) (T.length (tokText t))
 checkAsciiArrow :: Context -> SourceFile -> [Finding]
 checkAsciiArrow _ f =
   [fixed (tokPos t) "use → instead of ->" (replaceTok t "→") | l <- codeLines f, t <- wordsOf l, tokText t == "->"]
+
+checkAsciiLambda :: Context -> SourceFile -> [Finding]
+checkAsciiLambda _ f =
+  [ fixed (tokPos t) "use λ instead of \\" (ReplaceSpan (tokPos t) 1 (if spaced then "λ" else "λ "))
+  | l <- codeLines f
+  , t <- wordsOf l
+  , "\\" `T.isPrefixOf` tokText t
+  , let spaced = maybe True (isSpace . fst) (T.uncons (T.drop (posCol (tokPos t) + 1) (lineText l)))
+  ]
+
+checkPatternLambda :: Context -> SourceFile -> [Finding]
+checkPatternLambda _ f =
+  [ finding (tokPos p) "use a pattern-matching lambda: λ { (…) → … }"
+  | l <- codeLines f
+  , lam : rest <- List.tails (codeTokens l)
+  , tokText lam == "λ"
+  , take 1 (map tokText rest) /= ["{"]
+  , p <- patterns (takeWhile ((/= "→") . tokText) rest)
+  ]
+  where
+    -- parenthesised binders without a type are patterns; () is the absurd lambda
+    patterns (t : ts)
+      | tokKind t == Delim, tokText t == "(" =
+          let (inside, after) = group (1 :: Int) [] ts
+           in [t | not (null inside), ":" `notElem` map tokText inside] ++ patterns after
+      -- an unmatched closer ends the lambda
+      | tokText t `elem` [")", "}", ";"] = []
+      | otherwise = patterns ts
+    patterns [] = []
+    group _ acc [] = (reverse acc, [])
+    group d acc (t : ts)
+      | tokText t == ")" && d == 1 = (reverse acc, ts)
+      | tokText t == ")" = group (d - 1) (t : acc) ts
+      | tokText t == "(" = group (d + 1) (t : acc) ts
+      | otherwise = group d (t : acc) ts
 
 checkAsciiSubscript :: Context -> SourceFile -> [Finding]
 checkAsciiSubscript ctx f =

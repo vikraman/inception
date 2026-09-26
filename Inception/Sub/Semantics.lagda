@@ -123,7 +123,7 @@ mutual
     let w = evalVal W γ in
       evalComp M (((γ , proj₁ w) , proj₂ w) , k)
   evalComp (push M N) (γ , k) =
-    evalComp M (γ , \a →
+    evalComp M (γ , λ a →
       evalComp N ((γ , a) , k))
   evalComp (app V W) (γ , k) =
     let w₁ = evalVal V γ in
@@ -171,7 +171,7 @@ sub-wk-coh π (sub-ex θ W) rewrite sub-wk-coh π θ | wk-val-coh π W = refl
 
 sub-id-coh : ⟦ sub-id {Γ} ⟧ˢ ≡ id
 sub-id-coh {ε} = refl
-sub-id-coh {Γ ∙ X} = funext \(γ , x) → cong₂ _,_ (happly sub-id-coh γ) refl
+sub-id-coh {Γ ∙ X} = funext λ { (γ , x) → cong₂ _,_ (happly sub-id-coh γ) refl }
 {-# REWRITE sub-id-coh #-}
 
 mutual

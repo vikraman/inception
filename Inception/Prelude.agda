@@ -33,7 +33,7 @@ module _ where
       I-rec-seg : ∀ {p₀} {p₁} {p} → cong (I-rec p₀ p₁ p) seg ≡ p
 
 funext : ∀ {a b} {A : Set a} {B : Set b} {f g : A → B} → ((x : A) → f x ≡ g x) → f ≡ g
-funext {f = f} {g = g} H = cong (flip \a → I-rec (f a) (g a) (H a)) seg
+funext {f = f} {g = g} H = cong (flip λ a → I-rec (f a) (g a) (H a)) seg
 
 happly : ∀ {a b} {A : Set a} {B : Set b} {f g : A → B} → f ≡ g → (x : A) → f x ≡ g x
 happly p x = cong (_$ x) p
@@ -41,8 +41,8 @@ happly p x = cong (_$ x) p
 happly-funext : ∀ {a b} {A : Set a} {B : Set b} {f g : A → B} (H : (x : A) → f x ≡ g x) → ∀ x → happly (funext H) x ≡ H x
 happly-funext {f = f} {g = g} H x =
   happly (funext H) x                                         ≡⟨ refl ⟩
-  cong (_$ x) (cong (flip \a → I-rec (f a) (g a) (H a)) seg) ≡⟨ sym (cong-∘ seg) ⟩
-  cong ((_$ x) ∘ (flip \a → I-rec (f a) (g a) (H a))) seg    ≡⟨ I-rec-seg ⟩
+  cong (_$ x) (cong (flip λ a → I-rec (f a) (g a) (H a)) seg) ≡⟨ sym (cong-∘ seg) ⟩
+  cong ((_$ x) ∘ (flip λ a → I-rec (f a) (g a) (H a))) seg    ≡⟨ I-rec-seg ⟩
   H x ∎
 
 -- categorical combinators
@@ -67,7 +67,7 @@ _^_ : ∀ {r a} (R : Set r) (A : Set a) → Set (r ⊔ a)
 R ^ A = A → R
 
 [_]^_ : ∀ {r a b} (R : Set r) {A : Set a} {B : Set b} → (A → B) → (R ^ B) → (R ^ A)
-[ R ]^ f = \k a → k (f a)
+[ R ]^ f = λ k a → k (f a)
 
 ev : ∀ {r a} {R : Set r} {A : Set a} → R ^ A × A → R
 ev (f , a) = f a
