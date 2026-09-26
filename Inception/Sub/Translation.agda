@@ -30,19 +30,19 @@ handleVal {A = A} n =
 
 ⟦_⟧ᶜ : SΓ S.⊢ᶜ SA -> ⟦ SΓ ⟧ˣ ⊢ᵗ ⟦ SA ⟧ ∣ L.Δ
 
-⟦_⟧ᵖ : SΓ S.⊢ᵖ SA -> ⟦ SΓ ⟧ˣ ⊢ᵛ ⟦ SA ⟧ ∣ L.Δ
-⟦ S.var i ⟧ᵖ    = var ⟦ i ⟧ⁱ
-⟦ S.lam M ⟧ᵖ    = lam ⟦ M ⟧ᶜ
-⟦ S.pair V W ⟧ᵖ = pair ⟦ V ⟧ᵖ ⟦ W ⟧ᵖ
-⟦ S.unit ⟧ᵖ     = unit
+⟦_⟧ᵛ : SΓ S.⊢ᵛ SA -> ⟦ SΓ ⟧ˣ ⊢ᵛ ⟦ SA ⟧ ∣ L.Δ
+⟦ S.var i ⟧ᵛ    = var ⟦ i ⟧ⁱ
+⟦ S.lam M ⟧ᵛ    = lam ⟦ M ⟧ᶜ
+⟦ S.pair V W ⟧ᵛ = pair ⟦ V ⟧ᵛ ⟦ W ⟧ᵛ
+⟦ S.unit ⟧ᵛ     = unit
 
 ⟦_⟧ˢ : S.Sub SΓ SΔ -> L.Sub ⟦ SΓ ⟧ˣ L.Δ ⟦ SΔ ⟧ˣ
 ⟦ S.sub-ε ⟧ˢ      = L.sub-ε
-⟦ S.sub-ex θ V ⟧ˢ = L.sub-ex ⟦ θ ⟧ˢ ⟦ V ⟧ᵖ
+⟦ S.sub-ex θ V ⟧ˢ = L.sub-ex ⟦ θ ⟧ˢ ⟦ V ⟧ᵛ
 
-⟦ S.return V ⟧ᶜ = ret ⟦ V ⟧ᵖ
-⟦ S.pm V M ⟧ᶜ   = letpv ⟦ V ⟧ᵖ ⟦ M ⟧ᶜ
+⟦ S.return V ⟧ᶜ = ret ⟦ V ⟧ᵛ
+⟦ S.pm V M ⟧ᶜ   = letpv ⟦ V ⟧ᵛ ⟦ M ⟧ᶜ
 ⟦ S.push M N ⟧ᶜ = lett ⟦ M ⟧ᶜ ⟦ N ⟧ᶜ
-⟦ S.app V W ⟧ᶜ  = applyL ⟦ V ⟧ᵖ ⟦ W ⟧ᵖ
-⟦ S.var V ⟧ᶜ    = raise ⟦ V ⟧ᵖ
+⟦ S.app V W ⟧ᶜ  = applyL ⟦ V ⟧ᵛ ⟦ W ⟧ᵛ
+⟦ S.var V ⟧ᶜ    = raise ⟦ V ⟧ᵛ
 ⟦ S.sub M N ⟧ᶜ  = μ (cut _ (L.letv (handleVal ⟦ N ⟧ᶜ) ⟦ M ⟧ᶜ) (covar here))
