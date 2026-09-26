@@ -64,11 +64,11 @@ _↠ᵏ_ {Γ} {X} = _~>*_ (_→ᵏ_ {Γ = Γ} {X = X})
 --------------------------------------------------------------------------
 -- weakening a configuration
 
-wk-stk : {Γ₁ : Ctx} → Γ₁ ⊇ Γ → Γ ⊢ᵏ X ⇒ Y → Γ₁ ⊢ᵏ X ⇒ Y
+wk-stk : {Δ : Ctx} → Δ ⊇ Γ → Γ ⊢ᵏ X ⇒ Y → Δ ⊢ᵏ X ⇒ Y
 wk-stk π ε       = ε
 wk-stk π (N ∷ K) = wk-comp (wk-cong π) N ∷ wk-stk π K
 
-wk-cfg : {Γ₁ : Ctx} → Γ₁ ⊇ Γ → Cfg Γ X → Cfg Γ₁ X
+wk-cfg : {Δ : Ctx} → Δ ⊇ Γ → Cfg Γ X → Cfg Δ X
 wk-cfg π ⟨ M ∥ K ⟩ = ⟨ wk-comp π M ∥ wk-stk π K ⟩
 
 --------------------------------------------------------------------------
@@ -82,7 +82,7 @@ Redᵛ : (X : Ty) → Γ ⊢ᵛ X → Set
 Redᶜ : (X : Ty) → Γ ⊢ᶜ X → Set
 
 Redᵛ `𝟙        V    = ⊤
-Redᵛ {Γ} (X `⇒ Y) V = ∀ {Γ₁} (π : Γ₁ ⊇ Γ) {W : Γ₁ ⊢ᵛ X} → Redᵛ X W → Redᶜ Y (app (wk-val π V) W)
+Redᵛ {Γ} (X `⇒ Y) V = ∀ {Δ} (π : Δ ⊇ Γ) {W : Δ ⊢ᵛ X} → Redᵛ X W → Redᶜ Y (app (wk-val π V) W)
 
 Redᶜ X M = SN ⟨ M ∥ ε ⟩ × (∀ {V} → ⟨ M ∥ ε ⟩ ↠ᵏ ⟨ return V ∥ ε ⟩ → Redᵛ X V)
 
@@ -140,7 +140,7 @@ Red-varᵛ (X `⇒ Y) i = λ π {W} rw → sn (λ ()) , λ { (_ ~>⟨ () ⟩ s) 
 --------------------------------------------------------------------------
 -- weakening/substitution preserves reducibility
 
-Red-wk : (X : Ty) {Γ₁ : Ctx} (π : Γ₁ ⊇ Γ) {V : Γ ⊢ᵛ X} → Redᵛ X V → Redᵛ X (wk-val π V)
+Red-wk : (X : Ty) {Δ : Ctx} (π : Δ ⊇ Γ) {V : Γ ⊢ᵛ X} → Redᵛ X V → Redᵛ X (wk-val π V)
 Red-wk `𝟙    π r = tt
 Red-wk (X `⇒ Y) π {V} f δ {W} redW =
   Eq.subst (Redᶜ Y)
@@ -155,7 +155,7 @@ record RedSub (θ : Γ ⊢ Δ) : Set where
   field red : (i : Δ ∋ X) → Redᵛ X (sub-mem θ i)
 open RedSub
 
-RedSub-wk : {Γ₁ : Ctx} (ρ : Γ₁ ⊇ Γ) {θ : Γ ⊢ Δ} → RedSub θ → RedSub (sub-wk ρ θ)
+RedSub-wk : {Ψ : Ctx} (ρ : Ψ ⊇ Γ) {θ : Γ ⊢ Δ} → RedSub θ → RedSub (sub-wk ρ θ)
 red (RedSub-wk ρ {θ} rθ) {X = X} i =
   Eq.subst (Redᵛ X)
            (begin
