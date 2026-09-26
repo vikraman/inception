@@ -2,12 +2,12 @@
 {- cabal:
 build-depends:
   , base                  >=4.20
-  , containers
-  , directory
-  , filepath
+  , containers            >=0.7
+  , directory             >=1.3.8
+  , filepath              >=1.5
   , generic-data          >=1.1
   , Glob                  >=0.10
-  , megaparsec            >=9.6
+  , megaparsec            >=9.7
   , optparse-generic      >=1.5
   , text                  >=2.1.2
   , toml-parser           >=2.0
@@ -16,7 +16,7 @@ default-extensions: DuplicateRecordFields, OverloadedStrings
 ghc-options: -O1 -Wall -Wextra -Wcompat
 -}
 {- project:
-index-state: 2026-09-01T00:00:00Z
+index-state: 2026-09-26T00:00:00Z
 -}
 
 -- agda style linter
