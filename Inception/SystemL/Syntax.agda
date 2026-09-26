@@ -8,7 +8,7 @@ open Eq.≡-Reasoning
 infixr 25 _`⇒_
 
 data Ty : Set where
-  `⊥ `Unit `P : Ty
+  `⊥ `𝟙 `P : Ty
   _`×_ _`⇒_ _`+_ : (X : Ty) -> (Y : Ty) -> Ty
 
 infixr 30 ¬_
@@ -51,7 +51,7 @@ data Val where
 
   unit :
        -----------------
-         Γ ⊢ᵛ `Unit ∣ Δ
+         Γ ⊢ᵛ `𝟙 ∣ Δ
 
   pair : Γ ⊢ᵛ X ∣ Δ -> Γ ⊢ᵛ Y ∣ Δ
        ---------------------------
@@ -289,9 +289,9 @@ data EqVal Γ Δ where
 
   -- eta rules
 
-  unit-eta : (V : Γ ⊢ᵛ `Unit ∣ Δ)
+  unit-eta : (V : Γ ⊢ᵛ `𝟙 ∣ Δ)
            --------------------------
-           -> Γ ⊢ᵛ V ≈ unit ∶ `Unit ∣ Δ
+           -> Γ ⊢ᵛ V ≈ unit ∶ `𝟙 ∣ Δ
 
   lam-eta : (V : Γ ⊢ᵛ X `⇒ Y ∣ Δ)
           -----------------------------------------------------------------------------------

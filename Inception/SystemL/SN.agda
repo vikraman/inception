@@ -50,8 +50,8 @@ data SN {Γ Δ} (C : Γ ⊢ Δ) : Set where
 Redᵛ  : (X : Ty) {Γ Δ : Ctx} → Γ ⊢ᵛ X ∣ Δ → Set
 CoRedᵏ : (X : Ty) {Γ Δ : Ctx} → Γ ∣ X ⊢ᵏ Δ → Set
 
-Redᵛ `⊥        V              = ⊤
-Redᵛ `Unit     V              = ⊤
+Redᵛ `⊥        V = ⊤
+Redᵛ `𝟙     V    = ⊤
 Redᵛ `P       V              = ⊤
 Redᵛ (X `× Y)  (var i)    = ⊤
 Redᵛ (X `× Y)  (pair V W) = Redᵛ X V × Redᵛ Y W
@@ -79,7 +79,7 @@ CoRedᵏ (X `⇒ Y)  (app V K)  = Redᵛ X V × CoRedᵏ Y K
 Red-wk : (X : Ty) {Γ Δ Γ₁ Δ₁ : Ctx} (π : Γ₁ ⊇ Γ) (ρ : Δ₁ ⊇ Δ) {V : Γ ⊢ᵛ X ∣ Δ}
        → Redᵛ X V → Redᵛ X (wk-val π ρ V)
 Red-wk `⊥        π ρ r = tt
-Red-wk `Unit     π ρ r = tt
+Red-wk `𝟙     π ρ r    = tt
 Red-wk `P       π ρ r = tt
 Red-wk (X `× Y) π ρ {V = var i}    r        = tt
 Red-wk (X `× Y) π ρ {V = pair V W} (rv , rw) = Red-wk X π ρ rv , Red-wk Y π ρ rw
@@ -116,9 +116,9 @@ Ortho : {X : Ty} {Γ Δ : Ctx} {V : Γ ⊢ᵛ X ∣ Δ} {K : Γ ∣ X ⊢ᵏ Δ}
 Ortho {X} {V = var i} {K = covar j} rv rk = sn λ ()
 Ortho {`⊥} {V = var i} {K = μ̃ C} rv rk = Ortho-μ̃ rv rk
 Ortho {`⊥} {V = var i} {K = tp} rv rk = sn λ ()
-Ortho {`Unit} {V = var i} {K = μ̃ C} rv rk = Ortho-μ̃ rv rk
-Ortho {`Unit} {V = unit} {K = covar i} rv rk = sn λ ()
-Ortho {`Unit} {V = unit} {K = μ̃ C} rv rk = Ortho-μ̃ rv rk
+Ortho {`𝟙} {V = var i} {K = μ̃ C} rv rk = Ortho-μ̃ rv rk
+Ortho {`𝟙} {V = unit} {K = covar i} rv rk = sn λ ()
+Ortho {`𝟙} {V = unit} {K = μ̃ C} rv rk = Ortho-μ̃ rv rk
 Ortho {`P} {V = var i} {K = μ̃ C} rv rk = Ortho-μ̃ rv rk
 Ortho {X `× Y} {V = var i} {K = fst K} rv rk = sn λ ()
 Ortho {X `× Y} {V = var i} {K = snd K} rv rk = sn λ ()
@@ -205,7 +205,7 @@ Fundamental-cotm θ φ rθ rφ tp          = tt
 
 Red-var-triv : (X : Ty) {Γ : Ctx} (Δ : Ctx) (i : Γ ∋ X) → Redᵛ X (var {Δ = Δ} i)
 Red-var-triv `⊥        Δ i = tt
-Red-var-triv `Unit     Δ i = tt
+Red-var-triv `𝟙     Δ i    = tt
 Red-var-triv `P       Δ i = tt
 Red-var-triv (X `× Y)  Δ i = tt
 Red-var-triv (X `+ Y)  Δ i = tt
@@ -247,8 +247,8 @@ step? (cut (X `× Y) (ret (var i)) (snd K)) = done (λ ())
 step? (cut (X `+ Y) (ret (var i)) (case K L)) = done (λ ())
 step? (cut (X `⇒ Y) (ret (var i)) (app V K))  = done (λ ())
 
-step? (cut `Unit (ret unit) (covar j)) = done (λ ())
-step? (cut `Unit (ret unit) (μ̃ C))     = next μ̃-step
+step? (cut `𝟙 (ret unit) (covar j)) = done (λ ())
+step? (cut `𝟙 (ret unit) (μ̃ C))     = next μ̃-step
 
 step? (cut (X `× Y) (ret (pair V W)) (covar j)) = done (λ ())
 step? (cut (X `× Y) (ret (pair V W)) (fst K))   = next fst-step

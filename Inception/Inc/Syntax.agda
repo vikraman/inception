@@ -6,7 +6,7 @@ infixr 40 _`×_
 infixr 25 _`⇒_
 
 data Ty : Set where
-  `Unit : Ty
+  `𝟙 : Ty
   _`×_ _`⇒_ : Ty -> Ty -> Ty
   `V `P : Ty
 
@@ -36,7 +36,7 @@ data Val where
 
   unit :
        -----------
-        Γ ⊢ᵛ `Unit
+        Γ ⊢ᵛ `𝟙
 
 data Comp where
 
@@ -167,9 +167,9 @@ data EqVal Γ where
 
   -- beta/eta rules
 
-  unit-eta : (V : Γ ⊢ᵛ `Unit)
+  unit-eta : (V : Γ ⊢ᵛ `𝟙)
            ------------------------
-           -> Γ ⊢ᵛ V ≈ unit ∶ `Unit
+           -> Γ ⊢ᵛ V ≈ unit ∶ `𝟙
 
   lam-eta : (V : Γ ⊢ᵛ A `⇒ B)
           ---------------------------

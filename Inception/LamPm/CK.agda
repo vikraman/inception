@@ -181,14 +181,14 @@ graft (W pmᵛ∷ L) K = W pmᵛ∷ graft L K
 Redᵛ : (A : Ty) → Γ ⊢ᵛ A → Set
 Redᶜ : (A : Ty) → Γ ⊢ᶜ A → Set
 
-Redᵛ `Unit       V = SN [ V ∥ ε ]
+Redᵛ `𝟙       V    = SN [ V ∥ ε ]
 Redᵛ (A `× B)    V = SN [ V ∥ ε ] × (∀ {V₁ V₂} → [ V ∥ ε ] ↠ᵏ [ pair V₁ V₂ ∥ ε ] → Redᵛ A V₁ × Redᵛ B V₂)
 Redᵛ {Γ} (A `⇒ B) V = SN [ V ∥ ε ] × (∀ {Γ₁} (π : Γ₁ ⊇ Γ) {W : Γ₁ ⊢ᵛ A} → Redᵛ A W → Redᶜ B (app (wk-val π V) W))
 
 Redᶜ A M = SN ⟨ M ∥ ε ⟩ × (∀ {V} → ⟨ M ∥ ε ⟩ ↠ᵏ ⟨ return V ∥ ε ⟩ → Redᵛ A V)
 
 Red→SNᵛ : (A : Ty) (V : Γ ⊢ᵛ A) → Redᵛ A V → SN [ V ∥ ε ]
-Red→SNᵛ `Unit    V r = r
+Red→SNᵛ `𝟙    V r    = r
 Red→SNᵛ (A `× B) V r = proj₁ r
 Red→SNᵛ (A `⇒ B) V r = proj₁ r
 
@@ -448,9 +448,9 @@ exp-app-pm {V = V} {W} {W₁} (snM , rtnM) =
   λ { (_ ~>⟨ app-pm-step ⟩ rest) → rtnM rest }
 
 Red-varᵛ : (A : Ty) (i : Γ ∋ A) → Redᵛ A (var i)
-Red-varᵛ `Unit    i           = sn (λ ())
-Red-varᵛ (A `× B) i           = sn (λ ()) , λ { (_ ~>⟨ () ⟩ _) }
-Red-varᵛ (A `⇒ B) i           = sn (λ ()) , λ π {W} rw → sn (λ ()) , λ { (_ ~>⟨ () ⟩ _) }
+Red-varᵛ `𝟙    i    = sn (λ ())
+Red-varᵛ (A `× B) i = sn (λ ()) , λ { (_ ~>⟨ () ⟩ _) }
+Red-varᵛ (A `⇒ B) i = sn (λ ()) , λ π {W} rw → sn (λ ()) , λ { (_ ~>⟨ () ⟩ _) }
 
 --------------------------------------------------------------------------
 -- weakening preserves reducibility
@@ -477,7 +477,7 @@ pair-cfg-inv π {σ₁ = [ pm V W ∥ K ]}          ()
 pair-cfg-inv π {σ₁ = [ unit ∥ K ]}            ()
 
 Red-wk : (A : Ty) {Γ₁ : Ctx} (π : Γ₁ ⊇ Γ) {V : Γ ⊢ᵛ A} → Redᵛ A V → Redᵛ A (wk-val π V)
-Red-wk `Unit    π r          = SN-wk π r
+Red-wk `𝟙    π r          = SN-wk π r
 Red-wk (A `× B) π {V} (snV , f) = SN-wk π snV , g
   where
   g : ∀ {W₁ W₂} → [ wk-val π V ∥ ε ] ↠ᵏ [ pair W₁ W₂ ∥ ε ] → Redᵛ A W₁ × Redᵛ B W₂
@@ -504,13 +504,13 @@ exp-pm-val : (C : Ty) {V : Γ ⊢ᵛ X `× Y} {W : (Γ ∙ X ∙ Y) ⊢ᵛ C}
            → Redᵛ (X `× Y) V
            → (∀ {Γ₁} (π : Γ₁ ⊇ Γ) {V₁ V₂} → Redᵛ X V₁ → Redᵛ Y V₂ → Redᵛ C (sub-val (sub-ex (sub-ex sub-id V₁) V₂) (wk-val (wk-cong (wk-cong π)) W)))
            → Redᵛ C (pm V W)
-exp-pm-val {Γ} {X} {Y} `Unit {V} {W} redV H =
+exp-pm-val {Γ} {X} {Y} `𝟙 {V} {W} redV H =
   sn (λ { pm-val-step →
     SN-ext-pmᵛ∷-V (Red→SNᵛ _ V redV) (proj₂ redV)
-      (λ redV₁ redV₂ → Red→SNᵛ `Unit _ (H₀ redV₁ redV₂)) })
+      (λ redV₁ redV₂ → Red→SNᵛ `𝟙 _ (H₀ redV₁ redV₂)) })
   where
-  H₀ : ∀ {V₁ V₂} → Redᵛ X V₁ → Redᵛ Y V₂ → Redᵛ `Unit (sub-val (sub-ex (sub-ex sub-id V₁) V₂) W)
-  H₀ {V₁} {V₂} redV₁ redV₂ = Eq.subst (Redᵛ `Unit) (cong (sub-val (sub-ex (sub-ex sub-id V₁) V₂)) (wk-val-id W)) (H wk-id redV₁ redV₂)
+  H₀ : ∀ {V₁ V₂} → Redᵛ X V₁ → Redᵛ Y V₂ → Redᵛ `𝟙 (sub-val (sub-ex (sub-ex sub-id V₁) V₂) W)
+  H₀ {V₁} {V₂} redV₁ redV₂ = Eq.subst (Redᵛ `𝟙) (cong (sub-val (sub-ex (sub-ex sub-id V₁) V₂)) (wk-val-id W)) (H wk-id redV₁ redV₂)
 exp-pm-val {Γ} {X} {Y} (C₁ `× C₂) {V} {W} redV H =
   sn (λ { pm-val-step →
     SN-ext-pmᵛ∷-V (Red→SNᵛ _ V redV) (proj₂ redV)

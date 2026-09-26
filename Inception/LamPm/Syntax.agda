@@ -13,7 +13,7 @@ infixr 40 _`×_
 infixr 25 _`⇒_
 
 data Ty : Set where
-  `Unit : Ty
+  `𝟙 : Ty
   _`×_  : Ty -> Ty -> Ty
   _`⇒_  : Ty -> Ty -> Ty
 
@@ -33,7 +33,7 @@ data Val where
   lam  : (Γ ∙ A) ⊢ᶜ B -> Γ ⊢ᵛ A `⇒ B
   pair : Γ ⊢ᵛ A -> Γ ⊢ᵛ B -> Γ ⊢ᵛ A `× B
   pm   : Γ ⊢ᵛ A `× B -> (Γ ∙ A ∙ B) ⊢ᵛ C -> Γ ⊢ᵛ C
-  unit : Γ ⊢ᵛ `Unit
+  unit : Γ ⊢ᵛ `𝟙
 
 data Comp where
   return : Γ ⊢ᵛ A -> Γ ⊢ᶜ A

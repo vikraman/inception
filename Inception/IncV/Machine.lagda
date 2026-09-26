@@ -40,7 +40,7 @@ mutual
 
     unitᵛ :
               -------------------
-              MVal {Z₀ = Z₀} `Unit
+              MVal {Z₀ = Z₀} `𝟙
 
     datᵛ :    (N : ℕ)
               -------------------
@@ -202,7 +202,7 @@ data SN {Z₀ : Ty} (σ : CState {Z₀ = Z₀}) : Set where
 Rᵛ : {Z₀ : Ty} → (X : Ty) → MVal {Z₀ = Z₀} X → Set
 Rᵏ : {Z₀ : Ty} → (X : Ty) → CStack {Z₀ = Z₀} X → Set
 
-Rᵛ `Unit unitᵛ = ⊤
+Rᵛ `𝟙 unitᵛ = ⊤
 Rᵛ (X `× Y) (pairᵛ 𝐕 𝐖) = Rᵛ X 𝐕 × Rᵛ Y 𝐖
 Rᵛ {Z₀ = Z₀} (X `⇒ Y) (cloᵛ M γ) = ∀ {𝐖 : MVal {Z₀ = Z₀} X} → Rᵛ X 𝐖 → ∀ {K : CStack {Z₀ = Z₀} Y} → Rᵏ Y K → SN ⟨ M ╎ γ · 𝐖 ╎ K ⟩
 Rᵛ {Z₀ = Z₀} `L (jumpᵛ M γ K) = ∀ {𝐖 : MVal {Z₀ = Z₀} `P} → SN ⟨ M ╎ γ · 𝐖 ╎ K ⟩

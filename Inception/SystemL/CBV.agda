@@ -22,7 +22,7 @@ open Monad T public
 
 ⟦_⟧ : Ty -> Set
 ⟦ `⊥ ⟧ = R
-⟦ `Unit ⟧ = ⊤
+⟦ `𝟙 ⟧ = ⊤
 ⟦ `P ⟧ = P
 ⟦ X `× Y ⟧ = ⟦ X ⟧ × ⟦ Y ⟧
 ⟦ X `⇒ Y ⟧ = ⟦ X ⟧ -> K ⟦ Y ⟧

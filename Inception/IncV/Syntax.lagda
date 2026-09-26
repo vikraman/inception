@@ -21,7 +21,7 @@ infixr 40 _`×_
 infixr 25 _`⇒_
 
 data Ty : Set where
-  `Unit : Ty
+  `𝟙 : Ty
   _`×_ _`⇒_ : Ty → Ty → Ty
   `L `P : Ty
 
@@ -55,7 +55,7 @@ data Val where
 
   unit :
           -----------
-          Γ ⊢ᵛ `Unit
+          Γ ⊢ᵛ `𝟙
 
 
   dat :   (N : ℕ)

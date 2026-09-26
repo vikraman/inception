@@ -12,7 +12,7 @@ open Eq.≡-Reasoning
 infixr 25 _`⇒_
 
 data Ty : Set where
-  `Unit : Ty
+  `𝟙 : Ty
   _`⇒_  : Ty -> Ty -> Ty
 
 open import Inception.Ctx Ty public
@@ -29,7 +29,7 @@ data Comp : Ctx -> Ty -> Set
 data Val where
   var  : (i : Γ ∋ A) -> Γ ⊢ᵛ A
   lam  : (Γ ∙ A) ⊢ᶜ B -> Γ ⊢ᵛ A `⇒ B
-  unit : Γ ⊢ᵛ `Unit
+  unit : Γ ⊢ᵛ `𝟙
 
 data Comp where
   return : Γ ⊢ᵛ A -> Γ ⊢ᶜ A

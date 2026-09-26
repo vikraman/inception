@@ -8,10 +8,10 @@ variable
   SA : S.Ty
 
 ⟦_⟧ : S.Ty -> L.Ty
-⟦ `𝟙 ⟧  = `Unit
+⟦ `𝟙 ⟧  = `𝟙
 ⟦ A `× B ⟧ = ⟦ A ⟧ `× ⟦ B ⟧
 ⟦ A `⇒ B ⟧ = ⟦ A ⟧ `⇒ ⟦ B ⟧
-⟦ `ℓ ⟧     = `Unit `⇒ `⊥
+⟦ `ℓ ⟧     = `𝟙 `⇒ `⊥
 
 ⟦_⟧ˣ : S.Ctx -> L.Ctx
 ⟦ S.ε ⟧ˣ     = ε
@@ -21,10 +21,10 @@ variable
 ⟦ S.here ⟧ⁱ   = here
 ⟦ S.there i ⟧ⁱ = there ⟦ i ⟧ⁱ
 
-raise : L.Γ ⊢ᵛ (`Unit `⇒ `⊥) ∣ L.Δ -> L.Γ ⊢ᵗ L.A ∣ L.Δ
+raise : L.Γ ⊢ᵛ (`𝟙 `⇒ `⊥) ∣ L.Δ -> L.Γ ⊢ᵗ L.A ∣ L.Δ
 raise ref = efq (applyL ref unit)
 
-handleVal : L.Γ ⊢ᵗ L.A ∣ L.Δ -> L.Γ ⊢ᵛ (`Unit `⇒ `⊥) ∣ (L.Δ ∙ L.A)
+handleVal : L.Γ ⊢ᵗ L.A ∣ L.Δ -> L.Γ ⊢ᵛ (`𝟙 `⇒ `⊥) ∣ (L.Δ ∙ L.A)
 handleVal {A = A} n =
   lam (μ (cut A (wk-tm (L.wk-wk L.wk-id) (L.wk-wk (L.wk-wk L.wk-id)) n) (covar (there here))))
 

@@ -81,7 +81,7 @@ graft (N ∷ L) K  = N ∷ graft L K
 Redᵛ : (A : Ty) → Γ ⊢ᵛ A → Set
 Redᶜ : (A : Ty) → Γ ⊢ᶜ A → Set
 
-Redᵛ `Unit        V = ⊤
+Redᵛ `𝟙        V    = ⊤
 Redᵛ {Γ} (A `⇒ B) V = ∀ {Γ₁} (π : Γ₁ ⊇ Γ) {W : Γ₁ ⊢ᵛ A} → Redᵛ A W → Redᶜ B (app (wk-val π V) W)
 
 Redᶜ A M = SN ⟨ M ∥ ε ⟩ × (∀ {V} → ⟨ M ∥ ε ⟩ ↠ᵏ ⟨ return V ∥ ε ⟩ → Redᵛ A V)
@@ -134,14 +134,14 @@ exp-app-lam {N = N} {V} (snN , rtnN) =
   λ { (_ ~>⟨ app-lam-step ⟩ rest) → rtnN rest }
 
 Red-varᵛ : (A : Ty) (i : Γ ∋ A) → Redᵛ A (var i)
-Red-varᵛ `Unit    i = tt
+Red-varᵛ `𝟙    i    = tt
 Red-varᵛ (A `⇒ B) i = λ π {W} rw → sn (λ ()) , λ { (_ ~>⟨ () ⟩ s) }
 
 --------------------------------------------------------------------------
 -- weakening/substitution preserves reducibility
 
 Red-wk : (A : Ty) {Γ₁ : Ctx} (π : Γ₁ ⊇ Γ) {V : Γ ⊢ᵛ A} → Redᵛ A V → Redᵛ A (wk-val π V)
-Red-wk `Unit    π r = tt
+Red-wk `𝟙    π r = tt
 Red-wk (A `⇒ B) π {V} f δ {W} redW =
   Eq.subst (Redᶜ B)
            (begin

@@ -15,7 +15,7 @@ infixl 20 _∷_
 
 mutual
   data MVal : Ty → Set where
-    unit : MVal `Unit
+    unit : MVal `𝟙
     pair : MVal A → MVal B → MVal (A `× B)
     clo  : {Γ : Ctx} → (Γ ∙ A) ⊢ᶜ B → Env Γ → MVal (A `⇒ B)
 
@@ -101,7 +101,7 @@ data SN {B} (σ : Cfg B) : Set where
 Redᵛ : (A : Ty) → MVal A → Set
 Redᵏ : (A : Ty) → Kont A B → Set
 
-Redᵛ `Unit    𝐕 = ⊤
+Redᵛ `𝟙    𝐕    = ⊤
 Redᵛ (A `× B) 𝐕 = Redᵛ A (fst-v 𝐕) × Redᵛ B (snd-v 𝐕)
 Redᵛ (A `⇒ B) 𝐕 = ∀ {𝐖} → Redᵛ A 𝐖 → ∀ {C} {K : Kont B C} → Redᵏ B K → SN (apply 𝐕 𝐖 K)
 
@@ -177,7 +177,7 @@ eval M = eval-acc (SN-theorem M)
 
 open import Relation.Binary.PropositionalEquality
 
-_ : eval (pm (pair unit unit) (return (lam {A = `Unit} (return (var here)))))
+_ : eval (pm (pair unit unit) (return (lam {A = `𝟙} (return (var here)))))
        ≡ ([ clo (return (var here)) (∅ ∷ unit ∷ unit) ∥ ε ] ,
           _ ~>⟨ pm-step ⟩ _ ~>⟨ return-step ⟩ _ ◼ , (λ ()))
 _ = refl

@@ -25,7 +25,7 @@ incK : {X : Set} -> (R ^ ℙ -> K X) × (ℙ -> K X) -> K X
 incK (f , g) k = f (\p -> g p k) k
 
 ⟦_⟧ : Ty -> Set
-⟦ `Unit ⟧ = ⊤
+⟦ `𝟙 ⟧ = ⊤
 ⟦ A `× B ⟧ = ⟦ A ⟧ × ⟦ B ⟧
 ⟦ A `⇒ B ⟧ = ⟦ A ⟧ -> K ⟦ B ⟧
 ⟦ `V ⟧ = ℙ -> R

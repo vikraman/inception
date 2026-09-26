@@ -13,7 +13,7 @@ open Inception.Prelude.RTC
 
 mutual
   data MVal : Ty → Set where
-    unit : MVal `Unit
+    unit : MVal `𝟙
     clo  : {Γ : Ctx} → (Γ ∙ A) ⊢ᶜ B → Env Γ → MVal (A `⇒ B)
 
   data Env : Ctx → Set where
@@ -84,7 +84,7 @@ data SN {B} (σ : Cfg B) : Set where
 Redᵛ : (A : Ty) → MVal A → Set
 Redᵏ : (A : Ty) → Kont A B → Set
 
-Redᵛ `Unit    𝐕 = ⊤
+Redᵛ `𝟙    𝐕    = ⊤
 Redᵛ (A `⇒ B) 𝐕 = ∀ {𝐖} → Redᵛ A 𝐖 → ∀ {C} {K : Kont B C} → Redᵏ B K → SN (apply 𝐕 𝐖 K)
 
 Redᵏ A K = ∀ {𝐕} → Redᵛ A 𝐕 → SN ⟨ 𝐕 ∥ K ⟩

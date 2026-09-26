@@ -8,7 +8,7 @@ variable
   IA : I.Ty
 
 ⟦_⟧ : I.Ty -> L.Ty
-⟦ `Unit ⟧  = `Unit
+⟦ `𝟙 ⟧     = `𝟙
 ⟦ A `× B ⟧ = ⟦ A ⟧ `× ⟦ B ⟧
 ⟦ A `⇒ B ⟧ = ⟦ A ⟧ `⇒ ⟦ B ⟧
 ⟦ `P ⟧     = `P
