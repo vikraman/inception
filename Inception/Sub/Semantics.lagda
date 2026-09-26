@@ -40,8 +40,8 @@ open Monad (K[_]-Monad {x = 0ℓ} R) using (η; _*)
 
 ⟦_⟧ : Ty → Set
 ⟦ `𝟙 ⟧ = ⊤
-⟦ A `× B ⟧ = ⟦ A ⟧ × ⟦ B ⟧
-⟦ A `⇒ B ⟧ = ⟦ A ⟧ → K ⟦ B ⟧
+⟦ X `× Y ⟧ = ⟦ X ⟧ × ⟦ Y ⟧
+⟦ X `⇒ Y ⟧ = ⟦ X ⟧ → K ⟦ Y ⟧
 ⟦ `ℓ ⟧ = R
 
 \end{code}
@@ -93,7 +93,7 @@ push-sem-eq : (γ : ⟦ Γ ⟧ˣ) → (k : (⟦ X ⟧ → R)) → (M : Comp Γ Z
       (< idf , ⟦ M ⟧ᶜ > ； τ ； ⟦ N ⟧ᶜ *) γ k ≡ ⟦ M ⟧ᶜ γ (λ t → ((⟦ N ⟧ᶜ *) ∘ τ)  (γ , η t) k)
 push-sem-eq γ k M N = refl
 
-pm-sem-eq : (γ : ⟦ Γ ⟧ˣ) → (k : (⟦ X ⟧ → R)) → (W : Val Γ (X₁ `× X₂)) → (M : (Γ ∙ X₁ ∙ X₂) ⊢ᶜ X) →
+pm-sem-eq : (γ : ⟦ Γ ⟧ˣ) → (k : (⟦ X ⟧ → R)) → (W : Val Γ (Y `× Z)) → (M : (Γ ∙ Y ∙ Z) ⊢ᶜ X) →
       (< idf , ⟦ W ⟧ᵛ > ； assocl ； ⟦ M ⟧ᶜ) γ k ≡ ⟦ M ⟧ᶜ ((γ , proj₁ (⟦ W ⟧ᵛ γ)) , proj₂ (⟦ W ⟧ᵛ γ)) k
 pm-sem-eq γ k W M = refl
 
@@ -329,8 +329,8 @@ module TopLevel {ℛ : Ty} {k₀ : ⟦ ℛ ⟧ → R} where
   eval-jump-eq : (W : Val Γ `ℓ) → (γ : MEnv Γ) → ⟦ eval W γ ⟧ⱽ ≡ ⟦ jump-to-state (eval W γ) ⟧ᶜꟴ
   eval-jump-eq W γ = jump-eq (eval W γ)
 
-  clo-eq : (𝐖 : MVal (X `⇒ Y)) → (T : ⟦ X ⟧) → (E : ⟦ proj₁ (clo-to-comp 𝐖) ⟧ˣ) → (eq : E ≡ ⟦ proj₂ (proj₂ (clo-to-comp 𝐖)) ⟧ᴱ) → ⟦ 𝐖 ⟧ⱽ T ≡ ⟦ proj₁ (proj₂ (clo-to-comp 𝐖)) ⟧ᶜ (E , T)
-  clo-eq (cloᵛ M γ) T E eq = cong (λ x → curry ⟦ M ⟧ᶜ x T) (sym eq)
+  clo-eq : (𝐖 : MVal (X `⇒ Y)) → (T : ⟦ X ⟧) → (Z : ⟦ proj₁ (clo-to-comp 𝐖) ⟧ˣ) → (eq : Z ≡ ⟦ proj₂ (proj₂ (clo-to-comp 𝐖)) ⟧ᴱ) → ⟦ 𝐖 ⟧ⱽ T ≡ ⟦ proj₁ (proj₂ (clo-to-comp 𝐖)) ⟧ᶜ (Z , T)
+  clo-eq (cloᵛ M γ) T X eq = cong (λ x → curry ⟦ M ⟧ᶜ x T) (sym eq)
 
   proj₁-val-eq : (𝐖 : MVal (X `× Y)) → proj₁ ⟦ 𝐖 ⟧ⱽ ≡ ⟦ proj₁-val 𝐖 ⟧ⱽ
   proj₁-val-eq (pairᵛ 𝐕 𝐖) = refl

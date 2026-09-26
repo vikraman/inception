@@ -42,9 +42,9 @@ mutual
               -------------------
               MVal `𝟙
 
-    pairᵛ :   (𝐕 : MVal X₁) → (𝐖 : MVal X₂)
+    pairᵛ :   (𝐕 : MVal X) → (𝐖 : MVal Y)
               -------------------------------------------------
-              → MVal (X₁ `× X₂)
+              → MVal (X `× Y)
 
     cloᵛ :    {Γ : Ctx} → (M : Comp (Γ ∙ X) Y) → (γ : MEnv Γ)
               ----------------------------------------------------
@@ -132,10 +132,10 @@ eval-clo V W γ K =
   in
   ⟨ M ╎ γ₁ · eval W γ ╎ K  ⟩
 
-eval₁ : Val Γ (X₁ `× X₂) → MEnv Γ → MVal X₁
+eval₁ : Val Γ (X `× Y) → MEnv Γ → MVal X
 eval₁ W γ = proj₁-val (eval W γ)
 
-eval₂ : Val Γ (X₁ `× X₂) → MEnv Γ → MVal X₂
+eval₂ : Val Γ (X `× Y) → MEnv Γ → MVal Y
 eval₂ W γ = proj₂-val (eval W γ)
 \end{code}
 %</Eval>

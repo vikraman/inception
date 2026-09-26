@@ -26,21 +26,21 @@ incK (f , g) k = f (\p → g p k) k
 
 ⟦_⟧ : Ty → Set
 ⟦ `𝟙 ⟧ = ⊤
-⟦ A `× B ⟧ = ⟦ A ⟧ × ⟦ B ⟧
-⟦ A `⇒ B ⟧ = ⟦ A ⟧ → K ⟦ B ⟧
+⟦ X `× Y ⟧ = ⟦ X ⟧ × ⟦ Y ⟧
+⟦ X `⇒ Y ⟧ = ⟦ X ⟧ → K ⟦ Y ⟧
 ⟦ `ℓ ⟧ = ℙ → R
 ⟦ `𝓅 ⟧ = ℙ
 
 open Sem ⟦_⟧
 
 mutual
-  ⟦_⟧ᵛ : Γ ⊢ᵛ A → ⟦ Γ ⟧ˣ → ⟦ A ⟧
+  ⟦_⟧ᵛ : Γ ⊢ᵛ X → ⟦ Γ ⟧ˣ → ⟦ X ⟧
   ⟦ var i ⟧ᵛ = ⟦ i ⟧ᵐ
   ⟦ lam M ⟧ᵛ = curry ⟦ M ⟧ᶜ
   ⟦ pair V W ⟧ᵛ = < ⟦ V ⟧ᵛ , ⟦ W ⟧ᵛ >
   ⟦ unit ⟧ᵛ = const tt
 
-  ⟦_⟧ᶜ : Γ ⊢ᶜ A → ⟦ Γ ⟧ˣ → K ⟦ A ⟧
+  ⟦_⟧ᶜ : Γ ⊢ᶜ X → ⟦ Γ ⟧ˣ → K ⟦ X ⟧
   ⟦ return V ⟧ᶜ = ⟦ V ⟧ᵛ ； η
   ⟦ pm V M ⟧ᶜ = < idf , ⟦ V ⟧ᵛ > ； assocl ； ⟦ M ⟧ᶜ
   ⟦ push M N ⟧ᶜ = < idf , ⟦ M ⟧ᶜ > ； τ ； ⟦ N ⟧ᶜ *
@@ -49,7 +49,7 @@ mutual
   ⟦ inc M N ⟧ᶜ = < curry ⟦ M ⟧ᶜ , curry ⟦ N ⟧ᶜ > ； incK
 
 mutual
-  evalVal : Γ ⊢ᵛ A → ⟦ Γ ⟧ˣ → ⟦ A ⟧
+  evalVal : Γ ⊢ᵛ X → ⟦ Γ ⟧ˣ → ⟦ X ⟧
   evalVal (var i) γ =
     ⟦ i ⟧ᵐ γ
   evalVal (lam M) γ a =
@@ -58,7 +58,7 @@ mutual
     evalVal V γ , evalVal W γ
   evalVal unit γ = tt
 
-  evalComp :  Γ ⊢ᶜ A → ⟦ Γ ⟧ˣ × (⟦ A ⟧ → R) → R
+  evalComp :  Γ ⊢ᶜ X → ⟦ Γ ⟧ˣ × (⟦ X ⟧ → R) → R
   evalComp (return V) (γ , k) =
     let v = evalVal V γ in
       k v
@@ -86,13 +86,13 @@ mutual
 
 -- coherences
 mutual
-  wk-val-coh : (π : Γ ⊇ Δ) (V : Δ ⊢ᵛ A) → ⟦ wk-val π V ⟧ᵛ ≡ (⟦ π ⟧ʷ ； ⟦ V ⟧ᵛ)
+  wk-val-coh : (π : Γ ⊇ Δ) (V : Δ ⊢ᵛ X) → ⟦ wk-val π V ⟧ᵛ ≡ (⟦ π ⟧ʷ ； ⟦ V ⟧ᵛ)
   wk-val-coh π (var i) rewrite wk-mem-coh π i = refl
   wk-val-coh π (lam M) rewrite wk-comp-coh (wk-cong π) M = refl
   wk-val-coh π (pair V W) rewrite wk-val-coh π V | wk-val-coh π W = refl
   wk-val-coh π unit = refl
 
-  wk-comp-coh : (π : Γ ⊇ Δ) (M : Δ ⊢ᶜ A) → ⟦ wk-comp π M ⟧ᶜ ≡ (⟦ π ⟧ʷ ； ⟦ M ⟧ᶜ)
+  wk-comp-coh : (π : Γ ⊇ Δ) (M : Δ ⊢ᶜ X) → ⟦ wk-comp π M ⟧ᶜ ≡ (⟦ π ⟧ʷ ； ⟦ M ⟧ᶜ)
   wk-comp-coh π (return V) rewrite wk-val-coh π V = refl
   wk-comp-coh π (pm V M) rewrite wk-val-coh π V | wk-comp-coh (wk-cong (wk-cong π)) M = refl
   wk-comp-coh π (push M N) rewrite wk-comp-coh π M | wk-comp-coh (wk-cong π) N = refl
@@ -103,7 +103,7 @@ mutual
 {-# REWRITE wk-val-coh #-}
 {-# REWRITE wk-comp-coh #-}
 
-sub-mem-coh : (θ : Sub Γ Δ) (i : Δ ∋ A) → ⟦ sub-mem θ i ⟧ᵛ ≡ (⟦ θ ⟧ˢ ； ⟦ i ⟧ᵐ)
+sub-mem-coh : (θ : Sub Γ Δ) (i : Δ ∋ X) → ⟦ sub-mem θ i ⟧ᵛ ≡ (⟦ θ ⟧ˢ ； ⟦ i ⟧ᵐ)
 sub-mem-coh (sub-ex θ V) here = refl
 sub-mem-coh (sub-ex θ V) (there i) rewrite sub-mem-coh θ i = refl
 {-# REWRITE sub-mem-coh #-}
@@ -115,17 +115,17 @@ sub-wk-coh π (sub-ex θ V) rewrite sub-wk-coh π θ | wk-val-coh π V = refl
 
 sub-id-coh : ⟦ sub-id {Γ} ⟧ˢ ≡ id
 sub-id-coh {ε} = refl
-sub-id-coh {Γ ∙ A} = funext \(γ , a) → cong₂ _,_ (happly sub-id-coh γ) refl
+sub-id-coh {Γ ∙ X} = funext \(γ , a) → cong₂ _,_ (happly sub-id-coh γ) refl
 {-# REWRITE sub-id-coh #-}
 
 mutual
-  sub-val-coh : (θ : Sub Γ Δ) (V : Δ ⊢ᵛ A) → ⟦ sub-val θ V ⟧ᵛ ≡ (⟦ θ ⟧ˢ ； ⟦ V ⟧ᵛ)
+  sub-val-coh : (θ : Sub Γ Δ) (V : Δ ⊢ᵛ X) → ⟦ sub-val θ V ⟧ᵛ ≡ (⟦ θ ⟧ˢ ； ⟦ V ⟧ᵛ)
   sub-val-coh θ (var i) = refl
   sub-val-coh θ (lam M) rewrite sub-comp-coh (sub-ex (sub-wk (wk-wk wk-id) θ) (var here)) M = refl
   sub-val-coh θ (pair V W) rewrite sub-val-coh θ V | sub-val-coh θ W = refl
   sub-val-coh θ unit = refl
 
-  sub-comp-coh : (θ : Sub Γ Δ) (M : Δ ⊢ᶜ A) → ⟦ sub-comp θ M ⟧ᶜ ≡ (⟦ θ ⟧ˢ ； ⟦ M ⟧ᶜ)
+  sub-comp-coh : (θ : Sub Γ Δ) (M : Δ ⊢ᶜ X) → ⟦ sub-comp θ M ⟧ᶜ ≡ (⟦ θ ⟧ˢ ； ⟦ M ⟧ᶜ)
   sub-comp-coh θ (return V) rewrite sub-val-coh θ V = refl
   sub-comp-coh θ (pm V M) rewrite sub-val-coh θ V | sub-comp-coh (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) θ) (var (there here))) (var here)) M = refl
   sub-comp-coh θ (push M N) rewrite sub-comp-coh θ M | sub-comp-coh (sub-ex (sub-wk (wk-wk wk-id) θ) (var here)) N = refl
@@ -137,7 +137,7 @@ mutual
 {-# REWRITE sub-comp-coh #-}
 
 mutual
-  eqVal : Γ ⊢ᵛ V ≈ W ∶ A → ⟦ V ⟧ᵛ ≡ ⟦ W ⟧ᵛ
+  eqVal : Γ ⊢ᵛ V ≈ W ∶ X → ⟦ V ⟧ᵛ ≡ ⟦ W ⟧ᵛ
   eqVal ≈-refl = refl
   eqVal (≈-sym p) = sym (eqVal p)
   eqVal (≈-trans p q) = trans (eqVal p) (eqVal q)
@@ -146,7 +146,7 @@ mutual
   eqVal (unit-eta _) = refl
   eqVal (lam-eta _) = refl
 
-  eqComp : Γ ⊢ᶜ M ≈ N ∶ A → ⟦ M ⟧ᶜ ≡ ⟦ N ⟧ᶜ
+  eqComp : Γ ⊢ᶜ M ≈ N ∶ X → ⟦ M ⟧ᶜ ≡ ⟦ N ⟧ᶜ
   eqComp ≈-refl = refl
   eqComp (≈-sym p) = sym (eqComp p)
   eqComp (≈-trans p q) = trans (eqComp p) (eqComp q)

@@ -9,24 +9,24 @@ variable
 
 ⟦_⟧ : S.Ty → L.Ty
 ⟦ `𝟙 ⟧  = `𝟙
-⟦ A `× B ⟧ = ⟦ A ⟧ `× ⟦ B ⟧
-⟦ A `⇒ B ⟧ = ⟦ A ⟧ `⇒ ⟦ B ⟧
+⟦ X `× Y ⟧ = ⟦ X ⟧ `× ⟦ Y ⟧
+⟦ X `⇒ Y ⟧ = ⟦ X ⟧ `⇒ ⟦ Y ⟧
 ⟦ `ℓ ⟧     = `𝟙 `⇒ `⊥
 
 ⟦_⟧ˣ : S.Ctx → L.Ctx
 ⟦ S.ε ⟧ˣ     = ε
-⟦ Γ S.∙ A ⟧ˣ = ⟦ Γ ⟧ˣ ∙ ⟦ A ⟧
+⟦ Γ S.∙ X ⟧ˣ = ⟦ Γ ⟧ˣ ∙ ⟦ X ⟧
 
 ⟦_⟧ⁱ : SΓ S.∋ SA → ⟦ SΓ ⟧ˣ L.∋ ⟦ SA ⟧
 ⟦ S.here ⟧ⁱ   = here
 ⟦ S.there i ⟧ⁱ = there ⟦ i ⟧ⁱ
 
-raise : L.Γ ⊢ᵛ (`𝟙 `⇒ `⊥) ∣ L.Δ → L.Γ ⊢ᵗ L.A ∣ L.Δ
+raise : L.Γ ⊢ᵛ (`𝟙 `⇒ `⊥) ∣ L.Δ → L.Γ ⊢ᵗ L.X ∣ L.Δ
 raise ref = efq (applyL ref unit)
 
-handleVal : L.Γ ⊢ᵗ L.A ∣ L.Δ → L.Γ ⊢ᵛ (`𝟙 `⇒ `⊥) ∣ (L.Δ ∙ L.A)
-handleVal {A = A} n =
-  lam (μ (cut A (wk-tm (L.wk-wk L.wk-id) (L.wk-wk (L.wk-wk L.wk-id)) n) (covar (there here))))
+handleVal : L.Γ ⊢ᵗ L.X ∣ L.Δ → L.Γ ⊢ᵛ (`𝟙 `⇒ `⊥) ∣ (L.Δ ∙ L.X)
+handleVal {X = X} n =
+  lam (μ (cut X (wk-tm (L.wk-wk L.wk-id) (L.wk-wk (L.wk-wk L.wk-id)) n) (covar (there here))))
 
 ⟦_⟧ᶜ : SΓ S.⊢ᶜ SA → ⟦ SΓ ⟧ˣ ⊢ᵗ ⟦ SA ⟧ ∣ L.Δ
 

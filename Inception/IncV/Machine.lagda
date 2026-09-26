@@ -18,6 +18,9 @@ open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; subst
 
 infixl 27 _·_
 
+private variable
+  Z₀ : Ty
+
 ---------------------------------------------------------------------------------
 -- ENVIRONMENTS
 
@@ -46,9 +49,9 @@ mutual
               -------------------
               → MVal {Z₀ = Z₀} `𝓅
 
-    pairᵛ :   (𝐕 : MVal {Z₀ = Z₀} X₁) → (𝐖 : MVal {Z₀ = Z₀} X₂)
+    pairᵛ :   (𝐕 : MVal {Z₀ = Z₀} X) → (𝐖 : MVal {Z₀ = Z₀} Y)
               -------------------------------------------------
-              → MVal (X₁ `× X₂)
+              → MVal (X `× Y)
 
     cloᵛ :    {Γ : Ctx} → (M : Comp (Γ ∙ X) Y) → (γ : Env {Z₀ = Z₀} Γ)
               ----------------------------------------------------
@@ -132,10 +135,10 @@ run-jump V W γ = jump-to-state (run V γ) (run W γ)
 run-clo : {Z₀ : Ty} → Val Γ (X `⇒ Y) → Val Γ X → Env {Z₀ = Z₀} Γ → CStack {Z₀ = Z₀} Y → CState {Z₀ = Z₀}
 run-clo V W γ K = ⟨ proj₁ (proj₂ (clo-to-comp (run V γ))) ╎ proj₂ (proj₂ (clo-to-comp (run V γ))) · run W γ ╎ K ⟩
 
-run₁ : {Z₀ : Ty} → Val Γ (X₁ `× X₂) → Env {Z₀ = Z₀} Γ → MVal {Z₀ = Z₀} X₁
+run₁ : {Z₀ : Ty} → Val Γ (X `× Y) → Env {Z₀ = Z₀} Γ → MVal {Z₀ = Z₀} X
 run₁ W γ = proj₁-val (run W γ)
 
-run₂ : {Z₀ : Ty} → Val Γ (X₁ `× X₂) → Env {Z₀ = Z₀} Γ → MVal {Z₀ = Z₀} X₂
+run₂ : {Z₀ : Ty} → Val Γ (X `× Y) → Env {Z₀ = Z₀} Γ → MVal {Z₀ = Z₀} Y
 run₂ W γ = proj₂-val (run W γ)
 
 \end{code}

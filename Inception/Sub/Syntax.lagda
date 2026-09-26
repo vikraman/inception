@@ -44,9 +44,9 @@ mutual
             --------------
             → Γ ⊢ᵛ X `⇒ Y
 
-    pair :  Γ ⊢ᵛ X₁ → Γ ⊢ᵛ X₂
+    pair :  Γ ⊢ᵛ X → Γ ⊢ᵛ Y
             -----------------
-            → Γ ⊢ᵛ X₁ `× X₂
+            → Γ ⊢ᵛ X `× Y
 
     unit :
             -----------
@@ -58,7 +58,7 @@ mutual
               ---------
               → Γ ⊢ᶜ X
 
-    pm :      Γ ⊢ᵛ X₁ `× X₂ → (Γ ∙ X₁ ∙ X₂) ⊢ᶜ Y
+    pm :      Γ ⊢ᵛ X `× Z → (Γ ∙ X ∙ Z) ⊢ᶜ Y
               -------------------------------
               → Γ ⊢ᶜ Y
 
@@ -179,9 +179,9 @@ data EqVal Γ where
            ---------------------------------
            → Γ ⊢ᵛ lam M₁ ≈ lam M₂ ∶ X `⇒ Y
 
-  pair-cong : Γ ⊢ᵛ V₁ ≈ V₂ ∶ X₁ → Γ ⊢ᵛ W₁ ≈ W₂ ∶ X₂
+  pair-cong : Γ ⊢ᵛ V₁ ≈ V₂ ∶ X → Γ ⊢ᵛ W₁ ≈ W₂ ∶ Y
             ----------------------------------------
-            → Γ ⊢ᵛ pair V₁ W₁ ≈ pair V₂ W₂ ∶ X₁ `× X₂
+            → Γ ⊢ᵛ pair V₁ W₁ ≈ pair V₂ W₂ ∶ X `× Y
 
   -- beta/eta rules
 
@@ -213,7 +213,7 @@ data EqComp Γ where
              -----------------------------
              → Γ ⊢ᶜ return V₁ ≈ return V₂ ∶ X
 
-  pm-cong : Γ ⊢ᵛ V₁ ≈ V₂ ∶ X₁ `× X₂ → (Γ ∙ X₁ ∙ X₂) ⊢ᶜ M₁ ≈ M₂ ∶ Y
+  pm-cong : Γ ⊢ᵛ V₁ ≈ V₂ ∶ X `× Z → (Γ ∙ X ∙ Z) ⊢ᶜ M₁ ≈ M₂ ∶ Y
             -------------------------------------------------------------------
             → Γ ⊢ᶜ pm V₁ M₁ ≈ pm V₂ M₂ ∶ Y
 
@@ -235,11 +235,11 @@ data EqComp Γ where
 
   -- beta/eta rules
 
-  pm-beta : (V : Γ ⊢ᵛ X₁) → (W : Γ ⊢ᵛ X₂) → (M : (Γ ∙ X₁ ∙ X₂) ⊢ᶜ Y)
+  pm-beta : (V : Γ ⊢ᵛ X) → (W : Γ ⊢ᵛ Z) → (M : (Γ ∙ X ∙ Z) ⊢ᶜ Y)
           ------------------------------------------------------------------------
           → Γ ⊢ᶜ pm (pair V W) M ≈ sub-comp (sub-ex (sub-ex sub-id V) W) M ∶ Y
 
-  pm-eta : (V : Γ ⊢ᵛ X₁ `× X₂) → (M : (Γ ∙ (X₁ `× X₂)) ⊢ᶜ Y)
+  pm-eta : (V : Γ ⊢ᵛ X `× Z) → (M : (Γ ∙ (X `× Z)) ⊢ᶜ Y)
          -------------------------------------------------------------------------------------------
          → Γ ⊢ᶜ sub-comp (sub-ex sub-id V) M ≈ pm V (sub-comp (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) sub-id) (pair (var (there here)) (var here))) M) ∶ Y
 

@@ -12,27 +12,27 @@ data Ty : Set where
 
 open import Inception.Ctx Ty public
 
-syntax Val Γ A = Γ ⊢ᵛ A
+syntax Val Γ X = Γ ⊢ᵛ X
 
 data Val : Ctx → Ty → Set
 
-syntax Comp Γ A = Γ ⊢ᶜ A
+syntax Comp Γ X = Γ ⊢ᶜ X
 
 data Comp : Ctx → Ty → Set
 
 data Val where
 
-  var : (i : Γ ∋ A)
+  var : (i : Γ ∋ X)
       ---------
-      → Γ ⊢ᵛ A
+      → Γ ⊢ᵛ X
 
-  lam : (Γ ∙ A) ⊢ᶜ B
+  lam : (Γ ∙ X) ⊢ᶜ Y
       -----------------
-      → Γ ⊢ᵛ A `⇒ B
+      → Γ ⊢ᵛ X `⇒ Y
 
-  pair : Γ ⊢ᵛ A → Γ ⊢ᵛ B
+  pair : Γ ⊢ᵛ X → Γ ⊢ᵛ Y
       -------------------
-       → Γ ⊢ᵛ A `× B
+       → Γ ⊢ᵛ X `× Y
 
   unit :
        -----------
@@ -40,39 +40,39 @@ data Val where
 
 data Comp where
 
-  return : Γ ⊢ᵛ A
+  return : Γ ⊢ᵛ X
          -----------
-         → Γ ⊢ᶜ A
+         → Γ ⊢ᶜ X
 
-  pm : Γ ⊢ᵛ A `× B → (Γ ∙ A ∙ B) ⊢ᶜ C
+  pm : Γ ⊢ᵛ X `× Y → (Γ ∙ X ∙ Y) ⊢ᶜ Z
      -----------------------------------
-     → Γ ⊢ᶜ C
+     → Γ ⊢ᶜ Z
 
-  push : Γ ⊢ᶜ A → (Γ ∙ A) ⊢ᶜ B
+  push : Γ ⊢ᶜ X → (Γ ∙ X) ⊢ᶜ Y
        ---------------------------
-       → Γ ⊢ᶜ B
+       → Γ ⊢ᶜ Y
 
-  app : Γ ⊢ᵛ A `⇒ B → Γ ⊢ᵛ A
+  app : Γ ⊢ᵛ X `⇒ Y → Γ ⊢ᵛ X
       -------------------------
-              → Γ ⊢ᶜ B
+              → Γ ⊢ᶜ Y
 
   rec : Γ ⊢ᵛ `ℓ → Γ ⊢ᵛ `𝓅
       -----------------------
-      → Γ ⊢ᶜ A
+      → Γ ⊢ᶜ X
 
-  inc : (Γ ∙ `ℓ) ⊢ᶜ A → (Γ ∙ `𝓅) ⊢ᶜ A
+  inc : (Γ ∙ `ℓ) ⊢ᶜ X → (Γ ∙ `𝓅) ⊢ᶜ X
       -----------------------------------
-      → Γ ⊢ᶜ A
+      → Γ ⊢ᶜ X
 
 mutual
-  wk-val : Wk Γ Δ → Δ ⊢ᵛ A → Γ ⊢ᵛ A
+  wk-val : Wk Γ Δ → Δ ⊢ᵛ X → Γ ⊢ᵛ X
   wk-val π (var x)         = var (wk-mem π x)
   wk-val π (lam M)         = lam (wk-comp (wk-cong π) M)
 
   wk-val π (pair V W) = pair (wk-val π V) (wk-val π W)
   wk-val π unit       = unit
 
-  wk-comp : Wk Γ Δ → Δ ⊢ᶜ A → Γ ⊢ᶜ A
+  wk-comp : Wk Γ Δ → Δ ⊢ᶜ X → Γ ⊢ᶜ X
   wk-comp π (return V)     = return (wk-val π V)
   wk-comp π (pm V M)       = pm (wk-val π V) (wk-comp (wk-cong (wk-cong π)) M)
   wk-comp π (push M N)     = push (wk-comp π M) (wk-comp (wk-cong π) N)
@@ -80,14 +80,14 @@ mutual
   wk-comp π (rec V W)      = rec (wk-val π V) (wk-val π W)
   wk-comp π (inc M N)      = inc (wk-comp (wk-cong π) M) (wk-comp (wk-cong π) N)
 
-wk : Val Γ A → Val (Γ ∙ B) A
+wk : Val Γ X → Val (Γ ∙ Y) X
 wk = wk-val (wk-wk wk-id)
 
 data Sub (Γ : Ctx) : (Δ : Ctx) → Set where
   sub-ε : Sub Γ ε
-  sub-ex : (θ : Sub Γ Δ) → (V : Val Γ A) → Sub Γ (Δ ∙ A)
+  sub-ex : (θ : Sub Γ Δ) → (V : Val Γ X) → Sub Γ (Δ ∙ X)
 
-sub-mem : Sub Γ Δ → Δ ∋ A → Val Γ A
+sub-mem : Sub Γ Δ → Δ ∋ X → Val Γ X
 sub-mem (sub-ex θ V) here = V
 sub-mem (sub-ex θ V) (there i) = sub-mem θ i
 
@@ -97,16 +97,16 @@ sub-wk π (sub-ex θ V) = sub-ex (sub-wk π θ) (wk-val π V)
 
 sub-id : Sub Γ Γ
 sub-id {Γ = ε} = sub-ε
-sub-id {Γ = Γ ∙ A} = sub-ex (sub-wk (wk-wk wk-id) sub-id) (var here)
+sub-id {Γ = Γ ∙ X} = sub-ex (sub-wk (wk-wk wk-id) sub-id) (var here)
 
 mutual
-  sub-val : Sub Γ Δ → Δ ⊢ᵛ A → Γ ⊢ᵛ A
+  sub-val : Sub Γ Δ → Δ ⊢ᵛ X → Γ ⊢ᵛ X
   sub-val θ (var x) = sub-mem θ x
   sub-val θ (lam M) = lam (sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ) (var here)) M)
   sub-val θ (pair V W) = pair (sub-val θ V) (sub-val θ W)
   sub-val θ unit = unit
 
-  sub-comp : Sub Γ Δ → Δ ⊢ᶜ A → Γ ⊢ᶜ A
+  sub-comp : Sub Γ Δ → Δ ⊢ᶜ X → Γ ⊢ᶜ X
   sub-comp θ (return V) = return (sub-val θ V)
   sub-comp θ (pm V M) = pm (sub-val θ V) (sub-comp (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) θ) (var (there here))) (var here)) M)
   sub-comp θ (push M N) = push (sub-comp θ M) (sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ) (var here)) N)
@@ -116,54 +116,54 @@ mutual
 
 -- syntactic sugar
 
-letv : Γ ⊢ᵛ A → (Γ ∙ A) ⊢ᵛ B
+letv : Γ ⊢ᵛ X → (Γ ∙ X) ⊢ᵛ Y
      ---------------------------
-    → Γ ⊢ᵛ B
+    → Γ ⊢ᵛ Y
 letv V W = sub-val (sub-ex sub-id V) W
 
-letc : Γ ⊢ᵛ A → (Γ ∙ A) ⊢ᶜ B
+letc : Γ ⊢ᵛ X → (Γ ∙ X) ⊢ᶜ Y
      ---------------------------
-     → Γ ⊢ᶜ B
+     → Γ ⊢ᶜ Y
 letc V M = sub-comp (sub-ex sub-id V) M
 
-exchg : Sub (Γ ∙ A ∙ B)(Γ ∙ B ∙ A)
+exchg : Sub (Γ ∙ X ∙ Y)(Γ ∙ Y ∙ X)
 exchg = sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) sub-id) (var here)) (var (there here))
 
 variable
-  V V₁ V₂ V₃ W W₁ W₂ : Γ ⊢ᵛ A
-  M M₁ M₂ M₃ N N₁ N₂ : Γ ⊢ᶜ A
+  V V₁ V₂ V₃ W W₁ W₂ : Γ ⊢ᵛ X
+  M M₁ M₂ M₃ N N₁ N₂ : Γ ⊢ᶜ X
 
-syntax EqVal Γ A e₁ e₂ = Γ ⊢ᵛ e₁ ≈ e₂ ∶ A
+syntax EqVal Γ X e₁ e₂ = Γ ⊢ᵛ e₁ ≈ e₂ ∶ X
 
-syntax EqComp Γ A e₁ e₂ = Γ ⊢ᶜ e₁ ≈ e₂ ∶ A
+syntax EqComp Γ X e₁ e₂ = Γ ⊢ᶜ e₁ ≈ e₂ ∶ X
 
-data EqVal (Γ : Ctx) : (A : Ty) → Γ ⊢ᵛ A → Γ ⊢ᵛ A → Set
+data EqVal (Γ : Ctx) : (X : Ty) → Γ ⊢ᵛ X → Γ ⊢ᵛ X → Set
 
-data EqComp (Γ : Ctx) : (A : Ty) → Γ ⊢ᶜ A → Γ ⊢ᶜ A → Set
+data EqComp (Γ : Ctx) : (X : Ty) → Γ ⊢ᶜ X → Γ ⊢ᶜ X → Set
 
 data EqVal Γ where
 
   -- equivalence rules
   ≈-refl  :
           -------------
-          Γ ⊢ᵛ V ≈ V ∶ A
+          Γ ⊢ᵛ V ≈ V ∶ X
 
-  ≈-sym   : Γ ⊢ᵛ V₁ ≈ V₂ ∶ A
+  ≈-sym   : Γ ⊢ᵛ V₁ ≈ V₂ ∶ X
           ------------------
-          → Γ ⊢ᵛ V₂ ≈ V₁ ∶ A
+          → Γ ⊢ᵛ V₂ ≈ V₁ ∶ X
 
-  ≈-trans : Γ ⊢ᵛ V₁ ≈ V₂ ∶ A → Γ ⊢ᵛ V₂ ≈ V₃ ∶ A
+  ≈-trans : Γ ⊢ᵛ V₁ ≈ V₂ ∶ X → Γ ⊢ᵛ V₂ ≈ V₃ ∶ X
           -------------------------------------
-          → Γ ⊢ᵛ V₁ ≈ V₃ ∶ A
+          → Γ ⊢ᵛ V₁ ≈ V₃ ∶ X
 
   -- congruence rules
-  lam-cong : (Γ ∙ A) ⊢ᶜ M₁ ≈ M₂ ∶ B
+  lam-cong : (Γ ∙ X) ⊢ᶜ M₁ ≈ M₂ ∶ Y
            ---------------------------------
-           → Γ ⊢ᵛ lam M₁ ≈ lam M₂ ∶ A `⇒ B
+           → Γ ⊢ᵛ lam M₁ ≈ lam M₂ ∶ X `⇒ Y
 
-  pair-cong : Γ ⊢ᵛ V₁ ≈ V₂ ∶ A → Γ ⊢ᵛ W₁ ≈ W₂ ∶ B
+  pair-cong : Γ ⊢ᵛ V₁ ≈ V₂ ∶ X → Γ ⊢ᵛ W₁ ≈ W₂ ∶ Y
             ----------------------------------------
-            → Γ ⊢ᵛ pair V₁ W₁ ≈ pair V₂ W₂ ∶ A `× B
+            → Γ ⊢ᵛ pair V₁ W₁ ≈ pair V₂ W₂ ∶ X `× Y
 
   -- beta/eta rules
 
@@ -171,100 +171,100 @@ data EqVal Γ where
            ------------------------
            → Γ ⊢ᵛ V ≈ unit ∶ `𝟙
 
-  lam-eta : (V : Γ ⊢ᵛ A `⇒ B)
+  lam-eta : (V : Γ ⊢ᵛ X `⇒ Y)
           ---------------------------
-          → Γ ⊢ᵛ V ≈ lam (app (wk V) (var here)) ∶ A `⇒ B
+          → Γ ⊢ᵛ V ≈ lam (app (wk V) (var here)) ∶ X `⇒ Y
 
 data EqComp Γ where
 
   -- equivalence rules
   ≈-refl  :
           -------------
-          Γ ⊢ᶜ M ≈ M ∶ A
+          Γ ⊢ᶜ M ≈ M ∶ X
 
-  ≈-sym   : Γ ⊢ᶜ M₁ ≈ M₂ ∶ A
+  ≈-sym   : Γ ⊢ᶜ M₁ ≈ M₂ ∶ X
           -------------------
-          → Γ ⊢ᶜ M₂ ≈ M₁ ∶ A
+          → Γ ⊢ᶜ M₂ ≈ M₁ ∶ X
 
-  ≈-trans : Γ ⊢ᶜ M₁ ≈ M₂ ∶ A → Γ ⊢ᶜ M₂ ≈ M₃ ∶ A
+  ≈-trans : Γ ⊢ᶜ M₁ ≈ M₂ ∶ X → Γ ⊢ᶜ M₂ ≈ M₃ ∶ X
           -------------------------------------
-          → Γ ⊢ᶜ M₁ ≈ M₃ ∶ A
+          → Γ ⊢ᶜ M₁ ≈ M₃ ∶ X
 
   -- congruence rules
-  return-cong : Γ ⊢ᵛ V₁ ≈ V₂ ∶ A
+  return-cong : Γ ⊢ᵛ V₁ ≈ V₂ ∶ X
              -----------------------------
-             → Γ ⊢ᶜ return V₁ ≈ return V₂ ∶ A
+             → Γ ⊢ᶜ return V₁ ≈ return V₂ ∶ X
 
-  pm-cong : Γ ⊢ᵛ V₁ ≈ V₂ ∶ A `× B → (Γ ∙ A ∙ B) ⊢ᶜ M₁ ≈ M₂ ∶ C
+  pm-cong : Γ ⊢ᵛ V₁ ≈ V₂ ∶ X `× Y → (Γ ∙ X ∙ Y) ⊢ᶜ M₁ ≈ M₂ ∶ Z
             -------------------------------------------------------------------
-            → Γ ⊢ᶜ pm V₁ M₁ ≈ pm V₂ M₂ ∶ C
+            → Γ ⊢ᶜ pm V₁ M₁ ≈ pm V₂ M₂ ∶ Z
 
-  push-cong : Γ ⊢ᶜ M₁ ≈ M₂ ∶ A → (Γ ∙ A) ⊢ᶜ N₁ ≈ N₂ ∶ B
+  push-cong : Γ ⊢ᶜ M₁ ≈ M₂ ∶ X → (Γ ∙ X) ⊢ᶜ N₁ ≈ N₂ ∶ Y
             ---------------------------------------------------
-            → Γ ⊢ᶜ push M₁ N₁ ≈ push M₂ N₂ ∶ B
+            → Γ ⊢ᶜ push M₁ N₁ ≈ push M₂ N₂ ∶ Y
 
-  app-cong : Γ ⊢ᵛ V₁ ≈ V₂ ∶ A `⇒ B → Γ ⊢ᵛ W₁ ≈ W₂ ∶ A
+  app-cong : Γ ⊢ᵛ V₁ ≈ V₂ ∶ X `⇒ Y → Γ ⊢ᵛ W₁ ≈ W₂ ∶ X
             ------------------------------------------------
-            → Γ ⊢ᶜ app V₁ W₁ ≈ app V₂ W₂ ∶ B
+            → Γ ⊢ᶜ app V₁ W₁ ≈ app V₂ W₂ ∶ Y
 
   rec-cong : Γ ⊢ᵛ V₁ ≈ V₂ ∶ `ℓ → Γ ⊢ᵛ W₁ ≈ W₂ ∶ `𝓅
             ----------------------------------------
-            → Γ ⊢ᶜ rec V₁ W₁ ≈ rec V₂ W₂ ∶ A
+            → Γ ⊢ᶜ rec V₁ W₁ ≈ rec V₂ W₂ ∶ X
 
-  inc-cong : (Γ ∙ `ℓ) ⊢ᶜ M₁ ≈ M₂ ∶ A → (Γ ∙ `𝓅) ⊢ᶜ N₁ ≈ N₂ ∶ A
+  inc-cong : (Γ ∙ `ℓ) ⊢ᶜ M₁ ≈ M₂ ∶ X → (Γ ∙ `𝓅) ⊢ᶜ N₁ ≈ N₂ ∶ X
             ----------------------------------------------------
-            → Γ ⊢ᶜ inc M₁ N₁ ≈ inc M₂ N₂ ∶ A
+            → Γ ⊢ᶜ inc M₁ N₁ ≈ inc M₂ N₂ ∶ X
 
   -- beta/eta rules
 
-  pm-beta : (V : Γ ⊢ᵛ A) → (W : Γ ⊢ᵛ B) → (M : (Γ ∙ A ∙ B) ⊢ᶜ C)
+  pm-beta : (V : Γ ⊢ᵛ X) → (W : Γ ⊢ᵛ Y) → (M : (Γ ∙ X ∙ Y) ⊢ᶜ Z)
           ------------------------------------------------------------------------
-          → Γ ⊢ᶜ pm (pair V₁ V₂) M ≈ sub-comp (sub-ex (sub-ex sub-id V₁) V₂) M ∶ C
+          → Γ ⊢ᶜ pm (pair V₁ V₂) M ≈ sub-comp (sub-ex (sub-ex sub-id V₁) V₂) M ∶ Z
 
-  pm-eta : (V : Γ ⊢ᵛ A `× B) → (M : (Γ ∙ (A `× B)) ⊢ᶜ C)
+  pm-eta : (V : Γ ⊢ᵛ X `× Y) → (M : (Γ ∙ (X `× Y)) ⊢ᶜ Z)
          -------------------------------------------------------------------------------------------
-         → Γ ⊢ᶜ sub-comp (sub-ex sub-id V) M ≈ pm V (sub-comp (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) sub-id) (pair (var (there here)) (var here))) M) ∶ C
+         → Γ ⊢ᶜ sub-comp (sub-ex sub-id V) M ≈ pm V (sub-comp (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) sub-id) (pair (var (there here)) (var here))) M) ∶ Z
 
-  return-beta : (V : Γ ⊢ᵛ A) → (M : (Γ ∙ A) ⊢ᶜ B)
+  return-beta : (V : Γ ⊢ᵛ X) → (M : (Γ ∙ X) ⊢ᶜ Y)
                ---------------------------------------------------------------
-               → Γ ⊢ᶜ push (return V) M ≈ sub-comp (sub-ex sub-id V) M ∶ B
+               → Γ ⊢ᶜ push (return V) M ≈ sub-comp (sub-ex sub-id V) M ∶ Y
 
-  return-eta : (M : Γ ⊢ᶜ A)
+  return-eta : (M : Γ ⊢ᶜ X)
               -----------------------
-              → Γ ⊢ᶜ M ≈ push M (return (var here)) ∶ A
+              → Γ ⊢ᶜ M ≈ push M (return (var here)) ∶ X
 
-  push-eta : (M : Γ ⊢ᶜ A) → (N : (Γ ∙ A) ⊢ᶜ B) → (P : (Γ ∙ B) ⊢ᶜ C)
+  push-eta : (M : Γ ⊢ᶜ X) → (N : (Γ ∙ X) ⊢ᶜ Y) → (P : (Γ ∙ Y) ⊢ᶜ Z)
            ----------------------------------------------------------------
-           → Γ ⊢ᶜ push (push M N) P ≈ push M (push N (wk-comp (wk-cong (wk-wk wk-id)) P)) ∶ C
+           → Γ ⊢ᶜ push (push M N) P ≈ push M (push N (wk-comp (wk-cong (wk-wk wk-id)) P)) ∶ Z
 
-  lam-beta : (M : (Γ ∙ A) ⊢ᶜ B) → (V : Γ ⊢ᵛ A)
+  lam-beta : (M : (Γ ∙ X) ⊢ᶜ Y) → (V : Γ ⊢ᵛ X)
            ------------------------------------------------
-           → Γ ⊢ᶜ app (lam M) V ≈ sub-comp (sub-ex sub-id V) M ∶ B
+           → Γ ⊢ᶜ app (lam M) V ≈ sub-comp (sub-ex sub-id V) M ∶ Y
 
   -- rec/inc rules
 
-  inc-weak : (M : Γ ⊢ᶜ A) → (N : (Γ ∙ `𝓅) ⊢ᶜ A)
+  inc-weak : (M : Γ ⊢ᶜ X) → (N : (Γ ∙ `𝓅) ⊢ᶜ X)
            ------------------------------------------------
-           → Γ ⊢ᶜ inc (wk-comp (wk-wk wk-id) M) N ≈ M ∶ A
+           → Γ ⊢ᶜ inc (wk-comp (wk-wk wk-id) M) N ≈ M ∶ X
 
-  inc-subst : (M : (Γ ∙ `𝓅) ⊢ᶜ A) → (V : Γ ⊢ᵛ `𝓅)
+  inc-subst : (M : (Γ ∙ `𝓅) ⊢ᶜ X) → (V : Γ ⊢ᵛ `𝓅)
             -----------------------------------------------------------------------
-            → Γ ⊢ᶜ inc (rec (var here) (wk V)) M ≈ sub-comp (sub-ex sub-id V) M ∶ A
+            → Γ ⊢ᶜ inc (rec (var here) (wk V)) M ≈ sub-comp (sub-ex sub-id V) M ∶ X
 
-  inc-ext : (M : (Γ ∙ `ℓ) ⊢ᶜ A) → (V : Γ ⊢ᵛ `ℓ)
+  inc-ext : (M : (Γ ∙ `ℓ) ⊢ᶜ X) → (V : Γ ⊢ᵛ `ℓ)
           ----------------------------------------------------------------------------------------
-          → Γ ⊢ᶜ inc (sub-comp sub-id M) (rec (wk V) (var here)) ≈ sub-comp (sub-ex sub-id V) M ∶ A
+          → Γ ⊢ᶜ inc (sub-comp sub-id M) (rec (wk V) (var here)) ≈ sub-comp (sub-ex sub-id V) M ∶ X
 
-  inc-assoc : (M : (Γ ∙ `ℓ ∙ `ℓ) ⊢ᶜ A) → (N : (Γ ∙ `ℓ ∙ `𝓅) ⊢ᶜ A) → (P : (Γ ∙ `𝓅) ⊢ᶜ A)
+  inc-assoc : (M : (Γ ∙ `ℓ ∙ `ℓ) ⊢ᶜ X) → (N : (Γ ∙ `ℓ ∙ `𝓅) ⊢ᶜ X) → (P : (Γ ∙ `𝓅) ⊢ᶜ X)
             ------------------------------------------------------------------------------------------------------------------------------------------------------------
-            → Γ ⊢ᶜ inc (inc M N) P ≈ inc (inc (sub-comp exchg M) (wk-comp (wk-cong (wk-wk wk-id)) P)) (inc (sub-comp exchg N) (wk-comp (wk-cong (wk-wk wk-id)) P)) ∶ A
+            → Γ ⊢ᶜ inc (inc M N) P ≈ inc (inc (sub-comp exchg M) (wk-comp (wk-cong (wk-wk wk-id)) P)) (inc (sub-comp exchg N) (wk-comp (wk-cong (wk-wk wk-id)) P)) ∶ X
 
   -- algebraicity rules
 
-  rec-push : (V : Γ ⊢ᵛ `ℓ) → (W : Γ ⊢ᵛ `𝓅) → (M : (Γ ∙ `ℓ) ⊢ᶜ A)
+  rec-push : (V : Γ ⊢ᵛ `ℓ) → (W : Γ ⊢ᵛ `𝓅) → (M : (Γ ∙ `ℓ) ⊢ᶜ X)
            --------------------------------------------------------
-           → Γ ⊢ᶜ push (rec V W) M ≈ rec V W ∶ A
+           → Γ ⊢ᶜ push (rec V W) M ≈ rec V W ∶ X
 
-  inc-push : (M : (Γ ∙ `ℓ) ⊢ᶜ A) → (N : (Γ ∙ `𝓅) ⊢ᶜ A) → (P : (Γ ∙ A) ⊢ᶜ B)
+  inc-push : (M : (Γ ∙ `ℓ) ⊢ᶜ X) → (N : (Γ ∙ `𝓅) ⊢ᶜ X) → (P : (Γ ∙ X) ⊢ᶜ Y)
            -------------------------------------------------------------------------------------------------------------------------------
-           → Γ ⊢ᶜ push (inc M N) P ≈ inc (push M (wk-comp (wk-cong (wk-wk wk-id)) P)) (push N (wk-comp (wk-cong (wk-wk wk-id)) P)) ∶ B
+           → Γ ⊢ᶜ push (inc M N) P ≈ inc (push M (wk-comp (wk-cong (wk-wk wk-id)) P)) (push N (wk-comp (wk-cong (wk-wk wk-id)) P)) ∶ Y

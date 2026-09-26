@@ -9,24 +9,24 @@ variable
 
 ⟦_⟧ : I.Ty → L.Ty
 ⟦ `𝟙 ⟧     = `𝟙
-⟦ A `× B ⟧ = ⟦ A ⟧ `× ⟦ B ⟧
-⟦ A `⇒ B ⟧ = ⟦ A ⟧ `⇒ ⟦ B ⟧
+⟦ X `× Y ⟧ = ⟦ X ⟧ `× ⟦ Y ⟧
+⟦ X `⇒ Y ⟧ = ⟦ X ⟧ `⇒ ⟦ Y ⟧
 ⟦ `𝓅 ⟧     = `𝓅
 ⟦ `ℓ ⟧     = ⟦ `𝓅 ⟧ `⇒ `⊥
 
 ⟦_⟧ˣ : I.Ctx → L.Ctx
 ⟦ I.ε ⟧ˣ     = ε
-⟦ Γ I.∙ A ⟧ˣ = ⟦ Γ ⟧ˣ ∙ ⟦ A ⟧
+⟦ Γ I.∙ X ⟧ˣ = ⟦ Γ ⟧ˣ ∙ ⟦ X ⟧
 
 ⟦_⟧ⁱ : IΓ I.∋ IA → ⟦ IΓ ⟧ˣ L.∋ ⟦ IA ⟧
 ⟦ I.here ⟧ⁱ   = here
 ⟦ I.there i ⟧ⁱ = there ⟦ i ⟧ⁱ
 
-raiseP : L.Γ ⊢ᵛ (⟦ `𝓅 ⟧ `⇒ `⊥) ∣ L.Δ → L.Γ ⊢ᵛ ⟦ `𝓅 ⟧ ∣ L.Δ → L.Γ ⊢ᵗ L.A ∣ L.Δ
+raiseP : L.Γ ⊢ᵛ (⟦ `𝓅 ⟧ `⇒ `⊥) ∣ L.Δ → L.Γ ⊢ᵛ ⟦ `𝓅 ⟧ ∣ L.Δ → L.Γ ⊢ᵗ L.X ∣ L.Δ
 raiseP ref p = efq (applyL ref p)
 
-installV : (L.Γ ∙ ⟦ `𝓅 ⟧) ⊢ᵗ L.A ∣ L.Δ → L.Γ ⊢ᵛ (⟦ `𝓅 ⟧ `⇒ `⊥) ∣ (L.Δ ∙ L.A)
-installV {A = A} n = lam (μ (cut A (wk̃ᵗ (wk̃ᵗ n)) (covar (there here))))
+installV : (L.Γ ∙ ⟦ `𝓅 ⟧) ⊢ᵗ L.X ∣ L.Δ → L.Γ ⊢ᵛ (⟦ `𝓅 ⟧ `⇒ `⊥) ∣ (L.Δ ∙ L.X)
+installV {X = X} n = lam (μ (cut X (wk̃ᵗ (wk̃ᵗ n)) (covar (there here))))
 
 ⟦_⟧ᶜ : IΓ I.⊢ᶜ IA → ⟦ IΓ ⟧ˣ ⊢ᵗ ⟦ IA ⟧ ∣ L.Δ
 

@@ -15,7 +15,7 @@ infixr 30 ¬_
 ¬_ : Ty → Ty
 ¬ X = X `⇒ `⊥
 
-open import Inception.Ctx Ty public hiding (C)
+open import Inception.Ctx Ty public
 
 syntax Cmd Γ Δ = Γ ⊢ Δ
 
@@ -227,7 +227,7 @@ projFst p = μ (cut _ (ret (wk̃ᵛ p)) (fst (covar here)))
 projSnd : Γ ⊢ᵛ (X `× Y) ∣ Δ → Γ ⊢ᵗ Y ∣ Δ
 projSnd p = μ (cut _ (ret (wk̃ᵛ p)) (snd (covar here)))
 
-letpv : Γ ⊢ᵛ X₁ `× X₂ ∣ Δ → (Γ ∙ X₁ ∙ X₂) ⊢ᵗ Y ∣ Δ → Γ ⊢ᵗ Y ∣ Δ
+letpv : Γ ⊢ᵛ X `× Z ∣ Δ → (Γ ∙ X ∙ Z) ⊢ᵗ Y ∣ Δ → Γ ⊢ᵗ Y ∣ Δ
 letpv V M = lett (projFst V) (lett (projSnd (wkᵛ V)) M)
 
 efq : Γ ⊢ᵗ `⊥ ∣ Δ → Γ ⊢ᵗ X ∣ Δ

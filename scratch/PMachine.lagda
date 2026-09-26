@@ -42,13 +42,13 @@ data Partial : (X : Ty) → Set where
            --------------------------------
            → Partial X
 
-    ⇡ᴸ :   (V : Val Γ X₁) → (W : Val Γ X₂) → (MEnv Γ)
+    ⇡ᴸ :   (V : Val Γ X) → (W : Val Γ Y) → (MEnv Γ)
            ----------------------------------------------------
-           → Partial (X₁ `× X₂)
+           → Partial (X `× Y)
 
-    ⇡ᴿ :   (𝐕 : MVal X₁) → (W : Val Γ X₂) → (MEnv Γ)
+    ⇡ᴿ :   (𝐕 : MVal X) → (W : Val Γ Y) → (MEnv Γ)
            ------------------------------------------------------------
-           → Partial (X₁ `× X₂)
+           → Partial (X `× Y)
 
 \end{code}
 %</Partial>
@@ -103,11 +103,11 @@ data PState : Ty → Set where
 %</PStates>
 \begin{code}
 
-_⧺_ : PStack ∅? Z → PStack non-empty Z₁ → PStack non-empty Z₁
+_⧺_ : PStack ∅? Z → PStack non-empty X → PStack non-empty X
 ⊠ ⧺ K = K
 (W ∷ K) ⧺ L = (W ∷ (K ⧺ L)) {𝐛 = ○}
 
-_⧻_ : (σ : PState Z) → PStack non-empty Z₁ → PState Z₁
+_⧻_ : (σ : PState Z) → PStack non-empty X → PState X
 ⟨ σ ⟩ ⧻ K = ⟨ σ ⧺ K ⟩
 
 \end{code}
@@ -129,8 +129,8 @@ data _→ᵖ_ {Z : Ty} :
                 →  ⟨ (⇡ (lam M) γ ∷ K) {𝐛 = 𝐛} ⟩
                    →ᵖ ⟨ (⭭ (cloᵛ M γ) ∷ K) {𝐛 = 𝐛} ⟩
 
-    pair→ :     {γ : MEnv Γ} {V : Val Γ X₁} {W : Val Γ X₂}
-                {K : PStack ∅? Z} {𝐛 : BotEq ∅? (X₁ `× X₂) Z}
+    pair→ :     {γ : MEnv Γ} {V : Val Γ X₁} {W : Val Γ Y₁}
+                {K : PStack ∅? Z} {𝐛 : BotEq ∅? (X₁ `× Y₁) Z}
                 ---------------------------------------------------------
                 →  ⟨ (⇡ (pair V W) γ ∷ K) {𝐛 = 𝐛} ⟩
                    →ᵖ ⟨ (⇡ V γ ∷ ((⇡ᴸ V W γ ∷ K) {𝐛 = 𝐛})) {𝐛 = ○} ⟩
@@ -142,14 +142,14 @@ data _→ᵖ_ {Z : Ty} :
                    →ᵖ ⟨ (⭭ unitᵛ ∷ K) {𝐛 = 𝐛} ⟩
 
     W∷l→ :      {γ : MEnv Γ} {𝐕 : MVal X₁} {V : Val Γ X₁}
-                {W : Val Γ X₂} {K : PStack ∅? Z}
-                {𝐛 : BotEq ∅? (X₁ `× X₂) Z}
+                {W : Val Γ Y₁} {K : PStack ∅? Z}
+                {𝐛 : BotEq ∅? (X₁ `× Y₁) Z}
                 ------------------------------------------------------
                 →  ⟨ (⭭ 𝐕 ∷ ((⇡ᴸ V W γ ∷ K) {𝐛 = 𝐛})) {𝐛 = ○} ⟩
                    →ᵖ ⟨ (⇡ W γ ∷ ((⇡ᴿ 𝐕 W γ ∷ K) {𝐛 = 𝐛})) {𝐛 = ○} ⟩
 
-    W∷r→ :      {γ : MEnv Γ} {𝐕 : MVal X₁} {𝐖 : MVal X₂} {W : Val Γ X₂}
-                {K : PStack ∅? Z} {𝐛 : BotEq ∅? (X₁ `× X₂) Z}
+    W∷r→ :      {γ : MEnv Γ} {𝐕 : MVal X₁} {𝐖 : MVal Y₁} {W : Val Γ Y₁}
+                {K : PStack ∅? Z} {𝐛 : BotEq ∅? (X₁ `× Y₁) Z}
                 -----------------------------------------------------------------
                 →  ⟨ (⭭ 𝐖 ∷ ((⇡ᴿ 𝐕 W γ ∷ K) {𝐛 = 𝐛})) {𝐛 = ○} ⟩
                    →ᵖ ⟨ (⭭ pairᵛ 𝐕 𝐖 ∷ K) {𝐛 = 𝐛} ⟩
@@ -168,7 +168,7 @@ _⨾_ : {σ₁ σ₂ σ₃ : PState Z} → (σ₁ ↠ᵛ σ₂) → (σ₂ ↠�
 _⨾_ (σ →ᵖ⟨ s ⟩．) ss = σ →ᵖ⟨ s ⟩ ss
 _⨾_ (σ →ᵖ⟨ s ⟩ ss₁) ss₂ = σ →ᵖ⟨ s ⟩ (ss₁ ⨾ ss₂)
 
-⟨_⟩⧻_ : {σ : PState Z} → {σ₁ : PState Z} → (s : σ →ᵖ σ₁) → (K : PStack non-empty Z₁) → (σ ⧻ K) →ᵖ (σ₁ ⧻ K)
+⟨_⟩⧻_ : {σ : PState Z} → {σ₁ : PState Z} → (s : σ →ᵖ σ₁) → (K : PStack non-empty X) → (σ ⧻ K) →ᵖ (σ₁ ⧻ K)
 ⟨ lookup→ ⟩⧻ K = lookup→
 ⟨ lam→ ⟩⧻ K = lam→
 ⟨ pair→ ⟩⧻ K = pair→
@@ -176,7 +176,7 @@ _⨾_ (σ →ᵖ⟨ s ⟩ ss₁) ss₂ = σ →ᵖ⟨ s ⟩ (ss₁ ⨾ ss₂)
 ⟨ W∷l→ ⟩⧻ K = W∷l→
 ⟨ W∷r→ ⟩⧻ K = W∷r→
 
-⟪_⟫⧻_ : {σ : PState Z} → {σ₁ : PState Z} → (ss : σ ↠ᵛ σ₁) → (K : PStack non-empty Z₁) → (σ ⧻ K) ↠ᵛ (σ₁ ⧻ K)
+⟪_⟫⧻_ : {σ : PState Z} → {σ₁ : PState Z} → (ss : σ ↠ᵛ σ₁) → (K : PStack non-empty X) → (σ ⧻ K) ↠ᵛ (σ₁ ⧻ K)
 ⟪ _ →ᵖ⟨ s ⟩． ⟫⧻ K =  _ →ᵖ⟨ ⟨ s ⟩⧻ K ⟩．
 ⟪ _ →ᵖ⟨ s ⟩ ss ⟫⧻ K =   _ →ᵖ⟨ ⟨ s ⟩⧻ K ⟩ (⟪ ss ⟫⧻ K)
 
