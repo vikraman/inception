@@ -1,11 +1,22 @@
-on: [push, pull_request]
 name: ci
 
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
 env:
-  AGDA_VERSION: 2.7.0.1
-  STDLIB_VERSION: 2.2
-  GHC_VERSION: 9.8.4
-  LTS_VERSION: 23.17
+  AGDA_VERSION: "2.8.0.2"
+  STDLIB_VERSION: "2.4"
+  GHC_VERSION: "9.14.1"
 
 jobs:
   lint:
@@ -13,80 +24,94 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Haskell
+        id: setup
         uses: haskell-actions/setup@v2
         with:
-          ghc-version: '9.12'
-          cabal-version: 'latest'
+          ghc-version: ${{ env.GHC_VERSION }}
+          cabal-version: latest
 
       - name: Cache cabal
-        uses: actions/cache@v4
+        id: cabal-cache
+        uses: actions/cache@v6
         with:
           path: |
+            ${{ steps.setup.outputs.cabal-store }}
             ~/.cabal/packages
-            ~/.cabal/store
             ~/.cabal/script-builds
-          key: ${{ runner.os }}-agdalint-${{ hashFiles('scripts/AgdaLint.hs') }}
+          key: ${{ runner.os }}-ghc-${{ env.GHC_VERSION }}-agdalint-${{ hashFiles('scripts/AgdaLint.hs') }}
+          restore-keys: ${{ runner.os }}-ghc-${{ env.GHC_VERSION }}-agdalint-
 
       - name: Update package index
+        if: steps.cabal-cache.outputs.cache-hit != 'true'
         run: cabal update
 
       - name: Lint
         run: make lint
 
-
   agda:
     name: agda
     runs-on: ubuntu-latest
     steps:
-      - name: Setup Haskell
-        uses: haskell-actions/setup@v2
-        with:
-          ghc-version: ${{ env.GHC_VERSION }}
-          enable-stack: true
-          stack-version: 'latest'
-
-      - name: Set PATH
-        run: |
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
-
-      - name: Cache stack workspace
-        uses: actions/cache@v4
-        id: cache-stack
-        with:
-          path: ~/.stack
-          key: ${{ runner.os }}-stack-ghc-${{ env.GHC_VERSION }}-agda-${{ env.AGDA_VERSION }}
-
-      - name: Install Agda
-        run: stack --resolver lts-${{ env.LTS_VERSION }} --system-ghc install Agda-${{ env.AGDA_VERSION }}
-
-      - name: Install stdlib
-        run: |
-          mkdir -p $HOME/.agda
-          cd $HOME/.agda
-          wget https://github.com/agda/agda-stdlib/archive/v${{ env.STDLIB_VERSION }}.tar.gz
-          tar -xzvf v${{ env.STDLIB_VERSION }}.tar.gz
-          mv agda-stdlib-${{ env.STDLIB_VERSION }} agda-stdlib
-          echo "~/.agda/agda-stdlib/standard-library.agda-lib" > libraries
-          cd -
-
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
+
+      - name: Setup Agda
+        id: agda
+        uses: ./.github/actions/setup-agda
+        with:
+          agda-version: ${{ env.AGDA_VERSION }}
+          stdlib-version: ${{ env.STDLIB_VERSION }}
+          cache-name: check
 
       - name: Check
-        run: make -j3
+        run: |
+          agda --version
+          make -j"$(nproc)"
+
+      - name: Save interface files
+        if: always() && steps.agda.outcome == 'success'
+        uses: actions/cache/save@v6
+        with:
+          path: ${{ steps.agda.outputs.cache-paths }}
+          key: ${{ steps.agda.outputs.cache-key }}
+
+  html:
+    name: html
+    needs: [lint, agda]
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v7
+
+      - name: Setup Agda
+        id: agda
+        uses: ./.github/actions/setup-agda
+        with:
+          agda-version: ${{ env.AGDA_VERSION }}
+          stdlib-version: ${{ env.STDLIB_VERSION }}
+          cache-name: html
+          cache-fallbacks: check
 
       - name: Generate html
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         run: |
           ./index.sh
           make html
 
+      - name: Save interface files
+        if: always() && steps.agda.outcome == 'success'
+        uses: actions/cache/save@v6
+        with:
+          path: ${{ steps.agda.outputs.cache-paths }}
+          key: ${{ steps.agda.outputs.cache-key }}
+
       - name: Deploy html
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-        uses: JamesIves/github-pages-deploy-action@4.1.5
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
           folder: html
