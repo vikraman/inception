@@ -23,7 +23,7 @@ open Monad T public
 ⟦_⟧ : Ty -> Set
 ⟦ `⊥ ⟧ = R
 ⟦ `𝟙 ⟧ = ⊤
-⟦ `P ⟧ = P
+⟦ `𝓅 ⟧ = P
 ⟦ X `× Y ⟧ = ⟦ X ⟧ × ⟦ Y ⟧
 ⟦ X `⇒ Y ⟧ = ⟦ X ⟧ -> K ⟦ Y ⟧
 ⟦ X `+ Y ⟧ = ⟦ X ⟧ ⊎ ⟦ Y ⟧

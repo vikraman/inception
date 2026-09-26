@@ -23,7 +23,7 @@ infixr 25 _`⇒_
 data Ty : Set where
   `𝟙 : Ty
   _`×_ _`⇒_ : Ty → Ty → Ty
-  `L `P : Ty
+  `ℓ `𝓅 : Ty
 
 open import Inception.Ctx Ty public
 
@@ -60,7 +60,7 @@ data Val where
 
   dat :   (N : ℕ)
           -----------
-          → Γ ⊢ᵛ `P
+          → Γ ⊢ᵛ `𝓅
 
 \end{code}
 %</Val>
@@ -88,11 +88,11 @@ data Comp where
             ---------------------
             → Γ ⊢ᶜ Y
 
-  rec :     Γ ⊢ᵛ `L → Γ ⊢ᵛ `P
+  rec :     Γ ⊢ᵛ `ℓ → Γ ⊢ᵛ `𝓅
             ------------------
             → Γ ⊢ᶜ X
 
-  inc :     (Γ ∙ `L) ⊢ᶜ X → (Γ ∙ `P) ⊢ᶜ X
+  inc :     (Γ ∙ `ℓ) ⊢ᶜ X → (Γ ∙ `𝓅) ⊢ᶜ X
             -------------------------------
             → Γ ⊢ᶜ X
 

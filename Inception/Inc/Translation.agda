@@ -11,8 +11,8 @@ variable
 ⟦ `𝟙 ⟧     = `𝟙
 ⟦ A `× B ⟧ = ⟦ A ⟧ `× ⟦ B ⟧
 ⟦ A `⇒ B ⟧ = ⟦ A ⟧ `⇒ ⟦ B ⟧
-⟦ `P ⟧     = `P
-⟦ `V ⟧     = ⟦ `P ⟧ `⇒ `⊥
+⟦ `𝓅 ⟧     = `𝓅
+⟦ `ℓ ⟧     = ⟦ `𝓅 ⟧ `⇒ `⊥
 
 ⟦_⟧ˣ : I.Ctx -> L.Ctx
 ⟦ I.ε ⟧ˣ     = ε
@@ -22,10 +22,10 @@ variable
 ⟦ I.here ⟧ⁱ   = here
 ⟦ I.there i ⟧ⁱ = there ⟦ i ⟧ⁱ
 
-raiseP : L.Γ ⊢ᵛ (⟦ `P ⟧ `⇒ `⊥) ∣ L.Δ -> L.Γ ⊢ᵛ ⟦ `P ⟧ ∣ L.Δ -> L.Γ ⊢ᵗ L.A ∣ L.Δ
+raiseP : L.Γ ⊢ᵛ (⟦ `𝓅 ⟧ `⇒ `⊥) ∣ L.Δ -> L.Γ ⊢ᵛ ⟦ `𝓅 ⟧ ∣ L.Δ -> L.Γ ⊢ᵗ L.A ∣ L.Δ
 raiseP ref p = efq (applyL ref p)
 
-installV : (L.Γ ∙ ⟦ `P ⟧) ⊢ᵗ L.A ∣ L.Δ -> L.Γ ⊢ᵛ (⟦ `P ⟧ `⇒ `⊥) ∣ (L.Δ ∙ L.A)
+installV : (L.Γ ∙ ⟦ `𝓅 ⟧) ⊢ᵗ L.A ∣ L.Δ -> L.Γ ⊢ᵛ (⟦ `𝓅 ⟧ `⇒ `⊥) ∣ (L.Δ ∙ L.A)
 installV {A = A} n = lam (μ (cut A (wk̃ᵗ (wk̃ᵗ n)) (covar (there here))))
 
 ⟦_⟧ᶜ : IΓ I.⊢ᶜ IA -> ⟦ IΓ ⟧ˣ ⊢ᵗ ⟦ IA ⟧ ∣ L.Δ

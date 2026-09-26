@@ -44,7 +44,7 @@ mutual
 
     datᵛ :    (N : ℕ)
               -------------------
-              → MVal {Z₀ = Z₀} `P
+              → MVal {Z₀ = Z₀} `𝓅
 
     pairᵛ :   (𝐕 : MVal {Z₀ = Z₀} X₁) → (𝐖 : MVal {Z₀ = Z₀} X₂)
               -------------------------------------------------
@@ -54,10 +54,10 @@ mutual
               ----------------------------------------------------
               → MVal (X `⇒ Y)
 
-    jumpᵛ :   {Γ : Ctx} → (M : Comp (Γ ∙ `P) X) → (γ : Env {Z₀ = Z₀} Γ)
+    jumpᵛ :   {Γ : Ctx} → (M : Comp (Γ ∙ `𝓅) X) → (γ : Env {Z₀ = Z₀} Γ)
               → (K : CStack {Z₀ = Z₀} X)
               -----------------------------------------------
-              → MVal `L
+              → MVal `ℓ
 
   data Env {Z₀ : Ty} : Ctx → Set where
 
@@ -117,7 +117,7 @@ run (pair V W) γ = pairᵛ (run V γ) (run W γ)
 run unit γ = unitᵛ
 run (dat N) γ = datᵛ N
 
-jump-to-state : {Z₀ : Ty} → MVal {Z₀ = Z₀} `L → MVal `P → CState {Z₀ = Z₀}
+jump-to-state : {Z₀ : Ty} → MVal {Z₀ = Z₀} `ℓ → MVal `𝓅 → CState {Z₀ = Z₀}
 jump-to-state (jumpᵛ M γ K) 𝐖 = ⟨ M ╎ γ · 𝐖 ╎ K ⟩
 
 clo-to-comp : {Z₀ : Ty} → MVal {Z₀ = Z₀} (X `⇒ Y) → Σ[ Γ ∈ Ctx ] Comp (Γ ∙ X) Y × Env {Z₀ = Z₀} Γ
@@ -126,7 +126,7 @@ clo-to-comp (cloᵛ M γ) = _ , M , γ
 clo-val : {Z₀ : Ty} → (W : MVal {Z₀ = Z₀} (X `⇒ Y)) → (cloᵛ (proj₁ (proj₂ (clo-to-comp W))) (proj₂ (proj₂ (clo-to-comp W))) ≡ W)
 clo-val (cloᵛ M γ) = refl
 
-run-jump : {Z₀ : Ty} → Val Γ `L → Val Γ `P → Env {Z₀ = Z₀} Γ → CState {Z₀ = Z₀}
+run-jump : {Z₀ : Ty} → Val Γ `ℓ → Val Γ `𝓅 → Env {Z₀ = Z₀} Γ → CState {Z₀ = Z₀}
 run-jump V W γ = jump-to-state (run V γ) (run W γ)
 
 run-clo : {Z₀ : Ty} → Val Γ (X `⇒ Y) → Val Γ X → Env {Z₀ = Z₀} Γ → CStack {Z₀ = Z₀} Y → CState {Z₀ = Z₀}
@@ -156,11 +156,11 @@ data _→ᶜ_ {Z₀ : Ty} : CState {Z₀ = Z₀} → CState {Z₀ = Z₀} → Se
              ----------------------------------------------------------------
              →  ⟨ push M N ╎ γ ╎ K ⟩ →ᶜ ⟨ M ╎ γ ╎ < N ； γ >∷ K ⟩
 
-  inc→ :     {M : Comp (Γ ∙ `L) X} {N : Comp (Γ ∙ `P) X} {γ : Env Γ} {K : CStack X}
+  inc→ :     {M : Comp (Γ ∙ `ℓ) X} {N : Comp (Γ ∙ `𝓅) X} {γ : Env Γ} {K : CStack X}
              ----------------------------------------------------------------
              →  ⟨ inc M N ╎ γ ╎ K ⟩ →ᶜ ⟨ M ╎ γ · (jumpᵛ N γ K) ╎ K ⟩
 
-  rec→ :     {V : Val Γ `L} {W : Val Γ `P} {γ : Env Γ} {K : CStack X}
+  rec→ :     {V : Val Γ `ℓ} {W : Val Γ `𝓅} {γ : Env Γ} {K : CStack X}
              -------------------------------------------------------
              →  ⟨ rec V W ╎ γ ╎ K ⟩ →ᶜ run-jump V W γ
 
@@ -205,8 +205,8 @@ Rᵏ : {Z₀ : Ty} → (X : Ty) → CStack {Z₀ = Z₀} X → Set
 Rᵛ `𝟙 unitᵛ = ⊤
 Rᵛ (X `× Y) (pairᵛ 𝐕 𝐖) = Rᵛ X 𝐕 × Rᵛ Y 𝐖
 Rᵛ {Z₀ = Z₀} (X `⇒ Y) (cloᵛ M γ) = ∀ {𝐖 : MVal {Z₀ = Z₀} X} → Rᵛ X 𝐖 → ∀ {K : CStack {Z₀ = Z₀} Y} → Rᵏ Y K → SN ⟨ M ╎ γ · 𝐖 ╎ K ⟩
-Rᵛ {Z₀ = Z₀} `L (jumpᵛ M γ K) = ∀ {𝐖 : MVal {Z₀ = Z₀} `P} → SN ⟨ M ╎ γ · 𝐖 ╎ K ⟩
-Rᵛ `P (datᵛ N) = ⊤
+Rᵛ {Z₀ = Z₀} `ℓ (jumpᵛ M γ K) = ∀ {𝐖 : MVal {Z₀ = Z₀} `𝓅} → SN ⟨ M ╎ γ · 𝐖 ╎ K ⟩
+Rᵛ `𝓅 (datᵛ N) = ⊤
 
 Rᵏ {Z₀ = Z₀} X K = ∀ {𝐖 : MVal {Z₀ = Z₀} X} → Rᵛ X 𝐖 → SN ⟨ 𝐖 ╎ K ⟩
 
@@ -217,7 +217,7 @@ Rᴱ-ext : {Z₀ : Ty} {γ : Env {Z₀ = Z₀} Γ} {𝐖 : MVal {Z₀ = Z₀} X}
 Rᴱ-ext Rγ RW here = RW
 Rᴱ-ext Rγ RW (there i) = Rγ i
 
-rv≡sn : {Z₀ : Ty} → (𝐖 : MVal {Z₀ = Z₀} `L) → Rᵛ `L 𝐖 ≡ (∀ {𝐕 : MVal {Z₀ = Z₀} `P} → SN (jump-to-state 𝐖 𝐕))
+rv≡sn : {Z₀ : Ty} → (𝐖 : MVal {Z₀ = Z₀} `ℓ) → Rᵛ `ℓ 𝐖 ≡ (∀ {𝐕 : MVal {Z₀ = Z₀} `𝓅} → SN (jump-to-state 𝐖 𝐕))
 rv≡sn (jumpᵛ _ _ _) = refl
 
 mutual
