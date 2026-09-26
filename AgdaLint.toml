@@ -21,7 +21,7 @@ asciiSubscript = "error"
 prime = "error"
 prefixType = "error"
 bannedName = "error"
-typeVarLetter = "error"
+reservedLetter = "error"
 sortLetter = "warning"
 unneededSubscript = "warning"
 pairSubscript = "warning"
@@ -42,10 +42,6 @@ sectionTitle = "lower"
 "`P" = "`𝓅"
 "`L" = "`ℓ"
 "`V" = "`ℓ"
-
-[typeVars]
-sort = "Ty"
-allowed = ["X", "Y", "Z", "U", "S", "T", "ℛ"]
 
 [[pairSkip]]
 path = "Inception/SystemL/"
@@ -91,3 +87,4 @@ letters = "ΓΔΨΞ"
 [[sorts]]
 exact = ["Ty"]
 letters = "XYZUSTℛ"
+reserved = true

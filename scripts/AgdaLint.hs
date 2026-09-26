@@ -80,8 +80,8 @@ data RuleId
   | Prime
   | PrefixType
   | BannedName
-  | TypeVarLetter
   | SortLetter
+  | ReservedLetter
   | UnneededSubscript
   | PairSubscript
   | UnusedVariable
@@ -130,8 +130,8 @@ rule r = case r of
   Prime -> Rule r Error "no primes on single-letter variables (Γ', σ'')" checkPrime
   PrefixType -> Rule r Error "write types that have a syntax declaration in their notation" checkPrefixType
   BannedName -> Rule r Error "names listed in [bannedNames]" checkBannedName
-  TypeVarLetter -> Rule r Error "variables of the [typeVars] sort use the allowed letters, and only they do" checkTypeVarLetter
-  SortLetter -> Rule r Warning "typed binders use the letters configured in [[sorts]]" checkSortLetter
+  SortLetter -> Rule r Warning "typed binders and variables use the letters configured in [[sorts]]" checkSortLetter
+  ReservedLetter -> Rule r Error "letters of a reserved sort are not used for binders of other types" checkReservedLetter
   UnneededSubscript -> Rule r Warning "a lone M₁ in a clause should be M" checkUnneededSubscript
   PairSubscript -> Rule r Warning "two of a kind use the letter pair (M N), not M M₁" checkPairSubscript
   UnusedVariable -> Rule r Warning "generalizable variables that are never used" checkUnusedVariable
@@ -201,11 +201,9 @@ data SectionTitle = Sentence | Lower | Any
 
 data Banned = Banned {bannedReplacement :: Maybe Text, bannedAutoFix :: Bool}
 
-data TypeVarSpec = TypeVarSpec {typeSort :: Text, typeLetters :: [Text]}
-
 data SortMatch = HeadsAnyOf [Text] | ExactlyOneOf [Text]
 
-data SortSpec = SortSpec {sortMatch :: SortMatch, sortLetters :: [Text]}
+data SortSpec = SortSpec {sortMatch :: SortMatch, sortLetters :: [Text], sortReserved :: Bool}
 
 data PairSkip = PairSkip {skipPath :: FilePath, skipPairs :: [(Text, Text)]}
 
@@ -222,7 +220,6 @@ data Config = Config
   , cfgRules           :: Map RuleId Level
   , cfgBannedNames     :: Map Text Banned
   , cfgSubscriptIgnore :: [Text]
-  , cfgTypeVars        :: Maybe TypeVarSpec
   , cfgSubscriptExempt :: [Text]
   , cfgSorts           :: [SortSpec]
   , cfgPairs           :: [(Text, Text)]
@@ -239,7 +236,6 @@ data RawConfig = RawConfig
   , bannedNames          :: Maybe (Map Text Text)
   , fixBannedNames       :: Maybe [Text]
   , asciiSubscriptIgnore :: Maybe [Text]
-  , typeVars             :: Maybe RawTypeVars
   , subscriptExempt      :: Maybe [Text]
   , sorts                :: Maybe [RawSort]
   , pairs                :: Maybe [Text]
@@ -248,10 +244,7 @@ data RawConfig = RawConfig
   }
   deriving (Generic)
 
-data RawTypeVars = RawTypeVars {sort :: Text, allowed :: [Text]}
-  deriving (Generic)
-
-data RawSort = RawSort {heads :: Maybe [Text], exact :: Maybe [Text], letters :: Text}
+data RawSort = RawSort {heads :: Maybe [Text], exact :: Maybe [Text], letters :: Text, reserved :: Maybe Bool}
   deriving (Generic)
 
 data RawPairSkip = RawPairSkip {path :: Text, pairs :: [Text]}
@@ -261,7 +254,6 @@ data RawStyle = RawStyle {lineLength :: Maybe Int, sectionWidth :: Maybe Int, se
   deriving (Generic)
 
 instance FromValue RawConfig where fromValue = genericFromTable
-instance FromValue RawTypeVars where fromValue = genericFromTable
 instance FromValue RawSort where fromValue = genericFromTable
 instance FromValue RawPairSkip where fromValue = genericFromTable
 instance FromValue RawStyle where fromValue = genericFromTable
@@ -283,7 +275,7 @@ pairOf t = case T.unpack t of
   _      -> (t, t)
 
 resolveConfig :: RawConfig -> Either String Config
-resolveConfig RawConfig {sources, exclude, allowlist, rules, bannedNames, fixBannedNames, asciiSubscriptIgnore, typeVars, subscriptExempt, sorts, pairs, pairSkip, style} = do
+resolveConfig RawConfig {sources, exclude, allowlist, rules, bannedNames, fixBannedNames, asciiSubscriptIgnore, subscriptExempt, sorts, pairs, pairSkip, style} = do
   let settings = fromMaybe Map.empty rules
       unknown = [n | n <- Map.keys settings, n `notElem` map ruleName [minBound .. maxBound]]
       letterPairs = fromMaybe [] pairs
@@ -299,7 +291,6 @@ resolveConfig RawConfig {sources, exclude, allowlist, rules, bannedNames, fixBan
       , cfgRules = Map.fromList [(r, Map.findWithDefault (ruleDefault (rule r)) (ruleName r) settings) | r <- [minBound .. maxBound]]
       , cfgBannedNames = Map.mapWithKey (banned (fromMaybe [] fixBannedNames)) (fromMaybe Map.empty bannedNames)
       , cfgSubscriptIgnore = fromMaybe [] asciiSubscriptIgnore
-      , cfgTypeVars = (\RawTypeVars {sort, allowed} -> TypeVarSpec sort allowed) <$> typeVars
       , cfgSubscriptExempt = fromMaybe [] subscriptExempt
       , cfgSorts = sortSpecs
       , cfgPairs = map pairOf letterPairs
@@ -308,9 +299,9 @@ resolveConfig RawConfig {sources, exclude, allowlist, rules, bannedNames, fixBan
       }
   where
     banned fixable k v = Banned (if T.null v then Nothing else Just v) (k `elem` fixable)
-    resolveSort RawSort {heads, exact, letters} = case (heads, exact) of
-      (Just hs, Nothing) -> Right (SortSpec (HeadsAnyOf hs) (map T.singleton (T.unpack letters)))
-      (Nothing, Just es) -> Right (SortSpec (ExactlyOneOf es) (map T.singleton (T.unpack letters)))
+    resolveSort RawSort {heads, exact, letters, reserved} = case (heads, exact) of
+      (Just hs, Nothing) -> Right (SortSpec (HeadsAnyOf hs) (map T.singleton (T.unpack letters)) (fromMaybe False reserved))
+      (Nothing, Just es) -> Right (SortSpec (ExactlyOneOf es) (map T.singleton (T.unpack letters)) (fromMaybe False reserved))
       _                  -> Left "a sort needs exactly one of heads or exact"
     resolvePairSkip RawPairSkip {path, pairs = ps} = PairSkip (T.unpack path) (map pairOf ps)
     defaultStyle = StyleSpec 72 72 Sentence
@@ -663,7 +654,10 @@ binders = fromMaybe [] . runTokens (scan binder)
     isBracket t = tokKind t == Delim && tokText t `elem` ["(", ")", "{", "}"]
 
 codomain :: [Token] -> [Text]
-codomain = reverse . takeWhile (/= "→") . reverse . texts
+codomain = codomainOf . texts
+
+codomainOf :: [Text] -> [Text]
+codomainOf = reverse . takeWhile (/= "→") . reverse
 
 ------------------------------------------------------------------------
 -- context
@@ -815,39 +809,35 @@ checkBannedName ctx f =
 hasLetterFrom :: [Text] -> Text -> Bool
 hasLetterFrom letters v = any (maybe False (T.all isSubscript) . (`T.stripPrefix` v)) letters
 
-checkTypeVarLetter :: Context -> SourceFile -> [Finding]
-checkTypeVarLetter ctx f = case cfgTypeVars (ctxConfig ctx) of
-  Nothing -> []
-  Just tv ->
-    [ finding (tokPos n) ("type variable " <> tokText n <> ": use " <> T.intercalate ", " (typeLetters tv))
-    | n <- binderVars tv ++ declVars tv
-    , not (hasLetterFrom (typeLetters tv) (tokText n))
-    ]
-      ++ [ finding (tokPos n) (tokText n <> " is a type letter, but has type " <> T.unwords (texts (binderType b)))
-         | l <- codeLines f
-         , b <- binders (codeTokens l)
-         , let ty = texts (binderType b)
-         , not (null ty), ty /= ["_"], ty /= [typeSort tv]
-         -- universes are types too
-         , "Set" `notElem` take 1 (codomain (binderType b))
-         , n <- binderNames b
-         , hasLetterFrom (typeLetters tv) (tokText n)
-         ]
-  where
-    binderVars tv = [n | l <- codeLines f, b <- binders (codeTokens l), texts (binderType b) == [typeSort tv], n <- binderNames b]
-    declVars tv = [n | v <- srcVariables f, varType v == [typeSort tv], n <- varNames v]
-
 checkSortLetter :: Context -> SourceFile -> [Finding]
 checkSortLetter ctx f =
   [ finding (tokPos n) (tokText n <> " : " <> T.unwords cod <> " should be one of " <> T.unwords (sortLetters s))
-  | l <- codeLines f
-  , b <- binders (codeTokens l)
-  , let cod = codomain (binderType b)
+  | (ns, cod) <- [(binderNames b, codomain (binderType b)) | l <- codeLines f, b <- binders (codeTokens l)]
+      ++ [(varNames v, codomainOf (varType v)) | v <- srcVariables f]
   , Just s <- [find (sortMatches cod) (cfgSorts (ctxConfig ctx))]
-  , n <- binderNames b
+  , n <- ns
   , tokText n /= "_"
   , not (hasLetterFrom (sortLetters s) (tokText n))
   ]
+
+checkReservedLetter :: Context -> SourceFile -> [Finding]
+checkReservedLetter ctx f =
+  [ finding (tokPos n) (tokText n <> " is reserved for " <> T.unwords (sortNames s) <> ", but has type " <> T.unwords (texts (binderType b)))
+  | l <- codeLines f
+  , b <- binders (codeTokens l)
+  , let cod = codomain (binderType b)
+  , not (null cod), cod /= ["_"]
+  -- universes are types too
+  , take 1 cod /= ["Set"]
+  , n <- binderNames b
+  , Just s <- [find (\o -> sortReserved o && hasLetterFrom (sortLetters o) (tokText n)) sorts]
+  , not (sortMatches cod s)
+  ]
+  where
+    sorts = cfgSorts (ctxConfig ctx)
+    sortNames s = case sortMatch s of
+      HeadsAnyOf hs   -> hs
+      ExactlyOneOf es -> es
 
 sortMatches :: [Text] -> SortSpec -> Bool
 sortMatches cod s = case sortMatch s of
