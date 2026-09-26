@@ -156,7 +156,7 @@ mutual
   eqComp (app-cong p q) rewrite eqVal p | eqVal q = refl
   eqComp (rec-cong p q) rewrite eqVal p | eqVal q = refl
   eqComp (inc-cong p q) rewrite eqComp p | eqComp q = refl
-  eqComp (pm-beta V1 V2 M) = refl
+  eqComp (pm-beta V W M) = refl
   eqComp (pm-eta V M) = refl
   eqComp (return-beta V M) = refl
   eqComp (return-eta _) = refl
@@ -165,6 +165,6 @@ mutual
   eqComp (inc-weak _ N) = refl
   eqComp (inc-subst _ _) = refl
   eqComp (inc-ext M V) = refl
-  eqComp (inc-assoc L M N) = refl
+  eqComp (inc-assoc M N P) = refl
   eqComp (rec-push V W M) = refl
-  eqComp (inc-push M N L) = refl
+  eqComp (inc-push M N P) = refl

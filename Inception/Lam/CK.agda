@@ -109,16 +109,16 @@ SN-ext∷-C {M = return V} {K₀ = N₀ ∷ K₀} (sn f) rtn H =
 
 RTN-ext∷-C : {E : Ty} {M : Γ ⊢ᶜ A} {K₀ : Γ ⊢ᵏ A ⇒ D} {N : (Γ ∙ D) ⊢ᶜ E} {K : Γ ⊢ᵏ E ⇒ C}
            → (∀ {V} → ⟨ M ∥ K₀ ⟩ ↠ᵏ ⟨ return V ∥ ε ⟩ → Redᵛ D V)
-           → (∀ {V} → Redᵛ D V → ∀ {V'} → ⟨ sub-comp (sub-ex sub-id V) N ∥ K ⟩ ↠ᵏ ⟨ return V' ∥ ε ⟩ → Redᵛ C V')
-           → {V' : Γ ⊢ᵛ C} → ⟨ M ∥ graft K₀ (N ∷ K) ⟩ ↠ᵏ ⟨ return V' ∥ ε ⟩ → Redᵛ C V'
-RTN-ext∷-C {M = push M₀ N₀} rtn H2 (_ ~>⟨ push-step ⟩ rest) =
-  RTN-ext∷-C (λ ch → rtn (_ ~>⟨ push-step ⟩ ch)) H2 rest
-RTN-ext∷-C {M = app (var i) V} rtn H2 (_ ~>⟨ () ⟩ rest)
-RTN-ext∷-C {M = app (lam N₀) V} rtn H2 (_ ~>⟨ app-lam-step ⟩ rest) =
-  RTN-ext∷-C (λ ch → rtn (_ ~>⟨ app-lam-step ⟩ ch)) H2 rest
-RTN-ext∷-C {M = return V} {K₀ = ε} rtn H2 (_ ~>⟨ return-step ⟩ rest) = H2 (rtn (_ ◼)) rest
-RTN-ext∷-C {M = return V} {K₀ = N₀ ∷ K₀} rtn H2 (_ ~>⟨ return-step ⟩ rest) =
-  RTN-ext∷-C (λ ch → rtn (_ ~>⟨ return-step ⟩ ch)) H2 rest
+           → (∀ {V} → Redᵛ D V → ∀ {W} → ⟨ sub-comp (sub-ex sub-id V) N ∥ K ⟩ ↠ᵏ ⟨ return W ∥ ε ⟩ → Redᵛ C W)
+           → {W : Γ ⊢ᵛ C} → ⟨ M ∥ graft K₀ (N ∷ K) ⟩ ↠ᵏ ⟨ return W ∥ ε ⟩ → Redᵛ C W
+RTN-ext∷-C {M = push M₀ N₀} rtn H₂ (_ ~>⟨ push-step ⟩ rest) =
+  RTN-ext∷-C (λ ch → rtn (_ ~>⟨ push-step ⟩ ch)) H₂ rest
+RTN-ext∷-C {M = app (var i) V} rtn H₂ (_ ~>⟨ () ⟩ rest)
+RTN-ext∷-C {M = app (lam N₀) V} rtn H₂ (_ ~>⟨ app-lam-step ⟩ rest) =
+  RTN-ext∷-C (λ ch → rtn (_ ~>⟨ app-lam-step ⟩ ch)) H₂ rest
+RTN-ext∷-C {M = return V} {K₀ = ε} rtn H₂ (_ ~>⟨ return-step ⟩ rest) = H₂ (rtn (_ ◼)) rest
+RTN-ext∷-C {M = return V} {K₀ = N₀ ∷ K₀} rtn H₂ (_ ~>⟨ return-step ⟩ rest) =
+  RTN-ext∷-C (λ ch → rtn (_ ~>⟨ return-step ⟩ ch)) H₂ rest
 
 exp-push : {M : Γ ⊢ᶜ A} {N : (Γ ∙ A) ⊢ᶜ B}
          → Redᶜ A M → (∀ {V : Γ ⊢ᵛ A} → Redᵛ A V → Redᶜ B (sub-comp (sub-ex sub-id V) N))

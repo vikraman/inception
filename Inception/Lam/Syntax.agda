@@ -86,43 +86,43 @@ mutual
 
 variable
   x : Γ ∋ A
-  V V1 V2 V3 : Γ ⊢ᵛ A
-  W W1 W2 W3 : Γ ⊢ᵛ A
-  M M1 M2 M3 : Γ ⊢ᶜ A
-  N N1 N2 N3 : Γ ⊢ᶜ A
+  V V₁ V₂ V₃ : Γ ⊢ᵛ A
+  W W₁ W₂ W₃ : Γ ⊢ᵛ A
+  M M₁ M₂ M₃ : Γ ⊢ᶜ A
+  N N₁ N₂ N₃ : Γ ⊢ᶜ A
 
 --------------------------------------------------------------------------
 -- weakening
 
 mutual
-  wk-val-id : (M : Γ ⊢ᵛ A) → wk-val wk-id M ≡ M
-  wk-val-id (var i)      = cong var wk-mem-id
-  wk-val-id (lam W)      = cong lam (wk-comp-id W)
-  wk-val-id unit         = refl
+  wk-val-id : (V : Γ ⊢ᵛ A) → wk-val wk-id V ≡ V
+  wk-val-id (var i) = cong var wk-mem-id
+  wk-val-id (lam M) = cong lam (wk-comp-id M)
+  wk-val-id unit    = refl
 
-  wk-comp-id : (W : Γ ⊢ᶜ A) → wk-comp wk-id W ≡ W
+  wk-comp-id : (M : Γ ⊢ᶜ A) → wk-comp wk-id M ≡ M
   wk-comp-id (return V) = cong return (wk-val-id V)
   wk-comp-id (push M N) = cong₂ push (wk-comp-id M) (wk-comp-id N)
-  wk-comp-id (app W W₁) = cong₂ app (wk-val-id W) (wk-val-id W₁)
+  wk-comp-id (app V W)  = cong₂ app (wk-val-id V) (wk-val-id W)
 
 mutual
-  wk-val-trans : (M : Γ ⊢ᵛ A) → (π₁ : Ψ ⊇ Δ) → (π₂ : Δ ⊇ Γ) → wk-val π₁ (wk-val π₂ M) ≡ wk-val (wk-trans π₁ π₂) M
+  wk-val-trans : (V : Γ ⊢ᵛ A) → (π₁ : Ψ ⊇ Δ) → (π₂ : Δ ⊇ Γ) → wk-val π₁ (wk-val π₂ V) ≡ wk-val (wk-trans π₁ π₂) V
   wk-val-trans (var i) π₁ π₂ = cong var (wk-mem-trans i π₁ π₂)
-  wk-val-trans (lam x) π₁ π₂ = cong lam (wk-comp-trans x (wk-cong π₁) (wk-cong π₂))
+  wk-val-trans (lam M) π₁ π₂ = cong lam (wk-comp-trans M (wk-cong π₁) (wk-cong π₂))
   wk-val-trans unit π₁ π₂    = refl
 
-  wk-comp-trans : (W : Γ ⊢ᶜ A) → (π₁ : Ψ ⊇ Δ) → (π₂ : Δ ⊇ Γ) → wk-comp π₁ (wk-comp π₂ W) ≡ wk-comp (wk-trans π₁ π₂) W
-  wk-comp-trans (return M) π₁ π₂ = cong return (wk-val-trans M π₁ π₂)
+  wk-comp-trans : (M : Γ ⊢ᶜ A) → (π₁ : Ψ ⊇ Δ) → (π₂ : Δ ⊇ Γ) → wk-comp π₁ (wk-comp π₂ M) ≡ wk-comp (wk-trans π₁ π₂) M
+  wk-comp-trans (return V) π₁ π₂ = cong return (wk-val-trans V π₁ π₂)
   wk-comp-trans (push M N) π₁ π₂ = cong₂ push (wk-comp-trans M π₁ π₂) (wk-comp-trans N (wk-cong π₁) (wk-cong π₂))
   wk-comp-trans (app V W) π₁ π₂  = cong₂ app (wk-val-trans V π₁ π₂) (wk-val-trans W π₁ π₂)
 
 --------------------------------------------------------------------------
 -- weakening/substitution
 
-sub-wk-trans : (π1 : Γ ⊇ Γ') (π2 : Γ' ⊇ Γ'') (θ : Γ'' ⊢ Δ)
-             -> sub-wk π1 (sub-wk π2 θ) ≡ sub-wk (wk-trans π1 π2) θ
-sub-wk-trans π1 π2 sub-ε        = refl
-sub-wk-trans π1 π2 (sub-ex θ V) = cong₂ sub-ex (sub-wk-trans π1 π2 θ) (wk-val-trans V π1 π2)
+sub-wk-trans : (π₁ : Γ ⊇ Γ') (π₂ : Γ' ⊇ Γ'') (θ : Γ'' ⊢ Δ)
+             -> sub-wk π₁ (sub-wk π₂ θ) ≡ sub-wk (wk-trans π₁ π₂) θ
+sub-wk-trans π₁ π₂ sub-ε        = refl
+sub-wk-trans π₁ π₂ (sub-ex θ V) = cong₂ sub-ex (sub-wk-trans π₁ π₂ θ) (wk-val-trans V π₁ π₂)
 
 sub-wk-wk-wk-id : (θ : Γ ⊢ Δ) -> sub-wk (wk-wk {A = A} wk-id) (sub-wk (wk-wk {A = B} wk-id) θ) ≡ sub-wk (wk-wk {A = A} (wk-wk {A = B} wk-id)) θ
 sub-wk-wk-wk-id θ = begin
@@ -282,59 +282,59 @@ wk-beta-1 π V M = begin
 -- substitution composition
 
 sub-comp-sub : Γ ⊢ Δ -> Δ ⊢ Ψ -> Γ ⊢ Ψ
-sub-comp-sub θ1 sub-ε        = sub-ε
-sub-comp-sub θ1 (sub-ex θ2 V) = sub-ex (sub-comp-sub θ1 θ2) (sub-val θ1 V)
+sub-comp-sub θ₁ sub-ε        = sub-ε
+sub-comp-sub θ₁ (sub-ex θ₂ V) = sub-ex (sub-comp-sub θ₁ θ₂) (sub-val θ₁ V)
 
-sub-mem-sub : (θ1 : Γ ⊢ Δ) (θ2 : Δ ⊢ Ψ) (i : Ψ ∋ A) -> sub-mem (sub-comp-sub θ1 θ2) i ≡ sub-val θ1 (sub-mem θ2 i)
-sub-mem-sub θ1 (sub-ex θ2 V) here     = refl
-sub-mem-sub θ1 (sub-ex θ2 V) (there i) = sub-mem-sub θ1 θ2 i
+sub-mem-sub : (θ₁ : Γ ⊢ Δ) (θ₂ : Δ ⊢ Ψ) (i : Ψ ∋ A) -> sub-mem (sub-comp-sub θ₁ θ₂) i ≡ sub-val θ₁ (sub-mem θ₂ i)
+sub-mem-sub θ₁ (sub-ex θ₂ V) here     = refl
+sub-mem-sub θ₁ (sub-ex θ₂ V) (there i) = sub-mem-sub θ₁ θ₂ i
 
-sub-comp-sub-wk-r : (θ1 : Γ ⊢ Δ') (π : Δ' ⊇ Δ) (θ2 : Δ ⊢ Ψ) -> sub-comp-sub θ1 (sub-wk π θ2) ≡ sub-comp-sub (sub-pre θ1 π) θ2
-sub-comp-sub-wk-r θ1 π sub-ε        = refl
-sub-comp-sub-wk-r θ1 π (sub-ex θ2 V) = cong₂ sub-ex (sub-comp-sub-wk-r θ1 π θ2) (sub-val-wk-pre θ1 π V)
+sub-comp-sub-wk-r : (θ₁ : Γ ⊢ Δ') (π : Δ' ⊇ Δ) (θ₂ : Δ ⊢ Ψ) -> sub-comp-sub θ₁ (sub-wk π θ₂) ≡ sub-comp-sub (sub-pre θ₁ π) θ₂
+sub-comp-sub-wk-r θ₁ π sub-ε        = refl
+sub-comp-sub-wk-r θ₁ π (sub-ex θ₂ V) = cong₂ sub-ex (sub-comp-sub-wk-r θ₁ π θ₂) (sub-val-wk-pre θ₁ π V)
 
-sub-comp-sub-wk-l : (ρ : Γ' ⊇ Γ) (θ1 : Γ ⊢ Δ) (θ2 : Δ ⊢ Ψ) -> sub-comp-sub (sub-wk ρ θ1) θ2 ≡ sub-wk ρ (sub-comp-sub θ1 θ2)
-sub-comp-sub-wk-l ρ θ1 sub-ε        = refl
-sub-comp-sub-wk-l ρ θ1 (sub-ex θ2 V) = cong₂ sub-ex (sub-comp-sub-wk-l ρ θ1 θ2) (sym (wk-sub-val ρ θ1 V))
+sub-comp-sub-wk-l : (ρ : Γ' ⊇ Γ) (θ₁ : Γ ⊢ Δ) (θ₂ : Δ ⊢ Ψ) -> sub-comp-sub (sub-wk ρ θ₁) θ₂ ≡ sub-wk ρ (sub-comp-sub θ₁ θ₂)
+sub-comp-sub-wk-l ρ θ₁ sub-ε        = refl
+sub-comp-sub-wk-l ρ θ₁ (sub-ex θ₂ V) = cong₂ sub-ex (sub-comp-sub-wk-l ρ θ₁ θ₂) (sym (wk-sub-val ρ θ₁ V))
 
-sub-comp-sub-ext1 : (θ1 : Γ ⊢ Δ) (θ2 : Δ ⊢ Ψ)
-  -> sub-comp-sub (sub-ex (sub-wk (wk-wk {A = A} wk-id) θ1) (var here)) (sub-ex (sub-wk (wk-wk wk-id) θ2) (var here))
-   ≡ sub-ex (sub-wk (wk-wk wk-id) (sub-comp-sub θ1 θ2)) (var here)
-sub-comp-sub-ext1 θ1 θ2 =
+sub-comp-sub-ext1 : (θ₁ : Γ ⊢ Δ) (θ₂ : Δ ⊢ Ψ)
+  -> sub-comp-sub (sub-ex (sub-wk (wk-wk {A = A} wk-id) θ₁) (var here)) (sub-ex (sub-wk (wk-wk wk-id) θ₂) (var here))
+   ≡ sub-ex (sub-wk (wk-wk wk-id) (sub-comp-sub θ₁ θ₂)) (var here)
+sub-comp-sub-ext1 θ₁ θ₂ =
   cong₂ sub-ex
     (begin
-      sub-comp-sub (sub-ex (sub-wk (wk-wk wk-id) θ1) (var here)) (sub-wk (wk-wk wk-id) θ2)
-    ≡⟨ sub-comp-sub-wk-r (sub-ex (sub-wk (wk-wk wk-id) θ1) (var here)) (wk-wk wk-id) θ2 ⟩
-      sub-comp-sub (sub-pre (sub-wk (wk-wk wk-id) θ1) wk-id) θ2
-    ≡⟨ cong (λ w -> sub-comp-sub w θ2) (sub-pre-wk-id (sub-wk (wk-wk wk-id) θ1)) ⟩
-      sub-comp-sub (sub-wk (wk-wk wk-id) θ1) θ2
-    ≡⟨ sub-comp-sub-wk-l (wk-wk wk-id) θ1 θ2 ⟩
-      sub-wk (wk-wk wk-id) (sub-comp-sub θ1 θ2) ∎)
+      sub-comp-sub (sub-ex (sub-wk (wk-wk wk-id) θ₁) (var here)) (sub-wk (wk-wk wk-id) θ₂)
+    ≡⟨ sub-comp-sub-wk-r (sub-ex (sub-wk (wk-wk wk-id) θ₁) (var here)) (wk-wk wk-id) θ₂ ⟩
+      sub-comp-sub (sub-pre (sub-wk (wk-wk wk-id) θ₁) wk-id) θ₂
+    ≡⟨ cong (λ w -> sub-comp-sub w θ₂) (sub-pre-wk-id (sub-wk (wk-wk wk-id) θ₁)) ⟩
+      sub-comp-sub (sub-wk (wk-wk wk-id) θ₁) θ₂
+    ≡⟨ sub-comp-sub-wk-l (wk-wk wk-id) θ₁ θ₂ ⟩
+      sub-wk (wk-wk wk-id) (sub-comp-sub θ₁ θ₂) ∎)
     refl
 
 mutual
-  sub-sub-val : (θ1 : Γ ⊢ Δ) (θ2 : Δ ⊢ Ψ) (V : Ψ ⊢ᵛ A) -> sub-val θ1 (sub-val θ2 V) ≡ sub-val (sub-comp-sub θ1 θ2) V
-  sub-sub-val θ1 θ2 (var i) = sym (sub-mem-sub θ1 θ2 i)
-  sub-sub-val θ1 θ2 (lam M) =
+  sub-sub-val : (θ₁ : Γ ⊢ Δ) (θ₂ : Δ ⊢ Ψ) (V : Ψ ⊢ᵛ A) -> sub-val θ₁ (sub-val θ₂ V) ≡ sub-val (sub-comp-sub θ₁ θ₂) V
+  sub-sub-val θ₁ θ₂ (var i) = sym (sub-mem-sub θ₁ θ₂ i)
+  sub-sub-val θ₁ θ₂ (lam M) =
     cong lam (begin
-      sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ1) (var here)) (sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ2) (var here)) M)
-    ≡⟨ sub-sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ1) (var here)) (sub-ex (sub-wk (wk-wk wk-id) θ2) (var here)) M ⟩
-      sub-comp (sub-comp-sub (sub-ex (sub-wk (wk-wk wk-id) θ1) (var here)) (sub-ex (sub-wk (wk-wk wk-id) θ2) (var here))) M
-    ≡⟨ cong (λ w -> sub-comp w M) (sub-comp-sub-ext1 θ1 θ2) ⟩
-      sub-comp (sub-ex (sub-wk (wk-wk wk-id) (sub-comp-sub θ1 θ2)) (var here)) M ∎)
-  sub-sub-val θ1 θ2 unit = refl
+      sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ₁) (var here)) (sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ₂) (var here)) M)
+    ≡⟨ sub-sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ₁) (var here)) (sub-ex (sub-wk (wk-wk wk-id) θ₂) (var here)) M ⟩
+      sub-comp (sub-comp-sub (sub-ex (sub-wk (wk-wk wk-id) θ₁) (var here)) (sub-ex (sub-wk (wk-wk wk-id) θ₂) (var here))) M
+    ≡⟨ cong (λ w -> sub-comp w M) (sub-comp-sub-ext1 θ₁ θ₂) ⟩
+      sub-comp (sub-ex (sub-wk (wk-wk wk-id) (sub-comp-sub θ₁ θ₂)) (var here)) M ∎)
+  sub-sub-val θ₁ θ₂ unit = refl
 
-  sub-sub-comp : (θ1 : Γ ⊢ Δ) (θ2 : Δ ⊢ Ψ) (M : Ψ ⊢ᶜ A) -> sub-comp θ1 (sub-comp θ2 M) ≡ sub-comp (sub-comp-sub θ1 θ2) M
-  sub-sub-comp θ1 θ2 (return V) = cong return (sub-sub-val θ1 θ2 V)
-  sub-sub-comp θ1 θ2 (push M N) =
-    cong₂ push (sub-sub-comp θ1 θ2 M)
+  sub-sub-comp : (θ₁ : Γ ⊢ Δ) (θ₂ : Δ ⊢ Ψ) (M : Ψ ⊢ᶜ A) -> sub-comp θ₁ (sub-comp θ₂ M) ≡ sub-comp (sub-comp-sub θ₁ θ₂) M
+  sub-sub-comp θ₁ θ₂ (return V) = cong return (sub-sub-val θ₁ θ₂ V)
+  sub-sub-comp θ₁ θ₂ (push M N) =
+    cong₂ push (sub-sub-comp θ₁ θ₂ M)
                (begin
-                 sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ1) (var here)) (sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ2) (var here)) N)
-               ≡⟨ sub-sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ1) (var here)) (sub-ex (sub-wk (wk-wk wk-id) θ2) (var here)) N ⟩
-                 sub-comp (sub-comp-sub (sub-ex (sub-wk (wk-wk wk-id) θ1) (var here)) (sub-ex (sub-wk (wk-wk wk-id) θ2) (var here))) N
-               ≡⟨ cong (λ w -> sub-comp w N) (sub-comp-sub-ext1 θ1 θ2) ⟩
-                 sub-comp (sub-ex (sub-wk (wk-wk wk-id) (sub-comp-sub θ1 θ2)) (var here)) N ∎)
-  sub-sub-comp θ1 θ2 (app V W) = cong₂ app (sub-sub-val θ1 θ2 V) (sub-sub-val θ1 θ2 W)
+                 sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ₁) (var here)) (sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ₂) (var here)) N)
+               ≡⟨ sub-sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ₁) (var here)) (sub-ex (sub-wk (wk-wk wk-id) θ₂) (var here)) N ⟩
+                 sub-comp (sub-comp-sub (sub-ex (sub-wk (wk-wk wk-id) θ₁) (var here)) (sub-ex (sub-wk (wk-wk wk-id) θ₂) (var here))) N
+               ≡⟨ cong (λ w -> sub-comp w N) (sub-comp-sub-ext1 θ₁ θ₂) ⟩
+                 sub-comp (sub-ex (sub-wk (wk-wk wk-id) (sub-comp-sub θ₁ θ₂)) (var here)) N ∎)
+  sub-sub-comp θ₁ θ₂ (app V W) = cong₂ app (sub-sub-val θ₁ θ₂ V) (sub-sub-val θ₁ θ₂ W)
 
 mutual
   sub-val-ren : (π : Γ ⊇ Δ) (V : Δ ⊢ᵛ A) -> sub-val (ren π) V ≡ wk-val π V

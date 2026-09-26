@@ -21,13 +21,13 @@ mutual
     _∷_ : Env Γ → MVal A → Env (Γ ∙ A)
 
 lookup : Env Γ → Γ ∋ A → MVal A
-lookup (ρ ∷ v) here     = v
-lookup (ρ ∷ v) (there i) = lookup ρ i
+lookup (γ ∷ 𝐕) here     = 𝐕
+lookup (γ ∷ 𝐕) (there i) = lookup γ i
 
 eval-val : Γ ⊢ᵛ A → Env Γ → MVal A
-eval-val (var i) ρ = lookup ρ i
-eval-val (lam M) ρ = clo M ρ
-eval-val unit    ρ = unit
+eval-val (var i) γ = lookup γ i
+eval-val (lam M) γ = clo M γ
+eval-val unit    γ = unit
 
 --------------------------------------------------------------------------
 -- continuations
@@ -36,7 +36,7 @@ infixr 20 _◂_∷_
 
 data Kont : Ty → Ty → Set where
   ε     : Kont A A
-  _◂_∷_ : {Γ : Ctx} → (N : (Γ ∙ A) ⊢ᶜ B) → (ρ : Env Γ) → (κ : Kont B C) → Kont A C
+  _◂_∷_ : {Γ : Ctx} → (N : (Γ ∙ A) ⊢ᶜ B) → (γ : Env Γ) → (K : Kont B C) → Kont A C
 
 --------------------------------------------------------------------------
 -- states, configurations, transitions
@@ -49,23 +49,23 @@ data Cfg : Ty → Set where
   ⟨_∥_⟩   : MVal A → Kont A B → Cfg B
 
 apply : MVal (A `⇒ B) → MVal A → Kont B C → Cfg C
-apply (clo N ρ) w κ = ⟨ N ∥ ρ ∷ w ∥ κ ⟩
+apply (clo N γ) 𝐖 K = ⟨ N ∥ γ ∷ 𝐖 ∥ K ⟩
 
 infix 5 _→ᵏ_
 
 data _→ᵏ_ : {B : Ty} → Cfg B → Cfg B → Set where
 
-  push-step   : {Γ : Ctx} {M : Γ ⊢ᶜ A} {N : (Γ ∙ A) ⊢ᶜ B} {ρ : Env Γ} {κ : Kont B C}
-              → ⟨ push M N ∥ ρ ∥ κ ⟩ →ᵏ ⟨ M ∥ ρ ∥ N ◂ ρ ∷ κ ⟩
+  push-step   : {Γ : Ctx} {M : Γ ⊢ᶜ A} {N : (Γ ∙ A) ⊢ᶜ B} {γ : Env Γ} {K : Kont B C}
+              → ⟨ push M N ∥ γ ∥ K ⟩ →ᵏ ⟨ M ∥ γ ∥ N ◂ γ ∷ K ⟩
 
-  return-step : {Γ : Ctx} {V : Γ ⊢ᵛ A} {ρ : Env Γ} {κ : Kont A B}
-              → ⟨ return V ∥ ρ ∥ κ ⟩ →ᵏ ⟨ eval-val V ρ ∥ κ ⟩
+  return-step : {Γ : Ctx} {V : Γ ⊢ᵛ A} {γ : Env Γ} {K : Kont A B}
+              → ⟨ return V ∥ γ ∥ K ⟩ →ᵏ ⟨ eval-val V γ ∥ K ⟩
 
-  resume-step : {Γ : Ctx} {v : MVal A} {N : (Γ ∙ A) ⊢ᶜ B} {ρ : Env Γ} {κ : Kont B C}
-              → ⟨ v ∥ N ◂ ρ ∷ κ ⟩ →ᵏ ⟨ N ∥ ρ ∷ v ∥ κ ⟩
+  resume-step : {Γ : Ctx} {𝐕 : MVal A} {N : (Γ ∙ A) ⊢ᶜ B} {γ : Env Γ} {K : Kont B C}
+              → ⟨ 𝐕 ∥ N ◂ γ ∷ K ⟩ →ᵏ ⟨ N ∥ γ ∷ 𝐕 ∥ K ⟩
 
-  app-step    : {Γ : Ctx} {V : Γ ⊢ᵛ (A `⇒ B)} {W : Γ ⊢ᵛ A} {ρ : Env Γ} {κ : Kont B C}
-              → ⟨ app V W ∥ ρ ∥ κ ⟩ →ᵏ apply (eval-val V ρ) (eval-val W ρ) κ
+  app-step    : {Γ : Ctx} {V : Γ ⊢ᵛ (A `⇒ B)} {W : Γ ⊢ᵛ A} {γ : Env Γ} {K : Kont B C}
+              → ⟨ app V W ∥ γ ∥ K ⟩ →ᵏ apply (eval-val V γ) (eval-val W γ) K
 
 infix 5 _↠ᵏ_
 
@@ -84,20 +84,20 @@ data SN {B} (σ : Cfg B) : Set where
 Redᵛ : (A : Ty) → MVal A → Set
 Redᵏ : (A : Ty) → Kont A B → Set
 
-Redᵛ `Unit    v = ⊤
-Redᵛ (A `⇒ B) v = ∀ {w} → Redᵛ A w → ∀ {C} {κ : Kont B C} → Redᵏ B κ → SN (apply v w κ)
+Redᵛ `Unit    𝐕 = ⊤
+Redᵛ (A `⇒ B) 𝐕 = ∀ {𝐖} → Redᵛ A 𝐖 → ∀ {C} {K : Kont B C} → Redᵏ B K → SN (apply 𝐕 𝐖 K)
 
-Redᵏ A κ = ∀ {v} → Redᵛ A v → SN ⟨ v ∥ κ ⟩
+Redᵏ A K = ∀ {𝐕} → Redᵛ A 𝐕 → SN ⟨ 𝐕 ∥ K ⟩
 
-record RedEnv (ρ : Env Γ) : Set where
-  field red : (i : Γ ∋ A) → Redᵛ A (lookup ρ i)
+record RedEnv (γ : Env Γ) : Set where
+  field red : (i : Γ ∋ A) → Redᵛ A (lookup γ i)
 open RedEnv
 
 RedEnv-∅ : RedEnv ∅
 red RedEnv-∅ ()
 
-RedEnv-ext : {ρ : Env Γ} {v : MVal A} → RedEnv ρ → Redᵛ A v → RedEnv (ρ ∷ v)
-RedEnv-ext redρ redv = record { red = λ { here → redv ; (there i) → redρ .red i } }
+RedEnv-ext : {γ : Env Γ} {𝐕 : MVal A} → RedEnv γ → Redᵛ A 𝐕 → RedEnv (γ ∷ 𝐕)
+RedEnv-ext redγ redv = record { red = λ { here → redv ; (there i) → redγ .red i } }
 
 Redᵏ-ε : Redᵏ A ε
 Redᵏ-ε redv = sn (λ ())
@@ -105,22 +105,22 @@ Redᵏ-ε redv = sn (λ ())
 --------------------------------------------------------------------------
 -- Fundamental Lemma
 
-Fundamental-val  : (V : Γ ⊢ᵛ A) {ρ : Env Γ} → RedEnv ρ → Redᵛ A (eval-val V ρ)
-Fundamental-comp : (M : Γ ⊢ᶜ A) {ρ : Env Γ} → RedEnv ρ → {κ : Kont A B} → Redᵏ A κ → SN ⟨ M ∥ ρ ∥ κ ⟩
+Fundamental-val  : (V : Γ ⊢ᵛ A) {γ : Env Γ} → RedEnv γ → Redᵛ A (eval-val V γ)
+Fundamental-comp : (M : Γ ⊢ᶜ A) {γ : Env Γ} → RedEnv γ → {K : Kont A B} → Redᵏ A K → SN ⟨ M ∥ γ ∥ K ⟩
 
-Fundamental-val (var i) redρ = redρ .red i
-Fundamental-val unit    redρ = tt
-Fundamental-val (lam M) {ρ} redρ {w} redw redκ = Fundamental-comp M (RedEnv-ext redρ redw) redκ
+Fundamental-val (var i) redγ = redγ .red i
+Fundamental-val unit    redγ = tt
+Fundamental-val (lam M) {γ} redγ {𝐖} redw redk = Fundamental-comp M (RedEnv-ext redγ redw) redk
 
-Fundamental-comp (return V) redρ redκ =
-  sn (λ { return-step → redκ (Fundamental-val V redρ) })
-Fundamental-comp (app V W) redρ redκ =
-  sn (λ { app-step → Fundamental-val V redρ (Fundamental-val W redρ) redκ })
-Fundamental-comp (push {A = A} M N) {ρ} redρ {κ} redκ =
-  sn (λ { push-step → Fundamental-comp M redρ redκ' })
+Fundamental-comp (return V) redγ redk =
+  sn (λ { return-step → redk (Fundamental-val V redγ) })
+Fundamental-comp (app V W) redγ redk =
+  sn (λ { app-step → Fundamental-val V redγ (Fundamental-val W redγ) redk })
+Fundamental-comp (push {A = A} M N) {γ} redγ {K} redk =
+  sn (λ { push-step → Fundamental-comp M redγ redk₁ })
   where
-  redκ' : Redᵏ A (N ◂ ρ ∷ κ)
-  redκ' redv = sn (λ { resume-step → Fundamental-comp N (RedEnv-ext redρ redv) redκ })
+  redk₁ : Redᵏ A (N ◂ γ ∷ K)
+  redk₁ redv = sn (λ { resume-step → Fundamental-comp N (RedEnv-ext redγ redv) redk })
 
 SN-theorem : (M : ε ⊢ᶜ A) → SN ⟨ M ∥ ∅ ∥ ε ⟩
 SN-theorem M = Fundamental-comp M RedEnv-∅ Redᵏ-ε
@@ -136,11 +136,11 @@ data Step? (σ : Cfg B) : Set where
   next : {σ' : Cfg B} → σ →ᵏ σ' → Step? σ
 
 step? : (σ : Cfg B) → Step? σ
-step? ⟨ push M N ∥ ρ ∥ κ ⟩ = next push-step
-step? ⟨ return V ∥ ρ ∥ κ ⟩ = next return-step
-step? ⟨ app V W ∥ ρ ∥ κ ⟩  = next app-step
-step? ⟨ v ∥ ε ⟩            = done (λ ())
-step? ⟨ v ∥ N ◂ ρ ∷ κ ⟩    = next resume-step
+step? ⟨ push M N ∥ γ ∥ K ⟩ = next push-step
+step? ⟨ return V ∥ γ ∥ K ⟩ = next return-step
+step? ⟨ app V W ∥ γ ∥ K ⟩  = next app-step
+step? ⟨ 𝐕 ∥ ε ⟩            = done (λ ())
+step? ⟨ 𝐕 ∥ N ◂ γ ∷ K ⟩    = next resume-step
 
 eval-acc : {σ : Cfg B} → SN σ → Σ[ σ' ∈ Cfg B ] (σ ↠ᵏ σ') × Normal σ'
 eval-acc {σ = σ} (sn f) with step? σ

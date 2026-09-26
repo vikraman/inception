@@ -53,7 +53,7 @@ mutual
   ⟦ app V K ⟧ᵏ = < ⟦ K ⟧ᵏ , ⟦ V ⟧ᵛ > ； η ； [ R ]^ cbv
   ⟦ fst K ⟧ᵏ = ⟦ K ⟧ᵏ ； curry′ (assocl ； proj₁ ； ev)
   ⟦ snd K ⟧ᵏ = ⟦ K ⟧ᵏ ； curry′ (assocl ； P.map proj₁ id ； ev)
-  ⟦ case K1 K2 ⟧ᵏ = < ⟦ K1 ⟧ᵏ , ⟦ K2 ⟧ᵏ > ； uncurry′ S.[_,_]
+  ⟦ case K₁ K₂ ⟧ᵏ = < ⟦ K₁ ⟧ᵏ , ⟦ K₂ ⟧ᵏ > ； uncurry′ S.[_,_]
   ⟦ μ̃ M ⟧ᵏ = curry′ (shuffle ； ⟦ M ⟧ᶜ)
   ⟦ tp ⟧ᵏ = const idf
 
@@ -93,7 +93,7 @@ mutual
   wk-cotm-coh ρ σ (app V K) rewrite wk-val-coh ρ σ V | wk-cotm-coh ρ σ K = refl
   wk-cotm-coh ρ σ (fst K) rewrite wk-cotm-coh ρ σ K = refl
   wk-cotm-coh ρ σ (snd K) rewrite wk-cotm-coh ρ σ K = refl
-  wk-cotm-coh ρ σ (case K1 K2) rewrite wk-cotm-coh ρ σ K1 | wk-cotm-coh ρ σ K2 = refl
+  wk-cotm-coh ρ σ (case K₁ K₂) rewrite wk-cotm-coh ρ σ K₁ | wk-cotm-coh ρ σ K₂ = refl
   wk-cotm-coh ρ σ (μ̃ M) rewrite wk-cmd-coh (wk-cong ρ) σ M = refl
   wk-cotm-coh ρ σ tp = refl
 
@@ -159,7 +159,7 @@ mutual
   sub-cotm-coh θ φ (app V K) rewrite sub-val-coh θ φ V | sub-cotm-coh θ φ K = refl
   sub-cotm-coh θ φ (fst K) rewrite sub-cotm-coh θ φ K = refl
   sub-cotm-coh θ φ (snd K) rewrite sub-cotm-coh θ φ K = refl
-  sub-cotm-coh θ φ (case K1 K2) rewrite sub-cotm-coh θ φ K1 | sub-cotm-coh θ φ K2 = refl
+  sub-cotm-coh θ φ (case K₁ K₂) rewrite sub-cotm-coh θ φ K₁ | sub-cotm-coh θ φ K₂ = refl
   sub-cotm-coh θ φ (μ̃ M) rewrite sub-cmd-coh (sub-ex (sub-wk (wk-wk wk-id) wk-id θ) (var here)) (cosub-wk (wk-wk wk-id) wk-id φ) M = refl
   sub-cotm-coh θ φ tp = refl
 
@@ -171,7 +171,7 @@ mutual
 -- soundness of the equational theory
 
 mutual
-  eqVal : Γ ⊢ᵛ V1 ≈ V2 ∶ A ∣ Δ -> ⟦ V1 ⟧ᵛ ≡ ⟦ V2 ⟧ᵛ
+  eqVal : Γ ⊢ᵛ V₁ ≈ V₂ ∶ A ∣ Δ -> ⟦ V₁ ⟧ᵛ ≡ ⟦ V₂ ⟧ᵛ
   eqVal ≈-refl = refl
   eqVal (≈-sym p) = sym (eqVal p)
   eqVal (≈-trans p q) = trans (eqVal p) (eqVal q)
@@ -182,7 +182,7 @@ mutual
   eqVal (unit-eta V) = refl
   eqVal (lam-eta V) = refl
 
-  eqTm : Γ ⊢ᵗ M1 ≈ M2 ∶ A ∣ Δ -> ⟦ M1 ⟧ᵗ ≡ ⟦ M2 ⟧ᵗ
+  eqTm : Γ ⊢ᵗ M₁ ≈ M₂ ∶ A ∣ Δ -> ⟦ M₁ ⟧ᵗ ≡ ⟦ M₂ ⟧ᵗ
   eqTm ≈-refl = refl
   eqTm (≈-sym p) = sym (eqTm p)
   eqTm (≈-trans p q) = trans (eqTm p) (eqTm q)
@@ -191,7 +191,7 @@ mutual
   eqTm (μ-eta M) = refl
   eqTm (pair-eta V) = refl
 
-  eqCoTm : Γ ∣ K1 ≈ K2 ∶ A ⊢ᵏ Δ -> ⟦ K1 ⟧ᵏ ≡ ⟦ K2 ⟧ᵏ
+  eqCoTm : Γ ∣ K₁ ≈ K₂ ∶ A ⊢ᵏ Δ -> ⟦ K₁ ⟧ᵏ ≡ ⟦ K₂ ⟧ᵏ
   eqCoTm ≈-refl = refl
   eqCoTm (≈-sym p) = sym (eqCoTm p)
   eqCoTm (≈-trans p q) = trans (eqCoTm p) (eqCoTm q)
@@ -203,7 +203,7 @@ mutual
   eqCoTm (μ̃-eta K) = refl
   eqCoTm (case-eta K) = funext λ env → funext λ { (inj₁ x) → refl ; (inj₂ y) → refl }
 
-  eqCmd : Γ ⊢ M1' ≈ M2' ⊣ Δ -> ⟦ M1' ⟧ᶜ ≡ ⟦ M2' ⟧ᶜ
+  eqCmd : Γ ⊢ M₁' ≈ M₂' ⊣ Δ -> ⟦ M₁' ⟧ᶜ ≡ ⟦ M₂' ⟧ᶜ
   eqCmd ≈-refl = refl
   eqCmd (≈-sym p) = sym (eqCmd p)
   eqCmd (≈-trans p q) = trans (eqCmd p) (eqCmd q)
@@ -213,5 +213,5 @@ mutual
   eqCmd (app-beta M V K) = refl
   eqCmd (fst-beta V W K) = refl
   eqCmd (snd-beta V W K) = refl
-  eqCmd (inl-beta V K1 K2) = refl
-  eqCmd (inr-beta W K1 K2) = refl
+  eqCmd (inl-beta V K₁ K₂) = refl
+  eqCmd (inr-beta W K₁ K₂) = refl
