@@ -1,0 +1,93 @@
+# agdalint config
+
+sources = ["Inception/**/*.agda", "Inception/**/*.lagda", "scratch/*.lagda"]
+
+# asciiSubscript exemptions
+asciiSubscriptIgnore = ["ex"]
+
+# fixable banned names
+fixBannedNames = ["`Unit", "`P", "`L", "`V"]
+
+# subscript rule exemptions
+subscriptExempt = ["≈"]
+
+# letter pairs
+pairs = ["VW", "MN", "KL", "𝐕𝐖", "θφ", "πδ", "XY", "ΓΔ"]
+
+# rule levels
+[rules]
+asciiArrow = "error"
+asciiSubscript = { level = "error", skip = ["Inception/Prelude.agda"] }
+prime = { level = "error", skip = ["Inception/Prelude.agda", "Inception/Monad/", "Inception/Cont/"] }
+prefixType = "error"
+bannedName = "error"
+typeVarLetter = { level = "error", skip = ["Inception/Prelude.agda", "Inception/Monad/", "Inception/Cont/"] }
+sortLetter = { level = "warning", skip = ["Inception/Prelude.agda", "Inception/Monad/", "Inception/Cont/"] }
+unneededSubscript = "warning"
+pairSubscript = "warning"
+unusedVariable = "warning"
+lineLength = "off"
+leadingArrow = "off"
+mutualBlock = "off"
+importPublic = "off"
+asciiPrime = { level = "warning", skip = ["Inception/Prelude.agda"] }
+
+[style]
+sectionWidth = 74
+sectionTitle = "lower"
+
+# replacements
+[bannedNames]
+"`Unit" = "`𝟙"
+"`P" = "`𝓅"
+"`L" = "`ℓ"
+"`V" = "`ℓ"
+
+[typeVars]
+sort = "Ty"
+allowed = ["X", "Y", "Z", "ℛ"]
+
+[[pairSkip]]
+path = "Inception/SystemL/"
+pairs = ["θφ", "πδ", "ΓΔ"]
+
+# letters by sort
+[[sorts]]
+heads = ["⊢ᵛ", "Val"]
+letters = "VW"
+
+[[sorts]]
+heads = ["⊢ᶜ", "⊢ᵗ", "Comp", "Tm"]
+letters = "MNP"
+
+[[sorts]]
+heads = ["⊢ᵏ", "Stk", "Kont", "CStack", "PStack", "CoTm"]
+letters = "KL"
+
+[[sorts]]
+heads = ["MVal"]
+letters = "𝐕𝐖"
+
+[[sorts]]
+heads = ["MEnv", "Env"]
+letters = "γ"
+
+[[sorts]]
+heads = ["Cfg", "CState", "PState"]
+letters = "σ"
+
+[[sorts]]
+heads = ["∋"]
+letters = "ijk"
+
+[[sorts]]
+heads = ["⊇"]
+letters = "πδρσ"
+
+[[sorts]]
+exact = ["Ctx"]
+letters = "ΓΔΨΞ"
+
+[[sorts]]
+exact = ["Ty"]
+letters = "XYZℛ"
