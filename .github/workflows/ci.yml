@@ -22,6 +22,9 @@ jobs:
   lint:
     name: lint
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
     steps:
       - name: Checkout repo
         uses: actions/checkout@v7
@@ -49,7 +52,21 @@ jobs:
         run: cabal update
 
       - name: Lint
-        run: make lint
+        shell: bash
+        run: make lint | tee lint.txt
+
+      - name: Setup reviewdog
+        if: always() && github.event_name == 'pull_request'
+        uses: reviewdog/action-setup@v1
+
+      - name: Report on pull request
+        if: always() && github.event_name == 'pull_request' && hashFiles('lint.txt') != ''
+        env:
+          REVIEWDOG_GITHUB_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >
+          reviewdog -name=AgdaLint -reporter=github-pr-check -filter-mode=nofilter -fail-level=none
+          -efm="%f:%l:%c: %trror %m" -efm="%f:%l:%c: %tarning %m"
+          < lint.txt
 
   agda:
     name: agda
