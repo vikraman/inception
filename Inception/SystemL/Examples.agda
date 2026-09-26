@@ -85,7 +85,7 @@ open import Inception.SystemL.Syntax
 
 
 ---
-open import Inception.Sub.Machine using (ex15)
+open import Inception.Sub.Examples using (ex15)
 open import Inception.Sub.Translation using (⟦_⟧ᶜ)
 open import Inception.SystemL.SN
 open import Inception.Prelude
