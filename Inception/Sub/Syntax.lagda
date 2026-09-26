@@ -5,14 +5,14 @@ module Inception.Sub.Syntax where
 
 open import Inception.Prelude
 
-open import Data.Product using (proj₁; proj₂; _,_; _×_; Σ-syntax)
 open import Data.Empty using (⊥)
+open import Data.Product using (proj₁; proj₂; _,_; _×_; Σ-syntax)
 
 import Relation.Binary.PropositionalEquality as Eq
 open Eq using (_≡_; refl; cong; trans; cong₂)
 open Eq.≡-Reasoning
 
----------------------------------------------------------------------------------
+--------------------------------------------------------------------------
 
 infixr 40 _`×_
 infixr 25 _`⇒_
@@ -36,7 +36,7 @@ mutual
 
   data Val : Ctx → Ty → Set where
 
-    var :   (x : Γ ∋ X)
+    var :   (i : Γ ∋ X)
             ----------
             → Γ ⊢ᵛ X
 
@@ -44,9 +44,9 @@ mutual
             --------------
             → Γ ⊢ᵛ X `⇒ Y
 
-    pair :  Γ ⊢ᵛ X₁ → Γ ⊢ᵛ X₂
+    pair :  Γ ⊢ᵛ X → Γ ⊢ᵛ Y
             -----------------
-            → Γ ⊢ᵛ X₁ `× X₂
+            → Γ ⊢ᵛ X `× Y
 
     unit :
             -----------
@@ -58,7 +58,7 @@ mutual
               ---------
               → Γ ⊢ᶜ X
 
-    pm :      Γ ⊢ᵛ X₁ `× X₂ → (Γ ∙ X₁ ∙ X₂) ⊢ᶜ Y
+    pm :      Γ ⊢ᵛ X `× Z → (Γ ∙ X ∙ Z) ⊢ᶜ Y
               -------------------------------
               → Γ ⊢ᶜ Y
 
@@ -83,14 +83,14 @@ mutual
 \begin{code}
 
 mutual
-  wk-val : Wk Γ Δ → Δ ⊢ᵛ X → Γ ⊢ᵛ X
-  wk-val π (var x)         = var (wk-mem π x)
-  wk-val π (lam M)         = lam (wk-comp (wk-cong π) M)
+  wk-val : Γ ⊇ Δ → Δ ⊢ᵛ X → Γ ⊢ᵛ X
+  wk-val π (var i) = var (wk-mem π i)
+  wk-val π (lam M) = lam (wk-comp (wk-cong π) M)
 
   wk-val π (pair V W) = pair (wk-val π V) (wk-val π W)
   wk-val π unit       = unit
 
-  wk-comp : Wk Γ Δ → Δ ⊢ᶜ X → Γ ⊢ᶜ X
+  wk-comp : Γ ⊇ Δ → Δ ⊢ᶜ X → Γ ⊢ᶜ X
   wk-comp π (return W)     = return (wk-val π W)
   wk-comp π (pm W M)       = pm (wk-val π W) (wk-comp (wk-cong (wk-cong π)) M)
   wk-comp π (push M N) = push (wk-comp π M) (wk-comp (wk-cong π) N)
@@ -98,33 +98,35 @@ mutual
   wk-comp π (var W)        = var (wk-val π W)
   wk-comp π (sub M N)      = sub (wk-comp (wk-cong π) M) (wk-comp π N)
 
-wk : Val Γ X → Val (Γ ∙ Y) X
+wk : Γ ⊢ᵛ X → (Γ ∙ Y) ⊢ᵛ X
 wk = wk-val (wk-wk wk-id)
 
-data Sub (Γ : Ctx) : (Δ : Ctx) → Set where
-  sub-ε : Sub Γ ε
-  sub-ex : (θ : Sub Γ Δ) → (W : Val Γ X) → Sub Γ (Δ ∙ X)
+syntax Sub Γ Δ = Γ ⊢ Δ
 
-sub-mem : Sub Γ Δ → Δ ∋ X → Val Γ X
+data Sub (Γ : Ctx) : (Δ : Ctx) → Set where
+  sub-ε : Γ ⊢ ε
+  sub-ex : (θ : Γ ⊢ Δ) → (W : Γ ⊢ᵛ X) → Γ ⊢ (Δ ∙ X)
+
+sub-mem : Γ ⊢ Δ → Δ ∋ X → Γ ⊢ᵛ X
 sub-mem (sub-ex θ W) here = W
 sub-mem (sub-ex θ W) (there i) = sub-mem θ i
 
-sub-wk : Wk Γ Δ → Sub Δ Ψ → Sub Γ Ψ
+sub-wk : Γ ⊇ Δ → Δ ⊢ Ψ → Γ ⊢ Ψ
 sub-wk π sub-ε = sub-ε
 sub-wk π (sub-ex θ W) = sub-ex (sub-wk π θ) (wk-val π W)
 
-sub-id : Sub Γ Γ
+sub-id : Γ ⊢ Γ
 sub-id {Γ = ε} = sub-ε
 sub-id {Γ = Γ ∙ X} = sub-ex (sub-wk (wk-wk wk-id) sub-id) (var here)
 
 mutual
-  sub-val : Sub Γ Δ → Δ ⊢ᵛ X → Γ ⊢ᵛ X
-  sub-val θ (var x) = sub-mem θ x
+  sub-val : Γ ⊢ Δ → Δ ⊢ᵛ X → Γ ⊢ᵛ X
+  sub-val θ (var i) = sub-mem θ i
   sub-val θ (lam M) = lam (sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ) (var here)) M)
   sub-val θ (pair V W) = pair (sub-val θ V) (sub-val θ W)
   sub-val θ unit = unit
 
-  sub-comp : Sub Γ Δ → Δ ⊢ᶜ X → Γ ⊢ᶜ X
+  sub-comp : Γ ⊢ Δ → Δ ⊢ᶜ X → Γ ⊢ᶜ X
   sub-comp θ (return W) = return (sub-val θ W)
   sub-comp θ (pm W M) = pm (sub-val θ W) (sub-comp (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) θ) (var (there here))) (var here)) M)
   sub-comp θ (push M N) = push (sub-comp θ M) (sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ) (var here)) N)
@@ -144,7 +146,7 @@ letc : Γ ⊢ᵛ X → (Γ ∙ X) ⊢ᶜ Y
      → Γ ⊢ᶜ Y
 letc W M = sub-comp (sub-ex sub-id W) M
 
-exchg : Sub (Γ ∙ X ∙ Y)(Γ ∙ Y ∙ X)
+exchg : (Γ ∙ X ∙ Y) ⊢ (Γ ∙ Y ∙ X)
 exchg = sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) sub-id) (var here)) (var (there here))
 
 variable
@@ -179,9 +181,9 @@ data EqVal Γ where
            ---------------------------------
            → Γ ⊢ᵛ lam M₁ ≈ lam M₂ ∶ X `⇒ Y
 
-  pair-cong : Γ ⊢ᵛ V₁ ≈ V₂ ∶ X₁ → Γ ⊢ᵛ W₁ ≈ W₂ ∶ X₂
+  pair-cong : Γ ⊢ᵛ V₁ ≈ V₂ ∶ X → Γ ⊢ᵛ W₁ ≈ W₂ ∶ Y
             ----------------------------------------
-            → Γ ⊢ᵛ pair V₁ W₁ ≈ pair V₂ W₂ ∶ X₁ `× X₂
+            → Γ ⊢ᵛ pair V₁ W₁ ≈ pair V₂ W₂ ∶ X `× Y
 
   -- beta/eta rules
 
@@ -213,7 +215,7 @@ data EqComp Γ where
              -----------------------------
              → Γ ⊢ᶜ return V₁ ≈ return V₂ ∶ X
 
-  pm-cong : Γ ⊢ᵛ V₁ ≈ V₂ ∶ X₁ `× X₂ → (Γ ∙ X₁ ∙ X₂) ⊢ᶜ M₁ ≈ M₂ ∶ Y
+  pm-cong : Γ ⊢ᵛ V₁ ≈ V₂ ∶ X `× Z → (Γ ∙ X ∙ Z) ⊢ᶜ M₁ ≈ M₂ ∶ Y
             -------------------------------------------------------------------
             → Γ ⊢ᶜ pm V₁ M₁ ≈ pm V₂ M₂ ∶ Y
 
@@ -235,11 +237,11 @@ data EqComp Γ where
 
   -- beta/eta rules
 
-  pm-beta : (V : Γ ⊢ᵛ X₁) → (W : Γ ⊢ᵛ X₂) → (M : (Γ ∙ X₁ ∙ X₂) ⊢ᶜ Y)
+  pm-beta : (V : Γ ⊢ᵛ X) → (W : Γ ⊢ᵛ Z) → (M : (Γ ∙ X ∙ Z) ⊢ᶜ Y)
           ------------------------------------------------------------------------
           → Γ ⊢ᶜ pm (pair V W) M ≈ sub-comp (sub-ex (sub-ex sub-id V) W) M ∶ Y
 
-  pm-eta : (V : Γ ⊢ᵛ X₁ `× X₂) → (M : (Γ ∙ (X₁ `× X₂)) ⊢ᶜ Y)
+  pm-eta : (V : Γ ⊢ᵛ X `× Z) → (M : (Γ ∙ (X `× Z)) ⊢ᶜ Y)
          -------------------------------------------------------------------------------------------
          → Γ ⊢ᶜ sub-comp (sub-ex sub-id V) M ≈ pm V (sub-comp (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) sub-id) (pair (var (there here)) (var here))) M) ∶ Y
 
@@ -290,7 +292,7 @@ data EqComp Γ where
 
 mutual
 
-  wk-val-trans : (V : Γ ⊢ᵛ X) → (π : Wk Ψ Δ) → (δ : Wk Δ Γ) → wk-val π (wk-val δ V) ≡ wk-val (wk-trans π δ) V
+  wk-val-trans : (V : Γ ⊢ᵛ X) → (π : Ψ ⊇ Δ) → (δ : Δ ⊇ Γ) → wk-val π (wk-val δ V) ≡ wk-val (wk-trans π δ) V
   wk-val-trans (var i) π δ = cong var (wk-mem-trans i π δ)
   wk-val-trans (lam M) π δ = cong lam (wk-comp-trans M (wk-cong π) (wk-cong δ))
   wk-val-trans (pair V W) π δ = pair (wk-val π (wk-val δ V)) (wk-val π (wk-val δ W))
@@ -300,7 +302,7 @@ mutual
                pair (wk-val (wk-trans π δ) V) (wk-val (wk-trans π δ) W) ∎
   wk-val-trans unit π δ = refl
 
-  wk-comp-trans : (M : Γ ⊢ᶜ X) → (π : Wk Ψ Δ) → (δ : Wk Δ Γ) → wk-comp π (wk-comp δ M) ≡ wk-comp (wk-trans π δ) M
+  wk-comp-trans : (M : Γ ⊢ᶜ X) → (π : Ψ ⊇ Δ) → (δ : Δ ⊇ Γ) → wk-comp π (wk-comp δ M) ≡ wk-comp (wk-trans π δ) M
   wk-comp-trans (return V) π δ = cong return (wk-val-trans V π δ)
   wk-comp-trans (pm V M) π δ =
                 pm (wk-val π (wk-val δ V)) (wk-comp (wk-cong (wk-cong π)) (wk-comp (wk-cong (wk-cong δ)) M))

@@ -17,12 +17,14 @@ pairs = ["VW", "MN", "KL", "𝐕𝐖", "θφ", "πδ", "XY", "ΓΔ"]
 # rule levels
 [rules]
 asciiArrow = "error"
-asciiSubscript = { level = "error", skip = ["Inception/Prelude.agda"] }
-prime = { level = "error", skip = ["Inception/Prelude.agda", "Inception/Monad/", "Inception/Cont/"] }
+asciiLambda = "error"
+patternLambda = "error"
+asciiSubscript = "error"
+prime = "error"
 prefixType = "error"
 bannedName = "error"
-typeVarLetter = { level = "error", skip = ["Inception/Prelude.agda", "Inception/Monad/", "Inception/Cont/"] }
-sortLetter = { level = "warning", skip = ["Inception/Prelude.agda", "Inception/Monad/", "Inception/Cont/"] }
+reservedLetter = "error"
+sortLetter = "warning"
 unneededSubscript = "warning"
 pairSubscript = "warning"
 unusedVariable = "warning"
@@ -30,7 +32,7 @@ lineLength = "off"
 leadingArrow = "off"
 mutualBlock = "off"
 importPublic = "off"
-asciiPrime = { level = "warning", skip = ["Inception/Prelude.agda"] }
+asciiPrime = "warning"
 
 [style]
 sectionWidth = 74
@@ -42,10 +44,6 @@ sectionTitle = "lower"
 "`P" = "`𝓅"
 "`L" = "`ℓ"
 "`V" = "`ℓ"
-
-[typeVars]
-sort = "Ty"
-allowed = ["X", "Y", "Z", "ℛ"]
 
 [[pairSkip]]
 path = "Inception/SystemL/"
@@ -90,4 +88,5 @@ letters = "ΓΔΨΞ"
 
 [[sorts]]
 exact = ["Ty"]
-letters = "XYZℛ"
+letters = "XYZUSTℛ"
+reserved = true

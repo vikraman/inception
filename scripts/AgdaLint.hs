@@ -45,6 +45,7 @@ import qualified Data.Set                   as Set
 import           Data.Text                  (Text)
 import qualified Data.Text                  as T
 import qualified Data.Text.IO               as TIO
+import qualified Data.Text.Read             as TR
 import           Options.Generic            (ParseRecord, Wrapped,
                                              unwrapRecord, type (:::),
                                              type (<?>))
@@ -75,12 +76,14 @@ data Level = Error | Warning | Off
 
 data RuleId
   = AsciiArrow
+  | AsciiLambda
+  | PatternLambda
   | AsciiSubscript
   | Prime
   | PrefixType
   | BannedName
-  | TypeVarLetter
   | SortLetter
+  | ReservedLetter
   | UnneededSubscript
   | PairSubscript
   | UnusedVariable
@@ -125,12 +128,14 @@ ruleName = camelName
 rule :: RuleId -> Rule
 rule r = case r of
   AsciiArrow -> Rule r Error "use → instead of ->" checkAsciiArrow
+  AsciiLambda -> Rule r Error "use λ instead of \\" checkAsciiLambda
+  PatternLambda -> Rule r Error "lambdas that match on patterns use λ { (…) → … }" checkPatternLambda
   AsciiSubscript -> Rule r Error "use unicode subscripts (V₁) instead of ascii digits (V1)" checkAsciiSubscript
   Prime -> Rule r Error "no primes on single-letter variables (Γ', σ'')" checkPrime
   PrefixType -> Rule r Error "write types that have a syntax declaration in their notation" checkPrefixType
   BannedName -> Rule r Error "names listed in [bannedNames]" checkBannedName
-  TypeVarLetter -> Rule r Error "variables of the [typeVars] sort use the allowed letters" checkTypeVarLetter
-  SortLetter -> Rule r Warning "typed binders use the letters configured in [[sorts]]" checkSortLetter
+  SortLetter -> Rule r Warning "typed binders and variables use the letters configured in [[sorts]]" checkSortLetter
+  ReservedLetter -> Rule r Error "letters of a reserved sort are not used for binders of other types" checkReservedLetter
   UnneededSubscript -> Rule r Warning "a lone M₁ in a clause should be M" checkUnneededSubscript
   PairSubscript -> Rule r Warning "two of a kind use the letter pair (M N), not M M₁" checkPairSubscript
   UnusedVariable -> Rule r Warning "generalizable variables that are never used" checkUnusedVariable
@@ -198,15 +203,11 @@ fixed p m f = Finding p m (Just f)
 data SectionTitle = Sentence | Lower | Any
   deriving (Eq, Show, Enum, Bounded, Generic)
 
-data RuleSetting = RuleSetting {settingLevel :: Level, settingSkip :: [FilePath]}
-
 data Banned = Banned {bannedReplacement :: Maybe Text, bannedAutoFix :: Bool}
-
-data TypeVarSpec = TypeVarSpec {typeSort :: Text, typeLetters :: [Text]}
 
 data SortMatch = HeadsAnyOf [Text] | ExactlyOneOf [Text]
 
-data SortSpec = SortSpec {sortMatch :: SortMatch, sortLetters :: [Text]}
+data SortSpec = SortSpec {sortMatch :: SortMatch, sortLetters :: [Text], sortReserved :: Bool}
 
 data PairSkip = PairSkip {skipPath :: FilePath, skipPairs :: [(Text, Text)]}
 
@@ -220,10 +221,9 @@ data Config = Config
   { cfgSources         :: [String]
   , cfgExclude         :: [String]
   , cfgAllowlist       :: FilePath
-  , cfgRules           :: Map RuleId RuleSetting
+  , cfgRules           :: Map RuleId Level
   , cfgBannedNames     :: Map Text Banned
   , cfgSubscriptIgnore :: [Text]
-  , cfgTypeVars        :: Maybe TypeVarSpec
   , cfgSubscriptExempt :: [Text]
   , cfgSorts           :: [SortSpec]
   , cfgPairs           :: [(Text, Text)]
@@ -236,11 +236,10 @@ data RawConfig = RawConfig
   { sources              :: Maybe [Text]
   , exclude              :: Maybe [Text]
   , allowlist            :: Maybe Text
-  , rules                :: Maybe (Map Text RawSetting)
+  , rules                :: Maybe (Map Text Level)
   , bannedNames          :: Maybe (Map Text Text)
   , fixBannedNames       :: Maybe [Text]
   , asciiSubscriptIgnore :: Maybe [Text]
-  , typeVars             :: Maybe RawTypeVars
   , subscriptExempt      :: Maybe [Text]
   , sorts                :: Maybe [RawSort]
   , pairs                :: Maybe [Text]
@@ -249,10 +248,7 @@ data RawConfig = RawConfig
   }
   deriving (Generic)
 
-data RawTypeVars = RawTypeVars {sort :: Text, allowed :: [Text]}
-  deriving (Generic)
-
-data RawSort = RawSort {heads :: Maybe [Text], exact :: Maybe [Text], letters :: Text}
+data RawSort = RawSort {heads :: Maybe [Text], exact :: Maybe [Text], letters :: Text, reserved :: Maybe Bool}
   deriving (Generic)
 
 data RawPairSkip = RawPairSkip {path :: Text, pairs :: [Text]}
@@ -261,26 +257,12 @@ data RawPairSkip = RawPairSkip {path :: Text, pairs :: [Text]}
 data RawStyle = RawStyle {lineLength :: Maybe Int, sectionWidth :: Maybe Int, sectionTitle :: Maybe SectionTitle}
   deriving (Generic)
 
-data RuleTable = RuleTable {level :: Maybe Level, skip :: Maybe [Text]}
-  deriving (Generic)
-
--- level or table
-data RawSetting = RawLevel Level | RawTable RuleTable
-
 instance FromValue RawConfig where fromValue = genericFromTable
-instance FromValue RawTypeVars where fromValue = genericFromTable
 instance FromValue RawSort where fromValue = genericFromTable
 instance FromValue RawPairSkip where fromValue = genericFromTable
 instance FromValue RawStyle where fromValue = genericFromTable
-instance FromValue RuleTable where fromValue = genericFromTable
 instance FromValue Level where fromValue = enumFromValue
 instance FromValue SectionTitle where fromValue = enumFromValue
-
-instance FromValue RawSetting where
-  fromValue v = case v of
-    Text' {}  -> RawLevel <$> fromValue v
-    Table' {} -> RawTable <$> fromValue v
-    _         -> failAt (Toml.valueAnn v) "expected a level or a table with level and skip"
 
 -- enum by camelCase constructor name
 enumFromValue :: forall a l. (Bounded a, Enum a, Constructors a) => Value' l -> Matcher l a
@@ -297,7 +279,7 @@ pairOf t = case T.unpack t of
   _      -> (t, t)
 
 resolveConfig :: RawConfig -> Either String Config
-resolveConfig RawConfig {sources, exclude, allowlist, rules, bannedNames, fixBannedNames, asciiSubscriptIgnore, typeVars, subscriptExempt, sorts, pairs, pairSkip, style} = do
+resolveConfig RawConfig {sources, exclude, allowlist, rules, bannedNames, fixBannedNames, asciiSubscriptIgnore, subscriptExempt, sorts, pairs, pairSkip, style} = do
   let settings = fromMaybe Map.empty rules
       unknown = [n | n <- Map.keys settings, n `notElem` map ruleName [minBound .. maxBound]]
       letterPairs = fromMaybe [] pairs
@@ -310,10 +292,9 @@ resolveConfig RawConfig {sources, exclude, allowlist, rules, bannedNames, fixBan
       { cfgSources = maybe ["**/*.agda", "**/*.lagda", "**/*.lagda.md"] (map T.unpack) sources
       , cfgExclude = maybe ["_build/**"] (map T.unpack) exclude
       , cfgAllowlist = maybe "AgdaLint.allow" T.unpack allowlist
-      , cfgRules = Map.fromList [(r, setting (Map.lookup (ruleName r) settings) (ruleDefault (rule r))) | r <- [minBound .. maxBound]]
+      , cfgRules = Map.fromList [(r, Map.findWithDefault (ruleDefault (rule r)) (ruleName r) settings) | r <- [minBound .. maxBound]]
       , cfgBannedNames = Map.mapWithKey (banned (fromMaybe [] fixBannedNames)) (fromMaybe Map.empty bannedNames)
       , cfgSubscriptIgnore = fromMaybe [] asciiSubscriptIgnore
-      , cfgTypeVars = (\RawTypeVars {sort, allowed} -> TypeVarSpec sort allowed) <$> typeVars
       , cfgSubscriptExempt = fromMaybe [] subscriptExempt
       , cfgSorts = sortSpecs
       , cfgPairs = map pairOf letterPairs
@@ -321,14 +302,10 @@ resolveConfig RawConfig {sources, exclude, allowlist, rules, bannedNames, fixBan
       , cfgStyle = maybe defaultStyle resolveStyle style
       }
   where
-    setting raw def = case raw of
-      Nothing                              -> RuleSetting def []
-      Just (RawLevel l)                    -> RuleSetting l []
-      Just (RawTable RuleTable {level, skip}) -> RuleSetting (fromMaybe def level) (maybe [] (map T.unpack) skip)
     banned fixable k v = Banned (if T.null v then Nothing else Just v) (k `elem` fixable)
-    resolveSort RawSort {heads, exact, letters} = case (heads, exact) of
-      (Just hs, Nothing) -> Right (SortSpec (HeadsAnyOf hs) (map T.singleton (T.unpack letters)))
-      (Nothing, Just es) -> Right (SortSpec (ExactlyOneOf es) (map T.singleton (T.unpack letters)))
+    resolveSort RawSort {heads, exact, letters, reserved} = case (heads, exact) of
+      (Just hs, Nothing) -> Right (SortSpec (HeadsAnyOf hs) (map T.singleton (T.unpack letters)) (fromMaybe False reserved))
+      (Nothing, Just es) -> Right (SortSpec (ExactlyOneOf es) (map T.singleton (T.unpack letters)) (fromMaybe False reserved))
       _                  -> Left "a sort needs exactly one of heads or exact"
     resolvePairSkip RawPairSkip {path, pairs = ps} = PairSkip (T.unpack path) (map pairOf ps)
     defaultStyle = StyleSpec 72 72 Sentence
@@ -681,7 +658,10 @@ binders = fromMaybe [] . runTokens (scan binder)
     isBracket t = tokKind t == Delim && tokText t `elem` ["(", ")", "{", "}"]
 
 codomain :: [Token] -> [Text]
-codomain = reverse . takeWhile (/= "→") . reverse . texts
+codomain = codomainOf . texts
+
+codomainOf :: [Text] -> [Text]
+codomainOf = reverse . takeWhile (/= "→") . reverse
 
 ------------------------------------------------------------------------
 -- context
@@ -732,6 +712,41 @@ replaceTok t = ReplaceSpan (tokPos t) (T.length (tokText t))
 checkAsciiArrow :: Context -> SourceFile -> [Finding]
 checkAsciiArrow _ f =
   [fixed (tokPos t) "use → instead of ->" (replaceTok t "→") | l <- codeLines f, t <- wordsOf l, tokText t == "->"]
+
+checkAsciiLambda :: Context -> SourceFile -> [Finding]
+checkAsciiLambda _ f =
+  [ fixed (tokPos t) "use λ instead of \\" (ReplaceSpan (tokPos t) 1 (if spaced then "λ" else "λ "))
+  | l <- codeLines f
+  , t <- wordsOf l
+  , "\\" `T.isPrefixOf` tokText t
+  , let spaced = maybe True (isSpace . fst) (T.uncons (T.drop (posCol (tokPos t) + 1) (lineText l)))
+  ]
+
+checkPatternLambda :: Context -> SourceFile -> [Finding]
+checkPatternLambda _ f =
+  [ finding (tokPos p) "use a pattern-matching lambda: λ { (…) → … }"
+  | l <- codeLines f
+  , lam : rest <- List.tails (codeTokens l)
+  , tokText lam == "λ"
+  , take 1 (map tokText rest) /= ["{"]
+  , p <- patterns (takeWhile ((/= "→") . tokText) rest)
+  ]
+  where
+    -- parenthesised binders without a type are patterns; () is the absurd lambda
+    patterns (t : ts)
+      | tokKind t == Delim, tokText t == "(" =
+          let (inside, after) = group (1 :: Int) [] ts
+           in [t | not (null inside), ":" `notElem` map tokText inside] ++ patterns after
+      -- an unmatched closer ends the lambda
+      | tokText t `elem` [")", "}", ";"] = []
+      | otherwise = patterns ts
+    patterns [] = []
+    group _ acc [] = (reverse acc, [])
+    group d acc (t : ts)
+      | tokText t == ")" && d == 1 = (reverse acc, ts)
+      | tokText t == ")" = group (d - 1) (t : acc) ts
+      | tokText t == "(" = group (d + 1) (t : acc) ts
+      | otherwise = group d (t : acc) ts
 
 checkAsciiSubscript :: Context -> SourceFile -> [Finding]
 checkAsciiSubscript ctx f =
@@ -833,33 +848,40 @@ checkBannedName ctx f =
 hasLetterFrom :: [Text] -> Text -> Bool
 hasLetterFrom letters v = any (maybe False (T.all isSubscript) . (`T.stripPrefix` v)) letters
 
-checkTypeVarLetter :: Context -> SourceFile -> [Finding]
-checkTypeVarLetter ctx f = case cfgTypeVars (ctxConfig ctx) of
-  Nothing -> []
-  Just tv ->
-    [ finding (tokPos n) ("type variable " <> tokText n <> ": use " <> T.intercalate ", " (typeLetters tv))
-    | n <- binderVars tv ++ declVars tv
-    , not (hasLetterFrom (typeLetters tv) (tokText n))
-    ]
-  where
-    binderVars tv = [n | l <- codeLines f, b <- binders (codeTokens l), texts (binderType b) == [typeSort tv], n <- binderNames b]
-    declVars tv = [n | v <- srcVariables f, varType v == [typeSort tv], n <- varNames v]
-
 checkSortLetter :: Context -> SourceFile -> [Finding]
 checkSortLetter ctx f =
   [ finding (tokPos n) (tokText n <> " : " <> T.unwords cod <> " should be one of " <> T.unwords (sortLetters s))
-  | l <- codeLines f
-  , b <- binders (codeTokens l)
-  , let cod = codomain (binderType b)
-  , Just s <- [find (matches cod) (cfgSorts (ctxConfig ctx))]
-  , n <- binderNames b
+  | (ns, cod) <- [(binderNames b, codomain (binderType b)) | l <- codeLines f, b <- binders (codeTokens l)]
+      ++ [(varNames v, codomainOf (varType v)) | v <- srcVariables f]
+  , Just s <- [find (sortMatches cod) (cfgSorts (ctxConfig ctx))]
+  , n <- ns
   , tokText n /= "_"
   , not (hasLetterFrom (sortLetters s) (tokText n))
   ]
+
+checkReservedLetter :: Context -> SourceFile -> [Finding]
+checkReservedLetter ctx f =
+  [ finding (tokPos n) (tokText n <> " is reserved for " <> T.unwords (sortNames s) <> ", but has type " <> T.unwords (texts (binderType b)))
+  | l <- codeLines f
+  , b <- binders (codeTokens l)
+  , let cod = codomain (binderType b)
+  , not (null cod), cod /= ["_"]
+  -- universes are types too
+  , take 1 cod /= ["Set"]
+  , n <- binderNames b
+  , Just s <- [find (\o -> sortReserved o && hasLetterFrom (sortLetters o) (tokText n)) sorts]
+  , not (sortMatches cod s)
+  ]
   where
-    matches cod s = case sortMatch s of
-      HeadsAnyOf hs   -> any (`elem` hs) cod
-      ExactlyOneOf es -> case cod of [c] -> c `elem` es; _ -> False
+    sorts = cfgSorts (ctxConfig ctx)
+    sortNames s = case sortMatch s of
+      HeadsAnyOf hs   -> hs
+      ExactlyOneOf es -> es
+
+sortMatches :: [Text] -> SortSpec -> Bool
+sortMatches cod s = case sortMatch s of
+  HeadsAnyOf hs   -> any (`elem` hs) cod
+  ExactlyOneOf es -> case cod of [c] -> c `elem` es; _ -> False
 
 -- clause names without named-argument keys
 clauseNames :: Clause -> [Text]
@@ -972,11 +994,15 @@ checkModuleBlankLine _ f = case dropWhile (not . isHeader) (codeLines f) of
     isFence l = lineRole l == Prose
 
 checkImportOrder :: Context -> SourceFile -> [Finding]
-checkImportOrder _ f = concatMap check (blocks (codeLines f))
+checkImportOrder _ f = concatMap check (blocks (srcLines f))
   where
+    -- a block is a run of imports, broken by blank lines, comments and other code
     blocks ls = case dropWhile (not . isImport) ls of
       [] -> []
-      xs -> let (b, rest) = span (\l -> isImport l || lineRole l == Blank) xs in filter isImport b : blocks rest
+      xs@(x : _) ->
+        let continues l = isImport l || (lineRole l == Code && indentOf l > indentOf x)
+            (b, rest) = span continues xs
+         in filter isImport b : blocks rest
     isImport l = maybe False openIsImport (openDecl l)
     check b =
       [ finding (lineStart l) (m <> " should come before " <> p)
@@ -1039,8 +1065,11 @@ checkSectionHeader ctx f = concat [check l next | (l, next) <- zip ls (map Just 
           _ -> []
     titleProblem t = case styleSectionTitle style of
       Sentence | not (maybe False (isUpper . fst) (T.uncons t)) || not (T.any isLower t) -> Just ("title should be in sentence case: " <> t)
-      Lower | T.toLower t /= t -> Just ("title should be lowercase: " <> t)
+      Lower | not (all allowedWord (T.words t)) -> Just ("title should be lowercase: " <> t)
       _ -> Nothing
+      where
+        -- acronyms are fine in an otherwise lowercase title
+        allowedWord w = T.toLower w == w || (T.any isLower t && T.all (\c -> not (isLetter c) || isUpper c) w)
 
 checkWithAlignment :: Context -> SourceFile -> [Finding]
 checkWithAlignment _ f =
@@ -1122,17 +1151,38 @@ loadSources root cfg = do
       paths = nubOrd (filter keep found)
   forM (List.sort paths) $ \p -> either failWith pure . analyse (rel p) =<< TIO.readFile p
 
-enabled :: Config -> SourceFile -> RuleId -> Maybe Level
-enabled cfg f r =
-  let s = cfgRules cfg Map.! r
-   in if settingLevel s == Off || any (`isPrefixOf` srcPath f) (settingSkip s) then Nothing else Just (settingLevel s)
+-- path glob, line (all if Nothing), rule
+data Allow = Allow {allowPath :: Glob.Pattern, allowLine :: Maybe Int, allowRule :: RuleId}
 
-lintAll :: Config -> Set Text -> [SourceFile] -> [Diagnostic]
+parseAllow :: Text -> Either String Allow
+parseAllow l = case T.splitOn ":" l of
+  [p, n, r] -> Allow (Glob.compile (T.unpack p)) <$> line n <*> ruleOf r
+  _ -> Left ("expected path:line:rule, got " <> T.unpack l)
+  where
+    line n
+      | n == "*" = Right Nothing
+      | Right (k, "") <- TR.decimal n = Right (Just k)
+      | otherwise = Left ("bad line " <> T.unpack n <> " in " <> T.unpack l)
+    ruleOf r = maybe (Left ("unknown rule " <> T.unpack r <> " in " <> T.unpack l)) Right (find ((== r) . ruleName) [minBound .. maxBound])
+
+loadAllowlist :: FilePath -> IO [Allow]
+loadAllowlist p = do
+  ok <- doesFileExist p
+  src <- if ok then TIO.readFile p else pure ""
+  either (failWith . ((p <> ": ") <>)) pure $
+    traverse parseAllow [l | l <- map T.strip (T.lines src), not (T.null l), not ("#" `T.isPrefixOf` l)]
+
+enabled :: Config -> RuleId -> Maybe Level
+enabled cfg r = case cfgRules cfg Map.! r of
+  Off -> Nothing
+  l   -> Just l
+
+lintAll :: Config -> [Allow] -> [SourceFile] -> [Diagnostic]
 lintAll cfg allow files =
   [ Diagnostic (srcPath f) fd (ruleId r) lvl
   | f <- files
   , r <- allRules
-  , Just lvl <- [enabled cfg f (ruleId r)]
+  , Just lvl <- [enabled cfg (ruleId r)]
   , fd <- ruleCheck r ctx f
   , not (allowed (srcPath f) (ruleId r) fd)
   ]
@@ -1146,8 +1196,7 @@ lintAll cfg allow files =
         , ctxImporters = importers closures
         }
     allowed p r fd =
-      let key' l = T.pack p <> ":" <> l <> ":" <> ruleName r
-       in Set.member (key' (T.show (posLine (findingPos fd)))) allow || Set.member (key' "*") allow
+      any (\a -> allowRule a == r && Glob.match (allowPath a) p && all (== posLine (findingPos fd)) (allowLine a)) allow
 
 applyFixes :: [Fix] -> [Text] -> [Text]
 applyFixes fixes ls = structural (zipWith perLine [1 ..] ls)
@@ -1171,7 +1220,7 @@ applyFixes fixes ls = structural (zipWith perLine [1 ..] ls)
       | Set.member n deletes = []
       | otherwise = t : Map.findWithDefault [] n inserts
 
-fixRound :: FilePath -> Config -> Set Text -> IO Bool
+fixRound :: FilePath -> Config -> [Allow] -> IO Bool
 fixRound root cfg allow = do
   files <- loadSources root cfg
   let diags = lintAll cfg allow files
@@ -1195,14 +1244,10 @@ main = do
   root <- getCurrentDirectory
   when listRules $ do
     forM_ allRules $ \r -> do
-      let lvl = settingLevel (cfgRules cfg Map.! ruleId r)
+      let lvl = cfgRules cfg Map.! ruleId r
       TIO.putStrLn (T.justifyLeft 24 ' ' (ruleName (ruleId r)) <> T.justifyLeft 9 ' ' (camelName lvl) <> ruleSummary r)
     exitSuccess
-  allowText <- do
-    let p = root </> cfgAllowlist cfg
-    ok <- doesFileExist p
-    if ok then TIO.readFile p else pure ""
-  let allow = Set.fromList [l | l <- map T.strip (T.lines allowText), not (T.null l), not ("#" `T.isPrefixOf` l)]
+  allow <- loadAllowlist (root </> cfgAllowlist cfg)
   when fix $ fixLoop root cfg allow (5 :: Int)
   files <- loadSources root cfg
   let diags = List.sort (lintAll cfg allow files)
