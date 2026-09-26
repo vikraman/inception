@@ -41,11 +41,11 @@ open import Inception.SystemL.Syntax
                         (covar here)))))
 
 `letcc : (Γ ∙ ¬ A) ⊢ᵗ A ∣ Δ -> Γ ⊢ᵗ A ∣ Δ
-`letcc {A = A} t =
+`letcc {A = A} M =
   lett (wk-tm wk-emp wk-emp `callcc)
        (μ (cut ((¬ A `⇒ A) `⇒ A)
                (ret (var here))
-               (app (wk-val (wk-wk wk-id) (wk-wk wk-id) (lam t))
+               (app (wk-val (wk-wk wk-id) (wk-wk wk-id) (lam M))
                     (covar here))))
 
 `throw : (ε ∙ A ∙ ¬ A) ⊢ᵗ B ∣ ε
@@ -55,9 +55,9 @@ open import Inception.SystemL.Syntax
          (app (var (there here)) tp))
 
 `abort : Γ ⊢ᵗ ¬ A ∣ Δ -> Γ ⊢ᵗ A ∣ Δ -> Γ ⊢ᵗ B ∣ Δ
-`abort {A = A} {B = B} t1 t2 =
-  lett t1
-       (lett (wkᵗ t2)
+`abort {A = A} {B = B} M N =
+  lett M
+       (lett (wkᵗ N)
              (μ (cut (¬ A)
                      (ret (var (there here)))
                      (app (var here) tp))))
@@ -66,7 +66,7 @@ open import Inception.SystemL.Syntax
 `var = ret (lam (μ `efq))
 
 `varr : Γ ⊢ᵗ `⊥ ∣ Δ -> Γ ⊢ᵗ A ∣ Δ
-`varr t = μ (cut `⊥ (wk̃ᵗ t) tp)
+`varr M = μ (cut `⊥ (wk̃ᵗ M) tp)
 
 `sub : (ε ∙ (`⊥ `⇒ A) ∙ A)  ⊢ᵗ A ∣ ε
 `sub {A = A} =
@@ -77,10 +77,10 @@ open import Inception.SystemL.Syntax
                  (covar here))))
 
 `subb : (Γ ∙ `⊥) ⊢ᵗ A ∣ Δ -> Γ ⊢ᵗ A ∣ Δ -> Γ ⊢ᵗ A ∣ Δ
-`subb {A = A} t1 t2 =
-  μ (cut (`⊥ `⇒ A) (ret (lam (wk̃ᵗ t1)))
+`subb {A = A} M N =
+  μ (cut (`⊥ `⇒ A) (ret (lam (wk̃ᵗ M)))
          (μ̃ (cut A
-                 (wkᵗ (wk̃ᵗ t2))
+                 (wkᵗ (wk̃ᵗ N))
                  (covar here))))
 
 
@@ -132,7 +132,7 @@ _ = refl
 ---
 open import Inception.Sub.Syntax as S hiding (ε; _∙_; here; there)
 
-ex16 : S.ε ⊢ᶜ `Unit
+ex16 : S.ε ⊢ᶜ `𝟙
 ex16 = push (return unit) (return unit)
 
 ex16-tr : ε ⊢ᵗ `Unit ∣ (ε ∙ `Unit)

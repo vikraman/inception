@@ -42,11 +42,11 @@ data Partial : (X : Ty) → Set where
            --------------------------------
            → Partial X
 
-    ⇡ᴸ :   (W₁ : Val Γ X₁) → (W₂ : Val Γ X₂) → (MEnv Γ)
+    ⇡ᴸ :   (V : Val Γ X₁) → (W : Val Γ X₂) → (MEnv Γ)
            ----------------------------------------------------
            → Partial (X₁ `× X₂)
 
-    ⇡ᴿ :   (𝐖₁ : MVal X₁) → (W₂ : Val Γ X₂) → (MEnv Γ)
+    ⇡ᴿ :   (𝐕 : MVal X₁) → (W : Val Γ X₂) → (MEnv Γ)
            ------------------------------------------------------------
            → Partial (X₁ `× X₂)
 
@@ -85,100 +85,100 @@ data PStack : IsEmpty → Ty → Set where
 
     ⊠ :
            -----------------------
-           PStack empty Z₁
+           PStack empty Z
 
-    _∷_ :  Partial X → (pstack : PStack ∅? Z₁)
-           → {𝐛 : BotEq ∅? X Z₁}
+    _∷_ :  Partial X → (K : PStack ∅? Z)
+           → {𝐛 : BotEq ∅? X Z}
            --------------------------------------------------
-           → PStack non-empty Z₁
+           → PStack non-empty Z
 
 
 data PState : Ty → Set where
 
-    ⟨_⟩ :  PStack non-empty Z₁
+    ⟨_⟩ :  PStack non-empty Z
            ---------------------------
-           → PState Z₁
+           → PState Z
 
 \end{code}
 %</PStates>
 \begin{code}
 
-_⧺_ : PStack ∅? Z₁ → PStack non-empty Z₁' → PStack non-empty Z₁'
-⊠ ⧺ lower = lower
-(W ∷ upper) ⧺ lower = (W ∷ (upper ⧺ lower)) {𝐛 = ○}
+_⧺_ : PStack ∅? Z → PStack non-empty Z₁ → PStack non-empty Z₁
+⊠ ⧺ K = K
+(W ∷ K) ⧺ L = (W ∷ (K ⧺ L)) {𝐛 = ○}
 
-_⧻_ : (upper : PState Z₁) → PStack non-empty Z₁' → PState Z₁'
-⟨ upper ⟩ ⧻ lower = ⟨ upper ⧺ lower ⟩
+_⧻_ : (σ : PState Z) → PStack non-empty Z₁ → PState Z₁
+⟨ σ ⟩ ⧻ K = ⟨ σ ⧺ K ⟩
 
 \end{code}
 %<*PTrans>
 \begin{code}
 
-data _→ᵖ_ {Z₁ : Ty} :
-        PState Z₁ → PState Z₁ → Set where
+data _→ᵖ_ {Z : Ty} :
+        PState Z → PState Z → Set where
 
     lookup→ :   {x : Γ ∋ X} {γ : MEnv Γ}
-                {pstack : PStack ∅? Z₁} {𝐛 : BotEq ∅? X Z₁}
+                {K : PStack ∅? Z} {𝐛 : BotEq ∅? X Z}
                 -------------------------------------------------
-                →  ⟨ (⇡ (var x) γ ∷ pstack) {𝐛 = 𝐛} ⟩
-                   →ᵖ ⟨ (⭭ (lookup x γ) ∷ pstack) {𝐛 = 𝐛} ⟩
+                →  ⟨ (⇡ (var x) γ ∷ K) {𝐛 = 𝐛} ⟩
+                   →ᵖ ⟨ (⭭ (lookup x γ) ∷ K) {𝐛 = 𝐛} ⟩
 
     lam→ :      {M : Comp (Γ ∙ X) Y} {γ  : MEnv Γ}
-                {pstack : PStack ∅? Z₁} {𝐛 : BotEq ∅? (X `⇒ Y) Z₁}
+                {K : PStack ∅? Z} {𝐛 : BotEq ∅? (X `⇒ Y) Z}
                 --------------------------------------------------------
-                →  ⟨ (⇡ (lam M) γ ∷ pstack) {𝐛 = 𝐛} ⟩
-                   →ᵖ ⟨ (⭭ (cloᵛ M γ) ∷ pstack) {𝐛 = 𝐛} ⟩
+                →  ⟨ (⇡ (lam M) γ ∷ K) {𝐛 = 𝐛} ⟩
+                   →ᵖ ⟨ (⭭ (cloᵛ M γ) ∷ K) {𝐛 = 𝐛} ⟩
 
-    pair→ :     {γ : MEnv Γ} {W₁ : Val Γ X₁} {W₂ : Val Γ X₂}
-                {pstack : PStack ∅? Z₁} {𝐛 : BotEq ∅? (X₁ `× X₂) Z₁}
+    pair→ :     {γ : MEnv Γ} {V : Val Γ X₁} {W : Val Γ X₂}
+                {K : PStack ∅? Z} {𝐛 : BotEq ∅? (X₁ `× X₂) Z}
                 ---------------------------------------------------------
-                →  ⟨ (⇡ (pair W₁ W₂) γ ∷ pstack) {𝐛 = 𝐛} ⟩
-                   →ᵖ ⟨ (⇡ W₁ γ ∷ ((⇡ᴸ W₁ W₂ γ ∷ pstack) {𝐛 = 𝐛})) {𝐛 = ○} ⟩
+                →  ⟨ (⇡ (pair V W) γ ∷ K) {𝐛 = 𝐛} ⟩
+                   →ᵖ ⟨ (⇡ V γ ∷ ((⇡ᴸ V W γ ∷ K) {𝐛 = 𝐛})) {𝐛 = ○} ⟩
 
     unit→ :     {γ  : MEnv Γ}
-                {pstack : PStack ∅? Z₁} {𝐛 : BotEq ∅? `𝟙 Z₁}
+                {K : PStack ∅? Z} {𝐛 : BotEq ∅? `𝟙 Z}
                 ----------------------------------------------------
-                →  ⟨ (⇡ unit γ ∷ pstack) {𝐛 = 𝐛} ⟩
-                   →ᵖ ⟨ (⭭ unitᵛ ∷ pstack) {𝐛 = 𝐛} ⟩
+                →  ⟨ (⇡ unit γ ∷ K) {𝐛 = 𝐛} ⟩
+                   →ᵖ ⟨ (⭭ unitᵛ ∷ K) {𝐛 = 𝐛} ⟩
 
-    W∷l→ :      {γ : MEnv Γ} {𝐖₁ : MVal X₁} {W₁ : Val Γ X₁}
-                {W₂ : Val Γ X₂} {pstack : PStack ∅? Z₁}
-                {𝐛 : BotEq ∅? (X₁ `× X₂) Z₁}
+    W∷l→ :      {γ : MEnv Γ} {𝐕 : MVal X₁} {V : Val Γ X₁}
+                {W : Val Γ X₂} {K : PStack ∅? Z}
+                {𝐛 : BotEq ∅? (X₁ `× X₂) Z}
                 ------------------------------------------------------
-                →  ⟨ (⭭ 𝐖₁ ∷ ((⇡ᴸ W₁ W₂ γ ∷ pstack) {𝐛 = 𝐛})) {𝐛 = ○} ⟩
-                   →ᵖ ⟨ (⇡ W₂ γ ∷ ((⇡ᴿ 𝐖₁ W₂ γ ∷ pstack) {𝐛 = 𝐛})) {𝐛 = ○} ⟩
+                →  ⟨ (⭭ 𝐕 ∷ ((⇡ᴸ V W γ ∷ K) {𝐛 = 𝐛})) {𝐛 = ○} ⟩
+                   →ᵖ ⟨ (⇡ W γ ∷ ((⇡ᴿ 𝐕 W γ ∷ K) {𝐛 = 𝐛})) {𝐛 = ○} ⟩
 
-    W∷r→ :      {γ : MEnv Γ} {𝐖₁ : MVal X₁} {𝐖₂ : MVal X₂} {W₂ : Val Γ X₂}
-                {pstack : PStack ∅? Z₁} {𝐛 : BotEq ∅? (X₁ `× X₂) Z₁}
+    W∷r→ :      {γ : MEnv Γ} {𝐕 : MVal X₁} {𝐖 : MVal X₂} {W : Val Γ X₂}
+                {K : PStack ∅? Z} {𝐛 : BotEq ∅? (X₁ `× X₂) Z}
                 -----------------------------------------------------------------
-                →  ⟨ (⭭ 𝐖₂ ∷ ((⇡ᴿ 𝐖₁ W₂ γ ∷ pstack) {𝐛 = 𝐛})) {𝐛 = ○} ⟩
-                   →ᵖ ⟨ (⭭ pairᵛ 𝐖₁ 𝐖₂ ∷ pstack) {𝐛 = 𝐛} ⟩
+                →  ⟨ (⭭ 𝐖 ∷ ((⇡ᴿ 𝐕 W γ ∷ K) {𝐛 = 𝐛})) {𝐛 = ○} ⟩
+                   →ᵖ ⟨ (⭭ pairᵛ 𝐕 𝐖 ∷ K) {𝐛 = 𝐛} ⟩
 
 \end{code}
 %</PTrans>
 \begin{code}
 
-data _↠ᵛ_ {Z₁ : Ty} : PState Z₁ → PState Z₁ → Set where
+data _↠ᵛ_ {Z : Ty} : PState Z → PState Z → Set where
 
-  _→ᵖ⟨_⟩． : (S : PState Z₁) → {S' : PState Z₁} → (laststep : S →ᵖ S') → S ↠ᵛ S'
+  _→ᵖ⟨_⟩． : (σ : PState Z) → {σ₁ : PState Z} → (laststep : σ →ᵖ σ₁) → σ ↠ᵛ σ₁
 
-  _→ᵖ⟨_⟩_ : (S : PState Z₁) → {S' S'' : PState Z₁} → S →ᵖ S' → S' ↠ᵛ S'' → S ↠ᵛ S''
+  _→ᵖ⟨_⟩_ : (σ : PState Z) → {σ₁ σ₂ : PState Z} → σ →ᵖ σ₁ → σ₁ ↠ᵛ σ₂ → σ ↠ᵛ σ₂
 
-_⨾_ : {F S T : PState Z₁} → (F ↠ᵛ S) → (S ↠ᵛ T) → (F ↠ᵛ T)
-_⨾_ (F →ᵖ⟨ F>S ⟩．) S>>T = F →ᵖ⟨ F>S ⟩ S>>T
-_⨾_ (F →ᵖ⟨ F>S₁ ⟩ S₁>>S₂) S₂>>T = F →ᵖ⟨ F>S₁ ⟩ (S₁>>S₂ ⨾ S₂>>T)
+_⨾_ : {σ₁ σ₂ σ₃ : PState Z} → (σ₁ ↠ᵛ σ₂) → (σ₂ ↠ᵛ σ₃) → (σ₁ ↠ᵛ σ₃)
+_⨾_ (σ →ᵖ⟨ s ⟩．) ss = σ →ᵖ⟨ s ⟩ ss
+_⨾_ (σ →ᵖ⟨ s ⟩ ss₁) ss₂ = σ →ᵖ⟨ s ⟩ (ss₁ ⨾ ss₂)
 
-⟨_⟩⧻_ : {from : PState Z₁} → {to : PState Z₁} → (F>T : from →ᵖ to) → (pstack : PStack non-empty Z₁') → (from ⧻ pstack) →ᵖ (to ⧻ pstack)
-⟨ lookup→ ⟩⧻ pstack = lookup→
-⟨ lam→ ⟩⧻ pstack = lam→
-⟨ pair→ ⟩⧻ pstack = pair→
-⟨ unit→ ⟩⧻ pstack = unit→
-⟨ W∷l→ ⟩⧻ pstack = W∷l→
-⟨ W∷r→ ⟩⧻ pstack = W∷r→
+⟨_⟩⧻_ : {σ : PState Z} → {σ₁ : PState Z} → (s : σ →ᵖ σ₁) → (K : PStack non-empty Z₁) → (σ ⧻ K) →ᵖ (σ₁ ⧻ K)
+⟨ lookup→ ⟩⧻ K = lookup→
+⟨ lam→ ⟩⧻ K = lam→
+⟨ pair→ ⟩⧻ K = pair→
+⟨ unit→ ⟩⧻ K = unit→
+⟨ W∷l→ ⟩⧻ K = W∷l→
+⟨ W∷r→ ⟩⧻ K = W∷r→
 
-⟪_⟫⧻_ : {from : PState Z₁} → {to : PState Z₁} → (F>T : from ↠ᵛ to) → (pstack : PStack non-empty Z₁') → (from ⧻ pstack) ↠ᵛ (to ⧻ pstack)
-⟪ _ →ᵖ⟨ F>T ⟩． ⟫⧻ pstack =  _ →ᵖ⟨ ⟨ F>T ⟩⧻ pstack ⟩．
-⟪ _ →ᵖ⟨ F>T ⟩ F>>T ⟫⧻ pstack =   _ →ᵖ⟨ ⟨ F>T ⟩⧻ pstack ⟩ (⟪ F>>T ⟫⧻ pstack)
+⟪_⟫⧻_ : {σ : PState Z} → {σ₁ : PState Z} → (ss : σ ↠ᵛ σ₁) → (K : PStack non-empty Z₁) → (σ ⧻ K) ↠ᵛ (σ₁ ⧻ K)
+⟪ _ →ᵖ⟨ s ⟩． ⟫⧻ K =  _ →ᵖ⟨ ⟨ s ⟩⧻ K ⟩．
+⟪ _ →ᵖ⟨ s ⟩ ss ⟫⧻ K =   _ →ᵖ⟨ ⟨ s ⟩⧻ K ⟩ (⟪ ss ⟫⧻ K)
 
 
 \end{code}
@@ -199,16 +199,16 @@ normalise-val : (W : Val Γ X) → (γ : MEnv Γ) → ValSteps W γ
 
 normalise-val (var i) γ = record { result = lookup i γ ; steps = ⟨ ⇡ (var i) γ ∷ ⊠ ⟩ →ᵖ⟨ lookup→ ⟩． }
 normalise-val (lam M) γ = record { result = cloᵛ M γ ; steps = ⟨ ⇡ (lam M) γ ∷ ⊠ ⟩ →ᵖ⟨ lam→ ⟩． }
-normalise-val (pair W₁ W₂) γ =
+normalise-val (pair V W) γ =
   let
-    IH₁ = normalise-val W₁ γ
-    IH₂ = normalise-val W₂ γ
+    IH₁ = normalise-val V γ
+    IH₂ = normalise-val W γ
     trace = _ →ᵖ⟨ pair→ ⟩． ⨾ ⟪ steps IH₁ ⟫⧻ _ ⨾ _ →ᵖ⟨ W∷l→ ⟩． ⨾ (⟪ steps IH₂ ⟫⧻ _) ⨾ _ →ᵖ⟨ W∷r→ ⟩．
   in
   record { result = pairᵛ (result IH₁) (result IH₂) ; steps = trace }
 normalise-val unit γ = record { result = unitᵛ ; steps = ⟨ ⇡ unit γ ∷ ⊠ ⟩ →ᵖ⟨ unit→ ⟩． }
 
-determinismⱽ : {S S' : PState Z₁} → (S→S'₁ S→S'₂ : S →ᵖ S') → (S→S'₁ ≡ S→S'₂)
+determinismⱽ : {σ σ₁ : PState Z} → (s₁ s₂ : σ →ᵖ σ₁) → (s₁ ≡ s₂)
 determinismⱽ lookup→ lookup→ = refl
 determinismⱽ lam→ lam→ = refl
 determinismⱽ pair→ pair→ = refl
@@ -219,7 +219,7 @@ determinismⱽ W∷r→ W∷r→ = refl
 normalise-val-eval : (W : Val Γ X) → (γ : MEnv Γ) → ValSteps.result (normalise-val W γ) ≡ eval W γ
 normalise-val-eval (var i) γ = refl
 normalise-val-eval (lam M) γ = refl
-normalise-val-eval (pair W₁ W₂) γ = cong₂ pairᵛ (normalise-val-eval W₁ γ) (normalise-val-eval W₂ γ)
+normalise-val-eval (pair V W) γ = cong₂ pairᵛ (normalise-val-eval V γ) (normalise-val-eval W γ)
 normalise-val-eval unit γ = refl
 
 ---------------------------------------------------------------------------------
@@ -240,59 +240,59 @@ module Correct (R : Set) {k₀ : SubSem.⟦_⟧ R ℛ → R} where
   ⟦_⟧ᵀ : Partial X → ⟦ X ⟧
   ⟦ ⭭ 𝐖 ⟧ᵀ = ⟦ 𝐖 ⟧ⱽ
   ⟦ ⇡ W γ ⟧ᵀ = ⟦ W ⟧ᵛ ⟦ γ ⟧ᴱ
-  ⟦ ⇡ᴸ W₁ W₂ γ ⟧ᵀ = ⟦ pair W₁ W₂ ⟧ᵛ ⟦ γ ⟧ᴱ
-  ⟦ ⇡ᴿ 𝐖₁ W₂ γ ⟧ᵀ = ⟦ 𝐖₁ ⟧ⱽ , ⟦ W₂ ⟧ᵛ ⟦ γ ⟧ᴱ
+  ⟦ ⇡ᴸ V W γ ⟧ᵀ = ⟦ pair V W ⟧ᵛ ⟦ γ ⟧ᴱ
+  ⟦ ⇡ᴿ 𝐕 W γ ⟧ᵀ = ⟦ 𝐕 ⟧ⱽ , ⟦ W ⟧ᵛ ⟦ γ ⟧ᴱ
 \end{code}
 %</SemPartial>
 
 %<*SemPStack>
 \begin{code}
-  ⟦_⟧ᵖˢ : (S : PStack non-empty Z₁) → ⟦ Z₁ ⟧
-  ⟦ ((⭭ W) ∷ ⊠) {𝐛 = ▿} ⟧ᵖˢ = ⟦ W ⟧ⱽ
+  ⟦_⟧ᵖˢ : (K : PStack non-empty Z) → ⟦ Z ⟧
+  ⟦ ((⭭ 𝐖) ∷ ⊠) {𝐛 = ▿} ⟧ᵖˢ = ⟦ 𝐖 ⟧ⱽ
   ⟦ (⇡ W γ ∷ ⊠) {𝐛 = ▿} ⟧ᵖˢ = ⟦ W ⟧ᵛ ⟦ γ ⟧ᴱ
-  ⟦ (⇡ᴸ W₁ W₂ γ ∷ ⊠) {𝐛 = ▿} ⟧ᵖˢ = ⟦ pair W₁ W₂ ⟧ᵛ ⟦ γ ⟧ᴱ
-  ⟦ (⇡ᴿ 𝐖₁ W₂ γ ∷ ⊠) {𝐛 = ▿} ⟧ᵖˢ = ⟦ 𝐖₁ ⟧ⱽ , ⟦ W₂ ⟧ᵛ ⟦ γ ⟧ᴱ
-  ⟦ ((⭭ 𝐖) ∷ ((x ∷ S) {𝐛 = 𝐛})) {𝐛 = ○} ⟧ᵖˢ = ⟦ (x ∷ S) {𝐛 = 𝐛} ⟧ᵖˢ
-  ⟦ (⇡ W γ ∷ ((x ∷ S) {𝐛 = 𝐛})) {𝐛 = ○} ⟧ᵖˢ = ⟦ (x ∷ S) {𝐛 = 𝐛} ⟧ᵖˢ
-  ⟦ (⇡ᴸ W₁ W₂ γ ∷ ((x ∷ S) {𝐛 = 𝐛})) {𝐛 = ○} ⟧ᵖˢ = ⟦ (x ∷ S) {𝐛 = 𝐛} ⟧ᵖˢ
-  ⟦ (⇡ᴿ 𝐖₁ W₂ γ ∷ ((x ∷ S) {𝐛 = 𝐛})) {𝐛 = ○} ⟧ᵖˢ = ⟦ (x ∷ S) {𝐛 = 𝐛} ⟧ᵖˢ
+  ⟦ (⇡ᴸ V W γ ∷ ⊠) {𝐛 = ▿} ⟧ᵖˢ = ⟦ pair V W ⟧ᵛ ⟦ γ ⟧ᴱ
+  ⟦ (⇡ᴿ 𝐕 W γ ∷ ⊠) {𝐛 = ▿} ⟧ᵖˢ = ⟦ 𝐕 ⟧ⱽ , ⟦ W ⟧ᵛ ⟦ γ ⟧ᴱ
+  ⟦ ((⭭ 𝐖) ∷ ((x ∷ K) {𝐛 = 𝐛})) {𝐛 = ○} ⟧ᵖˢ = ⟦ (x ∷ K) {𝐛 = 𝐛} ⟧ᵖˢ
+  ⟦ (⇡ W γ ∷ ((x ∷ K) {𝐛 = 𝐛})) {𝐛 = ○} ⟧ᵖˢ = ⟦ (x ∷ K) {𝐛 = 𝐛} ⟧ᵖˢ
+  ⟦ (⇡ᴸ V W γ ∷ ((x ∷ K) {𝐛 = 𝐛})) {𝐛 = ○} ⟧ᵖˢ = ⟦ (x ∷ K) {𝐛 = 𝐛} ⟧ᵖˢ
+  ⟦ (⇡ᴿ 𝐕 W γ ∷ ((x ∷ K) {𝐛 = 𝐛})) {𝐛 = ○} ⟧ᵖˢ = ⟦ (x ∷ K) {𝐛 = 𝐛} ⟧ᵖˢ
 \end{code}
 %</SemPStack>
 
 %<*SemPState>
 \begin{code}
-  ⟦_⟧ᵖꟴ : (S : PState Z₁) → ⟦ Z₁ ⟧
-  ⟦ ⟨ pstack ⟩ ⟧ᵖꟴ = ⟦ pstack ⟧ᵖˢ
+  ⟦_⟧ᵖꟴ : (σ : PState Z) → ⟦ Z ⟧
+  ⟦ ⟨ K ⟩ ⟧ᵖꟴ = ⟦ K ⟧ᵖˢ
 \end{code}
 %</SemPState>
 
 \begin{code}
 
-  data PStackGood : PStack non-empty Z₁ → Set where
+  data PStackGood : PStack non-empty Z → Set where
 
 
     ▿ : (W : Partial X) → PStackGood ((W ∷ ⊠) {𝐛 = ▿})
 
-    lhs-good :   {b : IsEmpty} {pstack : PStack b Z₁}
+    lhs-good :   {b : IsEmpty} {K : PStack b Z}
               → {Wₕₒₗₑ : Val Γ X} {W₂ : Val Γ Y} {γ : MEnv Γ} {W : Partial X}
-              → {𝐛 : BotEq b (X `× Y) Z₁}
-              → PStackGood (((⇡ᴸ Wₕₒₗₑ W₂ γ) ∷ pstack) {𝐛 = 𝐛})
-              → (eq : ⟦ W ⟧ᵀ ≡ ⟦ Wₕₒₗₑ ⟧ᵛ ⟦ γ ⟧ᴱ) → PStackGood ((W ∷ ((⇡ᴸ Wₕₒₗₑ W₂ γ) ∷ pstack) {𝐛 = 𝐛}) {𝐛 = ○})
+              → {𝐛 : BotEq b (X `× Y) Z}
+              → PStackGood (((⇡ᴸ Wₕₒₗₑ W₂ γ) ∷ K) {𝐛 = 𝐛})
+              → (eq : ⟦ W ⟧ᵀ ≡ ⟦ Wₕₒₗₑ ⟧ᵛ ⟦ γ ⟧ᴱ) → PStackGood ((W ∷ ((⇡ᴸ Wₕₒₗₑ W₂ γ) ∷ K) {𝐛 = 𝐛}) {𝐛 = ○})
 
-    rhs-good :   {b : IsEmpty} {pstack : PStack b Z₁}
-              → {W₁ : MVal X} {Wₕₒₗₑ : Val Γ Y} {γ : MEnv Γ} {W : Partial Y}
-              → {𝐛 : BotEq b (X `× Y) Z₁}
-              → PStackGood (((⇡ᴿ W₁ Wₕₒₗₑ γ) ∷ pstack) {𝐛 = 𝐛})
-              → (eq : ⟦ W ⟧ᵀ ≡ ⟦ Wₕₒₗₑ ⟧ᵛ ⟦ γ ⟧ᴱ) → PStackGood ((W ∷ ((⇡ᴿ W₁ Wₕₒₗₑ γ) ∷ pstack) {𝐛 = 𝐛}) {𝐛 = ○})
+    rhs-good :   {b : IsEmpty} {K : PStack b Z}
+              → {𝐕 : MVal X} {Wₕₒₗₑ : Val Γ Y} {γ : MEnv Γ} {W : Partial Y}
+              → {𝐛 : BotEq b (X `× Y) Z}
+              → PStackGood (((⇡ᴿ 𝐕 Wₕₒₗₑ γ) ∷ K) {𝐛 = 𝐛})
+              → (eq : ⟦ W ⟧ᵀ ≡ ⟦ Wₕₒₗₑ ⟧ᵛ ⟦ γ ⟧ᴱ) → PStackGood ((W ∷ ((⇡ᴿ 𝐕 Wₕₒₗₑ γ) ∷ K) {𝐛 = 𝐛}) {𝐛 = ○})
 
-  data PStateGood : (S : PState X) → Set where
-      g[_] : {S : PStack non-empty Z₁} → PStackGood S → PStateGood ⟨ S ⟩
+  data PStateGood : (σ : PState X) → Set where
+      g[_] : {K : PStack non-empty Z} → PStackGood K → PStateGood ⟨ K ⟩
 
   lookup-good : (i : Γ ∋ X) → (γ : MEnv Γ) → ⟦ lookup i γ ⟧ⱽ ≡ ⟦ i ⟧ᵐ ⟦ γ ⟧ᴱ
   lookup-good here (γ · x) = refl
   lookup-good (there i) (γ · x) = lookup-good i γ
 
-  valstate-good : {S S' : PState X} → PStateGood S → S →ᵖ S' → PStateGood S'
+  valstate-good : {σ σ₁ : PState X} → PStateGood σ → σ →ᵖ σ₁ → PStateGood σ₁
   valstate-good g[ ▿ W ] lookup→ = g[ ▿ (⭭ _) ]
   valstate-good g[ ▿ W ] lam→ = g[ ▿ (⭭ cloᵛ _ _) ]
   valstate-good g[ ▿ W ] pair→ = g[ lhs-good (▿ (⇡ᴸ _ _ _)) refl ]
@@ -306,30 +306,30 @@ module Correct (R : Set) {k₀ : SubSem.⟦_⟧ R ℛ → R} where
   valstate-good g[ rhs-good x eq ] pair→ = g[ lhs-good (rhs-good x eq) refl ]
   valstate-good g[ rhs-good x eq ] unit→ = g[ rhs-good x eq ]
   valstate-good g[ lhs-good (▿ W) eq ] W∷l→ = g[ rhs-good (▿ (⇡ᴿ _ _ _)) refl ]
-  valstate-good g[ lhs-good {Wₕₒₗₑ = Wₕₒₗₑ} {W₂ = W₂} {γ = γ} (lhs-good {Wₕₒₗₑ = Wₕₒₗₑ'} {W₂ = W₂'} {γ = γ'} x eq₁) eq ] (W∷l→ {𝐖₁ = 𝐖₁}) = g[ (rhs-good (lhs-good x ((⟦ 𝐖₁ ⟧ⱽ , ⟦ W₂ ⟧ᵛ ⟦ γ ⟧ᴱ) ≡⟨ cong (λ x → x , ⟦ W₂ ⟧ᵛ ⟦ γ ⟧ᴱ) eq ⟩ ⟦ ⇡ᴸ Wₕₒₗₑ W₂ γ ⟧ᵀ ≡⟨ eq₁ ⟩ ⟦ Wₕₒₗₑ' ⟧ᵛ ⟦ γ' ⟧ᴱ ∎)) refl) ]
-  valstate-good g[ lhs-good {Wₕₒₗₑ = Wₕₒₗₑ} {W₂ = W₂} {γ = γ} (rhs-good {W₁ = W₁} {Wₕₒₗₑ = Wₕₒₗₑ'} {γ = γ'} x eq₁) eq ] (W∷l→ {𝐖₁ = 𝐖₁}) = g[ (rhs-good (rhs-good x ((⟦ 𝐖₁ ⟧ⱽ , ⟦ W₂ ⟧ᵛ ⟦ γ ⟧ᴱ) ≡⟨ cong (λ x → x , ⟦ W₂ ⟧ᵛ ⟦ γ ⟧ᴱ) eq ⟩ ⟦ ⇡ᴸ Wₕₒₗₑ W₂ γ ⟧ᵀ ≡⟨ eq₁ ⟩ ⟦ Wₕₒₗₑ' ⟧ᵛ ⟦ γ' ⟧ᴱ ∎)) refl) ]
+  valstate-good g[ lhs-good {Wₕₒₗₑ = Wₕₒₗₑ} {W₂ = W₂} {γ = γ} (lhs-good {Wₕₒₗₑ = Wₕₒₗₑ₁} {W₂ = W₁} {γ = γ₁} x eq₁) eq ] (W∷l→ {𝐕 = 𝐕}) = g[ (rhs-good (lhs-good x ((⟦ 𝐕 ⟧ⱽ , ⟦ W₂ ⟧ᵛ ⟦ γ ⟧ᴱ) ≡⟨ cong (λ x → x , ⟦ W₂ ⟧ᵛ ⟦ γ ⟧ᴱ) eq ⟩ ⟦ ⇡ᴸ Wₕₒₗₑ W₂ γ ⟧ᵀ ≡⟨ eq₁ ⟩ ⟦ Wₕₒₗₑ₁ ⟧ᵛ ⟦ γ₁ ⟧ᴱ ∎)) refl) ]
+  valstate-good g[ lhs-good {Wₕₒₗₑ = Wₕₒₗₑ} {W₂ = W₂} {γ = γ} (rhs-good {𝐕 = 𝐕₁} {Wₕₒₗₑ = Wₕₒₗₑ₁} {γ = γ₁} x eq₁) eq ] (W∷l→ {𝐕 = 𝐕}) = g[ (rhs-good (rhs-good x ((⟦ 𝐕 ⟧ⱽ , ⟦ W₂ ⟧ᵛ ⟦ γ ⟧ᴱ) ≡⟨ cong (λ x → x , ⟦ W₂ ⟧ᵛ ⟦ γ ⟧ᴱ) eq ⟩ ⟦ ⇡ᴸ Wₕₒₗₑ W₂ γ ⟧ᵀ ≡⟨ eq₁ ⟩ ⟦ Wₕₒₗₑ₁ ⟧ᵛ ⟦ γ₁ ⟧ᴱ ∎)) refl) ]
 
-  valstate-good g[ rhs-good {W₁ = W₁} {Wₕₒₗₑ = Wₕₒₗₑ} {γ = γ} (▿ W) eq ] W∷r→ = g[ ▿ (⭭ pairᵛ _ _) ]
-  valstate-good g[ rhs-good {W₁ = W₁} {Wₕₒₗₑ = Wₕₒₗₑ} {γ = γ} (lhs-good {Wₕₒₗₑ = Wₕₒₗₑ'} {W₂ = W₂} {γ = γ'} x eq₁) eq ] (W∷r→ {𝐖₂ = 𝐖₂}) = g[ (lhs-good x (trans (cong (λ x → ⟦ W₁ ⟧ⱽ , x) eq) eq₁)) ]
-  valstate-good g[ rhs-good {W₁ = W₁} {Wₕₒₗₑ = Wₕₒₗₑ} {γ = γ} (rhs-good {W₁ = W₁'} {Wₕₒₗₑ = Wₕₒₗₑ'} {γ = γ'} x eq₁) eq ] (W∷r→ {𝐖₂ = 𝐖₂}) = g[ (rhs-good x (trans (cong (λ x → ⟦ W₁ ⟧ⱽ , x) eq) eq₁)) ]
+  valstate-good g[ rhs-good {𝐕 = 𝐕} {Wₕₒₗₑ = Wₕₒₗₑ} {γ = γ} (▿ W) eq ] W∷r→ = g[ ▿ (⭭ pairᵛ _ _) ]
+  valstate-good g[ rhs-good {𝐕 = 𝐕} {Wₕₒₗₑ = Wₕₒₗₑ} {γ = γ} (lhs-good {Wₕₒₗₑ = Wₕₒₗₑ₁} {W₂ = W₂} {γ = γ₁} x eq₁) eq ] (W∷r→ {𝐖 = 𝐖}) = g[ (lhs-good x (trans (cong (λ x → ⟦ 𝐕 ⟧ⱽ , x) eq) eq₁)) ]
+  valstate-good g[ rhs-good {𝐕 = 𝐕} {Wₕₒₗₑ = Wₕₒₗₑ} {γ = γ} (rhs-good {𝐕 = 𝐕₁} {Wₕₒₗₑ = Wₕₒₗₑ₁} {γ = γ₁} x eq₁) eq ] (W∷r→ {𝐖 = 𝐖}) = g[ (rhs-good x (trans (cong (λ x → ⟦ 𝐕 ⟧ⱽ , x) eq) eq₁)) ]
 
-  valstate-eq : {S S' : PState X} → PStateGood S → S →ᵖ S' → ⟦ S ⟧ᵖꟴ ≡ ⟦ S' ⟧ᵖꟴ
-  valstate-eq {S = S} {S' = S'} good (lookup→ {x = x} {γ = γ} {pstack = ⊠} {𝐛 = ▿}) = lookup-eq x γ
-  valstate-eq {S = S} {S' = S'} good (lookup→ {pstack = (x ∷ pstack) {𝐛 = 𝐛}} {𝐛 = ○}) = refl
-  valstate-eq {S = S} {S' = S'} good (lam→ {pstack = ⊠} {𝐛 = ▿}) = refl
-  valstate-eq {S = S} {S' = S'} good (lam→ {pstack = (x ∷ pstack) {𝐛 = 𝐛}} {𝐛 = ○}) = refl
-  valstate-eq {S = S} {S' = S'} good (pair→ {pstack = ⊠} {𝐛 = ▿}) = refl
-  valstate-eq {S = S} {S' = S'} good (pair→ {pstack = (x ∷ pstack) {𝐛 = 𝐛}} {𝐛 = ○}) = refl
-  valstate-eq {S = S} {S' = S'} good (unit→ {pstack = ⊠} {𝐛 = ▿}) = refl
-  valstate-eq {S = S} {S' = S'} good (unit→ {pstack = (x ∷ pstack) {𝐛 = 𝐛}} {𝐛 = ○}) = refl
-  valstate-eq {S = S} {S' = S'} g[ lhs-good {W₂ = W₂} {γ = γ} x eq ] (W∷l→ {pstack = ⊠} {𝐛 = ▿}) = cong (λ x → x , ⟦ W₂ ⟧ᵛ ⟦ γ ⟧ᴱ) (sym eq)
-  valstate-eq {S = S} {S' = S'} good (W∷l→ {pstack = (x ∷ pstack) {𝐛 = 𝐛}} {𝐛 = ○}) = refl
-  valstate-eq {S = S} {S' = S'} g[ rhs-good {W₁ = W₁} {γ = γ} x eq ] (W∷r→ {pstack = ⊠} {𝐛 = ▿}) = cong (λ x → ⟦ W₁ ⟧ⱽ , x) (sym eq)
-  valstate-eq {S = S} {S' = S'} good (W∷r→ {pstack = (x ∷ pstack) {𝐛 = 𝐛}} {𝐛 = ○}) = refl
+  valstate-eq : {σ σ₁ : PState X} → PStateGood σ → σ →ᵖ σ₁ → ⟦ σ ⟧ᵖꟴ ≡ ⟦ σ₁ ⟧ᵖꟴ
+  valstate-eq {σ = σ} {σ₁ = σ₁} good (lookup→ {x = x} {γ = γ} {K = ⊠} {𝐛 = ▿}) = lookup-eq x γ
+  valstate-eq {σ = σ} {σ₁ = σ₁} good (lookup→ {K = (x ∷ K) {𝐛 = 𝐛}} {𝐛 = ○}) = refl
+  valstate-eq {σ = σ} {σ₁ = σ₁} good (lam→ {K = ⊠} {𝐛 = ▿}) = refl
+  valstate-eq {σ = σ} {σ₁ = σ₁} good (lam→ {K = (x ∷ K) {𝐛 = 𝐛}} {𝐛 = ○}) = refl
+  valstate-eq {σ = σ} {σ₁ = σ₁} good (pair→ {K = ⊠} {𝐛 = ▿}) = refl
+  valstate-eq {σ = σ} {σ₁ = σ₁} good (pair→ {K = (x ∷ K) {𝐛 = 𝐛}} {𝐛 = ○}) = refl
+  valstate-eq {σ = σ} {σ₁ = σ₁} good (unit→ {K = ⊠} {𝐛 = ▿}) = refl
+  valstate-eq {σ = σ} {σ₁ = σ₁} good (unit→ {K = (x ∷ K) {𝐛 = 𝐛}} {𝐛 = ○}) = refl
+  valstate-eq {σ = σ} {σ₁ = σ₁} g[ lhs-good {W₂ = W₂} {γ = γ} x eq ] (W∷l→ {K = ⊠} {𝐛 = ▿}) = cong (λ x → x , ⟦ W₂ ⟧ᵛ ⟦ γ ⟧ᴱ) (sym eq)
+  valstate-eq {σ = σ} {σ₁ = σ₁} good (W∷l→ {K = (x ∷ K) {𝐛 = 𝐛}} {𝐛 = ○}) = refl
+  valstate-eq {σ = σ} {σ₁ = σ₁} g[ rhs-good {𝐕 = 𝐕} {γ = γ} x eq ] (W∷r→ {K = ⊠} {𝐛 = ▿}) = cong (λ x → ⟦ 𝐕 ⟧ⱽ , x) (sym eq)
+  valstate-eq {σ = σ} {σ₁ = σ₁} good (W∷r→ {K = (x ∷ K) {𝐛 = 𝐛}} {𝐛 = ○}) = refl
 
-  valstate-trans-eq : {S S' : PState X} → PStateGood S → S ↠ᵛ S' → ⟦ S ⟧ᵖꟴ ≡ ⟦ S' ⟧ᵖꟴ
-  valstate-trans-eq good (S →ᵖ⟨ S→ᵖS' ⟩．) = valstate-eq good S→ᵖS'
-  valstate-trans-eq good (S →ᵖ⟨ S→ᵖS' ⟩ S'↠ᵛS'') = trans (valstate-eq good S→ᵖS') (valstate-trans-eq (valstate-good good S→ᵖS') S'↠ᵛS'')
+  valstate-trans-eq : {σ σ₁ : PState X} → PStateGood σ → σ ↠ᵛ σ₁ → ⟦ σ ⟧ᵖꟴ ≡ ⟦ σ₁ ⟧ᵖꟴ
+  valstate-trans-eq good (σ →ᵖ⟨ s ⟩．) = valstate-eq good s
+  valstate-trans-eq good (σ →ᵖ⟨ s ⟩ ss) = trans (valstate-eq good s) (valstate-trans-eq (valstate-good good s) ss)
 
   value-machine-correct : (W : Val Γ X) → (γ : MEnv Γ) → ⟦ W ⟧ᵛ ⟦ γ ⟧ᴱ ≡ ⟦ result (normalise-val W γ) ⟧ⱽ
   value-machine-correct W γ = valstate-trans-eq g[ ▿ (⇡ W γ) ] (steps (normalise-val W γ))
