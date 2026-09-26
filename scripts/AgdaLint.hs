@@ -525,6 +525,7 @@ data SourceFile = SourceFile
   , srcFixities     :: Set Text
   , srcNamedKeys    :: Set Text
   , srcModuleParams :: Set Text
+  , srcTokenCounts  :: Map Text Int
   }
 
 codeLines :: SourceFile -> [Line]
@@ -560,6 +561,7 @@ analyse path src =
     , srcNamedKeys = Set.fromList (concatMap (namedKeys . codeTokens) code)
     , srcModuleParams =
         Set.fromList [tokText n | l <- code, firstText l == Just "module", b <- binders (codeTokens l), n <- binderNames b]
+    , srcTokenCounts = Map.fromListWith (+) [(tokText t, 1) | l <- code, t <- wordsOf l]
     }
   where
     ls = lexFile path src
@@ -688,21 +690,29 @@ data Context = Context
   { ctxConfig      :: Config
   , ctxNotations   :: Map FilePath (Map Text Notation)
   , ctxOperators   :: Set Text
-  , ctxTokenCounts :: Map Text Int
+  , ctxImporters   :: Map FilePath [SourceFile]
   }
 
-visibleNotations :: [SourceFile] -> Map FilePath (Map Text Notation)
-visibleNotations files = Map.fromList [(srcPath f, visible f) | f <- files]
+-- each file with the files it imports, transitively, itself included
+importClosures :: [SourceFile] -> Map FilePath [SourceFile]
+importClosures files = Map.fromList [(srcPath f, closure f) | f <- files]
   where
     byModule = Map.fromList [(m, srcPath f) | f <- files, Just m <- [srcModule f]]
     imports f = mapMaybe ((`Map.lookup` byModule) . openModule) (filter openIsImport (srcOpens f))
     (graph, fromVertex, toVertex) = Graph.graphFromEdges [(f, srcPath f, imports f) | f <- files]
     closure f = [g | Just v <- [toVertex (srcPath f)], w <- Graph.reachable graph v, let (g, _, _) = fromVertex w]
-    visible f =
-      let tables = map srcSyntax (closure f)
-          merged = Map.unionsWith pick (map (Map.map Just) tables)
+
+visibleNotations :: Map FilePath [SourceFile] -> Map FilePath (Map Text Notation)
+visibleNotations = Map.map visible
+  where
+    visible closure =
+      let merged = Map.unionsWith pick (map (Map.map Just . srcSyntax) closure)
           pick a b = if a == b then a else Nothing
        in Map.mapMaybe id merged
+
+-- each file with the files that import it, transitively, itself included
+importers :: Map FilePath [SourceFile] -> Map FilePath [SourceFile]
+importers closures = Map.fromListWith (++) [(srcPath d, [g]) | gs <- Map.elems closures, g <- take 1 gs, d <- gs]
 
 ------------------------------------------------------------------------
 -- naming rules
@@ -911,7 +921,7 @@ checkUnusedVariable ctx f =
   [ finding (tokPos n) (tokText n <> " is declared but never used")
   | v <- srcVariables f
   , n <- varNames v
-  , Map.findWithDefault 0 (tokText n) (ctxTokenCounts ctx) <= 1
+  , sum [Map.findWithDefault 0 (tokText n) (srcTokenCounts g) | g <- Map.findWithDefault [f] (srcPath f) (ctxImporters ctx)] <= 1
   ]
 
 ------------------------------------------------------------------------
@@ -1127,12 +1137,13 @@ lintAll cfg allow files =
   , not (allowed (srcPath f) (ruleId r) fd)
   ]
   where
+    closures = importClosures files
     ctx =
       Context
         { ctxConfig = cfg
-        , ctxNotations = visibleNotations files
+        , ctxNotations = visibleNotations closures
         , ctxOperators = notationOperators files
-        , ctxTokenCounts = Map.fromListWith (+) [(tokText t, 1) | f <- files, l <- codeLines f, t <- wordsOf l]
+        , ctxImporters = importers closures
         }
     allowed p r fd =
       let key' l = T.pack p <> ":" <> l <> ":" <> ruleName r
