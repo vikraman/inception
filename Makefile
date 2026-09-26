@@ -14,10 +14,18 @@ todos: $(AGDA_SRCS)
 	find -H Inception -type f -name '*.agda' \
 		-exec grep -E -n --colour=auto 'TODO' {} \+
 
+LINT = scripts/AgdaLint.hs
+
+lint:
+	$(LINT)
+
+lint-fix:
+	$(LINT) --fix
+
 cloc:
 	cloc Inception/
 
 clean:
 	rm -f $(AGDA_BINS)
 
-.PHONY: all clean
+.PHONY: all clean lint lint-fix

@@ -8,6 +8,35 @@ env:
   LTS_VERSION: 23.17
 
 jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Haskell
+        uses: haskell-actions/setup@v2
+        with:
+          ghc-version: '9.12'
+          cabal-version: 'latest'
+
+      - name: Cache cabal
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cabal/packages
+            ~/.cabal/store
+            ~/.cabal/script-builds
+          key: ${{ runner.os }}-agdalint-${{ hashFiles('scripts/AgdaLint.hs') }}
+
+      - name: Update package index
+        run: cabal update
+
+      - name: Lint
+        run: make lint
+
+
   agda:
     name: agda
     runs-on: ubuntu-latest
