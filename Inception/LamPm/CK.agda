@@ -100,17 +100,17 @@ wk-cfg π ⟨ M ∥ K ⟩ = ⟨ wk-comp π M ∥ wk-stk π K ⟩
 wk-cfg π [ V ∥ K ] = [ wk-val π V ∥ wk-stk π K ]
 
 wk-ins2 : {Γ Γ₁ : Ctx} {X Y A : Ty} (π : Γ₁ ⊇ Γ) (V : Γ ⊢ᵛ A) →
-        wk-val (wk-wk {A = Y} (wk-wk {A = X} wk-id)) (wk-val π V) ≡ wk-val (wk-cong {A = Y} (wk-cong {A = X} π)) (wk-val (wk-wk {A = Y} (wk-wk {A = X} wk-id)) V)
+        wk-val (wk-wk {X = Y} (wk-wk {X = X} wk-id)) (wk-val π V) ≡ wk-val (wk-cong {X = Y} (wk-cong {X = X} π)) (wk-val (wk-wk {X = Y} (wk-wk {X = X} wk-id)) V)
 wk-ins2 {X = X} {Y = Y} π V = begin
-    wk-val (wk-wk {A = Y} (wk-wk {A = X} wk-id)) (wk-val π V)
-  ≡⟨ wk-val-trans V (wk-wk {A = Y} (wk-wk {A = X} wk-id)) π ⟩
-    wk-val (wk-wk {A = Y} (wk-wk {A = X} (wk-trans wk-id π))) V
-  ≡⟨ cong (λ x → wk-val (wk-wk {A = Y} (wk-wk {A = X} x)) V) (wk-trans-idl π) ⟩
-    wk-val (wk-wk {A = Y} (wk-wk {A = X} π)) V
-  ≡˘⟨ cong (λ x → wk-val (wk-wk {A = Y} (wk-wk {A = X} x)) V) (wk-trans-idr π) ⟩
-    wk-val (wk-wk {A = Y} (wk-wk {A = X} (wk-trans π wk-id))) V
-  ≡˘⟨ wk-val-trans V (wk-cong {A = Y} (wk-cong {A = X} π)) (wk-wk {A = Y} (wk-wk {A = X} wk-id)) ⟩
-    wk-val (wk-cong {A = Y} (wk-cong {A = X} π)) (wk-val (wk-wk {A = Y} (wk-wk {A = X} wk-id)) V) ∎
+    wk-val (wk-wk {X = Y} (wk-wk {X = X} wk-id)) (wk-val π V)
+  ≡⟨ wk-val-trans V (wk-wk {X = Y} (wk-wk {X = X} wk-id)) π ⟩
+    wk-val (wk-wk {X = Y} (wk-wk {X = X} (wk-trans wk-id π))) V
+  ≡⟨ cong (λ x → wk-val (wk-wk {X = Y} (wk-wk {X = X} x)) V) (wk-trans-idl π) ⟩
+    wk-val (wk-wk {X = Y} (wk-wk {X = X} π)) V
+  ≡˘⟨ cong (λ x → wk-val (wk-wk {X = Y} (wk-wk {X = X} x)) V) (wk-trans-idr π) ⟩
+    wk-val (wk-wk {X = Y} (wk-wk {X = X} (wk-trans π wk-id))) V
+  ≡˘⟨ wk-val-trans V (wk-cong {X = Y} (wk-cong {X = X} π)) (wk-wk {X = Y} (wk-wk {X = X} wk-id)) ⟩
+    wk-val (wk-cong {X = Y} (wk-cong {X = X} π)) (wk-val (wk-wk {X = Y} (wk-wk {X = X} wk-id)) V) ∎
 
 wk-step : {Γ₁ : Ctx} (π : Γ₁ ⊇ Γ) {σ σ₁ : Cfg Γ B} → σ →ᵏ σ₁ → wk-cfg π σ →ᵏ wk-cfg π σ₁
 wk-step π push-step = push-step

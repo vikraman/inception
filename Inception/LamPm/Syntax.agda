@@ -135,7 +135,7 @@ sub-wk-trans : (π : Γ ⊇ Γ₁) (δ : Γ₁ ⊇ Γ₂) (θ : Γ₂ ⊢ Δ)
 sub-wk-trans π δ sub-ε        = refl
 sub-wk-trans π δ (sub-ex θ V) = cong₂ sub-ex (sub-wk-trans π δ θ) (wk-val-trans V π δ)
 
-sub-wk-wk-wk-id : (θ : Γ ⊢ Δ) -> sub-wk (wk-wk {A = A} wk-id) (sub-wk (wk-wk {A = B} wk-id) θ) ≡ sub-wk (wk-wk {A = A} (wk-wk {A = B} wk-id)) θ
+sub-wk-wk-wk-id : (θ : Γ ⊢ Δ) -> sub-wk (wk-wk {X = A} wk-id) (sub-wk (wk-wk {X = B} wk-id) θ) ≡ sub-wk (wk-wk {X = A} (wk-wk {X = B} wk-id)) θ
 sub-wk-wk-wk-id θ = begin
   sub-wk (wk-wk wk-id) (sub-wk (wk-wk wk-id) θ)   ≡⟨ sub-wk-trans (wk-wk wk-id) (wk-wk wk-id) θ ⟩
   sub-wk (wk-trans (wk-wk wk-id) (wk-wk wk-id)) θ ≡⟨ cong (λ π -> sub-wk π θ) (cong wk-wk (wk-trans-idl (wk-wk wk-id))) ⟩
@@ -146,14 +146,14 @@ ren wk-ε        = sub-ε
 ren (wk-cong π) = sub-ex (sub-wk (wk-wk wk-id) (ren π)) (var here)
 ren (wk-wk π)   = sub-wk (wk-wk wk-id) (ren π)
 
-ren-cong2 : (π : Γ ⊇ Δ) -> ren (wk-cong {A = A} (wk-cong {A = B} π)) ≡ sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) (ren π)) (var (there here))) (var here)
+ren-cong2 : (π : Γ ⊇ Δ) -> ren (wk-cong {X = A} (wk-cong {X = B} π)) ≡ sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) (ren π)) (var (there here))) (var here)
 ren-cong2 π = cong (λ x -> sub-ex x (var here)) (cong (λ x -> sub-ex x (var (there here))) (sub-wk-wk-wk-id (ren π)))
 
 sub-mem-wk : (π : Γ ⊇ Δ) (θ : Δ ⊢ Ψ) (i : Ψ ∋ A) -> sub-mem (sub-wk π θ) i ≡ wk-val π (sub-mem θ i)
 sub-mem-wk π (sub-ex θ V) here     = refl
 sub-mem-wk π (sub-ex θ V) (there i) = sub-mem-wk π θ i
 
-wk-val-var-wk-wk-id : (i : Γ ∋ A) -> wk-val (wk-wk {A = B} wk-id) (var i) ≡ var (there i)
+wk-val-var-wk-wk-id : (i : Γ ∋ A) -> wk-val (wk-wk {X = B} wk-id) (var i) ≡ var (there i)
 wk-val-var-wk-wk-id i = cong var (begin
   wk-mem (wk-wk wk-id) i ≡⟨ wk-mem-wk-wk wk-id i ⟩
   there (wk-mem wk-id i)     ≡⟨ cong there wk-mem-id ⟩
@@ -174,7 +174,7 @@ sub-mem-ren (wk-wk π) i = begin
   var (wk-mem (wk-wk π) i)                  ∎
 
 wk-cong-sub-wk-lemma : (π : Γ₁ ⊇ Γ) (θ : Γ ⊢ Δ)
-                     -> sub-wk (wk-cong {A = A} π) (sub-wk (wk-wk wk-id) θ) ≡ sub-wk (wk-wk wk-id) (sub-wk π θ)
+                     -> sub-wk (wk-cong {X = A} π) (sub-wk (wk-wk wk-id) θ) ≡ sub-wk (wk-wk wk-id) (sub-wk π θ)
 wk-cong-sub-wk-lemma π θ = begin
   sub-wk (wk-cong π) (sub-wk (wk-wk wk-id) θ) ≡⟨ sub-wk-trans (wk-cong π) (wk-wk wk-id) θ ⟩
   sub-wk (wk-wk (wk-trans π wk-id)) θ         ≡⟨ cong (λ w -> sub-wk w θ) (cong wk-wk (wk-trans-comm-id π)) ⟩
@@ -182,7 +182,7 @@ wk-cong-sub-wk-lemma π θ = begin
   sub-wk (wk-wk wk-id) (sub-wk π θ)           ∎
 
 wk-cong2-sub-wk-lemma : (π : Γ₁ ⊇ Γ) (θ : Γ ⊢ Δ)
-                      -> sub-wk (wk-cong {A = A} (wk-cong {A = B} π)) (sub-wk (wk-wk (wk-wk wk-id)) θ) ≡ sub-wk (wk-wk (wk-wk wk-id)) (sub-wk π θ)
+                      -> sub-wk (wk-cong {X = A} (wk-cong {X = B} π)) (sub-wk (wk-wk (wk-wk wk-id)) θ) ≡ sub-wk (wk-wk (wk-wk wk-id)) (sub-wk π θ)
 wk-cong2-sub-wk-lemma π θ = begin
   sub-wk (wk-cong (wk-cong π)) (sub-wk (wk-wk (wk-wk wk-id)) θ) ≡⟨ sub-wk-trans (wk-cong (wk-cong π)) (wk-wk (wk-wk wk-id)) θ ⟩
   sub-wk (wk-wk (wk-wk (wk-trans π wk-id))) θ                   ≡⟨ cong (λ w -> sub-wk w θ) (cong wk-wk (cong wk-wk (wk-trans-comm-id π))) ⟩
@@ -380,7 +380,7 @@ sub-comp-sub-wk-l ρ θ sub-ε        = refl
 sub-comp-sub-wk-l ρ θ (sub-ex φ V) = cong₂ sub-ex (sub-comp-sub-wk-l ρ θ φ) (sym (wk-sub-val ρ θ V))
 
 sub-comp-sub-ext1 : (θ : Γ ⊢ Δ) (φ : Δ ⊢ Ψ)
-  -> sub-comp-sub (sub-ex (sub-wk (wk-wk {A = A} wk-id) θ) (var here)) (sub-ex (sub-wk (wk-wk wk-id) φ) (var here))
+  -> sub-comp-sub (sub-ex (sub-wk (wk-wk {X = A} wk-id) θ) (var here)) (sub-ex (sub-wk (wk-wk wk-id) φ) (var here))
    ≡ sub-ex (sub-wk (wk-wk wk-id) (sub-comp-sub θ φ)) (var here)
 sub-comp-sub-ext1 θ φ =
   cong₂ sub-ex
@@ -395,7 +395,7 @@ sub-comp-sub-ext1 θ φ =
     refl
 
 sub-comp-sub-ext2 : (θ : Γ ⊢ Δ) (φ : Δ ⊢ Ψ)
-  -> sub-comp-sub (sub-ex (sub-ex (sub-wk (wk-wk {A = A} (wk-wk {A = B} wk-id)) θ) (var (there here))) (var here))
+  -> sub-comp-sub (sub-ex (sub-ex (sub-wk (wk-wk {X = A} (wk-wk {X = B} wk-id)) θ) (var (there here))) (var here))
                   (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) φ) (var (there here))) (var here))
    ≡ sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) (sub-comp-sub θ φ)) (var (there here))) (var here)
 sub-comp-sub-ext2 θ φ =
