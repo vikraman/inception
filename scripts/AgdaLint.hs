@@ -130,7 +130,7 @@ rule r = case r of
   Prime -> Rule r Error "no primes on single-letter variables (Γ', σ'')" checkPrime
   PrefixType -> Rule r Error "write types that have a syntax declaration in their notation" checkPrefixType
   BannedName -> Rule r Error "names listed in [bannedNames]" checkBannedName
-  TypeVarLetter -> Rule r Error "variables of the [typeVars] sort use the allowed letters" checkTypeVarLetter
+  TypeVarLetter -> Rule r Error "variables of the [typeVars] sort use the allowed letters, and only they do" checkTypeVarLetter
   SortLetter -> Rule r Warning "typed binders use the letters configured in [[sorts]]" checkSortLetter
   UnneededSubscript -> Rule r Warning "a lone M₁ in a clause should be M" checkUnneededSubscript
   PairSubscript -> Rule r Warning "two of a kind use the letter pair (M N), not M M₁" checkPairSubscript
@@ -823,6 +823,16 @@ checkTypeVarLetter ctx f = case cfgTypeVars (ctxConfig ctx) of
     | n <- binderVars tv ++ declVars tv
     , not (hasLetterFrom (typeLetters tv) (tokText n))
     ]
+      ++ [ finding (tokPos n) (tokText n <> " is a type letter, but has type " <> T.unwords (texts (binderType b)))
+         | l <- codeLines f
+         , b <- binders (codeTokens l)
+         , let ty = texts (binderType b)
+         , not (null ty), ty /= ["_"], ty /= [typeSort tv]
+         -- universes are types too
+         , "Set" `notElem` take 1 (codomain (binderType b))
+         , n <- binderNames b
+         , hasLetterFrom (typeLetters tv) (tokText n)
+         ]
   where
     binderVars tv = [n | l <- codeLines f, b <- binders (codeTokens l), texts (binderType b) == [typeSort tv], n <- binderNames b]
     declVars tv = [n | v <- srcVariables f, varType v == [typeSort tv], n <- varNames v]
@@ -833,15 +843,16 @@ checkSortLetter ctx f =
   | l <- codeLines f
   , b <- binders (codeTokens l)
   , let cod = codomain (binderType b)
-  , Just s <- [find (matches cod) (cfgSorts (ctxConfig ctx))]
+  , Just s <- [find (sortMatches cod) (cfgSorts (ctxConfig ctx))]
   , n <- binderNames b
   , tokText n /= "_"
   , not (hasLetterFrom (sortLetters s) (tokText n))
   ]
-  where
-    matches cod s = case sortMatch s of
-      HeadsAnyOf hs   -> any (`elem` hs) cod
-      ExactlyOneOf es -> case cod of [c] -> c `elem` es; _ -> False
+
+sortMatches :: [Text] -> SortSpec -> Bool
+sortMatches cod s = case sortMatch s of
+  HeadsAnyOf hs   -> any (`elem` hs) cod
+  ExactlyOneOf es -> case cod of [c] -> c `elem` es; _ -> False
 
 -- clause names without named-argument keys
 clauseNames :: Clause -> [Text]

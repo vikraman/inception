@@ -1,6 +1,6 @@
 module Inception.SystemL.CBV (P R : Set) where
 
-open import Inception.SystemL.Syntax hiding (K)
+open import Inception.SystemL.Syntax hiding (K; T)
 
 open import Data.Empty
 open import Data.Product as P

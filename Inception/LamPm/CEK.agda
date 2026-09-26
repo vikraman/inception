@@ -62,7 +62,7 @@ data Cfg : Ty → Set where
 apply : MVal (X `⇒ Y) → MVal X → Kont Y Z → Cfg Z
 apply (clo N γ) 𝐖 K = ⟨ N ∥ γ ∷ 𝐖 ∥ K ⟩
 
-split : MVal (X `× Y) → (Γ ∙ X ∙ Y) ⊢ᶜ Z → Env Γ → Kont Z X₁ → Cfg X₁
+split : MVal (X `× Y) → (Γ ∙ X ∙ Y) ⊢ᶜ Z → Env Γ → Kont Z U → Cfg U
 split 𝐕 M γ K = ⟨ M ∥ γ ∷ fst-v 𝐕 ∷ snd-v 𝐕 ∥ K ⟩
 
 infix 5 _→ᵏ_
@@ -81,7 +81,7 @@ data _→ᵏ_ : {X : Ty} → Cfg X → Cfg X → Set where
   app-step    : {Γ : Ctx} {V : Γ ⊢ᵛ (X `⇒ Y)} {W : Γ ⊢ᵛ X} {γ : Env Γ} {K : Kont Y Z}
               → ⟨ app V W ∥ γ ∥ K ⟩ →ᵏ apply (eval-val V γ) (eval-val W γ) K
 
-  pm-step     : {Γ : Ctx} {V : Γ ⊢ᵛ (X `× Y)} {M : (Γ ∙ X ∙ Y) ⊢ᶜ Z} {γ : Env Γ} {K : Kont Z X₁}
+  pm-step     : {Γ : Ctx} {V : Γ ⊢ᵛ (X `× Y)} {M : (Γ ∙ X ∙ Y) ⊢ᶜ Z} {γ : Env Γ} {K : Kont Z U}
               → ⟨ pm V M ∥ γ ∥ K ⟩ →ᵏ split (eval-val V γ) M γ K
 
 infix 5 _↠ᵏ_

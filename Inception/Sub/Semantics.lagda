@@ -329,8 +329,8 @@ module TopLevel {ℛ : Ty} {k₀ : ⟦ ℛ ⟧ → R} where
   eval-jump-eq : (W : Γ ⊢ᵛ `ℓ) → (γ : MEnv Γ) → ⟦ eval W γ ⟧ⱽ ≡ ⟦ jump-to-state (eval W γ) ⟧ᶜꟴ
   eval-jump-eq W γ = jump-eq (eval W γ)
 
-  clo-eq : (𝐖 : MVal (X `⇒ Y)) → (T : ⟦ X ⟧) → (Z : ⟦ proj₁ (clo-to-comp 𝐖) ⟧ˣ) → (eq : Z ≡ ⟦ proj₂ (proj₂ (clo-to-comp 𝐖)) ⟧ᴱ) → ⟦ 𝐖 ⟧ⱽ T ≡ ⟦ proj₁ (proj₂ (clo-to-comp 𝐖)) ⟧ᶜ (Z , T)
-  clo-eq (cloᵛ M γ) T X eq = cong (λ x → curry ⟦ M ⟧ᶜ x T) (sym eq)
+  clo-eq : (𝐖 : MVal (X `⇒ Y)) → (w : ⟦ X ⟧) → (γ : ⟦ proj₁ (clo-to-comp 𝐖) ⟧ˣ) → (eq : γ ≡ ⟦ proj₂ (proj₂ (clo-to-comp 𝐖)) ⟧ᴱ) → ⟦ 𝐖 ⟧ⱽ w ≡ ⟦ proj₁ (proj₂ (clo-to-comp 𝐖)) ⟧ᶜ (γ , w)
+  clo-eq (cloᵛ M _) w γ eq = cong (λ x → curry ⟦ M ⟧ᶜ x w) (sym eq)
 
   proj₁-val-eq : (𝐖 : MVal (X `× Y)) → proj₁ ⟦ 𝐖 ⟧ⱽ ≡ ⟦ proj₁-val 𝐖 ⟧ⱽ
   proj₁-val-eq (pairᵛ 𝐕 𝐖) = refl

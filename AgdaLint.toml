@@ -45,7 +45,7 @@ sectionTitle = "lower"
 
 [typeVars]
 sort = "Ty"
-allowed = ["X", "Y", "Z", "ℛ"]
+allowed = ["X", "Y", "Z", "U", "S", "T", "ℛ"]
 
 [[pairSkip]]
 path = "Inception/SystemL/"
@@ -90,4 +90,4 @@ letters = "ΓΔΨΞ"
 
 [[sorts]]
 exact = ["Ty"]
-letters = "XYZℛ"
+letters = "XYZUSTℛ"

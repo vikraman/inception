@@ -23,7 +23,7 @@ data Ctx : Set where
   _∙_ : Ctx → Ty → Ctx
 
 variable
-  X Y Z X₁ Y₁ Z₁ : Ty
+  X Y Z U S T : Ty
   Γ Δ Ψ Ξ Γ₁ Δ₁ Ψ₁ : Ctx
 
 data _∋_ : Ctx → Ty → Set where

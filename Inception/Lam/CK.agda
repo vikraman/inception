@@ -92,7 +92,7 @@ Red→SNᶜ X M (snM , ret) = snM
 Red→RTNᶜ : (X : Ty) (M : Γ ⊢ᶜ X) → Redᶜ X M → (∀ {V} → ⟨ M ∥ ε ⟩ ↠ᵏ ⟨ return V ∥ ε ⟩ → Redᵛ X V)
 Red→RTNᶜ X M (snM , ret) = ret
 
-SN-ext∷-C : {X : Ty} {M : Γ ⊢ᶜ Y} {L : Γ ⊢ᵏ Y ⇒ Z} {N : (Γ ∙ Z) ⊢ᶜ X} {K : Γ ⊢ᵏ X ⇒ X₁}
+SN-ext∷-C : {X : Ty} {M : Γ ⊢ᶜ Y} {L : Γ ⊢ᵏ Y ⇒ Z} {N : (Γ ∙ Z) ⊢ᶜ X} {K : Γ ⊢ᵏ X ⇒ U}
           → SN ⟨ M ∥ L ⟩
           → (∀ {V} → ⟨ M ∥ L ⟩ ↠ᵏ ⟨ return V ∥ ε ⟩ → Redᵛ Z V)
           → (∀ {V} → Redᵛ Z V → SN ⟨ sub-comp (sub-ex sub-id V) N ∥ K ⟩)
@@ -107,10 +107,10 @@ SN-ext∷-C {M = return V} {L = ε} (sn f) rtn H =
 SN-ext∷-C {M = return V} {L = N ∷ L} (sn f) rtn H =
   sn (λ { return-step → SN-ext∷-C (f return-step) (λ ch → rtn (_ ~>⟨ return-step ⟩ ch)) H })
 
-RTN-ext∷-C : {X : Ty} {M : Γ ⊢ᶜ Y} {L : Γ ⊢ᵏ Y ⇒ Z} {N : (Γ ∙ Z) ⊢ᶜ X} {K : Γ ⊢ᵏ X ⇒ X₁}
+RTN-ext∷-C : {X : Ty} {M : Γ ⊢ᶜ Y} {L : Γ ⊢ᵏ Y ⇒ Z} {N : (Γ ∙ Z) ⊢ᶜ X} {K : Γ ⊢ᵏ X ⇒ U}
            → (∀ {V} → ⟨ M ∥ L ⟩ ↠ᵏ ⟨ return V ∥ ε ⟩ → Redᵛ Z V)
-           → (∀ {V} → Redᵛ Z V → ∀ {W} → ⟨ sub-comp (sub-ex sub-id V) N ∥ K ⟩ ↠ᵏ ⟨ return W ∥ ε ⟩ → Redᵛ X₁ W)
-           → {W : Γ ⊢ᵛ X₁} → ⟨ M ∥ graft L (N ∷ K) ⟩ ↠ᵏ ⟨ return W ∥ ε ⟩ → Redᵛ X₁ W
+           → (∀ {V} → Redᵛ Z V → ∀ {W} → ⟨ sub-comp (sub-ex sub-id V) N ∥ K ⟩ ↠ᵏ ⟨ return W ∥ ε ⟩ → Redᵛ U W)
+           → {W : Γ ⊢ᵛ U} → ⟨ M ∥ graft L (N ∷ K) ⟩ ↠ᵏ ⟨ return W ∥ ε ⟩ → Redᵛ U W
 RTN-ext∷-C {M = push M N} rtn H (_ ~>⟨ push-step ⟩ rest) =
   RTN-ext∷-C (λ ch → rtn (_ ~>⟨ push-step ⟩ ch)) H rest
 RTN-ext∷-C {M = app (var i) V} rtn H (_ ~>⟨ () ⟩ rest)
@@ -199,7 +199,7 @@ Fundamental-val θ rθ (lam M) π {W} rw =
 Fundamental-comp θ rθ (return V) =
   sn (λ ()) , λ { (_ ◼) → Fundamental-val θ rθ V ; (_ ~>⟨ () ⟩ _) }
 Fundamental-comp θ rθ (app V W) =
-  Eq.subst (λ U → Redᶜ _ (app U (sub-val θ W))) (wk-val-id (sub-val θ V))
+  Eq.subst (λ x → Redᶜ _ (app x (sub-val θ W))) (wk-val-id (sub-val θ V))
            (Fundamental-val θ rθ V wk-id (Fundamental-val θ rθ W))
 Fundamental-comp θ rθ (push M N) =
   exp-push (Fundamental-comp θ rθ M)
