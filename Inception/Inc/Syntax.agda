@@ -65,14 +65,14 @@ data Comp where
       → Γ ⊢ᶜ X
 
 mutual
-  wk-val : Wk Γ Δ → Δ ⊢ᵛ X → Γ ⊢ᵛ X
-  wk-val π (var x)         = var (wk-mem π x)
-  wk-val π (lam M)         = lam (wk-comp (wk-cong π) M)
+  wk-val : Γ ⊇ Δ → Δ ⊢ᵛ X → Γ ⊢ᵛ X
+  wk-val π (var i) = var (wk-mem π i)
+  wk-val π (lam M) = lam (wk-comp (wk-cong π) M)
 
   wk-val π (pair V W) = pair (wk-val π V) (wk-val π W)
   wk-val π unit       = unit
 
-  wk-comp : Wk Γ Δ → Δ ⊢ᶜ X → Γ ⊢ᶜ X
+  wk-comp : Γ ⊇ Δ → Δ ⊢ᶜ X → Γ ⊢ᶜ X
   wk-comp π (return V)     = return (wk-val π V)
   wk-comp π (pm V M)       = pm (wk-val π V) (wk-comp (wk-cong (wk-cong π)) M)
   wk-comp π (push M N)     = push (wk-comp π M) (wk-comp (wk-cong π) N)
@@ -80,33 +80,35 @@ mutual
   wk-comp π (rec V W)      = rec (wk-val π V) (wk-val π W)
   wk-comp π (inc M N)      = inc (wk-comp (wk-cong π) M) (wk-comp (wk-cong π) N)
 
-wk : Val Γ X → Val (Γ ∙ Y) X
+wk : Γ ⊢ᵛ X → (Γ ∙ Y) ⊢ᵛ X
 wk = wk-val (wk-wk wk-id)
 
-data Sub (Γ : Ctx) : (Δ : Ctx) → Set where
-  sub-ε : Sub Γ ε
-  sub-ex : (θ : Sub Γ Δ) → (V : Val Γ X) → Sub Γ (Δ ∙ X)
+syntax Sub Γ Δ = Γ ⊢ Δ
 
-sub-mem : Sub Γ Δ → Δ ∋ X → Val Γ X
+data Sub (Γ : Ctx) : (Δ : Ctx) → Set where
+  sub-ε : Γ ⊢ ε
+  sub-ex : (θ : Γ ⊢ Δ) → (V : Γ ⊢ᵛ X) → Γ ⊢ (Δ ∙ X)
+
+sub-mem : Γ ⊢ Δ → Δ ∋ X → Γ ⊢ᵛ X
 sub-mem (sub-ex θ V) here = V
 sub-mem (sub-ex θ V) (there i) = sub-mem θ i
 
-sub-wk : Wk Γ Δ → Sub Δ Ψ → Sub Γ Ψ
+sub-wk : Γ ⊇ Δ → Δ ⊢ Ψ → Γ ⊢ Ψ
 sub-wk π sub-ε = sub-ε
 sub-wk π (sub-ex θ V) = sub-ex (sub-wk π θ) (wk-val π V)
 
-sub-id : Sub Γ Γ
+sub-id : Γ ⊢ Γ
 sub-id {Γ = ε} = sub-ε
 sub-id {Γ = Γ ∙ X} = sub-ex (sub-wk (wk-wk wk-id) sub-id) (var here)
 
 mutual
-  sub-val : Sub Γ Δ → Δ ⊢ᵛ X → Γ ⊢ᵛ X
-  sub-val θ (var x) = sub-mem θ x
+  sub-val : Γ ⊢ Δ → Δ ⊢ᵛ X → Γ ⊢ᵛ X
+  sub-val θ (var i) = sub-mem θ i
   sub-val θ (lam M) = lam (sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ) (var here)) M)
   sub-val θ (pair V W) = pair (sub-val θ V) (sub-val θ W)
   sub-val θ unit = unit
 
-  sub-comp : Sub Γ Δ → Δ ⊢ᶜ X → Γ ⊢ᶜ X
+  sub-comp : Γ ⊢ Δ → Δ ⊢ᶜ X → Γ ⊢ᶜ X
   sub-comp θ (return V) = return (sub-val θ V)
   sub-comp θ (pm V M) = pm (sub-val θ V) (sub-comp (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) θ) (var (there here))) (var here)) M)
   sub-comp θ (push M N) = push (sub-comp θ M) (sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ) (var here)) N)
@@ -126,7 +128,7 @@ letc : Γ ⊢ᵛ X → (Γ ∙ X) ⊢ᶜ Y
      → Γ ⊢ᶜ Y
 letc V M = sub-comp (sub-ex sub-id V) M
 
-exchg : Sub (Γ ∙ X ∙ Y)(Γ ∙ Y ∙ X)
+exchg : (Γ ∙ X ∙ Y) ⊢ (Γ ∙ Y ∙ X)
 exchg = sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) sub-id) (var here)) (var (there here))
 
 variable

@@ -85,23 +85,23 @@ mutual
 %</SemTerms>
 \begin{code}
 
-push-return-sem-eq : (γ : ⟦ Γ ⟧ˣ) → (k : (⟦ X ⟧ → R)) → (W : Val Γ Z) → (M : (Γ ∙ Z) ⊢ᶜ X) →
+push-return-sem-eq : (γ : ⟦ Γ ⟧ˣ) → (k : (⟦ X ⟧ → R)) → (W : Γ ⊢ᵛ Z) → (M : (Γ ∙ Z) ⊢ᶜ X) →
       (< idf , ⟦ return W ⟧ᶜ > ； τ ； ⟦ M ⟧ᶜ *) γ k ≡ ⟦ M ⟧ᶜ (γ , ⟦ W ⟧ᵛ γ) k
 push-return-sem-eq γ k W M = refl
 
-push-sem-eq : (γ : ⟦ Γ ⟧ˣ) → (k : (⟦ X ⟧ → R)) → (M : Comp Γ Z) → (N : (Γ ∙ Z) ⊢ᶜ X) →
+push-sem-eq : (γ : ⟦ Γ ⟧ˣ) → (k : (⟦ X ⟧ → R)) → (M : Γ ⊢ᶜ Z) → (N : (Γ ∙ Z) ⊢ᶜ X) →
       (< idf , ⟦ M ⟧ᶜ > ； τ ； ⟦ N ⟧ᶜ *) γ k ≡ ⟦ M ⟧ᶜ γ (λ t → ((⟦ N ⟧ᶜ *) ∘ τ)  (γ , η t) k)
 push-sem-eq γ k M N = refl
 
-pm-sem-eq : (γ : ⟦ Γ ⟧ˣ) → (k : (⟦ X ⟧ → R)) → (W : Val Γ (Y `× Z)) → (M : (Γ ∙ Y ∙ Z) ⊢ᶜ X) →
+pm-sem-eq : (γ : ⟦ Γ ⟧ˣ) → (k : (⟦ X ⟧ → R)) → (W : Γ ⊢ᵛ (Y `× Z)) → (M : (Γ ∙ Y ∙ Z) ⊢ᶜ X) →
       (< idf , ⟦ W ⟧ᵛ > ； assocl ； ⟦ M ⟧ᶜ) γ k ≡ ⟦ M ⟧ᶜ ((γ , proj₁ (⟦ W ⟧ᵛ γ)) , proj₂ (⟦ W ⟧ᵛ γ)) k
 pm-sem-eq γ k W M = refl
 
-app-sem-eq : (γ : ⟦ Γ ⟧ˣ) → (k : (⟦ Y ⟧ → R)) → (V : Val Γ (X `⇒ Y)) → (W : Val Γ X) →
+app-sem-eq : (γ : ⟦ Γ ⟧ˣ) → (k : (⟦ Y ⟧ → R)) → (V : Γ ⊢ᵛ (X `⇒ Y)) → (W : Γ ⊢ᵛ X) →
       (< ⟦ V ⟧ᵛ , ⟦ W ⟧ᵛ > ； ev) γ k ≡ (⟦ V ⟧ᵛ γ) (⟦ W ⟧ᵛ γ) k
 app-sem-eq γ k V W = refl
 
-app-lam-sem-eq : (γ : ⟦ Γ ⟧ˣ) → (k : (⟦ Y ⟧ → R)) → (M : Comp (Γ ∙ X) Y) → (V : Val Γ X) →
+app-lam-sem-eq : (γ : ⟦ Γ ⟧ˣ) → (k : (⟦ Y ⟧ → R)) → (M : (Γ ∙ X) ⊢ᶜ Y) → (V : Γ ⊢ᵛ X) →
       (< ⟦ lam M ⟧ᵛ , ⟦ V ⟧ᵛ > ； ev) γ k ≡ ⟦ M ⟧ᶜ (γ , (⟦ V ⟧ᵛ γ)) k
 app-lam-sem-eq γ k M V = refl
 
@@ -136,7 +136,7 @@ mutual
     let m = evalComp N (γ , k) in
       evalComp M ((γ , m) , k)
 
-⟦_⟧ˢ : Sub Γ Δ → ⟦ Γ ⟧ˣ → ⟦ Δ ⟧ˣ
+⟦_⟧ˢ : Γ ⊢ Δ → ⟦ Γ ⟧ˣ → ⟦ Δ ⟧ˣ
 ⟦ sub-ε ⟧ˢ = const tt
 ⟦ sub-ex θ W ⟧ˢ = < ⟦ θ ⟧ˢ , ⟦ W ⟧ᵛ >
 
@@ -159,12 +159,12 @@ mutual
 {-# REWRITE wk-val-coh #-}
 {-# REWRITE wk-comp-coh #-}
 
-sub-mem-coh : (θ : Sub Γ Δ) (i : Δ ∋ X) → ⟦ sub-mem θ i ⟧ᵛ ≡ (⟦ θ ⟧ˢ ； ⟦ i ⟧ᵐ)
+sub-mem-coh : (θ : Γ ⊢ Δ) (i : Δ ∋ X) → ⟦ sub-mem θ i ⟧ᵛ ≡ (⟦ θ ⟧ˢ ； ⟦ i ⟧ᵐ)
 sub-mem-coh (sub-ex θ W) here = refl
 sub-mem-coh (sub-ex θ W) (there i) rewrite sub-mem-coh θ i = refl
 {-# REWRITE sub-mem-coh #-}
 
-sub-wk-coh : (π : Γ ⊇ Δ) (θ : Sub Δ Ψ) → ⟦ sub-wk π θ ⟧ˢ ≡ (⟦ π ⟧ʷ ； ⟦ θ ⟧ˢ)
+sub-wk-coh : (π : Γ ⊇ Δ) (θ : Δ ⊢ Ψ) → ⟦ sub-wk π θ ⟧ˢ ≡ (⟦ π ⟧ʷ ； ⟦ θ ⟧ˢ)
 sub-wk-coh π sub-ε = refl
 sub-wk-coh π (sub-ex θ W) rewrite sub-wk-coh π θ | wk-val-coh π W = refl
 {-# REWRITE sub-wk-coh #-}
@@ -175,13 +175,13 @@ sub-id-coh {Γ ∙ X} = funext \(γ , x) → cong₂ _,_ (happly sub-id-coh γ) 
 {-# REWRITE sub-id-coh #-}
 
 mutual
-  sub-val-coh : (θ : Sub Γ Δ) (W : Δ ⊢ᵛ X) → ⟦ sub-val θ W ⟧ᵛ ≡ (⟦ θ ⟧ˢ ； ⟦ W ⟧ᵛ)
+  sub-val-coh : (θ : Γ ⊢ Δ) (W : Δ ⊢ᵛ X) → ⟦ sub-val θ W ⟧ᵛ ≡ (⟦ θ ⟧ˢ ； ⟦ W ⟧ᵛ)
   sub-val-coh θ (var i) = refl
   sub-val-coh θ (lam M) rewrite sub-comp-coh (sub-ex (sub-wk (wk-wk wk-id) θ) (var here)) M = refl
   sub-val-coh θ (pair V W) rewrite sub-val-coh θ V | sub-val-coh θ W = refl
   sub-val-coh θ unit = refl
 
-  sub-comp-coh : (θ : Sub Γ Δ) (M : Δ ⊢ᶜ X) → ⟦ sub-comp θ M ⟧ᶜ ≡ (⟦ θ ⟧ˢ ； ⟦ M ⟧ᶜ)
+  sub-comp-coh : (θ : Γ ⊢ Δ) (M : Δ ⊢ᶜ X) → ⟦ sub-comp θ M ⟧ᶜ ≡ (⟦ θ ⟧ˢ ； ⟦ M ⟧ᶜ)
   sub-comp-coh θ (return W) rewrite sub-val-coh θ W = refl
   sub-comp-coh θ (pm W M) rewrite sub-val-coh θ W | sub-comp-coh (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) θ) (var (there here))) (var here)) M = refl
   sub-comp-coh θ (push M N) rewrite sub-comp-coh θ M | sub-comp-coh (sub-ex (sub-wk (wk-wk wk-id) θ) (var here)) N = refl
@@ -225,7 +225,7 @@ mutual
   eqComp (var-push V M) = refl
   eqComp (sub-push M N P) = refl
 
-wk-sem-trans : (π : Wk Ψ Δ) → (δ : Wk Δ Γ) → (γ : ⟦ Ψ ⟧ˣ) → ⟦ δ ⟧ʷ (⟦ π ⟧ʷ γ) ≡ ⟦ wk-trans π δ ⟧ʷ γ
+wk-sem-trans : (π : Ψ ⊇ Δ) → (δ : Δ ⊇ Γ) → (γ : ⟦ Ψ ⟧ˣ) → ⟦ δ ⟧ʷ (⟦ π ⟧ʷ γ) ≡ ⟦ wk-trans π δ ⟧ʷ γ
 wk-sem-trans wk-ε π γ = refl
 wk-sem-trans {Γ = ε} (wk-cong π) δ γ = refl
 wk-sem-trans {Γ = Γ ∙ x} (wk-cong π) (wk-cong δ) γ =
@@ -296,7 +296,7 @@ module TopLevel {ℛ : Ty} {k₀ : ⟦ ℛ ⟧ → R} where
   lookup-eq here (γ · 𝐖) = refl
   lookup-eq (there i) (γ · 𝐖) = lookup-eq i γ
 
-  eval-correct : (W : Val Γ X) → (γ : MEnv Γ) → ⟦ W ⟧ᵛ ⟦ γ ⟧ᴱ ≡ ⟦ eval W γ ⟧ⱽ
+  eval-correct : (W : Γ ⊢ᵛ X) → (γ : MEnv Γ) → ⟦ W ⟧ᵛ ⟦ γ ⟧ᴱ ≡ ⟦ eval W γ ⟧ⱽ
   eval-correct (var i) γ = lookup-eq i γ
   eval-correct (lam M) γ = refl
   eval-correct (pair V W) γ = cong₂ _,_ (eval-correct V γ) (eval-correct W γ)
@@ -326,7 +326,7 @@ module TopLevel {ℛ : Ty} {k₀ : ⟦ ℛ ⟧ → R} where
   jump-eq : (𝐖 : MVal `ℓ) → ⟦ 𝐖 ⟧ⱽ ≡ ⟦ jump-to-state 𝐖 ⟧ᶜꟴ
   jump-eq (jumpᵛ _ _ _) = refl
 
-  eval-jump-eq : (W : Val Γ `ℓ) → (γ : MEnv Γ) → ⟦ eval W γ ⟧ⱽ ≡ ⟦ jump-to-state (eval W γ) ⟧ᶜꟴ
+  eval-jump-eq : (W : Γ ⊢ᵛ `ℓ) → (γ : MEnv Γ) → ⟦ eval W γ ⟧ⱽ ≡ ⟦ jump-to-state (eval W γ) ⟧ᶜꟴ
   eval-jump-eq W γ = jump-eq (eval W γ)
 
   clo-eq : (𝐖 : MVal (X `⇒ Y)) → (T : ⟦ X ⟧) → (Z : ⟦ proj₁ (clo-to-comp 𝐖) ⟧ˣ) → (eq : Z ≡ ⟦ proj₂ (proj₂ (clo-to-comp 𝐖)) ⟧ᴱ) → ⟦ 𝐖 ⟧ⱽ T ≡ ⟦ proj₁ (proj₂ (clo-to-comp 𝐖)) ⟧ᶜ (Z , T)
@@ -338,10 +338,10 @@ module TopLevel {ℛ : Ty} {k₀ : ⟦ ℛ ⟧ → R} where
   proj₂-val-eq : (𝐖 : MVal (X `× Y)) → proj₂ ⟦ 𝐖 ⟧ⱽ ≡ ⟦ proj₂-val 𝐖 ⟧ⱽ
   proj₂-val-eq (pairᵛ 𝐕 𝐖) = refl
 
-  eval-proj₁-eq : (W : Val Γ (X `× Y)) → (γ : MEnv Γ) → (proj₁ (⟦ W ⟧ᵛ ⟦ γ ⟧ᴱ)) ≡ ⟦ proj₁-val (eval W γ) ⟧ⱽ
+  eval-proj₁-eq : (W : Γ ⊢ᵛ (X `× Y)) → (γ : MEnv Γ) → (proj₁ (⟦ W ⟧ᵛ ⟦ γ ⟧ᴱ)) ≡ ⟦ proj₁-val (eval W γ) ⟧ⱽ
   eval-proj₁-eq W γ = trans (cong proj₁ (eval-correct W γ)) (proj₁-val-eq (eval W γ))
 
-  eval-proj₂-eq : (W : Val Γ (X `× Y)) → (γ : MEnv Γ) → (proj₂ (⟦ W ⟧ᵛ ⟦ γ ⟧ᴱ)) ≡ ⟦ proj₂-val (eval W γ) ⟧ⱽ
+  eval-proj₂-eq : (W : Γ ⊢ᵛ (X `× Y)) → (γ : MEnv Γ) → (proj₂ (⟦ W ⟧ᵛ ⟦ γ ⟧ᴱ)) ≡ ⟦ proj₂-val (eval W γ) ⟧ⱽ
   eval-proj₂-eq W γ = trans (cong proj₂ (eval-correct W γ)) (proj₂-val-eq (eval W γ))
 
   compstate-eq : {σ σ₁ : CState} → σ →ᶜ σ₁ → ⟦ σ ⟧ᶜꟴ ≡ ⟦ σ₁ ⟧ᶜꟴ
@@ -399,13 +399,13 @@ module TopLevel {ℛ : Ty} {k₀ : ⟦ ℛ ⟧ → R} where
   compstate-eq* (σ ◼) = refl
   compstate-eq* (σ ~>⟨ s ⟩ ss) = trans (compstate-eq s) (compstate-eq* ss)
 
-  comp-machine-transitions-correct : (M : Comp ε ℛ) → ⟦ ⟨ M ╎ ⋄ ╎ ◻ ⟩ ⟧ᶜꟴ ≡ ⟦ proj₁ (exec M) ⟧ᶜꟴ
+  comp-machine-transitions-correct : (M : ε ⊢ᶜ ℛ) → ⟦ ⟨ M ╎ ⋄ ╎ ◻ ⟩ ⟧ᶜꟴ ≡ ⟦ proj₁ (exec M) ⟧ᶜꟴ
   comp-machine-transitions-correct M = compstate-eq* (proj₁ (proj₂ (proj₂ (proj₂ (exec M)))))
 
 \end{code}
 %<*SubVarCorrect>
 \begin{code}
-  comp-machine-correct : (M : Comp ε ℛ) → ⟦ M ⟧ᶜ tt k₀ ≡ k₀ ⟦ (proj₁ (proj₂ (exec M))) ⟧ⱽ
+  comp-machine-correct : (M : ε ⊢ᶜ ℛ) → ⟦ M ⟧ᶜ tt k₀ ≡ k₀ ⟦ (proj₁ (proj₂ (exec M))) ⟧ⱽ
 \end{code}
 %</SubVarCorrect>
 \begin{code}

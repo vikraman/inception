@@ -38,15 +38,15 @@ data Partial : (X : Ty) → Set where
            ----------------------
            → Partial X
 
-    ⇡ :    (W : Val Γ X) → (MEnv Γ)
+    ⇡ :    (W : Γ ⊢ᵛ X) → (MEnv Γ)
            --------------------------------
            → Partial X
 
-    ⇡ᴸ :   (V : Val Γ X) → (W : Val Γ Y) → (MEnv Γ)
+    ⇡ᴸ :   (V : Γ ⊢ᵛ X) → (W : Γ ⊢ᵛ Y) → (MEnv Γ)
            ----------------------------------------------------
            → Partial (X `× Y)
 
-    ⇡ᴿ :   (𝐕 : MVal X) → (W : Val Γ Y) → (MEnv Γ)
+    ⇡ᴿ :   (𝐕 : MVal X) → (W : Γ ⊢ᵛ Y) → (MEnv Γ)
            ------------------------------------------------------------
            → Partial (X `× Y)
 
@@ -117,19 +117,19 @@ _⧻_ : (σ : PState Z) → PStack non-empty X → PState X
 data _→ᵖ_ {Z : Ty} :
         PState Z → PState Z → Set where
 
-    lookup→ :   {x : Γ ∋ X} {γ : MEnv Γ}
+    lookup→ :   {i : Γ ∋ X} {γ : MEnv Γ}
                 {K : PStack ∅? Z} {𝐛 : BotEq ∅? X Z}
                 -------------------------------------------------
-                →  ⟨ (⇡ (var x) γ ∷ K) {𝐛 = 𝐛} ⟩
-                   →ᵖ ⟨ (⭭ (lookup x γ) ∷ K) {𝐛 = 𝐛} ⟩
+                →  ⟨ (⇡ (var i) γ ∷ K) {𝐛 = 𝐛} ⟩
+                   →ᵖ ⟨ (⭭ (lookup i γ) ∷ K) {𝐛 = 𝐛} ⟩
 
-    lam→ :      {M : Comp (Γ ∙ X) Y} {γ  : MEnv Γ}
+    lam→ :      {M : (Γ ∙ X) ⊢ᶜ Y} {γ  : MEnv Γ}
                 {K : PStack ∅? Z} {𝐛 : BotEq ∅? (X `⇒ Y) Z}
                 --------------------------------------------------------
                 →  ⟨ (⇡ (lam M) γ ∷ K) {𝐛 = 𝐛} ⟩
                    →ᵖ ⟨ (⭭ (cloᵛ M γ) ∷ K) {𝐛 = 𝐛} ⟩
 
-    pair→ :     {γ : MEnv Γ} {V : Val Γ X₁} {W : Val Γ Y₁}
+    pair→ :     {γ : MEnv Γ} {V : Γ ⊢ᵛ X₁} {W : Γ ⊢ᵛ Y₁}
                 {K : PStack ∅? Z} {𝐛 : BotEq ∅? (X₁ `× Y₁) Z}
                 ---------------------------------------------------------
                 →  ⟨ (⇡ (pair V W) γ ∷ K) {𝐛 = 𝐛} ⟩
@@ -141,14 +141,14 @@ data _→ᵖ_ {Z : Ty} :
                 →  ⟨ (⇡ unit γ ∷ K) {𝐛 = 𝐛} ⟩
                    →ᵖ ⟨ (⭭ unitᵛ ∷ K) {𝐛 = 𝐛} ⟩
 
-    W∷l→ :      {γ : MEnv Γ} {𝐕 : MVal X₁} {V : Val Γ X₁}
-                {W : Val Γ Y₁} {K : PStack ∅? Z}
+    W∷l→ :      {γ : MEnv Γ} {𝐕 : MVal X₁} {V : Γ ⊢ᵛ X₁}
+                {W : Γ ⊢ᵛ Y₁} {K : PStack ∅? Z}
                 {𝐛 : BotEq ∅? (X₁ `× Y₁) Z}
                 ------------------------------------------------------
                 →  ⟨ (⭭ 𝐕 ∷ ((⇡ᴸ V W γ ∷ K) {𝐛 = 𝐛})) {𝐛 = ○} ⟩
                    →ᵖ ⟨ (⇡ W γ ∷ ((⇡ᴿ 𝐕 W γ ∷ K) {𝐛 = 𝐛})) {𝐛 = ○} ⟩
 
-    W∷r→ :      {γ : MEnv Γ} {𝐕 : MVal X₁} {𝐖 : MVal Y₁} {W : Val Γ Y₁}
+    W∷r→ :      {γ : MEnv Γ} {𝐕 : MVal X₁} {𝐖 : MVal Y₁} {W : Γ ⊢ᵛ Y₁}
                 {K : PStack ∅? Z} {𝐛 : BotEq ∅? (X₁ `× Y₁) Z}
                 -----------------------------------------------------------------
                 →  ⟨ (⭭ 𝐖 ∷ ((⇡ᴿ 𝐕 W γ ∷ K) {𝐛 = 𝐛})) {𝐛 = ○} ⟩
@@ -184,13 +184,13 @@ _⨾_ (σ →ᵖ⟨ s ⟩ ss₁) ss₂ = σ →ᵖ⟨ s ⟩ (ss₁ ⨾ ss₂)
 \end{code}
 %<*ValSteps>
 \begin{code}
-record ValSteps (W : Val Γ X) (γ : MEnv Γ) : Set where
+record ValSteps (W : Γ ⊢ᵛ X) (γ : MEnv Γ) : Set where
   field
     result : MVal X
     steps  : ⟨ ((⇡ W γ ∷ ⊠) {𝐛 = ▿}) ⟩ ↠ᵛ ⟨ ((⭭ result ∷ ⊠) {𝐛 = ▿}) ⟩
 open ValSteps
 
-normalise-val : (W : Val Γ X) → (γ : MEnv Γ) → ValSteps W γ
+normalise-val : (W : Γ ⊢ᵛ X) → (γ : MEnv Γ) → ValSteps W γ
 
 -- ...
 \end{code}
@@ -216,7 +216,7 @@ determinismⱽ unit→ unit→ = refl
 determinismⱽ W∷l→ W∷l→ = refl
 determinismⱽ W∷r→ W∷r→ = refl
 
-normalise-val-eval : (W : Val Γ X) → (γ : MEnv Γ) → ValSteps.result (normalise-val W γ) ≡ eval W γ
+normalise-val-eval : (W : Γ ⊢ᵛ X) → (γ : MEnv Γ) → ValSteps.result (normalise-val W γ) ≡ eval W γ
 normalise-val-eval (var i) γ = refl
 normalise-val-eval (lam M) γ = refl
 normalise-val-eval (pair V W) γ = cong₂ pairᵛ (normalise-val-eval V γ) (normalise-val-eval W γ)
@@ -274,13 +274,13 @@ module Correct (R : Set) {k₀ : SubSem.⟦_⟧ R ℛ → R} where
     ▿ : (W : Partial X) → PStackGood ((W ∷ ⊠) {𝐛 = ▿})
 
     lhs-good :   {b : IsEmpty} {K : PStack b Z}
-              → {Wₕₒₗₑ : Val Γ X} {W₂ : Val Γ Y} {γ : MEnv Γ} {W : Partial X}
+              → {Wₕₒₗₑ : Γ ⊢ᵛ X} {W₂ : Γ ⊢ᵛ Y} {γ : MEnv Γ} {W : Partial X}
               → {𝐛 : BotEq b (X `× Y) Z}
               → PStackGood (((⇡ᴸ Wₕₒₗₑ W₂ γ) ∷ K) {𝐛 = 𝐛})
               → (eq : ⟦ W ⟧ᵀ ≡ ⟦ Wₕₒₗₑ ⟧ᵛ ⟦ γ ⟧ᴱ) → PStackGood ((W ∷ ((⇡ᴸ Wₕₒₗₑ W₂ γ) ∷ K) {𝐛 = 𝐛}) {𝐛 = ○})
 
     rhs-good :   {b : IsEmpty} {K : PStack b Z}
-              → {𝐕 : MVal X} {Wₕₒₗₑ : Val Γ Y} {γ : MEnv Γ} {W : Partial Y}
+              → {𝐕 : MVal X} {Wₕₒₗₑ : Γ ⊢ᵛ Y} {γ : MEnv Γ} {W : Partial Y}
               → {𝐛 : BotEq b (X `× Y) Z}
               → PStackGood (((⇡ᴿ 𝐕 Wₕₒₗₑ γ) ∷ K) {𝐛 = 𝐛})
               → (eq : ⟦ W ⟧ᵀ ≡ ⟦ Wₕₒₗₑ ⟧ᵛ ⟦ γ ⟧ᴱ) → PStackGood ((W ∷ ((⇡ᴿ 𝐕 Wₕₒₗₑ γ) ∷ K) {𝐛 = 𝐛}) {𝐛 = ○})
@@ -297,11 +297,11 @@ module Correct (R : Set) {k₀ : SubSem.⟦_⟧ R ℛ → R} where
   valstate-good g[ ▿ W ] lam→ = g[ ▿ (⭭ cloᵛ _ _) ]
   valstate-good g[ ▿ W ] pair→ = g[ lhs-good (▿ (⇡ᴸ _ _ _)) refl ]
   valstate-good g[ ▿ W ] unit→ = g[ ▿ (⭭ unitᵛ) ]
-  valstate-good g[ lhs-good g eq ] (lookup→ {x = x} {γ = γ}) = g[ (lhs-good g (trans (lookup-good x γ) eq)) ]
+  valstate-good g[ lhs-good g eq ] (lookup→ {i = i} {γ = γ}) = g[ (lhs-good g (trans (lookup-good i γ) eq)) ]
   valstate-good g[ lhs-good x eq ] lam→ = g[ lhs-good x eq ]
   valstate-good g[ lhs-good x eq ] pair→ = g[ lhs-good (lhs-good x eq) refl ]
   valstate-good g[ lhs-good x eq ] unit→ = g[ lhs-good x eq ]
-  valstate-good g[ rhs-good g eq ] (lookup→ {x = x} {γ = γ}) = g[ (rhs-good g (trans (lookup-good x γ) eq)) ]
+  valstate-good g[ rhs-good g eq ] (lookup→ {i = i} {γ = γ}) = g[ (rhs-good g (trans (lookup-good i γ) eq)) ]
   valstate-good g[ rhs-good x eq ] lam→ = g[ rhs-good x eq ]
   valstate-good g[ rhs-good x eq ] pair→ = g[ lhs-good (rhs-good x eq) refl ]
   valstate-good g[ rhs-good x eq ] unit→ = g[ rhs-good x eq ]
@@ -314,7 +314,7 @@ module Correct (R : Set) {k₀ : SubSem.⟦_⟧ R ℛ → R} where
   valstate-good g[ rhs-good {𝐕 = 𝐕} {Wₕₒₗₑ = Wₕₒₗₑ} {γ = γ} (rhs-good {𝐕 = 𝐕₁} {Wₕₒₗₑ = Wₕₒₗₑ₁} {γ = γ₁} x eq₁) eq ] (W∷r→ {𝐖 = 𝐖}) = g[ (rhs-good x (trans (cong (λ x → ⟦ 𝐕 ⟧ⱽ , x) eq) eq₁)) ]
 
   valstate-eq : {σ σ₁ : PState X} → PStateGood σ → σ →ᵖ σ₁ → ⟦ σ ⟧ᵖꟴ ≡ ⟦ σ₁ ⟧ᵖꟴ
-  valstate-eq {σ = σ} {σ₁ = σ₁} good (lookup→ {x = x} {γ = γ} {K = ⊠} {𝐛 = ▿}) = lookup-eq x γ
+  valstate-eq {σ = σ} {σ₁ = σ₁} good (lookup→ {i = i} {γ = γ} {K = ⊠} {𝐛 = ▿}) = lookup-eq i γ
   valstate-eq {σ = σ} {σ₁ = σ₁} good (lookup→ {K = (x ∷ K) {𝐛 = 𝐛}} {𝐛 = ○}) = refl
   valstate-eq {σ = σ} {σ₁ = σ₁} good (lam→ {K = ⊠} {𝐛 = ▿}) = refl
   valstate-eq {σ = σ} {σ₁ = σ₁} good (lam→ {K = (x ∷ K) {𝐛 = 𝐛}} {𝐛 = ○}) = refl
@@ -331,7 +331,7 @@ module Correct (R : Set) {k₀ : SubSem.⟦_⟧ R ℛ → R} where
   valstate-trans-eq good (σ →ᵖ⟨ s ⟩．) = valstate-eq good s
   valstate-trans-eq good (σ →ᵖ⟨ s ⟩ ss) = trans (valstate-eq good s) (valstate-trans-eq (valstate-good good s) ss)
 
-  value-machine-correct : (W : Val Γ X) → (γ : MEnv Γ) → ⟦ W ⟧ᵛ ⟦ γ ⟧ᴱ ≡ ⟦ result (normalise-val W γ) ⟧ⱽ
+  value-machine-correct : (W : Γ ⊢ᵛ X) → (γ : MEnv Γ) → ⟦ W ⟧ᵛ ⟦ γ ⟧ᴱ ≡ ⟦ result (normalise-val W γ) ⟧ⱽ
   value-machine-correct W γ = valstate-trans-eq g[ ▿ (⇡ W γ) ] (steps (normalise-val W γ))
 
 \end{code}

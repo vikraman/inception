@@ -80,7 +80,7 @@ mutual
     evalComp M ((γ , \p →
       evalComp N ((γ , p) , k)) , k)
 
-⟦_⟧ˢ : Sub Γ Δ → ⟦ Γ ⟧ˣ → ⟦ Δ ⟧ˣ
+⟦_⟧ˢ : Γ ⊢ Δ → ⟦ Γ ⟧ˣ → ⟦ Δ ⟧ˣ
 ⟦ sub-ε ⟧ˢ = const tt
 ⟦ sub-ex θ V ⟧ˢ = < ⟦ θ ⟧ˢ , ⟦ V ⟧ᵛ >
 
@@ -103,12 +103,12 @@ mutual
 {-# REWRITE wk-val-coh #-}
 {-# REWRITE wk-comp-coh #-}
 
-sub-mem-coh : (θ : Sub Γ Δ) (i : Δ ∋ X) → ⟦ sub-mem θ i ⟧ᵛ ≡ (⟦ θ ⟧ˢ ； ⟦ i ⟧ᵐ)
+sub-mem-coh : (θ : Γ ⊢ Δ) (i : Δ ∋ X) → ⟦ sub-mem θ i ⟧ᵛ ≡ (⟦ θ ⟧ˢ ； ⟦ i ⟧ᵐ)
 sub-mem-coh (sub-ex θ V) here = refl
 sub-mem-coh (sub-ex θ V) (there i) rewrite sub-mem-coh θ i = refl
 {-# REWRITE sub-mem-coh #-}
 
-sub-wk-coh : (π : Γ ⊇ Δ) (θ : Sub Δ Ψ) → ⟦ sub-wk π θ ⟧ˢ ≡ (⟦ π ⟧ʷ ； ⟦ θ ⟧ˢ)
+sub-wk-coh : (π : Γ ⊇ Δ) (θ : Δ ⊢ Ψ) → ⟦ sub-wk π θ ⟧ˢ ≡ (⟦ π ⟧ʷ ； ⟦ θ ⟧ˢ)
 sub-wk-coh π sub-ε = refl
 sub-wk-coh π (sub-ex θ V) rewrite sub-wk-coh π θ | wk-val-coh π V = refl
 {-# REWRITE sub-wk-coh #-}
@@ -119,13 +119,13 @@ sub-id-coh {Γ ∙ X} = funext \(γ , a) → cong₂ _,_ (happly sub-id-coh γ) 
 {-# REWRITE sub-id-coh #-}
 
 mutual
-  sub-val-coh : (θ : Sub Γ Δ) (V : Δ ⊢ᵛ X) → ⟦ sub-val θ V ⟧ᵛ ≡ (⟦ θ ⟧ˢ ； ⟦ V ⟧ᵛ)
+  sub-val-coh : (θ : Γ ⊢ Δ) (V : Δ ⊢ᵛ X) → ⟦ sub-val θ V ⟧ᵛ ≡ (⟦ θ ⟧ˢ ； ⟦ V ⟧ᵛ)
   sub-val-coh θ (var i) = refl
   sub-val-coh θ (lam M) rewrite sub-comp-coh (sub-ex (sub-wk (wk-wk wk-id) θ) (var here)) M = refl
   sub-val-coh θ (pair V W) rewrite sub-val-coh θ V | sub-val-coh θ W = refl
   sub-val-coh θ unit = refl
 
-  sub-comp-coh : (θ : Sub Γ Δ) (M : Δ ⊢ᶜ X) → ⟦ sub-comp θ M ⟧ᶜ ≡ (⟦ θ ⟧ˢ ； ⟦ M ⟧ᶜ)
+  sub-comp-coh : (θ : Γ ⊢ Δ) (M : Δ ⊢ᶜ X) → ⟦ sub-comp θ M ⟧ᶜ ≡ (⟦ θ ⟧ˢ ； ⟦ M ⟧ᶜ)
   sub-comp-coh θ (return V) rewrite sub-val-coh θ V = refl
   sub-comp-coh θ (pm V M) rewrite sub-val-coh θ V | sub-comp-coh (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) θ) (var (there here))) (var here)) M = refl
   sub-comp-coh θ (push M N) rewrite sub-comp-coh θ M | sub-comp-coh (sub-ex (sub-wk (wk-wk wk-id) θ) (var here)) N = refl

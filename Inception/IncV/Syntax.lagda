@@ -41,7 +41,7 @@ data Comp : Ctx → Ty → Set
 
 data Val where
 
-  var :   (x : Γ ∋ X)
+  var :   (i : Γ ∋ X)
           ----------
           → Γ ⊢ᵛ X
 
@@ -101,14 +101,14 @@ data Comp where
 \begin{code}
 
 mutual
-  wk-val : Wk Γ Δ → Δ ⊢ᵛ X → Γ ⊢ᵛ X
-  wk-val π (var x)    = var (wk-mem π x)
+  wk-val : Γ ⊇ Δ → Δ ⊢ᵛ X → Γ ⊢ᵛ X
+  wk-val π (var i)    = var (wk-mem π i)
   wk-val π (lam M)    = lam (wk-comp (wk-cong π) M)
   wk-val π (pair V W) = pair (wk-val π V) (wk-val π W)
   wk-val π unit       = unit
   wk-val π (dat N)    = dat N
 
-  wk-comp : Wk Γ Δ → Δ ⊢ᶜ X → Γ ⊢ᶜ X
+  wk-comp : Γ ⊇ Δ → Δ ⊢ᶜ X → Γ ⊢ᶜ X
   wk-comp π (return W) = return (wk-val π W)
   wk-comp π (pm W M)   = pm (wk-val π W) (wk-comp (wk-cong (wk-cong π)) M)
   wk-comp π (push M N) = push (wk-comp π M) (wk-comp (wk-cong π) N)
@@ -116,7 +116,7 @@ mutual
   wk-comp π (rec V W)  = rec (wk-val π V) (wk-val π W)
   wk-comp π (inc M N)  = inc (wk-comp (wk-cong π) M) (wk-comp (wk-cong π) N)
 
-wk : Val Γ X → Val (Γ ∙ Y) X
+wk : Γ ⊢ᵛ X → (Γ ∙ Y) ⊢ᵛ X
 wk = wk-val (wk-wk wk-id)
 
 \end{code}

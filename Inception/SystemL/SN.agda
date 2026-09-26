@@ -60,12 +60,12 @@ Redᵛ (X `+ Y)  (inl V)    = Redᵛ X V
 Redᵛ (X `+ Y)  (inr W)    = Redᵛ Y W
 Redᵛ (X `⇒ Y)  (var i)    = ⊤
 Redᵛ (X `⇒ Y) {Γ} {Δ} (lam M) =
-  ∀ {Ψ Δ₁} (π : Ψ ⊇ Γ) (ρ : Δ₁ ⊇ Δ) {W : Ψ ⊢ᵛ X ∣ Δ₁} {K : Ψ ∣ Y ⊢ᵏ Δ₁}
+  ∀ {Ψ Ξ} (π : Ψ ⊇ Γ) (ρ : Ξ ⊇ Δ) {W : Ψ ⊢ᵛ X ∣ Ξ} {K : Ψ ∣ Y ⊢ᵏ Ξ}
   → Redᵛ X W → CoRedᵏ Y K → SN (cut Y (letv W (wk-tm (wk-cong π) ρ M)) K)
 
 CoRedᵏ X         (covar i)    = ⊤
 CoRedᵏ X {Γ} {Δ} (μ̃ C)       =
-  ∀ {Ψ Δ₁} (π : Ψ ⊇ Γ) (ρ : Δ₁ ⊇ Δ) {V : Ψ ⊢ᵛ X ∣ Δ₁}
+  ∀ {Ψ Ξ} (π : Ψ ⊇ Γ) (ρ : Ξ ⊇ Δ) {V : Ψ ⊢ᵛ X ∣ Ξ}
   → Redᵛ X V → SN (sub-cmd (sub-ex sub-id V) cosub-id (wk-cmd (wk-cong π) ρ C))
 CoRedᵏ `⊥        tp         = ⊤
 CoRedᵏ (X `× Y)  (fst K)    = CoRedᵏ X K
@@ -76,7 +76,7 @@ CoRedᵏ (X `⇒ Y)  (app V K)  = Redᵛ X V × CoRedᵏ Y K
 --------------------------------------------------------------------------
 -- weakening preserves reducibility
 
-Red-wk : (X : Ty) {Γ Δ Ψ Δ₁ : Ctx} (π : Ψ ⊇ Γ) (ρ : Δ₁ ⊇ Δ) {V : Γ ⊢ᵛ X ∣ Δ}
+Red-wk : (X : Ty) {Γ Δ Ψ Ξ : Ctx} (π : Ψ ⊇ Γ) (ρ : Ξ ⊇ Δ) {V : Γ ⊢ᵛ X ∣ Δ}
        → Redᵛ X V → Redᵛ X (wk-val π ρ V)
 Red-wk `⊥        π ρ r = tt
 Red-wk `𝟙     π ρ r    = tt
@@ -91,7 +91,7 @@ Red-wk (X `⇒ Y) {Γ} {Δ} π ρ {V = lam M} f =
   λ π₁ σ {W} {K} rw rk →
     Eq.subst (λ x → SN (cut Y (letv W x) K)) (sym (wk-tm-trans M (wk-cong π₁) (wk-cong π) σ ρ)) (f (wk-trans π₁ π) (wk-trans σ ρ) rw rk)
 
-CoRed-wk : (X : Ty) {Γ Δ Ψ Δ₁ : Ctx} (π : Ψ ⊇ Γ) (ρ : Δ₁ ⊇ Δ) {K : Γ ∣ X ⊢ᵏ Δ}
+CoRed-wk : (X : Ty) {Γ Δ Ψ Ξ : Ctx} (π : Ψ ⊇ Γ) (ρ : Ξ ⊇ Δ) {K : Γ ∣ X ⊢ᵏ Δ}
          → CoRedᵏ X K → CoRedᵏ X (wk-cotm π ρ K)
 CoRed-wk X             π ρ {K = covar i}   r  = tt
 CoRed-wk `⊥            π ρ {K = tp}        r  = tt
@@ -145,36 +145,36 @@ Ortho {X `+ Y} {V = inr V} {K = μ̃ C} rv rk = Ortho-μ̃ rv rk
 --------------------------------------------------------------------------
 -- fundamental lemma
 
-record RedSub {Γ Δ Ψ : Ctx} (θ : Sub Γ Δ Ψ) : Set where
+record RedSub {Γ Δ Ψ : Ctx} (θ : Γ ⊢ Ψ ∣ Δ) : Set where
   field red : {X : Ty} (i : Ψ ∋ X) → Redᵛ X (sub-mem θ i)
 open RedSub
 
-record CoRedSub {Γ Δ Δ₁ : Ctx} (φ : CoSub Γ Δ Δ₁) : Set where
-  field cored : {X : Ty} (i : Δ₁ ∋ X) → CoRedᵏ X (cosub-mem φ i)
+record CoRedSub {Γ Δ Ξ : Ctx} (φ : Γ ∣ Ξ ⊢ Δ) : Set where
+  field cored : {X : Ty} (i : Ξ ∋ X) → CoRedᵏ X (cosub-mem φ i)
 open CoRedSub
 
-RedSub-wk : {Γ Δ Ψ Δ₁ Γ₁ : Ctx} (π : Ψ ⊇ Γ) (ρ : Δ₁ ⊇ Δ) {θ : Sub Γ Δ Γ₁} → RedSub θ → RedSub (sub-wk π ρ θ)
+RedSub-wk : {Γ Δ Ψ Ξ Γ₁ : Ctx} (π : Ψ ⊇ Γ) (ρ : Ξ ⊇ Δ) {θ : Γ ⊢ Γ₁ ∣ Δ} → RedSub θ → RedSub (sub-wk π ρ θ)
 RedSub-wk π ρ {θ} rθ .red {X} i = Eq.subst (Redᵛ X) (sym (sub-mem-wk π ρ θ i)) (Red-wk X π ρ (rθ .red i))
 
-CoRedSub-wk : {Γ Δ Ψ Δ₁ Δ₂ : Ctx} (π : Ψ ⊇ Γ) (ρ : Δ₁ ⊇ Δ) {φ : CoSub Γ Δ Δ₂} → CoRedSub φ → CoRedSub (cosub-wk π ρ φ)
+CoRedSub-wk : {Γ Δ Ψ Ξ Δ₁ : Ctx} (π : Ψ ⊇ Γ) (ρ : Ξ ⊇ Δ) {φ : Γ ∣ Δ₁ ⊢ Δ} → CoRedSub φ → CoRedSub (cosub-wk π ρ φ)
 CoRedSub-wk π ρ {φ} rφ .cored {X} i = Eq.subst (CoRedᵏ X) (sym (cosub-mem-wk π ρ φ i)) (CoRed-wk X π ρ {K = cosub-mem φ i} (rφ .cored i))
 
-RedSub-ext : {Γ Δ Ψ : Ctx} {X : Ty} {θ : Sub Γ Δ Ψ} {V : Γ ⊢ᵛ X ∣ Δ} → RedSub θ → Redᵛ X V → RedSub (sub-ex θ V)
+RedSub-ext : {Γ Δ Ψ : Ctx} {X : Ty} {θ : Γ ⊢ Ψ ∣ Δ} {V : Γ ⊢ᵛ X ∣ Δ} → RedSub θ → Redᵛ X V → RedSub (sub-ex θ V)
 RedSub-ext rθ rv .red here = rv
 RedSub-ext rθ rv .red (there i) = rθ .red i
 
-CoRedSub-ext : {Γ Δ Δ₁ : Ctx} {X : Ty} {φ : CoSub Γ Δ Δ₁} {K : Γ ∣ X ⊢ᵏ Δ} → CoRedSub φ → CoRedᵏ X K → CoRedSub (cosub-ex φ K)
+CoRedSub-ext : {Γ Δ Ξ : Ctx} {X : Ty} {φ : Γ ∣ Ξ ⊢ Δ} {K : Γ ∣ X ⊢ᵏ Δ} → CoRedSub φ → CoRedᵏ X K → CoRedSub (cosub-ex φ K)
 CoRedSub-ext rφ rk .cored here = rk
 CoRedSub-ext rφ rk .cored (there i) = rφ .cored i
 
-Fundamental-cmd : {Γ Δ Ψ Δ₁ : Ctx} (θ : Sub Γ Δ Ψ) (φ : CoSub Γ Δ Δ₁)
-                → RedSub θ → CoRedSub φ → (C : Ψ ⊢ Δ₁) → SN (sub-cmd θ φ C)
-Fundamental-val : {Γ Δ Ψ Δ₁ : Ctx} {X : Ty} (θ : Sub Γ Δ Ψ) (φ : CoSub Γ Δ Δ₁)
-                → RedSub θ → CoRedSub φ → (V : Ψ ⊢ᵛ X ∣ Δ₁) → Redᵛ X (sub-val θ φ V)
-Fundamental-tm  : {Γ Δ Ψ Δ₁ : Ctx} {X : Ty} (θ : Sub Γ Δ Ψ) (φ : CoSub Γ Δ Δ₁)
-                → RedSub θ → CoRedSub φ → (M : Ψ ⊢ᵗ X ∣ Δ₁) → ∀ {K : Γ ∣ X ⊢ᵏ Δ} → CoRedᵏ X K → SN (cut X (sub-tm θ φ M) K)
-Fundamental-cotm : {Γ Δ Ψ Δ₁ : Ctx} {X : Ty} (θ : Sub Γ Δ Ψ) (φ : CoSub Γ Δ Δ₁)
-                → RedSub θ → CoRedSub φ → (K : Ψ ∣ X ⊢ᵏ Δ₁) → CoRedᵏ X (sub-cotm θ φ K)
+Fundamental-cmd : {Γ Δ Ψ Ξ : Ctx} (θ : Γ ⊢ Ψ ∣ Δ) (φ : Γ ∣ Ξ ⊢ Δ)
+                → RedSub θ → CoRedSub φ → (C : Ψ ⊢ Ξ) → SN (sub-cmd θ φ C)
+Fundamental-val : {Γ Δ Ψ Ξ : Ctx} {X : Ty} (θ : Γ ⊢ Ψ ∣ Δ) (φ : Γ ∣ Ξ ⊢ Δ)
+                → RedSub θ → CoRedSub φ → (V : Ψ ⊢ᵛ X ∣ Ξ) → Redᵛ X (sub-val θ φ V)
+Fundamental-tm  : {Γ Δ Ψ Ξ : Ctx} {X : Ty} (θ : Γ ⊢ Ψ ∣ Δ) (φ : Γ ∣ Ξ ⊢ Δ)
+                → RedSub θ → CoRedSub φ → (M : Ψ ⊢ᵗ X ∣ Ξ) → ∀ {K : Γ ∣ X ⊢ᵏ Δ} → CoRedᵏ X K → SN (cut X (sub-tm θ φ M) K)
+Fundamental-cotm : {Γ Δ Ψ Ξ : Ctx} {X : Ty} (θ : Γ ⊢ Ψ ∣ Δ) (φ : Γ ∣ Ξ ⊢ Δ)
+                → RedSub θ → CoRedSub φ → (K : Ψ ∣ X ⊢ᵏ Ξ) → CoRedᵏ X (sub-cotm θ φ K)
 
 Fundamental-cmd θ φ rθ rφ (cut X M K) = Fundamental-tm θ φ rθ rφ M (Fundamental-cotm θ φ rθ rφ K)
 

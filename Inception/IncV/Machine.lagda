@@ -33,7 +33,7 @@ mutual
 
     ◻ :        CStack ℛ
 
-    <_；_>∷_ :  Comp (Γ ∙ Y) X → (γ : Env Γ)
+    <_；_>∷_ :  (Γ ∙ Y) ⊢ᶜ X → (γ : Env Γ)
                 → (pstack : CStack X)
                 ------------------------------------
                 → CStack Y
@@ -52,11 +52,11 @@ mutual
               -------------------------------------------------
               → MVal (X `× Y)
 
-    cloᵛ :    {Γ : Ctx} → (M : Comp (Γ ∙ X) Y) → (γ : Env Γ)
+    cloᵛ :    {Γ : Ctx} → (M : (Γ ∙ X) ⊢ᶜ Y) → (γ : Env Γ)
               ----------------------------------------------------
               → MVal (X `⇒ Y)
 
-    jumpᵛ :   {Γ : Ctx} → (M : Comp (Γ ∙ `𝓅) X) → (γ : Env Γ)
+    jumpᵛ :   {Γ : Ctx} → (M : (Γ ∙ `𝓅) ⊢ᶜ X) → (γ : Env Γ)
               → (K : CStack X)
               -----------------------------------------------
               → MVal `ℓ
@@ -104,7 +104,7 @@ data CState : Set where
              ---------------------------------------------------
              → CState
 
-  ⟨_╎_╎_⟩ :  (M : Comp Γ X) → (γ : Env Γ) → (K : CStack X)
+  ⟨_╎_╎_⟩ :  (M : Γ ⊢ᶜ X) → (γ : Env Γ) → (K : CStack X)
              -----------------------------------------------------------------
              → CState
 
@@ -112,7 +112,7 @@ data CState : Set where
 %</CStates>
 \begin{code}
 
-run : Val Γ X → Env Γ → MVal X
+run : Γ ⊢ᵛ X → Env Γ → MVal X
 run (var i) γ = lookup i γ
 run (lam M) γ = cloᵛ M γ
 run (pair V W) γ = pairᵛ (run V γ) (run W γ)
@@ -122,22 +122,22 @@ run (dat N) γ = datᵛ N
 jump-to-state : MVal `ℓ → MVal `𝓅 → CState
 jump-to-state (jumpᵛ M γ K) 𝐖 = ⟨ M ╎ γ · 𝐖 ╎ K ⟩
 
-clo-to-comp : MVal (X `⇒ Y) → Σ[ Γ ∈ Ctx ] Comp (Γ ∙ X) Y × Env Γ
+clo-to-comp : MVal (X `⇒ Y) → Σ[ Γ ∈ Ctx ] (Γ ∙ X) ⊢ᶜ Y × Env Γ
 clo-to-comp (cloᵛ M γ) = _ , M , γ
 
 clo-val : (W : MVal (X `⇒ Y)) → (cloᵛ (proj₁ (proj₂ (clo-to-comp W))) (proj₂ (proj₂ (clo-to-comp W))) ≡ W)
 clo-val (cloᵛ M γ) = refl
 
-run-jump : Val Γ `ℓ → Val Γ `𝓅 → Env Γ → CState
+run-jump : Γ ⊢ᵛ `ℓ → Γ ⊢ᵛ `𝓅 → Env Γ → CState
 run-jump V W γ = jump-to-state (run V γ) (run W γ)
 
-run-clo : Val Γ (X `⇒ Y) → Val Γ X → Env Γ → CStack Y → CState
+run-clo : Γ ⊢ᵛ (X `⇒ Y) → Γ ⊢ᵛ X → Env Γ → CStack Y → CState
 run-clo V W γ K = ⟨ proj₁ (proj₂ (clo-to-comp (run V γ))) ╎ proj₂ (proj₂ (clo-to-comp (run V γ))) · run W γ ╎ K ⟩
 
-run₁ : Val Γ (X `× Y) → Env Γ → MVal X
+run₁ : Γ ⊢ᵛ (X `× Y) → Env Γ → MVal X
 run₁ W γ = proj₁-val (run W γ)
 
-run₂ : Val Γ (X `× Y) → Env Γ → MVal Y
+run₂ : Γ ⊢ᵛ (X `× Y) → Env Γ → MVal Y
 run₂ W γ = proj₂-val (run W γ)
 
 \end{code}
@@ -146,32 +146,32 @@ run₂ W γ = proj₂-val (run W γ)
 
 data _→ᶜ_ : CState → CState → Set where
 
-  run→ :    {W : Val Γ X} {γ : Env Γ} {K : CStack X}
+  run→ :    {W : Γ ⊢ᵛ X} {γ : Env Γ} {K : CStack X}
              -------------------------------------------
              →  ⟨ return W ╎ γ ╎ K ⟩ →ᶜ ⟨ run W γ ╎ K ⟩
 
-  return→ :  {𝐖 : MVal X} {M : Comp (Γ ∙ X) Y} {γ : Env Γ} {K : CStack Y}
+  return→ :  {𝐖 : MVal X} {M : (Γ ∙ X) ⊢ᶜ Y} {γ : Env Γ} {K : CStack Y}
              --------------------------------------------------------------
              →  ⟨ 𝐖 ╎ < M ； γ >∷ K ⟩ →ᶜ ⟨ M ╎ γ · 𝐖 ╎ K ⟩
 
-  push→ :    {M : Comp Γ X} {N : Comp (Γ ∙ X) Y} {γ : Env Γ} {K : CStack Y}
+  push→ :    {M : Γ ⊢ᶜ X} {N : (Γ ∙ X) ⊢ᶜ Y} {γ : Env Γ} {K : CStack Y}
              ----------------------------------------------------------------
              →  ⟨ push M N ╎ γ ╎ K ⟩ →ᶜ ⟨ M ╎ γ ╎ < N ； γ >∷ K ⟩
 
-  inc→ :     {M : Comp (Γ ∙ `ℓ) X} {N : Comp (Γ ∙ `𝓅) X} {γ : Env Γ} {K : CStack X}
+  inc→ :     {M : (Γ ∙ `ℓ) ⊢ᶜ X} {N : (Γ ∙ `𝓅) ⊢ᶜ X} {γ : Env Γ} {K : CStack X}
              ----------------------------------------------------------------
              →  ⟨ inc M N ╎ γ ╎ K ⟩ →ᶜ ⟨ M ╎ γ · (jumpᵛ N γ K) ╎ K ⟩
 
-  rec→ :     {V : Val Γ `ℓ} {W : Val Γ `𝓅} {γ : Env Γ} {K : CStack X}
+  rec→ :     {V : Γ ⊢ᵛ `ℓ} {W : Γ ⊢ᵛ `𝓅} {γ : Env Γ} {K : CStack X}
              -------------------------------------------------------
              →  ⟨ rec V W ╎ γ ╎ K ⟩ →ᶜ run-jump V W γ
 
-  pmᶜ→ :     {W : Val Γ (X `× Y)} {γ : Env Γ}
-             {M : Comp (Γ ∙ X ∙ Y) Z} {K : CStack Z}
+  pmᶜ→ :     {W : Γ ⊢ᵛ (X `× Y)} {γ : Env Γ}
+             {M : (Γ ∙ X ∙ Y) ⊢ᶜ Z} {K : CStack Z}
              -------------------------------------------------------------
              →  ⟨ pm W M ╎ γ ╎ K ⟩ →ᶜ ⟨ M ╎ γ · run₁ W γ · run₂ W γ ╎ K ⟩
 
-  app→ :     {V : Val Γ (X `⇒ Y)} {W : Val Γ X} {γ : Env Γ} {K : CStack Y}
+  app→ :     {V : Γ ⊢ᵛ (X `⇒ Y)} {W : Γ ⊢ᵛ X} {γ : Env Γ} {K : CStack Y}
              ----------------------------------------------------------------
              →  ⟨ app V W ╎ γ ╎ K ⟩ →ᶜ run-clo V W γ K
 
@@ -224,14 +224,14 @@ rv≡sn (jumpᵛ _ _ _) = refl
 
 mutual
 
-  fundamentalᵛ  : (W : Val Γ X) → {γ : Env Γ} → Rᴱ γ → Rᵛ X (run W γ)
+  fundamentalᵛ  : (W : Γ ⊢ᵛ X) → {γ : Env Γ} → Rᴱ γ → Rᵛ X (run W γ)
   fundamentalᵛ (var i) Rγ = Rγ i
   fundamentalᵛ (lam M) Rγ RW Rk = fundamentalᶜ M (Rᴱ-ext Rγ RW) Rk
   fundamentalᵛ (pair V W) Rγ = (fundamentalᵛ V Rγ) , (fundamentalᵛ W Rγ)
   fundamentalᵛ unit Rγ = tt
   fundamentalᵛ (dat N) Rγ = tt
 
-  fundamentalᶜ : (M : Comp Γ X) → {γ : Env Γ} → Rᴱ γ → {K : CStack X} → Rᵏ X K → SN ⟨ M ╎ γ ╎ K ⟩
+  fundamentalᶜ : (M : Γ ⊢ᶜ X) → {γ : Env Γ} → Rᴱ γ → {K : CStack X} → Rᵏ X K → SN ⟨ M ╎ γ ╎ K ⟩
   fundamentalᶜ (return W) Rγ Rk = sn λ { run→ → Rk (fundamentalᵛ W Rγ)}
   fundamentalᶜ (pm W M) {γ = γ} Rγ Rk =
     let
@@ -265,7 +265,7 @@ Rᴱ-⊘ = λ ()
 Rᵏ-◻ : Rᵏ ℛ ◻
 Rᵏ-◻ RW = sn λ {σ} ()
 
-SN-theorem : (M : Comp ε ℛ) → SN ⟨ M ╎ ⋄ ╎ ◻ ⟩
+SN-theorem : (M : ε ⊢ᶜ ℛ) → SN ⟨ M ╎ ⋄ ╎ ◻ ⟩
 SN-theorem M = fundamentalᶜ M Rᴱ-⊘ Rᵏ-◻
 
 Normal : CState → Set
@@ -302,7 +302,7 @@ eval-acc {σ = σ} (sn f) with progress σ
 ... | step s with eval-acc (f s)
 ...   | (σ₁ , 𝐖 , NF , ss , eq) = σ₁ , 𝐖 , NF , (_ →ᶜ⟨ s ⟩ ss) , eq
 
-eval : (M : Comp ε ℛ) → Σ[ σ ∈ CState ] Σ[ 𝐖 ∈ MVal ℛ ] Σ[ NF ∈ Normal σ ] (⟨ M ╎ ⋄ ╎ ◻ ⟩ →ᶜ* σ) × (𝐖 ≡ proj₁ (halting-state σ NF))
+eval : (M : ε ⊢ᶜ ℛ) → Σ[ σ ∈ CState ] Σ[ 𝐖 ∈ MVal ℛ ] Σ[ NF ∈ Normal σ ] (⟨ M ╎ ⋄ ╎ ◻ ⟩ →ᶜ* σ) × (𝐖 ≡ proj₁ (halting-state σ NF))
 eval M = eval-acc (SN-theorem M)
 
 \end{code}

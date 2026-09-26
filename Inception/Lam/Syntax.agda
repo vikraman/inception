@@ -113,7 +113,7 @@ mutual
 --------------------------------------------------------------------------
 -- weakening/substitution
 
-sub-wk-trans : (π : Γ ⊇ Ψ) (δ : Ψ ⊇ Γ₁) (θ : Γ₁ ⊢ Δ)
+sub-wk-trans : (π : Γ ⊇ Ψ) (δ : Ψ ⊇ Ξ) (θ : Ξ ⊢ Δ)
              → sub-wk π (sub-wk δ θ) ≡ sub-wk (wk-trans π δ) θ
 sub-wk-trans π δ sub-ε        = refl
 sub-wk-trans π δ (sub-ex θ V) = cong₂ sub-ex (sub-wk-trans π δ θ) (wk-val-trans V π δ)
@@ -198,7 +198,7 @@ sub-mem-pre (sub-ex θ V) (wk-wk π) i = begin
   sub-mem θ (wk-mem π i)                     ≡˘⟨ cong (sub-mem (sub-ex θ V)) (wk-mem-wk-wk π i) ⟩
   sub-mem (sub-ex θ V) (wk-mem (wk-wk π) i)  ∎
 
-sub-pre-wk-l : (π : Γ₁ ⊇ Γ) (θ : Γ ⊢ Δ) (δ : Δ ⊇ Ψ) → sub-pre (sub-wk π θ) δ ≡ sub-wk π (sub-pre θ δ)
+sub-pre-wk-l : (π : Ξ ⊇ Γ) (θ : Γ ⊢ Δ) (δ : Δ ⊇ Ψ) → sub-pre (sub-wk π θ) δ ≡ sub-wk π (sub-pre θ δ)
 sub-pre-wk-l ρ θ wk-ε              = refl
 sub-pre-wk-l π (sub-ex θ V) (wk-cong δ) = cong₂ sub-ex (sub-pre-wk-l π θ δ) refl
 sub-pre-wk-l π (sub-ex θ V) (wk-wk δ)   = sub-pre-wk-l π θ δ
@@ -283,11 +283,11 @@ sub-mem-sub : (θ : Γ ⊢ Δ) (φ : Δ ⊢ Ψ) (i : Ψ ∋ X) → sub-mem (sub-
 sub-mem-sub θ (sub-ex φ V) here     = refl
 sub-mem-sub θ (sub-ex φ V) (there i) = sub-mem-sub θ φ i
 
-sub-comp-sub-wk-r : (θ : Γ ⊢ Γ₁) (π : Γ₁ ⊇ Δ) (φ : Δ ⊢ Ψ) → sub-comp-sub θ (sub-wk π φ) ≡ sub-comp-sub (sub-pre θ π) φ
+sub-comp-sub-wk-r : (θ : Γ ⊢ Ξ) (π : Ξ ⊇ Δ) (φ : Δ ⊢ Ψ) → sub-comp-sub θ (sub-wk π φ) ≡ sub-comp-sub (sub-pre θ π) φ
 sub-comp-sub-wk-r θ π sub-ε        = refl
 sub-comp-sub-wk-r θ π (sub-ex φ V) = cong₂ sub-ex (sub-comp-sub-wk-r θ π φ) (sub-val-wk-pre θ π V)
 
-sub-comp-sub-wk-l : (ρ : Γ₁ ⊇ Γ) (θ : Γ ⊢ Δ) (φ : Δ ⊢ Ψ) → sub-comp-sub (sub-wk ρ θ) φ ≡ sub-wk ρ (sub-comp-sub θ φ)
+sub-comp-sub-wk-l : (ρ : Ξ ⊇ Γ) (θ : Γ ⊢ Δ) (φ : Δ ⊢ Ψ) → sub-comp-sub (sub-wk ρ θ) φ ≡ sub-wk ρ (sub-comp-sub θ φ)
 sub-comp-sub-wk-l ρ θ sub-ε        = refl
 sub-comp-sub-wk-l ρ θ (sub-ex φ V) = cong₂ sub-ex (sub-comp-sub-wk-l ρ θ φ) (sym (wk-sub-val ρ θ V))
 

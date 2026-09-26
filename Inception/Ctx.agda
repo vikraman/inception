@@ -24,13 +24,13 @@ data Ctx : Set where
 
 variable
   X Y Z X₁ Y₁ Z₁ : Ty
-  Γ Δ Ψ Γ₁ Δ₁ Δ₂ Ψ₁ : Ctx
+  Γ Δ Ψ Ξ Γ₁ Δ₁ Ψ₁ : Ctx
 
 data _∋_ : Ctx → Ty → Set where
   here  : Γ ∙ X ∋ X
   there : Γ ∋ X → Γ ∙ Y ∋ X
 
-there-injective : {i i₁ : Γ ∋ X} → there {Y = Y} i ≡ there i₁ → i ≡ i₁
+there-injective : {i j : Γ ∋ X} → there {Y = Y} i ≡ there j → i ≡ j
 there-injective refl = refl
 
 --------------------------------------------------------------------------
@@ -106,7 +106,7 @@ wk-trans-comm-id π = begin
   π                 ≡˘⟨ wk-trans-idl π ⟩
   wk-trans wk-id π  ∎
 
-wk-assoc : {π₁ : Γ ⊇ Δ} {π₂ : Δ ⊇ Ψ} {π₃ : Ψ ⊇ Γ₁} → wk-trans π₁ (wk-trans π₂ π₃) ≡ wk-trans (wk-trans π₁ π₂) π₃
+wk-assoc : {π₁ : Γ ⊇ Δ} {π₂ : Δ ⊇ Ψ} {π₃ : Ψ ⊇ Ξ} → wk-trans π₁ (wk-trans π₂ π₃) ≡ wk-trans (wk-trans π₁ π₂) π₃
 wk-assoc {π₁ = wk-ε} = refl
 wk-assoc {π₁ = wk-cong π₁} {π₂ = wk-cong π₂} {π₃ = wk-cong π₃} = cong wk-cong (wk-assoc {π₁ = π₁} {π₂ = π₂} {π₃ = π₃})
 wk-assoc {π₁ = wk-cong π₁} {π₂ = wk-cong π₂} {π₃ = wk-wk π₃}   = cong wk-wk (wk-assoc {π₁ = π₁} {π₂ = π₂} {π₃ = π₃})
@@ -129,7 +129,7 @@ wk-id-id {π = wk-cong π} rewrite wk-id-id {π = π} = refl
 wk-id-id {π = wk-wk π} = ql (wk-absurd π wk-id) (wk-wk π ≡ wk-id)
 
 wk-merge : (π₁ : Γ ⊇ Δ) (π₂ : Γ ⊇ Ψ)
-         → Σ[ Γ₁ ∈ Ctx ] Σ[ π ∈ Γ ⊇ Γ₁ ] Σ[ π₃ ∈ Γ₁ ⊇ Δ ] Σ[ π₄ ∈ Γ₁ ⊇ Ψ ] ((π₁ ≡ wk-trans π π₃) × (π₂ ≡ wk-trans π π₄))
+         → Σ[ Ξ ∈ Ctx ] Σ[ π ∈ Γ ⊇ Ξ ] Σ[ π₃ ∈ Ξ ⊇ Δ ] Σ[ π₄ ∈ Ξ ⊇ Ψ ] ((π₁ ≡ wk-trans π π₃) × (π₂ ≡ wk-trans π π₄))
 wk-merge wk-ε wk-ε = ε , wk-ε , wk-ε , wk-ε , refl , refl
 wk-merge {Γ = Γ ∙ X} (wk-cong π) (wk-cong δ) with wk-merge π δ
 ... | Γ , π , π₁ , π₂ , eq₁ , eq₂ = Γ ∙ X , wk-cong π , wk-cong π₁ , wk-cong π₂ , cong wk-cong eq₁ , cong wk-cong eq₂
