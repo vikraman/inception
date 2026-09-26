@@ -234,27 +234,24 @@ mutual
   fundamentalᶜ : (M : Γ ⊢ᶜ X) → {γ : Env Γ} → Rᴱ γ → {K : CStack X} → Rᵏ X K → SN ⟨ M ╎ γ ╎ K ⟩
   fundamentalᶜ (return W) Rγ Rk = sn λ { run→ → Rk (fundamentalᵛ W Rγ)}
   fundamentalᶜ (pm W M) {γ = γ} Rγ Rk =
-    let
+    sn λ { pmᶜ→ → fundamentalᶜ M (Rᴱ-ext (Rᴱ-ext Rγ (proj₁ IH₁)) (proj₂ IH₁)) Rk }
+    where
       IH = fundamentalᵛ W Rγ
       𝐖  = run W γ
       IH₁ : Rᵛ _ (pairᵛ (proj₁-val 𝐖) (proj₂-val 𝐖))
       IH₁ = subst (λ x → Rᵛ _ x) (sym (pair-val 𝐖)) IH
-    in
-    sn λ { pmᶜ→ → fundamentalᶜ M (Rᴱ-ext (Rᴱ-ext Rγ (proj₁ IH₁)) (proj₂ IH₁)) Rk }
   fundamentalᶜ (push M N) {γ = γ} Rγ {K = K} Rk =
-    let
+    sn λ { push→ → fundamentalᶜ M Rγ Rk₁ }
+    where
       Rk₁ : Rᵏ _ (< N ； γ >∷ K)
       Rk₁ RW = sn (λ { return→ → fundamentalᶜ N (Rᴱ-ext Rγ RW) Rk })
-    in
-    sn λ { push→ → fundamentalᶜ M Rγ Rk₁ }
   fundamentalᶜ (app V W) {γ = γ} Rγ {K = K} Rk =
-    let
+    sn λ { app→ → IH₁ (fundamentalᵛ W Rγ) Rk }
+    where
       IH = fundamentalᵛ V Rγ
       𝐕 = run V γ
       eq = sym (clo-val 𝐕)
       IH₁ = subst (λ x → Rᵛ _ x) eq IH
-    in
-    sn λ { app→ → IH₁ (fundamentalᵛ W Rγ) Rk }
   fundamentalᶜ (rec V W) {γ = γ} Rγ Rk = sn λ { rec→ → subst (λ x → x) (rv≡sn (run V γ)) (fundamentalᵛ V Rγ)}
   fundamentalᶜ (inc M N) Rγ Rk =
     sn λ { inc→ → fundamentalᶜ M (Rᴱ-ext Rγ (λ { {datᵛ n} → fundamentalᶜ N (Rᴱ-ext {𝐖 = datᵛ n} Rγ tt) Rk })) Rk }

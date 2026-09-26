@@ -346,14 +346,10 @@ module TopLevel {ℛ : Ty} {k₀ : ⟦ ℛ ⟧ → R} where
 
   compstate-eq : {σ σ₁ : CState} → σ →ᶜ σ₁ → ⟦ σ ⟧ᶜꟴ ≡ ⟦ σ₁ ⟧ᶜꟴ
   compstate-eq (eval→ {W = W} {γ = γ} {K = K}) =
-    let
-      eq = eval-correct W γ
-    in
     η (⟦ W ⟧ᵛ ⟦ γ ⟧ᴱ) ⟦ K ⟧ᴷ ≡⟨ cong (λ x → η x ⟦ K ⟧ᴷ) eq ⟩ η ⟦ eval W γ ⟧ⱽ ⟦ K ⟧ᴷ ∎
+    where
+      eq = eval-correct W γ
   compstate-eq (return→ {𝐖 = 𝐖} {M = M} {γ = γ} {K = K}) =
-    let
-      eq = push-eq K (⟦ M ⟧ᶜ (⟦ γ ⟧ᴱ , ⟦ 𝐖 ⟧ⱽ))
-    in
       η ⟦ 𝐖 ⟧ⱽ ⟦ < M ； γ >∷ K ⟧ᴷ
     ≡⟨ refl ⟩
      ⟦ K ⟧ᶜˢ (λ k₁ → ⟦ M ⟧ᶜ (⟦ γ ⟧ᴱ , ⟦ 𝐖 ⟧ⱽ) k₁) k₀
@@ -361,6 +357,8 @@ module TopLevel {ℛ : Ty} {k₀ : ⟦ ℛ ⟧ → R} where
      ⟦ M ⟧ᶜ (⟦ γ ⟧ᴱ , ⟦ 𝐖 ⟧ⱽ) (λ y → ⟦ K ⟧ᶜˢ (λ k₁ → k₁ y) k₀)
     ≡⟨ refl ⟩
      ⟦ M ⟧ᶜ (⟦ γ ⟧ᴱ , ⟦ 𝐖 ⟧ⱽ) ⟦ K ⟧ᴷ ∎
+    where
+      eq = push-eq K (⟦ M ⟧ᶜ (⟦ γ ⟧ᴱ , ⟦ 𝐖 ⟧ⱽ))
   compstate-eq (push→ {M = M} {N = N} {γ = γ} {K = K}) =
     (< idf , ⟦ M ⟧ᶜ > ； τ ； ⟦ N ⟧ᶜ *) ⟦ γ ⟧ᴱ ⟦ K ⟧ᴷ
      ≡⟨ refl ⟩
@@ -371,10 +369,9 @@ module TopLevel {ℛ : Ty} {k₀ : ⟦ ℛ ⟧ → R} where
      ⟦ M ⟧ᶜ ⟦ γ ⟧ᴱ ⟦ < N ； γ >∷ K ⟧ᴷ ∎
   compstate-eq sub→ = refl
   compstate-eq (var→ {W = W} {γ = γ} {K = K}) =
-    let
-      eq = eval-correct W γ
-    in
     (⟦ W ⟧ᵛ ； varK) ⟦ γ ⟧ᴱ ⟦ K ⟧ᴷ ≡⟨ refl ⟩ ⟦ W ⟧ᵛ ⟦ γ ⟧ᴱ ≡⟨ eq ⟩ ⟦ eval W γ ⟧ⱽ ≡⟨ eval-jump-eq W γ ⟩ ⟦ jump-to-state (eval W γ) ⟧ᶜꟴ ∎
+    where
+      eq = eval-correct W γ
   compstate-eq (pmᶜ→ {W = W} {γ = γ} {M = M} {K = K}) =
     (< idf , ⟦ W ⟧ᵛ > ； assocl ； ⟦ M ⟧ᶜ) ⟦ γ ⟧ᴱ ⟦ K ⟧ᴷ
     ≡⟨ refl ⟩
@@ -411,10 +408,6 @@ module TopLevel {ℛ : Ty} {k₀ : ⟦ ℛ ⟧ → R} where
 \begin{code}
 
   comp-machine-correct M =
-    let
-      eq = comp-machine-transitions-correct M
-      hs = proj₂ (halting-state (proj₁ (exec M)) (proj₁ (proj₂ (proj₂ (exec M)))))
-    in
       ⟦ M ⟧ᶜ tt k₀
     ≡⟨ eq ⟩
       ⟦ proj₁ (exec M) ⟧ᶜꟴ
@@ -424,5 +417,8 @@ module TopLevel {ℛ : Ty} {k₀ : ⟦ ℛ ⟧ → R} where
       k₀ ⟦ proj₁ (halting-state (proj₁ (exec M)) (proj₁ (proj₂ (proj₂ (exec M))))) ⟧ⱽ
     ≡⟨ cong (λ x → k₀ ⟦ x ⟧ⱽ) (sym (proj₂ (proj₂ (proj₂ (proj₂ (exec M)))))) ⟩
       k₀ ⟦ proj₁ (proj₂ (exec M)) ⟧ⱽ ∎
+    where
+      eq = comp-machine-transitions-correct M
+      hs = proj₂ (halting-state (proj₁ (exec M)) (proj₁ (proj₂ (proj₂ (exec M)))))
 
 \end{code}

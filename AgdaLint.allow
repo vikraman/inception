@@ -1,3 +1,5 @@
 # path glob:line or *:rule
 Inception/Everything.agda:*:importOrder
 scratch/PMachine.lagda:*:sortLetter
+Inception/Inc/CPS.agda:*:letBinding
+Inception/Sub/Semantics.lagda:*:letBinding

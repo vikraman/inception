@@ -165,9 +165,11 @@ wk-reflect π {σ = [ unit ∥ K ]} ()
 wk-reflect π {σ = [ var i ∥ K ]} ()
 
 SN-wk : {Δ : Ctx} (π : Δ ⊇ Γ) {σ : Cfg Γ X} → SN σ → SN (wk-cfg π σ)
-SN-wk π (sn f) = sn (λ step →
-  let (σ₁ , σ-step , eq) = wk-reflect π step
-  in Eq.subst SN (sym eq) (SN-wk π (f σ-step)))
+SN-wk π {σ} (sn f) = sn step
+  where
+  step : ∀ {σ₁} → wk-cfg π σ →ᵏ σ₁ → SN σ₁
+  step s with wk-reflect π s
+  ... | (σ₂ , σ-step , eq) = Eq.subst SN (sym eq) (SN-wk π (f σ-step))
 
 --------------------------------------------------------------------------
 -- reducibility candidates
@@ -459,9 +461,8 @@ wk-reflect* : {Δ : Ctx} (π : Δ ⊇ Γ) {σ : Cfg Γ X} {σ₁ : Cfg Δ X}
             → wk-cfg π σ ↠ᵏ σ₁ → Σ[ σ₂ ∈ Cfg Γ X ] (σ ↠ᵏ σ₂) × (σ₁ ≡ wk-cfg π σ₂)
 wk-reflect* π (_ ◼) = _ , (_ ◼) , refl
 wk-reflect* π (_ ~>⟨ step ⟩ rest) with wk-reflect π step
-wk-reflect* π (_ ~>⟨ step ⟩ rest) | (σ , σ-step , refl) =
-  let (σ₁ , σ₁-steps , eq₂) = wk-reflect* π rest
-  in σ₁ , _ ~>⟨ σ-step ⟩ σ₁-steps , eq₂
+wk-reflect* π (_ ~>⟨ step ⟩ rest) | (σ , σ-step , refl) with wk-reflect* π rest
+... | (σ₁ , σ₁-steps , eq₂) = σ₁ , _ ~>⟨ σ-step ⟩ σ₁-steps , eq₂
 
 pair-cfg-inv : {Δ : Ctx} {X Y : Ty} (π : Δ ⊇ Γ) {σ₁ : Cfg Γ (X `× Y)} {W₁ : Δ ⊢ᵛ X} {W₂ : Δ ⊢ᵛ Y}
              → [ pair W₁ W₂ ∥ ε ] ≡ wk-cfg π σ₁
@@ -481,11 +482,10 @@ Red-wk `𝟙    π r          = SN-wk π r
 Red-wk (X `× Y) π {V} (snV , f) = SN-wk π snV , g
   where
   g : ∀ {W₁ W₂} → [ wk-val π V ∥ ε ] ↠ᵏ [ pair W₁ W₂ ∥ ε ] → Redᵛ X W₁ × Redᵛ Y W₂
-  g p =
-    let (σ₁ , σ-steps , eq)          = wk-reflect* π p
-        (V₁ , V₂ , σ₁-eq , eqV₁ , eqV₂) = pair-cfg-inv π eq
-        (redV₁ , redV₂)                 = f (Eq.subst (λ x → [ V ∥ ε ] ↠ᵏ x) σ₁-eq σ-steps)
-    in Eq.subst (Redᵛ X) eqV₁ (Red-wk X π redV₁) , Eq.subst (Redᵛ Y) eqV₂ (Red-wk Y π redV₂)
+  g p with wk-reflect* π p
+  ... | (σ₁ , σ-steps , eq) with pair-cfg-inv π eq
+  ... | (V₁ , V₂ , σ₁-eq , eqV₁ , eqV₂) with f (Eq.subst (λ x → [ V ∥ ε ] ↠ᵏ x) σ₁-eq σ-steps)
+  ... | (redV₁ , redV₂) = Eq.subst (Redᵛ X) eqV₁ (Red-wk X π redV₁) , Eq.subst (Redᵛ Y) eqV₂ (Red-wk Y π redV₂)
 Red-wk (X `⇒ Y) π {V} (snV , f) = SN-wk π snV , harrow
   where
   harrow : ∀ {Γ} (δ : Γ ⊇ _) {W : Γ ⊢ᵛ X} → Redᵛ X W → Redᶜ Y (app (wk-val δ (wk-val π V)) W)
@@ -533,12 +533,10 @@ exp-pm-val {Γ} {X} {Y} (Z `⇒ X₁) {V} {W} redV H =
     exp-app-pm
       (exp-pm-comp (Red-wk (X `× Y) ρ redV)
         (λ {V₁} {V₂} redV₁ redV₂ →
-          let redW = H ρ redV₁ redV₂
-              redW₁-wk = Eq.subst (Redᵛ Z) (sym (sub-val-ins2-cancel V₁ V₂ W₁)) redW₁
-          in Eq.subst (Redᶜ X₁)
-                      (cong (λ w → app w (sub-val (sub-ex (sub-ex sub-id V₁) V₂) (wk-val (wk-wk (wk-wk wk-id)) W₁)))
-                            (wk-val-id (sub-val (sub-ex (sub-ex sub-id V₁) V₂) (wk-val (wk-cong (wk-cong ρ)) W))))
-                      (proj₂ redW wk-id redW₁-wk)))
+          Eq.subst (Redᶜ X₁)
+                   (cong (λ w → app w (sub-val (sub-ex (sub-ex sub-id V₁) V₂) (wk-val (wk-wk (wk-wk wk-id)) W₁)))
+                         (wk-val-id (sub-val (sub-ex (sub-ex sub-id V₁) V₂) (wk-val (wk-cong (wk-cong ρ)) W))))
+                   (proj₂ (H ρ redV₁ redV₂) wk-id (Eq.subst (Redᵛ Z) (sym (sub-val-ins2-cancel V₁ V₂ W₁)) redW₁))))
 
 record RedSub (θ : Γ ⊢ Δ) : Set where
   field red : (i : Δ ∋ X) → Redᵛ X (sub-mem θ i)

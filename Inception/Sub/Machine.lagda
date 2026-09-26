@@ -126,11 +126,9 @@ eval-jump W γ = jump-to-state (eval W γ)
 eval-clo :  Γ ⊢ᵛ (X `⇒ Y) → Γ ⊢ᵛ X → MEnv Γ
             → CStack Y → CState
 eval-clo V W γ K =
-  let
-    M  = proj₁ (proj₂ (clo-to-comp (eval V γ)))
-    γ₁ = proj₂ (proj₂ (clo-to-comp (eval V γ)))
-  in
-  ⟨ M ╎ γ₁ · eval W γ ╎ K  ⟩
+  ⟨ proj₁ (proj₂ c) ╎ proj₂ (proj₂ c) · eval W γ ╎ K  ⟩
+  where
+    c = clo-to-comp (eval V γ)
 
 eval₁ : Γ ⊢ᵛ (X `× Y) → MEnv Γ → MVal X
 eval₁ W γ = proj₁-val (eval W γ)
@@ -244,27 +242,24 @@ mutual
   fundamentalᶜ : (M : Γ ⊢ᶜ X) → {γ : MEnv Γ} → Rᴱ γ → {K : CStack X} → Rᵏ X K → SN ⟨ M ╎ γ ╎ K ⟩
   fundamentalᶜ (return W) Rγ Rk = sn λ { eval→ → Rk (fundamentalᵛ W Rγ)}
   fundamentalᶜ (pm W M) {γ = γ} Rγ Rk =
-    let
+    sn λ { pmᶜ→ → fundamentalᶜ M (Rᴱ-ext (Rᴱ-ext Rγ (proj₁ IH₁)) (proj₂ IH₁)) Rk }
+    where
       IH = fundamentalᵛ W Rγ
       𝐖  = eval W γ
       IH₁ : Rᵛ _ (pairᵛ (proj₁-val 𝐖) (proj₂-val 𝐖))
       IH₁ = subst (λ x → Rᵛ _ x) (sym (pair-val 𝐖)) IH
-    in
-    sn λ { pmᶜ→ → fundamentalᶜ M (Rᴱ-ext (Rᴱ-ext Rγ (proj₁ IH₁)) (proj₂ IH₁)) Rk }
   fundamentalᶜ (push M N) {γ = γ} Rγ {K = K} Rk =
-    let
+    sn λ { push→ → fundamentalᶜ M Rγ Rk₁ }
+    where
       Rk₁ : Rᵏ _ (< N ； γ >∷ K)
       Rk₁ RW = sn (λ { return→ → fundamentalᶜ N (Rᴱ-ext Rγ RW) Rk })
-    in
-    sn λ { push→ → fundamentalᶜ M Rγ Rk₁ }
   fundamentalᶜ (app V W) {γ = γ} Rγ {K = K} Rk =
-    let
+    sn λ { app→ → IH₁ (fundamentalᵛ W Rγ) Rk }
+    where
       IH = fundamentalᵛ V Rγ
       𝐕 = eval V γ
       eq = sym (clo-val 𝐕)
       IH₁ = subst (λ x → Rᵛ _ x) eq IH
-    in
-    sn λ { app→ → IH₁ (fundamentalᵛ W Rγ) Rk }
   fundamentalᶜ (var W) {γ = γ} Rγ Rk = sn λ { var→ → subst (λ x → x) (rv≡sn (eval W γ)) (fundamentalᵛ W Rγ)}
   fundamentalᶜ (sub M N) Rγ Rk = sn λ { sub→ → fundamentalᶜ M (Rᴱ-ext Rγ (fundamentalᶜ N Rγ Rk)) Rk}
 

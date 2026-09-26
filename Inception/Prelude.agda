@@ -39,7 +39,7 @@ happly : ∀ {a b} {A : Set a} {B : Set b} {f g : A → B} → f ≡ g → (x : 
 happly p x = cong (_$ x) p
 
 happly-funext : ∀ {a b} {A : Set a} {B : Set b} {f g : A → B} (H : (x : A) → f x ≡ g x) → ∀ x → happly (funext H) x ≡ H x
-happly-funext {f = f} {g = g} H x = let open Eq.≡-Reasoning in
+happly-funext {f = f} {g = g} H x =
   happly (funext H) x                                         ≡⟨ refl ⟩
   cong (_$ x) (cong (flip \a → I-rec (f a) (g a) (H a)) seg) ≡⟨ sym (cong-∘ seg) ⟩
   cong ((_$ x) ∘ (flip \a → I-rec (f a) (g a) (H a))) seg    ≡⟨ I-rec-seg ⟩

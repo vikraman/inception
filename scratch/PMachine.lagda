@@ -200,12 +200,11 @@ normalise-val : (W : Γ ⊢ᵛ X) → (γ : MEnv Γ) → ValSteps W γ
 normalise-val (var i) γ = record { result = lookup i γ ; steps = ⟨ ⇡ (var i) γ ∷ ⊠ ⟩ →ᵖ⟨ lookup→ ⟩． }
 normalise-val (lam M) γ = record { result = cloᵛ M γ ; steps = ⟨ ⇡ (lam M) γ ∷ ⊠ ⟩ →ᵖ⟨ lam→ ⟩． }
 normalise-val (pair V W) γ =
-  let
+  record { result = pairᵛ (result IH₁) (result IH₂) ; steps = trace }
+  where
     IH₁ = normalise-val V γ
     IH₂ = normalise-val W γ
     trace = _ →ᵖ⟨ pair→ ⟩． ⨾ ⟪ steps IH₁ ⟫⧻ _ ⨾ _ →ᵖ⟨ W∷l→ ⟩． ⨾ (⟪ steps IH₂ ⟫⧻ _) ⨾ _ →ᵖ⟨ W∷r→ ⟩．
-  in
-  record { result = pairᵛ (result IH₁) (result IH₂) ; steps = trace }
 normalise-val unit γ = record { result = unitᵛ ; steps = ⟨ ⇡ unit γ ∷ ⊠ ⟩ →ᵖ⟨ unit→ ⟩． }
 
 determinismⱽ : {σ σ₁ : PState Z} → (s₁ s₂ : σ →ᵖ σ₁) → (s₁ ≡ s₂)

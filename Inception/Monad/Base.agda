@@ -34,12 +34,13 @@ record MonadMorphism {x y z} {T : Set x → Set y} {S : Set x → Set z} (MT : M
     F-* : ∀ {A B} → (f : A → T B) → F ∘ (f T.*) ≡ (F ∘ f) S.* ∘ F
 
   nat : ∀ {A B} → (f : A → B) → F ∘ T.map f ≡ S.map f ∘ F
-  nat f = let open ≡-Reasoning in
+  nat f =
     F ∘ (T.η ∘ f) T.* ≡⟨ F-* (T.η ∘ f) ⟩
     (F ∘ (T.η ∘ f)) S.* ∘ F ≡⟨ refl ⟩
     ((F ∘ T.η) ∘ f) S.* ∘ F ≡⟨ cong (λ p → (p ∘ f) S.* ∘ F) F-η ⟩
     (S.η ∘ f) S.* ∘ F
     ∎
+    where open ≡-Reasoning
 
 open MonadMorphism public
 
