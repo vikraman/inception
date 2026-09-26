@@ -93,7 +93,7 @@ _↠ᵏ_ {B} = _~>*_ (_→ᵏ_ {B = B})
 -- accessibility
 
 data SN {B} (σ : Cfg B) : Set where
-  sn : (∀ {σ'} → σ →ᵏ σ' → SN σ') → SN σ
+  sn : (∀ {σ₁} → σ →ᵏ σ₁ → SN σ₁) → SN σ
 
 --------------------------------------------------------------------------
 -- reducibility candidates
@@ -152,11 +152,11 @@ SN-theorem M = Fundamental-comp M RedEnv-∅ Redᵏ-ε
 -- eval
 
 Normal : Cfg B → Set
-Normal σ = ∀ {σ'} → σ →ᵏ σ' → ⊥
+Normal σ = ∀ {σ₁} → σ →ᵏ σ₁ → ⊥
 
 data Step? (σ : Cfg B) : Set where
   done : Normal σ → Step? σ
-  next : {σ' : Cfg B} → σ →ᵏ σ' → Step? σ
+  next : {σ₁ : Cfg B} → σ →ᵏ σ₁ → Step? σ
 
 step? : (σ : Cfg B) → Step? σ
 step? ⟨ push M N ∥ γ ∥ K ⟩ = next push-step
@@ -166,13 +166,13 @@ step? ⟨ pm V M ∥ γ ∥ K ⟩   = next pm-step
 step? [ 𝐕 ∥ ε ]            = done (λ ())
 step? [ 𝐕 ∥ N ◂ γ ∷ K ]    = next resume-step
 
-eval-acc : {σ : Cfg B} → SN σ → Σ[ σ' ∈ Cfg B ] (σ ↠ᵏ σ') × Normal σ'
+eval-acc : {σ : Cfg B} → SN σ → Σ[ σ₁ ∈ Cfg B ] (σ ↠ᵏ σ₁) × Normal σ₁
 eval-acc {σ = σ} (sn f) with step? σ
 ... | done normal    = σ , σ ◼ , normal
-... | next {σ'} step with eval-acc (f step)
-...   | (σ'' , chain , normal) = σ'' , σ ~>⟨ step ⟩ chain , normal
+... | next {σ₁} step with eval-acc (f step)
+...   | (σ₂ , chain , normal) = σ₂ , σ ~>⟨ step ⟩ chain , normal
 
-eval : (M : ε ⊢ᶜ A) → Σ[ σ' ∈ Cfg A ] (⟨ M ∥ ∅ ∥ ε ⟩ ↠ᵏ σ') × Normal σ'
+eval : (M : ε ⊢ᶜ A) → Σ[ σ ∈ Cfg A ] (⟨ M ∥ ∅ ∥ ε ⟩ ↠ᵏ σ) × Normal σ
 eval M = eval-acc (SN-theorem M)
 
 open import Relation.Binary.PropositionalEquality

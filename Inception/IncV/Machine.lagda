@@ -177,7 +177,7 @@ data _→ᶜ_ {Z₀ : Ty} : CState {Z₀ = Z₀} → CState {Z₀ = Z₀} → Se
 %</CTrans>
 \begin{code}
 
-determinismꟲ : {Z₀ : Ty} {σ σ' : CState {Z₀ = Z₀}} (s₁ s₂ : σ →ᶜ σ') → (s₁ ≡ s₂)
+determinismꟲ : {Z₀ : Ty} {σ σ₁ : CState {Z₀ = Z₀}} (s₁ s₂ : σ →ᶜ σ₁) → (s₁ ≡ s₂)
 determinismꟲ run→ run→ = refl
 determinismꟲ return→ return→ = refl
 determinismꟲ push→ push→ = refl
@@ -197,7 +197,7 @@ _⨾ᶜ_ (σ →ᶜ⟨ s ⟩ ss₁) ss₂ = σ →ᶜ⟨ s ⟩ (ss₁ ⨾ᶜ ss�
 
 
 data SN {Z₀ : Ty} (σ : CState {Z₀ = Z₀}) : Set where
-  sn : (∀ {σ'} → σ →ᶜ σ' → SN σ') → SN σ
+  sn : (∀ {σ₁} → σ →ᶜ σ₁ → SN σ₁) → SN σ
 
 Rᵛ : {Z₀ : Ty} → (X : Ty) → MVal {Z₀ = Z₀} X → Set
 Rᵏ : {Z₀ : Ty} → (X : Ty) → CStack {Z₀ = Z₀} X → Set
@@ -261,17 +261,17 @@ Rᴱ-⊘ : {Z₀ : Ty} → Rᴱ {Z₀ = Z₀} ⋄
 Rᴱ-⊘ = λ ()
 
 Rᵏ-◻ : {Z₀ : Ty} → Rᵏ {Z₀ = Z₀} Z₀ ◻
-Rᵏ-◻ RW = sn λ {σ'} ()
+Rᵏ-◻ RW = sn λ {σ} ()
 
 SN-theorem : {Z₀ : Ty} → (M : Comp ε Z₀) → SN {Z₀ = Z₀} ⟨ M ╎ ⋄ ╎ ◻ ⟩
 SN-theorem M = fundamentalᶜ M Rᴱ-⊘ Rᵏ-◻
 
 Normal : {Z₀ : Ty} → CState {Z₀ = Z₀} → Set
-Normal σ = ∀ {σ'} → σ →ᶜ σ' → ⊥
+Normal σ = ∀ {σ₁} → σ →ᶜ σ₁ → ⊥
 
 data Progress {Z₀ : Ty} (σ : CState {Z₀ = Z₀}) : Set where
   done : Normal σ → Progress σ
-  step : {σ' : CState} → σ →ᶜ σ' → Progress σ
+  step : {σ₁ : CState} → σ →ᶜ σ₁ → Progress σ
 
 progress : {Z₀ : Ty} (σ : CState {Z₀ = Z₀}) → Progress σ
 progress ⟨ 𝐖 ╎ ◻ ⟩ = done (λ ())
@@ -294,13 +294,13 @@ halting-state ⟨ rec _ _ ╎ γ ╎ K ⟩ normal = ql (normal rec→) _
 halting-state ⟨ inc _ _ ╎ γ ╎ K ⟩ normal = ql (normal inc→) _
 
 
-eval-acc : {Z₀ : Ty} {σ : CState {Z₀ = Z₀}} → SN σ → Σ[ σ' ∈ CState ] Σ[ 𝐖 ∈ MVal {Z₀ = Z₀} Z₀ ] Σ[ NF ∈ Normal σ' ] (σ →ᶜ* σ') × (𝐖 ≡ proj₁ (halting-state σ' NF))
+eval-acc : {Z₀ : Ty} {σ : CState {Z₀ = Z₀}} → SN σ → Σ[ σ₁ ∈ CState ] Σ[ 𝐖 ∈ MVal {Z₀ = Z₀} Z₀ ] Σ[ NF ∈ Normal σ₁ ] (σ →ᶜ* σ₁) × (𝐖 ≡ proj₁ (halting-state σ₁ NF))
 eval-acc {σ = σ} (sn f) with progress σ
 ... | done NF    = σ , proj₁ (halting-state σ NF) , NF , (σ ◼) , refl
 ... | step s with eval-acc (f s)
-...   | (σ'' , 𝐖 , NF , ss , eq) = σ'' , 𝐖 , NF , (_ →ᶜ⟨ s ⟩ ss) , eq
+...   | (σ₁ , 𝐖 , NF , ss , eq) = σ₁ , 𝐖 , NF , (_ →ᶜ⟨ s ⟩ ss) , eq
 
-eval : {Z₀ : Ty} → (M : Comp ε Z₀) → Σ[ σ' ∈ CState ] Σ[ 𝐖 ∈ MVal {Z₀ = Z₀} Z₀ ] Σ[ NF ∈ Normal σ' ] (⟨ M ╎ ⋄ ╎ ◻ ⟩ →ᶜ* σ') × (𝐖 ≡ proj₁ (halting-state σ' NF))
+eval : {Z₀ : Ty} → (M : Comp ε Z₀) → Σ[ σ ∈ CState ] Σ[ 𝐖 ∈ MVal {Z₀ = Z₀} Z₀ ] Σ[ NF ∈ Normal σ ] (⟨ M ╎ ⋄ ╎ ◻ ⟩ →ᶜ* σ) × (𝐖 ≡ proj₁ (halting-state σ NF))
 eval M = eval-acc (SN-theorem M)
 
 \end{code}

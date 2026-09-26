@@ -24,14 +24,14 @@ data Ctx : Set where
 
 variable
   A B C D A₁ A₂ : Ty
-  X X₁ X₂ Y Z Z₀ Z₁' : Ty
-  Γ Δ Ψ Γ' Γ'' Γ''' Δ' Δ'' Ψ' Γ₁ Δ₁ : Ctx
+  X X₁ X₂ Y Z Z₀ Z₁ : Ty
+  Γ Δ Ψ Γ₁ Γ₂ Γ₃ Δ₁ Δ₂ Ψ₁ : Ctx
 
 data _∋_ : Ctx -> Ty -> Set where
   here  : Γ ∙ A ∋ A
   there : Γ ∋ A -> Γ ∙ B ∋ A
 
-there-injective : {i i' : Γ ∋ A} -> there {B = B} i ≡ there i' -> i ≡ i'
+there-injective : {i i₁ : Γ ∋ A} -> there {B = B} i ≡ there i₁ -> i ≡ i₁
 there-injective refl = refl
 
 --------------------------------------------------------------------------
@@ -107,7 +107,7 @@ wk-trans-comm-id π = begin
   π                 ≡˘⟨ wk-trans-idl π ⟩
   wk-trans wk-id π  ∎
 
-wk-assoc : {π₁ : Γ ⊇ Γ'} {π₂ : Γ' ⊇ Γ''} {π₃ : Γ'' ⊇ Γ'''} -> wk-trans π₁ (wk-trans π₂ π₃) ≡ wk-trans (wk-trans π₁ π₂) π₃
+wk-assoc : {π₁ : Γ ⊇ Γ₁} {π₂ : Γ₁ ⊇ Γ₂} {π₃ : Γ₂ ⊇ Γ₃} -> wk-trans π₁ (wk-trans π₂ π₃) ≡ wk-trans (wk-trans π₁ π₂) π₃
 wk-assoc {π₁ = wk-ε} = refl
 wk-assoc {π₁ = wk-cong π₁} {π₂ = wk-cong π₂} {π₃ = wk-cong π₃} = cong wk-cong (wk-assoc {π₁ = π₁} {π₂ = π₂} {π₃ = π₃})
 wk-assoc {π₁ = wk-cong π₁} {π₂ = wk-cong π₂} {π₃ = wk-wk π₃}   = cong wk-wk (wk-assoc {π₁ = π₁} {π₂ = π₂} {π₃ = π₃})
@@ -129,17 +129,17 @@ wk-id-id {π = wk-ε} = refl
 wk-id-id {π = wk-cong π} rewrite wk-id-id {π = π} = refl
 wk-id-id {π = wk-wk π} = ql (wk-absurd π wk-id) (wk-wk π ≡ wk-id)
 
-wk-merge : (π₁ : Γ ⊇ Δ) (π₂ : Γ ⊇ Δ')
-         -> Σ[ Γ' ∈ Ctx ] Σ[ π ∈ Γ ⊇ Γ' ] Σ[ π₁' ∈ Γ' ⊇ Δ ] Σ[ π₂' ∈ Γ' ⊇ Δ' ] ((π₁ ≡ wk-trans π π₁') × (π₂ ≡ wk-trans π π₂'))
+wk-merge : (π₁ : Γ ⊇ Δ) (π₂ : Γ ⊇ Δ₁)
+         -> Σ[ Γ₁ ∈ Ctx ] Σ[ π ∈ Γ ⊇ Γ₁ ] Σ[ π₃ ∈ Γ₁ ⊇ Δ ] Σ[ π₄ ∈ Γ₁ ⊇ Δ₁ ] ((π₁ ≡ wk-trans π π₃) × (π₂ ≡ wk-trans π π₄))
 wk-merge wk-ε wk-ε = ε , wk-ε , wk-ε , wk-ε , refl , refl
 wk-merge {Γ = Γ ∙ A} (wk-cong π) (wk-cong δ) with wk-merge π δ
-... | Γ , π , π₁' , π₂' , eq₁ , eq₂ = Γ ∙ A , wk-cong π , wk-cong π₁' , wk-cong π₂' , cong wk-cong eq₁ , cong wk-cong eq₂
+... | Γ , π , π₁ , π₂ , eq₁ , eq₂ = Γ ∙ A , wk-cong π , wk-cong π₁ , wk-cong π₂ , cong wk-cong eq₁ , cong wk-cong eq₂
 wk-merge {Γ = Γ ∙ A} (wk-cong π) (wk-wk δ) with wk-merge π δ
-... | Γ , π , π₁' , π₂' , eq₁ , eq₂ = Γ ∙ A , wk-cong π , wk-cong π₁' , wk-wk π₂' , cong wk-cong eq₁ , cong wk-wk eq₂
+... | Γ , π , π₁ , π₂ , eq₁ , eq₂ = Γ ∙ A , wk-cong π , wk-cong π₁ , wk-wk π₂ , cong wk-cong eq₁ , cong wk-wk eq₂
 wk-merge {Γ = Γ ∙ A} (wk-wk π) (wk-cong δ) with wk-merge π δ
-... | Γ , π , π₁' , π₂' , eq₁ , eq₂ = Γ ∙ A , wk-cong π , wk-wk π₁' , wk-cong π₂' , cong wk-wk eq₁ , cong wk-cong eq₂
+... | Γ , π , π₁ , π₂ , eq₁ , eq₂ = Γ ∙ A , wk-cong π , wk-wk π₁ , wk-cong π₂ , cong wk-wk eq₁ , cong wk-cong eq₂
 wk-merge (wk-wk π) (wk-wk δ) with wk-merge π δ
-... | Γ , π , π₁' , π₂' , eq₁ , eq₂ = Γ , wk-wk π , π₁' , π₂' , cong wk-wk eq₁ , cong wk-wk eq₂
+... | Γ , π , π₁ , π₂ , eq₁ , eq₂ = Γ , wk-wk π , π₁ , π₂ , cong wk-wk eq₁ , cong wk-wk eq₂
 
 wk-wk-trans-id : (π : Δ ⊇ (Γ ∙ A)) (i : Γ ∋ B) -> wk-mem (wk-trans π (wk-wk wk-id)) i ≡ wk-mem π (there i)
 wk-wk-trans-id (wk-cong (wk-cong π)) here      = refl
@@ -210,7 +210,7 @@ module Sem (⟦_⟧ : Ty -> Set) where
   ⟦ ε ⟧ˣ̃     = ⊥
   ⟦ Δ ∙ A ⟧ˣ̃ = ⟦ Δ ⟧ˣ̃ ⊎ ⟦ A ⟧
 
-  ⟦_⟧ʷ̃ : Δ ⊇ Δ' -> ⟦ Δ' ⟧ˣ̃ -> ⟦ Δ ⟧ˣ̃
+  ⟦_⟧ʷ̃ : Δ ⊇ Δ₁ -> ⟦ Δ₁ ⟧ˣ̃ -> ⟦ Δ ⟧ˣ̃
   ⟦ wk-ε ⟧ʷ̃ ()
   ⟦ wk-cong π ⟧ʷ̃ (inj₁ x) = inj₁ (⟦ π ⟧ʷ̃ x)
   ⟦ wk-cong π ⟧ʷ̃ (inj₂ y) = inj₂ y
@@ -229,8 +229,8 @@ module Sem (⟦_⟧ : Ty -> Set) where
 
   {-# REWRITE wk-id-coh̃ #-}
 
-  wk-mem-coh̃ : (σ : Δ ⊇ Δ') (i : Δ' ∋ A) -> ⟦ wk-mem σ i ⟧ᵐ̃ ≡ (⟦ i ⟧ᵐ̃ ； ⟦ σ ⟧ʷ̃)
-  wk-mem-coh̃ (wk-cong σ) here      = funext λ a → refl
-  wk-mem-coh̃ (wk-cong σ) (there i) = funext λ a → cong inj₁ (happly (wk-mem-coh̃ σ i) a)
-  wk-mem-coh̃ (wk-wk σ) here        = funext λ a → cong inj₁ (happly (wk-mem-coh̃ σ here) a)
-  wk-mem-coh̃ (wk-wk σ) (there i)   = funext λ a → cong inj₁ (happly (wk-mem-coh̃ σ (there i)) a)
+  wk-mem-coh̃ : (ρ : Δ ⊇ Δ₁) (i : Δ₁ ∋ A) -> ⟦ wk-mem ρ i ⟧ᵐ̃ ≡ (⟦ i ⟧ᵐ̃ ； ⟦ ρ ⟧ʷ̃)
+  wk-mem-coh̃ (wk-cong ρ) here      = funext λ a → refl
+  wk-mem-coh̃ (wk-cong ρ) (there i) = funext λ a → cong inj₁ (happly (wk-mem-coh̃ ρ i) a)
+  wk-mem-coh̃ (wk-wk ρ) here        = funext λ a → cong inj₁ (happly (wk-mem-coh̃ ρ here) a)
+  wk-mem-coh̃ (wk-wk ρ) (there i)   = funext λ a → cong inj₁ (happly (wk-mem-coh̃ ρ (there i)) a)

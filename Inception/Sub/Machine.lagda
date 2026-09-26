@@ -185,7 +185,7 @@ data _→ᶜ_ : CState → CState → Set where
 \begin{code}
 
 
-determinismꟲ : {σ σ' : CState} (s₁ s₂ : σ →ᶜ σ') → (s₁ ≡ s₂)
+determinismꟲ : {σ σ₁ : CState} (s₁ s₂ : σ →ᶜ σ₁) → (s₁ ≡ s₂)
 determinismꟲ eval→ eval→ = refl
 determinismꟲ return→ return→ = refl
 determinismꟲ push→ push→ = refl
@@ -208,7 +208,7 @@ _⨾ᶜ_ (σ →ᶜ⟨ s ⟩ ss₁) ss₂ = σ →ᶜ⟨ s ⟩ (ss₁ ⨾ᶜ ss�
 %<*SubVarSN>
 \begin{code}
 data SN (σ : CState) : Set where
-  sn : (∀ {σ'} → σ →ᶜ σ' → SN σ') → SN σ
+  sn : (∀ {σ₁} → σ →ᶜ σ₁ → SN σ₁) → SN σ
 \end{code}
 %</SubVarSN>
 \begin{code}
@@ -272,7 +272,7 @@ Rᴱ-⊘ : Rᴱ ⋄
 Rᴱ-⊘ = λ ()
 
 Rᵏ-◻ : Rᵏ ℛ ◻
-Rᵏ-◻ RW = sn λ {σ'} ()
+Rᵏ-◻ RW = sn λ {σ} ()
 
 SN-theorem : (M : Comp ε ℛ) → SN ⟨ M ╎ ⋄ ╎ ◻ ⟩
 SN-theorem M = fundamentalᶜ M Rᴱ-⊘ Rᵏ-◻
@@ -282,14 +282,14 @@ SN-theorem M = fundamentalᶜ M Rᴱ-⊘ Rᵏ-◻
 \begin{code}
 -- A CState is Normal, if there are no transitions from it.
 Normal : CState → Set
-Normal σ = ∀ {σ'} → σ →ᶜ σ' → ⊥
+Normal σ = ∀ {σ₁} → σ →ᶜ σ₁ → ⊥
 \end{code}
 %</SubVarNormal>
 \begin{code}
 
 data Progress (σ : CState) : Set where
   done : Normal σ → Progress σ
-  step : {σ' : CState} → σ →ᶜ σ' → Progress σ
+  step : {σ₁ : CState} → σ →ᶜ σ₁ → Progress σ
 
 progress : (σ : CState) → Progress σ
 progress ⟨ 𝐖 ╎ ◻ ⟩ = done (λ ())
@@ -321,11 +321,11 @@ halting-state ⟨ var _ ╎ γ ╎ K ⟩ normal = ql (normal var→) _
 halting-state ⟨ sub _ _ ╎ γ ╎ K ⟩ normal = ql (normal sub→) _
 
 
-exec-acc : {σ : CState} → SN σ → Σ[ σ' ∈ CState ] Σ[ 𝐖 ∈ MVal ℛ ] Σ[ NF ∈ Normal σ' ] (σ →ᶜ* σ') × (𝐖 ≡ proj₁ (halting-state σ' NF))
+exec-acc : {σ : CState} → SN σ → Σ[ σ₁ ∈ CState ] Σ[ 𝐖 ∈ MVal ℛ ] Σ[ NF ∈ Normal σ₁ ] (σ →ᶜ* σ₁) × (𝐖 ≡ proj₁ (halting-state σ₁ NF))
 exec-acc {σ = σ} (sn f) with progress σ
 ... | done NF    = σ , proj₁ (halting-state σ NF) , NF , (σ ◼) , refl
 ... | step s with exec-acc (f s)
-...   | (σ'' , 𝐖 , NF , ss , eq) = σ'' , 𝐖 , NF , (_ →ᶜ⟨ s ⟩ ss) , eq
+...   | (σ₁ , 𝐖 , NF , ss , eq) = σ₁ , 𝐖 , NF , (_ →ᶜ⟨ s ⟩ ss) , eq
 
 \end{code}
 %<*SubVarEval>

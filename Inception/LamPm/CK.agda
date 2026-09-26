@@ -79,7 +79,7 @@ data _→ᵏ_ : Cfg Γ B → Cfg Γ B → Set where
 -- accessibility
 
 data SN {Γ B} (σ : Cfg Γ B) : Set where
-  sn : (∀ {σ'} → σ →ᵏ σ' → SN σ') → SN σ
+  sn : (∀ {σ₁} → σ →ᵏ σ₁ → SN σ₁) → SN σ
 
 infix 5 _↠ᵏ_
 
@@ -89,17 +89,17 @@ _↠ᵏ_ {Γ} {B} = _~>*_ (_→ᵏ_ {Γ = Γ} {B = B})
 --------------------------------------------------------------------------
 -- weakening a configuration
 
-wk-stk : {Γ' : Ctx} → Γ' ⊇ Γ → Γ ⊢ᵏ A ⇒ B → Γ' ⊢ᵏ A ⇒ B
+wk-stk : {Γ₁ : Ctx} → Γ₁ ⊇ Γ → Γ ⊢ᵏ A ⇒ B → Γ₁ ⊢ᵏ A ⇒ B
 wk-stk π ε          = ε
 wk-stk π (N ∷ K)    = wk-comp (wk-cong π) N ∷ wk-stk π K
 wk-stk π (N pm∷ K)  = wk-comp (wk-cong (wk-cong π)) N pm∷ wk-stk π K
 wk-stk π (W pmᵛ∷ K) = wk-val (wk-cong (wk-cong π)) W pmᵛ∷ wk-stk π K
 
-wk-cfg : {Γ' : Ctx} → Γ' ⊇ Γ → Cfg Γ B → Cfg Γ' B
+wk-cfg : {Γ₁ : Ctx} → Γ₁ ⊇ Γ → Cfg Γ B → Cfg Γ₁ B
 wk-cfg π ⟨ M ∥ K ⟩ = ⟨ wk-comp π M ∥ wk-stk π K ⟩
 wk-cfg π [ V ∥ K ] = [ wk-val π V ∥ wk-stk π K ]
 
-wk-ins2 : {Γ Γ' : Ctx} {X Y A : Ty} (π : Γ' ⊇ Γ) (V : Γ ⊢ᵛ A) →
+wk-ins2 : {Γ Γ₁ : Ctx} {X Y A : Ty} (π : Γ₁ ⊇ Γ) (V : Γ ⊢ᵛ A) →
         wk-val (wk-wk {A = Y} (wk-wk {A = X} wk-id)) (wk-val π V) ≡ wk-val (wk-cong {A = Y} (wk-cong {A = X} π)) (wk-val (wk-wk {A = Y} (wk-wk {A = X} wk-id)) V)
 wk-ins2 {X = X} {Y = Y} π V = begin
     wk-val (wk-wk {A = Y} (wk-wk {A = X} wk-id)) (wk-val π V)
@@ -112,7 +112,7 @@ wk-ins2 {X = X} {Y = Y} π V = begin
   ≡˘⟨ wk-val-trans V (wk-cong {A = Y} (wk-cong {A = X} π)) (wk-wk {A = Y} (wk-wk {A = X} wk-id)) ⟩
     wk-val (wk-cong {A = Y} (wk-cong {A = X} π)) (wk-val (wk-wk {A = Y} (wk-wk {A = X} wk-id)) V) ∎
 
-wk-step : {Γ' : Ctx} (π : Γ' ⊇ Γ) {σ σ' : Cfg Γ B} → σ →ᵏ σ' → wk-cfg π σ →ᵏ wk-cfg π σ'
+wk-step : {Γ₁ : Ctx} (π : Γ₁ ⊇ Γ) {σ σ₁ : Cfg Γ B} → σ →ᵏ σ₁ → wk-cfg π σ →ᵏ wk-cfg π σ₁
 wk-step π push-step = push-step
 wk-step π (return-step {V = V} {N = N} {K = K}) =
   Eq.subst (λ x → ⟨ return (wk-val π V) ∥ wk-comp (wk-cong π) N ∷ wk-stk π K ⟩ →ᵏ ⟨ x ∥ wk-stk π K ⟩)
@@ -133,8 +133,8 @@ wk-step π (app-pm-step {X = X} {Y = Y} {V = V} {W = W} {W₁ = W₁} {K = K}) =
            (Eq.cong (app (wk-val (wk-cong (wk-cong π)) W)) (wk-ins2 {X = X} {Y = Y} π W₁))
            app-pm-step
 
-wk-reflect : {Γ' : Ctx} (π : Γ' ⊇ Γ) {σ : Cfg Γ B} {σ₁ : Cfg Γ' B}
-           → wk-cfg π σ →ᵏ σ₁ → Σ[ σ' ∈ Cfg Γ B ] (σ →ᵏ σ') × (σ₁ ≡ wk-cfg π σ')
+wk-reflect : {Γ₁ : Ctx} (π : Γ₁ ⊇ Γ) {σ : Cfg Γ B} {σ₁ : Cfg Γ₁ B}
+           → wk-cfg π σ →ᵏ σ₁ → Σ[ σ₂ ∈ Cfg Γ B ] (σ →ᵏ σ₂) × (σ₁ ≡ wk-cfg π σ₂)
 wk-reflect π {σ = ⟨ push M N ∥ K ⟩} push-step = ⟨ M ∥ N ∷ K ⟩ , push-step , refl
 wk-reflect π {σ = ⟨ return V ∥ ε ⟩} ()
 wk-reflect π {σ = ⟨ return V ∥ N ∷ K ⟩} return-step =
@@ -164,9 +164,9 @@ wk-reflect π {σ = [ lam N ∥ K ]} ()
 wk-reflect π {σ = [ unit ∥ K ]} ()
 wk-reflect π {σ = [ var i ∥ K ]} ()
 
-SN-wk : {Γ' : Ctx} (π : Γ' ⊇ Γ) {σ : Cfg Γ B} → SN σ → SN (wk-cfg π σ)
+SN-wk : {Γ₁ : Ctx} (π : Γ₁ ⊇ Γ) {σ : Cfg Γ B} → SN σ → SN (wk-cfg π σ)
 SN-wk π (sn f) = sn (λ step →
-  let (σ' , σ-step , eq) = wk-reflect π step
+  let (σ₁ , σ-step , eq) = wk-reflect π step
   in Eq.subst SN (sym eq) (SN-wk π (f σ-step)))
 
 --------------------------------------------------------------------------
@@ -183,7 +183,7 @@ Redᶜ : (A : Ty) → Γ ⊢ᶜ A → Set
 
 Redᵛ `Unit       V = SN [ V ∥ ε ]
 Redᵛ (A `× B)    V = SN [ V ∥ ε ] × (∀ {V₁ V₂} → [ V ∥ ε ] ↠ᵏ [ pair V₁ V₂ ∥ ε ] → Redᵛ A V₁ × Redᵛ B V₂)
-Redᵛ {Γ} (A `⇒ B) V = SN [ V ∥ ε ] × (∀ {Γ'} (π : Γ' ⊇ Γ) {W : Γ' ⊢ᵛ A} → Redᵛ A W → Redᶜ B (app (wk-val π V) W))
+Redᵛ {Γ} (A `⇒ B) V = SN [ V ∥ ε ] × (∀ {Γ₁} (π : Γ₁ ⊇ Γ) {W : Γ₁ ⊢ᵛ A} → Redᵛ A W → Redᶜ B (app (wk-val π V) W))
 
 Redᶜ A M = SN ⟨ M ∥ ε ⟩ × (∀ {V} → ⟨ M ∥ ε ⟩ ↠ᵏ ⟨ return V ∥ ε ⟩ → Redᵛ A V)
 
@@ -392,10 +392,10 @@ mutual
     sn (λ { pmᵛ-pair-step → SN-ext-pmᵛ∷-V (f pmᵛ-pair-step) (λ ch → rtn (_ ~>⟨ pmᵛ-pair-step ⟩ ch)) H })
 
 mutual
-  RTN-ext-pmᵛ∷ᴾ-C : {X Y E X' Y' : Ty} {M : Γ ⊢ᶜ A} {L : Γ ⊢ᵏ A ⇒ (X `× Y)} {W : (Γ ∙ X ∙ Y) ⊢ᵛ E} {K : Γ ⊢ᵏ E ⇒ (X' `× Y')}
+  RTN-ext-pmᵛ∷ᴾ-C : {X Y E X₁ Y₁ : Ty} {M : Γ ⊢ᶜ A} {L : Γ ⊢ᵏ A ⇒ (X `× Y)} {W : (Γ ∙ X ∙ Y) ⊢ᵛ E} {K : Γ ⊢ᵏ E ⇒ (X₁ `× Y₁)}
                 → (∀ {V₁ V₂} → ⟨ M ∥ L ⟩ ↠ᵏ [ pair V₁ V₂ ∥ ε ] → Redᵛ X V₁ × Redᵛ Y V₂)
-                → (∀ {V₁ V₂} → Redᵛ X V₁ → Redᵛ Y V₂ → ∀ {W₁ W₂} → [ sub-val (sub-ex (sub-ex sub-id V₁) V₂) W ∥ K ] ↠ᵏ [ pair W₁ W₂ ∥ ε ] → Redᵛ X' W₁ × Redᵛ Y' W₂)
-                → {W₁ : Γ ⊢ᵛ X'} {W₂ : Γ ⊢ᵛ Y'} → ⟨ M ∥ graft L (W pmᵛ∷ K) ⟩ ↠ᵏ [ pair W₁ W₂ ∥ ε ] → Redᵛ X' W₁ × Redᵛ Y' W₂
+                → (∀ {V₁ V₂} → Redᵛ X V₁ → Redᵛ Y V₂ → ∀ {W₁ W₂} → [ sub-val (sub-ex (sub-ex sub-id V₁) V₂) W ∥ K ] ↠ᵏ [ pair W₁ W₂ ∥ ε ] → Redᵛ X₁ W₁ × Redᵛ Y₁ W₂)
+                → {W₁ : Γ ⊢ᵛ X₁} {W₂ : Γ ⊢ᵛ Y₁} → ⟨ M ∥ graft L (W pmᵛ∷ K) ⟩ ↠ᵏ [ pair W₁ W₂ ∥ ε ] → Redᵛ X₁ W₁ × Redᵛ Y₁ W₂
   RTN-ext-pmᵛ∷ᴾ-C {M = push M N} rtn H (_ ~>⟨ push-step ⟩ rest) =
     RTN-ext-pmᵛ∷ᴾ-C (λ ch → rtn (_ ~>⟨ push-step ⟩ ch)) H rest
   RTN-ext-pmᵛ∷ᴾ-C {M = app (var i) V} rtn H (_ ~>⟨ () ⟩ rest)
@@ -411,10 +411,10 @@ mutual
   RTN-ext-pmᵛ∷ᴾ-C {M = return V} {L = N pm∷ L} rtn H (_ ~>⟨ () ⟩ rest)
   RTN-ext-pmᵛ∷ᴾ-C {M = return V} {L = W pmᵛ∷ L} rtn H (_ ~>⟨ () ⟩ rest)
 
-  RTN-ext-pmᵛ∷ᴾ-V : {X Y E X' Y' : Ty} {V : Γ ⊢ᵛ A} {L : Γ ⊢ᵏ A ⇒ (X `× Y)} {W : (Γ ∙ X ∙ Y) ⊢ᵛ E} {K : Γ ⊢ᵏ E ⇒ (X' `× Y')}
+  RTN-ext-pmᵛ∷ᴾ-V : {X Y E X₁ Y₁ : Ty} {V : Γ ⊢ᵛ A} {L : Γ ⊢ᵏ A ⇒ (X `× Y)} {W : (Γ ∙ X ∙ Y) ⊢ᵛ E} {K : Γ ⊢ᵏ E ⇒ (X₁ `× Y₁)}
                 → (∀ {V₁ V₂} → [ V ∥ L ] ↠ᵏ [ pair V₁ V₂ ∥ ε ] → Redᵛ X V₁ × Redᵛ Y V₂)
-                → (∀ {V₁ V₂} → Redᵛ X V₁ → Redᵛ Y V₂ → ∀ {W₁ W₂} → [ sub-val (sub-ex (sub-ex sub-id V₁) V₂) W ∥ K ] ↠ᵏ [ pair W₁ W₂ ∥ ε ] → Redᵛ X' W₁ × Redᵛ Y' W₂)
-                → {W₁ : Γ ⊢ᵛ X'} {W₂ : Γ ⊢ᵛ Y'} → [ V ∥ graft L (W pmᵛ∷ K) ] ↠ᵏ [ pair W₁ W₂ ∥ ε ] → Redᵛ X' W₁ × Redᵛ Y' W₂
+                → (∀ {V₁ V₂} → Redᵛ X V₁ → Redᵛ Y V₂ → ∀ {W₁ W₂} → [ sub-val (sub-ex (sub-ex sub-id V₁) V₂) W ∥ K ] ↠ᵏ [ pair W₁ W₂ ∥ ε ] → Redᵛ X₁ W₁ × Redᵛ Y₁ W₂)
+                → {W₁ : Γ ⊢ᵛ X₁} {W₂ : Γ ⊢ᵛ Y₁} → [ V ∥ graft L (W pmᵛ∷ K) ] ↠ᵏ [ pair W₁ W₂ ∥ ε ] → Redᵛ X₁ W₁ × Redᵛ Y₁ W₂
   RTN-ext-pmᵛ∷ᴾ-V {V = var i} rtn H (_ ~>⟨ () ⟩ rest)
   RTN-ext-pmᵛ∷ᴾ-V {V = lam N} rtn H (_ ~>⟨ () ⟩ rest)
   RTN-ext-pmᵛ∷ᴾ-V {V = unit} rtn H (_ ~>⟨ () ⟩ rest)
@@ -455,40 +455,40 @@ Red-varᵛ (A `⇒ B) i           = sn (λ ()) , λ π {W} rw → sn (λ ()) , �
 --------------------------------------------------------------------------
 -- weakening preserves reducibility
 
-wk-reflect* : {Γ' : Ctx} (π : Γ' ⊇ Γ) {σ : Cfg Γ B} {σ₁ : Cfg Γ' B}
-            → wk-cfg π σ ↠ᵏ σ₁ → Σ[ σ' ∈ Cfg Γ B ] (σ ↠ᵏ σ') × (σ₁ ≡ wk-cfg π σ')
+wk-reflect* : {Γ₁ : Ctx} (π : Γ₁ ⊇ Γ) {σ : Cfg Γ B} {σ₁ : Cfg Γ₁ B}
+            → wk-cfg π σ ↠ᵏ σ₁ → Σ[ σ₂ ∈ Cfg Γ B ] (σ ↠ᵏ σ₂) × (σ₁ ≡ wk-cfg π σ₂)
 wk-reflect* π (_ ◼) = _ , (_ ◼) , refl
 wk-reflect* π (_ ~>⟨ step ⟩ rest) with wk-reflect π step
 wk-reflect* π (_ ~>⟨ step ⟩ rest) | (σ , σ-step , refl) =
-  let (σ' , σ₁-steps , eq₂) = wk-reflect* π rest
-  in σ' , _ ~>⟨ σ-step ⟩ σ₁-steps , eq₂
+  let (σ₁ , σ₁-steps , eq₂) = wk-reflect* π rest
+  in σ₁ , _ ~>⟨ σ-step ⟩ σ₁-steps , eq₂
 
-pair-cfg-inv : {Γ' : Ctx} {A B : Ty} (π : Γ' ⊇ Γ) {σ' : Cfg Γ (A `× B)} {W₁ : Γ' ⊢ᵛ A} {W₂ : Γ' ⊢ᵛ B}
-             → [ pair W₁ W₂ ∥ ε ] ≡ wk-cfg π σ'
-             → Σ[ V₁ ∈ Γ ⊢ᵛ A ] Σ[ V₂ ∈ Γ ⊢ᵛ B ] (σ' ≡ [ pair V₁ V₂ ∥ ε ]) × (wk-val π V₁ ≡ W₁) × (wk-val π V₂ ≡ W₂)
-pair-cfg-inv π {σ' = ⟨ M ∥ K ⟩}               ()
-pair-cfg-inv π {σ' = [ var i ∥ K ]}           ()
-pair-cfg-inv π {σ' = [ lam N ∥ K ]}           ()
-pair-cfg-inv π {σ' = [ pair V W ∥ ε ]}        refl = V , W , refl , refl , refl
-pair-cfg-inv π {σ' = [ pair V W ∥ N ∷ K ]}    ()
-pair-cfg-inv π {σ' = [ pair V W ∥ N pm∷ K ]}  ()
-pair-cfg-inv π {σ' = [ pair V₁ V₂ ∥ W pmᵛ∷ K ]} ()
-pair-cfg-inv π {σ' = [ pm V W ∥ K ]}          ()
-pair-cfg-inv π {σ' = [ unit ∥ K ]}            ()
+pair-cfg-inv : {Γ₁ : Ctx} {A B : Ty} (π : Γ₁ ⊇ Γ) {σ₁ : Cfg Γ (A `× B)} {W₁ : Γ₁ ⊢ᵛ A} {W₂ : Γ₁ ⊢ᵛ B}
+             → [ pair W₁ W₂ ∥ ε ] ≡ wk-cfg π σ₁
+             → Σ[ V₁ ∈ Γ ⊢ᵛ A ] Σ[ V₂ ∈ Γ ⊢ᵛ B ] (σ₁ ≡ [ pair V₁ V₂ ∥ ε ]) × (wk-val π V₁ ≡ W₁) × (wk-val π V₂ ≡ W₂)
+pair-cfg-inv π {σ₁ = ⟨ M ∥ K ⟩}               ()
+pair-cfg-inv π {σ₁ = [ var i ∥ K ]}           ()
+pair-cfg-inv π {σ₁ = [ lam N ∥ K ]}           ()
+pair-cfg-inv π {σ₁ = [ pair V W ∥ ε ]}        refl = V , W , refl , refl , refl
+pair-cfg-inv π {σ₁ = [ pair V W ∥ N ∷ K ]}    ()
+pair-cfg-inv π {σ₁ = [ pair V W ∥ N pm∷ K ]}  ()
+pair-cfg-inv π {σ₁ = [ pair V₁ V₂ ∥ W pmᵛ∷ K ]} ()
+pair-cfg-inv π {σ₁ = [ pm V W ∥ K ]}          ()
+pair-cfg-inv π {σ₁ = [ unit ∥ K ]}            ()
 
-Red-wk : (A : Ty) {Γ' : Ctx} (π : Γ' ⊇ Γ) {V : Γ ⊢ᵛ A} → Redᵛ A V → Redᵛ A (wk-val π V)
+Red-wk : (A : Ty) {Γ₁ : Ctx} (π : Γ₁ ⊇ Γ) {V : Γ ⊢ᵛ A} → Redᵛ A V → Redᵛ A (wk-val π V)
 Red-wk `Unit    π r          = SN-wk π r
 Red-wk (A `× B) π {V} (snV , f) = SN-wk π snV , g
   where
   g : ∀ {W₁ W₂} → [ wk-val π V ∥ ε ] ↠ᵏ [ pair W₁ W₂ ∥ ε ] → Redᵛ A W₁ × Redᵛ B W₂
   g p =
-    let (σ' , σ-steps , eq)          = wk-reflect* π p
-        (V₁ , V₂ , σ'-eq , eqV₁ , eqV₂) = pair-cfg-inv π eq
-        (redV₁ , redV₂)                 = f (Eq.subst (λ x → [ V ∥ ε ] ↠ᵏ x) σ'-eq σ-steps)
+    let (σ₁ , σ-steps , eq)          = wk-reflect* π p
+        (V₁ , V₂ , σ₁-eq , eqV₁ , eqV₂) = pair-cfg-inv π eq
+        (redV₁ , redV₂)                 = f (Eq.subst (λ x → [ V ∥ ε ] ↠ᵏ x) σ₁-eq σ-steps)
     in Eq.subst (Redᵛ A) eqV₁ (Red-wk A π redV₁) , Eq.subst (Redᵛ B) eqV₂ (Red-wk B π redV₂)
 Red-wk (A `⇒ B) π {V} (snV , f) = SN-wk π snV , harrow
   where
-  harrow : ∀ {Γ''} (δ : Γ'' ⊇ _) {W : Γ'' ⊢ᵛ A} → Redᵛ A W → Redᶜ B (app (wk-val δ (wk-val π V)) W)
+  harrow : ∀ {Γ} (δ : Γ ⊇ _) {W : Γ ⊢ᵛ A} → Redᵛ A W → Redᶜ B (app (wk-val δ (wk-val π V)) W)
   harrow δ {W = W} redW =
     Eq.subst (Redᶜ B) (sym (cong (λ x → app x W) (wk-val-trans V δ π))) (f (wk-trans δ π) redW)
 
@@ -502,7 +502,7 @@ sub-val-ins2-cancel V₁ V₂ W = begin
 
 exp-pm-val : (C : Ty) {V : Γ ⊢ᵛ X `× Y} {W : (Γ ∙ X ∙ Y) ⊢ᵛ C}
            → Redᵛ (X `× Y) V
-           → (∀ {Γ'} (π : Γ' ⊇ Γ) {V₁ V₂} → Redᵛ X V₁ → Redᵛ Y V₂ → Redᵛ C (sub-val (sub-ex (sub-ex sub-id V₁) V₂) (wk-val (wk-cong (wk-cong π)) W)))
+           → (∀ {Γ₁} (π : Γ₁ ⊇ Γ) {V₁ V₂} → Redᵛ X V₁ → Redᵛ Y V₂ → Redᵛ C (sub-val (sub-ex (sub-ex sub-id V₁) V₂) (wk-val (wk-cong (wk-cong π)) W)))
            → Redᵛ C (pm V W)
 exp-pm-val {Γ} {X} {Y} `Unit {V} {W} redV H =
   sn (λ { pm-val-step →
@@ -528,7 +528,7 @@ exp-pm-val {Γ} {X} {Y} (C₁ `⇒ C₂) {V} {W} redV H =
   H₀ : ∀ {V₁ V₂} → Redᵛ X V₁ → Redᵛ Y V₂ → Redᵛ (C₁ `⇒ C₂) (sub-val (sub-ex (sub-ex sub-id V₁) V₂) W)
   H₀ {V₁} {V₂} redV₁ redV₂ = Eq.subst (Redᵛ (C₁ `⇒ C₂)) (cong (sub-val (sub-ex (sub-ex sub-id V₁) V₂)) (wk-val-id W)) (H wk-id redV₁ redV₂)
 
-  harrow : ∀ {Γ''} (ρ : Γ'' ⊇ Γ) {W₁ : Γ'' ⊢ᵛ C₁} → Redᵛ C₁ W₁ → Redᶜ C₂ (app (wk-val ρ (pm V W)) W₁)
+  harrow : ∀ {Γ₁} (ρ : Γ₁ ⊇ Γ) {W₁ : Γ₁ ⊢ᵛ C₁} → Redᵛ C₁ W₁ → Redᶜ C₂ (app (wk-val ρ (pm V W)) W₁)
   harrow ρ {W₁} redW₁ =
     exp-app-pm
       (exp-pm-comp (Red-wk (X `× Y) ρ redV)
@@ -544,7 +544,7 @@ record RedSub (θ : Γ ⊢ Δ) : Set where
   field red : (i : Δ ∋ A) → Redᵛ A (sub-mem θ i)
 open RedSub
 
-RedSub-wk : {Γ' : Ctx} (ρ : Γ' ⊇ Γ) {θ : Γ ⊢ Δ} → RedSub θ → RedSub (sub-wk ρ θ)
+RedSub-wk : {Γ₁ : Ctx} (ρ : Γ₁ ⊇ Γ) {θ : Γ ⊢ Δ} → RedSub θ → RedSub (sub-wk ρ θ)
 RedSub-wk ρ {θ} rθ = record
   { red = λ i → Eq.subst (Redᵛ _) (sym (sub-mem-wk ρ θ i)) (Red-wk _ ρ (rθ .red i)) }
 
@@ -617,11 +617,11 @@ SN-theorem {Γ} {A} M =
 -- eval
 
 Normal : Cfg Γ B → Set
-Normal σ = ∀ {σ'} → σ →ᵏ σ' → ⊥
+Normal σ = ∀ {σ₁} → σ →ᵏ σ₁ → ⊥
 
 data Step? (σ : Cfg Γ B) : Set where
   done : Normal σ → Step? σ
-  next : {σ' : Cfg Γ B} → σ →ᵏ σ' → Step? σ
+  next : {σ₁ : Cfg Γ B} → σ →ᵏ σ₁ → Step? σ
 
 step? : (σ : Cfg Γ B) → Step? σ
 step? ⟨ push M N ∥ K ⟩          = next push-step
@@ -642,11 +642,11 @@ step? [ pair V W ∥ N ∷ K ]      = done (λ ())
 step? [ pair V W ∥ N pm∷ K ]    = next pm-pair-step
 step? [ pair V₁ V₂ ∥ W pmᵛ∷ K ] = next pmᵛ-pair-step
 
-eval-acc : {σ : Cfg Γ B} → SN σ → Σ[ σ' ∈ Cfg Γ B ] (σ ↠ᵏ σ') × Normal σ'
+eval-acc : {σ : Cfg Γ B} → SN σ → Σ[ σ₁ ∈ Cfg Γ B ] (σ ↠ᵏ σ₁) × Normal σ₁
 eval-acc {σ = σ} (sn f) with step? σ
 ... | done normal    = σ , σ ◼ , normal
-... | next {σ'} step with eval-acc (f step)
-...   | (σ'' , chain , normal) = σ'' , σ ~>⟨ step ⟩ chain , normal
+... | next {σ₁} step with eval-acc (f step)
+...   | (σ₂ , chain , normal) = σ₂ , σ ~>⟨ step ⟩ chain , normal
 
-eval : (M : Γ ⊢ᶜ A) → Σ[ σ' ∈ Cfg Γ A ] (⟨ M ∥ ε ⟩ ↠ᵏ σ') × Normal σ'
+eval : (M : Γ ⊢ᶜ A) → Σ[ σ₁ ∈ Cfg Γ A ] (⟨ M ∥ ε ⟩ ↠ᵏ σ₁) × Normal σ₁
 eval M = eval-acc (SN-theorem M)
