@@ -40,7 +40,7 @@ open import Inception.SystemL.Syntax
                                      (covar (there here)))))
                         (covar here)))))
 
-`letcc : (Γ ∙ ¬ X) ⊢ᵗ X ∣ Δ -> Γ ⊢ᵗ X ∣ Δ
+`letcc : (Γ ∙ ¬ X) ⊢ᵗ X ∣ Δ → Γ ⊢ᵗ X ∣ Δ
 `letcc {X = X} M =
   lett (wk-tm wk-emp wk-emp `callcc)
        (μ (cut ((¬ X `⇒ X) `⇒ X)
@@ -54,7 +54,7 @@ open import Inception.SystemL.Syntax
          (ret (var here))
          (app (var (there here)) tp))
 
-`abort : Γ ⊢ᵗ ¬ X ∣ Δ -> Γ ⊢ᵗ X ∣ Δ -> Γ ⊢ᵗ Y ∣ Δ
+`abort : Γ ⊢ᵗ ¬ X ∣ Δ → Γ ⊢ᵗ X ∣ Δ → Γ ⊢ᵗ Y ∣ Δ
 `abort {X = X} {Y = Y} M N =
   lett M
        (lett (wkᵗ N)
@@ -65,7 +65,7 @@ open import Inception.SystemL.Syntax
 `var : ε ⊢ᵗ `⊥ `⇒ X ∣ ε
 `var = ret (lam (μ `efq))
 
-`varr : Γ ⊢ᵗ `⊥ ∣ Δ -> Γ ⊢ᵗ X ∣ Δ
+`varr : Γ ⊢ᵗ `⊥ ∣ Δ → Γ ⊢ᵗ X ∣ Δ
 `varr M = μ (cut `⊥ (wk̃ᵗ M) tp)
 
 `sub : (ε ∙ (`⊥ `⇒ X) ∙ X)  ⊢ᵗ X ∣ ε
@@ -76,7 +76,7 @@ open import Inception.SystemL.Syntax
                  (ret (var (there here)))
                  (covar here))))
 
-`subb : (Γ ∙ `⊥) ⊢ᵗ X ∣ Δ -> Γ ⊢ᵗ X ∣ Δ -> Γ ⊢ᵗ X ∣ Δ
+`subb : (Γ ∙ `⊥) ⊢ᵗ X ∣ Δ → Γ ⊢ᵗ X ∣ Δ → Γ ⊢ᵗ X ∣ Δ
 `subb {X = X} M N =
   μ (cut (`⊥ `⇒ X) (ret (lam (wk̃ᵗ M)))
          (μ̃ (cut X

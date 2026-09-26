@@ -7,36 +7,36 @@ variable
   IΓ IΔ : I.Ctx
   IA : I.Ty
 
-⟦_⟧ : I.Ty -> L.Ty
+⟦_⟧ : I.Ty → L.Ty
 ⟦ `𝟙 ⟧     = `𝟙
 ⟦ A `× B ⟧ = ⟦ A ⟧ `× ⟦ B ⟧
 ⟦ A `⇒ B ⟧ = ⟦ A ⟧ `⇒ ⟦ B ⟧
 ⟦ `𝓅 ⟧     = `𝓅
 ⟦ `ℓ ⟧     = ⟦ `𝓅 ⟧ `⇒ `⊥
 
-⟦_⟧ˣ : I.Ctx -> L.Ctx
+⟦_⟧ˣ : I.Ctx → L.Ctx
 ⟦ I.ε ⟧ˣ     = ε
 ⟦ Γ I.∙ A ⟧ˣ = ⟦ Γ ⟧ˣ ∙ ⟦ A ⟧
 
-⟦_⟧ⁱ : IΓ I.∋ IA -> ⟦ IΓ ⟧ˣ L.∋ ⟦ IA ⟧
+⟦_⟧ⁱ : IΓ I.∋ IA → ⟦ IΓ ⟧ˣ L.∋ ⟦ IA ⟧
 ⟦ I.here ⟧ⁱ   = here
 ⟦ I.there i ⟧ⁱ = there ⟦ i ⟧ⁱ
 
-raiseP : L.Γ ⊢ᵛ (⟦ `𝓅 ⟧ `⇒ `⊥) ∣ L.Δ -> L.Γ ⊢ᵛ ⟦ `𝓅 ⟧ ∣ L.Δ -> L.Γ ⊢ᵗ L.A ∣ L.Δ
+raiseP : L.Γ ⊢ᵛ (⟦ `𝓅 ⟧ `⇒ `⊥) ∣ L.Δ → L.Γ ⊢ᵛ ⟦ `𝓅 ⟧ ∣ L.Δ → L.Γ ⊢ᵗ L.A ∣ L.Δ
 raiseP ref p = efq (applyL ref p)
 
-installV : (L.Γ ∙ ⟦ `𝓅 ⟧) ⊢ᵗ L.A ∣ L.Δ -> L.Γ ⊢ᵛ (⟦ `𝓅 ⟧ `⇒ `⊥) ∣ (L.Δ ∙ L.A)
+installV : (L.Γ ∙ ⟦ `𝓅 ⟧) ⊢ᵗ L.A ∣ L.Δ → L.Γ ⊢ᵛ (⟦ `𝓅 ⟧ `⇒ `⊥) ∣ (L.Δ ∙ L.A)
 installV {A = A} n = lam (μ (cut A (wk̃ᵗ (wk̃ᵗ n)) (covar (there here))))
 
-⟦_⟧ᶜ : IΓ I.⊢ᶜ IA -> ⟦ IΓ ⟧ˣ ⊢ᵗ ⟦ IA ⟧ ∣ L.Δ
+⟦_⟧ᶜ : IΓ I.⊢ᶜ IA → ⟦ IΓ ⟧ˣ ⊢ᵗ ⟦ IA ⟧ ∣ L.Δ
 
-⟦_⟧ᵛ : IΓ I.⊢ᵛ IA -> ⟦ IΓ ⟧ˣ ⊢ᵛ ⟦ IA ⟧ ∣ L.Δ
+⟦_⟧ᵛ : IΓ I.⊢ᵛ IA → ⟦ IΓ ⟧ˣ ⊢ᵛ ⟦ IA ⟧ ∣ L.Δ
 ⟦ I.var i ⟧ᵛ    = var ⟦ i ⟧ⁱ
 ⟦ I.lam M ⟧ᵛ    = lam ⟦ M ⟧ᶜ
 ⟦ I.pair V W ⟧ᵛ = pair ⟦ V ⟧ᵛ ⟦ W ⟧ᵛ
 ⟦ I.unit ⟧ᵛ     = unit
 
-⟦_⟧ˢ : I.Sub IΓ IΔ -> L.Sub ⟦ IΓ ⟧ˣ L.Δ ⟦ IΔ ⟧ˣ
+⟦_⟧ˢ : I.Sub IΓ IΔ → L.Sub ⟦ IΓ ⟧ˣ L.Δ ⟦ IΔ ⟧ˣ
 ⟦ I.sub-ε ⟧ˢ      = L.sub-ε
 ⟦ I.sub-ex θ V ⟧ˢ = L.sub-ex ⟦ θ ⟧ˢ ⟦ V ⟧ᵛ
 

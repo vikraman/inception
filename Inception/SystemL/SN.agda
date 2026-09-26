@@ -226,7 +226,7 @@ SN-theorem {Γ} {Δ} M = Eq.subst SN (sub-cmd-id M) (Fundamental-cmd sub-id cosu
 open import Inception.Prelude
 open Inception.Prelude.RTC
 
-_↦*_ : {Γ Δ : Ctx} -> Γ ⊢ Δ -> Γ ⊢ Δ -> Set
+_↦*_ : {Γ Δ : Ctx} → Γ ⊢ Δ → Γ ⊢ Δ → Set
 _↦*_ {Γ} {Δ} = _~>*_ (_↦_ {Γ = Γ} {Δ = Δ})
 
 Normal : {Γ Δ : Ctx} → Γ ⊢ Δ → Set

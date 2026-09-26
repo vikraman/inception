@@ -7,36 +7,36 @@ variable
   SΓ SΔ : S.Ctx
   SA : S.Ty
 
-⟦_⟧ : S.Ty -> L.Ty
+⟦_⟧ : S.Ty → L.Ty
 ⟦ `𝟙 ⟧  = `𝟙
 ⟦ A `× B ⟧ = ⟦ A ⟧ `× ⟦ B ⟧
 ⟦ A `⇒ B ⟧ = ⟦ A ⟧ `⇒ ⟦ B ⟧
 ⟦ `ℓ ⟧     = `𝟙 `⇒ `⊥
 
-⟦_⟧ˣ : S.Ctx -> L.Ctx
+⟦_⟧ˣ : S.Ctx → L.Ctx
 ⟦ S.ε ⟧ˣ     = ε
 ⟦ Γ S.∙ A ⟧ˣ = ⟦ Γ ⟧ˣ ∙ ⟦ A ⟧
 
-⟦_⟧ⁱ : SΓ S.∋ SA -> ⟦ SΓ ⟧ˣ L.∋ ⟦ SA ⟧
+⟦_⟧ⁱ : SΓ S.∋ SA → ⟦ SΓ ⟧ˣ L.∋ ⟦ SA ⟧
 ⟦ S.here ⟧ⁱ   = here
 ⟦ S.there i ⟧ⁱ = there ⟦ i ⟧ⁱ
 
-raise : L.Γ ⊢ᵛ (`𝟙 `⇒ `⊥) ∣ L.Δ -> L.Γ ⊢ᵗ L.A ∣ L.Δ
+raise : L.Γ ⊢ᵛ (`𝟙 `⇒ `⊥) ∣ L.Δ → L.Γ ⊢ᵗ L.A ∣ L.Δ
 raise ref = efq (applyL ref unit)
 
-handleVal : L.Γ ⊢ᵗ L.A ∣ L.Δ -> L.Γ ⊢ᵛ (`𝟙 `⇒ `⊥) ∣ (L.Δ ∙ L.A)
+handleVal : L.Γ ⊢ᵗ L.A ∣ L.Δ → L.Γ ⊢ᵛ (`𝟙 `⇒ `⊥) ∣ (L.Δ ∙ L.A)
 handleVal {A = A} n =
   lam (μ (cut A (wk-tm (L.wk-wk L.wk-id) (L.wk-wk (L.wk-wk L.wk-id)) n) (covar (there here))))
 
-⟦_⟧ᶜ : SΓ S.⊢ᶜ SA -> ⟦ SΓ ⟧ˣ ⊢ᵗ ⟦ SA ⟧ ∣ L.Δ
+⟦_⟧ᶜ : SΓ S.⊢ᶜ SA → ⟦ SΓ ⟧ˣ ⊢ᵗ ⟦ SA ⟧ ∣ L.Δ
 
-⟦_⟧ᵛ : SΓ S.⊢ᵛ SA -> ⟦ SΓ ⟧ˣ ⊢ᵛ ⟦ SA ⟧ ∣ L.Δ
+⟦_⟧ᵛ : SΓ S.⊢ᵛ SA → ⟦ SΓ ⟧ˣ ⊢ᵛ ⟦ SA ⟧ ∣ L.Δ
 ⟦ S.var i ⟧ᵛ    = var ⟦ i ⟧ⁱ
 ⟦ S.lam M ⟧ᵛ    = lam ⟦ M ⟧ᶜ
 ⟦ S.pair V W ⟧ᵛ = pair ⟦ V ⟧ᵛ ⟦ W ⟧ᵛ
 ⟦ S.unit ⟧ᵛ     = unit
 
-⟦_⟧ˢ : S.Sub SΓ SΔ -> L.Sub ⟦ SΓ ⟧ˣ L.Δ ⟦ SΔ ⟧ˣ
+⟦_⟧ˢ : S.Sub SΓ SΔ → L.Sub ⟦ SΓ ⟧ˣ L.Δ ⟦ SΔ ⟧ˣ
 ⟦ S.sub-ε ⟧ˢ      = L.sub-ε
 ⟦ S.sub-ex θ V ⟧ˢ = L.sub-ex ⟦ θ ⟧ˢ ⟦ V ⟧ᵛ
 
