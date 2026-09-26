@@ -16,7 +16,7 @@ import Relation.Binary.PropositionalEquality as Eq
 open Eq using (_≡_; refl; sym; trans; cong; cong₂; subst)
 open Eq.≡-Reasoning
 
----------------------------------------------------------------------------------
+--------------------------------------------------------------------------
 
 infix  20 ⭭_
 infix  19 _∷_
@@ -25,8 +25,8 @@ infixr 15 _→ᵖ⟨_⟩_
 infix  15 _→ᵖ_
 infixr 10 _⨾_
 
----------------------------------------------------------------------------------
--- MACHINE FOR VALUES
+--------------------------------------------------------------------------
+-- machine for values
 
 \end{code}
 %<*Partial>
@@ -222,8 +222,8 @@ normalise-val-eval (lam M) γ = refl
 normalise-val-eval (pair V W) γ = cong₂ pairᵛ (normalise-val-eval V γ) (normalise-val-eval W γ)
 normalise-val-eval unit γ = refl
 
----------------------------------------------------------------------------------
--- CORRECTNESS
+--------------------------------------------------------------------------
+-- correctness
 
 open import Inception.Sub.Semantics as SubSem using ()
 

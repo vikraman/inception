@@ -179,7 +179,7 @@ red (RedSub-id {Γ}) {X = X} i =
            (Red-varᵛ X i)
 
 --------------------------------------------------------------------------
--- Fundamental Lemma
+-- fundamental lemma
 
 Fundamental-val : (θ : Γ ⊢ Δ) → RedSub θ → (V : Δ ⊢ᵛ X) → Redᵛ X (sub-val θ V)
 Fundamental-comp : (θ : Γ ⊢ Δ) → RedSub θ → (M : Δ ⊢ᶜ X) → Redᶜ X (sub-comp θ M)

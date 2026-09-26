@@ -103,7 +103,7 @@ Redᵏ-ε : Redᵏ X ε
 Redᵏ-ε redv = sn (λ ())
 
 --------------------------------------------------------------------------
--- Fundamental Lemma
+-- fundamental lemma
 
 Fundamental-val  : (V : Γ ⊢ᵛ X) {γ : Env Γ} → RedEnv γ → Redᵛ X (eval-val V γ)
 Fundamental-comp : (M : Γ ⊢ᶜ X) {γ : Env Γ} → RedEnv γ → {K : Kont X Y} → Redᵏ X K → SN ⟨ M ∥ γ ∥ K ⟩

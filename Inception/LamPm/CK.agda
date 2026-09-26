@@ -555,7 +555,7 @@ RedSub-id : RedSub (sub-id {Γ})
 RedSub-id {Γ} = record { red = λ i → Eq.subst (Redᵛ _) (sym (sub-mem-id i)) (Red-varᵛ _ i) }
 
 --------------------------------------------------------------------------
--- Fundamental Lemma
+-- fundamental lemma
 
 Fundamental-val : (θ : Γ ⊢ Δ) → RedSub θ → (V : Δ ⊢ᵛ X) → Redᵛ X (sub-val θ V)
 Fundamental-comp : (θ : Γ ⊢ Δ) → RedSub θ → (M : Δ ⊢ᶜ X) → Redᶜ X (sub-comp θ M)

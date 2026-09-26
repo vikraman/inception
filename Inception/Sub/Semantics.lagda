@@ -17,7 +17,7 @@ import Relation.Binary.PropositionalEquality as Eq
 open Eq using (_≡_; refl; cong; cong₂; sym; trans; subst)
 open Eq.≡-Reasoning using (step-≡-⟩; step-≡-∣; step-≡-⟨; _∎; step-≡)
 
----------------------------------------------------------------------------------
+--------------------------------------------------------------------------
 
 \end{code}
 %<*Helpers>

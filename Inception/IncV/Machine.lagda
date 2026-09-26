@@ -16,12 +16,12 @@ open import Data.Unit using (⊤; tt)
 
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; subst)
 
----------------------------------------------------------------------------------
+--------------------------------------------------------------------------
 
 infixl 27 _·_
 
----------------------------------------------------------------------------------
--- ENVIRONMENTS
+--------------------------------------------------------------------------
+-- environments
 
 \end{code}
 %<*Env>
@@ -79,8 +79,8 @@ lookup : (i : Γ ∋ X) → Env Γ → MVal X
 lookup here (γ · 𝐖) = 𝐖
 lookup (there i) (γ · 𝐖) = lookup i γ
 
----------------------------------------------------------------------------------
--- VALUE PROJECTIONS
+--------------------------------------------------------------------------
+-- value projections
 
 proj₁-val : MVal (X `× Y) → MVal X
 proj₁-val (pairᵛ 𝐕 𝐖) = 𝐕
@@ -91,8 +91,8 @@ proj₂-val (pairᵛ 𝐕 𝐖) = 𝐖
 pair-val : (𝐖 : MVal (X `× Y)) → (pairᵛ (proj₁-val 𝐖) (proj₂-val 𝐖) ≡ 𝐖)
 pair-val (pairᵛ 𝐕 𝐖) = refl
 
----------------------------------------------------------------------------------
--- MACHINE FOR EFFECTFUL TERMS / COMPUTATIONS
+--------------------------------------------------------------------------
+-- machine for effectful terms / computations
 
 \end{code}
 %<*CStates>

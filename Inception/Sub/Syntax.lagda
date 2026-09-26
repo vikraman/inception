@@ -12,7 +12,7 @@ import Relation.Binary.PropositionalEquality as Eq
 open Eq using (_≡_; refl; cong; trans; cong₂)
 open Eq.≡-Reasoning
 
----------------------------------------------------------------------------------
+--------------------------------------------------------------------------
 
 infixr 40 _`×_
 infixr 25 _`⇒_

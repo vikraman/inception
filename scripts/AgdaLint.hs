@@ -1025,8 +1025,11 @@ checkSectionHeader ctx f = concat [check l next | (l, next) <- zip ls (map Just 
           _ -> []
     titleProblem t = case styleSectionTitle style of
       Sentence | not (maybe False (isUpper . fst) (T.uncons t)) || not (T.any isLower t) -> Just ("title should be in sentence case: " <> t)
-      Lower | T.toLower t /= t -> Just ("title should be lowercase: " <> t)
+      Lower | not (all allowedWord (T.words t)) -> Just ("title should be lowercase: " <> t)
       _ -> Nothing
+      where
+        -- acronyms are fine in an otherwise lowercase title
+        allowedWord w = T.toLower w == w || (T.any isLower t && T.all (\c -> not (isLetter c) || isUpper c) w)
 
 checkWithAlignment :: Context -> SourceFile -> [Finding]
 checkWithAlignment _ f =
