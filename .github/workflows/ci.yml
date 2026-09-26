@@ -34,6 +34,7 @@ jobs:
         uses: haskell-actions/setup@v2
         with:
           ghc-version: ${{ env.GHC_VERSION }}
+          cabal-update: false
 
       - name: Restore cabal
         id: cabal
