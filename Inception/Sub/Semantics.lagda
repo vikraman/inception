@@ -7,9 +7,9 @@ open import Inception.Prelude
 open Inception.Prelude.RTC
 open import Inception.Sub.Syntax
 
-open import Data.Unit using (⊤; tt)
-open import Data.Sum using (_⊎_; inj₁; inj₂)
 open import Data.Product using (proj₁; proj₂; _,_; <_,_>; curry; _×_; Σ-syntax; uncurry)
+open import Data.Sum using (_⊎_; inj₁; inj₂)
+open import Data.Unit using (⊤; tt)
 
 open import Function.Base using (const; _∘_; id)
 
@@ -22,9 +22,9 @@ open Eq.≡-Reasoning using (step-≡-⟩; step-≡-∣; step-≡-⟨; _∎; ste
 \end{code}
 %<*Helpers>
 \begin{code}
-open import Level using (0ℓ)
 open import Inception.Cont.Base
 open import Inception.Monad.Base using (Monad)
+open import Level using (0ℓ)
 
 K : Set → Set
 K = K[ R ]

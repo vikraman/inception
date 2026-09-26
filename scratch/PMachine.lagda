@@ -5,9 +5,9 @@ open import Inception.Sub.Syntax using (Ty)
 
 module scratch.PMachine (ℛ : Ty) where
 
-open import Inception.Sub.Syntax
-open import Inception.Sub.Machine ℛ
 open import Inception.Prelude
+open import Inception.Sub.Machine ℛ
+open import Inception.Sub.Syntax
 
 open import Data.Product using (proj₁; proj₂; _,_; _×_; Σ-syntax)
 open import Data.Unit using (⊤; tt)

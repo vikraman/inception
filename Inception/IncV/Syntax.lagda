@@ -6,8 +6,8 @@ module Inception.IncV.Syntax where
 
 open import Inception.Prelude
 
-open import Data.Product using (proj₁; proj₂; _,_; _×_; Σ-syntax)
 open import Data.Empty using (⊥)
+open import Data.Product using (proj₁; proj₂; _,_; _×_; Σ-syntax)
 
 open import Data.Nat
 

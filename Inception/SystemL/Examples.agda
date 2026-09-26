@@ -85,10 +85,10 @@ open import Inception.SystemL.Syntax
 
 
 ---
+open import Inception.Prelude
 open import Inception.Sub.Examples using (ex15)
 open import Inception.Sub.Translation using (⟦_⟧ᶜ)
 open import Inception.SystemL.SN
-open import Inception.Prelude
 open Inception.Prelude.RTC
 open import Relation.Binary.PropositionalEquality
 

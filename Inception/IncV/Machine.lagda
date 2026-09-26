@@ -9,10 +9,10 @@ module Inception.IncV.Machine (ℛ : Ty) where
 open import Inception.IncV.Syntax
 open import Inception.Prelude
 
-open import Data.Product using (proj₁; proj₂; _,_; _×_; Σ-syntax)
-open import Data.Unit using (⊤; tt)
 open import Data.Empty using (⊥)
 open import Data.Nat
+open import Data.Product using (proj₁; proj₂; _,_; _×_; Σ-syntax)
+open import Data.Unit using (⊤; tt)
 
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; subst)
 

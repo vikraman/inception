@@ -1,10 +1,10 @@
 module Inception.Cont.Base where
 
-open import Level
-open import Data.Unit
 open import Data.Product as P
-open import Function as F
 open import Data.Sum as S
+open import Data.Unit
+open import Function as F
+open import Level
 open import Relation.Binary.PropositionalEquality
 
 open import Inception.Prelude

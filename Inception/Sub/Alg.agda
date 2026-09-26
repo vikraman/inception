@@ -1,9 +1,9 @@
 module Inception.Sub.Alg where
 
-open import Level
-open import Data.Unit
 open import Data.Product as P
+open import Data.Unit
 open import Function as F
+open import Level
 open import Relation.Binary.PropositionalEquality
 
 record Alg[_] {v x} (V : Set v) (X : Set x) : Set (v ⊔ x) where

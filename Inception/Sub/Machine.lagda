@@ -5,12 +5,12 @@ open import Inception.Sub.Syntax using (Ty)
 
 module Inception.Sub.Machine (ℛ : Ty) where
 
-open import Inception.Sub.Syntax
 open import Inception.Prelude
+open import Inception.Sub.Syntax
 
+open import Data.Empty using (⊥)
 open import Data.Product using (proj₁; proj₂; _,_; _×_; Σ-syntax)
 open import Data.Unit using (⊤; tt)
-open import Data.Empty using (⊥)
 
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; subst)
 

@@ -1,2 +1,3 @@
-# path:line:rule
+# path glob:line or *:rule
+Inception/Everything.agda:*:importOrder
 scratch/PMachine.lagda:*:sortLetter

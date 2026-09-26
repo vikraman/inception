@@ -4,16 +4,16 @@ module Inception.LamPm.CBV (R : Set) where
 
 open import Inception.LamPm.Syntax
 
-open import Data.Unit
 open import Data.Product as P
+open import Data.Unit
 open import Function as F hiding (_∋_)
 open import Relation.Binary.PropositionalEquality
 open Relation.Binary.PropositionalEquality.≡-Reasoning
 open import Inception.Prelude
 
-open import Level using (0ℓ)
 open import Inception.Cont.Base
 open import Inception.Monad.Base using (Monad)
+open import Level using (0ℓ)
 
 K : Set → Set
 K = K[ R ]

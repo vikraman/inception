@@ -1,7 +1,7 @@
 module Inception.Monad.Base where
 
-open import Level
 open import Function as F
+open import Level
 open import Relation.Binary.PropositionalEquality
 
 record Monad {x y} (T : Set x → Set y) : Set (suc x ⊔ y) where

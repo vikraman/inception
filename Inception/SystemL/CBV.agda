@@ -2,14 +2,14 @@ module Inception.SystemL.CBV (P R : Set) where
 
 open import Inception.SystemL.Syntax hiding (K)
 
-open import Level
-open import Data.Unit
 open import Data.Empty
 open import Data.Product as P
-open import Function as F hiding (_∋_)
 open import Data.Sum as S
-open import Relation.Binary.PropositionalEquality
+open import Data.Unit
+open import Function as F hiding (_∋_)
 open import Inception.Prelude
+open import Level
+open import Relation.Binary.PropositionalEquality
 
 open import Inception.Cont.Base
 

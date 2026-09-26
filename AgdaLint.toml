@@ -18,11 +18,11 @@ pairs = ["VW", "MN", "KL", "𝐕𝐖", "θφ", "πδ", "XY", "ΓΔ"]
 [rules]
 asciiArrow = "error"
 asciiSubscript = "error"
-prime = { level = "error", skip = ["Inception/Monad/", "Inception/Cont/"] }
+prime = "error"
 prefixType = "error"
 bannedName = "error"
-typeVarLetter = { level = "error", skip = ["Inception/Monad/", "Inception/Cont/"] }
-sortLetter = { level = "warning", skip = ["Inception/Monad/", "Inception/Cont/"] }
+typeVarLetter = "error"
+sortLetter = "warning"
 unneededSubscript = "warning"
 pairSubscript = "warning"
 unusedVariable = "warning"

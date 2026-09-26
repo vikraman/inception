@@ -1,10 +1,10 @@
 module Inception.Ctx (Ty : Set) where
 
-open import Function using (id)
-open import Data.Unit using (⊤)
 open import Data.Empty using (⊥)
 open import Data.Product using (proj₁; proj₂; _,_; <_,_>; _×_; Σ-syntax)
 open import Data.Sum using (_⊎_; inj₁; inj₂)
+open import Data.Unit using (⊤)
+open import Function using (id)
 
 import Relation.Binary.PropositionalEquality as Eq
 open Eq using (_≡_; refl; cong)

@@ -1,15 +1,15 @@
 module Inception.Cont.Repr where
 
-open import Level
-open import Data.Unit
 open import Data.Product as P
-open import Function as F
 open import Data.Sum
+open import Data.Unit
+open import Function as F
+open import Level
 open import Relation.Binary.PropositionalEquality
 
-open import Inception.Prelude
 open import Inception.Cont.Base
 open import Inception.Monad.Base
+open import Inception.Prelude
 
 module _ {v y} (V : Set v) {S : Set v → Set y} (S-Monad : Monad S) where
   open MonadMorphism

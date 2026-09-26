@@ -1,12 +1,12 @@
 module Inception.Prelude where
 
-open import Level
 open import Function
+open import Level
 
 open import Agda.Primitive using (Level)
 
-open import Data.Product using (proj₁; proj₂; _,_; <_,_>; curry; _×_; Σ; ∃; Σ-syntax; ∃-syntax) public
 open import Data.Empty using (⊥)
+open import Data.Product using (proj₁; proj₂; _,_; <_,_>; curry; _×_; Σ; ∃; Σ-syntax; ∃-syntax) public
 
 import Relation.Binary.PropositionalEquality as Eq
 open Eq using (_≡_; refl; cong; cong₂; cong-app; dcong₂; sym; trans; subst; subst₂; cong-∘)

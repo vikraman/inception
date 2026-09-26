@@ -45,6 +45,7 @@ import qualified Data.Set                   as Set
 import           Data.Text                  (Text)
 import qualified Data.Text                  as T
 import qualified Data.Text.IO               as TIO
+import qualified Data.Text.Read             as TR
 import           Options.Generic            (ParseRecord, Wrapped,
                                              unwrapRecord, type (:::),
                                              type (<?>))
@@ -198,8 +199,6 @@ fixed p m f = Finding p m (Just f)
 data SectionTitle = Sentence | Lower | Any
   deriving (Eq, Show, Enum, Bounded, Generic)
 
-data RuleSetting = RuleSetting {settingLevel :: Level, settingSkip :: [FilePath]}
-
 data Banned = Banned {bannedReplacement :: Maybe Text, bannedAutoFix :: Bool}
 
 data TypeVarSpec = TypeVarSpec {typeSort :: Text, typeLetters :: [Text]}
@@ -220,7 +219,7 @@ data Config = Config
   { cfgSources         :: [String]
   , cfgExclude         :: [String]
   , cfgAllowlist       :: FilePath
-  , cfgRules           :: Map RuleId RuleSetting
+  , cfgRules           :: Map RuleId Level
   , cfgBannedNames     :: Map Text Banned
   , cfgSubscriptIgnore :: [Text]
   , cfgTypeVars        :: Maybe TypeVarSpec
@@ -236,7 +235,7 @@ data RawConfig = RawConfig
   { sources              :: Maybe [Text]
   , exclude              :: Maybe [Text]
   , allowlist            :: Maybe Text
-  , rules                :: Maybe (Map Text RawSetting)
+  , rules                :: Maybe (Map Text Level)
   , bannedNames          :: Maybe (Map Text Text)
   , fixBannedNames       :: Maybe [Text]
   , asciiSubscriptIgnore :: Maybe [Text]
@@ -261,26 +260,13 @@ data RawPairSkip = RawPairSkip {path :: Text, pairs :: [Text]}
 data RawStyle = RawStyle {lineLength :: Maybe Int, sectionWidth :: Maybe Int, sectionTitle :: Maybe SectionTitle}
   deriving (Generic)
 
-data RuleTable = RuleTable {level :: Maybe Level, skip :: Maybe [Text]}
-  deriving (Generic)
-
--- level or table
-data RawSetting = RawLevel Level | RawTable RuleTable
-
 instance FromValue RawConfig where fromValue = genericFromTable
 instance FromValue RawTypeVars where fromValue = genericFromTable
 instance FromValue RawSort where fromValue = genericFromTable
 instance FromValue RawPairSkip where fromValue = genericFromTable
 instance FromValue RawStyle where fromValue = genericFromTable
-instance FromValue RuleTable where fromValue = genericFromTable
 instance FromValue Level where fromValue = enumFromValue
 instance FromValue SectionTitle where fromValue = enumFromValue
-
-instance FromValue RawSetting where
-  fromValue v = case v of
-    Text' {}  -> RawLevel <$> fromValue v
-    Table' {} -> RawTable <$> fromValue v
-    _         -> failAt (Toml.valueAnn v) "expected a level or a table with level and skip"
 
 -- enum by camelCase constructor name
 enumFromValue :: forall a l. (Bounded a, Enum a, Constructors a) => Value' l -> Matcher l a
@@ -310,7 +296,7 @@ resolveConfig RawConfig {sources, exclude, allowlist, rules, bannedNames, fixBan
       { cfgSources = maybe ["**/*.agda", "**/*.lagda", "**/*.lagda.md"] (map T.unpack) sources
       , cfgExclude = maybe ["_build/**"] (map T.unpack) exclude
       , cfgAllowlist = maybe "AgdaLint.allow" T.unpack allowlist
-      , cfgRules = Map.fromList [(r, setting (Map.lookup (ruleName r) settings) (ruleDefault (rule r))) | r <- [minBound .. maxBound]]
+      , cfgRules = Map.fromList [(r, Map.findWithDefault (ruleDefault (rule r)) (ruleName r) settings) | r <- [minBound .. maxBound]]
       , cfgBannedNames = Map.mapWithKey (banned (fromMaybe [] fixBannedNames)) (fromMaybe Map.empty bannedNames)
       , cfgSubscriptIgnore = fromMaybe [] asciiSubscriptIgnore
       , cfgTypeVars = (\RawTypeVars {sort, allowed} -> TypeVarSpec sort allowed) <$> typeVars
@@ -321,10 +307,6 @@ resolveConfig RawConfig {sources, exclude, allowlist, rules, bannedNames, fixBan
       , cfgStyle = maybe defaultStyle resolveStyle style
       }
   where
-    setting raw def = case raw of
-      Nothing                              -> RuleSetting def []
-      Just (RawLevel l)                    -> RuleSetting l []
-      Just (RawTable RuleTable {level, skip}) -> RuleSetting (fromMaybe def level) (maybe [] (map T.unpack) skip)
     banned fixable k v = Banned (if T.null v then Nothing else Just v) (k `elem` fixable)
     resolveSort RawSort {heads, exact, letters} = case (heads, exact) of
       (Just hs, Nothing) -> Right (SortSpec (HeadsAnyOf hs) (map T.singleton (T.unpack letters)))
@@ -972,11 +954,15 @@ checkModuleBlankLine _ f = case dropWhile (not . isHeader) (codeLines f) of
     isFence l = lineRole l == Prose
 
 checkImportOrder :: Context -> SourceFile -> [Finding]
-checkImportOrder _ f = concatMap check (blocks (codeLines f))
+checkImportOrder _ f = concatMap check (blocks (srcLines f))
   where
+    -- a block is a run of imports, broken by blank lines, comments and other code
     blocks ls = case dropWhile (not . isImport) ls of
       [] -> []
-      xs -> let (b, rest) = span (\l -> isImport l || lineRole l == Blank) xs in filter isImport b : blocks rest
+      xs@(x : _) ->
+        let continues l = isImport l || (lineRole l == Code && indentOf l > indentOf x)
+            (b, rest) = span continues xs
+         in filter isImport b : blocks rest
     isImport l = maybe False openIsImport (openDecl l)
     check b =
       [ finding (lineStart l) (m <> " should come before " <> p)
@@ -1122,17 +1108,38 @@ loadSources root cfg = do
       paths = nubOrd (filter keep found)
   forM (List.sort paths) $ \p -> either failWith pure . analyse (rel p) =<< TIO.readFile p
 
-enabled :: Config -> SourceFile -> RuleId -> Maybe Level
-enabled cfg f r =
-  let s = cfgRules cfg Map.! r
-   in if settingLevel s == Off || any (`isPrefixOf` srcPath f) (settingSkip s) then Nothing else Just (settingLevel s)
+-- path glob, line (all if Nothing), rule
+data Allow = Allow {allowPath :: Glob.Pattern, allowLine :: Maybe Int, allowRule :: RuleId}
 
-lintAll :: Config -> Set Text -> [SourceFile] -> [Diagnostic]
+parseAllow :: Text -> Either String Allow
+parseAllow l = case T.splitOn ":" l of
+  [p, n, r] -> Allow (Glob.compile (T.unpack p)) <$> line n <*> ruleOf r
+  _ -> Left ("expected path:line:rule, got " <> T.unpack l)
+  where
+    line n
+      | n == "*" = Right Nothing
+      | Right (k, "") <- TR.decimal n = Right (Just k)
+      | otherwise = Left ("bad line " <> T.unpack n <> " in " <> T.unpack l)
+    ruleOf r = maybe (Left ("unknown rule " <> T.unpack r <> " in " <> T.unpack l)) Right (find ((== r) . ruleName) [minBound .. maxBound])
+
+loadAllowlist :: FilePath -> IO [Allow]
+loadAllowlist p = do
+  ok <- doesFileExist p
+  src <- if ok then TIO.readFile p else pure ""
+  either (failWith . ((p <> ": ") <>)) pure $
+    traverse parseAllow [l | l <- map T.strip (T.lines src), not (T.null l), not ("#" `T.isPrefixOf` l)]
+
+enabled :: Config -> RuleId -> Maybe Level
+enabled cfg r = case cfgRules cfg Map.! r of
+  Off -> Nothing
+  l   -> Just l
+
+lintAll :: Config -> [Allow] -> [SourceFile] -> [Diagnostic]
 lintAll cfg allow files =
   [ Diagnostic (srcPath f) fd (ruleId r) lvl
   | f <- files
   , r <- allRules
-  , Just lvl <- [enabled cfg f (ruleId r)]
+  , Just lvl <- [enabled cfg (ruleId r)]
   , fd <- ruleCheck r ctx f
   , not (allowed (srcPath f) (ruleId r) fd)
   ]
@@ -1146,8 +1153,7 @@ lintAll cfg allow files =
         , ctxImporters = importers closures
         }
     allowed p r fd =
-      let key' l = T.pack p <> ":" <> l <> ":" <> ruleName r
-       in Set.member (key' (T.show (posLine (findingPos fd)))) allow || Set.member (key' "*") allow
+      any (\a -> allowRule a == r && Glob.match (allowPath a) p && all (== posLine (findingPos fd)) (allowLine a)) allow
 
 applyFixes :: [Fix] -> [Text] -> [Text]
 applyFixes fixes ls = structural (zipWith perLine [1 ..] ls)
@@ -1171,7 +1177,7 @@ applyFixes fixes ls = structural (zipWith perLine [1 ..] ls)
       | Set.member n deletes = []
       | otherwise = t : Map.findWithDefault [] n inserts
 
-fixRound :: FilePath -> Config -> Set Text -> IO Bool
+fixRound :: FilePath -> Config -> [Allow] -> IO Bool
 fixRound root cfg allow = do
   files <- loadSources root cfg
   let diags = lintAll cfg allow files
@@ -1195,14 +1201,10 @@ main = do
   root <- getCurrentDirectory
   when listRules $ do
     forM_ allRules $ \r -> do
-      let lvl = settingLevel (cfgRules cfg Map.! ruleId r)
+      let lvl = cfgRules cfg Map.! ruleId r
       TIO.putStrLn (T.justifyLeft 24 ' ' (ruleName (ruleId r)) <> T.justifyLeft 9 ' ' (camelName lvl) <> ruleSummary r)
     exitSuccess
-  allowText <- do
-    let p = root </> cfgAllowlist cfg
-    ok <- doesFileExist p
-    if ok then TIO.readFile p else pure ""
-  let allow = Set.fromList [l | l <- map T.strip (T.lines allowText), not (T.null l), not ("#" `T.isPrefixOf` l)]
+  allow <- loadAllowlist (root </> cfgAllowlist cfg)
   when fix $ fixLoop root cfg allow (5 :: Int)
   files <- loadSources root cfg
   let diags = List.sort (lintAll cfg allow files)
