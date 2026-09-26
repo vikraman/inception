@@ -93,7 +93,7 @@ data CoTm where
       -------------------
       -> Γ ∣ A `× B ⊢ᵏ Δ
 
-  case : (K₁ : Γ ∣ A ⊢ᵏ Δ) -> (K₂ : Γ ∣ B ⊢ᵏ Δ)
+  case : (K : Γ ∣ A ⊢ᵏ Δ) -> (L : Γ ∣ B ⊢ᵏ Δ)
        -------------------------------------------
        -> Γ ∣ A `+ B ⊢ᵏ Δ
 
@@ -125,7 +125,7 @@ mutual
   wk-cotm ρ σ (app V K) = app (wk-val ρ σ V) (wk-cotm ρ σ K)
   wk-cotm ρ σ (fst K)   = fst (wk-cotm ρ σ K)
   wk-cotm ρ σ (snd K)   = snd (wk-cotm ρ σ K)
-  wk-cotm ρ σ (case K₁ K₂) = case (wk-cotm ρ σ K₁) (wk-cotm ρ σ K₂)
+  wk-cotm ρ σ (case K L) = case (wk-cotm ρ σ K) (wk-cotm ρ σ L)
   wk-cotm ρ σ (μ̃ M')     = μ̃ (wk-cmd (wk-cong ρ) σ M')
   wk-cotm ρ σ tp        = tp
 
@@ -200,7 +200,7 @@ mutual
   sub-cotm θ φ (app V K) = app (sub-val θ φ V) (sub-cotm θ φ K)
   sub-cotm θ φ (fst K)   = fst (sub-cotm θ φ K)
   sub-cotm θ φ (snd K)   = snd (sub-cotm θ φ K)
-  sub-cotm θ φ (case K₁ K₂) = case (sub-cotm θ φ K₁) (sub-cotm θ φ K₂)
+  sub-cotm θ φ (case K L) = case (sub-cotm θ φ K) (sub-cotm θ φ L)
   sub-cotm θ φ (μ̃ M')     = μ̃ (sub-cmd (sub-ex (sub-wk (wk-wk wk-id) wk-id θ) (var here)) (cosub-wk (wk-wk wk-id) wk-id φ) M')
   sub-cotm θ φ tp        = tp
 
@@ -234,9 +234,9 @@ efq : Γ ⊢ᵗ `⊥ ∣ Δ -> Γ ⊢ᵗ A ∣ Δ
 efq u = μ (cut `⊥ (wk̃ᵗ u) tp)
 
 variable
-  V V₁ V₂ V₃ W W₁ W₂ : Γ ⊢ᵛ A ∣ Δ
-  M M₁ M₂ M₃ N N₁ N₂ : Γ ⊢ᵗ A ∣ Δ
-  K K₁ K₂ K₃ K₄ : Γ ∣ A ⊢ᵏ Δ
+  V V₁ V₂ V₃ W₁ W₂ : Γ ⊢ᵛ A ∣ Δ
+  M M₁ M₂ M₃ : Γ ⊢ᵗ A ∣ Δ
+  K K₁ K₂ K₃ L₁ L₂ : Γ ∣ A ⊢ᵏ Δ
   M' M₁' M₂' M₃' : Γ ⊢ Δ
 
 syntax EqVal Γ Δ A V₁ V₂ = Γ ⊢ᵛ V₁ ≈ V₂ ∶ A ∣ Δ
@@ -365,9 +365,9 @@ data EqCoTm Γ Δ where
            -----------------------------------
            -> Γ ∣ snd K₁ ≈ snd K₂ ∶ A `× B ⊢ᵏ Δ
 
-  case-cong : Γ ∣ K₁ ≈ K₂ ∶ A ⊢ᵏ Δ -> Γ ∣ K₃ ≈ K₄ ∶ B ⊢ᵏ Δ
+  case-cong : Γ ∣ K₁ ≈ K₂ ∶ A ⊢ᵏ Δ -> Γ ∣ L₁ ≈ L₂ ∶ B ⊢ᵏ Δ
             -------------------------------------------------------
-            -> Γ ∣ case K₁ K₃ ≈ case K₂ K₄ ∶ A `+ B ⊢ᵏ Δ
+            -> Γ ∣ case K₁ L₁ ≈ case K₂ L₂ ∶ A `+ B ⊢ᵏ Δ
 
   μ̃-cong : (Γ ∙ A) ⊢ M₁' ≈ M₂' ⊣ Δ
          ---------------------------
@@ -426,13 +426,13 @@ data EqCmd Γ Δ where
            -----------------------------------------------------------------
            -> Γ ⊢ cut (A `× B) (ret (pair V W)) (snd K) ≈ cut B (ret W) K ⊣ Δ
 
-  inl-beta : (V : Γ ⊢ᵛ A ∣ Δ) -> (K₁ : Γ ∣ A ⊢ᵏ Δ) -> (K₂ : Γ ∣ B ⊢ᵏ Δ)
+  inl-beta : (V : Γ ⊢ᵛ A ∣ Δ) -> (K : Γ ∣ A ⊢ᵏ Δ) -> (L : Γ ∣ B ⊢ᵏ Δ)
            -----------------------------------------------------------------------
-           -> Γ ⊢ cut (A `+ B) (ret (inl V)) (case K₁ K₂) ≈ cut A (ret V) K₁ ⊣ Δ
+           -> Γ ⊢ cut (A `+ B) (ret (inl V)) (case K L) ≈ cut A (ret V) K ⊣ Δ
 
-  inr-beta : (W : Γ ⊢ᵛ B ∣ Δ) -> (K₁ : Γ ∣ A ⊢ᵏ Δ) -> (K₂ : Γ ∣ B ⊢ᵏ Δ)
+  inr-beta : (W : Γ ⊢ᵛ B ∣ Δ) -> (K : Γ ∣ A ⊢ᵏ Δ) -> (L : Γ ∣ B ⊢ᵏ Δ)
            -----------------------------------------------------------------------
-           -> Γ ⊢ cut (A `+ B) (ret (inr W)) (case K₁ K₂) ≈ cut B (ret W) K₂ ⊣ Δ
+           -> Γ ⊢ cut (A `+ B) (ret (inr W)) (case K L) ≈ cut B (ret W) L ⊣ Δ
 
 --------------------------------------------------------------------------
 -- weakening lemmas
@@ -458,7 +458,7 @@ mutual
   wk-cotm-id (app V K) = cong₂ app (wk-val-id V) (wk-cotm-id K)
   wk-cotm-id (fst K)   = cong fst (wk-cotm-id K)
   wk-cotm-id (snd K)   = cong snd (wk-cotm-id K)
-  wk-cotm-id (case K₁ K₂) = cong₂ case (wk-cotm-id K₁) (wk-cotm-id K₂)
+  wk-cotm-id (case K L) = cong₂ case (wk-cotm-id K) (wk-cotm-id L)
   wk-cotm-id (μ̃ M')     = cong μ̃ (wk-cmd-id M')
   wk-cotm-id tp        = refl
 
@@ -487,7 +487,7 @@ mutual
   wk-cotm-trans (app V K) ρ₁ ρ₂ σ₁ σ₂ = cong₂ app (wk-val-trans V ρ₁ ρ₂ σ₁ σ₂) (wk-cotm-trans K ρ₁ ρ₂ σ₁ σ₂)
   wk-cotm-trans (fst K) ρ₁ ρ₂ σ₁ σ₂   = cong fst (wk-cotm-trans K ρ₁ ρ₂ σ₁ σ₂)
   wk-cotm-trans (snd K) ρ₁ ρ₂ σ₁ σ₂   = cong snd (wk-cotm-trans K ρ₁ ρ₂ σ₁ σ₂)
-  wk-cotm-trans (case K₁ K₂) ρ₁ ρ₂ σ₁ σ₂ = cong₂ case (wk-cotm-trans K₁ ρ₁ ρ₂ σ₁ σ₂) (wk-cotm-trans K₂ ρ₁ ρ₂ σ₁ σ₂)
+  wk-cotm-trans (case K L) ρ₁ ρ₂ σ₁ σ₂ = cong₂ case (wk-cotm-trans K ρ₁ ρ₂ σ₁ σ₂) (wk-cotm-trans L ρ₁ ρ₂ σ₁ σ₂)
   wk-cotm-trans (μ̃ M') ρ₁ ρ₂ σ₁ σ₂     = cong μ̃ (wk-cmd-trans M' (wk-cong ρ₁) (wk-cong ρ₂) σ₁ σ₂)
   wk-cotm-trans tp ρ₁ ρ₂ σ₁ σ₂        = refl
 
@@ -660,11 +660,11 @@ mutual
     M'                                                        ∎)
 
   sub-cotm-id : (K : Γ ∣ A ⊢ᵏ Δ) -> sub-cotm sub-id cosub-id K ≡ K
-  sub-cotm-id (covar i)    = cosub-mem-id i
-  sub-cotm-id (app V K)    = cong₂ app (sub-val-id V) (sub-cotm-id K)
-  sub-cotm-id (fst K)      = cong fst (sub-cotm-id K)
-  sub-cotm-id (snd K)      = cong snd (sub-cotm-id K)
-  sub-cotm-id (case K₁ K₂) = cong₂ case (sub-cotm-id K₁) (sub-cotm-id K₂)
+  sub-cotm-id (covar i)  = cosub-mem-id i
+  sub-cotm-id (app V K)  = cong₂ app (sub-val-id V) (sub-cotm-id K)
+  sub-cotm-id (fst K)    = cong fst (sub-cotm-id K)
+  sub-cotm-id (snd K)    = cong snd (sub-cotm-id K)
+  sub-cotm-id (case K L) = cong₂ case (sub-cotm-id K) (sub-cotm-id L)
   sub-cotm-id (μ̃ M')        = cong μ̃ (begin
     sub-cmd sub-id (cosub-wk (wk-wk wk-id) wk-id cosub-id) M'  ≡⟨ cong (λ x -> sub-cmd sub-id x M') (cosub-id-Γ-wk (wk-wk wk-id)) ⟩
     sub-cmd sub-id cosub-id M'                                 ≡⟨ sub-cmd-id M' ⟩
@@ -707,11 +707,11 @@ mutual
 
   wk-sub-cotm : (ρ : Γ' ⊇ Γ) (σ : Δ' ⊇ Δ) (θ : Sub Γ Δ Ψ) (φ : CoSub Γ Δ Ψ') (K : Ψ ∣ A ⊢ᵏ Ψ')
              -> wk-cotm ρ σ (sub-cotm θ φ K) ≡ sub-cotm (sub-wk ρ σ θ) (cosub-wk ρ σ φ) K
-  wk-sub-cotm ρ σ θ φ (covar i)    = sym (cosub-mem-wk ρ σ φ i)
-  wk-sub-cotm ρ σ θ φ (app V K)    = cong₂ app (wk-sub-val ρ σ θ φ V) (wk-sub-cotm ρ σ θ φ K)
-  wk-sub-cotm ρ σ θ φ (fst K)      = cong fst (wk-sub-cotm ρ σ θ φ K)
-  wk-sub-cotm ρ σ θ φ (snd K)      = cong snd (wk-sub-cotm ρ σ θ φ K)
-  wk-sub-cotm ρ σ θ φ (case K₁ K₂) = cong₂ case (wk-sub-cotm ρ σ θ φ K₁) (wk-sub-cotm ρ σ θ φ K₂)
+  wk-sub-cotm ρ σ θ φ (covar i)  = sym (cosub-mem-wk ρ σ φ i)
+  wk-sub-cotm ρ σ θ φ (app V K)  = cong₂ app (wk-sub-val ρ σ θ φ V) (wk-sub-cotm ρ σ θ φ K)
+  wk-sub-cotm ρ σ θ φ (fst K)    = cong fst (wk-sub-cotm ρ σ θ φ K)
+  wk-sub-cotm ρ σ θ φ (snd K)    = cong snd (wk-sub-cotm ρ σ θ φ K)
+  wk-sub-cotm ρ σ θ φ (case K L) = cong₂ case (wk-sub-cotm ρ σ θ φ K) (wk-sub-cotm ρ σ θ φ L)
   wk-sub-cotm ρ σ θ φ (μ̃ M') =
     cong μ̃ (begin
       wk-cmd (wk-cong ρ) σ (sub-cmd (sub-ex (sub-wk (wk-wk wk-id) wk-id θ) (var here)) (cosub-wk (wk-wk wk-id) wk-id φ) M')
@@ -804,7 +804,7 @@ mutual
   sub-cotm-wk-pre θ φ ρ σ (app V K) = cong₂ app (sub-val-wk-pre θ φ ρ σ V) (sub-cotm-wk-pre θ φ ρ σ K)
   sub-cotm-wk-pre θ φ ρ σ (fst K)   = cong fst (sub-cotm-wk-pre θ φ ρ σ K)
   sub-cotm-wk-pre θ φ ρ σ (snd K)   = cong snd (sub-cotm-wk-pre θ φ ρ σ K)
-  sub-cotm-wk-pre θ φ ρ σ (case K₁ K₂) = cong₂ case (sub-cotm-wk-pre θ φ ρ σ K₁) (sub-cotm-wk-pre θ φ ρ σ K₂)
+  sub-cotm-wk-pre θ φ ρ σ (case K L) = cong₂ case (sub-cotm-wk-pre θ φ ρ σ K) (sub-cotm-wk-pre θ φ ρ σ L)
   sub-cotm-wk-pre θ φ ρ σ (μ̃ M') =
     cong μ̃ (begin
       sub-cmd (sub-ex (sub-wk (wk-wk wk-id) wk-id θ) (var here)) (cosub-wk (wk-wk wk-id) wk-id φ) (wk-cmd (wk-cong ρ) σ M')
@@ -822,98 +822,98 @@ mutual
 -- substitution composition
 
 sub-comp-sub : Sub Γ Δ Γ' -> CoSub Γ Δ Δ' -> Sub Γ' Δ' Ψ -> Sub Γ Δ Ψ
-sub-comp-sub θ₁ φ₁ sub-ε         = sub-ε
-sub-comp-sub θ₁ φ₁ (sub-ex θ₂ V) = sub-ex (sub-comp-sub θ₁ φ₁ θ₂) (sub-val θ₁ φ₁ V)
+sub-comp-sub θ φ sub-ε          = sub-ε
+sub-comp-sub θ₁ φ (sub-ex θ₂ V) = sub-ex (sub-comp-sub θ₁ φ θ₂) (sub-val θ₁ φ V)
 
 cosub-comp-sub : Sub Γ Δ Γ' -> CoSub Γ Δ Δ' -> CoSub Γ' Δ' Ψ -> CoSub Γ Δ Ψ
-cosub-comp-sub θ₁ φ₁ cosub-ε         = cosub-ε
-cosub-comp-sub θ₁ φ₁ (cosub-ex φ₂ K) = cosub-ex (cosub-comp-sub θ₁ φ₁ φ₂) (sub-cotm θ₁ φ₁ K)
+cosub-comp-sub θ φ cosub-ε          = cosub-ε
+cosub-comp-sub θ φ₁ (cosub-ex φ₂ K) = cosub-ex (cosub-comp-sub θ φ₁ φ₂) (sub-cotm θ φ₁ K)
 
-sub-mem-comp-sub : (θ₁ : Sub Γ Δ Γ') (φ₁ : CoSub Γ Δ Δ') (θ₂ : Sub Γ' Δ' Ψ) (i : Ψ ∋ A)
-                  -> sub-mem (sub-comp-sub θ₁ φ₁ θ₂) i ≡ sub-val θ₁ φ₁ (sub-mem θ₂ i)
-sub-mem-comp-sub θ₁ φ₁ (sub-ex θ₂ V) here     = refl
-sub-mem-comp-sub θ₁ φ₁ (sub-ex θ₂ V) (there i) = sub-mem-comp-sub θ₁ φ₁ θ₂ i
+sub-mem-comp-sub : (θ₁ : Sub Γ Δ Γ') (φ : CoSub Γ Δ Δ') (θ₂ : Sub Γ' Δ' Ψ) (i : Ψ ∋ A)
+                  -> sub-mem (sub-comp-sub θ₁ φ θ₂) i ≡ sub-val θ₁ φ (sub-mem θ₂ i)
+sub-mem-comp-sub θ₁ φ (sub-ex θ₂ V) here     = refl
+sub-mem-comp-sub θ₁ φ (sub-ex θ₂ V) (there i) = sub-mem-comp-sub θ₁ φ θ₂ i
 
-cosub-mem-comp-sub : (θ₁ : Sub Γ Δ Γ') (φ₁ : CoSub Γ Δ Δ') (φ₂ : CoSub Γ' Δ' Ψ) (i : Ψ ∋ A)
-                    -> cosub-mem (cosub-comp-sub θ₁ φ₁ φ₂) i ≡ sub-cotm θ₁ φ₁ (cosub-mem φ₂ i)
-cosub-mem-comp-sub θ₁ φ₁ (cosub-ex φ₂ K) here     = refl
-cosub-mem-comp-sub θ₁ φ₁ (cosub-ex φ₂ K) (there i) = cosub-mem-comp-sub θ₁ φ₁ φ₂ i
+cosub-mem-comp-sub : (θ : Sub Γ Δ Γ') (φ₁ : CoSub Γ Δ Δ') (φ₂ : CoSub Γ' Δ' Ψ) (i : Ψ ∋ A)
+                    -> cosub-mem (cosub-comp-sub θ φ₁ φ₂) i ≡ sub-cotm θ φ₁ (cosub-mem φ₂ i)
+cosub-mem-comp-sub θ φ₁ (cosub-ex φ₂ K) here     = refl
+cosub-mem-comp-sub θ φ₁ (cosub-ex φ₂ K) (there i) = cosub-mem-comp-sub θ φ₁ φ₂ i
 
-sub-comp-sub-wk-r : (θ₁ : Sub Γ Δ Γ') (φ₁ : CoSub Γ Δ Δ') (ρ : Γ' ⊇ Γ'') (σ : Δ' ⊇ Δ'') (θ₂ : Sub Γ'' Δ'' Ψ)
-                   -> sub-comp-sub θ₁ φ₁ (sub-wk ρ σ θ₂) ≡ sub-comp-sub (sub-pre θ₁ ρ) (cosub-pre φ₁ σ) θ₂
-sub-comp-sub-wk-r θ₁ φ₁ ρ σ sub-ε         = refl
-sub-comp-sub-wk-r θ₁ φ₁ ρ σ (sub-ex θ₂ V) = cong₂ sub-ex (sub-comp-sub-wk-r θ₁ φ₁ ρ σ θ₂) (sub-val-wk-pre θ₁ φ₁ ρ σ V)
+sub-comp-sub-wk-r : (θ₁ : Sub Γ Δ Γ') (φ : CoSub Γ Δ Δ') (ρ : Γ' ⊇ Γ'') (σ : Δ' ⊇ Δ'') (θ₂ : Sub Γ'' Δ'' Ψ)
+                   -> sub-comp-sub θ₁ φ (sub-wk ρ σ θ₂) ≡ sub-comp-sub (sub-pre θ₁ ρ) (cosub-pre φ σ) θ₂
+sub-comp-sub-wk-r θ φ ρ σ sub-ε          = refl
+sub-comp-sub-wk-r θ₁ φ ρ σ (sub-ex θ₂ V) = cong₂ sub-ex (sub-comp-sub-wk-r θ₁ φ ρ σ θ₂) (sub-val-wk-pre θ₁ φ ρ σ V)
 
-cosub-comp-sub-wk-r : (θ₁ : Sub Γ Δ Γ') (φ₁ : CoSub Γ Δ Δ') (ρ : Γ' ⊇ Γ'') (σ : Δ' ⊇ Δ'') (φ₂ : CoSub Γ'' Δ'' Ψ)
-                     -> cosub-comp-sub θ₁ φ₁ (cosub-wk ρ σ φ₂) ≡ cosub-comp-sub (sub-pre θ₁ ρ) (cosub-pre φ₁ σ) φ₂
-cosub-comp-sub-wk-r θ₁ φ₁ ρ σ cosub-ε         = refl
-cosub-comp-sub-wk-r θ₁ φ₁ ρ σ (cosub-ex φ₂ K) = cong₂ cosub-ex (cosub-comp-sub-wk-r θ₁ φ₁ ρ σ φ₂) (sub-cotm-wk-pre θ₁ φ₁ ρ σ K)
+cosub-comp-sub-wk-r : (θ : Sub Γ Δ Γ') (φ₁ : CoSub Γ Δ Δ') (ρ : Γ' ⊇ Γ'') (σ : Δ' ⊇ Δ'') (φ₂ : CoSub Γ'' Δ'' Ψ)
+                     -> cosub-comp-sub θ φ₁ (cosub-wk ρ σ φ₂) ≡ cosub-comp-sub (sub-pre θ ρ) (cosub-pre φ₁ σ) φ₂
+cosub-comp-sub-wk-r θ φ ρ σ cosub-ε          = refl
+cosub-comp-sub-wk-r θ φ₁ ρ σ (cosub-ex φ₂ K) = cong₂ cosub-ex (cosub-comp-sub-wk-r θ φ₁ ρ σ φ₂) (sub-cotm-wk-pre θ φ₁ ρ σ K)
 
-sub-comp-sub-wk-l : (ρ : Γ₁ ⊇ Γ) (σ : Δ₁ ⊇ Δ) (θ₁ : Sub Γ Δ Γ') (φ₁ : CoSub Γ Δ Δ') (θ₂ : Sub Γ' Δ' Ψ)
-                   -> sub-comp-sub (sub-wk ρ σ θ₁) (cosub-wk ρ σ φ₁) θ₂ ≡ sub-wk ρ σ (sub-comp-sub θ₁ φ₁ θ₂)
-sub-comp-sub-wk-l ρ σ θ₁ φ₁ sub-ε         = refl
-sub-comp-sub-wk-l ρ σ θ₁ φ₁ (sub-ex θ₂ V) =
-  cong₂ sub-ex (sub-comp-sub-wk-l ρ σ θ₁ φ₁ θ₂) (sym (wk-sub-val ρ σ θ₁ φ₁ V))
+sub-comp-sub-wk-l : (ρ : Γ₁ ⊇ Γ) (σ : Δ₁ ⊇ Δ) (θ₁ : Sub Γ Δ Γ') (φ : CoSub Γ Δ Δ') (θ₂ : Sub Γ' Δ' Ψ)
+                   -> sub-comp-sub (sub-wk ρ σ θ₁) (cosub-wk ρ σ φ) θ₂ ≡ sub-wk ρ σ (sub-comp-sub θ₁ φ θ₂)
+sub-comp-sub-wk-l ρ σ θ φ sub-ε         = refl
+sub-comp-sub-wk-l ρ σ θ₁ φ (sub-ex θ₂ V) =
+  cong₂ sub-ex (sub-comp-sub-wk-l ρ σ θ₁ φ θ₂) (sym (wk-sub-val ρ σ θ₁ φ V))
 
-cosub-comp-sub-wk-l : (ρ : Γ₁ ⊇ Γ) (σ : Δ₁ ⊇ Δ) (θ₁ : Sub Γ Δ Γ') (φ₁ : CoSub Γ Δ Δ') (φ₂ : CoSub Γ' Δ' Ψ)
-                     -> cosub-comp-sub (sub-wk ρ σ θ₁) (cosub-wk ρ σ φ₁) φ₂ ≡ cosub-wk ρ σ (cosub-comp-sub θ₁ φ₁ φ₂)
-cosub-comp-sub-wk-l ρ σ θ₁ φ₁ cosub-ε         = refl
-cosub-comp-sub-wk-l ρ σ θ₁ φ₁ (cosub-ex φ₂ K) =
-  cong₂ cosub-ex (cosub-comp-sub-wk-l ρ σ θ₁ φ₁ φ₂) (sym (wk-sub-cotm ρ σ θ₁ φ₁ K))
+cosub-comp-sub-wk-l : (ρ : Γ₁ ⊇ Γ) (σ : Δ₁ ⊇ Δ) (θ : Sub Γ Δ Γ') (φ₁ : CoSub Γ Δ Δ') (φ₂ : CoSub Γ' Δ' Ψ)
+                     -> cosub-comp-sub (sub-wk ρ σ θ) (cosub-wk ρ σ φ₁) φ₂ ≡ cosub-wk ρ σ (cosub-comp-sub θ φ₁ φ₂)
+cosub-comp-sub-wk-l ρ σ θ φ cosub-ε         = refl
+cosub-comp-sub-wk-l ρ σ θ φ₁ (cosub-ex φ₂ K) =
+  cong₂ cosub-ex (cosub-comp-sub-wk-l ρ σ θ φ₁ φ₂) (sym (wk-sub-cotm ρ σ θ φ₁ K))
 
 -- pushing a fresh-variable lift through composition, on either the Γ or Δ side
-sub-comp-sub-ext-Γ : (θ₁ : Sub Γ Δ Γ') (φ₁ : CoSub Γ Δ Δ') (θ₂ : Sub Γ' Δ' Ψ)
-                   -> sub-comp-sub (sub-ex (sub-wk (wk-wk {A = A} wk-id) wk-id θ₁) (var here)) (cosub-wk (wk-wk wk-id) wk-id φ₁) (sub-ex (sub-wk (wk-wk wk-id) wk-id θ₂) (var here))
-                    ≡ sub-ex (sub-wk (wk-wk wk-id) wk-id (sub-comp-sub θ₁ φ₁ θ₂)) (var here)
-sub-comp-sub-ext-Γ θ₁ φ₁ θ₂ =
+sub-comp-sub-ext-Γ : (θ₁ : Sub Γ Δ Γ') (φ : CoSub Γ Δ Δ') (θ₂ : Sub Γ' Δ' Ψ)
+                   -> sub-comp-sub (sub-ex (sub-wk (wk-wk {A = A} wk-id) wk-id θ₁) (var here)) (cosub-wk (wk-wk wk-id) wk-id φ) (sub-ex (sub-wk (wk-wk wk-id) wk-id θ₂) (var here))
+                    ≡ sub-ex (sub-wk (wk-wk wk-id) wk-id (sub-comp-sub θ₁ φ θ₂)) (var here)
+sub-comp-sub-ext-Γ θ₁ φ θ₂ =
   cong₂ sub-ex
     (begin
-      sub-comp-sub (sub-ex (sub-wk (wk-wk wk-id) wk-id θ₁) (var here)) (cosub-wk (wk-wk wk-id) wk-id φ₁) (sub-wk (wk-wk wk-id) wk-id θ₂)
-        ≡⟨ sub-comp-sub-wk-r (sub-ex (sub-wk (wk-wk wk-id) wk-id θ₁) (var here)) (cosub-wk (wk-wk wk-id) wk-id φ₁) (wk-wk wk-id) wk-id θ₂ ⟩
-      sub-comp-sub (sub-pre (sub-wk (wk-wk wk-id) wk-id θ₁) wk-id) (cosub-pre (cosub-wk (wk-wk wk-id) wk-id φ₁) wk-id) θ₂
-        ≡⟨ cong₂ (λ x y -> sub-comp-sub x y θ₂) (sub-pre-wk-id (sub-wk (wk-wk wk-id) wk-id θ₁)) (cosub-pre-wk-id (cosub-wk (wk-wk wk-id) wk-id φ₁)) ⟩
-      sub-comp-sub (sub-wk (wk-wk wk-id) wk-id θ₁) (cosub-wk (wk-wk wk-id) wk-id φ₁) θ₂
-        ≡⟨ sub-comp-sub-wk-l (wk-wk wk-id) wk-id θ₁ φ₁ θ₂ ⟩
-      sub-wk (wk-wk wk-id) wk-id (sub-comp-sub θ₁ φ₁ θ₂)  ∎)
+      sub-comp-sub (sub-ex (sub-wk (wk-wk wk-id) wk-id θ₁) (var here)) (cosub-wk (wk-wk wk-id) wk-id φ) (sub-wk (wk-wk wk-id) wk-id θ₂)
+        ≡⟨ sub-comp-sub-wk-r (sub-ex (sub-wk (wk-wk wk-id) wk-id θ₁) (var here)) (cosub-wk (wk-wk wk-id) wk-id φ) (wk-wk wk-id) wk-id θ₂ ⟩
+      sub-comp-sub (sub-pre (sub-wk (wk-wk wk-id) wk-id θ₁) wk-id) (cosub-pre (cosub-wk (wk-wk wk-id) wk-id φ) wk-id) θ₂
+        ≡⟨ cong₂ (λ x y -> sub-comp-sub x y θ₂) (sub-pre-wk-id (sub-wk (wk-wk wk-id) wk-id θ₁)) (cosub-pre-wk-id (cosub-wk (wk-wk wk-id) wk-id φ)) ⟩
+      sub-comp-sub (sub-wk (wk-wk wk-id) wk-id θ₁) (cosub-wk (wk-wk wk-id) wk-id φ) θ₂
+        ≡⟨ sub-comp-sub-wk-l (wk-wk wk-id) wk-id θ₁ φ θ₂ ⟩
+      sub-wk (wk-wk wk-id) wk-id (sub-comp-sub θ₁ φ θ₂)  ∎)
     refl
 
-cosub-comp-sub-ext-Γ : (θ₁ : Sub Γ Δ Γ') (φ₁ : CoSub Γ Δ Δ') (φ₂ : CoSub Γ' Δ' Ψ)
-                      -> cosub-comp-sub (sub-ex (sub-wk (wk-wk {A = A} wk-id) wk-id θ₁) (var here)) (cosub-wk (wk-wk wk-id) wk-id φ₁) (cosub-wk (wk-wk wk-id) wk-id φ₂)
-                       ≡ cosub-wk (wk-wk wk-id) wk-id (cosub-comp-sub θ₁ φ₁ φ₂)
-cosub-comp-sub-ext-Γ θ₁ φ₁ φ₂ = begin
-  cosub-comp-sub (sub-ex (sub-wk (wk-wk wk-id) wk-id θ₁) (var here)) (cosub-wk (wk-wk wk-id) wk-id φ₁) (cosub-wk (wk-wk wk-id) wk-id φ₂)
-    ≡⟨ cosub-comp-sub-wk-r (sub-ex (sub-wk (wk-wk wk-id) wk-id θ₁) (var here)) (cosub-wk (wk-wk wk-id) wk-id φ₁) (wk-wk wk-id) wk-id φ₂ ⟩
-  cosub-comp-sub (sub-pre (sub-wk (wk-wk wk-id) wk-id θ₁) wk-id) (cosub-pre (cosub-wk (wk-wk wk-id) wk-id φ₁) wk-id) φ₂
-    ≡⟨ cong₂ (λ x y -> cosub-comp-sub x y φ₂) (sub-pre-wk-id (sub-wk (wk-wk wk-id) wk-id θ₁)) (cosub-pre-wk-id (cosub-wk (wk-wk wk-id) wk-id φ₁)) ⟩
-  cosub-comp-sub (sub-wk (wk-wk wk-id) wk-id θ₁) (cosub-wk (wk-wk wk-id) wk-id φ₁) φ₂
-    ≡⟨ cosub-comp-sub-wk-l (wk-wk wk-id) wk-id θ₁ φ₁ φ₂ ⟩
-  cosub-wk (wk-wk wk-id) wk-id (cosub-comp-sub θ₁ φ₁ φ₂)  ∎
+cosub-comp-sub-ext-Γ : (θ : Sub Γ Δ Γ') (φ₁ : CoSub Γ Δ Δ') (φ₂ : CoSub Γ' Δ' Ψ)
+                      -> cosub-comp-sub (sub-ex (sub-wk (wk-wk {A = A} wk-id) wk-id θ) (var here)) (cosub-wk (wk-wk wk-id) wk-id φ₁) (cosub-wk (wk-wk wk-id) wk-id φ₂)
+                       ≡ cosub-wk (wk-wk wk-id) wk-id (cosub-comp-sub θ φ₁ φ₂)
+cosub-comp-sub-ext-Γ θ φ₁ φ₂ = begin
+  cosub-comp-sub (sub-ex (sub-wk (wk-wk wk-id) wk-id θ) (var here)) (cosub-wk (wk-wk wk-id) wk-id φ₁) (cosub-wk (wk-wk wk-id) wk-id φ₂)
+    ≡⟨ cosub-comp-sub-wk-r (sub-ex (sub-wk (wk-wk wk-id) wk-id θ) (var here)) (cosub-wk (wk-wk wk-id) wk-id φ₁) (wk-wk wk-id) wk-id φ₂ ⟩
+  cosub-comp-sub (sub-pre (sub-wk (wk-wk wk-id) wk-id θ) wk-id) (cosub-pre (cosub-wk (wk-wk wk-id) wk-id φ₁) wk-id) φ₂
+    ≡⟨ cong₂ (λ x y -> cosub-comp-sub x y φ₂) (sub-pre-wk-id (sub-wk (wk-wk wk-id) wk-id θ)) (cosub-pre-wk-id (cosub-wk (wk-wk wk-id) wk-id φ₁)) ⟩
+  cosub-comp-sub (sub-wk (wk-wk wk-id) wk-id θ) (cosub-wk (wk-wk wk-id) wk-id φ₁) φ₂
+    ≡⟨ cosub-comp-sub-wk-l (wk-wk wk-id) wk-id θ φ₁ φ₂ ⟩
+  cosub-wk (wk-wk wk-id) wk-id (cosub-comp-sub θ φ₁ φ₂)  ∎
 
-sub-comp-sub-ext-Δ : (θ₁ : Sub Γ Δ Γ') (φ₁ : CoSub Γ Δ Δ') (θ₂ : Sub Γ' Δ' Ψ)
-                   -> sub-comp-sub (sub-wk wk-id (wk-wk {A = A} wk-id) θ₁) (cosub-ex (cosub-wk wk-id (wk-wk wk-id) φ₁) (covar here)) (sub-wk wk-id (wk-wk wk-id) θ₂)
-                    ≡ sub-wk wk-id (wk-wk wk-id) (sub-comp-sub θ₁ φ₁ θ₂)
-sub-comp-sub-ext-Δ θ₁ φ₁ θ₂ = begin
-  sub-comp-sub (sub-wk wk-id (wk-wk wk-id) θ₁) (cosub-ex (cosub-wk wk-id (wk-wk wk-id) φ₁) (covar here)) (sub-wk wk-id (wk-wk wk-id) θ₂)
-    ≡⟨ sub-comp-sub-wk-r (sub-wk wk-id (wk-wk wk-id) θ₁) (cosub-ex (cosub-wk wk-id (wk-wk wk-id) φ₁) (covar here)) wk-id (wk-wk wk-id) θ₂ ⟩
-  sub-comp-sub (sub-pre (sub-wk wk-id (wk-wk wk-id) θ₁) wk-id) (cosub-pre (cosub-wk wk-id (wk-wk wk-id) φ₁) wk-id) θ₂
-    ≡⟨ cong₂ (λ x y -> sub-comp-sub x y θ₂) (sub-pre-wk-id (sub-wk wk-id (wk-wk wk-id) θ₁)) (cosub-pre-wk-id (cosub-wk wk-id (wk-wk wk-id) φ₁)) ⟩
-  sub-comp-sub (sub-wk wk-id (wk-wk wk-id) θ₁) (cosub-wk wk-id (wk-wk wk-id) φ₁) θ₂
-    ≡⟨ sub-comp-sub-wk-l wk-id (wk-wk wk-id) θ₁ φ₁ θ₂ ⟩
-  sub-wk wk-id (wk-wk wk-id) (sub-comp-sub θ₁ φ₁ θ₂)  ∎
+sub-comp-sub-ext-Δ : (θ₁ : Sub Γ Δ Γ') (φ : CoSub Γ Δ Δ') (θ₂ : Sub Γ' Δ' Ψ)
+                   -> sub-comp-sub (sub-wk wk-id (wk-wk {A = A} wk-id) θ₁) (cosub-ex (cosub-wk wk-id (wk-wk wk-id) φ) (covar here)) (sub-wk wk-id (wk-wk wk-id) θ₂)
+                    ≡ sub-wk wk-id (wk-wk wk-id) (sub-comp-sub θ₁ φ θ₂)
+sub-comp-sub-ext-Δ θ₁ φ θ₂ = begin
+  sub-comp-sub (sub-wk wk-id (wk-wk wk-id) θ₁) (cosub-ex (cosub-wk wk-id (wk-wk wk-id) φ) (covar here)) (sub-wk wk-id (wk-wk wk-id) θ₂)
+    ≡⟨ sub-comp-sub-wk-r (sub-wk wk-id (wk-wk wk-id) θ₁) (cosub-ex (cosub-wk wk-id (wk-wk wk-id) φ) (covar here)) wk-id (wk-wk wk-id) θ₂ ⟩
+  sub-comp-sub (sub-pre (sub-wk wk-id (wk-wk wk-id) θ₁) wk-id) (cosub-pre (cosub-wk wk-id (wk-wk wk-id) φ) wk-id) θ₂
+    ≡⟨ cong₂ (λ x y -> sub-comp-sub x y θ₂) (sub-pre-wk-id (sub-wk wk-id (wk-wk wk-id) θ₁)) (cosub-pre-wk-id (cosub-wk wk-id (wk-wk wk-id) φ)) ⟩
+  sub-comp-sub (sub-wk wk-id (wk-wk wk-id) θ₁) (cosub-wk wk-id (wk-wk wk-id) φ) θ₂
+    ≡⟨ sub-comp-sub-wk-l wk-id (wk-wk wk-id) θ₁ φ θ₂ ⟩
+  sub-wk wk-id (wk-wk wk-id) (sub-comp-sub θ₁ φ θ₂)  ∎
 
-cosub-comp-sub-ext-Δ : (θ₁ : Sub Γ Δ Γ') (φ₁ : CoSub Γ Δ Δ') (φ₂ : CoSub Γ' Δ' Ψ)
-                      -> cosub-comp-sub (sub-wk wk-id (wk-wk {A = A} wk-id) θ₁) (cosub-ex (cosub-wk wk-id (wk-wk wk-id) φ₁) (covar here)) (cosub-ex (cosub-wk wk-id (wk-wk wk-id) φ₂) (covar here))
-                       ≡ cosub-ex (cosub-wk wk-id (wk-wk wk-id) (cosub-comp-sub θ₁ φ₁ φ₂)) (covar here)
-cosub-comp-sub-ext-Δ θ₁ φ₁ φ₂ =
+cosub-comp-sub-ext-Δ : (θ : Sub Γ Δ Γ') (φ₁ : CoSub Γ Δ Δ') (φ₂ : CoSub Γ' Δ' Ψ)
+                      -> cosub-comp-sub (sub-wk wk-id (wk-wk {A = A} wk-id) θ) (cosub-ex (cosub-wk wk-id (wk-wk wk-id) φ₁) (covar here)) (cosub-ex (cosub-wk wk-id (wk-wk wk-id) φ₂) (covar here))
+                       ≡ cosub-ex (cosub-wk wk-id (wk-wk wk-id) (cosub-comp-sub θ φ₁ φ₂)) (covar here)
+cosub-comp-sub-ext-Δ θ φ₁ φ₂ =
   cong₂ cosub-ex
     (begin
-      cosub-comp-sub (sub-wk wk-id (wk-wk wk-id) θ₁) (cosub-ex (cosub-wk wk-id (wk-wk wk-id) φ₁) (covar here)) (cosub-wk wk-id (wk-wk wk-id) φ₂)
-        ≡⟨ cosub-comp-sub-wk-r (sub-wk wk-id (wk-wk wk-id) θ₁) (cosub-ex (cosub-wk wk-id (wk-wk wk-id) φ₁) (covar here)) wk-id (wk-wk wk-id) φ₂ ⟩
-      cosub-comp-sub (sub-pre (sub-wk wk-id (wk-wk wk-id) θ₁) wk-id) (cosub-pre (cosub-wk wk-id (wk-wk wk-id) φ₁) wk-id) φ₂
-        ≡⟨ cong₂ (λ x y -> cosub-comp-sub x y φ₂) (sub-pre-wk-id (sub-wk wk-id (wk-wk wk-id) θ₁)) (cosub-pre-wk-id (cosub-wk wk-id (wk-wk wk-id) φ₁)) ⟩
-      cosub-comp-sub (sub-wk wk-id (wk-wk wk-id) θ₁) (cosub-wk wk-id (wk-wk wk-id) φ₁) φ₂
-        ≡⟨ cosub-comp-sub-wk-l wk-id (wk-wk wk-id) θ₁ φ₁ φ₂ ⟩
-      cosub-wk wk-id (wk-wk wk-id) (cosub-comp-sub θ₁ φ₁ φ₂)  ∎)
+      cosub-comp-sub (sub-wk wk-id (wk-wk wk-id) θ) (cosub-ex (cosub-wk wk-id (wk-wk wk-id) φ₁) (covar here)) (cosub-wk wk-id (wk-wk wk-id) φ₂)
+        ≡⟨ cosub-comp-sub-wk-r (sub-wk wk-id (wk-wk wk-id) θ) (cosub-ex (cosub-wk wk-id (wk-wk wk-id) φ₁) (covar here)) wk-id (wk-wk wk-id) φ₂ ⟩
+      cosub-comp-sub (sub-pre (sub-wk wk-id (wk-wk wk-id) θ) wk-id) (cosub-pre (cosub-wk wk-id (wk-wk wk-id) φ₁) wk-id) φ₂
+        ≡⟨ cong₂ (λ x y -> cosub-comp-sub x y φ₂) (sub-pre-wk-id (sub-wk wk-id (wk-wk wk-id) θ)) (cosub-pre-wk-id (cosub-wk wk-id (wk-wk wk-id) φ₁)) ⟩
+      cosub-comp-sub (sub-wk wk-id (wk-wk wk-id) θ) (cosub-wk wk-id (wk-wk wk-id) φ₁) φ₂
+        ≡⟨ cosub-comp-sub-wk-l wk-id (wk-wk wk-id) θ φ₁ φ₂ ⟩
+      cosub-wk wk-id (wk-wk wk-id) (cosub-comp-sub θ φ₁ φ₂)  ∎)
     refl
 
 mutual
@@ -955,11 +955,11 @@ mutual
 
   sub-sub-cotm : (θ₁ : Sub Γ Δ Γ') (φ₁ : CoSub Γ Δ Δ') (θ₂ : Sub Γ' Δ' Ψ) (φ₂ : CoSub Γ' Δ' Ψ') (K : Ψ ∣ A ⊢ᵏ Ψ')
               -> sub-cotm θ₁ φ₁ (sub-cotm θ₂ φ₂ K) ≡ sub-cotm (sub-comp-sub θ₁ φ₁ θ₂) (cosub-comp-sub θ₁ φ₁ φ₂) K
-  sub-sub-cotm θ₁ φ₁ θ₂ φ₂ (covar i)    = sym (cosub-mem-comp-sub θ₁ φ₁ φ₂ i)
-  sub-sub-cotm θ₁ φ₁ θ₂ φ₂ (app V K)    = cong₂ app (sub-sub-val θ₁ φ₁ θ₂ φ₂ V) (sub-sub-cotm θ₁ φ₁ θ₂ φ₂ K)
-  sub-sub-cotm θ₁ φ₁ θ₂ φ₂ (fst K)      = cong fst (sub-sub-cotm θ₁ φ₁ θ₂ φ₂ K)
-  sub-sub-cotm θ₁ φ₁ θ₂ φ₂ (snd K)      = cong snd (sub-sub-cotm θ₁ φ₁ θ₂ φ₂ K)
-  sub-sub-cotm θ₁ φ₁ θ₂ φ₂ (case K₁ K₂) = cong₂ case (sub-sub-cotm θ₁ φ₁ θ₂ φ₂ K₁) (sub-sub-cotm θ₁ φ₁ θ₂ φ₂ K₂)
+  sub-sub-cotm θ₁ φ₁ θ₂ φ₂ (covar i)  = sym (cosub-mem-comp-sub θ₁ φ₁ φ₂ i)
+  sub-sub-cotm θ₁ φ₁ θ₂ φ₂ (app V K)  = cong₂ app (sub-sub-val θ₁ φ₁ θ₂ φ₂ V) (sub-sub-cotm θ₁ φ₁ θ₂ φ₂ K)
+  sub-sub-cotm θ₁ φ₁ θ₂ φ₂ (fst K)    = cong fst (sub-sub-cotm θ₁ φ₁ θ₂ φ₂ K)
+  sub-sub-cotm θ₁ φ₁ θ₂ φ₂ (snd K)    = cong snd (sub-sub-cotm θ₁ φ₁ θ₂ φ₂ K)
+  sub-sub-cotm θ₁ φ₁ θ₂ φ₂ (case K L) = cong₂ case (sub-sub-cotm θ₁ φ₁ θ₂ φ₂ K) (sub-sub-cotm θ₁ φ₁ θ₂ φ₂ L)
   sub-sub-cotm θ₁ φ₁ θ₂ φ₂ (μ̃ M') =
     cong μ̃ (begin
       sub-cmd (sub-ex (sub-wk (wk-wk wk-id) wk-id θ₁) (var here)) (cosub-wk (wk-wk wk-id) wk-id φ₁)

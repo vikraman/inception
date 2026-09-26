@@ -133,8 +133,8 @@ mutual
     let w = evalVal W γ in
       w
   evalComp (sub M N) (γ , k) =
-    let m₂ = evalComp N (γ , k) in
-      evalComp M ((γ , m₂) , k)
+    let m = evalComp N (γ , k) in
+      evalComp M ((γ , m) , k)
 
 ⟦_⟧ˢ : Sub Γ Δ → ⟦ Γ ⟧ˣ → ⟦ Δ ⟧ˣ
 ⟦ sub-ε ⟧ˢ = const tt
@@ -225,35 +225,35 @@ mutual
   eqComp (var-push V M) = refl
   eqComp (sub-push M N P) = refl
 
-wk-sem-trans : (π₁ : Wk Ψ Δ) → (π₂ : Wk Δ Γ) → (γ : ⟦ Ψ ⟧ˣ) → ⟦ π₂ ⟧ʷ (⟦ π₁ ⟧ʷ γ) ≡ ⟦ wk-trans π₁ π₂ ⟧ʷ γ
-wk-sem-trans wk-ε π₂ γ = refl
-wk-sem-trans {Γ = ε} (wk-cong π₁) π₂ γ = refl
-wk-sem-trans {Γ = Γ ∙ x} (wk-cong π₁) (wk-cong π₂) γ =
-       ⟦ wk-cong π₂ ⟧ʷ (⟦ wk-cong π₁ ⟧ʷ γ)
+wk-sem-trans : (π : Wk Ψ Δ) → (δ : Wk Δ Γ) → (γ : ⟦ Ψ ⟧ˣ) → ⟦ δ ⟧ʷ (⟦ π ⟧ʷ γ) ≡ ⟦ wk-trans π δ ⟧ʷ γ
+wk-sem-trans wk-ε π γ = refl
+wk-sem-trans {Γ = ε} (wk-cong π) δ γ = refl
+wk-sem-trans {Γ = Γ ∙ x} (wk-cong π) (wk-cong δ) γ =
+       ⟦ wk-cong δ ⟧ʷ (⟦ wk-cong π ⟧ʷ γ)
       ≡⟨ refl ⟩
-       ⟦ π₂ ⟧ʷ (⟦ π₁ ⟧ʷ (proj₁ γ )) , proj₂ γ
-      ≡⟨ cong (λ y → y , proj₂ γ) (wk-sem-trans π₁ π₂ (proj₁ γ)) ⟩
-       ⟦ wk-trans π₁ π₂ ⟧ʷ (proj₁ γ) , proj₂ γ
+       ⟦ δ ⟧ʷ (⟦ π ⟧ʷ (proj₁ γ )) , proj₂ γ
+      ≡⟨ cong (λ y → y , proj₂ γ) (wk-sem-trans π δ (proj₁ γ)) ⟩
+       ⟦ wk-trans π δ ⟧ʷ (proj₁ γ) , proj₂ γ
       ≡⟨ refl ⟩
-       ⟦ wk-cong (wk-trans π₁ π₂) ⟧ʷ γ ∎
-wk-sem-trans {Γ = Γ ∙ x} (wk-cong π₁) (wk-wk π₂) γ =
-       ⟦ wk-wk π₂ ⟧ʷ (⟦ wk-cong π₁ ⟧ʷ γ)
+       ⟦ wk-cong (wk-trans π δ) ⟧ʷ γ ∎
+wk-sem-trans {Γ = Γ ∙ x} (wk-cong π) (wk-wk δ) γ =
+       ⟦ wk-wk δ ⟧ʷ (⟦ wk-cong π ⟧ʷ γ)
       ≡⟨ refl ⟩
-       ⟦ π₂ ⟧ʷ (⟦ π₁ ⟧ʷ (proj₁ γ))
-      ≡⟨ wk-sem-trans π₁ π₂ (proj₁ γ) ⟩
-       ⟦ wk-trans π₁ π₂ ⟧ʷ (proj₁ γ)
+       ⟦ δ ⟧ʷ (⟦ π ⟧ʷ (proj₁ γ))
+      ≡⟨ wk-sem-trans π δ (proj₁ γ) ⟩
+       ⟦ wk-trans π δ ⟧ʷ (proj₁ γ)
       ≡⟨ refl ⟩
-       ⟦ wk-trans (wk-cong π₁) (wk-wk π₂) ⟧ʷ γ ∎
-wk-sem-trans (wk-wk π₁) wk-ε γ = refl
-wk-sem-trans (wk-wk π₁) (wk-cong π₂) γ =
-       ⟦ wk-cong π₂ ⟧ʷ (⟦ wk-wk π₁ ⟧ʷ γ)
+       ⟦ wk-trans (wk-cong π) (wk-wk δ) ⟧ʷ γ ∎
+wk-sem-trans (wk-wk π) wk-ε γ = refl
+wk-sem-trans (wk-wk π) (wk-cong δ) γ =
+       ⟦ wk-cong δ ⟧ʷ (⟦ wk-wk π ⟧ʷ γ)
       ≡⟨ refl ⟩
-       ⟦ π₂ ⟧ʷ (proj₁ (⟦ π₁ ⟧ʷ (proj₁ γ))) , proj₂ (⟦ π₁ ⟧ʷ (proj₁ γ))
-      ≡⟨ wk-sem-trans π₁ (wk-cong π₂) (proj₁ γ) ⟩
-       ⟦ wk-trans π₁ (wk-cong π₂) ⟧ʷ (proj₁ γ)
+       ⟦ δ ⟧ʷ (proj₁ (⟦ π ⟧ʷ (proj₁ γ))) , proj₂ (⟦ π ⟧ʷ (proj₁ γ))
+      ≡⟨ wk-sem-trans π (wk-cong δ) (proj₁ γ) ⟩
+       ⟦ wk-trans π (wk-cong δ) ⟧ʷ (proj₁ γ)
       ≡⟨ refl ⟩
-       ⟦ wk-wk (wk-trans π₁ (wk-cong π₂)) ⟧ʷ γ ∎
-wk-sem-trans (wk-wk π₁) (wk-wk π₂) γ = wk-sem-trans π₁ (wk-wk π₂) (proj₁ γ)
+       ⟦ wk-wk (wk-trans π (wk-cong δ)) ⟧ʷ γ ∎
+wk-sem-trans (wk-wk π) (wk-wk δ) γ = wk-sem-trans π (wk-wk δ) (proj₁ γ)
 
 module TopLevel {ℛ : Ty} {k₀ : ⟦ ℛ ⟧ → R} where
 

@@ -130,10 +130,8 @@ exchg : Sub (Γ ∙ A ∙ B)(Γ ∙ B ∙ A)
 exchg = sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) sub-id) (var here)) (var (there here))
 
 variable
-  n : ℕ
-  x : Γ ∋ A
-  V V₁ V₂ V₃ V₄ W W₁ W₂ W₃ : Γ ⊢ᵛ A
-  M M₁ M₂ M₃ M₄ N N₁ N₂ N₃ P P₁ P₂ P₃ : Γ ⊢ᶜ A
+  V V₁ V₂ V₃ W W₁ W₂ : Γ ⊢ᵛ A
+  M M₁ M₂ M₃ N N₁ N₂ : Γ ⊢ᶜ A
 
 syntax EqVal Γ A e₁ e₂ = Γ ⊢ᵛ e₁ ≈ e₂ ∶ A
 
@@ -219,7 +217,7 @@ data EqComp Γ where
 
   -- beta/eta rules
 
-  pm-beta : (V₁ : Γ ⊢ᵛ A) -> (V₂ : Γ ⊢ᵛ B) -> (M : (Γ ∙ A ∙ B) ⊢ᶜ C)
+  pm-beta : (V : Γ ⊢ᵛ A) -> (W : Γ ⊢ᵛ B) -> (M : (Γ ∙ A ∙ B) ⊢ᶜ C)
           ------------------------------------------------------------------------
           -> Γ ⊢ᶜ pm (pair V₁ V₂) M ≈ sub-comp (sub-ex (sub-ex sub-id V₁) V₂) M ∶ C
 

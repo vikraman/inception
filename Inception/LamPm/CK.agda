@@ -60,8 +60,8 @@ data _→ᵏ_ : Cfg Γ B → Cfg Γ B → Set where
   pm-step        : {V : Γ ⊢ᵛ A `× B} {N : (Γ ∙ A ∙ B) ⊢ᶜ C} {K : Γ ⊢ᵏ C ⇒ D}
                  → ⟨ pm V N ∥ K ⟩ →ᵏ [ V ∥ N pm∷ K ]
 
-  pm-pair-step   : {V₁ : Γ ⊢ᵛ A} {V₂ : Γ ⊢ᵛ B} {N : (Γ ∙ A ∙ B) ⊢ᶜ C} {K : Γ ⊢ᵏ C ⇒ D}
-                 → [ pair V₁ V₂ ∥ N pm∷ K ] →ᵏ ⟨ sub-comp (sub-ex (sub-ex sub-id V₁) V₂) N ∥ K ⟩
+  pm-pair-step   : {V : Γ ⊢ᵛ A} {W : Γ ⊢ᵛ B} {N : (Γ ∙ A ∙ B) ⊢ᶜ C} {K : Γ ⊢ᵏ C ⇒ D}
+                 → [ pair V W ∥ N pm∷ K ] →ᵏ ⟨ sub-comp (sub-ex (sub-ex sub-id V) W) N ∥ K ⟩
 
   pm-val-step    : {V : Γ ⊢ᵛ A `× B} {W : (Γ ∙ A ∙ B) ⊢ᵛ C} {K : Γ ⊢ᵏ C ⇒ D}
                  → [ pm V W ∥ K ] →ᵏ [ V ∥ W pmᵛ∷ K ]
@@ -118,9 +118,9 @@ wk-step π (return-step {V = V} {N = N} {K = K}) =
   Eq.subst (λ x → ⟨ return (wk-val π V) ∥ wk-comp (wk-cong π) N ∷ wk-stk π K ⟩ →ᵏ ⟨ x ∥ wk-stk π K ⟩)
            (wk-beta-1 π V N) return-step
 wk-step π pm-step = pm-step
-wk-step π (pm-pair-step {V₁ = V₁} {V₂ = V₂} {N = N} {K = K}) =
-  Eq.subst (λ x → [ pair (wk-val π V₁) (wk-val π V₂) ∥ wk-comp (wk-cong (wk-cong π)) N pm∷ wk-stk π K ] →ᵏ ⟨ x ∥ wk-stk π K ⟩)
-           (wk-beta-pmᶜ π V₁ V₂ N) pm-pair-step
+wk-step π (pm-pair-step {V = V} {W = W} {N = N} {K = K}) =
+  Eq.subst (λ x → [ pair (wk-val π V) (wk-val π W) ∥ wk-comp (wk-cong (wk-cong π)) N pm∷ wk-stk π K ] →ᵏ ⟨ x ∥ wk-stk π K ⟩)
+           (wk-beta-pmᶜ π V W N) pm-pair-step
 wk-step π pm-val-step = pm-val-step
 wk-step π (pmᵛ-pair-step {V₁ = V₁} {V₂ = V₂} {W = W} {K = K}) =
   Eq.subst (λ x → [ pair (wk-val π V₁) (wk-val π V₂) ∥ wk-val (wk-cong (wk-cong π)) W pmᵛ∷ wk-stk π K ] →ᵏ [ x ∥ wk-stk π K ])
@@ -151,11 +151,11 @@ wk-reflect π {σ = ⟨ app (pm V₁ W) V ∥ K ⟩} app-pm-step =
   ⟨ pm V₁ (app W (wk-val (wk-wk (wk-wk wk-id)) V)) ∥ K ⟩ , app-pm-step ,
   Eq.cong (λ x → ⟨ pm (wk-val π V₁) x ∥ wk-stk π K ⟩)
           (Eq.cong (app (wk-val (wk-cong (wk-cong π)) W)) (wk-ins2 π V))
-wk-reflect π {σ = [ pair V₁ V₂ ∥ ε ]} ()
-wk-reflect π {σ = [ pair V₁ V₂ ∥ N ∷ K ]} ()
-wk-reflect π {σ = [ pair V₁ V₂ ∥ N pm∷ K ]} pm-pair-step =
-  ⟨ sub-comp (sub-ex (sub-ex sub-id V₁) V₂) N ∥ K ⟩ , pm-pair-step ,
-  Eq.cong (λ x → ⟨ x ∥ wk-stk π K ⟩) (wk-beta-pmᶜ π V₁ V₂ N)
+wk-reflect π {σ = [ pair V W ∥ ε ]} ()
+wk-reflect π {σ = [ pair V W ∥ N ∷ K ]} ()
+wk-reflect π {σ = [ pair V W ∥ N pm∷ K ]} pm-pair-step =
+  ⟨ sub-comp (sub-ex (sub-ex sub-id V) W) N ∥ K ⟩ , pm-pair-step ,
+  Eq.cong (λ x → ⟨ x ∥ wk-stk π K ⟩) (wk-beta-pmᶜ π V W N)
 wk-reflect π {σ = [ pair V₁ V₂ ∥ W pmᵛ∷ K ]} pmᵛ-pair-step =
   [ sub-val (sub-ex (sub-ex sub-id V₁) V₂) W ∥ K ] , pmᵛ-pair-step ,
   Eq.cong (λ x → [ x ∥ wk-stk π K ]) (wk-beta-pmᵛ π V₁ V₂ W)
@@ -174,9 +174,9 @@ SN-wk π (sn f) = sn (λ step →
 
 graft : Γ ⊢ᵏ A ⇒ D → Γ ⊢ᵏ D ⇒ C → Γ ⊢ᵏ A ⇒ C
 graft ε          K = K
-graft (N ∷ K₀)   K = N ∷ graft K₀ K
-graft (N pm∷ K₀)  K = N pm∷ graft K₀ K
-graft (W pmᵛ∷ K₀) K = W pmᵛ∷ graft K₀ K
+graft (N ∷ L)   K  = N ∷ graft L K
+graft (N pm∷ L)  K = N pm∷ graft L K
+graft (W pmᵛ∷ L) K = W pmᵛ∷ graft L K
 
 Redᵛ : (A : Ty) → Γ ⊢ᵛ A → Set
 Redᶜ : (A : Ty) → Γ ⊢ᶜ A → Set
@@ -199,79 +199,79 @@ Red→RTNᶜ : (A : Ty) (M : Γ ⊢ᶜ A) → Redᶜ A M → (∀ {V} → ⟨ M 
 Red→RTNᶜ A M (snM , ret) = ret
 
 mutual
-  SN-ext∷-C : {E : Ty} {M : Γ ⊢ᶜ A} {K₀ : Γ ⊢ᵏ A ⇒ D} {N : (Γ ∙ D) ⊢ᶜ E} {K : Γ ⊢ᵏ E ⇒ C}
-            → SN ⟨ M ∥ K₀ ⟩
-            → (∀ {V} → ⟨ M ∥ K₀ ⟩ ↠ᵏ ⟨ return V ∥ ε ⟩ → Redᵛ D V)
+  SN-ext∷-C : {E : Ty} {M : Γ ⊢ᶜ A} {L : Γ ⊢ᵏ A ⇒ D} {N : (Γ ∙ D) ⊢ᶜ E} {K : Γ ⊢ᵏ E ⇒ C}
+            → SN ⟨ M ∥ L ⟩
+            → (∀ {V} → ⟨ M ∥ L ⟩ ↠ᵏ ⟨ return V ∥ ε ⟩ → Redᵛ D V)
             → (∀ {V} → Redᵛ D V → SN ⟨ sub-comp (sub-ex sub-id V) N ∥ K ⟩)
-            → SN ⟨ M ∥ graft K₀ (N ∷ K) ⟩
-  SN-ext∷-C {M = push M₀ N₀} (sn f) rtn H =
+            → SN ⟨ M ∥ graft L (N ∷ K) ⟩
+  SN-ext∷-C {M = push M N} (sn f) rtn H =
     sn (λ { push-step → SN-ext∷-C (f push-step) (λ ch → rtn (_ ~>⟨ push-step ⟩ ch)) H })
   SN-ext∷-C {M = app (var i) V} (sn f) rtn H = sn (λ ())
-  SN-ext∷-C {M = app (lam N₀) V} (sn f) rtn H =
+  SN-ext∷-C {M = app (lam N) V} (sn f) rtn H =
     sn (λ { app-lam-step → SN-ext∷-C (f app-lam-step) (λ ch → rtn (_ ~>⟨ app-lam-step ⟩ ch)) H })
-  SN-ext∷-C {M = app (pm V₀ W₀) V} (sn f) rtn H =
+  SN-ext∷-C {M = app (pm V₀ W) V} (sn f) rtn H =
     sn (λ { app-pm-step → SN-ext∷-C (f app-pm-step) (λ ch → rtn (_ ~>⟨ app-pm-step ⟩ ch)) H })
-  SN-ext∷-C {M = pm V₀ N₀} (sn f) rtn H =
+  SN-ext∷-C {M = pm V N} (sn f) rtn H =
     sn (λ { pm-step → SN-ext∷-V (f pm-step) (λ ch → rtn (_ ~>⟨ pm-step ⟩ ch)) H })
-  SN-ext∷-C {M = return V} {K₀ = ε} (sn f) rtn H =
+  SN-ext∷-C {M = return V} {L = ε} (sn f) rtn H =
     sn (λ { return-step → H (rtn (_ ◼)) })
-  SN-ext∷-C {M = return V} {K₀ = N₀ ∷ K₀} (sn f) rtn H =
+  SN-ext∷-C {M = return V} {L = N ∷ L} (sn f) rtn H =
     sn (λ { return-step → SN-ext∷-C (f return-step) (λ ch → rtn (_ ~>⟨ return-step ⟩ ch)) H })
-  SN-ext∷-C {M = return V} {K₀ = N₀ pm∷ K₀} (sn f) rtn H = sn (λ ())
-  SN-ext∷-C {M = return V} {K₀ = W₀ pmᵛ∷ K₀} (sn f) rtn H = sn (λ ())
+  SN-ext∷-C {M = return V} {L = N pm∷ L} (sn f) rtn H = sn (λ ())
+  SN-ext∷-C {M = return V} {L = W pmᵛ∷ L} (sn f) rtn H = sn (λ ())
 
-  SN-ext∷-V : {E : Ty} {V : Γ ⊢ᵛ A} {K₀ : Γ ⊢ᵏ A ⇒ D} {N : (Γ ∙ D) ⊢ᶜ E} {K : Γ ⊢ᵏ E ⇒ C}
-            → SN [ V ∥ K₀ ]
-            → (∀ {W} → [ V ∥ K₀ ] ↠ᵏ ⟨ return W ∥ ε ⟩ → Redᵛ D W)
+  SN-ext∷-V : {E : Ty} {V : Γ ⊢ᵛ A} {L : Γ ⊢ᵏ A ⇒ D} {N : (Γ ∙ D) ⊢ᶜ E} {K : Γ ⊢ᵏ E ⇒ C}
+            → SN [ V ∥ L ]
+            → (∀ {W} → [ V ∥ L ] ↠ᵏ ⟨ return W ∥ ε ⟩ → Redᵛ D W)
             → (∀ {W} → Redᵛ D W → SN ⟨ sub-comp (sub-ex sub-id W) N ∥ K ⟩)
-            → SN [ V ∥ graft K₀ (N ∷ K) ]
+            → SN [ V ∥ graft L (N ∷ K) ]
   SN-ext∷-V {V = var i} (sn f) rtn H = sn (λ ())
-  SN-ext∷-V {V = lam N₀} (sn f) rtn H = sn (λ ())
+  SN-ext∷-V {V = lam N} (sn f) rtn H = sn (λ ())
   SN-ext∷-V {V = unit} (sn f) rtn H = sn (λ ())
-  SN-ext∷-V {V = pm V₀ W₀} (sn f) rtn H =
+  SN-ext∷-V {V = pm V W} (sn f) rtn H =
     sn (λ { pm-val-step → SN-ext∷-V (f pm-val-step) (λ ch → rtn (_ ~>⟨ pm-val-step ⟩ ch)) H })
-  SN-ext∷-V {V = pair V₁ V₂} {K₀ = ε} (sn f) rtn H = sn (λ ())
-  SN-ext∷-V {V = pair V₁ V₂} {K₀ = N₀ ∷ K₀} (sn f) rtn H = sn (λ ())
-  SN-ext∷-V {V = pair V₁ V₂} {K₀ = N₀ pm∷ K₀} (sn f) rtn H =
+  SN-ext∷-V {V = pair V W} {L = ε} (sn f) rtn H = sn (λ ())
+  SN-ext∷-V {V = pair V W} {L = N ∷ L} (sn f) rtn H = sn (λ ())
+  SN-ext∷-V {V = pair V W} {L = N pm∷ L} (sn f) rtn H =
     sn (λ { pm-pair-step → SN-ext∷-C (f pm-pair-step) (λ ch → rtn (_ ~>⟨ pm-pair-step ⟩ ch)) H })
-  SN-ext∷-V {V = pair V₁ V₂} {K₀ = W₀ pmᵛ∷ K₀} (sn f) rtn H =
+  SN-ext∷-V {V = pair V₁ V₂} {L = W pmᵛ∷ L} (sn f) rtn H =
     sn (λ { pmᵛ-pair-step → SN-ext∷-V (f pmᵛ-pair-step) (λ ch → rtn (_ ~>⟨ pmᵛ-pair-step ⟩ ch)) H })
 
 mutual
-  RTN-ext∷-C : {E : Ty} {M : Γ ⊢ᶜ A} {K₀ : Γ ⊢ᵏ A ⇒ D} {N : (Γ ∙ D) ⊢ᶜ E} {K : Γ ⊢ᵏ E ⇒ C}
-             → (∀ {V} → ⟨ M ∥ K₀ ⟩ ↠ᵏ ⟨ return V ∥ ε ⟩ → Redᵛ D V)
+  RTN-ext∷-C : {E : Ty} {M : Γ ⊢ᶜ A} {L : Γ ⊢ᵏ A ⇒ D} {N : (Γ ∙ D) ⊢ᶜ E} {K : Γ ⊢ᵏ E ⇒ C}
+             → (∀ {V} → ⟨ M ∥ L ⟩ ↠ᵏ ⟨ return V ∥ ε ⟩ → Redᵛ D V)
              → (∀ {V} → Redᵛ D V → ∀ {W} → ⟨ sub-comp (sub-ex sub-id V) N ∥ K ⟩ ↠ᵏ ⟨ return W ∥ ε ⟩ → Redᵛ C W)
-             → {W : _} → ⟨ M ∥ graft K₀ (N ∷ K) ⟩ ↠ᵏ ⟨ return W ∥ ε ⟩ → Redᵛ C W
-  RTN-ext∷-C {M = push M₀ N₀} rtn H₂ (_ ~>⟨ push-step ⟩ rest) =
-    RTN-ext∷-C (λ ch → rtn (_ ~>⟨ push-step ⟩ ch)) H₂ rest
-  RTN-ext∷-C {M = app (var i) V} rtn H₂ (_ ~>⟨ () ⟩ rest)
-  RTN-ext∷-C {M = app (lam N₀) V} rtn H₂ (_ ~>⟨ app-lam-step ⟩ rest) =
-    RTN-ext∷-C (λ ch → rtn (_ ~>⟨ app-lam-step ⟩ ch)) H₂ rest
-  RTN-ext∷-C {M = app (pm V₀ W₀) V} rtn H₂ (_ ~>⟨ app-pm-step ⟩ rest) =
-    RTN-ext∷-C (λ ch → rtn (_ ~>⟨ app-pm-step ⟩ ch)) H₂ rest
-  RTN-ext∷-C {M = pm V₀ N₀} rtn H₂ (_ ~>⟨ pm-step ⟩ rest) =
-    RTN-ext∷-V (λ ch → rtn (_ ~>⟨ pm-step ⟩ ch)) H₂ rest
-  RTN-ext∷-C {M = return V} {K₀ = ε} rtn H₂ (_ ~>⟨ return-step ⟩ rest) = H₂ (rtn (_ ◼)) rest
-  RTN-ext∷-C {M = return V} {K₀ = N₀ ∷ K₀} rtn H₂ (_ ~>⟨ return-step ⟩ rest) =
-    RTN-ext∷-C (λ ch → rtn (_ ~>⟨ return-step ⟩ ch)) H₂ rest
-  RTN-ext∷-C {M = return V} {K₀ = N₀ pm∷ K₀} rtn H₂ (_ ~>⟨ () ⟩ rest)
-  RTN-ext∷-C {M = return V} {K₀ = W₀ pmᵛ∷ K₀} rtn H₂ (_ ~>⟨ () ⟩ rest)
+             → {W : _} → ⟨ M ∥ graft L (N ∷ K) ⟩ ↠ᵏ ⟨ return W ∥ ε ⟩ → Redᵛ C W
+  RTN-ext∷-C {M = push M N} rtn H (_ ~>⟨ push-step ⟩ rest) =
+    RTN-ext∷-C (λ ch → rtn (_ ~>⟨ push-step ⟩ ch)) H rest
+  RTN-ext∷-C {M = app (var i) V} rtn H (_ ~>⟨ () ⟩ rest)
+  RTN-ext∷-C {M = app (lam N) V} rtn H (_ ~>⟨ app-lam-step ⟩ rest) =
+    RTN-ext∷-C (λ ch → rtn (_ ~>⟨ app-lam-step ⟩ ch)) H rest
+  RTN-ext∷-C {M = app (pm V₀ W) V} rtn H (_ ~>⟨ app-pm-step ⟩ rest) =
+    RTN-ext∷-C (λ ch → rtn (_ ~>⟨ app-pm-step ⟩ ch)) H rest
+  RTN-ext∷-C {M = pm V N} rtn H (_ ~>⟨ pm-step ⟩ rest) =
+    RTN-ext∷-V (λ ch → rtn (_ ~>⟨ pm-step ⟩ ch)) H rest
+  RTN-ext∷-C {M = return V} {L = ε} rtn H (_ ~>⟨ return-step ⟩ rest) = H (rtn (_ ◼)) rest
+  RTN-ext∷-C {M = return V} {L = N ∷ L} rtn H (_ ~>⟨ return-step ⟩ rest) =
+    RTN-ext∷-C (λ ch → rtn (_ ~>⟨ return-step ⟩ ch)) H rest
+  RTN-ext∷-C {M = return V} {L = N pm∷ L} rtn H (_ ~>⟨ () ⟩ rest)
+  RTN-ext∷-C {M = return V} {L = W pmᵛ∷ L} rtn H (_ ~>⟨ () ⟩ rest)
 
-  RTN-ext∷-V : {E : Ty} {V : Γ ⊢ᵛ A} {K₀ : Γ ⊢ᵏ A ⇒ D} {N : (Γ ∙ D) ⊢ᶜ E} {K : Γ ⊢ᵏ E ⇒ C}
-             → (∀ {V₁} → [ V ∥ K₀ ] ↠ᵏ ⟨ return V₁ ∥ ε ⟩ → Redᵛ D V₁)
+  RTN-ext∷-V : {E : Ty} {V : Γ ⊢ᵛ A} {L : Γ ⊢ᵏ A ⇒ D} {N : (Γ ∙ D) ⊢ᶜ E} {K : Γ ⊢ᵏ E ⇒ C}
+             → (∀ {V₁} → [ V ∥ L ] ↠ᵏ ⟨ return V₁ ∥ ε ⟩ → Redᵛ D V₁)
              → (∀ {V₁} → Redᵛ D V₁ → ∀ {V₂} → ⟨ sub-comp (sub-ex sub-id V₁) N ∥ K ⟩ ↠ᵏ ⟨ return V₂ ∥ ε ⟩ → Redᵛ C V₂)
-             → {V₂ : _} → [ V ∥ graft K₀ (N ∷ K) ] ↠ᵏ ⟨ return V₂ ∥ ε ⟩ → Redᵛ C V₂
-  RTN-ext∷-V {V = var i} rtn H₂ (_ ~>⟨ () ⟩ rest)
-  RTN-ext∷-V {V = lam N₀} rtn H₂ (_ ~>⟨ () ⟩ rest)
-  RTN-ext∷-V {V = unit} rtn H₂ (_ ~>⟨ () ⟩ rest)
-  RTN-ext∷-V {V = pm V₀ W₀} rtn H₂ (_ ~>⟨ pm-val-step ⟩ rest) =
-    RTN-ext∷-V (λ ch → rtn (_ ~>⟨ pm-val-step ⟩ ch)) H₂ rest
-  RTN-ext∷-V {V = pair V₁ V₂} {K₀ = ε} rtn H₂ (_ ~>⟨ () ⟩ rest)
-  RTN-ext∷-V {V = pair V₁ V₂} {K₀ = N₀ ∷ K₀} rtn H₂ (_ ~>⟨ () ⟩ rest)
-  RTN-ext∷-V {V = pair V₁ V₂} {K₀ = N₀ pm∷ K₀} rtn H₂ (_ ~>⟨ pm-pair-step ⟩ rest) =
-    RTN-ext∷-C (λ ch → rtn (_ ~>⟨ pm-pair-step ⟩ ch)) H₂ rest
-  RTN-ext∷-V {V = pair V₁ V₂} {K₀ = W₀ pmᵛ∷ K₀} rtn H₂ (_ ~>⟨ pmᵛ-pair-step ⟩ rest) =
-    RTN-ext∷-V (λ ch → rtn (_ ~>⟨ pmᵛ-pair-step ⟩ ch)) H₂ rest
+             → {V₂ : _} → [ V ∥ graft L (N ∷ K) ] ↠ᵏ ⟨ return V₂ ∥ ε ⟩ → Redᵛ C V₂
+  RTN-ext∷-V {V = var i} rtn H (_ ~>⟨ () ⟩ rest)
+  RTN-ext∷-V {V = lam N} rtn H (_ ~>⟨ () ⟩ rest)
+  RTN-ext∷-V {V = unit} rtn H (_ ~>⟨ () ⟩ rest)
+  RTN-ext∷-V {V = pm V W} rtn H (_ ~>⟨ pm-val-step ⟩ rest) =
+    RTN-ext∷-V (λ ch → rtn (_ ~>⟨ pm-val-step ⟩ ch)) H rest
+  RTN-ext∷-V {V = pair V W} {L = ε} rtn H (_ ~>⟨ () ⟩ rest)
+  RTN-ext∷-V {V = pair V W} {L = N ∷ L} rtn H (_ ~>⟨ () ⟩ rest)
+  RTN-ext∷-V {V = pair V W} {L = N pm∷ L} rtn H (_ ~>⟨ pm-pair-step ⟩ rest) =
+    RTN-ext∷-C (λ ch → rtn (_ ~>⟨ pm-pair-step ⟩ ch)) H rest
+  RTN-ext∷-V {V = pair V₁ V₂} {L = W pmᵛ∷ L} rtn H (_ ~>⟨ pmᵛ-pair-step ⟩ rest) =
+    RTN-ext∷-V (λ ch → rtn (_ ~>⟨ pmᵛ-pair-step ⟩ ch)) H rest
 
 exp-push : {M : Γ ⊢ᶜ A} {N : (Γ ∙ A) ⊢ᶜ B}
          → Redᶜ A M → (∀ {V} → Redᵛ A V → Redᶜ B (sub-comp (sub-ex sub-id V) N))
@@ -281,152 +281,152 @@ exp-push {M = M} {N} rM H =
   λ { (_ ~>⟨ push-step ⟩ rest) → RTN-ext∷-C (Red→RTNᶜ _ _ rM) (λ {V} rv → Red→RTNᶜ _ _ (H rv)) rest }
 
 mutual
-  SN-ext-pm∷-C : {X Y E : Ty} {M : Γ ⊢ᶜ A} {K₀ : Γ ⊢ᵏ A ⇒ (X `× Y)} {N : (Γ ∙ X ∙ Y) ⊢ᶜ E} {K : Γ ⊢ᵏ E ⇒ C}
-               → SN ⟨ M ∥ K₀ ⟩
-               → (∀ {V₁ V₂} → ⟨ M ∥ K₀ ⟩ ↠ᵏ [ pair V₁ V₂ ∥ ε ] → Redᵛ X V₁ × Redᵛ Y V₂)
-               → (∀ {V₁ V₂} → Redᵛ X V₁ → Redᵛ Y V₂ → SN ⟨ sub-comp (sub-ex (sub-ex sub-id V₁) V₂) N ∥ K ⟩)
-               → SN ⟨ M ∥ graft K₀ (N pm∷ K) ⟩
-  SN-ext-pm∷-C {M = push M₀ N₀} (sn f) rtn H =
+  SN-ext-pm∷-C : {X Y E : Ty} {M : Γ ⊢ᶜ A} {L : Γ ⊢ᵏ A ⇒ (X `× Y)} {N : (Γ ∙ X ∙ Y) ⊢ᶜ E} {K : Γ ⊢ᵏ E ⇒ C}
+               → SN ⟨ M ∥ L ⟩
+               → (∀ {V W} → ⟨ M ∥ L ⟩ ↠ᵏ [ pair V W ∥ ε ] → Redᵛ X V × Redᵛ Y W)
+               → (∀ {V W} → Redᵛ X V → Redᵛ Y W → SN ⟨ sub-comp (sub-ex (sub-ex sub-id V) W) N ∥ K ⟩)
+               → SN ⟨ M ∥ graft L (N pm∷ K) ⟩
+  SN-ext-pm∷-C {M = push M N} (sn f) rtn H =
     sn (λ { push-step → SN-ext-pm∷-C (f push-step) (λ ch → rtn (_ ~>⟨ push-step ⟩ ch)) H })
   SN-ext-pm∷-C {M = app (var i) V} (sn f) rtn H = sn (λ ())
-  SN-ext-pm∷-C {M = app (lam N₀) V} (sn f) rtn H =
+  SN-ext-pm∷-C {M = app (lam N) V} (sn f) rtn H =
     sn (λ { app-lam-step → SN-ext-pm∷-C (f app-lam-step) (λ ch → rtn (_ ~>⟨ app-lam-step ⟩ ch)) H })
-  SN-ext-pm∷-C {M = app (pm V₀ W₀) V} (sn f) rtn H =
+  SN-ext-pm∷-C {M = app (pm V₀ W) V} (sn f) rtn H =
     sn (λ { app-pm-step → SN-ext-pm∷-C (f app-pm-step) (λ ch → rtn (_ ~>⟨ app-pm-step ⟩ ch)) H })
-  SN-ext-pm∷-C {M = pm V₀ N₀} (sn f) rtn H =
+  SN-ext-pm∷-C {M = pm V N} (sn f) rtn H =
     sn (λ { pm-step → SN-ext-pm∷-V (f pm-step) (λ ch → rtn (_ ~>⟨ pm-step ⟩ ch)) H })
-  SN-ext-pm∷-C {M = return V} {K₀ = ε} (sn f) rtn H = sn (λ ())
-  SN-ext-pm∷-C {M = return V} {K₀ = N₀ ∷ K₀} (sn f) rtn H =
+  SN-ext-pm∷-C {M = return V} {L = ε} (sn f) rtn H = sn (λ ())
+  SN-ext-pm∷-C {M = return V} {L = N ∷ L} (sn f) rtn H =
     sn (λ { return-step → SN-ext-pm∷-C (f return-step) (λ ch → rtn (_ ~>⟨ return-step ⟩ ch)) H })
-  SN-ext-pm∷-C {M = return V} {K₀ = N₀ pm∷ K₀} (sn f) rtn H = sn (λ ())
-  SN-ext-pm∷-C {M = return V} {K₀ = W₀ pmᵛ∷ K₀} (sn f) rtn H = sn (λ ())
+  SN-ext-pm∷-C {M = return V} {L = N pm∷ L} (sn f) rtn H = sn (λ ())
+  SN-ext-pm∷-C {M = return V} {L = W pmᵛ∷ L} (sn f) rtn H = sn (λ ())
 
-  SN-ext-pm∷-V : {X Y E : Ty} {V : Γ ⊢ᵛ A} {K₀ : Γ ⊢ᵏ A ⇒ (X `× Y)} {N : (Γ ∙ X ∙ Y) ⊢ᶜ E} {K : Γ ⊢ᵏ E ⇒ C}
-               → SN [ V ∥ K₀ ]
-               → (∀ {V₁ V₂} → [ V ∥ K₀ ] ↠ᵏ [ pair V₁ V₂ ∥ ε ] → Redᵛ X V₁ × Redᵛ Y V₂)
+  SN-ext-pm∷-V : {X Y E : Ty} {V : Γ ⊢ᵛ A} {L : Γ ⊢ᵏ A ⇒ (X `× Y)} {N : (Γ ∙ X ∙ Y) ⊢ᶜ E} {K : Γ ⊢ᵏ E ⇒ C}
+               → SN [ V ∥ L ]
+               → (∀ {V₁ V₂} → [ V ∥ L ] ↠ᵏ [ pair V₁ V₂ ∥ ε ] → Redᵛ X V₁ × Redᵛ Y V₂)
                → (∀ {V₁ V₂} → Redᵛ X V₁ → Redᵛ Y V₂ → SN ⟨ sub-comp (sub-ex (sub-ex sub-id V₁) V₂) N ∥ K ⟩)
-               → SN [ V ∥ graft K₀ (N pm∷ K) ]
+               → SN [ V ∥ graft L (N pm∷ K) ]
   SN-ext-pm∷-V {V = var i} (sn f) rtn H = sn (λ ())
-  SN-ext-pm∷-V {V = lam N₀} (sn f) rtn H = sn (λ ())
+  SN-ext-pm∷-V {V = lam N} (sn f) rtn H = sn (λ ())
   SN-ext-pm∷-V {V = unit} (sn f) rtn H = sn (λ ())
-  SN-ext-pm∷-V {V = pm V₀ W₀} (sn f) rtn H =
+  SN-ext-pm∷-V {V = pm V W} (sn f) rtn H =
     sn (λ { pm-val-step → SN-ext-pm∷-V (f pm-val-step) (λ ch → rtn (_ ~>⟨ pm-val-step ⟩ ch)) H })
-  SN-ext-pm∷-V {V = pair V₁ V₂} {K₀ = ε} (sn f) rtn H =
+  SN-ext-pm∷-V {V = pair V W} {L = ε} (sn f) rtn H =
     sn (λ { pm-pair-step → H (proj₁ (rtn (_ ◼))) (proj₂ (rtn (_ ◼))) })
-  SN-ext-pm∷-V {V = pair V₁ V₂} {K₀ = N₀ ∷ K₀} (sn f) rtn H = sn (λ ())
-  SN-ext-pm∷-V {V = pair V₁ V₂} {K₀ = N₀ pm∷ K₀} (sn f) rtn H =
+  SN-ext-pm∷-V {V = pair V W} {L = N ∷ L} (sn f) rtn H = sn (λ ())
+  SN-ext-pm∷-V {V = pair V W} {L = N pm∷ L} (sn f) rtn H =
     sn (λ { pm-pair-step → SN-ext-pm∷-C (f pm-pair-step) (λ ch → rtn (_ ~>⟨ pm-pair-step ⟩ ch)) H })
-  SN-ext-pm∷-V {V = pair V₁ V₂} {K₀ = W₀ pmᵛ∷ K₀} (sn f) rtn H =
+  SN-ext-pm∷-V {V = pair V₁ V₂} {L = W pmᵛ∷ L} (sn f) rtn H =
     sn (λ { pmᵛ-pair-step → SN-ext-pm∷-V (f pmᵛ-pair-step) (λ ch → rtn (_ ~>⟨ pmᵛ-pair-step ⟩ ch)) H })
 
 mutual
-  RTN-ext-pm∷-C : {X Y E : Ty} {M : Γ ⊢ᶜ A} {K₀ : Γ ⊢ᵏ A ⇒ (X `× Y)} {N : (Γ ∙ X ∙ Y) ⊢ᶜ E} {K : Γ ⊢ᵏ E ⇒ C}
-                → (∀ {V₁ V₂} → ⟨ M ∥ K₀ ⟩ ↠ᵏ [ pair V₁ V₂ ∥ ε ] → Redᵛ X V₁ × Redᵛ Y V₂)
+  RTN-ext-pm∷-C : {X Y E : Ty} {M : Γ ⊢ᶜ A} {L : Γ ⊢ᵏ A ⇒ (X `× Y)} {N : (Γ ∙ X ∙ Y) ⊢ᶜ E} {K : Γ ⊢ᵏ E ⇒ C}
+                → (∀ {V₁ V₂} → ⟨ M ∥ L ⟩ ↠ᵏ [ pair V₁ V₂ ∥ ε ] → Redᵛ X V₁ × Redᵛ Y V₂)
                 → (∀ {V₁ V₂} → Redᵛ X V₁ → Redᵛ Y V₂ → ∀ {W} → ⟨ sub-comp (sub-ex (sub-ex sub-id V₁) V₂) N ∥ K ⟩ ↠ᵏ ⟨ return W ∥ ε ⟩ → Redᵛ C W)
-                → {W : _} → ⟨ M ∥ graft K₀ (N pm∷ K) ⟩ ↠ᵏ ⟨ return W ∥ ε ⟩ → Redᵛ C W
-  RTN-ext-pm∷-C {M = push M₀ N₀} rtn H₂ (_ ~>⟨ push-step ⟩ rest) =
-    RTN-ext-pm∷-C (λ ch → rtn (_ ~>⟨ push-step ⟩ ch)) H₂ rest
-  RTN-ext-pm∷-C {M = app (var i) V} rtn H₂ (_ ~>⟨ () ⟩ rest)
-  RTN-ext-pm∷-C {M = app (lam N₀) V} rtn H₂ (_ ~>⟨ app-lam-step ⟩ rest) =
-    RTN-ext-pm∷-C (λ ch → rtn (_ ~>⟨ app-lam-step ⟩ ch)) H₂ rest
-  RTN-ext-pm∷-C {M = app (pm V₀ W₀) V} rtn H₂ (_ ~>⟨ app-pm-step ⟩ rest) =
-    RTN-ext-pm∷-C (λ ch → rtn (_ ~>⟨ app-pm-step ⟩ ch)) H₂ rest
-  RTN-ext-pm∷-C {M = pm V₀ N₀} rtn H₂ (_ ~>⟨ pm-step ⟩ rest) =
-    RTN-ext-pm∷-V (λ ch → rtn (_ ~>⟨ pm-step ⟩ ch)) H₂ rest
-  RTN-ext-pm∷-C {M = return V} {K₀ = ε} rtn H₂ (_ ~>⟨ () ⟩ rest)
-  RTN-ext-pm∷-C {M = return V} {K₀ = N₀ ∷ K₀} rtn H₂ (_ ~>⟨ return-step ⟩ rest) =
-    RTN-ext-pm∷-C (λ ch → rtn (_ ~>⟨ return-step ⟩ ch)) H₂ rest
-  RTN-ext-pm∷-C {M = return V} {K₀ = N₀ pm∷ K₀} rtn H₂ (_ ~>⟨ () ⟩ rest)
-  RTN-ext-pm∷-C {M = return V} {K₀ = W₀ pmᵛ∷ K₀} rtn H₂ (_ ~>⟨ () ⟩ rest)
+                → {W : _} → ⟨ M ∥ graft L (N pm∷ K) ⟩ ↠ᵏ ⟨ return W ∥ ε ⟩ → Redᵛ C W
+  RTN-ext-pm∷-C {M = push M N} rtn H (_ ~>⟨ push-step ⟩ rest) =
+    RTN-ext-pm∷-C (λ ch → rtn (_ ~>⟨ push-step ⟩ ch)) H rest
+  RTN-ext-pm∷-C {M = app (var i) V} rtn H (_ ~>⟨ () ⟩ rest)
+  RTN-ext-pm∷-C {M = app (lam N) V} rtn H (_ ~>⟨ app-lam-step ⟩ rest) =
+    RTN-ext-pm∷-C (λ ch → rtn (_ ~>⟨ app-lam-step ⟩ ch)) H rest
+  RTN-ext-pm∷-C {M = app (pm V₀ W) V} rtn H (_ ~>⟨ app-pm-step ⟩ rest) =
+    RTN-ext-pm∷-C (λ ch → rtn (_ ~>⟨ app-pm-step ⟩ ch)) H rest
+  RTN-ext-pm∷-C {M = pm V N} rtn H (_ ~>⟨ pm-step ⟩ rest) =
+    RTN-ext-pm∷-V (λ ch → rtn (_ ~>⟨ pm-step ⟩ ch)) H rest
+  RTN-ext-pm∷-C {M = return V} {L = ε} rtn H (_ ~>⟨ () ⟩ rest)
+  RTN-ext-pm∷-C {M = return V} {L = N ∷ L} rtn H (_ ~>⟨ return-step ⟩ rest) =
+    RTN-ext-pm∷-C (λ ch → rtn (_ ~>⟨ return-step ⟩ ch)) H rest
+  RTN-ext-pm∷-C {M = return V} {L = N pm∷ L} rtn H (_ ~>⟨ () ⟩ rest)
+  RTN-ext-pm∷-C {M = return V} {L = W pmᵛ∷ L} rtn H (_ ~>⟨ () ⟩ rest)
 
-  RTN-ext-pm∷-V : {X Y E : Ty} {V : Γ ⊢ᵛ A} {K₀ : Γ ⊢ᵏ A ⇒ (X `× Y)} {N : (Γ ∙ X ∙ Y) ⊢ᶜ E} {K : Γ ⊢ᵏ E ⇒ C}
-                → (∀ {V₁ V₂} → [ V ∥ K₀ ] ↠ᵏ [ pair V₁ V₂ ∥ ε ] → Redᵛ X V₁ × Redᵛ Y V₂)
+  RTN-ext-pm∷-V : {X Y E : Ty} {V : Γ ⊢ᵛ A} {L : Γ ⊢ᵏ A ⇒ (X `× Y)} {N : (Γ ∙ X ∙ Y) ⊢ᶜ E} {K : Γ ⊢ᵏ E ⇒ C}
+                → (∀ {V₁ V₂} → [ V ∥ L ] ↠ᵏ [ pair V₁ V₂ ∥ ε ] → Redᵛ X V₁ × Redᵛ Y V₂)
                 → (∀ {V₁ V₂} → Redᵛ X V₁ → Redᵛ Y V₂ → ∀ {W} → ⟨ sub-comp (sub-ex (sub-ex sub-id V₁) V₂) N ∥ K ⟩ ↠ᵏ ⟨ return W ∥ ε ⟩ → Redᵛ C W)
-                → {W : _} → [ V ∥ graft K₀ (N pm∷ K) ] ↠ᵏ ⟨ return W ∥ ε ⟩ → Redᵛ C W
-  RTN-ext-pm∷-V {V = pm V₀ W₀} rtn H₂ (_ ~>⟨ pm-val-step ⟩ rest) =
-    RTN-ext-pm∷-V (λ ch → rtn (_ ~>⟨ pm-val-step ⟩ ch)) H₂ rest
-  RTN-ext-pm∷-V {V = pair V₁ V₂} {K₀ = ε} rtn H₂ (_ ~>⟨ pm-pair-step ⟩ rest) =
-    H₂ (proj₁ (rtn (_ ◼))) (proj₂ (rtn (_ ◼))) rest
-  RTN-ext-pm∷-V {V = pair V₁ V₂} {K₀ = N₀ pm∷ K₀} rtn H₂ (_ ~>⟨ pm-pair-step ⟩ rest) =
-    RTN-ext-pm∷-C (λ ch → rtn (_ ~>⟨ pm-pair-step ⟩ ch)) H₂ rest
-  RTN-ext-pm∷-V {V = pair V₁ V₂} {K₀ = W₀ pmᵛ∷ K₀} rtn H₂ (_ ~>⟨ pmᵛ-pair-step ⟩ rest) =
-    RTN-ext-pm∷-V (λ ch → rtn (_ ~>⟨ pmᵛ-pair-step ⟩ ch)) H₂ rest
+                → {W : _} → [ V ∥ graft L (N pm∷ K) ] ↠ᵏ ⟨ return W ∥ ε ⟩ → Redᵛ C W
+  RTN-ext-pm∷-V {V = pm V W} rtn H (_ ~>⟨ pm-val-step ⟩ rest) =
+    RTN-ext-pm∷-V (λ ch → rtn (_ ~>⟨ pm-val-step ⟩ ch)) H rest
+  RTN-ext-pm∷-V {V = pair V W} {L = ε} rtn H (_ ~>⟨ pm-pair-step ⟩ rest) =
+    H (proj₁ (rtn (_ ◼))) (proj₂ (rtn (_ ◼))) rest
+  RTN-ext-pm∷-V {V = pair V W} {L = N pm∷ L} rtn H (_ ~>⟨ pm-pair-step ⟩ rest) =
+    RTN-ext-pm∷-C (λ ch → rtn (_ ~>⟨ pm-pair-step ⟩ ch)) H rest
+  RTN-ext-pm∷-V {V = pair V₁ V₂} {L = W pmᵛ∷ L} rtn H (_ ~>⟨ pmᵛ-pair-step ⟩ rest) =
+    RTN-ext-pm∷-V (λ ch → rtn (_ ~>⟨ pmᵛ-pair-step ⟩ ch)) H rest
 
 mutual
-  SN-ext-pmᵛ∷-C : {X Y E : Ty} {M : Γ ⊢ᶜ A} {K₀ : Γ ⊢ᵏ A ⇒ (X `× Y)} {W : (Γ ∙ X ∙ Y) ⊢ᵛ E} {K : Γ ⊢ᵏ E ⇒ C}
-               → SN ⟨ M ∥ K₀ ⟩
-               → (∀ {V₁ V₂} → ⟨ M ∥ K₀ ⟩ ↠ᵏ [ pair V₁ V₂ ∥ ε ] → Redᵛ X V₁ × Redᵛ Y V₂)
+  SN-ext-pmᵛ∷-C : {X Y E : Ty} {M : Γ ⊢ᶜ A} {L : Γ ⊢ᵏ A ⇒ (X `× Y)} {W : (Γ ∙ X ∙ Y) ⊢ᵛ E} {K : Γ ⊢ᵏ E ⇒ C}
+               → SN ⟨ M ∥ L ⟩
+               → (∀ {V₁ V₂} → ⟨ M ∥ L ⟩ ↠ᵏ [ pair V₁ V₂ ∥ ε ] → Redᵛ X V₁ × Redᵛ Y V₂)
                → (∀ {V₁ V₂} → Redᵛ X V₁ → Redᵛ Y V₂ → SN [ sub-val (sub-ex (sub-ex sub-id V₁) V₂) W ∥ K ])
-               → SN ⟨ M ∥ graft K₀ (W pmᵛ∷ K) ⟩
-  SN-ext-pmᵛ∷-C {M = push M₀ N₀} (sn f) rtn H =
+               → SN ⟨ M ∥ graft L (W pmᵛ∷ K) ⟩
+  SN-ext-pmᵛ∷-C {M = push M N} (sn f) rtn H =
     sn (λ { push-step → SN-ext-pmᵛ∷-C (f push-step) (λ ch → rtn (_ ~>⟨ push-step ⟩ ch)) H })
   SN-ext-pmᵛ∷-C {M = app (var i) V} (sn f) rtn H = sn (λ ())
-  SN-ext-pmᵛ∷-C {M = app (lam N₀) V} (sn f) rtn H =
+  SN-ext-pmᵛ∷-C {M = app (lam N) V} (sn f) rtn H =
     sn (λ { app-lam-step → SN-ext-pmᵛ∷-C (f app-lam-step) (λ ch → rtn (_ ~>⟨ app-lam-step ⟩ ch)) H })
-  SN-ext-pmᵛ∷-C {M = app (pm V₀ W₀) V} (sn f) rtn H =
+  SN-ext-pmᵛ∷-C {M = app (pm V₀ W) V} (sn f) rtn H =
     sn (λ { app-pm-step → SN-ext-pmᵛ∷-C (f app-pm-step) (λ ch → rtn (_ ~>⟨ app-pm-step ⟩ ch)) H })
-  SN-ext-pmᵛ∷-C {M = pm V₀ N₀} (sn f) rtn H =
+  SN-ext-pmᵛ∷-C {M = pm V N} (sn f) rtn H =
     sn (λ { pm-step → SN-ext-pmᵛ∷-V (f pm-step) (λ ch → rtn (_ ~>⟨ pm-step ⟩ ch)) H })
-  SN-ext-pmᵛ∷-C {M = return V} {K₀ = ε} (sn f) rtn H = sn (λ ())
-  SN-ext-pmᵛ∷-C {M = return V} {K₀ = N₀ ∷ K₀} (sn f) rtn H =
+  SN-ext-pmᵛ∷-C {M = return V} {L = ε} (sn f) rtn H = sn (λ ())
+  SN-ext-pmᵛ∷-C {M = return V} {L = N ∷ L} (sn f) rtn H =
     sn (λ { return-step → SN-ext-pmᵛ∷-C (f return-step) (λ ch → rtn (_ ~>⟨ return-step ⟩ ch)) H })
-  SN-ext-pmᵛ∷-C {M = return V} {K₀ = N₀ pm∷ K₀} (sn f) rtn H = sn (λ ())
-  SN-ext-pmᵛ∷-C {M = return V} {K₀ = W₀ pmᵛ∷ K₀} (sn f) rtn H = sn (λ ())
+  SN-ext-pmᵛ∷-C {M = return V} {L = N pm∷ L} (sn f) rtn H = sn (λ ())
+  SN-ext-pmᵛ∷-C {M = return V} {L = W pmᵛ∷ L} (sn f) rtn H = sn (λ ())
 
-  SN-ext-pmᵛ∷-V : {X Y E : Ty} {V : Γ ⊢ᵛ A} {K₀ : Γ ⊢ᵏ A ⇒ (X `× Y)} {W : (Γ ∙ X ∙ Y) ⊢ᵛ E} {K : Γ ⊢ᵏ E ⇒ C}
-               → SN [ V ∥ K₀ ]
-               → (∀ {V₁ V₂} → [ V ∥ K₀ ] ↠ᵏ [ pair V₁ V₂ ∥ ε ] → Redᵛ X V₁ × Redᵛ Y V₂)
+  SN-ext-pmᵛ∷-V : {X Y E : Ty} {V : Γ ⊢ᵛ A} {L : Γ ⊢ᵏ A ⇒ (X `× Y)} {W : (Γ ∙ X ∙ Y) ⊢ᵛ E} {K : Γ ⊢ᵏ E ⇒ C}
+               → SN [ V ∥ L ]
+               → (∀ {V₁ V₂} → [ V ∥ L ] ↠ᵏ [ pair V₁ V₂ ∥ ε ] → Redᵛ X V₁ × Redᵛ Y V₂)
                → (∀ {V₁ V₂} → Redᵛ X V₁ → Redᵛ Y V₂ → SN [ sub-val (sub-ex (sub-ex sub-id V₁) V₂) W ∥ K ])
-               → SN [ V ∥ graft K₀ (W pmᵛ∷ K) ]
+               → SN [ V ∥ graft L (W pmᵛ∷ K) ]
   SN-ext-pmᵛ∷-V {V = var i} (sn f) rtn H = sn (λ ())
-  SN-ext-pmᵛ∷-V {V = lam N₀} (sn f) rtn H = sn (λ ())
+  SN-ext-pmᵛ∷-V {V = lam N} (sn f) rtn H = sn (λ ())
   SN-ext-pmᵛ∷-V {V = unit} (sn f) rtn H = sn (λ ())
-  SN-ext-pmᵛ∷-V {V = pm V₀ W₀} (sn f) rtn H =
+  SN-ext-pmᵛ∷-V {V = pm V W} (sn f) rtn H =
     sn (λ { pm-val-step → SN-ext-pmᵛ∷-V (f pm-val-step) (λ ch → rtn (_ ~>⟨ pm-val-step ⟩ ch)) H })
-  SN-ext-pmᵛ∷-V {V = pair V₁ V₂} {K₀ = ε} (sn f) rtn H =
+  SN-ext-pmᵛ∷-V {V = pair V W} {L = ε} (sn f) rtn H =
     sn (λ { pmᵛ-pair-step → H (proj₁ (rtn (_ ◼))) (proj₂ (rtn (_ ◼))) })
-  SN-ext-pmᵛ∷-V {V = pair V₁ V₂} {K₀ = N₀ ∷ K₀} (sn f) rtn H = sn (λ ())
-  SN-ext-pmᵛ∷-V {V = pair V₁ V₂} {K₀ = N₀ pm∷ K₀} (sn f) rtn H =
+  SN-ext-pmᵛ∷-V {V = pair V W} {L = N ∷ L} (sn f) rtn H = sn (λ ())
+  SN-ext-pmᵛ∷-V {V = pair V W} {L = N pm∷ L} (sn f) rtn H =
     sn (λ { pm-pair-step → SN-ext-pmᵛ∷-C (f pm-pair-step) (λ ch → rtn (_ ~>⟨ pm-pair-step ⟩ ch)) H })
-  SN-ext-pmᵛ∷-V {V = pair V₁ V₂} {K₀ = W₀ pmᵛ∷ K₀} (sn f) rtn H =
+  SN-ext-pmᵛ∷-V {V = pair V₁ V₂} {L = W pmᵛ∷ L} (sn f) rtn H =
     sn (λ { pmᵛ-pair-step → SN-ext-pmᵛ∷-V (f pmᵛ-pair-step) (λ ch → rtn (_ ~>⟨ pmᵛ-pair-step ⟩ ch)) H })
 
 mutual
-  RTN-ext-pmᵛ∷ᴾ-C : {X Y E X' Y' : Ty} {M : Γ ⊢ᶜ A} {K₀ : Γ ⊢ᵏ A ⇒ (X `× Y)} {W : (Γ ∙ X ∙ Y) ⊢ᵛ E} {K : Γ ⊢ᵏ E ⇒ (X' `× Y')}
-                → (∀ {V₁ V₂} → ⟨ M ∥ K₀ ⟩ ↠ᵏ [ pair V₁ V₂ ∥ ε ] → Redᵛ X V₁ × Redᵛ Y V₂)
+  RTN-ext-pmᵛ∷ᴾ-C : {X Y E X' Y' : Ty} {M : Γ ⊢ᶜ A} {L : Γ ⊢ᵏ A ⇒ (X `× Y)} {W : (Γ ∙ X ∙ Y) ⊢ᵛ E} {K : Γ ⊢ᵏ E ⇒ (X' `× Y')}
+                → (∀ {V₁ V₂} → ⟨ M ∥ L ⟩ ↠ᵏ [ pair V₁ V₂ ∥ ε ] → Redᵛ X V₁ × Redᵛ Y V₂)
                 → (∀ {V₁ V₂} → Redᵛ X V₁ → Redᵛ Y V₂ → ∀ {W₁ W₂} → [ sub-val (sub-ex (sub-ex sub-id V₁) V₂) W ∥ K ] ↠ᵏ [ pair W₁ W₂ ∥ ε ] → Redᵛ X' W₁ × Redᵛ Y' W₂)
-                → {W₁ : Γ ⊢ᵛ X'} {W₂ : Γ ⊢ᵛ Y'} → ⟨ M ∥ graft K₀ (W pmᵛ∷ K) ⟩ ↠ᵏ [ pair W₁ W₂ ∥ ε ] → Redᵛ X' W₁ × Redᵛ Y' W₂
-  RTN-ext-pmᵛ∷ᴾ-C {M = push M₀ N₀} rtn H₂ (_ ~>⟨ push-step ⟩ rest) =
-    RTN-ext-pmᵛ∷ᴾ-C (λ ch → rtn (_ ~>⟨ push-step ⟩ ch)) H₂ rest
-  RTN-ext-pmᵛ∷ᴾ-C {M = app (var i) V} rtn H₂ (_ ~>⟨ () ⟩ rest)
-  RTN-ext-pmᵛ∷ᴾ-C {M = app (lam N₀) V} rtn H₂ (_ ~>⟨ app-lam-step ⟩ rest) =
-    RTN-ext-pmᵛ∷ᴾ-C (λ ch → rtn (_ ~>⟨ app-lam-step ⟩ ch)) H₂ rest
-  RTN-ext-pmᵛ∷ᴾ-C {M = app (pm V₀ W₀) V} rtn H₂ (_ ~>⟨ app-pm-step ⟩ rest) =
-    RTN-ext-pmᵛ∷ᴾ-C (λ ch → rtn (_ ~>⟨ app-pm-step ⟩ ch)) H₂ rest
-  RTN-ext-pmᵛ∷ᴾ-C {M = pm V₀ N₀} rtn H₂ (_ ~>⟨ pm-step ⟩ rest) =
-    RTN-ext-pmᵛ∷ᴾ-V (λ ch → rtn (_ ~>⟨ pm-step ⟩ ch)) H₂ rest
-  RTN-ext-pmᵛ∷ᴾ-C {M = return V} {K₀ = ε} rtn H₂ (_ ~>⟨ () ⟩ rest)
-  RTN-ext-pmᵛ∷ᴾ-C {M = return V} {K₀ = N₀ ∷ K₀} rtn H₂ (_ ~>⟨ return-step ⟩ rest) =
-    RTN-ext-pmᵛ∷ᴾ-C (λ ch → rtn (_ ~>⟨ return-step ⟩ ch)) H₂ rest
-  RTN-ext-pmᵛ∷ᴾ-C {M = return V} {K₀ = N₀ pm∷ K₀} rtn H₂ (_ ~>⟨ () ⟩ rest)
-  RTN-ext-pmᵛ∷ᴾ-C {M = return V} {K₀ = W₀ pmᵛ∷ K₀} rtn H₂ (_ ~>⟨ () ⟩ rest)
+                → {W₁ : Γ ⊢ᵛ X'} {W₂ : Γ ⊢ᵛ Y'} → ⟨ M ∥ graft L (W pmᵛ∷ K) ⟩ ↠ᵏ [ pair W₁ W₂ ∥ ε ] → Redᵛ X' W₁ × Redᵛ Y' W₂
+  RTN-ext-pmᵛ∷ᴾ-C {M = push M N} rtn H (_ ~>⟨ push-step ⟩ rest) =
+    RTN-ext-pmᵛ∷ᴾ-C (λ ch → rtn (_ ~>⟨ push-step ⟩ ch)) H rest
+  RTN-ext-pmᵛ∷ᴾ-C {M = app (var i) V} rtn H (_ ~>⟨ () ⟩ rest)
+  RTN-ext-pmᵛ∷ᴾ-C {M = app (lam N) V} rtn H (_ ~>⟨ app-lam-step ⟩ rest) =
+    RTN-ext-pmᵛ∷ᴾ-C (λ ch → rtn (_ ~>⟨ app-lam-step ⟩ ch)) H rest
+  RTN-ext-pmᵛ∷ᴾ-C {M = app (pm V₀ W) V} rtn H (_ ~>⟨ app-pm-step ⟩ rest) =
+    RTN-ext-pmᵛ∷ᴾ-C (λ ch → rtn (_ ~>⟨ app-pm-step ⟩ ch)) H rest
+  RTN-ext-pmᵛ∷ᴾ-C {M = pm V N} rtn H (_ ~>⟨ pm-step ⟩ rest) =
+    RTN-ext-pmᵛ∷ᴾ-V (λ ch → rtn (_ ~>⟨ pm-step ⟩ ch)) H rest
+  RTN-ext-pmᵛ∷ᴾ-C {M = return V} {L = ε} rtn H (_ ~>⟨ () ⟩ rest)
+  RTN-ext-pmᵛ∷ᴾ-C {M = return V} {L = N ∷ L} rtn H (_ ~>⟨ return-step ⟩ rest) =
+    RTN-ext-pmᵛ∷ᴾ-C (λ ch → rtn (_ ~>⟨ return-step ⟩ ch)) H rest
+  RTN-ext-pmᵛ∷ᴾ-C {M = return V} {L = N pm∷ L} rtn H (_ ~>⟨ () ⟩ rest)
+  RTN-ext-pmᵛ∷ᴾ-C {M = return V} {L = W pmᵛ∷ L} rtn H (_ ~>⟨ () ⟩ rest)
 
-  RTN-ext-pmᵛ∷ᴾ-V : {X Y E X' Y' : Ty} {V : Γ ⊢ᵛ A} {K₀ : Γ ⊢ᵏ A ⇒ (X `× Y)} {W : (Γ ∙ X ∙ Y) ⊢ᵛ E} {K : Γ ⊢ᵏ E ⇒ (X' `× Y')}
-                → (∀ {V₁ V₂} → [ V ∥ K₀ ] ↠ᵏ [ pair V₁ V₂ ∥ ε ] → Redᵛ X V₁ × Redᵛ Y V₂)
+  RTN-ext-pmᵛ∷ᴾ-V : {X Y E X' Y' : Ty} {V : Γ ⊢ᵛ A} {L : Γ ⊢ᵏ A ⇒ (X `× Y)} {W : (Γ ∙ X ∙ Y) ⊢ᵛ E} {K : Γ ⊢ᵏ E ⇒ (X' `× Y')}
+                → (∀ {V₁ V₂} → [ V ∥ L ] ↠ᵏ [ pair V₁ V₂ ∥ ε ] → Redᵛ X V₁ × Redᵛ Y V₂)
                 → (∀ {V₁ V₂} → Redᵛ X V₁ → Redᵛ Y V₂ → ∀ {W₁ W₂} → [ sub-val (sub-ex (sub-ex sub-id V₁) V₂) W ∥ K ] ↠ᵏ [ pair W₁ W₂ ∥ ε ] → Redᵛ X' W₁ × Redᵛ Y' W₂)
-                → {W₁ : Γ ⊢ᵛ X'} {W₂ : Γ ⊢ᵛ Y'} → [ V ∥ graft K₀ (W pmᵛ∷ K) ] ↠ᵏ [ pair W₁ W₂ ∥ ε ] → Redᵛ X' W₁ × Redᵛ Y' W₂
-  RTN-ext-pmᵛ∷ᴾ-V {V = var i} rtn H₂ (_ ~>⟨ () ⟩ rest)
-  RTN-ext-pmᵛ∷ᴾ-V {V = lam N₀} rtn H₂ (_ ~>⟨ () ⟩ rest)
-  RTN-ext-pmᵛ∷ᴾ-V {V = unit} rtn H₂ (_ ~>⟨ () ⟩ rest)
-  RTN-ext-pmᵛ∷ᴾ-V {V = pm V₀ W₀} rtn H₂ (_ ~>⟨ pm-val-step ⟩ rest) =
-    RTN-ext-pmᵛ∷ᴾ-V (λ ch → rtn (_ ~>⟨ pm-val-step ⟩ ch)) H₂ rest
-  RTN-ext-pmᵛ∷ᴾ-V {V = pair V₁ V₂} {K₀ = ε} rtn H₂ (_ ~>⟨ pmᵛ-pair-step ⟩ rest) =
-    H₂ (proj₁ (rtn (_ ◼))) (proj₂ (rtn (_ ◼))) rest
-  RTN-ext-pmᵛ∷ᴾ-V {V = pair V₁ V₂} {K₀ = N₀ ∷ K₀} rtn H₂ (_ ~>⟨ () ⟩ rest)
-  RTN-ext-pmᵛ∷ᴾ-V {V = pair V₁ V₂} {K₀ = N₀ pm∷ K₀} rtn H₂ (_ ~>⟨ pm-pair-step ⟩ rest) =
-    RTN-ext-pmᵛ∷ᴾ-C (λ ch → rtn (_ ~>⟨ pm-pair-step ⟩ ch)) H₂ rest
-  RTN-ext-pmᵛ∷ᴾ-V {V = pair V₁ V₂} {K₀ = W₀ pmᵛ∷ K₀} rtn H₂ (_ ~>⟨ pmᵛ-pair-step ⟩ rest) =
-    RTN-ext-pmᵛ∷ᴾ-V (λ ch → rtn (_ ~>⟨ pmᵛ-pair-step ⟩ ch)) H₂ rest
+                → {W₁ : Γ ⊢ᵛ X'} {W₂ : Γ ⊢ᵛ Y'} → [ V ∥ graft L (W pmᵛ∷ K) ] ↠ᵏ [ pair W₁ W₂ ∥ ε ] → Redᵛ X' W₁ × Redᵛ Y' W₂
+  RTN-ext-pmᵛ∷ᴾ-V {V = var i} rtn H (_ ~>⟨ () ⟩ rest)
+  RTN-ext-pmᵛ∷ᴾ-V {V = lam N} rtn H (_ ~>⟨ () ⟩ rest)
+  RTN-ext-pmᵛ∷ᴾ-V {V = unit} rtn H (_ ~>⟨ () ⟩ rest)
+  RTN-ext-pmᵛ∷ᴾ-V {V = pm V W} rtn H (_ ~>⟨ pm-val-step ⟩ rest) =
+    RTN-ext-pmᵛ∷ᴾ-V (λ ch → rtn (_ ~>⟨ pm-val-step ⟩ ch)) H rest
+  RTN-ext-pmᵛ∷ᴾ-V {V = pair V W} {L = ε} rtn H (_ ~>⟨ pmᵛ-pair-step ⟩ rest) =
+    H (proj₁ (rtn (_ ◼))) (proj₂ (rtn (_ ◼))) rest
+  RTN-ext-pmᵛ∷ᴾ-V {V = pair V W} {L = N ∷ L} rtn H (_ ~>⟨ () ⟩ rest)
+  RTN-ext-pmᵛ∷ᴾ-V {V = pair V W} {L = N pm∷ L} rtn H (_ ~>⟨ pm-pair-step ⟩ rest) =
+    RTN-ext-pmᵛ∷ᴾ-C (λ ch → rtn (_ ~>⟨ pm-pair-step ⟩ ch)) H rest
+  RTN-ext-pmᵛ∷ᴾ-V {V = pair V₁ V₂} {L = W pmᵛ∷ L} rtn H (_ ~>⟨ pmᵛ-pair-step ⟩ rest) =
+    RTN-ext-pmᵛ∷ᴾ-V (λ ch → rtn (_ ~>⟨ pmᵛ-pair-step ⟩ ch)) H rest
 
 exp-pm-comp : {V : Γ ⊢ᵛ X `× Y} {M : (Γ ∙ X ∙ Y) ⊢ᶜ C}
             → Redᵛ (X `× Y) V → (∀ {V₁ V₂} → Redᵛ X V₁ → Redᵛ Y V₂ → Redᶜ C (sub-comp (sub-ex (sub-ex sub-id V₁) V₂) M))
@@ -459,7 +459,7 @@ wk-reflect* : {Γ' : Ctx} (π : Γ' ⊇ Γ) {σ : Cfg Γ B} {σ₁ : Cfg Γ' B}
             → wk-cfg π σ ↠ᵏ σ₁ → Σ[ σ' ∈ Cfg Γ B ] (σ ↠ᵏ σ') × (σ₁ ≡ wk-cfg π σ')
 wk-reflect* π (_ ◼) = _ , (_ ◼) , refl
 wk-reflect* π (_ ~>⟨ step ⟩ rest) with wk-reflect π step
-wk-reflect* π (_ ~>⟨ step ⟩ rest) | (σ₁ , σ-step , refl) =
+wk-reflect* π (_ ~>⟨ step ⟩ rest) | (σ , σ-step , refl) =
   let (σ' , σ₁-steps , eq₂) = wk-reflect* π rest
   in σ' , _ ~>⟨ σ-step ⟩ σ₁-steps , eq₂
 
@@ -469,9 +469,9 @@ pair-cfg-inv : {Γ' : Ctx} {A B : Ty} (π : Γ' ⊇ Γ) {σ' : Cfg Γ (A `× B)}
 pair-cfg-inv π {σ' = ⟨ M ∥ K ⟩}               ()
 pair-cfg-inv π {σ' = [ var i ∥ K ]}           ()
 pair-cfg-inv π {σ' = [ lam N ∥ K ]}           ()
-pair-cfg-inv π {σ' = [ pair V₁ V₂ ∥ ε ]}        refl = V₁ , V₂ , refl , refl , refl
-pair-cfg-inv π {σ' = [ pair V₁ V₂ ∥ N ∷ K ]}    ()
-pair-cfg-inv π {σ' = [ pair V₁ V₂ ∥ N pm∷ K ]}  ()
+pair-cfg-inv π {σ' = [ pair V W ∥ ε ]}        refl = V , W , refl , refl , refl
+pair-cfg-inv π {σ' = [ pair V W ∥ N ∷ K ]}    ()
+pair-cfg-inv π {σ' = [ pair V W ∥ N pm∷ K ]}  ()
 pair-cfg-inv π {σ' = [ pair V₁ V₂ ∥ W pmᵛ∷ K ]} ()
 pair-cfg-inv π {σ' = [ pm V W ∥ K ]}          ()
 pair-cfg-inv π {σ' = [ unit ∥ K ]}            ()
@@ -488,9 +488,9 @@ Red-wk (A `× B) π {V} (snV , f) = SN-wk π snV , g
     in Eq.subst (Redᵛ A) eqV₁ (Red-wk A π redV₁) , Eq.subst (Redᵛ B) eqV₂ (Red-wk B π redV₂)
 Red-wk (A `⇒ B) π {V} (snV , f) = SN-wk π snV , harrow
   where
-  harrow : ∀ {Γ''} (ρ : Γ'' ⊇ _) {W : Γ'' ⊢ᵛ A} → Redᵛ A W → Redᶜ B (app (wk-val ρ (wk-val π V)) W)
-  harrow ρ {W = W} redW =
-    Eq.subst (Redᶜ B) (sym (cong (λ x → app x W) (wk-val-trans V ρ π))) (f (wk-trans ρ π) redW)
+  harrow : ∀ {Γ''} (δ : Γ'' ⊇ _) {W : Γ'' ⊢ᵛ A} → Redᵛ A W → Redᶜ B (app (wk-val δ (wk-val π V)) W)
+  harrow δ {W = W} redW =
+    Eq.subst (Redᶜ B) (sym (cong (λ x → app x W) (wk-val-trans V δ π))) (f (wk-trans δ π) redW)
 
 sub-val-ins2-cancel : (V₁ : Γ ⊢ᵛ X) (V₂ : Γ ⊢ᵛ Y) (W : Γ ⊢ᵛ A)
                      → sub-val (sub-ex (sub-ex sub-id V₁) V₂) (wk-val (wk-wk (wk-wk wk-id)) W) ≡ W
@@ -637,9 +637,9 @@ step? [ var i ∥ K ]             = done (λ ())
 step? [ lam N ∥ K ]             = done (λ ())
 step? [ unit ∥ K ]              = done (λ ())
 step? [ pm V W ∥ K ]            = next pm-val-step
-step? [ pair V₁ V₂ ∥ ε ]        = done (λ ())
-step? [ pair V₁ V₂ ∥ N ∷ K ]    = done (λ ())
-step? [ pair V₁ V₂ ∥ N pm∷ K ]  = next pm-pair-step
+step? [ pair V W ∥ ε ]          = done (λ ())
+step? [ pair V W ∥ N ∷ K ]      = done (λ ())
+step? [ pair V W ∥ N pm∷ K ]    = next pm-pair-step
 step? [ pair V₁ V₂ ∥ W pmᵛ∷ K ] = next pmᵛ-pair-step
 
 eval-acc : {σ : Cfg Γ B} → SN σ → Σ[ σ' ∈ Cfg Γ B ] (σ ↠ᵏ σ') × Normal σ'

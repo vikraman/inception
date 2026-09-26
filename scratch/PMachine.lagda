@@ -85,71 +85,71 @@ data PStack : IsEmpty → Ty → Set where
 
     ⊠ :
            -----------------------
-           PStack empty Z₁
+           PStack empty Z
 
-    _∷_ :  Partial X → (K : PStack ∅? Z₁)
-           → {𝐛 : BotEq ∅? X Z₁}
+    _∷_ :  Partial X → (K : PStack ∅? Z)
+           → {𝐛 : BotEq ∅? X Z}
            --------------------------------------------------
-           → PStack non-empty Z₁
+           → PStack non-empty Z
 
 
 data PState : Ty → Set where
 
-    ⟨_⟩ :  PStack non-empty Z₁
+    ⟨_⟩ :  PStack non-empty Z
            ---------------------------
-           → PState Z₁
+           → PState Z
 
 \end{code}
 %</PStates>
 \begin{code}
 
-_⧺_ : PStack ∅? Z₁ → PStack non-empty Z₁' → PStack non-empty Z₁'
-⊠ ⧺ K₂ = K₂
-(W ∷ K₁) ⧺ K₂ = (W ∷ (K₁ ⧺ K₂)) {𝐛 = ○}
+_⧺_ : PStack ∅? Z → PStack non-empty Z₁' → PStack non-empty Z₁'
+⊠ ⧺ K = K
+(W ∷ K) ⧺ L = (W ∷ (K ⧺ L)) {𝐛 = ○}
 
-_⧻_ : (σ : PState Z₁) → PStack non-empty Z₁' → PState Z₁'
+_⧻_ : (σ : PState Z) → PStack non-empty Z₁' → PState Z₁'
 ⟨ σ ⟩ ⧻ K = ⟨ σ ⧺ K ⟩
 
 \end{code}
 %<*PTrans>
 \begin{code}
 
-data _→ᵖ_ {Z₁ : Ty} :
-        PState Z₁ → PState Z₁ → Set where
+data _→ᵖ_ {Z : Ty} :
+        PState Z → PState Z → Set where
 
     lookup→ :   {x : Γ ∋ X} {γ : MEnv Γ}
-                {K : PStack ∅? Z₁} {𝐛 : BotEq ∅? X Z₁}
+                {K : PStack ∅? Z} {𝐛 : BotEq ∅? X Z}
                 -------------------------------------------------
                 →  ⟨ (⇡ (var x) γ ∷ K) {𝐛 = 𝐛} ⟩
                    →ᵖ ⟨ (⭭ (lookup x γ) ∷ K) {𝐛 = 𝐛} ⟩
 
     lam→ :      {M : Comp (Γ ∙ X) Y} {γ  : MEnv Γ}
-                {K : PStack ∅? Z₁} {𝐛 : BotEq ∅? (X `⇒ Y) Z₁}
+                {K : PStack ∅? Z} {𝐛 : BotEq ∅? (X `⇒ Y) Z}
                 --------------------------------------------------------
                 →  ⟨ (⇡ (lam M) γ ∷ K) {𝐛 = 𝐛} ⟩
                    →ᵖ ⟨ (⭭ (cloᵛ M γ) ∷ K) {𝐛 = 𝐛} ⟩
 
     pair→ :     {γ : MEnv Γ} {V : Val Γ X₁} {W : Val Γ X₂}
-                {K : PStack ∅? Z₁} {𝐛 : BotEq ∅? (X₁ `× X₂) Z₁}
+                {K : PStack ∅? Z} {𝐛 : BotEq ∅? (X₁ `× X₂) Z}
                 ---------------------------------------------------------
                 →  ⟨ (⇡ (pair V W) γ ∷ K) {𝐛 = 𝐛} ⟩
                    →ᵖ ⟨ (⇡ V γ ∷ ((⇡ᴸ V W γ ∷ K) {𝐛 = 𝐛})) {𝐛 = ○} ⟩
 
     unit→ :     {γ  : MEnv Γ}
-                {K : PStack ∅? Z₁} {𝐛 : BotEq ∅? `𝟙 Z₁}
+                {K : PStack ∅? Z} {𝐛 : BotEq ∅? `𝟙 Z}
                 ----------------------------------------------------
                 →  ⟨ (⇡ unit γ ∷ K) {𝐛 = 𝐛} ⟩
                    →ᵖ ⟨ (⭭ unitᵛ ∷ K) {𝐛 = 𝐛} ⟩
 
     W∷l→ :      {γ : MEnv Γ} {𝐕 : MVal X₁} {V : Val Γ X₁}
-                {W : Val Γ X₂} {K : PStack ∅? Z₁}
-                {𝐛 : BotEq ∅? (X₁ `× X₂) Z₁}
+                {W : Val Γ X₂} {K : PStack ∅? Z}
+                {𝐛 : BotEq ∅? (X₁ `× X₂) Z}
                 ------------------------------------------------------
                 →  ⟨ (⭭ 𝐕 ∷ ((⇡ᴸ V W γ ∷ K) {𝐛 = 𝐛})) {𝐛 = ○} ⟩
                    →ᵖ ⟨ (⇡ W γ ∷ ((⇡ᴿ 𝐕 W γ ∷ K) {𝐛 = 𝐛})) {𝐛 = ○} ⟩
 
     W∷r→ :      {γ : MEnv Γ} {𝐕 : MVal X₁} {𝐖 : MVal X₂} {W : Val Γ X₂}
-                {K : PStack ∅? Z₁} {𝐛 : BotEq ∅? (X₁ `× X₂) Z₁}
+                {K : PStack ∅? Z} {𝐛 : BotEq ∅? (X₁ `× X₂) Z}
                 -----------------------------------------------------------------
                 →  ⟨ (⭭ 𝐖 ∷ ((⇡ᴿ 𝐕 W γ ∷ K) {𝐛 = 𝐛})) {𝐛 = ○} ⟩
                    →ᵖ ⟨ (⭭ pairᵛ 𝐕 𝐖 ∷ K) {𝐛 = 𝐛} ⟩
@@ -158,17 +158,17 @@ data _→ᵖ_ {Z₁ : Ty} :
 %</PTrans>
 \begin{code}
 
-data _↠ᵛ_ {Z₁ : Ty} : PState Z₁ → PState Z₁ → Set where
+data _↠ᵛ_ {Z : Ty} : PState Z → PState Z → Set where
 
-  _→ᵖ⟨_⟩． : (σ : PState Z₁) → {σ' : PState Z₁} → (laststep : σ →ᵖ σ') → σ ↠ᵛ σ'
+  _→ᵖ⟨_⟩． : (σ : PState Z) → {σ' : PState Z} → (laststep : σ →ᵖ σ') → σ ↠ᵛ σ'
 
-  _→ᵖ⟨_⟩_ : (σ : PState Z₁) → {σ' σ'' : PState Z₁} → σ →ᵖ σ' → σ' ↠ᵛ σ'' → σ ↠ᵛ σ''
+  _→ᵖ⟨_⟩_ : (σ : PState Z) → {σ' σ'' : PState Z} → σ →ᵖ σ' → σ' ↠ᵛ σ'' → σ ↠ᵛ σ''
 
-_⨾_ : {σ₁ σ₂ σ₃ : PState Z₁} → (σ₁ ↠ᵛ σ₂) → (σ₂ ↠ᵛ σ₃) → (σ₁ ↠ᵛ σ₃)
+_⨾_ : {σ₁ σ₂ σ₃ : PState Z} → (σ₁ ↠ᵛ σ₂) → (σ₂ ↠ᵛ σ₃) → (σ₁ ↠ᵛ σ₃)
 _⨾_ (σ →ᵖ⟨ s ⟩．) ss = σ →ᵖ⟨ s ⟩ ss
 _⨾_ (σ →ᵖ⟨ s ⟩ ss₁) ss₂ = σ →ᵖ⟨ s ⟩ (ss₁ ⨾ ss₂)
 
-⟨_⟩⧻_ : {σ : PState Z₁} → {σ' : PState Z₁} → (s : σ →ᵖ σ') → (K : PStack non-empty Z₁') → (σ ⧻ K) →ᵖ (σ' ⧻ K)
+⟨_⟩⧻_ : {σ : PState Z} → {σ' : PState Z} → (s : σ →ᵖ σ') → (K : PStack non-empty Z₁') → (σ ⧻ K) →ᵖ (σ' ⧻ K)
 ⟨ lookup→ ⟩⧻ K = lookup→
 ⟨ lam→ ⟩⧻ K = lam→
 ⟨ pair→ ⟩⧻ K = pair→
@@ -176,7 +176,7 @@ _⨾_ (σ →ᵖ⟨ s ⟩ ss₁) ss₂ = σ →ᵖ⟨ s ⟩ (ss₁ ⨾ ss₂)
 ⟨ W∷l→ ⟩⧻ K = W∷l→
 ⟨ W∷r→ ⟩⧻ K = W∷r→
 
-⟪_⟫⧻_ : {σ : PState Z₁} → {σ' : PState Z₁} → (ss : σ ↠ᵛ σ') → (K : PStack non-empty Z₁') → (σ ⧻ K) ↠ᵛ (σ' ⧻ K)
+⟪_⟫⧻_ : {σ : PState Z} → {σ' : PState Z} → (ss : σ ↠ᵛ σ') → (K : PStack non-empty Z₁') → (σ ⧻ K) ↠ᵛ (σ' ⧻ K)
 ⟪ _ →ᵖ⟨ s ⟩． ⟫⧻ K =  _ →ᵖ⟨ ⟨ s ⟩⧻ K ⟩．
 ⟪ _ →ᵖ⟨ s ⟩ ss ⟫⧻ K =   _ →ᵖ⟨ ⟨ s ⟩⧻ K ⟩ (⟪ ss ⟫⧻ K)
 
@@ -208,7 +208,7 @@ normalise-val (pair V W) γ =
   record { result = pairᵛ (result IH₁) (result IH₂) ; steps = trace }
 normalise-val unit γ = record { result = unitᵛ ; steps = ⟨ ⇡ unit γ ∷ ⊠ ⟩ →ᵖ⟨ unit→ ⟩． }
 
-determinismⱽ : {σ σ' : PState Z₁} → (s₁ s₂ : σ →ᵖ σ') → (s₁ ≡ s₂)
+determinismⱽ : {σ σ' : PState Z} → (s₁ s₂ : σ →ᵖ σ') → (s₁ ≡ s₂)
 determinismⱽ lookup→ lookup→ = refl
 determinismⱽ lam→ lam→ = refl
 determinismⱽ pair→ pair→ = refl
@@ -247,7 +247,7 @@ module Correct (R : Set) {k₀ : SubSem.⟦_⟧ R ℛ → R} where
 
 %<*SemPStack>
 \begin{code}
-  ⟦_⟧ᵖˢ : (K : PStack non-empty Z₁) → ⟦ Z₁ ⟧
+  ⟦_⟧ᵖˢ : (K : PStack non-empty Z) → ⟦ Z ⟧
   ⟦ ((⭭ 𝐖) ∷ ⊠) {𝐛 = ▿} ⟧ᵖˢ = ⟦ 𝐖 ⟧ⱽ
   ⟦ (⇡ W γ ∷ ⊠) {𝐛 = ▿} ⟧ᵖˢ = ⟦ W ⟧ᵛ ⟦ γ ⟧ᴱ
   ⟦ (⇡ᴸ V W γ ∷ ⊠) {𝐛 = ▿} ⟧ᵖˢ = ⟦ pair V W ⟧ᵛ ⟦ γ ⟧ᴱ
@@ -261,32 +261,32 @@ module Correct (R : Set) {k₀ : SubSem.⟦_⟧ R ℛ → R} where
 
 %<*SemPState>
 \begin{code}
-  ⟦_⟧ᵖꟴ : (σ : PState Z₁) → ⟦ Z₁ ⟧
+  ⟦_⟧ᵖꟴ : (σ : PState Z) → ⟦ Z ⟧
   ⟦ ⟨ K ⟩ ⟧ᵖꟴ = ⟦ K ⟧ᵖˢ
 \end{code}
 %</SemPState>
 
 \begin{code}
 
-  data PStackGood : PStack non-empty Z₁ → Set where
+  data PStackGood : PStack non-empty Z → Set where
 
 
     ▿ : (W : Partial X) → PStackGood ((W ∷ ⊠) {𝐛 = ▿})
 
-    lhs-good :   {b : IsEmpty} {K : PStack b Z₁}
+    lhs-good :   {b : IsEmpty} {K : PStack b Z}
               → {Wₕₒₗₑ : Val Γ X} {W₂ : Val Γ Y} {γ : MEnv Γ} {W : Partial X}
-              → {𝐛 : BotEq b (X `× Y) Z₁}
+              → {𝐛 : BotEq b (X `× Y) Z}
               → PStackGood (((⇡ᴸ Wₕₒₗₑ W₂ γ) ∷ K) {𝐛 = 𝐛})
               → (eq : ⟦ W ⟧ᵀ ≡ ⟦ Wₕₒₗₑ ⟧ᵛ ⟦ γ ⟧ᴱ) → PStackGood ((W ∷ ((⇡ᴸ Wₕₒₗₑ W₂ γ) ∷ K) {𝐛 = 𝐛}) {𝐛 = ○})
 
-    rhs-good :   {b : IsEmpty} {K : PStack b Z₁}
+    rhs-good :   {b : IsEmpty} {K : PStack b Z}
               → {𝐕 : MVal X} {Wₕₒₗₑ : Val Γ Y} {γ : MEnv Γ} {W : Partial Y}
-              → {𝐛 : BotEq b (X `× Y) Z₁}
+              → {𝐛 : BotEq b (X `× Y) Z}
               → PStackGood (((⇡ᴿ 𝐕 Wₕₒₗₑ γ) ∷ K) {𝐛 = 𝐛})
               → (eq : ⟦ W ⟧ᵀ ≡ ⟦ Wₕₒₗₑ ⟧ᵛ ⟦ γ ⟧ᴱ) → PStackGood ((W ∷ ((⇡ᴿ 𝐕 Wₕₒₗₑ γ) ∷ K) {𝐛 = 𝐛}) {𝐛 = ○})
 
   data PStateGood : (σ : PState X) → Set where
-      g[_] : {K : PStack non-empty Z₁} → PStackGood K → PStateGood ⟨ K ⟩
+      g[_] : {K : PStack non-empty Z} → PStackGood K → PStateGood ⟨ K ⟩
 
   lookup-good : (i : Γ ∋ X) → (γ : MEnv Γ) → ⟦ lookup i γ ⟧ⱽ ≡ ⟦ i ⟧ᵐ ⟦ γ ⟧ᴱ
   lookup-good here (γ · x) = refl

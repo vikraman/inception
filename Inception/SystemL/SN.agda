@@ -32,17 +32,17 @@ data _↦_ {Γ Δ : Ctx} : Γ ⊢ Δ → Γ ⊢ Δ → Set where
   snd-step : {A B : Ty} {V : Γ ⊢ᵛ A ∣ Δ} {W : Γ ⊢ᵛ B ∣ Δ} {K : Γ ∣ B ⊢ᵏ Δ}
            → cut (A `× B) (ret (pair V W)) (snd K) ↦ cut B (ret W) K
 
-  inl-step : {A B : Ty} {V : Γ ⊢ᵛ A ∣ Δ} {K₁ : Γ ∣ A ⊢ᵏ Δ} {K₂ : Γ ∣ B ⊢ᵏ Δ}
-           → cut (A `+ B) (ret (inl V)) (case K₁ K₂) ↦ cut A (ret V) K₁
+  inl-step : {A B : Ty} {V : Γ ⊢ᵛ A ∣ Δ} {K : Γ ∣ A ⊢ᵏ Δ} {L : Γ ∣ B ⊢ᵏ Δ}
+           → cut (A `+ B) (ret (inl V)) (case K L) ↦ cut A (ret V) K
 
-  inr-step : {A B : Ty} {W : Γ ⊢ᵛ B ∣ Δ} {K₁ : Γ ∣ A ⊢ᵏ Δ} {K₂ : Γ ∣ B ⊢ᵏ Δ}
-           → cut (A `+ B) (ret (inr W)) (case K₁ K₂) ↦ cut B (ret W) K₂
+  inr-step : {A B : Ty} {W : Γ ⊢ᵛ B ∣ Δ} {K : Γ ∣ A ⊢ᵏ Δ} {L : Γ ∣ B ⊢ᵏ Δ}
+           → cut (A `+ B) (ret (inr W)) (case K L) ↦ cut B (ret W) L
 
 --------------------------------------------------------------------------
 -- accessibility
 
 data SN {Γ Δ} (M : Γ ⊢ Δ) : Set where
-  sn : (∀ {M₁} → M ↦ M₁ → SN M₁) → SN M
+  sn : (∀ {N} → M ↦ N → SN N) → SN M
 
 --------------------------------------------------------------------------
 -- reducibility candidates
@@ -67,11 +67,11 @@ CoRedᵏ A         (covar i)    = ⊤
 CoRedᵏ A {Γ} {Δ} (μ̃ M)       =
   ∀ {Γ' Δ'} (π : Γ' ⊇ Γ) (σ : Δ' ⊇ Δ) {V : Γ' ⊢ᵛ A ∣ Δ'}
   → Redᵛ A V → SN (sub-cmd (sub-ex sub-id V) cosub-id (wk-cmd (wk-cong π) σ M))
-CoRedᵏ `⊥        tp           = ⊤
-CoRedᵏ (A `× B)  (fst K)      = CoRedᵏ A K
-CoRedᵏ (A `× B)  (snd K)      = CoRedᵏ B K
-CoRedᵏ (A `+ B)  (case K₁ K₂) = CoRedᵏ A K₁ × CoRedᵏ B K₂
-CoRedᵏ (A `⇒ B)  (app V K)    = Redᵛ A V × CoRedᵏ B K
+CoRedᵏ `⊥        tp         = ⊤
+CoRedᵏ (A `× B)  (fst K)    = CoRedᵏ A K
+CoRedᵏ (A `× B)  (snd K)    = CoRedᵏ B K
+CoRedᵏ (A `+ B)  (case K L) = CoRedᵏ A K × CoRedᵏ B L
+CoRedᵏ (A `⇒ B)  (app V K)  = Redᵛ A V × CoRedᵏ B K
 
 --------------------------------------------------------------------------
 -- weakening preserves reducibility
@@ -97,7 +97,7 @@ CoRed-wk A             π σ {K = covar i}   r  = tt
 CoRed-wk `⊥            π σ {K = tp}        r  = tt
 CoRed-wk (A `× B)      π σ {K = fst K}     r  = CoRed-wk A π σ {K = K} r
 CoRed-wk (A `× B)      π σ {K = snd K}     r  = CoRed-wk B π σ {K = K} r
-CoRed-wk (A `+ B)      π σ {K = case K₁ K₂} (r₁ , r₂) = CoRed-wk A π σ {K = K₁} r₁ , CoRed-wk B π σ {K = K₂} r₂
+CoRed-wk (A `+ B)      π σ {K = case K L} (r₁ , r₂) = CoRed-wk A π σ {K = K} r₁ , CoRed-wk B π σ {K = L} r₂
 CoRed-wk (A `⇒ B)      π σ {K = app V K}   (rv , rk)  = Red-wk A π σ rv , CoRed-wk B π σ {K = K} rk
 CoRed-wk A {Γ} {Δ} π σ {K = μ̃ M} f =
   λ π' σ' {V} rv →
@@ -133,13 +133,13 @@ Ortho {A `⇒ B} {V = lam M} {K = covar i} rv rk = sn λ ()
 Ortho {A `⇒ B} {V = lam M} {K = app W K} rv (rw , rk) =
   sn λ { app-step → Eq.subst (λ x → SN (cut B (letv W x) K)) (wk-tm-id M) (rv wk-id wk-id rw rk) }
 Ortho {A `⇒ B} {V = lam M} {K = μ̃ N} rv rk = Ortho-μ̃ rv rk
-Ortho {A `+ B} {V = var i} {K = case K₁ K₂} rv rk = sn λ ()
+Ortho {A `+ B} {V = var i} {K = case K L} rv rk = sn λ ()
 Ortho {A `+ B} {V = var i} {K = μ̃ M} rv rk = Ortho-μ̃ rv rk
 Ortho {A `+ B} {V = inl V} {K = covar i} rv rk = sn λ ()
-Ortho {A `+ B} {V = inl V} {K = case K₁ K₂} rv (ra , rb) = sn λ { inl-step → Ortho rv ra }
+Ortho {A `+ B} {V = inl V} {K = case K L} rv (ra , rb) = sn λ { inl-step → Ortho rv ra }
 Ortho {A `+ B} {V = inl V} {K = μ̃ M} rv rk = Ortho-μ̃ rv rk
 Ortho {A `+ B} {V = inr V} {K = covar i} rv rk = sn λ ()
-Ortho {A `+ B} {V = inr V} {K = case K₁ K₂} rv (ra , rb) = sn λ { inr-step → Ortho rv rb }
+Ortho {A `+ B} {V = inr V} {K = case K L} rv (ra , rb) = sn λ { inr-step → Ortho rv rb }
 Ortho {A `+ B} {V = inr V} {K = μ̃ M} rv rk = Ortho-μ̃ rv rk
 
 --------------------------------------------------------------------------
@@ -196,7 +196,7 @@ Fundamental-cotm θ φ rθ rφ (covar i)   = rφ .cored i
 Fundamental-cotm θ φ rθ rφ (app V K)   = Fundamental-val θ φ rθ rφ V , Fundamental-cotm θ φ rθ rφ K
 Fundamental-cotm θ φ rθ rφ (fst K)     = Fundamental-cotm θ φ rθ rφ K
 Fundamental-cotm θ φ rθ rφ (snd K)     = Fundamental-cotm θ φ rθ rφ K
-Fundamental-cotm θ φ rθ rφ (case K₁ K₂) = Fundamental-cotm θ φ rθ rφ K₁ , Fundamental-cotm θ φ rθ rφ K₂
+Fundamental-cotm θ φ rθ rφ (case K L) = Fundamental-cotm θ φ rθ rφ K , Fundamental-cotm θ φ rθ rφ L
 Fundamental-cotm θ φ rθ rφ (μ̃ M)       =
   λ π σ {V} rv →
     Eq.subst SN (sym (fund-mut-wk-eq θ φ π σ V M))
@@ -244,8 +244,8 @@ step? (cut A (ret (var i)) (μ̃ M))           = next μ̃-step
 step? (cut `⊥ (ret (var i)) tp)             = done (λ ())
 step? (cut (A `× B) (ret (var i)) (fst K))  = done (λ ())
 step? (cut (A `× B) (ret (var i)) (snd K))  = done (λ ())
-step? (cut (A `+ B) (ret (var i)) (case K₁ K₂)) = done (λ ())
-step? (cut (A `⇒ B) (ret (var i)) (app V K))    = done (λ ())
+step? (cut (A `+ B) (ret (var i)) (case K L)) = done (λ ())
+step? (cut (A `⇒ B) (ret (var i)) (app V K))  = done (λ ())
 
 step? (cut `Unit (ret unit) (covar j)) = done (λ ())
 step? (cut `Unit (ret unit) (μ̃ M))     = next μ̃-step
@@ -255,11 +255,11 @@ step? (cut (A `× B) (ret (pair V W)) (fst K))   = next fst-step
 step? (cut (A `× B) (ret (pair V W)) (snd K))   = next snd-step
 step? (cut (A `× B) (ret (pair V W)) (μ̃ M))     = next μ̃-step
 
-step? (cut (A `+ B) (ret (inl V)) (covar j))    = done (λ ())
-step? (cut (A `+ B) (ret (inl V)) (case K₁ K₂)) = next inl-step
+step? (cut (A `+ B) (ret (inl V)) (covar j))  = done (λ ())
+step? (cut (A `+ B) (ret (inl V)) (case K L)) = next inl-step
 step? (cut (A `+ B) (ret (inl V)) (μ̃ M))          = next μ̃-step
-step? (cut (A `+ B) (ret (inr W)) (covar j))    = done (λ ())
-step? (cut (A `+ B) (ret (inr W)) (case K₁ K₂)) = next inr-step
+step? (cut (A `+ B) (ret (inr W)) (covar j))  = done (λ ())
+step? (cut (A `+ B) (ret (inr W)) (case K L)) = next inr-step
 step? (cut (A `+ B) (ret (inr W)) (μ̃ M))          = next μ̃-step
 
 step? (cut (A `⇒ B) (ret (lam M)) (covar j)) = done (λ ())

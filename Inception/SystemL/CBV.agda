@@ -53,7 +53,7 @@ mutual
   ⟦ app V K ⟧ᵏ = < ⟦ K ⟧ᵏ , ⟦ V ⟧ᵛ > ； η ； [ R ]^ cbv
   ⟦ fst K ⟧ᵏ = ⟦ K ⟧ᵏ ； curry′ (assocl ； proj₁ ； ev)
   ⟦ snd K ⟧ᵏ = ⟦ K ⟧ᵏ ； curry′ (assocl ； P.map proj₁ id ； ev)
-  ⟦ case K₁ K₂ ⟧ᵏ = < ⟦ K₁ ⟧ᵏ , ⟦ K₂ ⟧ᵏ > ； uncurry′ S.[_,_]
+  ⟦ case K L ⟧ᵏ = < ⟦ K ⟧ᵏ , ⟦ L ⟧ᵏ > ； uncurry′ S.[_,_]
   ⟦ μ̃ M ⟧ᵏ = curry′ (shuffle ； ⟦ M ⟧ᶜ)
   ⟦ tp ⟧ᵏ = const idf
 
@@ -93,7 +93,7 @@ mutual
   wk-cotm-coh ρ σ (app V K) rewrite wk-val-coh ρ σ V | wk-cotm-coh ρ σ K = refl
   wk-cotm-coh ρ σ (fst K) rewrite wk-cotm-coh ρ σ K = refl
   wk-cotm-coh ρ σ (snd K) rewrite wk-cotm-coh ρ σ K = refl
-  wk-cotm-coh ρ σ (case K₁ K₂) rewrite wk-cotm-coh ρ σ K₁ | wk-cotm-coh ρ σ K₂ = refl
+  wk-cotm-coh ρ σ (case K L) rewrite wk-cotm-coh ρ σ K | wk-cotm-coh ρ σ L = refl
   wk-cotm-coh ρ σ (μ̃ M) rewrite wk-cmd-coh (wk-cong ρ) σ M = refl
   wk-cotm-coh ρ σ tp = refl
 
@@ -159,7 +159,7 @@ mutual
   sub-cotm-coh θ φ (app V K) rewrite sub-val-coh θ φ V | sub-cotm-coh θ φ K = refl
   sub-cotm-coh θ φ (fst K) rewrite sub-cotm-coh θ φ K = refl
   sub-cotm-coh θ φ (snd K) rewrite sub-cotm-coh θ φ K = refl
-  sub-cotm-coh θ φ (case K₁ K₂) rewrite sub-cotm-coh θ φ K₁ | sub-cotm-coh θ φ K₂ = refl
+  sub-cotm-coh θ φ (case K L) rewrite sub-cotm-coh θ φ K | sub-cotm-coh θ φ L = refl
   sub-cotm-coh θ φ (μ̃ M) rewrite sub-cmd-coh (sub-ex (sub-wk (wk-wk wk-id) wk-id θ) (var here)) (cosub-wk (wk-wk wk-id) wk-id φ) M = refl
   sub-cotm-coh θ φ tp = refl
 
@@ -213,5 +213,5 @@ mutual
   eqCmd (app-beta M V K) = refl
   eqCmd (fst-beta V W K) = refl
   eqCmd (snd-beta V W K) = refl
-  eqCmd (inl-beta V K₁ K₂) = refl
-  eqCmd (inr-beta W K₁ K₂) = refl
+  eqCmd (inl-beta V K L) = refl
+  eqCmd (inr-beta W K L) = refl

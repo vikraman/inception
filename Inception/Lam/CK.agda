@@ -76,7 +76,7 @@ wk-cfg π ⟨ M ∥ K ⟩ = ⟨ wk-comp π M ∥ wk-stk π K ⟩
 
 graft : Γ ⊢ᵏ A ⇒ D → Γ ⊢ᵏ D ⇒ C → Γ ⊢ᵏ A ⇒ C
 graft ε        K = K
-graft (N ∷ K₀) K = N ∷ graft K₀ K
+graft (N ∷ L) K  = N ∷ graft L K
 
 Redᵛ : (A : Ty) → Γ ⊢ᵛ A → Set
 Redᶜ : (A : Ty) → Γ ⊢ᶜ A → Set
@@ -92,33 +92,33 @@ Red→SNᶜ A M (snM , ret) = snM
 Red→RTNᶜ : (A : Ty) (M : Γ ⊢ᶜ A) → Redᶜ A M → (∀ {V} → ⟨ M ∥ ε ⟩ ↠ᵏ ⟨ return V ∥ ε ⟩ → Redᵛ A V)
 Red→RTNᶜ A M (snM , ret) = ret
 
-SN-ext∷-C : {E : Ty} {M : Γ ⊢ᶜ A} {K₀ : Γ ⊢ᵏ A ⇒ D} {N : (Γ ∙ D) ⊢ᶜ E} {K : Γ ⊢ᵏ E ⇒ C}
-          → SN ⟨ M ∥ K₀ ⟩
-          → (∀ {V} → ⟨ M ∥ K₀ ⟩ ↠ᵏ ⟨ return V ∥ ε ⟩ → Redᵛ D V)
+SN-ext∷-C : {E : Ty} {M : Γ ⊢ᶜ A} {L : Γ ⊢ᵏ A ⇒ D} {N : (Γ ∙ D) ⊢ᶜ E} {K : Γ ⊢ᵏ E ⇒ C}
+          → SN ⟨ M ∥ L ⟩
+          → (∀ {V} → ⟨ M ∥ L ⟩ ↠ᵏ ⟨ return V ∥ ε ⟩ → Redᵛ D V)
           → (∀ {V} → Redᵛ D V → SN ⟨ sub-comp (sub-ex sub-id V) N ∥ K ⟩)
-          → SN ⟨ M ∥ graft K₀ (N ∷ K) ⟩
-SN-ext∷-C {M = push M₀ N₀} (sn f) rtn H =
+          → SN ⟨ M ∥ graft L (N ∷ K) ⟩
+SN-ext∷-C {M = push M N} (sn f) rtn H =
   sn (λ { push-step → SN-ext∷-C (f push-step) (λ ch → rtn (_ ~>⟨ push-step ⟩ ch)) H })
 SN-ext∷-C {M = app (var i) V} (sn f) rtn H = sn (λ ())
-SN-ext∷-C {M = app (lam N₀) V} (sn f) rtn H =
+SN-ext∷-C {M = app (lam N) V} (sn f) rtn H =
   sn (λ { app-lam-step → SN-ext∷-C (f app-lam-step) (λ ch → rtn (_ ~>⟨ app-lam-step ⟩ ch)) H })
-SN-ext∷-C {M = return V} {K₀ = ε} (sn f) rtn H =
+SN-ext∷-C {M = return V} {L = ε} (sn f) rtn H =
   sn (λ { return-step → H (rtn (_ ◼)) })
-SN-ext∷-C {M = return V} {K₀ = N₀ ∷ K₀} (sn f) rtn H =
+SN-ext∷-C {M = return V} {L = N ∷ L} (sn f) rtn H =
   sn (λ { return-step → SN-ext∷-C (f return-step) (λ ch → rtn (_ ~>⟨ return-step ⟩ ch)) H })
 
-RTN-ext∷-C : {E : Ty} {M : Γ ⊢ᶜ A} {K₀ : Γ ⊢ᵏ A ⇒ D} {N : (Γ ∙ D) ⊢ᶜ E} {K : Γ ⊢ᵏ E ⇒ C}
-           → (∀ {V} → ⟨ M ∥ K₀ ⟩ ↠ᵏ ⟨ return V ∥ ε ⟩ → Redᵛ D V)
+RTN-ext∷-C : {E : Ty} {M : Γ ⊢ᶜ A} {L : Γ ⊢ᵏ A ⇒ D} {N : (Γ ∙ D) ⊢ᶜ E} {K : Γ ⊢ᵏ E ⇒ C}
+           → (∀ {V} → ⟨ M ∥ L ⟩ ↠ᵏ ⟨ return V ∥ ε ⟩ → Redᵛ D V)
            → (∀ {V} → Redᵛ D V → ∀ {W} → ⟨ sub-comp (sub-ex sub-id V) N ∥ K ⟩ ↠ᵏ ⟨ return W ∥ ε ⟩ → Redᵛ C W)
-           → {W : Γ ⊢ᵛ C} → ⟨ M ∥ graft K₀ (N ∷ K) ⟩ ↠ᵏ ⟨ return W ∥ ε ⟩ → Redᵛ C W
-RTN-ext∷-C {M = push M₀ N₀} rtn H₂ (_ ~>⟨ push-step ⟩ rest) =
-  RTN-ext∷-C (λ ch → rtn (_ ~>⟨ push-step ⟩ ch)) H₂ rest
-RTN-ext∷-C {M = app (var i) V} rtn H₂ (_ ~>⟨ () ⟩ rest)
-RTN-ext∷-C {M = app (lam N₀) V} rtn H₂ (_ ~>⟨ app-lam-step ⟩ rest) =
-  RTN-ext∷-C (λ ch → rtn (_ ~>⟨ app-lam-step ⟩ ch)) H₂ rest
-RTN-ext∷-C {M = return V} {K₀ = ε} rtn H₂ (_ ~>⟨ return-step ⟩ rest) = H₂ (rtn (_ ◼)) rest
-RTN-ext∷-C {M = return V} {K₀ = N₀ ∷ K₀} rtn H₂ (_ ~>⟨ return-step ⟩ rest) =
-  RTN-ext∷-C (λ ch → rtn (_ ~>⟨ return-step ⟩ ch)) H₂ rest
+           → {W : Γ ⊢ᵛ C} → ⟨ M ∥ graft L (N ∷ K) ⟩ ↠ᵏ ⟨ return W ∥ ε ⟩ → Redᵛ C W
+RTN-ext∷-C {M = push M N} rtn H (_ ~>⟨ push-step ⟩ rest) =
+  RTN-ext∷-C (λ ch → rtn (_ ~>⟨ push-step ⟩ ch)) H rest
+RTN-ext∷-C {M = app (var i) V} rtn H (_ ~>⟨ () ⟩ rest)
+RTN-ext∷-C {M = app (lam N) V} rtn H (_ ~>⟨ app-lam-step ⟩ rest) =
+  RTN-ext∷-C (λ ch → rtn (_ ~>⟨ app-lam-step ⟩ ch)) H rest
+RTN-ext∷-C {M = return V} {L = ε} rtn H (_ ~>⟨ return-step ⟩ rest) = H (rtn (_ ◼)) rest
+RTN-ext∷-C {M = return V} {L = N ∷ L} rtn H (_ ~>⟨ return-step ⟩ rest) =
+  RTN-ext∷-C (λ ch → rtn (_ ~>⟨ return-step ⟩ ch)) H rest
 
 exp-push : {M : Γ ⊢ᶜ A} {N : (Γ ∙ A) ⊢ᶜ B}
          → Redᶜ A M → (∀ {V : Γ ⊢ᵛ A} → Redᵛ A V → Redᶜ B (sub-comp (sub-ex sub-id V) N))
@@ -142,14 +142,14 @@ Red-varᵛ (A `⇒ B) i = λ π {W} rw → sn (λ ()) , λ { (_ ~>⟨ () ⟩ s) 
 
 Red-wk : (A : Ty) {Γ' : Ctx} (π : Γ' ⊇ Γ) {V : Γ ⊢ᵛ A} → Redᵛ A V → Redᵛ A (wk-val π V)
 Red-wk `Unit    π r = tt
-Red-wk (A `⇒ B) π {V} f ρ {W} redW =
+Red-wk (A `⇒ B) π {V} f δ {W} redW =
   Eq.subst (Redᶜ B)
            (begin
-             app (wk-val (wk-trans ρ π) V) W
-           ≡˘⟨ cong (λ x → app x W) (wk-val-trans V ρ π) ⟩
-             app (wk-val ρ (wk-val π V)) W
+             app (wk-val (wk-trans δ π) V) W
+           ≡˘⟨ cong (λ x → app x W) (wk-val-trans V δ π) ⟩
+             app (wk-val δ (wk-val π V)) W
            ∎)
-           (f (wk-trans ρ π) redW)
+           (f (wk-trans δ π) redW)
 
 record RedSub (θ : Γ ⊢ Δ) : Set where
   field red : (i : Δ ∋ A) → Redᵛ A (sub-mem θ i)
