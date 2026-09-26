@@ -34,22 +34,33 @@ jobs:
         uses: haskell-actions/setup@v2
         with:
           ghc-version: ${{ env.GHC_VERSION }}
-          cabal-version: latest
 
-      - name: Cache cabal
-        id: cabal-cache
-        uses: actions/cache@v6
+      - name: Restore cabal
+        id: cabal
+        uses: actions/cache/restore@v6
         with:
           path: |
             ${{ steps.setup.outputs.cabal-store }}
-            ~/.cabal/packages
-            ~/.cabal/script-builds
+            ~/.cabal
+            ~/.cache/cabal
           key: ${{ runner.os }}-ghc-${{ env.GHC_VERSION }}-agdalint-${{ hashFiles('scripts/AgdaLint.hs') }}
           restore-keys: ${{ runner.os }}-ghc-${{ env.GHC_VERSION }}-agdalint-
 
-      - name: Update package index
-        if: steps.cabal-cache.outputs.cache-hit != 'true'
-        run: cabal update
+      - name: Build linter
+        if: steps.cabal.outputs.cache-hit != 'true'
+        run: |
+          cabal update
+          cabal build scripts/AgdaLint.hs
+
+      - name: Save cabal
+        if: steps.cabal.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: |
+            ${{ steps.setup.outputs.cabal-store }}
+            ~/.cabal
+            ~/.cache/cabal
+          key: ${{ steps.cabal.outputs.cache-primary-key }}
 
       - name: Lint
         shell: bash
