@@ -321,7 +321,7 @@ module TopLevel {ℛ : Ty} {k₀ : ⟦ ℛ ⟧ → R} where
                                       push-eq-at z = sym (push-eq K (⟦ M ⟧ᶜ (⟦ γ ⟧ᴱ , z)))
 
                                       push-eq-fun : (λ z → ⟦ M ⟧ᶜ (⟦ γ ⟧ᴱ , z) (λ y → ⟦ K ⟧ᶜˢ (λ k → k y) k₀)) ≡ (λ z → ⟦ K ⟧ᶜˢ (λ k → ⟦ M ⟧ᶜ (⟦ γ ⟧ᴱ , z) k) k₀)
-                                      push-eq-fun = extensionality push-eq-at
+                                      push-eq-fun = funext push-eq-at
 
   jump-eq : (𝐖 : MVal `ℓ) → ⟦ 𝐖 ⟧ⱽ ≡ ⟦ jump-to-state 𝐖 ⟧ᶜꟴ
   jump-eq (jumpᵛ _ _ _) = refl
@@ -365,7 +365,7 @@ module TopLevel {ℛ : Ty} {k₀ : ⟦ ℛ ⟧ → R} where
     (< idf , ⟦ M ⟧ᶜ > ； τ ； ⟦ N ⟧ᶜ *) ⟦ γ ⟧ᴱ ⟦ K ⟧ᴷ
      ≡⟨ refl ⟩
      ⟦ M ⟧ᶜ ⟦ γ ⟧ᴱ (λ z → ⟦ N ⟧ᶜ (⟦ γ ⟧ᴱ , z) (λ y → ⟦ K ⟧ᶜˢ (λ k₁ → k₁ y) k₀))
-     ≡⟨ cong (⟦ M ⟧ᶜ ⟦ γ ⟧ᴱ) (extensionality (λ x → sym (push-eq K (⟦ N ⟧ᶜ (⟦ γ ⟧ᴱ , x))))) ⟩
+     ≡⟨ cong (⟦ M ⟧ᶜ ⟦ γ ⟧ᴱ) (funext (λ x → sym (push-eq K (⟦ N ⟧ᶜ (⟦ γ ⟧ᴱ , x))))) ⟩
      ⟦ M ⟧ᶜ ⟦ γ ⟧ᴱ (λ y → ⟦ K ⟧ᶜˢ (λ k₁ → ⟦ N ⟧ᶜ (⟦ γ ⟧ᴱ , y) k₁) k₀)
      ≡⟨ refl ⟩
      ⟦ M ⟧ᶜ ⟦ γ ⟧ᴱ ⟦ < N ； γ >∷ K ⟧ᴷ ∎

@@ -17,12 +17,12 @@ pairs = ["VW", "MN", "KL", "𝐕𝐖", "θφ", "πδ", "XY", "ΓΔ"]
 # rule levels
 [rules]
 asciiArrow = "error"
-asciiSubscript = { level = "error", skip = ["Inception/Prelude.agda"] }
-prime = { level = "error", skip = ["Inception/Prelude.agda", "Inception/Monad/", "Inception/Cont/"] }
+asciiSubscript = "error"
+prime = { level = "error", skip = ["Inception/Monad/", "Inception/Cont/"] }
 prefixType = "error"
 bannedName = "error"
-typeVarLetter = { level = "error", skip = ["Inception/Prelude.agda", "Inception/Monad/", "Inception/Cont/"] }
-sortLetter = { level = "warning", skip = ["Inception/Prelude.agda", "Inception/Monad/", "Inception/Cont/"] }
+typeVarLetter = { level = "error", skip = ["Inception/Monad/", "Inception/Cont/"] }
+sortLetter = { level = "warning", skip = ["Inception/Monad/", "Inception/Cont/"] }
 unneededSubscript = "warning"
 pairSubscript = "warning"
 unusedVariable = "warning"
@@ -30,7 +30,7 @@ lineLength = "off"
 leadingArrow = "off"
 mutualBlock = "off"
 importPublic = "off"
-asciiPrime = { level = "warning", skip = ["Inception/Prelude.agda"] }
+asciiPrime = "warning"
 
 [style]
 sectionWidth = 74
