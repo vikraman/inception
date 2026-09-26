@@ -37,7 +37,7 @@ import           Data.List                  (find, isPrefixOf, mapAccumL,
 import qualified Data.List                  as List
 import           Data.Map.Strict            (Map)
 import qualified Data.Map.Strict            as Map
-import           Data.Either                (fromRight)
+import           Data.Bifunctor             (first)
 import           Data.Maybe                 (catMaybes, fromMaybe, isJust,
                                              listToMaybe, mapMaybe)
 import           Data.Set                   (Set)
@@ -467,26 +467,27 @@ codeMask fmt = case fmt of
           | inside = let stay = not (close t) in (stay, stay)
           | otherwise = (open t, False)
 
-lexFile :: FilePath -> Text -> [Line]
-lexFile path src = zipWith3 mkLine [1 ..] rawLines mask
+lexFile :: FilePath -> Text -> Either String [Line]
+lexFile path src = do
+  lexed <- first errorBundlePretty (runParser (oneColumnTabs *> tokensP) path masked)
+  let byLine = Map.fromListWith (flip (++)) [(posLine (tokPos t), [t]) | t <- lexed]
+      insideComment = Set.fromList [n | t <- lexed, tokKind t `elem` [Comment, Pragma], n <- [posLine (tokPos t) + 1 .. tokEndLine t]]
+      mkLine n t isCode
+        | not isCode = Line n t [] Prose
+        | otherwise = Line n t toks role
+        where
+          toks = Map.findWithDefault [] n byLine
+          role
+            | any ((`notElem` [Comment, Pragma]) . tokKind) toks = Code
+            | not (null toks) || Set.member n insideComment = CommentOnly
+            | otherwise = Blank
+  pure (zipWith3 mkLine [1 ..] rawLines mask)
   where
     rawLines = T.splitOn "\n" src
     mask = codeMask (formatOf path) rawLines
     masked = T.intercalate "\n" [if m then t else "" | (t, m) <- zip rawLines mask]
-    lexed = fromRight [] (runParser (oneColumnTabs *> tokensP) path masked)
     -- tab is one column
     oneColumnTabs = updateParserState (\st -> st {statePosState = (statePosState st) {pstateTabWidth = pos1}})
-    byLine = Map.fromListWith (flip (++)) [(posLine (tokPos t), [t]) | t <- lexed]
-    insideComment = Set.fromList [n | t <- lexed, tokKind t `elem` [Comment, Pragma], n <- [posLine (tokPos t) + 1 .. tokEndLine t]]
-    mkLine n t isCode
-      | not isCode = Line n t [] Prose
-      | otherwise = Line n t toks role
-      where
-        toks = Map.findWithDefault [] n byLine
-        role
-          | any ((`notElem` [Comment, Pragma]) . tokKind) toks = Code
-          | not (null toks) || Set.member n insideComment = CommentOnly
-          | otherwise = Blank
 
 ------------------------------------------------------------------------
 -- structure
@@ -547,9 +548,11 @@ firstText :: Line -> Maybe Text
 firstText l = tokText <$> listToMaybe (codeTokens l)
 
 
-analyse :: FilePath -> Text -> SourceFile
-analyse path src =
-  SourceFile
+analyse :: FilePath -> Text -> Either String SourceFile
+analyse path src = do
+  ls <- lexFile path src
+  let code = filter ((`elem` [Code, Blank]) . lineRole) ls
+  pure SourceFile
     { srcPath = path
     , srcLines = ls
     , srcModule = listToMaybe (mapMaybe (fmap tokText . runTokens (word "module" *> name) . codeTokens) code)
@@ -563,9 +566,6 @@ analyse path src =
         Set.fromList [tokText n | l <- code, firstText l == Just "module", b <- binders (codeTokens l), n <- binderNames b]
     , srcTokenCounts = Map.fromListWith (+) [(tokText t, 1) | l <- code, t <- wordsOf l]
     }
-  where
-    ls = lexFile path src
-    code = filter ((`elem` [Code, Blank]) . lineRole) ls
 
 -- line token parsers
 type TokParser = Parsec Void [Token]
@@ -1120,7 +1120,7 @@ loadSources root cfg = do
       rel = makeRelative root
       keep p = not (any (`Glob.match` rel p) excludes) && not (".#" `isPrefixOf` takeFileName p)
       paths = nubOrd (filter keep found)
-  forM (List.sort paths) $ \p -> analyse (rel p) <$> TIO.readFile p
+  forM (List.sort paths) $ \p -> either failWith pure . analyse (rel p) =<< TIO.readFile p
 
 enabled :: Config -> SourceFile -> RuleId -> Maybe Level
 enabled cfg f r =
