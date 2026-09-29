@@ -1,0 +1,80 @@
+name: setup-agda
+description: install agda and the standard library, and restore interface files
+
+inputs:
+  agda-version:
+    required: true
+  stdlib-version:
+    required: true
+  cache-name:
+    description: interface cache to use, falling back to the others listed after it
+    required: true
+  cache-fallbacks:
+    description: other interface caches to restore from, newline separated
+    required: false
+    default: ""
+
+outputs:
+  cache-key:
+    description: key to save the interface cache under
+    value: ${{ steps.keys.outputs.key }}
+  cache-paths:
+    description: paths of the interface cache
+    value: ${{ steps.keys.outputs.paths }}
+
+runs:
+  using: composite
+  steps:
+    - name: Cache toolchain
+      id: toolchain
+      uses: actions/cache@v6
+      with:
+        path: |
+          ~/.local/bin/agda
+          ~/.agda/agda-stdlib-${{ inputs.stdlib-version }}
+          !~/.agda/agda-stdlib-${{ inputs.stdlib-version }}/_build
+        key: ${{ runner.os }}-agda-${{ inputs.agda-version }}-stdlib-${{ inputs.stdlib-version }}
+
+    - name: Install Agda
+      if: steps.toolchain.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        mkdir -p "$HOME/.local/bin"
+        curl -fsSL "https://github.com/agda/agda/releases/download/v${{ inputs.agda-version }}/Agda-v${{ inputs.agda-version }}-linux.tar.xz" | tar -xJ -C "$HOME/.local/bin"
+
+    - name: Install stdlib
+      if: steps.toolchain.outputs.cache-hit != 'true'
+      shell: bash
+      run: |
+        mkdir -p "$HOME/.agda"
+        curl -fsSL "https://github.com/agda/agda-stdlib/archive/v${{ inputs.stdlib-version }}.tar.gz" | tar -xz -C "$HOME/.agda"
+
+    - name: Register stdlib
+      shell: bash
+      run: |
+        echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+        echo "$HOME/.agda/agda-stdlib-${{ inputs.stdlib-version }}/standard-library.agda-lib" > "$HOME/.agda/libraries"
+
+    - name: Interface cache keys
+      id: keys
+      shell: bash
+      run: |
+        prefix="${{ runner.os }}-agdai-${{ inputs.agda-version }}-stdlib-${{ inputs.stdlib-version }}"
+        {
+          echo "key=$prefix-${{ inputs.cache-name }}-${{ github.run_id }}-${{ github.run_attempt }}"
+          echo "restore<<EOF"
+          echo "$prefix-${{ inputs.cache-name }}-"
+          for name in ${{ inputs.cache-fallbacks }}; do echo "$prefix-$name-"; done
+          echo "EOF"
+          echo "paths<<EOF"
+          echo "_build"
+          echo "$HOME/.agda/agda-stdlib-${{ inputs.stdlib-version }}/_build"
+          echo "EOF"
+        } >> "$GITHUB_OUTPUT"
+
+    - name: Restore interface files
+      uses: actions/cache/restore@v6
+      with:
+        path: ${{ steps.keys.outputs.paths }}
+        key: ${{ steps.keys.outputs.key }}
+        restore-keys: ${{ steps.keys.outputs.restore }}
