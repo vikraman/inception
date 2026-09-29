@@ -314,3 +314,4 @@ TSWLatexianTemp*
 *.agdai
 MAlonzo/**
 html/**
+!html/Agda.css
