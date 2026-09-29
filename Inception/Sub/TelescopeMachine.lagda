@@ -50,7 +50,7 @@ mutual
               ----------------------------------------------------
               → MClo Γ (X `⇒ Y)
 
-    label :   (i : Γ ∋ `ℓ)
+    label :   (x : Γ ∋ `ℓ)
               ----------------------------------------------------
               → MClo Γ `ℓ
 
@@ -68,6 +68,12 @@ mutual
     _·﹝_╎_﹞ :  MEnv Γ → Comp Γ X → CStack X
                ----------------------------------------------
                → MEnv (Γ ∙ `ℓ)
+
+wk-mclo : Wk Γ Δ → MClo Δ X → MClo Γ X
+wk-mclo π unit = unit
+wk-mclo π (pair 𝐖₁ 𝐖₂) = pair (wk-mclo π 𝐖₁) (wk-mclo π 𝐖₂)
+wk-mclo π (lam M) = lam (wk-comp (wk-cong π) M)
+wk-mclo π (label x) = label (wk-mem π x)
 
 data CState : Set where
 
@@ -93,15 +99,52 @@ data CState : Set where
 -- lookup-label (there x) (γ · 𝐖) = lookup-label x γ
 -- lookup-label (there x) (γ ·﹝ M ╎ stack ﹞) = lookup-label x γ
 
--- lookup-label : Γ ∋ `ℓ → MEnv {ℛ = ℛ} Γ → CState {ℛ = ℛ}
--- lookup-label here (γ · label x) = lookup-label x γ
--- lookup-label here (γ ·﹝ M ╎ cstack ﹞) = ⟨ M ╎ γ ╎ cstack ⟩
--- lookup-label (there x) (γ · 𝐖) = lookup-label x γ
--- lookup-label (there x) (γ ·﹝ M ╎ stack ﹞) = lookup-label x γ
+lookup : Γ ∋ X → MEnv Γ → MClo Γ X
+lookup here (γ · 𝐖) = wk-mclo (wk-wk wk-id) 𝐖
+lookup here (γ ·﹝ 𝐖 ╎ cstack ﹞) = label here
+lookup (there x) (γ · 𝐖) = wk-mclo (wk-wk wk-id) (lookup x γ)
+lookup (there x) (γ ·﹝ 𝐖 ╎ cstack ﹞) = wk-mclo (wk-wk wk-id) (lookup x γ)
 
--- lookup : Γ ∋ X → MEnv {ℛ = ℛ} Γ → Value {ℛ = ℛ} X
--- lookup here (γ · 𝐖) = 𝐖
--- lookup (there x) (γ · 𝐖) = lookup x γ
+lookup-label : Γ ∋ `ℓ → MEnv Γ → CState
+lookup-label here (γ · label x) = lookup-label x γ
+lookup-label here (γ ·﹝ M ╎ cstack ﹞) = ⟨ M ╎ γ ╎ cstack ⟩
+lookup-label (there x) (γ · 𝐖) = lookup-label x γ
+lookup-label (there x) (γ ·﹝ M ╎ stack ﹞) = lookup-label x γ
+
+lam-to-comp :  MClo Γ (X `⇒ Y) → Comp (Γ ∙ X) Y
+lam-to-comp (lam M) = M
+
+jump-to-state : MClo Γ `ℓ → MEnv Γ → CState
+jump-to-state (label x) γ = lookup-label x γ
+
+eval : Val Γ X → MEnv Γ → MClo Γ X
+eval (var i) γ = lookup i γ
+eval (lam M) γ = lam M
+eval (pair V W) γ = pair (eval V γ) (eval W γ) --pairᵛ (eval V γ) (eval W γ)
+eval unit γ = unit
+
+eval-jump : Val Γ `ℓ → MEnv Γ → CState
+eval-jump W γ = jump-to-state (eval W γ) γ
+
+proj₁-mclo : MClo Γ (X₁ `× X₂) → MClo Γ X₁
+proj₁-mclo (pair 𝐖₁ 𝐖₂) = 𝐖₁
+
+proj₂-mclo : MClo Γ (X₁ `× X₂) → MClo Γ X₂
+proj₂-mclo (pair 𝐖₁ 𝐖₂) = 𝐖₂
+
+eval₁ : Val Γ (X₁ `× X₂) → MEnv Γ → MClo Γ X₁
+eval₁ W γ = proj₁-mclo (eval W γ)
+
+eval₂ : Val Γ (X₁ `× X₂) → MEnv Γ → MClo Γ X₂
+eval₂ W γ = proj₂-mclo (eval W γ)
+
+eval-app : Val Γ (X `⇒ Y) → Val Γ X → MEnv Γ
+           → CStack Y → CState
+eval-app V W γ cstack =
+  let
+    M  = lam-to-comp (eval V γ)
+  in
+  ⟨ M ╎ γ · eval W γ ╎ cstack ⟩
 
 \end{code}
 % %</MEnv>
@@ -181,40 +224,42 @@ data CState : Set where
 % \end{code}
 %
 % %<*CTrans>
-% \begin{code}
-%
-% data _→ᶜ_ {ℛ : Ty} : CState {ℛ = ℛ} → CState {ℛ = ℛ} → Set where
-%
-%   eval→ :    {W : Pure Γ X} {γ : MEnv Γ} {cstack : CStack X}
-%              -------------------------------------------
-%              →  ⟨ return W ╎ γ ╎ cstack ⟩ →ᶜ ⟨ eval W γ ╎ cstack ⟩
-%
-%   return→ :  {𝐖 : Value X} {M : Comp (Γ ∙ X) Y} {γ : MEnv Γ} {cstack : CStack Y}
-%              --------------------------------------------------------------
-%              →  ⟨ 𝐖 ╎ < M ； γ >∷ cstack ⟩ →ᶜ ⟨ M ╎ γ · 𝐖 ╎ cstack ⟩
-%
-%   push→ :    {M₁ : Comp Γ X} {M₂ : Comp (Γ ∙ X) Y} {γ : MEnv Γ} {cstack : CStack Y}
-%              ----------------------------------------------------------------
-%              →  ⟨ push M₁ M₂ ╎ γ ╎ cstack ⟩ →ᶜ ⟨ M₁ ╎ γ ╎ < M₂ ； γ >∷ cstack ⟩
-%
-%   sub→ :     {M₁ : Comp (Γ ∙ `ℓ) X} {M₂ : Comp Γ X} {γ : MEnv Γ} {cstack : CStack X}
-%              ----------------------------------------------------------------
-%              →  ⟨ sub M₁ M₂ ╎ γ ╎ cstack ⟩ →ᶜ ⟨ M₁ ╎ γ · (jumpᵛ M₂ γ cstack) ╎ cstack ⟩
-%
-%   var→ :     {W : Pure Γ `ℓ} {γ : MEnv Γ} {cstack : CStack X}
-%              ------------------------------------------
-%              →  ⟨ var W ╎ γ ╎ cstack ⟩ →ᶜ eval-jump W γ
-%
-%   pmᶜ→ :     {W : Pure Γ (X `× Y)} {γ : MEnv Γ}
-%              {M : Comp (Γ ∙ X ∙ Y) Z} {cstack : CStack Z}
-%              -------------------------------------------------------------
-%              →  ⟨ pm W M ╎ γ ╎ cstack ⟩ →ᶜ ⟨ M ╎ γ · eval₁ W γ · eval₂ W γ ╎ cstack ⟩
-%
-%   app→ :     {W₁ : Pure Γ (X `⇒ Y)} {W₂ : Pure Γ X} {γ : MEnv Γ} {cstack : CStack Y}
-%              ----------------------------------------------------------------
-%              →  ⟨ app W₁ W₂ ╎ γ ╎ cstack ⟩ →ᶜ eval-clo W₁ W₂ γ cstack
-%
-% \end{code}
+
+\begin{code}
+
+data _→ᶜ_ : CState → CState → Set where
+
+  eval→ :    {W : Val Γ X} {γ : MEnv Γ} {cstack : CStack X}
+             -------------------------------------------
+             →  ⟨ return W ╎ γ ╎ cstack ⟩ →ᶜ ⟨ eval W γ ； γ ╎ cstack ⟩
+
+  return→ :  {𝐖 : MClo Γ X} {M : Comp (Γ₁ ∙ X) Y} {γ : MEnv Γ} {γ₁ : MEnv Γ₁} {cstack : CStack Y} {π : Wk Γ₁ Γ}
+             --------------------------------------------------------------
+             →  ⟨ 𝐖 ； γ ╎ < M ； γ₁ >∷ cstack ⟩ →ᶜ ⟨ M ╎ γ₁ · wk-mclo π 𝐖 ╎ cstack ⟩
+
+  push→ :    {M₁ : Comp Γ X} {M₂ : Comp (Γ ∙ X) Y} {γ : MEnv Γ} {cstack : CStack Y}
+             ----------------------------------------------------------------
+             →  ⟨ push M₁ M₂ ╎ γ ╎ cstack ⟩ →ᶜ ⟨ M₁ ╎ γ ╎ < M₂ ； γ >∷ cstack ⟩
+
+  sub→ :     {M₁ : Comp (Γ ∙ `ℓ) X} {M₂ : Comp Γ X} {γ : MEnv Γ} {cstack : CStack X}
+             ----------------------------------------------------------------
+             →  ⟨ sub M₁ M₂ ╎ γ ╎ cstack ⟩ →ᶜ ⟨ M₁ ╎ γ ·﹝ M₂ ╎ cstack ﹞ ╎ cstack ⟩
+
+  var→ :     {W : Val Γ `ℓ} {γ : MEnv Γ} {cstack : CStack X}
+             ------------------------------------------
+             →  ⟨ var W ╎ γ ╎ cstack ⟩ →ᶜ eval-jump W γ
+
+  pmᶜ→ :     {W : Val Γ (X `× Y)} {γ : MEnv Γ}
+             {M : Comp (Γ ∙ X ∙ Y) Z} {cstack : CStack Z}
+             -------------------------------------------------------------
+             →  ⟨ pm W M ╎ γ ╎ cstack ⟩ →ᶜ ⟨ M ╎ γ · eval₁ W γ · (wk-mclo (wk-wk wk-id) (eval₂ W γ)) ╎ cstack ⟩
+
+  app→ :     {W₁ : Val Γ (X `⇒ Y)} {W₂ : Val Γ X} {γ : MEnv Γ} {cstack : CStack Y}
+             ----------------------------------------------------------------
+             →  ⟨ app W₁ W₂ ╎ γ ╎ cstack ⟩ →ᶜ eval-app W₁ W₂ γ cstack
+
+\end{code}
+
 % %</CTrans>
 % \begin{code}
 %
