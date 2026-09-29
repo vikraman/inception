@@ -1,7 +1,9 @@
 \begin{code}
 {-# OPTIONS --no-postfix-projections #-}
 
-module Inception.Sub.TelescopeMachine where
+open import Inception.Sub.Syntax using (Ty)
+
+module Inception.Sub.TelescopeMachine (ℛ : Ty) where
 
 open import Inception.Sub.Syntax
 open import Inception.Prelude
@@ -25,22 +27,22 @@ infixl 27 _·_
 
 mutual
 
-  data CStack {ℛ : Ty} : (X : Ty) → Set where
+  data CStack : (X : Ty) → Set where
 
     ◻ :        CStack ℛ
 
-    <_；_>∷_ :  Comp (Γ ∙ Y) X → (γ : MEnv {ℛ = ℛ} Γ)
-                → (pstack : CStack {ℛ = ℛ} X)
+    <_；_>∷_ :  Comp (Γ ∙ Y) X → (γ : MEnv Γ)
+                → (pstack : CStack X)
                 ------------------------------------
                 → CStack Y
 
-  data MClo {ℛ : Ty} : Ctx → Ty → Set where
+  data MClo : Ctx → Ty → Set where
 
     unit :
               -------------------
-              MClo {ℛ = ℛ} Γ `𝟙
+              MClo Γ `𝟙
 
-    pair :    (𝐖₁ : MClo {ℛ = ℛ} Γ X₁) → (𝐖₂ : MClo {ℛ = ℛ} Γ X₂)
+    pair :    (𝐖₁ : MClo Γ X₁) → (𝐖₂ : MClo Γ X₂)
               -------------------------------------------------
               → MClo Γ (X₁ `× X₂)
 
@@ -53,29 +55,29 @@ mutual
               → MClo Γ `ℓ
 
 
-  data MEnv {ℛ : Ty} : Ctx → Set where
+  data MEnv : Ctx → Set where
 
     ⋄ :
                --------------
-               MEnv {ℛ = ℛ} ε
+               MEnv ε
 
-    _·_ :      MEnv {ℛ = ℛ} Γ → MClo {ℛ = ℛ} Γ X
+    _·_ :      MEnv Γ → MClo Γ X
                ----------------------------------
-               → MEnv {ℛ = ℛ} (Γ ∙ X)
+               → MEnv (Γ ∙ X)
 
-    _·﹝_╎_﹞ :  MEnv {ℛ = ℛ} Γ → Comp Γ X → CStack {ℛ = ℛ} X
+    _·﹝_╎_﹞ :  MEnv Γ → Comp Γ X → CStack X
                ----------------------------------------------
-               → MEnv {ℛ = ℛ} (Γ ∙ `ℓ)
+               → MEnv (Γ ∙ `ℓ)
 
-data CState {ℛ : Ty} : Set where
+data CState : Set where
 
-  ⟨_；_╎_⟩ :  (𝐖 : MClo {ℛ = ℛ} Γ X) → (γ : MEnv {ℛ = ℛ} Γ) → (cstack : CStack {ℛ = ℛ} X)
+  ⟨_；_╎_⟩ :  (𝐖 : MClo Γ X) → (γ : MEnv Γ) → (cstack : CStack X)
               ---------------------------------------------------
-              → CState {ℛ = ℛ}
+              → CState
 
-  ⟨_╎_╎_⟩ :  (M : Comp Γ X) → (γ : MEnv {ℛ = ℛ} Γ) → (cstack : CStack {ℛ = ℛ} X)
+  ⟨_╎_╎_⟩ :  (M : Comp Γ X) → (γ : MEnv Γ) → (cstack : CStack X)
              -----------------------------------------------------------------
-             → CState {ℛ = ℛ}
+             → CState
 
 -- record CTriple {ℛ : Ty} : Set where
 --   field
