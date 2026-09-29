@@ -1,90 +1,76 @@
 module Inception.Prelude where
 
-open import Level
 open import Function
+open import Level
 
 open import Agda.Primitive using (Level)
 
-open import Data.Product using (proj₁; proj₂; _,_; <_,_>; curry; _×_; Σ; ∃; Σ-syntax; ∃-syntax) public
 open import Data.Empty using (⊥)
+open import Data.Product using (proj₁; proj₂; _,_; <_,_>; curry; _×_; Σ; ∃; Σ-syntax; ∃-syntax) public
 
 import Relation.Binary.PropositionalEquality as Eq
 open Eq using (_≡_; refl; cong; cong₂; cong-app; dcong₂; sym; trans; subst; subst₂; cong-∘)
 open Eq.≡-Reasoning
 
-import Relation.Binary.HeterogeneousEquality as H
-
 --postulate
---  TODO : ∀ {a} {A : Set a} -> A
+--  TODO : ∀ {a} {A : Set a} → A
 
 {-# BUILTIN REWRITE _≡_ #-}
 
 module _ where
   postulate
     I : Set
-    i0 i1 : I
-    seg : i0 ≡ i1
+    i₀ i₁ : I
+    seg : i₀ ≡ i₁
 
   module _ {p} {P : Set p} where
     postulate
-      I-rec : (p0 p1 : P) (p : p0 ≡ p1) -> I -> P
-      I-rec-i0 : ∀ {p0} {p1} {p} -> I-rec p0 p1 p i0 ≡ p0
+      I-rec : (p₀ p₁ : P) (p : p₀ ≡ p₁) → I → P
+      I-rec-i0 : ∀ {p₀} {p₁} {p} → I-rec p₀ p₁ p i₀ ≡ p₀
       {-# REWRITE I-rec-i0 #-}
-      I-rec-i1 : ∀ {p0} {p1} {p} -> I-rec p0 p1 p i1 ≡ p1
+      I-rec-i1 : ∀ {p₀} {p₁} {p} → I-rec p₀ p₁ p i₁ ≡ p₁
       {-# REWRITE I-rec-i1 #-}
-      I-rec-seg : ∀ {p0} {p1} {p} -> cong (I-rec p0 p1 p) seg ≡ p
+      I-rec-seg : ∀ {p₀} {p₁} {p} → cong (I-rec p₀ p₁ p) seg ≡ p
 
-funext : ∀ {a b} {A : Set a} {B : Set b} {f g : A -> B} -> ((x : A) -> f x ≡ g x) -> f ≡ g
-funext {f = f} {g = g} H = cong (flip \a -> I-rec (f a) (g a) (H a)) seg
+funext : ∀ {a b} {A : Set a} {B : Set b} {f g : A → B} → ((x : A) → f x ≡ g x) → f ≡ g
+funext {f = f} {g = g} H = cong (flip λ a → I-rec (f a) (g a) (H a)) seg
 
-happly : ∀ {a b} {A : Set a} {B : Set b} {f g : A -> B} -> f ≡ g -> (x : A) -> f x ≡ g x
+happly : ∀ {a b} {A : Set a} {B : Set b} {f g : A → B} → f ≡ g → (x : A) → f x ≡ g x
 happly p x = cong (_$ x) p
 
-happly-funext : ∀ {a b} {A : Set a} {B : Set b} {f g : A -> B} (H : (x : A) -> f x ≡ g x) -> ∀ x -> happly (funext H) x ≡ H x
-happly-funext {f = f} {g = g} H x = let open Eq.≡-Reasoning in
+happly-funext : ∀ {a b} {A : Set a} {B : Set b} {f g : A → B} (H : (x : A) → f x ≡ g x) → ∀ x → happly (funext H) x ≡ H x
+happly-funext {f = f} {g = g} H x =
   happly (funext H) x                                         ≡⟨ refl ⟩
-  cong (_$ x) (cong (flip \a -> I-rec (f a) (g a) (H a)) seg) ≡⟨ sym (cong-∘ seg) ⟩
-  cong ((_$ x) ∘ (flip \a -> I-rec (f a) (g a) (H a))) seg    ≡⟨ I-rec-seg ⟩
+  cong (_$ x) (cong (flip λ a → I-rec (f a) (g a) (H a)) seg) ≡⟨ sym (cong-∘ seg) ⟩
+  cong ((_$ x) ∘ (flip λ a → I-rec (f a) (g a) (H a))) seg    ≡⟨ I-rec-seg ⟩
   H x ∎
 
 -- categorical combinators
 infixr 4 _；_
 
-_；_ : ∀ {ℓ} {A B C : Set ℓ} -> (A -> B) -> (B -> C) -> (A -> C)
+_；_ : ∀ {ℓ} {A B C : Set ℓ} → (A → B) → (B → C) → (A → C)
 f ； g = g ∘ f
 
-idf : ∀ {ℓ} {A : Set ℓ} -> A -> A
+idf : ∀ {ℓ} {A : Set ℓ} → A → A
 idf a = a
 
-assocl : ∀ {ℓ} {A B C : Set ℓ} -> A × (B × C) -> (A × B) × C
+assocl : ∀ {ℓ} {A B C : Set ℓ} → A × (B × C) → (A × B) × C
 assocl (a , (b , c)) = (a , b) , c
 
-shuffle : ∀ {ℓ} {A B C : Set ℓ} -> (A × B) × C -> (A × C) × B
+shuffle : ∀ {ℓ} {A B C : Set ℓ} → (A × B) × C → (A × C) × B
 shuffle ((a , b) , c) = (a , c) , b
 
 -- functions
 infixr 20 _^_
 
-_^_ : ∀ {r a} (R : Set r) (A : Set a) -> Set (r ⊔ a)
-R ^ A = A -> R
+_^_ : ∀ {r a} (R : Set r) (A : Set a) → Set (r ⊔ a)
+R ^ A = A → R
 
-[_]^_ : ∀ {r a b} (R : Set r) {A : Set a} {B : Set b} -> (A -> B) -> (R ^ B) -> (R ^ A)
-[ R ]^ f = \k a -> k (f a)
+[_]^_ : ∀ {r a b} (R : Set r) {A : Set a} {B : Set b} → (A → B) → (R ^ B) → (R ^ A)
+[ R ]^ f = λ k a → k (f a)
 
-ev : ∀ {r a} {R : Set r} {A : Set a} -> R ^ A × A -> R
+ev : ∀ {r a} {R : Set r} {A : Set a} → R ^ A × A → R
 ev (f , a) = f a
-
--- use the funext above
-postulate
-  extensionality : ∀ {A B : Set} {f g : A → B}
-    → (∀ (x : A) → f x ≡ g x)
-      -----------------------
-    → f ≡ g
-
--- https://stackoverflow.com/questions/56304634/is-functional-extensionality-with-dependent-functions-consistent
-extensionality' : ∀ {A : Set}{B : A → Set}{f g : ∀ a → B a} → (∀ x → f x ≡ g x) → f ≡ g
-extensionality' {A}{B}{f}{g} e =
-    H.≅-to-≡ (H.cong (λ f x → proj₂ (f x)) (H.≡-to-≅ (extensionality λ a → cong (a ,_) (e a))))
 
 dcong₂-irr : {a b c : Level} → ∀ {A : Set a} {B : A → Set b} {C : Set c}
             (f : (x : A) → .(B x) → C) {x₁ x₂} .{y₁ y₂}
@@ -116,7 +102,7 @@ module RTC {A : Set} (_~>_ : A → A → Set) where
 
     _◼ : (a : A) → a ~>* a
 
-    _~>⟨_⟩_ : (a : A) → {a' a'' : A} → a ~> a' → a' ~>* a'' → a ~>* a''
+    _~>⟨_⟩_ : (a : A) → {b c : A} → a ~> b → b ~>* c → a ~>* c
 
   infix  25 _◼
   infixr 20 _~>⟨_⟩_

@@ -1,8 +1,9 @@
 module Inception.Sub.Examples where
 
-open import Inception.Sub.Syntax
-open import Inception.Sub.Machine `𝟙
 open import Inception.Prelude
+open import Inception.Sub.Syntax
+
+open import Inception.Sub.Machine `𝟙
 open Inception.Prelude.RTC renaming (_~>⟨_⟩_ to _→ᶜ⟨_⟩_)
 
 open import Data.Product using (_,_)
