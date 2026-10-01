@@ -113,9 +113,9 @@ wk-trans-assoc-η {π₁ = wk-cong π₁} {π₂ = wk-wk π₂} {π₃ = π₃} 
 wk-trans-assoc-η {π₁ = wk-wk π₁} {π₂ = π₂} {π₃ = π₃}                   = cong wk-wk (wk-trans-assoc-η {π₁ = π₁} {π₂ = π₂} {π₃ = π₃})
 {-# REWRITE wk-trans-assoc-η #-}
 
-wk-emp-uniq : (π : Γ ⊇ ε) → π ≡ wk-emp
-wk-emp-uniq wk-ε      = refl
-wk-emp-uniq (wk-wk π) = cong wk-wk (wk-emp-uniq π)
+wk-emp-η : (π : Γ ⊇ ε) → π ≡ wk-emp
+wk-emp-η wk-ε      = refl
+wk-emp-η (wk-wk π) = cong wk-wk (wk-emp-η π)
 
 wk-absurd : Γ ⊇ (Δ ∙ X) → Δ ⊇ Γ → ⊥
 wk-absurd (wk-cong π) (wk-cong δ) = wk-absurd π δ
@@ -123,10 +123,22 @@ wk-absurd (wk-cong π) (wk-wk δ)   = wk-absurd (wk-trans δ (wk-wk π)) wk-id
 wk-absurd (wk-wk π)   (wk-cong δ) = wk-absurd π (wk-wk δ)
 wk-absurd {X = X} (wk-wk π) (wk-wk δ) = wk-absurd π (wk-wk (wk-prev {X = X} (wk-wk δ)))
 
-wk-id-id : {π : Γ ⊇ Γ} → π ≡ wk-id
-wk-id-id {π = wk-ε} = refl
-wk-id-id {π = wk-cong π} rewrite wk-id-id {π = π} = refl
-wk-id-id {π = wk-wk π} = ql (wk-absurd π wk-id) (wk-wk π ≡ wk-id)
+wk-id-η : (π : Γ ⊇ Γ) → π ≡ wk-id
+wk-id-η wk-ε        = refl
+wk-id-η (wk-cong π) = cong wk-cong (wk-id-η π)
+wk-id-η (wk-wk π)   = ql (wk-absurd π wk-id) (wk-wk π ≡ wk-id)
+
+wk-mem-id-η : (π : Γ ⊇ Γ) (i : Γ ∋ X) → wk-mem π i ≡ i
+wk-mem-id-η π i = cong (λ δ → wk-mem δ i) (wk-id-η π)
+{-# REWRITE wk-mem-id-η #-}
+
+wk-trans-idl-η : (π : Γ ⊇ Γ) (δ : Γ ⊇ Δ) → wk-trans π δ ≡ δ
+wk-trans-idl-η π δ = cong (λ ρ → wk-trans ρ δ) (wk-id-η π)
+{-# REWRITE wk-trans-idl-η #-}
+
+wk-trans-idr-η : (π : Γ ⊇ Δ) (δ : Δ ⊇ Δ) → wk-trans π δ ≡ π
+wk-trans-idr-η π δ = cong (wk-trans π) (wk-id-η δ)
+{-# REWRITE wk-trans-idr-η #-}
 
 wk-merge : (π₁ : Γ ⊇ Δ) (π₂ : Γ ⊇ Ψ)
          → Σ[ Ξ ∈ Ctx ] Σ[ π ∈ Γ ⊇ Ξ ] Σ[ π₃ ∈ Ξ ⊇ Δ ] Σ[ π₄ ∈ Ξ ⊇ Ψ ] ((π₁ ≡ wk-trans π π₃) × (π₂ ≡ wk-trans π π₄))

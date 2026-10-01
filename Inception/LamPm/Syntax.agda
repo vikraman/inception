@@ -114,6 +114,14 @@ mutual
 
 {-# REWRITE wk-val-id-β wk-comp-id-β #-}
 
+wk-val-id-η : (π : Γ ⊇ Γ) (V : Γ ⊢ᵛ X) → wk-val π V ≡ V
+wk-val-id-η π V = cong (λ δ → wk-val δ V) (wk-id-η π)
+
+wk-comp-id-η : (π : Γ ⊇ Γ) (M : Γ ⊢ᶜ X) → wk-comp π M ≡ M
+wk-comp-id-η π M = cong (λ δ → wk-comp δ M) (wk-id-η π)
+
+{-# REWRITE wk-val-id-η wk-comp-id-η #-}
+
 mutual
   wk-val-wk-η : (V : Γ ⊢ᵛ X) → (π : Ψ ⊇ Δ) → (δ : Δ ⊇ Γ) → wk-val π (wk-val δ V) ≡ wk-val (wk-trans π δ) V
   wk-val-wk-η (var i) π δ    = refl
@@ -137,6 +145,10 @@ sub-wk-id-β : (θ : Γ ⊢ Δ) → sub-wk wk-id θ ≡ θ
 sub-wk-id-β sub-ε        = refl
 sub-wk-id-β (sub-ex θ V) = cong₂ sub-ex (sub-wk-id-β θ) refl
 {-# REWRITE sub-wk-id-β #-}
+
+sub-wk-id-η : (π : Γ ⊇ Γ) (θ : Γ ⊢ Δ) → sub-wk π θ ≡ θ
+sub-wk-id-η π θ = cong (λ δ → sub-wk δ θ) (wk-id-η π)
+{-# REWRITE sub-wk-id-η #-}
 
 sub-wk-wk-η : (π : Γ ⊇ Ψ) (δ : Ψ ⊇ Ξ) (θ : Ξ ⊢ Δ)
              → sub-wk π (sub-wk δ θ) ≡ sub-wk (wk-trans π δ) θ
@@ -194,6 +206,10 @@ sub-pre-idr-β : (θ : Γ ⊢ Δ) → sub-pre θ (wk-id {Δ}) ≡ θ
 sub-pre-idr-β sub-ε        = refl
 sub-pre-idr-β (sub-ex θ V) = cong₂ sub-ex (sub-pre-idr-β θ) refl
 {-# REWRITE sub-pre-idr-β #-}
+
+sub-pre-idr-η : (θ : Γ ⊢ Δ) (π : Δ ⊇ Δ) → sub-pre θ π ≡ θ
+sub-pre-idr-η θ π = cong (sub-pre θ) (wk-id-η π)
+{-# REWRITE sub-pre-idr-η #-}
 
 sub-pre-pre-η : (θ : Γ ⊢ Δ) (π : Δ ⊇ Ψ) (δ : Ψ ⊇ Ξ) → sub-pre (sub-pre θ π) δ ≡ sub-pre θ (wk-trans π δ)
 sub-pre-pre-η θ wk-ε wk-ε                          = refl

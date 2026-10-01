@@ -307,6 +307,14 @@ mutual
 
 {-# REWRITE wk-val-id-β wk-comp-id-β #-}
 
+wk-val-id-η : (π : Γ ⊇ Γ) (V : Γ ⊢ᵛ X) → wk-val π V ≡ V
+wk-val-id-η π V = cong (λ δ → wk-val δ V) (wk-id-η π)
+
+wk-comp-id-η : (π : Γ ⊇ Γ) (M : Γ ⊢ᶜ X) → wk-comp π M ≡ M
+wk-comp-id-η π M = cong (λ δ → wk-comp δ M) (wk-id-η π)
+
+{-# REWRITE wk-val-id-η wk-comp-id-η #-}
+
 mutual
   wk-val-wk-η : (V : Γ ⊢ᵛ X) → (π : Ψ ⊇ Δ) → (δ : Δ ⊇ Γ) → wk-val π (wk-val δ V) ≡ wk-val (wk-trans π δ) V
   wk-val-wk-η (var i) π δ    = refl
