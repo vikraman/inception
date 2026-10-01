@@ -7,7 +7,7 @@ open import Data.Unit using (⊤)
 open import Function using (id)
 
 import Relation.Binary.PropositionalEquality as Eq
-open Eq using (_≡_; refl; cong)
+open Eq using (_≡_; refl; cong; sym)
 open Eq.≡-Reasoning
 
 open import Inception.Prelude
@@ -140,38 +140,29 @@ wk-merge {Γ = Γ ∙ X} (wk-wk π) (wk-cong δ) with wk-merge π δ
 wk-merge (wk-wk π) (wk-wk δ) with wk-merge π δ
 ... | Γ , π , π₁ , π₂ , eq₁ , eq₂ = Γ , wk-wk π , π₁ , π₂ , cong wk-wk eq₁ , cong wk-wk eq₂
 
-wk-wk-trans-id : (π : Δ ⊇ (Γ ∙ X)) (i : Γ ∋ Y) → wk-mem (wk-trans π (wk-wk wk-id)) i ≡ wk-mem π (there i)
-wk-wk-trans-id (wk-cong (wk-cong π)) here      = refl
-wk-wk-trans-id (wk-cong (wk-cong π)) (there i) = cong (λ x → there (there (wk-mem x i))) (wk-trans-idr-β π)
-wk-wk-trans-id (wk-cong (wk-wk π)) here        = cong (λ x → there (there (wk-mem x here))) (wk-trans-idr-β π)
-wk-wk-trans-id (wk-cong (wk-wk π)) (there i)   = cong (λ x → there (there (wk-mem x (there i)))) (wk-trans-idr-β π)
-wk-wk-trans-id (wk-wk π) here                  = cong there (wk-wk-trans-id π here)
-wk-wk-trans-id (wk-wk π) (there i)             = cong there (wk-wk-trans-id π (there i))
+wk-mem-trans-wk-β : (π : Ψ ⊇ (Δ ∙ Y)) (δ : Δ ⊇ Γ) (i : Γ ∋ X) → wk-mem (wk-trans π (wk-wk δ)) i ≡ wk-mem π (there (wk-mem δ i))
+wk-mem-trans-wk-β π δ i = sym (wk-mem-wk-η i π (wk-wk δ))
+{-# REWRITE wk-mem-trans-wk-β #-}
 
-mutual
-  wk-cong-wk-trans : (π : Δ ⊇ (Γ ∙ X)) (δ : Γ ⊇ Ψ) → wk-trans (wk-trans π (wk-cong wk-id)) (wk-wk δ) ≡ wk-trans π (wk-wk δ)
-  wk-cong-wk-trans (wk-cong π) wk-ε        = wk-trans-idr-β _
-  wk-cong-wk-trans (wk-cong π) (wk-cong δ) = cong wk-wk (wk-cong-trans π δ)
-  wk-cong-wk-trans (wk-cong π) (wk-wk δ)   = cong wk-wk (wk-cong-wk-trans π δ)
-  wk-cong-wk-trans (wk-wk π) wk-ε          = cong wk-wk (wk-cong-wk-trans π wk-ε)
-  wk-cong-wk-trans (wk-wk π) (wk-cong δ)   = cong wk-wk (wk-cong-wk-trans π (wk-cong δ))
-  wk-cong-wk-trans (wk-wk π) (wk-wk δ)     = cong wk-wk (wk-cong-wk-trans π (wk-wk δ))
+wk-mem-trans-cong-here-β : (π : Ψ ⊇ (Δ ∙ X)) (δ : Δ ⊇ Γ) → wk-mem (wk-trans π (wk-cong δ)) here ≡ wk-mem π here
+wk-mem-trans-cong-here-β π δ = sym (wk-mem-wk-η here π (wk-cong δ))
+{-# REWRITE wk-mem-trans-cong-here-β #-}
 
-  wk-cong-trans : (π : Δ ⊇ (Γ ∙ X)) (δ : Γ ⊇ Ψ) → wk-trans (wk-trans π (wk-cong wk-id)) (wk-cong δ) ≡ wk-trans π (wk-cong δ)
-  wk-cong-trans (wk-cong π) wk-ε        = wk-trans-idr-β _
-  wk-cong-trans (wk-cong π) (wk-cong δ) = cong wk-cong (wk-cong-trans π δ)
-  wk-cong-trans (wk-cong π) (wk-wk δ)   = cong wk-cong (wk-cong-wk-trans π δ)
-  wk-cong-trans (wk-wk π) wk-ε          = wk-trans-idr-β _
-  wk-cong-trans (wk-wk π) (wk-cong δ)   = cong wk-wk (wk-cong-trans π (wk-cong δ))
-  wk-cong-trans (wk-wk π) (wk-wk δ)     = cong wk-wk (wk-cong-trans π (wk-wk δ))
+wk-mem-trans-cong-there-β : (π : Ψ ⊇ (Δ ∙ Y)) (δ : Δ ⊇ Γ) (i : Γ ∋ X) → wk-mem (wk-trans π (wk-cong δ)) (there i) ≡ wk-mem π (there (wk-mem δ i))
+wk-mem-trans-cong-there-β π δ i = sym (wk-mem-wk-η (there i) π (wk-cong δ))
+{-# REWRITE wk-mem-trans-cong-there-β #-}
 
-  wk-wk-trans : (π : Δ ⊇ (Γ ∙ X)) (δ : Γ ⊇ Ψ) → wk-trans (wk-trans π (wk-wk wk-id)) δ ≡ wk-trans π (wk-wk δ)
-  wk-wk-trans (wk-cong π) wk-ε        = cong wk-wk (wk-trans-idr-β _)
-  wk-wk-trans (wk-cong π) (wk-cong δ) = cong wk-wk (wk-cong-trans π δ)
-  wk-wk-trans (wk-cong π) (wk-wk δ)   = cong wk-wk (wk-cong-wk-trans π δ)
-  wk-wk-trans (wk-wk π) wk-ε          = cong wk-wk (wk-wk-trans π wk-ε)
-  wk-wk-trans (wk-wk π) (wk-cong δ)   = cong wk-wk (wk-wk-trans π (wk-cong δ))
-  wk-wk-trans (wk-wk π) (wk-wk δ)     = cong wk-wk (wk-wk-trans π (wk-wk δ))
+wk-trans-trans-wk-β : (π : Ξ ⊇ (Δ ∙ X)) (δ : Δ ⊇ Ψ) (ρ : Ψ ⊇ Γ) → wk-trans (wk-trans π (wk-wk δ)) ρ ≡ wk-trans π (wk-wk (wk-trans δ ρ))
+wk-trans-trans-wk-β π δ ρ = sym (wk-trans-assoc-η {π₁ = π} {π₂ = wk-wk δ} {π₃ = ρ})
+{-# REWRITE wk-trans-trans-wk-β #-}
+
+wk-trans-trans-cong-cong-β : (π : Ξ ⊇ (Δ ∙ X)) (δ : Δ ⊇ Ψ) (ρ : Ψ ⊇ Γ) → wk-trans (wk-trans π (wk-cong δ)) (wk-cong ρ) ≡ wk-trans π (wk-cong (wk-trans δ ρ))
+wk-trans-trans-cong-cong-β π δ ρ = sym (wk-trans-assoc-η {π₁ = π} {π₂ = wk-cong δ} {π₃ = wk-cong ρ})
+{-# REWRITE wk-trans-trans-cong-cong-β #-}
+
+wk-trans-trans-cong-wk-β : (π : Ξ ⊇ (Δ ∙ X)) (δ : Δ ⊇ Ψ) (ρ : Ψ ⊇ Γ) → wk-trans (wk-trans π (wk-cong δ)) (wk-wk ρ) ≡ wk-trans π (wk-wk (wk-trans δ ρ))
+wk-trans-trans-cong-wk-β π δ ρ = sym (wk-trans-assoc-η {π₁ = π} {π₂ = wk-cong δ} {π₃ = wk-wk ρ})
+{-# REWRITE wk-trans-trans-cong-wk-β #-}
 
 --------------------------------------------------------------------------
 -- semantics
