@@ -107,6 +107,7 @@ data RuleId
   | WhereLayout
   | StackedPrivate
   | BotElim
+  | RewriteName
   deriving (Eq, Ord, Enum, Bounded, Show, Generic)
 
 data Rule = Rule
@@ -159,6 +160,7 @@ rule r = case r of
   WhereLayout -> Rule r Warning "where goes on its own line below the clause" checkWhereLayout
   StackedPrivate -> Rule r Warning "private and variable go on separate lines" checkStackedPrivate
   BotElim -> Rule r Warning "prefer contradiction to ⊥-elim" checkBotElim
+  RewriteName -> Rule r Warning "rewrite rules have a name ending in one of [rewriteSuffixes]" checkRewriteName
 
 allRules :: [Rule]
 allRules = map rule [minBound .. maxBound]
@@ -225,6 +227,7 @@ data Config = Config
   , cfgBannedNames     :: Map Text Banned
   , cfgSubscriptIgnore :: [Text]
   , cfgSubscriptExempt :: [Text]
+  , cfgRewriteSuffixes :: [Text]
   , cfgSorts           :: [SortSpec]
   , cfgPairs           :: [(Text, Text)]
   , cfgPairSkips       :: [PairSkip]
@@ -241,6 +244,7 @@ data RawConfig = RawConfig
   , fixBannedNames       :: Maybe [Text]
   , asciiSubscriptIgnore :: Maybe [Text]
   , subscriptExempt      :: Maybe [Text]
+  , rewriteSuffixes      :: Maybe [Text]
   , sorts                :: Maybe [RawSort]
   , pairs                :: Maybe [Text]
   , pairSkip             :: Maybe [RawPairSkip]
@@ -279,7 +283,7 @@ pairOf t = case T.unpack t of
   _      -> (t, t)
 
 resolveConfig :: RawConfig -> Either String Config
-resolveConfig RawConfig {sources, exclude, allowlist, rules, bannedNames, fixBannedNames, asciiSubscriptIgnore, subscriptExempt, sorts, pairs, pairSkip, style} = do
+resolveConfig RawConfig {sources, exclude, allowlist, rules, bannedNames, fixBannedNames, asciiSubscriptIgnore, subscriptExempt, rewriteSuffixes, sorts, pairs, pairSkip, style} = do
   let settings = fromMaybe Map.empty rules
       unknown = [n | n <- Map.keys settings, n `notElem` map ruleName [minBound .. maxBound]]
       letterPairs = fromMaybe [] pairs
@@ -296,6 +300,7 @@ resolveConfig RawConfig {sources, exclude, allowlist, rules, bannedNames, fixBan
       , cfgBannedNames = Map.mapWithKey (banned (fromMaybe [] fixBannedNames)) (fromMaybe Map.empty bannedNames)
       , cfgSubscriptIgnore = fromMaybe [] asciiSubscriptIgnore
       , cfgSubscriptExempt = fromMaybe [] subscriptExempt
+      , cfgRewriteSuffixes = fromMaybe ["-β", "-η"] rewriteSuffixes
       , cfgSorts = sortSpecs
       , cfgPairs = map pairOf letterPairs
       , cfgPairSkips = maybe [] (map resolvePairSkip) pairSkip
@@ -1127,6 +1132,31 @@ checkStackedPrivate _ f = [finding (lineStart l) "put private and variable on se
 
 checkBotElim :: Context -> SourceFile -> [Finding]
 checkBotElim _ f = [finding (tokPos t) "prefer contradiction to ⊥-elim" | l <- codeLines f, t <- wordsOf l, tokText t == "⊥-elim"]
+
+checkRewriteName :: Context -> SourceFile -> [Finding]
+checkRewriteName ctx f =
+  [ finding (tokPos t) {posCol = posCol (tokPos t) + off} (n <> " is a rewrite rule; end its name in one of " <> T.intercalate ", " sfx)
+  | l <- blockLines f
+  , t@Token {tokKind = Pragma, tokText = body} <- lineTokens l
+  , Just rest <- [T.stripPrefix "REWRITE" . T.stripStart =<< T.stripPrefix "{-#" body]
+  , let base = T.length body - T.length rest
+  , (i, n) <- wordOffsets rest
+  , n /= "#-}"
+  , let off = base + i
+  , not (any (`T.isSuffixOf` n) sfx)
+  ]
+  where
+    sfx = cfgRewriteSuffixes (ctxConfig ctx)
+
+-- words with their offsets
+wordOffsets :: Text -> [(Int, Text)]
+wordOffsets = go 0
+  where
+    go i t =
+      let (sp, rest) = T.span isSpace t
+          (w, rest') = T.break isSpace rest
+          j = i + T.length sp
+       in if T.null w then [] else (j, w) : go (j + T.length w) rest'
 
 ------------------------------------------------------------------------
 -- running
