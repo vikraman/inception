@@ -82,8 +82,8 @@ proj₁-val (pairᵛ 𝐕 𝐖) = 𝐕
 proj₂-val : MVal (X `× Y) → MVal Y
 proj₂-val (pairᵛ 𝐕 𝐖) = 𝐖
 
-pair-val : (𝐖 : MVal (X `× Y)) → (pairᵛ (proj₁-val 𝐖) (proj₂-val 𝐖) ≡ 𝐖)
-pair-val (pairᵛ 𝐕 𝐖) = refl
+pairᵛ-η : (𝐖 : MVal (X `× Y)) → (pairᵛ (proj₁-val 𝐖) (proj₂-val 𝐖) ≡ 𝐖)
+pairᵛ-η (pairᵛ 𝐕 𝐖) = refl
 
 --------------------------------------------------------------------------
 -- machine for effectful terms / computations
@@ -139,8 +139,8 @@ eval₂ W γ = proj₂-val (eval W γ)
 %</Eval>
 \begin{code}
 
-clo-val : (𝐖 : MVal (X `⇒ Y)) → (cloᵛ (proj₁ (proj₂ (clo-to-comp 𝐖))) (proj₂ (proj₂ (clo-to-comp 𝐖))) ≡ 𝐖)
-clo-val (cloᵛ M γ) = refl
+cloᵛ-η : (𝐖 : MVal (X `⇒ Y)) → (cloᵛ (proj₁ (proj₂ (clo-to-comp 𝐖))) (proj₂ (proj₂ (clo-to-comp 𝐖))) ≡ 𝐖)
+cloᵛ-η (cloᵛ M γ) = refl
 
 \end{code}
 
@@ -247,7 +247,7 @@ mutual
       IH = fundamentalᵛ W Rγ
       𝐖  = eval W γ
       IH₁ : Rᵛ _ (pairᵛ (proj₁-val 𝐖) (proj₂-val 𝐖))
-      IH₁ = subst (λ x → Rᵛ _ x) (sym (pair-val 𝐖)) IH
+      IH₁ = subst (λ x → Rᵛ _ x) (sym (pairᵛ-η 𝐖)) IH
   fundamentalᶜ (push M N) {γ = γ} Rγ {K = K} Rk =
     sn λ { push→ → fundamentalᶜ M Rγ Rk₁ }
     where
@@ -258,7 +258,7 @@ mutual
     where
       IH = fundamentalᵛ V Rγ
       𝐕 = eval V γ
-      eq = sym (clo-val 𝐕)
+      eq = sym (cloᵛ-η 𝐕)
       IH₁ = subst (λ x → Rᵛ _ x) eq IH
   fundamentalᶜ (var W) {γ = γ} Rγ Rk = sn λ { var→ → subst (λ x → x) (rv≡sn (eval W γ)) (fundamentalᵛ W Rγ)}
   fundamentalᶜ (sub M N) Rγ Rk = sn λ { sub→ → fundamentalᶜ M (Rᴱ-ext Rγ (fundamentalᶜ N Rγ Rk)) Rk}
