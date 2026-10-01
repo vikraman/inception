@@ -70,48 +70,48 @@ wk-prev (wk-wk π)   = wk-trans π (wk-wk wk-id)
 --------------------------------------------------------------------------
 -- weakening laws
 
-wk-mem-id : {i : Γ ∋ X} → wk-mem wk-id i ≡ i
-wk-mem-id {i = here}    = refl
-wk-mem-id {i = there i} = cong there wk-mem-id
-{-# REWRITE wk-mem-id #-}
+wk-mem-id-β : {i : Γ ∋ X} → wk-mem wk-id i ≡ i
+wk-mem-id-β {i = here}    = refl
+wk-mem-id-β {i = there i} = cong there wk-mem-id-β
+{-# REWRITE wk-mem-id-β #-}
 
-wk-mem-wk-wk : (π : Γ ⊇ Δ) (i : Δ ∋ X) → wk-mem (wk-wk {X = Y} π) i ≡ there (wk-mem π i)
-wk-mem-wk-wk π here      = refl
-wk-mem-wk-wk π (there i) = refl
-{-# REWRITE wk-mem-wk-wk #-}
+wk-mem-wk-wk-β : (π : Γ ⊇ Δ) (i : Δ ∋ X) → wk-mem (wk-wk {X = Y} π) i ≡ there (wk-mem π i)
+wk-mem-wk-wk-β π here      = refl
+wk-mem-wk-wk-β π (there i) = refl
+{-# REWRITE wk-mem-wk-wk-β #-}
 
-wk-mem-trans : (i : Γ ∋ X) (π : Ψ ⊇ Δ) (δ : Δ ⊇ Γ) → wk-mem π (wk-mem δ i) ≡ wk-mem (wk-trans π δ) i
-wk-mem-trans here (wk-cong π) (wk-cong δ) = refl
-wk-mem-trans here (wk-cong π) (wk-wk δ)   = cong there (wk-mem-trans here π δ)
-wk-mem-trans here (wk-wk π)   (wk-cong δ) = cong there (wk-mem-trans here π (wk-cong δ))
-wk-mem-trans here (wk-wk π)   (wk-wk δ)   = cong there (wk-mem-trans here π (wk-wk δ))
-wk-mem-trans (there i) (wk-cong π) (wk-cong δ)         = cong there (wk-mem-trans i π δ)
-wk-mem-trans (there i) (wk-wk (wk-cong π)) (wk-cong δ) = cong there (cong there (wk-mem-trans i π δ))
-wk-mem-trans (there i) (wk-wk (wk-wk π)) (wk-cong δ)   = cong there (cong there (wk-mem-trans (there i) π (wk-cong δ)))
-wk-mem-trans (there i) (wk-cong π) (wk-wk δ)           = cong there (wk-mem-trans (there i) π δ)
-wk-mem-trans (there i) (wk-wk (wk-cong π)) (wk-wk δ)   = cong there (wk-mem-trans (there i) (wk-cong π) (wk-wk δ))
-wk-mem-trans (there i) (wk-wk (wk-wk π)) (wk-wk δ)     = cong there (wk-mem-trans (there i) (wk-wk π) (wk-wk δ))
-{-# REWRITE wk-mem-trans #-}
+wk-mem-wk-η : (i : Γ ∋ X) (π : Ψ ⊇ Δ) (δ : Δ ⊇ Γ) → wk-mem π (wk-mem δ i) ≡ wk-mem (wk-trans π δ) i
+wk-mem-wk-η here (wk-cong π) (wk-cong δ) = refl
+wk-mem-wk-η here (wk-cong π) (wk-wk δ)   = cong there (wk-mem-wk-η here π δ)
+wk-mem-wk-η here (wk-wk π)   (wk-cong δ) = cong there (wk-mem-wk-η here π (wk-cong δ))
+wk-mem-wk-η here (wk-wk π)   (wk-wk δ)   = cong there (wk-mem-wk-η here π (wk-wk δ))
+wk-mem-wk-η (there i) (wk-cong π) (wk-cong δ)         = cong there (wk-mem-wk-η i π δ)
+wk-mem-wk-η (there i) (wk-wk (wk-cong π)) (wk-cong δ) = cong there (cong there (wk-mem-wk-η i π δ))
+wk-mem-wk-η (there i) (wk-wk (wk-wk π)) (wk-cong δ)   = cong there (cong there (wk-mem-wk-η (there i) π (wk-cong δ)))
+wk-mem-wk-η (there i) (wk-cong π) (wk-wk δ)           = cong there (wk-mem-wk-η (there i) π δ)
+wk-mem-wk-η (there i) (wk-wk (wk-cong π)) (wk-wk δ)   = cong there (wk-mem-wk-η (there i) (wk-cong π) (wk-wk δ))
+wk-mem-wk-η (there i) (wk-wk (wk-wk π)) (wk-wk δ)     = cong there (wk-mem-wk-η (there i) (wk-wk π) (wk-wk δ))
+{-# REWRITE wk-mem-wk-η #-}
 
-wk-trans-idl : (π : Γ ⊇ Δ) → wk-trans wk-id π ≡ π
-wk-trans-idl wk-ε        = refl
-wk-trans-idl (wk-cong π) = cong wk-cong (wk-trans-idl π)
-wk-trans-idl (wk-wk π)   = cong wk-wk (wk-trans-idl π)
-{-# REWRITE wk-trans-idl #-}
+wk-trans-idl-β : (π : Γ ⊇ Δ) → wk-trans wk-id π ≡ π
+wk-trans-idl-β wk-ε        = refl
+wk-trans-idl-β (wk-cong π) = cong wk-cong (wk-trans-idl-β π)
+wk-trans-idl-β (wk-wk π)   = cong wk-wk (wk-trans-idl-β π)
+{-# REWRITE wk-trans-idl-β #-}
 
-wk-trans-idr : (π : Γ ⊇ Δ) → wk-trans π wk-id ≡ π
-wk-trans-idr wk-ε        = refl
-wk-trans-idr (wk-cong π) = cong wk-cong (wk-trans-idr π)
-wk-trans-idr (wk-wk π)   = cong wk-wk (wk-trans-idr π)
-{-# REWRITE wk-trans-idr #-}
+wk-trans-idr-β : (π : Γ ⊇ Δ) → wk-trans π wk-id ≡ π
+wk-trans-idr-β wk-ε        = refl
+wk-trans-idr-β (wk-cong π) = cong wk-cong (wk-trans-idr-β π)
+wk-trans-idr-β (wk-wk π)   = cong wk-wk (wk-trans-idr-β π)
+{-# REWRITE wk-trans-idr-β #-}
 
-wk-assoc : {π₁ : Γ ⊇ Δ} {π₂ : Δ ⊇ Ψ} {π₃ : Ψ ⊇ Ξ} → wk-trans π₁ (wk-trans π₂ π₃) ≡ wk-trans (wk-trans π₁ π₂) π₃
-wk-assoc {π₁ = wk-ε} = refl
-wk-assoc {π₁ = wk-cong π₁} {π₂ = wk-cong π₂} {π₃ = wk-cong π₃} = cong wk-cong (wk-assoc {π₁ = π₁} {π₂ = π₂} {π₃ = π₃})
-wk-assoc {π₁ = wk-cong π₁} {π₂ = wk-cong π₂} {π₃ = wk-wk π₃}   = cong wk-wk (wk-assoc {π₁ = π₁} {π₂ = π₂} {π₃ = π₃})
-wk-assoc {π₁ = wk-cong π₁} {π₂ = wk-wk π₂} {π₃ = π₃}           = cong wk-wk (wk-assoc {π₁ = π₁} {π₂ = π₂} {π₃ = π₃})
-wk-assoc {π₁ = wk-wk π₁} {π₂ = π₂} {π₃ = π₃}                   = cong wk-wk (wk-assoc {π₁ = π₁} {π₂ = π₂} {π₃ = π₃})
-{-# REWRITE wk-assoc #-}
+wk-trans-assoc-η : {π₁ : Γ ⊇ Δ} {π₂ : Δ ⊇ Ψ} {π₃ : Ψ ⊇ Ξ} → wk-trans π₁ (wk-trans π₂ π₃) ≡ wk-trans (wk-trans π₁ π₂) π₃
+wk-trans-assoc-η {π₁ = wk-ε} = refl
+wk-trans-assoc-η {π₁ = wk-cong π₁} {π₂ = wk-cong π₂} {π₃ = wk-cong π₃} = cong wk-cong (wk-trans-assoc-η {π₁ = π₁} {π₂ = π₂} {π₃ = π₃})
+wk-trans-assoc-η {π₁ = wk-cong π₁} {π₂ = wk-cong π₂} {π₃ = wk-wk π₃}   = cong wk-wk (wk-trans-assoc-η {π₁ = π₁} {π₂ = π₂} {π₃ = π₃})
+wk-trans-assoc-η {π₁ = wk-cong π₁} {π₂ = wk-wk π₂} {π₃ = π₃}           = cong wk-wk (wk-trans-assoc-η {π₁ = π₁} {π₂ = π₂} {π₃ = π₃})
+wk-trans-assoc-η {π₁ = wk-wk π₁} {π₂ = π₂} {π₃ = π₃}                   = cong wk-wk (wk-trans-assoc-η {π₁ = π₁} {π₂ = π₂} {π₃ = π₃})
+{-# REWRITE wk-trans-assoc-η #-}
 
 wk-emp-uniq : (π : Γ ⊇ ε) → π ≡ wk-emp
 wk-emp-uniq wk-ε      = refl
@@ -142,15 +142,15 @@ wk-merge (wk-wk π) (wk-wk δ) with wk-merge π δ
 
 wk-wk-trans-id : (π : Δ ⊇ (Γ ∙ X)) (i : Γ ∋ Y) → wk-mem (wk-trans π (wk-wk wk-id)) i ≡ wk-mem π (there i)
 wk-wk-trans-id (wk-cong (wk-cong π)) here      = refl
-wk-wk-trans-id (wk-cong (wk-cong π)) (there i) = cong (λ x → there (there (wk-mem x i))) (wk-trans-idr π)
-wk-wk-trans-id (wk-cong (wk-wk π)) here        = cong (λ x → there (there (wk-mem x here))) (wk-trans-idr π)
-wk-wk-trans-id (wk-cong (wk-wk π)) (there i)   = cong (λ x → there (there (wk-mem x (there i)))) (wk-trans-idr π)
+wk-wk-trans-id (wk-cong (wk-cong π)) (there i) = cong (λ x → there (there (wk-mem x i))) (wk-trans-idr-β π)
+wk-wk-trans-id (wk-cong (wk-wk π)) here        = cong (λ x → there (there (wk-mem x here))) (wk-trans-idr-β π)
+wk-wk-trans-id (wk-cong (wk-wk π)) (there i)   = cong (λ x → there (there (wk-mem x (there i)))) (wk-trans-idr-β π)
 wk-wk-trans-id (wk-wk π) here                  = cong there (wk-wk-trans-id π here)
 wk-wk-trans-id (wk-wk π) (there i)             = cong there (wk-wk-trans-id π (there i))
 
 mutual
   wk-cong-wk-trans : (π : Δ ⊇ (Γ ∙ X)) (δ : Γ ⊇ Ψ) → wk-trans (wk-trans π (wk-cong wk-id)) (wk-wk δ) ≡ wk-trans π (wk-wk δ)
-  wk-cong-wk-trans (wk-cong π) wk-ε        = wk-trans-idr _
+  wk-cong-wk-trans (wk-cong π) wk-ε        = wk-trans-idr-β _
   wk-cong-wk-trans (wk-cong π) (wk-cong δ) = cong wk-wk (wk-cong-trans π δ)
   wk-cong-wk-trans (wk-cong π) (wk-wk δ)   = cong wk-wk (wk-cong-wk-trans π δ)
   wk-cong-wk-trans (wk-wk π) wk-ε          = cong wk-wk (wk-cong-wk-trans π wk-ε)
@@ -158,15 +158,15 @@ mutual
   wk-cong-wk-trans (wk-wk π) (wk-wk δ)     = cong wk-wk (wk-cong-wk-trans π (wk-wk δ))
 
   wk-cong-trans : (π : Δ ⊇ (Γ ∙ X)) (δ : Γ ⊇ Ψ) → wk-trans (wk-trans π (wk-cong wk-id)) (wk-cong δ) ≡ wk-trans π (wk-cong δ)
-  wk-cong-trans (wk-cong π) wk-ε        = wk-trans-idr _
+  wk-cong-trans (wk-cong π) wk-ε        = wk-trans-idr-β _
   wk-cong-trans (wk-cong π) (wk-cong δ) = cong wk-cong (wk-cong-trans π δ)
   wk-cong-trans (wk-cong π) (wk-wk δ)   = cong wk-cong (wk-cong-wk-trans π δ)
-  wk-cong-trans (wk-wk π) wk-ε          = wk-trans-idr _
+  wk-cong-trans (wk-wk π) wk-ε          = wk-trans-idr-β _
   wk-cong-trans (wk-wk π) (wk-cong δ)   = cong wk-wk (wk-cong-trans π (wk-cong δ))
   wk-cong-trans (wk-wk π) (wk-wk δ)     = cong wk-wk (wk-cong-trans π (wk-wk δ))
 
   wk-wk-trans : (π : Δ ⊇ (Γ ∙ X)) (δ : Γ ⊇ Ψ) → wk-trans (wk-trans π (wk-wk wk-id)) δ ≡ wk-trans π (wk-wk δ)
-  wk-wk-trans (wk-cong π) wk-ε        = cong wk-wk (wk-trans-idr _)
+  wk-wk-trans (wk-cong π) wk-ε        = cong wk-wk (wk-trans-idr-β _)
   wk-wk-trans (wk-cong π) (wk-cong δ) = cong wk-wk (wk-cong-trans π δ)
   wk-wk-trans (wk-cong π) (wk-wk δ)   = cong wk-wk (wk-cong-wk-trans π δ)
   wk-wk-trans (wk-wk π) wk-ε          = cong wk-wk (wk-wk-trans π wk-ε)

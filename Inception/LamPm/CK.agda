@@ -469,7 +469,7 @@ exp-pm-val {Γ} {X} {Y} `𝟙 {V} {W} redV H =
       (λ redV₁ redV₂ → Red→SNᵛ `𝟙 _ (H₀ redV₁ redV₂)) })
   where
   H₀ : ∀ {V₁ V₂} → Redᵛ X V₁ → Redᵛ Y V₂ → Redᵛ `𝟙 (sub-val (sub-ex (sub-ex sub-id V₁) V₂) W)
-  H₀ {V₁} {V₂} redV₁ redV₂ = Eq.subst (Redᵛ `𝟙) (cong (sub-val (sub-ex (sub-ex sub-id V₁) V₂)) (wk-val-id W)) (H wk-id redV₁ redV₂)
+  H₀ {V₁} {V₂} redV₁ redV₂ = Eq.subst (Redᵛ `𝟙) (cong (sub-val (sub-ex (sub-ex sub-id V₁) V₂)) (wk-val-id-β W)) (H wk-id redV₁ redV₂)
 exp-pm-val {Γ} {X} {Y} (Z `× U) {V} {W} redV H =
   sn (λ { pm-val-step →
     SN-ext-pmᵛ∷-V (Red→SNᵛ _ V redV) (proj₂ redV)
@@ -477,7 +477,7 @@ exp-pm-val {Γ} {X} {Y} (Z `× U) {V} {W} redV H =
   λ { (_ ~>⟨ pm-val-step ⟩ rest) → RTN-ext-pmᵛ∷ᴾ-V (proj₂ redV) (λ redV₁ redV₂ → proj₂ (H₀ redV₁ redV₂)) rest }
   where
   H₀ : ∀ {V₁ V₂} → Redᵛ X V₁ → Redᵛ Y V₂ → Redᵛ (Z `× U) (sub-val (sub-ex (sub-ex sub-id V₁) V₂) W)
-  H₀ {V₁} {V₂} redV₁ redV₂ = Eq.subst (Redᵛ (Z `× U)) (cong (sub-val (sub-ex (sub-ex sub-id V₁) V₂)) (wk-val-id W)) (H wk-id redV₁ redV₂)
+  H₀ {V₁} {V₂} redV₁ redV₂ = Eq.subst (Redᵛ (Z `× U)) (cong (sub-val (sub-ex (sub-ex sub-id V₁) V₂)) (wk-val-id-β W)) (H wk-id redV₁ redV₂)
 exp-pm-val {Γ} {X} {Y} (Z `⇒ U) {V} {W} redV H =
   sn (λ { pm-val-step →
     SN-ext-pmᵛ∷-V (Red→SNᵛ _ V redV) (proj₂ redV)
@@ -485,7 +485,7 @@ exp-pm-val {Γ} {X} {Y} (Z `⇒ U) {V} {W} redV H =
   harrow
   where
   H₀ : ∀ {V₁ V₂} → Redᵛ X V₁ → Redᵛ Y V₂ → Redᵛ (Z `⇒ U) (sub-val (sub-ex (sub-ex sub-id V₁) V₂) W)
-  H₀ {V₁} {V₂} redV₁ redV₂ = Eq.subst (Redᵛ (Z `⇒ U)) (cong (sub-val (sub-ex (sub-ex sub-id V₁) V₂)) (wk-val-id W)) (H wk-id redV₁ redV₂)
+  H₀ {V₁} {V₂} redV₁ redV₂ = Eq.subst (Redᵛ (Z `⇒ U)) (cong (sub-val (sub-ex (sub-ex sub-id V₁) V₂)) (wk-val-id-β W)) (H wk-id redV₁ redV₂)
 
   harrow : ∀ {Δ} (ρ : Δ ⊇ Γ) {W₁ : Δ ⊢ᵛ Z} → Redᵛ Z W₁ → Redᶜ U (app (wk-val ρ (pm V W)) W₁)
   harrow ρ {W₁} redW₁ =

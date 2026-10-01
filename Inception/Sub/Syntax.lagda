@@ -291,37 +291,37 @@ data EqComp Γ where
 
 
 mutual
-  wk-val-id : (V : Γ ⊢ᵛ X) → wk-val wk-id V ≡ V
-  wk-val-id (var i)    = refl
-  wk-val-id (lam M)    = cong lam (wk-comp-id M)
-  wk-val-id (pair V W) = cong₂ pair (wk-val-id V) (wk-val-id W)
-  wk-val-id unit       = refl
+  wk-val-id-β : (V : Γ ⊢ᵛ X) → wk-val wk-id V ≡ V
+  wk-val-id-β (var i)    = refl
+  wk-val-id-β (lam M)    = cong lam (wk-comp-id-β M)
+  wk-val-id-β (pair V W) = cong₂ pair (wk-val-id-β V) (wk-val-id-β W)
+  wk-val-id-β unit       = refl
 
-  wk-comp-id : (M : Γ ⊢ᶜ X) → wk-comp wk-id M ≡ M
-  wk-comp-id (return V) = cong return (wk-val-id V)
-  wk-comp-id (pm V M)   = cong₂ pm (wk-val-id V) (wk-comp-id M)
-  wk-comp-id (push M N) = cong₂ push (wk-comp-id M) (wk-comp-id N)
-  wk-comp-id (app V W)  = cong₂ app (wk-val-id V) (wk-val-id W)
-  wk-comp-id (var V)    = cong var (wk-val-id V)
-  wk-comp-id (sub M N)  = cong₂ sub (wk-comp-id M) (wk-comp-id N)
+  wk-comp-id-β : (M : Γ ⊢ᶜ X) → wk-comp wk-id M ≡ M
+  wk-comp-id-β (return V) = cong return (wk-val-id-β V)
+  wk-comp-id-β (pm V M)   = cong₂ pm (wk-val-id-β V) (wk-comp-id-β M)
+  wk-comp-id-β (push M N) = cong₂ push (wk-comp-id-β M) (wk-comp-id-β N)
+  wk-comp-id-β (app V W)  = cong₂ app (wk-val-id-β V) (wk-val-id-β W)
+  wk-comp-id-β (var V)    = cong var (wk-val-id-β V)
+  wk-comp-id-β (sub M N)  = cong₂ sub (wk-comp-id-β M) (wk-comp-id-β N)
 
-{-# REWRITE wk-val-id wk-comp-id #-}
+{-# REWRITE wk-val-id-β wk-comp-id-β #-}
 
 mutual
-  wk-val-trans : (V : Γ ⊢ᵛ X) → (π : Ψ ⊇ Δ) → (δ : Δ ⊇ Γ) → wk-val π (wk-val δ V) ≡ wk-val (wk-trans π δ) V
-  wk-val-trans (var i) π δ    = refl
-  wk-val-trans (lam M) π δ    = cong lam (wk-comp-trans M (wk-cong π) (wk-cong δ))
-  wk-val-trans (pair V W) π δ = cong₂ pair (wk-val-trans V π δ) (wk-val-trans W π δ)
-  wk-val-trans unit π δ       = refl
+  wk-val-wk-η : (V : Γ ⊢ᵛ X) → (π : Ψ ⊇ Δ) → (δ : Δ ⊇ Γ) → wk-val π (wk-val δ V) ≡ wk-val (wk-trans π δ) V
+  wk-val-wk-η (var i) π δ    = refl
+  wk-val-wk-η (lam M) π δ    = cong lam (wk-comp-wk-η M (wk-cong π) (wk-cong δ))
+  wk-val-wk-η (pair V W) π δ = cong₂ pair (wk-val-wk-η V π δ) (wk-val-wk-η W π δ)
+  wk-val-wk-η unit π δ       = refl
 
-  wk-comp-trans : (M : Γ ⊢ᶜ X) → (π : Ψ ⊇ Δ) → (δ : Δ ⊇ Γ) → wk-comp π (wk-comp δ M) ≡ wk-comp (wk-trans π δ) M
-  wk-comp-trans (return V) π δ = cong return (wk-val-trans V π δ)
-  wk-comp-trans (pm V M) π δ   = cong₂ pm (wk-val-trans V π δ) (wk-comp-trans M (wk-cong (wk-cong π)) (wk-cong (wk-cong δ)))
-  wk-comp-trans (push M N) π δ = cong₂ push (wk-comp-trans M π δ) (wk-comp-trans N (wk-cong π) (wk-cong δ))
-  wk-comp-trans (app V W) π δ  = cong₂ app (wk-val-trans V π δ) (wk-val-trans W π δ)
-  wk-comp-trans (var V) π δ    = cong var (wk-val-trans V π δ)
-  wk-comp-trans (sub M N) π δ  = cong₂ sub (wk-comp-trans M (wk-cong π) (wk-cong δ)) (wk-comp-trans N π δ)
+  wk-comp-wk-η : (M : Γ ⊢ᶜ X) → (π : Ψ ⊇ Δ) → (δ : Δ ⊇ Γ) → wk-comp π (wk-comp δ M) ≡ wk-comp (wk-trans π δ) M
+  wk-comp-wk-η (return V) π δ = cong return (wk-val-wk-η V π δ)
+  wk-comp-wk-η (pm V M) π δ   = cong₂ pm (wk-val-wk-η V π δ) (wk-comp-wk-η M (wk-cong (wk-cong π)) (wk-cong (wk-cong δ)))
+  wk-comp-wk-η (push M N) π δ = cong₂ push (wk-comp-wk-η M π δ) (wk-comp-wk-η N (wk-cong π) (wk-cong δ))
+  wk-comp-wk-η (app V W) π δ  = cong₂ app (wk-val-wk-η V π δ) (wk-val-wk-η W π δ)
+  wk-comp-wk-η (var V) π δ    = cong var (wk-val-wk-η V π δ)
+  wk-comp-wk-η (sub M N) π δ  = cong₂ sub (wk-comp-wk-η M (wk-cong π) (wk-cong δ)) (wk-comp-wk-η N π δ)
 
-{-# REWRITE wk-val-trans wk-comp-trans #-}
+{-# REWRITE wk-val-wk-η wk-comp-wk-η #-}
 
 \end{code}
