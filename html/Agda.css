@@ -1,0 +1,190 @@
+/* Iosevka */
+@import url(https://cdnjs.cloudflare.com/ajax/libs/Iosevka/11.1.1/iosevka/iosevka.min.css);
+
+/* gruvbox light/dark palette */
+:root {
+  --bg: #fbf1c7;
+  --bg2: #d5c4a1;
+  --fg: #3c3836;
+  --gray: #928374;
+  --gray-text: #665c54;
+  --red: #9d0006;
+  --green: #79740e;
+  --yellow: #b57614;
+  --blue: #076678;
+  --purple: #8f3f71;
+  --aqua: #427b58;
+  --orange: #af3a03;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #282828;
+    --bg2: #504945;
+    --fg: #ebdbb2;
+    --gray: #928374;
+    --gray-text: #a89984;
+    --red: #fb4934;
+    --green: #b8bb26;
+    --yellow: #fabd2f;
+    --blue: #83a598;
+    --purple: #d3869b;
+    --aqua: #8ec07c;
+    --orange: #fe8019;
+  }
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+}
+
+.Agda {
+  font-family: 'Iosevka', 'Iosevka Web', monospace
+}
+
+/* Aspects. */
+.Agda .Comment {
+  color: var(--red)
+}
+
+.Agda .Background {}
+
+.Agda .Markup {
+  color: var(--fg)
+}
+
+.Agda .Keyword {
+  color: var(--orange)
+}
+
+.Agda .String {
+  color: var(--red)
+}
+
+.Agda .Number {
+  color: var(--purple)
+}
+
+.Agda .Symbol {
+  color: var(--gray-text)
+}
+
+.Agda .PrimitiveType {
+  color: var(--blue)
+}
+
+.Agda .Pragma {
+  color: var(--fg)
+}
+
+.Agda .Operator {}
+
+.Agda .Hole {
+  background: var(--bg2)
+}
+
+/* NameKinds. */
+.Agda .Bound {
+  color: var(--fg)
+}
+
+.Agda .Generalizable {
+  color: var(--fg)
+}
+
+.Agda .InductiveConstructor {
+  color: var(--green)
+}
+
+.Agda .CoinductiveConstructor {
+  color: var(--yellow)
+}
+
+.Agda .Datatype {
+  color: var(--blue)
+}
+
+.Agda .Field {
+  color: var(--aqua)
+}
+
+.Agda .Function {
+  color: var(--blue)
+}
+
+.Agda .Macro {
+  color: var(--blue)
+}
+
+.Agda .Module {
+  color: var(--purple)
+}
+
+.Agda .Postulate {
+  color: var(--blue)
+}
+
+.Agda .Primitive {
+  color: var(--blue)
+}
+
+.Agda .Record {
+  color: var(--blue)
+}
+
+/* OtherAspects. */
+.Agda .DottedPattern {}
+
+.Agda .UnsolvedMeta {
+  color: var(--fg);
+  background: var(--yellow)
+}
+
+.Agda .UnsolvedConstraint {
+  color: var(--fg);
+  background: var(--yellow)
+}
+
+.Agda .TerminationProblem {
+  color: var(--fg);
+  background: var(--orange)
+}
+
+.Agda .IncompletePattern {
+  color: var(--fg);
+  background: var(--bg2)
+}
+
+.Agda .Error {
+  color: var(--red);
+  text-decoration: underline
+}
+
+.Agda .TypeChecks {
+  color: var(--fg);
+  background: var(--blue)
+}
+
+.Agda .Deadcode {
+  color: var(--fg);
+  background: var(--gray)
+}
+
+.Agda .ShadowingInTelescope {
+  color: var(--fg);
+  background: var(--gray)
+}
+
+/* Standard attributes. */
+.Agda a {
+  text-decoration: none
+}
+
+.Agda a[href]:hover {
+  background-color: var(--bg2)
+}
+
+.Agda [href].hover-highlight {
+  background-color: var(--bg2);
+}
