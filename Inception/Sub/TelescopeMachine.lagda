@@ -77,37 +77,23 @@ wk-mclo π (label x) = label (wk-mem π x)
 
 data CState : Set where
 
-  ⟨_；_╎_⟩ :  (𝐖 : MClo Γ X) → (γ : MEnv Γ) → (cstack : CStack X)
+  ⟨_；_╎_⟩ :  (𝐖 : MClo Γ X) → (γ : MEnv Γ) → (K : CStack X)
               ---------------------------------------------------
               → CState
 
-  ⟨_╎_╎_⟩ :  (M : Comp Γ X) → (γ : MEnv Γ) → (cstack : CStack X)
+  ⟨_╎_╎_⟩ :  (M : Comp Γ X) → (γ : MEnv Γ) → (K : CStack X)
              -----------------------------------------------------------------
              → CState
 
--- record CTriple {ℛ : Ty} : Set where
---   field
---     𝚪 : Ctx
---     𝐗 : Ty
---     𝐌 : Comp 𝚪 𝐗
---     𝛄 : MEnv {ℛ = ℛ} 𝚪
---     cstack : CStack {ℛ = ℛ} 𝐗
---
--- lookup-label : Γ ∋ `ℓ → MEnv {ℛ = ℛ} Γ → CTriple {ℛ = ℛ}
--- lookup-label here (γ · label x) = lookup-label x γ
--- lookup-label here (γ ·﹝ M ╎ cstack ﹞) = record { 𝚪 = _ ; 𝐗 = _ ; 𝐌 = M ; 𝛄 = γ ; cstack = cstack }
--- lookup-label (there x) (γ · 𝐖) = lookup-label x γ
--- lookup-label (there x) (γ ·﹝ M ╎ stack ﹞) = lookup-label x γ
-
 lookup : Γ ∋ X → MEnv Γ → MClo Γ X
 lookup here (γ · 𝐖) = wk-mclo (wk-wk wk-id) 𝐖
-lookup here (γ ·﹝ 𝐖 ╎ cstack ﹞) = label here
+lookup here (γ ·﹝ 𝐖 ╎ K ﹞) = label here
 lookup (there x) (γ · 𝐖) = wk-mclo (wk-wk wk-id) (lookup x γ)
-lookup (there x) (γ ·﹝ 𝐖 ╎ cstack ﹞) = wk-mclo (wk-wk wk-id) (lookup x γ)
+lookup (there x) (γ ·﹝ 𝐖 ╎ K ﹞) = wk-mclo (wk-wk wk-id) (lookup x γ)
 
 lookup-label : Γ ∋ `ℓ → MEnv Γ → CState
 lookup-label here (γ · label x) = lookup-label x γ
-lookup-label here (γ ·﹝ M ╎ cstack ﹞) = ⟨ M ╎ γ ╎ cstack ⟩
+lookup-label here (γ ·﹝ M ╎ K ﹞) = ⟨ M ╎ γ ╎ K ⟩
 lookup-label (there x) (γ · 𝐖) = lookup-label x γ
 lookup-label (there x) (γ ·﹝ M ╎ stack ﹞) = lookup-label x γ
 
@@ -120,7 +106,7 @@ jump-to-state (label x) γ = lookup-label x γ
 eval : Val Γ X → MEnv Γ → MClo Γ X
 eval (var i) γ = lookup i γ
 eval (lam M) γ = lam M
-eval (pair V W) γ = pair (eval V γ) (eval W γ) --pairᵛ (eval V γ) (eval W γ)
+eval (pair V W) γ = pair (eval V γ) (eval W γ)
 eval unit γ = unit
 
 eval-jump : Val Γ `ℓ → MEnv Γ → CState
@@ -140,158 +126,95 @@ eval₂ W γ = proj₂-mclo (eval W γ)
 
 eval-app : Val Γ (X `⇒ Y) → Val Γ X → MEnv Γ
            → CStack Y → CState
-eval-app V W γ cstack =
+eval-app V W γ K =
   let
     M  = lam-to-comp (eval V γ)
   in
-  ⟨ M ╎ γ · eval W γ ╎ cstack ⟩
+  ⟨ M ╎ γ · eval W γ ╎ K ⟩
 
-\end{code}
-% %</MEnv>
-% \begin{code}
-%
-% ---------------------------------------------------------------------------------
-% -- VALUE PROJECTIONS
-%
-% proj₁-val : {ℛ : Ty} → Value {ℛ = ℛ} (X `× Y) → Value {ℛ = ℛ} X
-% proj₁-val (pairᵛ W₁ W₂) = W₁
-%
-% proj₂-val : {ℛ : Ty} → Value {ℛ = ℛ} (X `× Y) → Value {ℛ = ℛ} Y
-% proj₂-val (pairᵛ W₁ W₂) = W₂
-%
-% pair-val : {ℛ : Ty} → (W : Value {ℛ = ℛ} (X `× Y)) → (pairᵛ (proj₁-val W) (proj₂-val W) ≡ W)
-% pair-val (pairᵛ W₁ W₂) = refl
-%
-% ---------------------------------------------------------------------------------
-% -- MACHINE FOR EFFECTFUL TERMS / COMPUTATIONS
-%
-% \end{code}
-% %<*CStates>
-% \begin{code}
-%
-% data CState {ℛ : Ty} : Set where
-%
-%   ⟨_╎_⟩ :    (𝐖 : Value {ℛ = ℛ} X) → (cstack : CStack {ℛ = ℛ} X)
-%              ---------------------------------------------------
-%              → CState {ℛ = ℛ}
-%
-%   ⟨_╎_╎_⟩ :  (M : Comp Γ X) → (γ : MEnv {ℛ = ℛ} Γ) → (cstack : CStack {ℛ = ℛ} X)
-%              -----------------------------------------------------------------
-%              → CState {ℛ = ℛ}
-%
-% \end{code}
-% %</CStates>
-%
-% %<*Eval>
-% \begin{code}
-% jump-to-state : {ℛ : Ty} → Value {ℛ = ℛ} `ℓ → CState {ℛ = ℛ}
-% jump-to-state (jumpᵛ M γ k) = ⟨ M ╎ γ ╎ k ⟩
-%
-% clo-to-comp :  {ℛ : Ty} → Value {ℛ = ℛ} (X `⇒ Y)
-%                → Σ[ Γ ∈ Ctx ] Comp (Γ ∙ X) Y × MEnv {ℛ = ℛ} Γ
-% clo-to-comp (cloᵛ M γ) = _ , M , γ
-%
-% eval : {ℛ : Ty} → Pure Γ X → MEnv {ℛ = ℛ} Γ → Value {ℛ = ℛ} X
-% eval (var i) γ = lookup i γ
-% eval (lam M) γ = cloᵛ M γ
-% eval (pair W₁ W₂) γ = pairᵛ (eval W₁ γ) (eval W₂ γ)
-% eval unit γ = unitᵛ
-%
-% eval-jump : {ℛ : Ty} → Pure Γ `ℓ → MEnv {ℛ = ℛ} Γ → CState {ℛ = ℛ}
-% eval-jump W γ = jump-to-state (eval W γ)
-%
-% eval-clo :  {ℛ : Ty} → Pure Γ (X `⇒ Y) → Pure Γ X → MEnv {ℛ = ℛ} Γ
-%             → CStack {ℛ = ℛ} Y → CState {ℛ = ℛ}
-% eval-clo W₁ W₂ γ k =
-%   let
-%     M  = proj₁ (proj₂ (clo-to-comp (eval W₁ γ)))
-%     γ' = proj₂ (proj₂ (clo-to-comp (eval W₁ γ)))
-%   in
-%   ⟨ M ╎ γ' · eval W₂ γ ╎ k  ⟩
-%
-% eval₁ : {ℛ : Ty} → Pure Γ (X₁ `× X₂) → MEnv {ℛ = ℛ} Γ → Value {ℛ = ℛ} X₁
-% eval₁ W γ = proj₁-val (eval W γ)
-%
-% eval₂ : {ℛ : Ty} → Pure Γ (X₁ `× X₂) → MEnv {ℛ = ℛ} Γ → Value {ℛ = ℛ} X₂
-% eval₂ W γ = proj₂-val (eval W γ)
-% \end{code}
-% %</Eval>
-% \begin{code}
-%
-% clo-val : {ℛ : Ty} → (W : Value {ℛ = ℛ} (X `⇒ Y)) → (cloᵛ (proj₁ (proj₂ (clo-to-comp W))) (proj₂ (proj₂ (clo-to-comp W))) ≡ W)
-% clo-val (cloᵛ M γ) = refl
-%
-% \end{code}
-%
-% %<*CTrans>
-
-\begin{code}
 
 data _→ᶜ_ : CState → CState → Set where
 
-  eval→ :    {W : Val Γ X} {γ : MEnv Γ} {cstack : CStack X}
+  eval→ :    {W : Val Γ X} {γ : MEnv Γ} {K : CStack X}
              -------------------------------------------
-             →  ⟨ return W ╎ γ ╎ cstack ⟩ →ᶜ ⟨ eval W γ ； γ ╎ cstack ⟩
+             →  ⟨ return W ╎ γ ╎ K ⟩ →ᶜ ⟨ eval W γ ； γ ╎ K ⟩
 
-  return→ :  {𝐖 : MClo Γ X} {M : Comp (Γ₁ ∙ X) Y} {γ : MEnv Γ} {γ₁ : MEnv Γ₁} {cstack : CStack Y} {π : Wk Γ₁ Γ}
+  return→ :  {𝐖 : MClo Γ X} {𝐖₁ : MClo Γ₁ X} {M : Comp (Γ₁ ∙ X) Y} {γ : MEnv Γ} {γ₁ : MEnv Γ₁} {K : CStack Y}
+             {π : Wk Γ₁ Γ} {𝐖₁≡wk𝐖 : 𝐖₁ ≡ wk-mclo π 𝐖}
              --------------------------------------------------------------
-             →  ⟨ 𝐖 ； γ ╎ < M ； γ₁ >∷ cstack ⟩ →ᶜ ⟨ M ╎ γ₁ · wk-mclo π 𝐖 ╎ cstack ⟩
+             →  ⟨ 𝐖 ； γ ╎ < M ； γ₁ >∷ K ⟩ →ᶜ ⟨ M ╎ γ₁ · 𝐖₁ ╎ K ⟩
 
-  push→ :    {M₁ : Comp Γ X} {M₂ : Comp (Γ ∙ X) Y} {γ : MEnv Γ} {cstack : CStack Y}
+  push→ :    {M₁ : Comp Γ X} {M₂ : Comp (Γ ∙ X) Y} {γ : MEnv Γ} {K : CStack Y}
              ----------------------------------------------------------------
-             →  ⟨ push M₁ M₂ ╎ γ ╎ cstack ⟩ →ᶜ ⟨ M₁ ╎ γ ╎ < M₂ ； γ >∷ cstack ⟩
+             →  ⟨ push M₁ M₂ ╎ γ ╎ K ⟩ →ᶜ ⟨ M₁ ╎ γ ╎ < M₂ ； γ >∷ K ⟩
 
-  sub→ :     {M₁ : Comp (Γ ∙ `ℓ) X} {M₂ : Comp Γ X} {γ : MEnv Γ} {cstack : CStack X}
+  sub→ :     {M₁ : Comp (Γ ∙ `ℓ) X} {M₂ : Comp Γ X} {γ : MEnv Γ} {K : CStack X}
              ----------------------------------------------------------------
-             →  ⟨ sub M₁ M₂ ╎ γ ╎ cstack ⟩ →ᶜ ⟨ M₁ ╎ γ ·﹝ M₂ ╎ cstack ﹞ ╎ cstack ⟩
+             →  ⟨ sub M₁ M₂ ╎ γ ╎ K ⟩ →ᶜ ⟨ M₁ ╎ γ ·﹝ M₂ ╎ K ﹞ ╎ K ⟩
 
-  var→ :     {W : Val Γ `ℓ} {γ : MEnv Γ} {cstack : CStack X}
+  var→ :     {W : Val Γ `ℓ} {γ : MEnv Γ} {K : CStack X}
              ------------------------------------------
-             →  ⟨ var W ╎ γ ╎ cstack ⟩ →ᶜ eval-jump W γ
+             →  ⟨ var W ╎ γ ╎ K ⟩ →ᶜ eval-jump W γ
 
   pmᶜ→ :     {W : Val Γ (X `× Y)} {γ : MEnv Γ}
-             {M : Comp (Γ ∙ X ∙ Y) Z} {cstack : CStack Z}
+             {M : Comp (Γ ∙ X ∙ Y) Z} {K : CStack Z}
              -------------------------------------------------------------
-             →  ⟨ pm W M ╎ γ ╎ cstack ⟩ →ᶜ ⟨ M ╎ γ · eval₁ W γ · (wk-mclo (wk-wk wk-id) (eval₂ W γ)) ╎ cstack ⟩
+             →  ⟨ pm W M ╎ γ ╎ K ⟩ →ᶜ ⟨ M ╎ γ · eval₁ W γ · (wk-mclo (wk-wk wk-id) (eval₂ W γ)) ╎ K ⟩
 
-  app→ :     {W₁ : Val Γ (X `⇒ Y)} {W₂ : Val Γ X} {γ : MEnv Γ} {cstack : CStack Y}
+  app→ :     {W₁ : Val Γ (X `⇒ Y)} {W₂ : Val Γ X} {γ : MEnv Γ} {K : CStack Y}
              ----------------------------------------------------------------
-             →  ⟨ app W₁ W₂ ╎ γ ╎ cstack ⟩ →ᶜ eval-app W₁ W₂ γ cstack
+             →  ⟨ app W₁ W₂ ╎ γ ╎ K ⟩ →ᶜ eval-app W₁ W₂ γ K
+
+
+{-
+
+-- first need to prove that the weakening from the context of the main term to
+-- the context of the term at the top of the stack develops deterministically;
+-- should be true, but skipping this for now as the result might not be needed
+
+determinismꟲ : {ℛ : Ty} {S S' : CState} (S→S'₁ S→S'₂ : S →ᶜ S') → (S→S'₁ ≡ S→S'₂)
+determinismꟲ eval→ eval→ = refl
+determinismꟲ (return→ {𝐖 = 𝐖} {𝐖₁ = 𝐖₁}) (return→ {𝐖 = 𝐖} {𝐖₁ = 𝐖₁}) = {!refl!}
+determinismꟲ push→ push→ = refl
+determinismꟲ sub→ sub→ = refl
+determinismꟲ var→ var→ = refl
+determinismꟲ pmᶜ→ pmᶜ→ = refl
+determinismꟲ app→ app→ = refl
+-}
+
+open Inception.Prelude.RTC renaming (_~>⟨_⟩_ to _→ᶜ⟨_⟩_)
+
+_→ᶜ*_ : CState → CState → Set
+_→ᶜ*_ = _~>*_ (_→ᶜ_)
+
+_⨾ᶜ_ : {σ₁ σ₂ σ₃ : CState} → (σ₁ →ᶜ* σ₂) → (σ₂ →ᶜ* σ₃) → (σ₁ →ᶜ* σ₃)
+_⨾ᶜ_ (σ ◼) ss = ss
+_⨾ᶜ_ (σ →ᶜ⟨ s ⟩ ss₁) ss₂ = σ →ᶜ⟨ s ⟩ (ss₁ ⨾ᶜ ss₂)
+
+data SN (σ : CState) : Set where
+  sn : (∀ {σ₁} → σ →ᶜ σ₁ → SN σ₁) → SN σ
+
+Rᵛ : (X : Ty) → MClo Γ X → MEnv Γ → Set
+Rᵏ : (X : Ty) → CStack X → Set
+Rᴱ : MEnv Γ → Set
+
+Rᵛ `𝟙 unit γ = ⊤
+Rᵛ (X `× Y) (pair 𝐕 𝐖) γ = Rᵛ X 𝐕 γ × Rᵛ Y 𝐖 γ
+Rᵛ {Γ = Γ} (X `⇒ Y) (lam M) γ = ∀ {𝐖 : MClo Γ X} → Rᵛ X 𝐖 γ → Rᴱ γ → ∀ {K : CStack Y} → Rᵏ Y K → SN ⟨ M ╎ γ · 𝐖 ╎ K ⟩
+Rᵛ `ℓ (label x) γ = SN (lookup-label x γ)
+
+Rᴱ {Γ = Γ} ⋄ = ⊤
+Rᴱ {Γ = Γ ∙ X} (γ · 𝐖) = Rᴱ γ × Rᵛ X 𝐖 γ
+Rᴱ {Γ = Γ} (γ ·﹝ M ╎ K ﹞) = SN ⟨ M ╎ γ ╎ K ⟩
+
+-- termination check fails here
+Rᵏ X ◻ = ⊤
+Rᵏ X (<_；_>∷_ {Γ = Γ} {Y = Y} M γ K) = ∀ {𝐖 : MClo Γ Y} → {!!} --Rᵛ Y 𝐖 γ → {!!}
+--∀ {Γ : Ctx} {𝐖 : MClo Γ X} {γ : MEnv Γ} → Rᵛ X 𝐖 γ → SN ⟨ 𝐖 ； γ ╎ K ⟩
+--∀ {𝐖 : MVal X} → Rᵛ X 𝐖 → SN ⟨ 𝐖 ╎ K ⟩
 
 \end{code}
 
-% %</CTrans>
-% \begin{code}
-%
-%
-% determinismꟲ : {ℛ : Ty} {S S' : CState {ℛ = ℛ}} (S→S'₁ S→S'₂ : S →ᶜ S') → (S→S'₁ ≡ S→S'₂)
-% determinismꟲ eval→ eval→ = refl
-% determinismꟲ return→ return→ = refl
-% determinismꟲ push→ push→ = refl
-% determinismꟲ sub→ sub→ = refl
-% determinismꟲ var→ var→ = refl
-% determinismꟲ pmᶜ→ pmᶜ→ = refl
-% determinismꟲ app→ app→ = refl
-%
-% open Inception.Prelude.RTC renaming (_~>⟨_⟩_ to _→ᶜ⟨_⟩_)
-%
-% _→ᶜ*_ : {ℛ : Ty} → CState {ℛ = ℛ} → CState {ℛ = ℛ} → Set
-% _→ᶜ*_ {ℛ = ℛ} = _~>*_ (_→ᶜ_ {ℛ = ℛ})
-%
-% _⨾ᶜ_ : {ℛ : Ty} → {F S T : CState {ℛ = ℛ}} → (F →ᶜ* S) → (S →ᶜ* T) → (F →ᶜ* T)
-% _⨾ᶜ_ (S ◼) S>>T = S>>T
-% _⨾ᶜ_ (F →ᶜ⟨ F>S₁ ⟩ S₁>>S₂) S₂>>T = F →ᶜ⟨ F>S₁ ⟩ (S₁>>S₂ ⨾ᶜ S₂>>T)
-%
-%
-% \end{code}
-% %<*SubVarSN>
-% \begin{code}
-% data SN {ℛ : Ty} (σ : CState {ℛ = ℛ}) : Set where
-%   sn : (∀ {σ'} → σ →ᶜ σ' → SN σ') → SN σ
-% \end{code}
-% %</SubVarSN>
-% \begin{code}
-%
 % Rᵛ : {ℛ : Ty} → (X : Ty) → Value {ℛ = ℛ} X → Set
 % Rᵏ : {ℛ : Ty} → (X : Ty) → CStack {ℛ = ℛ} X → Set
 %
