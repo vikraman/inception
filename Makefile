@@ -8,7 +8,7 @@ reallyall: $(AGDA_BINS)
 	agda $<
 
 html: index.agda $(AGDA_SRCS)
-	agda --html index.agda
+	agda --html --highlight-occurrences --css=Agda.css index.agda
 
 todos: $(AGDA_SRCS)
 	find -H Inception -type f -name '*.agda' \
@@ -28,4 +28,4 @@ cloc:
 clean:
 	rm -f $(AGDA_BINS)
 
-.PHONY: all clean lint lint-fix
+.PHONY: all clean html lint lint-fix
