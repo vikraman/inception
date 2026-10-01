@@ -191,6 +191,7 @@ _⨾ᶜ_ : {σ₁ σ₂ σ₃ : CState} → (σ₁ →ᶜ* σ₂) → (σ₂ →
 _⨾ᶜ_ (σ ◼) ss = ss
 _⨾ᶜ_ (σ →ᶜ⟨ s ⟩ ss₁) ss₂ = σ →ᶜ⟨ s ⟩ (ss₁ ⨾ᶜ ss₂)
 
+{-
 data SN (σ : CState) : Set where
   sn : (∀ {σ₁} → σ →ᶜ σ₁ → SN σ₁) → SN σ
 
@@ -210,157 +211,36 @@ Rᴱ {Γ = Γ} (γ ·﹝ M ╎ K ﹞) = SN ⟨ M ╎ γ ╎ K ⟩
 -- termination check fails here
 Rᵏ X ◻ = ⊤
 Rᵏ X (<_；_>∷_ {Γ = Γ} {Y = Y} M γ K) = ∀ {𝐖 : MClo Γ Y} → {!!} --Rᵛ Y 𝐖 γ → {!!}
---∀ {Γ : Ctx} {𝐖 : MClo Γ X} {γ : MEnv Γ} → Rᵛ X 𝐖 γ → SN ⟨ 𝐖 ； γ ╎ K ⟩
---∀ {𝐖 : MVal X} → Rᵛ X 𝐖 → SN ⟨ 𝐖 ╎ K ⟩
+-}
+
+-- A CState is Normal, if there are no transitions from it.
+Normal : CState → Set
+Normal σ₁ = ∀ {σ₂} → σ₁ →ᶜ σ₂ → ⊥
+
+data Progress (σ : CState) : Set where
+  done : Normal σ → Progress σ
+  step : {σ' : CState} → σ →ᶜ σ' → Progress σ
+
+progress : (σ : CState) → Progress σ
+progress ⟨ 𝐖 ； γ ╎ ◻ ⟩ = done (λ ())
+progress ⟨ 𝐖 ； γ ╎ < x ； γ₁ >∷ K ⟩ = {!!} --step return→
+progress ⟨ return x ╎ γ ╎ K ⟩ = step eval→
+progress ⟨ pm x M ╎ γ ╎ K ⟩ = step pmᶜ→
+progress ⟨ push M M₁ ╎ γ ╎ K ⟩ = step push→
+progress ⟨ app x x₁ ╎ γ ╎ K ⟩ = step app→
+progress ⟨ var x ╎ γ ╎ K ⟩ = step var→
+progress ⟨ sub M M₁ ╎ γ ╎ K ⟩ = step sub→
+
+-- A Normal CState is a halting state and of the form ⟨ 𝐖 ╎ ◻ ⟩.
+halting-state :    (cstate : CState) → Normal cstate
+                 → Σ[ Γ ∈ Ctx ] Σ[ 𝐖 ∈ MClo Γ ℛ ] Σ[ γ ∈ MEnv Γ ] cstate ≡ ⟨ 𝐖 ； γ ╎ ◻ ⟩
+halting-state ⟨ 𝐖 ； γ ╎ ◻ ⟩ normal = _ , 𝐖 , γ , refl
+halting-state ⟨ 𝐖 ； γ ╎ < x ； γ₁ >∷ K ⟩ normal = {!!} --ql (normal return→) (Σ-syntax Ctx (λ Γ₂ → Σ-syntax (MClo Γ₂ ℛ) (λ 𝐖₁ → Σ-syntax (MEnv Γ₂) (λ γ₂ → ⟨ 𝐖 ； γ ╎ < x ； γ₁ >∷ K ⟩ ≡ ⟨ 𝐖₁ ； γ₂ ╎ ◻ ⟩))))
+halting-state ⟨ return x ╎ γ ╎ K ⟩ normal = ql (normal eval→) (Σ-syntax Ctx (λ Γ₁ → Σ-syntax (MClo Γ₁ ℛ) (λ 𝐖 → Σ-syntax (MEnv Γ₁) (λ γ₁ → ⟨ return x ╎ γ ╎ K ⟩ ≡ ⟨ 𝐖 ； γ₁ ╎ ◻ ⟩))))
+halting-state ⟨ pm x M ╎ γ ╎ K ⟩ normal = ql (normal pmᶜ→) (Σ-syntax Ctx (λ Γ₁ → Σ-syntax (MClo Γ₁ ℛ) (λ 𝐖 → Σ-syntax (MEnv Γ₁) (λ γ₁ → ⟨ pm x M ╎ γ ╎ K ⟩ ≡ ⟨ 𝐖 ； γ₁ ╎ ◻ ⟩))))
+halting-state ⟨ push M M₁ ╎ γ ╎ K ⟩ normal = ql (normal push→) (Σ-syntax Ctx (λ Γ₁ → Σ-syntax (MClo Γ₁ ℛ) (λ 𝐖 → Σ-syntax (MEnv Γ₁) (λ γ₁ → ⟨ push M M₁ ╎ γ ╎ K ⟩ ≡ ⟨ 𝐖 ； γ₁ ╎ ◻ ⟩))))
+halting-state ⟨ app x x₁ ╎ γ ╎ K ⟩ normal = ql (normal app→) (Σ-syntax Ctx (λ Γ₁ → Σ-syntax (MClo Γ₁ ℛ) (λ 𝐖 → Σ-syntax (MEnv Γ₁) (λ γ₁ → ⟨ app x x₁ ╎ γ ╎ K ⟩ ≡ ⟨ 𝐖 ； γ₁ ╎ ◻ ⟩))))
+halting-state ⟨ var x ╎ γ ╎ K ⟩ normal = ql (normal var→) (Σ-syntax Ctx (λ Γ₁ → Σ-syntax (MClo Γ₁ ℛ) (λ 𝐖 → Σ-syntax (MEnv Γ₁) (λ γ₁ → ⟨ var x ╎ γ ╎ K ⟩ ≡ ⟨ 𝐖 ； γ₁ ╎ ◻ ⟩))))
+halting-state ⟨ sub M M₁ ╎ γ ╎ K ⟩ normal = ql (normal sub→) (Σ-syntax Ctx (λ Γ₁ → Σ-syntax (MClo Γ₁ ℛ) (λ 𝐖 → Σ-syntax (MEnv Γ₁) (λ γ₁ → ⟨ sub M M₁ ╎ γ ╎ K ⟩ ≡ ⟨ 𝐖 ； γ₁ ╎ ◻ ⟩))))
 
 \end{code}
-
-% Rᵛ : {ℛ : Ty} → (X : Ty) → Value {ℛ = ℛ} X → Set
-% Rᵏ : {ℛ : Ty} → (X : Ty) → CStack {ℛ = ℛ} X → Set
-%
-% Rᵛ `𝟙 unitᵛ = ⊤
-% Rᵛ (X `× Y) (pairᵛ W₁ W₂) = Rᵛ X W₁ × Rᵛ Y W₂
-% Rᵛ {ℛ = ℛ} (X `⇒ Y) (cloᵛ M γ) = ∀ {W' : Value {ℛ = ℛ} X} → Rᵛ X W' → ∀ {cstack : CStack {ℛ = ℛ} Y} → Rᵏ Y cstack → SN ⟨ M ╎ γ · W' ╎ cstack ⟩
-% Rᵛ `ℓ (jumpᵛ M γ cstack) = SN ⟨ M ╎ γ ╎ cstack ⟩
-%
-% Rᵏ {ℛ = ℛ} X cstack = ∀ {W : Value {ℛ = ℛ} X} → Rᵛ X W → SN ⟨ W ╎ cstack ⟩
-%
-% Rᴱ : {ℛ : Ty} → MEnv {ℛ = ℛ} Γ → Set
-% Rᴱ {Γ = Γ} γ = ∀ {X : Ty} → (i : Γ ∋ X) → Rᵛ X (lookup i γ)
-%
-% Rᴱ-ext : {ℛ : Ty} {γ : MEnv {ℛ = ℛ} Γ} {W : Value {ℛ = ℛ} X} → Rᴱ γ → Rᵛ X W → Rᴱ (γ · W)
-% Rᴱ-ext Rγ RW here = RW
-% Rᴱ-ext Rγ RW (there i) = Rγ i
-%
-% rv≡sn : {ℛ : Ty} → (𝐖 : Value {ℛ = ℛ} `ℓ) → Rᵛ `ℓ 𝐖 ≡ SN (jump-to-state 𝐖)
-% rv≡sn (jumpᵛ _ _ _) = refl
-%
-% mutual
-%
-%   fundamentalᵖ  : {ℛ : Ty} → (W : Pure Γ X) → {γ : MEnv {ℛ = ℛ} Γ} → Rᴱ γ → Rᵛ X (eval W γ)
-%   fundamentalᵖ (var i) Rγ = Rγ i
-%   fundamentalᵖ (lam M) Rγ RW Rk = fundamentalᶜ M (Rᴱ-ext Rγ RW) Rk
-%   fundamentalᵖ (pair W₁ W₂) Rγ = (fundamentalᵖ W₁ Rγ) , (fundamentalᵖ W₂ Rγ)
-%   fundamentalᵖ unit Rγ = tt
-%
-%   fundamentalᶜ : {ℛ : Ty} → (M : Comp Γ X) → {γ : MEnv {ℛ = ℛ} Γ} → Rᴱ γ → {cstack : CStack {ℛ = ℛ} X} → Rᵏ X cstack → SN ⟨ M ╎ γ ╎ cstack ⟩
-%   fundamentalᶜ (return W) Rγ Rk = sn λ { eval→ → Rk (fundamentalᵖ W Rγ)}
-%   fundamentalᶜ (pm W M) {γ = γ} Rγ Rk =
-%     let
-%       IH = fundamentalᵖ W Rγ
-%       W' = eval W γ
-%       IH' : Rᵛ _ (pairᵛ (proj₁-val W') (proj₂-val W'))
-%       IH' = subst (λ x → Rᵛ _ x) (sym (pair-val W')) IH
-%     in
-%     sn λ { pmᶜ→ → fundamentalᶜ M (Rᴱ-ext (Rᴱ-ext Rγ (proj₁ IH')) (proj₂ IH')) Rk }
-%   fundamentalᶜ (push M₁ M₂) {γ = γ} Rγ {cstack = k} Rk =
-%     let
-%       Rk' : Rᵏ _ (< M₂ ； γ >∷ k)
-%       Rk' RW = sn (λ { return→ → fundamentalᶜ M₂ (Rᴱ-ext Rγ RW) Rk })
-%     in
-%     sn λ { push→ → fundamentalᶜ M₁ Rγ Rk' }
-%   fundamentalᶜ (app W₁ W₂) {γ = γ} Rγ {cstack = k} Rk =
-%     let
-%       IH = fundamentalᵖ W₁ Rγ
-%       W₁' = eval W₁ γ
-%       eq = sym (clo-val W₁')
-%       IH' = subst (λ x → Rᵛ _ x) eq IH
-%     in
-%     sn λ { app→ → IH' (fundamentalᵖ W₂ Rγ) Rk }
-%   fundamentalᶜ (var W) {γ = γ} Rγ Rk = sn λ { var→ → subst (λ x → x) (rv≡sn (eval W γ)) (fundamentalᵖ W Rγ)}
-%   fundamentalᶜ (sub M₁ M₂) Rγ Rk = sn λ { sub→ → fundamentalᶜ M₁ (Rᴱ-ext Rγ (fundamentalᶜ M₂ Rγ Rk)) Rk}
-%
-% Rᴱ-⊘ : {ℛ : Ty} → Rᴱ {ℛ = ℛ} ⋄
-% Rᴱ-⊘ = λ ()
-%
-% Rᵏ-◻ : {ℛ : Ty} → Rᵏ {ℛ = ℛ} ℛ ◻
-% Rᵏ-◻ RW = sn λ {σ'} ()
-%
-% SN-theorem : {ℛ : Ty} → (M : Comp ε ℛ) → SN {ℛ = ℛ} ⟨ M ╎ ⋄ ╎ ◻ ⟩
-% SN-theorem M = fundamentalᶜ M Rᴱ-⊘ Rᵏ-◻
-%
-% \end{code}
-% %<*SubVarNormal>
-% \begin{code}
-% -- A CState is Normal, if there are no transitions from it.
-% Normal : {ℛ : Ty} → CState {ℛ = ℛ} → Set
-% Normal cstate₁ = ∀ {cstate₂} → cstate₁ →ᶜ cstate₂ → ⊥
-% \end{code}
-% %</SubVarNormal>
-% \begin{code}
-%
-% data Progress {ℛ : Ty} (σ : CState {ℛ = ℛ}) : Set where
-%   done : Normal σ → Progress σ
-%   step : {σ' : CState} → σ →ᶜ σ' → Progress σ
-%
-% progress : {ℛ : Ty} (σ : CState {ℛ = ℛ}) → Progress σ
-% progress ⟨ W' ╎ ◻ ⟩ = done (λ ())
-% progress ⟨ W' ╎ < M ； γ >∷ cstack ⟩ = step return→
-% progress ⟨ return W ╎ γ ╎ cstack ⟩ = step eval→
-% progress ⟨ pm W M ╎ γ ╎ cstack ⟩ = step pmᶜ→
-% progress ⟨ push M₁ M₂ ╎ γ ╎ cstack ⟩ = step push→
-% progress ⟨ app W₁ W₂ ╎ γ ╎ cstack ⟩ = step app→
-% progress ⟨ var W ╎ γ ╎ cstack ⟩ = step var→
-% progress ⟨ sub M₁ M₂ ╎ γ ╎ cstack ⟩ = step sub→
-%
-% \end{code}
-% %<*SubVarHaltingState>
-% \begin{code}
-% -- A Normal CState is a halting state and of the form ⟨ 𝐖 ╎ ◻ ⟩.
-% halting-state :    (cstate : CState {ℛ = ℛ}) → Normal cstate
-%                  → Σ[ 𝐖 ∈ Value ℛ ] cstate ≡ ⟨ 𝐖 ╎ ◻ ⟩
-% \end{code}
-% %</SubVarHaltingState>
-% \begin{code}
-%
-% halting-state ⟨ W' ╎ ◻ ⟩ normal = W' , refl
-% halting-state ⟨ W' ╎ < x ； γ >∷ cstack ⟩ normal = ql (normal return→) _
-% halting-state ⟨ return _ ╎ γ ╎ cstack ⟩ normal = ql (normal eval→) _
-% halting-state ⟨ pm _ _ ╎ γ ╎ cstack ⟩ normal = ql (normal pmᶜ→) _
-% halting-state ⟨ push _ _ ╎ γ ╎ cstack ⟩ normal = ql (normal push→) _
-% halting-state ⟨ app _ _ ╎ γ ╎ cstack ⟩ normal = ql (normal app→) _
-% halting-state ⟨ var _ ╎ γ ╎ cstack ⟩ normal = ql (normal var→) _
-% halting-state ⟨ sub _ _ ╎ γ ╎ cstack ⟩ normal = ql (normal sub→) _
-%
-%
-% exec-acc : {ℛ : Ty} {σ : CState {ℛ = ℛ}} → SN σ → Σ[ σ' ∈ CState ] Σ[ W' ∈ Value {ℛ = ℛ} ℛ ] Σ[ NF ∈ Normal σ' ] (σ →ᶜ* σ') × (W' ≡ proj₁ (halting-state σ' NF))
-% exec-acc {σ = σ} (sn f) with progress σ
-% ... | done NF    = σ , proj₁ (halting-state σ NF) , NF , (σ ◼) , refl
-% ... | step S→S' with exec-acc (f S→S')
-% ...   | (σ'' , W' , NF , S'→*S'' , eq) = σ'' , W' , NF , (_ →ᶜ⟨ S→S' ⟩ S'→*S'') , eq
-%
-% \end{code}
-% %<*SubVarEval>
-% \begin{code}
-% exec :    {ℛ : Ty} → (M : Comp ε ℛ)
-%         → Σ[ cstate ∈ CState ]
-%           Σ[ 𝐖 ∈ Value {ℛ = ℛ} ℛ ]
-%           Σ[ NF ∈ Normal cstate ]
-%           (⟨ M ╎ ⋄ ╎ ◻ ⟩ →ᶜ* cstate) × (𝐖 ≡ proj₁ (halting-state cstate NF))
-% \end{code}
-% %</SubVarEval>
-% \begin{code}
-%
-% exec M = exec-acc (SN-theorem M)
-%
-% ---------------------------------------------------------------------------------
-% -- EXAMPLES
-%
-% ex15 : ε ⊢ᶜ (`𝟙)
-% ex15 = push (push (app (lam {X = `𝟙} (sub (var (var here)) (return unit))) unit) (return unit)) (return unit)
-%
-% _ : exec ex15 ≡ (_ , unitᵛ , _ ,
-%                   (⟨ push (push (app (lam (sub (var (var here)) (return unit))) unit) (return unit)) (return unit) ╎ ⋄ ╎ ◻ ⟩
-%     →ᶜ⟨ push→ ⟩   (⟨ push (app (lam (sub (var (var here)) (return unit))) unit) (return unit) ╎ ⋄ ╎ < return unit ； ⋄ >∷ ◻ ⟩
-%     →ᶜ⟨ push→ ⟩   (⟨ app (lam (sub (var (var here)) (return unit))) unit ╎ ⋄ ╎ < return unit ； ⋄ >∷ < return unit ； ⋄ >∷ ◻ ⟩
-%     →ᶜ⟨ app→ ⟩    (⟨ sub (var (var here)) (return unit) ╎ ⋄ · unitᵛ ╎ < return unit ； ⋄ >∷ < return unit ； ⋄ >∷ ◻ ⟩
-%     →ᶜ⟨ sub→ ⟩    (⟨ var (var here) ╎ ⋄ · unitᵛ · jumpᵛ (return unit) (⋄ · unitᵛ) (< return unit ； ⋄ >∷ < return unit ； ⋄ >∷ ◻) ╎ < return unit ； ⋄ >∷ < return unit ； ⋄ >∷ ◻ ⟩
-%     →ᶜ⟨ var→ ⟩    (⟨ return unit ╎ ⋄ · unitᵛ ╎ < return unit ； ⋄ >∷ < return unit ； ⋄ >∷ ◻ ⟩
-%     →ᶜ⟨ eval→ ⟩ (⟨ unitᵛ ╎ < return unit ； ⋄ >∷ < return unit ； ⋄ >∷ ◻ ⟩
-%     →ᶜ⟨ return→ ⟩ (⟨ return unit ╎ ⋄ · unitᵛ ╎ < return unit ； ⋄ >∷ ◻ ⟩
-%     →ᶜ⟨ eval→ ⟩ (⟨ unitᵛ ╎ < return unit ； ⋄ >∷ ◻ ⟩
-%     →ᶜ⟨ return→ ⟩ (⟨ return unit ╎ ⋄ · unitᵛ ╎ ◻ ⟩
-%     →ᶜ⟨ eval→ ⟩ (⟨ unitᵛ ╎ ◻ ⟩ ◼)))))))))))
-%     , _)
-% _ = refl
-% \end{code}
