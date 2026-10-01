@@ -73,10 +73,12 @@ wk-prev (wk-wk π)   = wk-trans π (wk-wk wk-id)
 wk-mem-id : {i : Γ ∋ X} → wk-mem wk-id i ≡ i
 wk-mem-id {i = here}    = refl
 wk-mem-id {i = there i} = cong there wk-mem-id
+{-# REWRITE wk-mem-id #-}
 
 wk-mem-wk-wk : (π : Γ ⊇ Δ) (i : Δ ∋ X) → wk-mem (wk-wk {X = Y} π) i ≡ there (wk-mem π i)
 wk-mem-wk-wk π here      = refl
 wk-mem-wk-wk π (there i) = refl
+{-# REWRITE wk-mem-wk-wk #-}
 
 wk-mem-trans : (i : Γ ∋ X) (π : Ψ ⊇ Δ) (δ : Δ ⊇ Γ) → wk-mem π (wk-mem δ i) ≡ wk-mem (wk-trans π δ) i
 wk-mem-trans here (wk-cong π) (wk-cong δ) = refl
@@ -89,22 +91,22 @@ wk-mem-trans (there i) (wk-wk (wk-wk π)) (wk-cong δ)   = cong there (cong ther
 wk-mem-trans (there i) (wk-cong π) (wk-wk δ)           = cong there (wk-mem-trans (there i) π δ)
 wk-mem-trans (there i) (wk-wk (wk-cong π)) (wk-wk δ)   = cong there (wk-mem-trans (there i) (wk-cong π) (wk-wk δ))
 wk-mem-trans (there i) (wk-wk (wk-wk π)) (wk-wk δ)     = cong there (wk-mem-trans (there i) (wk-wk π) (wk-wk δ))
+{-# REWRITE wk-mem-trans #-}
 
 wk-trans-idl : (π : Γ ⊇ Δ) → wk-trans wk-id π ≡ π
 wk-trans-idl wk-ε        = refl
 wk-trans-idl (wk-cong π) = cong wk-cong (wk-trans-idl π)
 wk-trans-idl (wk-wk π)   = cong wk-wk (wk-trans-idl π)
+{-# REWRITE wk-trans-idl #-}
 
 wk-trans-idr : (π : Γ ⊇ Δ) → wk-trans π wk-id ≡ π
 wk-trans-idr wk-ε        = refl
 wk-trans-idr (wk-cong π) = cong wk-cong (wk-trans-idr π)
 wk-trans-idr (wk-wk π)   = cong wk-wk (wk-trans-idr π)
+{-# REWRITE wk-trans-idr #-}
 
 wk-trans-comm-id : (π : Γ ⊇ Δ) → wk-trans π wk-id ≡ wk-trans wk-id π
-wk-trans-comm-id π = begin
-  wk-trans π wk-id  ≡⟨ wk-trans-idr π ⟩
-  π                 ≡˘⟨ wk-trans-idl π ⟩
-  wk-trans wk-id π  ∎
+wk-trans-comm-id π = refl
 
 wk-assoc : {π₁ : Γ ⊇ Δ} {π₂ : Δ ⊇ Ψ} {π₃ : Ψ ⊇ Ξ} → wk-trans π₁ (wk-trans π₂ π₃) ≡ wk-trans (wk-trans π₁ π₂) π₃
 wk-assoc {π₁ = wk-ε} = refl
@@ -112,6 +114,7 @@ wk-assoc {π₁ = wk-cong π₁} {π₂ = wk-cong π₂} {π₃ = wk-cong π₃}
 wk-assoc {π₁ = wk-cong π₁} {π₂ = wk-cong π₂} {π₃ = wk-wk π₃}   = cong wk-wk (wk-assoc {π₁ = π₁} {π₂ = π₂} {π₃ = π₃})
 wk-assoc {π₁ = wk-cong π₁} {π₂ = wk-wk π₂} {π₃ = π₃}           = cong wk-wk (wk-assoc {π₁ = π₁} {π₂ = π₂} {π₃ = π₃})
 wk-assoc {π₁ = wk-wk π₁} {π₂ = π₂} {π₃ = π₃}                   = cong wk-wk (wk-assoc {π₁ = π₁} {π₂ = π₂} {π₃ = π₃})
+{-# REWRITE wk-assoc #-}
 
 wk-emp-uniq : (π : Γ ⊇ ε) → π ≡ wk-emp
 wk-emp-uniq wk-ε      = refl
