@@ -105,9 +105,6 @@ wk-trans-idr (wk-cong π) = cong wk-cong (wk-trans-idr π)
 wk-trans-idr (wk-wk π)   = cong wk-wk (wk-trans-idr π)
 {-# REWRITE wk-trans-idr #-}
 
-wk-trans-comm-id : (π : Γ ⊇ Δ) → wk-trans π wk-id ≡ wk-trans wk-id π
-wk-trans-comm-id π = refl
-
 wk-assoc : {π₁ : Γ ⊇ Δ} {π₂ : Δ ⊇ Ψ} {π₃ : Ψ ⊇ Ξ} → wk-trans π₁ (wk-trans π₂ π₃) ≡ wk-trans (wk-trans π₁ π₂) π₃
 wk-assoc {π₁ = wk-ε} = refl
 wk-assoc {π₁ = wk-cong π₁} {π₂ = wk-cong π₂} {π₃ = wk-cong π₃} = cong wk-cong (wk-assoc {π₁ = π₁} {π₂ = π₂} {π₃ = π₃})
