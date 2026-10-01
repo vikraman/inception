@@ -201,39 +201,39 @@ mutual
 --------------------------------------------------------------------------
 -- substitution composition
 
-sub-comp-sub : Γ ⊢ Δ → Δ ⊢ Ψ → Γ ⊢ Ψ
-sub-comp-sub θ sub-ε        = sub-ε
-sub-comp-sub θ (sub-ex φ V) = sub-ex (sub-comp-sub θ φ) (sub-val θ V)
+sub-∘ : Γ ⊢ Δ → Δ ⊢ Ψ → Γ ⊢ Ψ
+sub-∘ θ sub-ε        = sub-ε
+sub-∘ θ (sub-ex φ V) = sub-ex (sub-∘ θ φ) (sub-val θ V)
 
-sub-mem-sub-β : (θ : Γ ⊢ Δ) (φ : Δ ⊢ Ψ) (i : Ψ ∋ X) → sub-mem (sub-comp-sub θ φ) i ≡ sub-val θ (sub-mem φ i)
+sub-mem-sub-β : (θ : Γ ⊢ Δ) (φ : Δ ⊢ Ψ) (i : Ψ ∋ X) → sub-mem (sub-∘ θ φ) i ≡ sub-val θ (sub-mem φ i)
 sub-mem-sub-β θ (sub-ex φ V) here      = refl
 sub-mem-sub-β θ (sub-ex φ V) (there i) = sub-mem-sub-β θ φ i
 {-# REWRITE sub-mem-sub-β #-}
 
-sub-comp-sub-wkr-η : (θ : Γ ⊢ Ξ) (π : Ξ ⊇ Δ) (φ : Δ ⊢ Ψ) → sub-comp-sub θ (sub-wk π φ) ≡ sub-comp-sub (sub-pre θ π) φ
-sub-comp-sub-wkr-η θ π sub-ε        = refl
-sub-comp-sub-wkr-η θ π (sub-ex φ V) = cong₂ sub-ex (sub-comp-sub-wkr-η θ π φ) refl
-{-# REWRITE sub-comp-sub-wkr-η #-}
+sub-∘-wkr-η : (θ : Γ ⊢ Ξ) (π : Ξ ⊇ Δ) (φ : Δ ⊢ Ψ) → sub-∘ θ (sub-wk π φ) ≡ sub-∘ (sub-pre θ π) φ
+sub-∘-wkr-η θ π sub-ε        = refl
+sub-∘-wkr-η θ π (sub-ex φ V) = cong₂ sub-ex (sub-∘-wkr-η θ π φ) refl
+{-# REWRITE sub-∘-wkr-η #-}
 
-sub-comp-sub-wkl-η : (π : Ξ ⊇ Γ) (θ : Γ ⊢ Δ) (φ : Δ ⊢ Ψ) → sub-comp-sub (sub-wk π θ) φ ≡ sub-wk π (sub-comp-sub θ φ)
-sub-comp-sub-wkl-η π θ sub-ε        = refl
-sub-comp-sub-wkl-η π θ (sub-ex φ V) = cong₂ sub-ex (sub-comp-sub-wkl-η π θ φ) refl
-{-# REWRITE sub-comp-sub-wkl-η #-}
+sub-∘-wkl-η : (π : Ξ ⊇ Γ) (θ : Γ ⊢ Δ) (φ : Δ ⊢ Ψ) → sub-∘ (sub-wk π θ) φ ≡ sub-wk π (sub-∘ θ φ)
+sub-∘-wkl-η π θ sub-ε        = refl
+sub-∘-wkl-η π θ (sub-ex φ V) = cong₂ sub-ex (sub-∘-wkl-η π θ φ) refl
+{-# REWRITE sub-∘-wkl-η #-}
 
-sub-pre-sub-η : (θ : Γ ⊢ Δ) (φ : Δ ⊢ Ψ) (π : Ψ ⊇ Ξ) → sub-pre (sub-comp-sub θ φ) π ≡ sub-comp-sub θ (sub-pre φ π)
+sub-pre-sub-η : (θ : Γ ⊢ Δ) (φ : Δ ⊢ Ψ) (π : Ψ ⊇ Ξ) → sub-pre (sub-∘ θ φ) π ≡ sub-∘ θ (sub-pre φ π)
 sub-pre-sub-η θ φ wk-ε                   = refl
 sub-pre-sub-η θ (sub-ex φ V) (wk-cong π) = cong₂ sub-ex (sub-pre-sub-η θ φ π) refl
 sub-pre-sub-η θ (sub-ex φ V) (wk-wk π)   = sub-pre-sub-η θ φ π
 {-# REWRITE sub-pre-sub-η #-}
 
 mutual
-  sub-val-sub-η : (θ : Γ ⊢ Δ) (φ : Δ ⊢ Ψ) (V : Ψ ⊢ᵛ X) → sub-val θ (sub-val φ V) ≡ sub-val (sub-comp-sub θ φ) V
+  sub-val-sub-η : (θ : Γ ⊢ Δ) (φ : Δ ⊢ Ψ) (V : Ψ ⊢ᵛ X) → sub-val θ (sub-val φ V) ≡ sub-val (sub-∘ θ φ) V
   sub-val-sub-η θ φ (var i) = refl
   sub-val-sub-η θ φ (lam M) =
     cong lam (sub-comp-sub-η (sub-ex (sub-wk (wk-wk wk-id) θ) (var here)) (sub-ex (sub-wk (wk-wk wk-id) φ) (var here)) M)
   sub-val-sub-η θ φ unit    = refl
 
-  sub-comp-sub-η : (θ : Γ ⊢ Δ) (φ : Δ ⊢ Ψ) (M : Ψ ⊢ᶜ X) → sub-comp θ (sub-comp φ M) ≡ sub-comp (sub-comp-sub θ φ) M
+  sub-comp-sub-η : (θ : Γ ⊢ Δ) (φ : Δ ⊢ Ψ) (M : Ψ ⊢ᶜ X) → sub-comp θ (sub-comp φ M) ≡ sub-comp (sub-∘ θ φ) M
   sub-comp-sub-η θ φ (return V) = cong return (sub-val-sub-η θ φ V)
   sub-comp-sub-η θ φ (push M N) =
     cong₂ push (sub-comp-sub-η θ φ M)
@@ -242,11 +242,11 @@ mutual
 
 {-# REWRITE sub-val-sub-η sub-comp-sub-η #-}
 
-sub-comp-sub-assoc-η : (θ : Γ ⊢ Δ) (φ : Δ ⊢ Ψ) (ψ : Ψ ⊢ Ξ)
-                   → sub-comp-sub θ (sub-comp-sub φ ψ) ≡ sub-comp-sub (sub-comp-sub θ φ) ψ
-sub-comp-sub-assoc-η θ φ sub-ε        = refl
-sub-comp-sub-assoc-η θ φ (sub-ex ψ V) = cong₂ sub-ex (sub-comp-sub-assoc-η θ φ ψ) refl
-{-# REWRITE sub-comp-sub-assoc-η #-}
+sub-∘-assoc-η : (θ : Γ ⊢ Δ) (φ : Δ ⊢ Ψ) (ψ : Ψ ⊢ Ξ)
+                   → sub-∘ θ (sub-∘ φ ψ) ≡ sub-∘ (sub-∘ θ φ) ψ
+sub-∘-assoc-η θ φ sub-ε        = refl
+sub-∘-assoc-η θ φ (sub-ex ψ V) = cong₂ sub-ex (sub-∘-assoc-η θ φ ψ) refl
+{-# REWRITE sub-∘-assoc-η #-}
 
 --------------------------------------------------------------------------
 -- identity substitution
@@ -277,12 +277,12 @@ sub-comp-id-β = sub-comp-ren-β wk-id
 
 {-# REWRITE sub-val-id-β sub-comp-id-β #-}
 
-sub-comp-sub-idl-β : (θ : Γ ⊢ Δ) → sub-comp-sub sub-id θ ≡ θ
-sub-comp-sub-idl-β sub-ε        = refl
-sub-comp-sub-idl-β (sub-ex θ V) = cong₂ sub-ex (sub-comp-sub-idl-β θ) refl
-{-# REWRITE sub-comp-sub-idl-β #-}
+sub-∘-idl-β : (θ : Γ ⊢ Δ) → sub-∘ sub-id θ ≡ θ
+sub-∘-idl-β sub-ε        = refl
+sub-∘-idl-β (sub-ex θ V) = cong₂ sub-ex (sub-∘-idl-β θ) refl
+{-# REWRITE sub-∘-idl-β #-}
 
-sub-comp-sub-idr-β : (θ : Γ ⊢ Δ) → sub-comp-sub θ sub-id ≡ θ
-sub-comp-sub-idr-β sub-ε        = refl
-sub-comp-sub-idr-β (sub-ex θ V) = cong₂ sub-ex (sub-comp-sub-idr-β θ) refl
-{-# REWRITE sub-comp-sub-idr-β #-}
+sub-∘-idr-β : (θ : Γ ⊢ Δ) → sub-∘ θ sub-id ≡ θ
+sub-∘-idr-β sub-ε        = refl
+sub-∘-idr-β (sub-ex θ V) = cong₂ sub-ex (sub-∘-idr-β θ) refl
+{-# REWRITE sub-∘-idr-β #-}
