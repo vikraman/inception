@@ -139,10 +139,15 @@ data _→ᶜ_ : CState → CState → Set where
              -------------------------------------------
              →  ⟨ return W ╎ γ ╎ K ⟩ →ᶜ ⟨ eval W γ ； γ ╎ K ⟩
 
-  return→ :  {𝐖 : MClo Γ X} {𝐖₁ : MClo Γ₁ X} {M : Comp (Γ₁ ∙ X) Y} {γ : MEnv Γ} {γ₁ : MEnv Γ₁} {K : CStack Y}
-             {π : Wk Γ₁ Γ} {𝐖₁≡wk𝐖 : 𝐖₁ ≡ wk-mclo π 𝐖}
+  -- return→ :  {𝐖 : MClo Γ X} {𝐖₁ : MClo Γ₁ X} {M : Comp (Γ₁ ∙ X) Y} {γ : MEnv Γ} {γ₁ : MEnv Γ₁} {K : CStack Y}
+  --            {π : Wk Γ₁ Γ} {𝐖₁≡wk𝐖 : 𝐖₁ ≡ wk-mclo π 𝐖}
+  --            --------------------------------------------------------------
+  --            →  ⟨ 𝐖 ； γ ╎ < M ； γ₁ >∷ K ⟩ →ᶜ ⟨ M ╎ γ₁ · 𝐖₁ ╎ K ⟩
+
+  return→ :  {𝐖 : MClo Γ X} {M : Comp (Γ ∙ X) Y} {M₁ : Comp (Γ₁ ∙ X) Y} {γ : MEnv Γ} {γ₁ : MEnv Γ₁} {K : CStack Y}
+             {π : Wk Γ Γ₁} {M≡wkM₁ : M ≡ wk-comp (wk-cong π) M₁}
              --------------------------------------------------------------
-             →  ⟨ 𝐖 ； γ ╎ < M ； γ₁ >∷ K ⟩ →ᶜ ⟨ M ╎ γ₁ · 𝐖₁ ╎ K ⟩
+             →  ⟨ 𝐖 ； γ ╎ < M₁ ； γ₁ >∷ K ⟩ →ᶜ ⟨ M ╎ γ · 𝐖 ╎ K ⟩
 
   push→ :    {M₁ : Comp Γ X} {M₂ : Comp (Γ ∙ X) Y} {γ : MEnv Γ} {K : CStack Y}
              ----------------------------------------------------------------
@@ -164,7 +169,6 @@ data _→ᶜ_ : CState → CState → Set where
   app→ :     {W₁ : Val Γ (X `⇒ Y)} {W₂ : Val Γ X} {γ : MEnv Γ} {K : CStack Y}
              ----------------------------------------------------------------
              →  ⟨ app W₁ W₂ ╎ γ ╎ K ⟩ →ᶜ eval-app W₁ W₂ γ K
-
 
 {-
 
