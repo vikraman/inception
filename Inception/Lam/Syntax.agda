@@ -16,6 +16,7 @@ data Ty : Set where
   _`⇒_  : Ty → Ty → Ty
 
 open import Inception.Ctx Ty public
+open import Inception.Ctx.Sub Ty public
 
 --------------------------------------------------------------------------
 -- values and computations
@@ -56,18 +57,12 @@ wk = wk-val (wk-wk wk-id)
 --------------------------------------------------------------------------
 -- substitutions
 
-syntax Sub Γ Δ = Γ ⊢ Δ
-data Sub (Γ : Ctx) : (Δ : Ctx) → Set where
-  sub-ε  : Γ ⊢ ε
-  sub-ex : (θ : Γ ⊢ Δ) → (V : Γ ⊢ᵛ X) → Γ ⊢ (Δ ∙ X)
-
-sub-mem : Γ ⊢ Δ → Δ ∋ X → Γ ⊢ᵛ X
-sub-mem (sub-ex θ V) here     = V
-sub-mem (sub-ex θ V) (there i) = sub-mem θ i
+syntax Subᵛ Γ Δ = Γ ⊢ Δ
+Subᵛ : Ctx → Ctx → Set
+Subᵛ Γ = Sub (Val Γ)
 
 sub-wk : Γ ⊇ Δ → Δ ⊢ Ψ → Γ ⊢ Ψ
-sub-wk π sub-ε        = sub-ε
-sub-wk π (sub-ex θ V) = sub-ex (sub-wk π θ) (wk-val π V)
+sub-wk π = sub-map (wk-val π)
 
 sub-id : Γ ⊢ Γ
 sub-id {Γ = ε}     = sub-ε
@@ -124,26 +119,6 @@ mutual
 --------------------------------------------------------------------------
 -- weakening/substitution
 
-sub-wk-id-β : (θ : Γ ⊢ Δ) → sub-wk wk-id θ ≡ θ
-sub-wk-id-β sub-ε        = refl
-sub-wk-id-β (sub-ex θ V) = cong₂ sub-ex (sub-wk-id-β θ) refl
-{-# REWRITE sub-wk-id-β #-}
-
-sub-wk-id-η : (π : Γ ⊇ Γ) (θ : Γ ⊢ Δ) → sub-wk π θ ≡ θ
-sub-wk-id-η π θ = cong (λ δ → sub-wk δ θ) (wk-id-η π)
-{-# REWRITE sub-wk-id-η #-}
-
-sub-wk-wk-η : (π : Γ ⊇ Ψ) (δ : Ψ ⊇ Ξ) (θ : Ξ ⊢ Δ)
-             → sub-wk π (sub-wk δ θ) ≡ sub-wk (wk-trans π δ) θ
-sub-wk-wk-η π δ sub-ε        = refl
-sub-wk-wk-η π δ (sub-ex θ V) = cong₂ sub-ex (sub-wk-wk-η π δ θ) refl
-{-# REWRITE sub-wk-wk-η #-}
-
-sub-mem-wk-β : (π : Γ ⊇ Δ) (θ : Δ ⊢ Ψ) (i : Ψ ∋ X) → sub-mem (sub-wk π θ) i ≡ wk-val π (sub-mem θ i)
-sub-mem-wk-β π (sub-ex θ V) here     = refl
-sub-mem-wk-β π (sub-ex θ V) (there i) = sub-mem-wk-β π θ i
-{-# REWRITE sub-mem-wk-β #-}
-
 mutual
   wk-val-sub-η : (π : Ψ ⊇ Γ) (θ : Γ ⊢ Δ) (V : Δ ⊢ᵛ X) → wk-val π (sub-val θ V) ≡ sub-val (sub-wk π θ) V
   wk-val-sub-η π θ (var i) = refl
@@ -160,39 +135,6 @@ mutual
 
 --------------------------------------------------------------------------
 -- substitution precomposed with weakening
-
-sub-pre : Γ ⊢ Δ → Δ ⊇ Ψ → Γ ⊢ Ψ
-sub-pre θ wk-ε              = sub-ε
-sub-pre (sub-ex θ V) (wk-cong π) = sub-ex (sub-pre θ π) V
-sub-pre (sub-ex θ V) (wk-wk π)   = sub-pre θ π
-
-sub-mem-pre-β : (θ : Γ ⊢ Δ) (π : Δ ⊇ Ψ) (i : Ψ ∋ X) → sub-mem (sub-pre θ π) i ≡ sub-mem θ (wk-mem π i)
-sub-mem-pre-β (sub-ex θ V) (wk-cong π) here      = refl
-sub-mem-pre-β (sub-ex θ V) (wk-cong π) (there i) = sub-mem-pre-β θ π i
-sub-mem-pre-β (sub-ex θ V) (wk-wk π) i           = sub-mem-pre-β θ π i
-{-# REWRITE sub-mem-pre-β #-}
-
-sub-pre-wk-η : (π : Ξ ⊇ Γ) (θ : Γ ⊢ Δ) (δ : Δ ⊇ Ψ) → sub-pre (sub-wk π θ) δ ≡ sub-wk π (sub-pre θ δ)
-sub-pre-wk-η π θ wk-ε                   = refl
-sub-pre-wk-η π (sub-ex θ V) (wk-cong δ) = cong₂ sub-ex (sub-pre-wk-η π θ δ) refl
-sub-pre-wk-η π (sub-ex θ V) (wk-wk δ)   = sub-pre-wk-η π θ δ
-{-# REWRITE sub-pre-wk-η #-}
-
-sub-pre-idr-β : (θ : Γ ⊢ Δ) → sub-pre θ (wk-id {Δ}) ≡ θ
-sub-pre-idr-β sub-ε        = refl
-sub-pre-idr-β (sub-ex θ V) = cong₂ sub-ex (sub-pre-idr-β θ) refl
-{-# REWRITE sub-pre-idr-β #-}
-
-sub-pre-idr-η : (θ : Γ ⊢ Δ) (π : Δ ⊇ Δ) → sub-pre θ π ≡ θ
-sub-pre-idr-η θ π = cong (sub-pre θ) (wk-id-η π)
-{-# REWRITE sub-pre-idr-η #-}
-
-sub-pre-pre-η : (θ : Γ ⊢ Δ) (π : Δ ⊇ Ψ) (δ : Ψ ⊇ Ξ) → sub-pre (sub-pre θ π) δ ≡ sub-pre θ (wk-trans π δ)
-sub-pre-pre-η θ wk-ε wk-ε                       = refl
-sub-pre-pre-η (sub-ex θ V) (wk-cong π) (wk-cong δ) = cong₂ sub-ex (sub-pre-pre-η θ π δ) refl
-sub-pre-pre-η (sub-ex θ V) (wk-cong π) (wk-wk δ)   = sub-pre-pre-η θ π δ
-sub-pre-pre-η (sub-ex θ V) (wk-wk π) δ             = sub-pre-pre-η θ π δ
-{-# REWRITE sub-pre-pre-η #-}
 
 sub-pre-idl-β : (π : Δ ⊇ Γ) → sub-pre (sub-id {Δ}) π ≡ sub-wk π (sub-id {Γ})
 sub-pre-idl-β wk-ε        = refl
@@ -218,29 +160,7 @@ mutual
 -- substitution composition
 
 sub-∘ : Γ ⊢ Δ → Δ ⊢ Ψ → Γ ⊢ Ψ
-sub-∘ θ sub-ε        = sub-ε
-sub-∘ θ (sub-ex φ V) = sub-ex (sub-∘ θ φ) (sub-val θ V)
-
-sub-mem-sub-β : (θ : Γ ⊢ Δ) (φ : Δ ⊢ Ψ) (i : Ψ ∋ X) → sub-mem (sub-∘ θ φ) i ≡ sub-val θ (sub-mem φ i)
-sub-mem-sub-β θ (sub-ex φ V) here      = refl
-sub-mem-sub-β θ (sub-ex φ V) (there i) = sub-mem-sub-β θ φ i
-{-# REWRITE sub-mem-sub-β #-}
-
-sub-∘-wkr-η : (θ : Γ ⊢ Ξ) (π : Ξ ⊇ Δ) (φ : Δ ⊢ Ψ) → sub-∘ θ (sub-wk π φ) ≡ sub-∘ (sub-pre θ π) φ
-sub-∘-wkr-η θ π sub-ε        = refl
-sub-∘-wkr-η θ π (sub-ex φ V) = cong₂ sub-ex (sub-∘-wkr-η θ π φ) refl
-{-# REWRITE sub-∘-wkr-η #-}
-
-sub-∘-wkl-η : (π : Ξ ⊇ Γ) (θ : Γ ⊢ Δ) (φ : Δ ⊢ Ψ) → sub-∘ (sub-wk π θ) φ ≡ sub-wk π (sub-∘ θ φ)
-sub-∘-wkl-η π θ sub-ε        = refl
-sub-∘-wkl-η π θ (sub-ex φ V) = cong₂ sub-ex (sub-∘-wkl-η π θ φ) refl
-{-# REWRITE sub-∘-wkl-η #-}
-
-sub-pre-sub-η : (θ : Γ ⊢ Δ) (φ : Δ ⊢ Ψ) (π : Ψ ⊇ Ξ) → sub-pre (sub-∘ θ φ) π ≡ sub-∘ θ (sub-pre φ π)
-sub-pre-sub-η θ φ wk-ε                   = refl
-sub-pre-sub-η θ (sub-ex φ V) (wk-cong π) = cong₂ sub-ex (sub-pre-sub-η θ φ π) refl
-sub-pre-sub-η θ (sub-ex φ V) (wk-wk π)   = sub-pre-sub-η θ φ π
-{-# REWRITE sub-pre-sub-η #-}
+sub-∘ θ = sub-map (sub-val θ)
 
 mutual
   sub-val-sub-η : (θ : Γ ⊢ Δ) (φ : Δ ⊢ Ψ) (V : Ψ ⊢ᵛ X) → sub-val θ (sub-val φ V) ≡ sub-val (sub-∘ θ φ) V
@@ -257,12 +177,6 @@ mutual
   sub-comp-sub-η θ φ (app V W)  = cong₂ app (sub-val-sub-η θ φ V) (sub-val-sub-η θ φ W)
 
 {-# REWRITE sub-val-sub-η sub-comp-sub-η #-}
-
-sub-∘-assoc-η : (θ : Γ ⊢ Δ) (φ : Δ ⊢ Ψ) (ψ : Ψ ⊢ Ξ)
-                   → sub-∘ θ (sub-∘ φ ψ) ≡ sub-∘ (sub-∘ θ φ) ψ
-sub-∘-assoc-η θ φ sub-ε        = refl
-sub-∘-assoc-η θ φ (sub-ex ψ V) = cong₂ sub-ex (sub-∘-assoc-η θ φ ψ) refl
-{-# REWRITE sub-∘-assoc-η #-}
 
 --------------------------------------------------------------------------
 -- identity substitution
@@ -293,12 +207,7 @@ sub-comp-id-β = sub-comp-ren-β wk-id
 
 {-# REWRITE sub-val-id-β sub-comp-id-β #-}
 
-sub-∘-idl-β : (θ : Γ ⊢ Δ) → sub-∘ sub-id θ ≡ θ
-sub-∘-idl-β sub-ε        = refl
-sub-∘-idl-β (sub-ex θ V) = cong₂ sub-ex (sub-∘-idl-β θ) refl
-{-# REWRITE sub-∘-idl-β #-}
-
-sub-∘-idr-β : (θ : Γ ⊢ Δ) → sub-∘ θ sub-id ≡ θ
+sub-∘-idr-β : (θ : Γ ⊢ Δ) → sub-map (sub-val θ) sub-id ≡ θ
 sub-∘-idr-β sub-ε        = refl
 sub-∘-idr-β (sub-ex θ V) = cong₂ sub-ex (sub-∘-idr-β θ) refl
 {-# REWRITE sub-∘-idr-β #-}
