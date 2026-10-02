@@ -148,20 +148,20 @@ record RedSub {Γ Δ Ψ : Ctx} (θ : Γ ⊢ Ψ ∣ Δ) : Set where
 open RedSub
 
 record CoRedSub {Γ Δ Ξ : Ctx} (φ : Γ ∣ Ξ ⊢ Δ) : Set where
-  field cored : {X : Ty} (i : Ξ ∋ X) → CoRedᵏ X (cosub-mem φ i)
+  field cored : {X : Ty} (i : Ξ ∋ X) → CoRedᵏ X (sub-mem φ i)
 open CoRedSub
 
 RedSub-wk : {Γ Δ Ψ Ξ Γ₁ : Ctx} (π : Ψ ⊇ Γ) (ρ : Ξ ⊇ Δ) {θ : Γ ⊢ Γ₁ ∣ Δ} → RedSub θ → RedSub (sub-wk π ρ θ)
 RedSub-wk π ρ {θ} rθ .red {X} i = Red-wk X π ρ (rθ .red i)
 
 CoRedSub-wk : {Γ Δ Ψ Ξ Δ₁ : Ctx} (π : Ψ ⊇ Γ) (ρ : Ξ ⊇ Δ) {φ : Γ ∣ Δ₁ ⊢ Δ} → CoRedSub φ → CoRedSub (cosub-wk π ρ φ)
-CoRedSub-wk π ρ {φ} rφ .cored {X} i = CoRed-wk X π ρ {K = cosub-mem φ i} (rφ .cored i)
+CoRedSub-wk π ρ {φ} rφ .cored {X} i = CoRed-wk X π ρ {K = sub-mem φ i} (rφ .cored i)
 
 RedSub-ext : {Γ Δ Ψ : Ctx} {X : Ty} {θ : Γ ⊢ Ψ ∣ Δ} {V : Γ ⊢ᵛ X ∣ Δ} → RedSub θ → Redᵛ X V → RedSub (sub-ex θ V)
 RedSub-ext rθ rv .red here = rv
 RedSub-ext rθ rv .red (there i) = rθ .red i
 
-CoRedSub-ext : {Γ Δ Ξ : Ctx} {X : Ty} {φ : Γ ∣ Ξ ⊢ Δ} {K : Γ ∣ X ⊢ᵏ Δ} → CoRedSub φ → CoRedᵏ X K → CoRedSub (cosub-ex φ K)
+CoRedSub-ext : {Γ Δ Ξ : Ctx} {X : Ty} {φ : Γ ∣ Ξ ⊢ Δ} {K : Γ ∣ X ⊢ᵏ Δ} → CoRedSub φ → CoRedᵏ X K → CoRedSub (sub-ex φ K)
 CoRedSub-ext rφ rk .cored here = rk
 CoRedSub-ext rφ rk .cored (there i) = rφ .cored i
 
@@ -187,7 +187,7 @@ Fundamental-val θ φ rθ rφ (inr W)    = Fundamental-val θ φ rθ rφ W
 
 Fundamental-tm θ φ rθ rφ (ret V) rk = Ortho (Fundamental-val θ φ rθ rφ V) rk
 Fundamental-tm θ φ rθ rφ (μ C)   {K} rk =
-  sn (λ { μ-step → Fundamental-cmd θ (cosub-ex φ K) rθ (CoRedSub-ext rφ rk) C })
+  sn (λ { μ-step → Fundamental-cmd θ (sub-ex φ K) rθ (CoRedSub-ext rφ rk) C })
 
 Fundamental-cotm θ φ rθ rφ (covar i)   = rφ .cored i
 Fundamental-cotm θ φ rθ rφ (app V K)   = Fundamental-val θ φ rθ rφ V , Fundamental-cotm θ φ rθ rφ K

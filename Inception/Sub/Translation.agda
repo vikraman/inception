@@ -36,7 +36,7 @@ handleVal {X = X} n =
 ⟦ S.pair V W ⟧ᵛ = pair ⟦ V ⟧ᵛ ⟦ W ⟧ᵛ
 ⟦ S.unit ⟧ᵛ     = unit
 
-⟦_⟧ˢ : S.Sub SΓ SΔ → L.Sub ⟦ SΓ ⟧ˣ L.Δ ⟦ SΔ ⟧ˣ
+⟦_⟧ˢ : S.Sub SΓ SΔ → L.Subᵛ ⟦ SΓ ⟧ˣ L.Δ ⟦ SΔ ⟧ˣ
 ⟦ S.sub-ε ⟧ˢ      = L.sub-ε
 ⟦ S.sub-ex θ V ⟧ˢ = L.sub-ex ⟦ θ ⟧ˢ ⟦ V ⟧ᵛ
 
