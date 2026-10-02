@@ -11,7 +11,6 @@ data Ty : Set where
   `ℓ `𝓅 : Ty
 
 open import Inception.Ctx Ty public
-open import Inception.Ctx.Sub Ty public
 
 syntax Val Γ X = Γ ⊢ᵛ X
 

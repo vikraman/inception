@@ -18,7 +18,6 @@ data Ty : Set where
   _`⇒_  : Ty → Ty → Ty
 
 open import Inception.Ctx Ty public
-open import Inception.Ctx.Sub Ty public
 
 --------------------------------------------------------------------------
 -- values and computations

@@ -16,7 +16,6 @@ infixr 30 ¬_
 ¬ X = X `⇒ `⊥
 
 open import Inception.Ctx Ty public
-open import Inception.Ctx.Sub Ty public
 
 syntax Cmd Γ Δ = Γ ⊢ Δ
 

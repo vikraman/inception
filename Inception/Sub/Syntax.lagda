@@ -23,7 +23,6 @@ data Ty : Set where
   `ℓ : Ty
 
 open import Inception.Ctx Ty public
-open import Inception.Ctx.Sub Ty public
 
 
 \end{code}
