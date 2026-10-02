@@ -10,11 +10,14 @@ open import Inception.Prelude
 open import Data.Product using (proj₁; proj₂; _,_; _×_; Σ-syntax)
 open import Data.Unit using (⊤; tt)
 open import Data.Empty using (⊥)
+open import Data.Nat
 
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; subst)
 
 import Inception.Sub.Machine ℛ as M
 import Inception.Sub.TelescopeMachine ℛ as TM
+open M using (⟨_╎_⟩; ⟨_╎_╎_⟩)
+open TM using (⟨_；_╎_╎_⟩; ⟨_╎_╎_╎_⟩)
 
 
 mutual
@@ -36,3 +39,7 @@ mutual
   mclo-to-mval (TM.label here) (γ TM.·﹝ M ╎ π ╎ K ﹞) = M.jumpᵛ M (tmenv-to-menv γ) (tmcstack-to-mcstack K)
   mclo-to-mval (TM.label (there i)) (γ TM.· 𝐖) = mclo-to-mval (TM.label i) γ
   mclo-to-mval (TM.label (there i)) (γ TM.·﹝ M ╎ π ╎ K ﹞) = mclo-to-mval (TM.label i) γ
+
+tmcstate-to-mcstate : TM.CState → M.CState
+tmcstate-to-mcstate ⟨ 𝐖 ； γ ╎ π ╎ K ⟩ = ⟨ mclo-to-mval 𝐖 γ ╎ tmcstack-to-mcstack K ⟩
+tmcstate-to-mcstate ⟨ M ╎ γ ╎ π ╎ K ⟩ = ⟨ M ╎ tmenv-to-menv γ ╎ tmcstack-to-mcstack K ⟩
