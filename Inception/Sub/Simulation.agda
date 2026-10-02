@@ -16,8 +16,9 @@ open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; subst
 
 import Inception.Sub.Machine ℛ as M
 import Inception.Sub.TelescopeMachine ℛ as TM
-open M using (⟨_╎_⟩; ⟨_╎_╎_⟩)
-open TM using (⟨_；_╎_╎_⟩; ⟨_╎_╎_╎_⟩)
+open M using (⟨_╎_⟩; ⟨_╎_╎_⟩; eval→; return→; push→; sub→; var→; pmᶜ→; app→; progress) renaming (_→ᶜ_ to _→ᴹ_)
+open TM using (⟨_；_╎_╎_⟩; ⟨_╎_╎_╎_⟩; eval→; return→; push→; sub→; var→; pmᶜ→; app→) renaming (_→ᶜ_ to _→ᵀᴹ_)
+--open TM using (⟨_；_╎_╎_⟩; ⟨_╎_╎_╎_⟩) renaming (_→ᶜ_ to _→ᵀᴹ_; eval→ to eval→ᵀᴹ; return→ to return→ᵀᴹ; push→ to push→ᵀᴹ; sub→ to sub→ᵀᴹ; var→ to var→ᵀᴹ; pmᶜ→ to pmᶜ→ᵀᴹ; app→ to app→ᵀᴹ)
 
 
 mutual
@@ -43,3 +44,38 @@ mutual
 tmcstate-to-mcstate : TM.CState → M.CState
 tmcstate-to-mcstate ⟨ 𝐖 ； γ ╎ π ╎ K ⟩ = ⟨ mclo-to-mval 𝐖 γ ╎ tmcstack-to-mcstack K ⟩
 tmcstate-to-mcstate ⟨ M ╎ γ ╎ π ╎ K ⟩ = ⟨ M ╎ tmenv-to-menv γ ╎ tmcstack-to-mcstack K ⟩
+
+tmstep-to-mstep : {σ σ' : TM.CState} → (σ →ᵀᴹ σ') → ((tmcstate-to-mcstate σ) →ᴹ (tmcstate-to-mcstate σ'))
+tmstep-to-mstep (eval→ {W = W} {γ = γ} {K = K}) =
+  --Goal: ⟨ return W ╎ tmenv-to-menv γ ╎ tmcstack-to-mcstack K ⟩ →ᴹ ⟨ mclo-to-mval (TM.eval W γ) γ ╎ tmcstack-to-mcstack K ⟩
+  let
+    a0 : M.Progress ⟨ return W ╎ tmenv-to-menv γ ╎ tmcstack-to-mcstack K ⟩
+    a0 = progress ⟨ return W ╎ tmenv-to-menv γ ╎ tmcstack-to-mcstack K ⟩
+  in
+  {!a0!}
+tmstep-to-mstep (return→ {𝐖 = 𝐖} {M₁ = M₁} {γ = γ} {γ₁ = γ₁} {K = K}) =
+  -- Goal: ⟨ mclo-to-mval 𝐖 γ ╎ M.< M₁ ； tmenv-to-menv γ₁ >∷ tmcstack-to-mcstack K ⟩ →ᴹ ⟨ wk-comp (wk-cong π) M₁ ╎ tmenv-to-menv γ M.· mclo-to-mval 𝐖 γ ╎ tmcstack-to-mcstack K ⟩
+  let
+    a0 = progress ⟨ mclo-to-mval 𝐖 γ ╎ M.< M₁ ； tmenv-to-menv γ₁ >∷ tmcstack-to-mcstack K ⟩
+  in
+  {!a0!}
+tmstep-to-mstep push→ = push→
+tmstep-to-mstep sub→ = sub→
+tmstep-to-mstep (var→ {W = W} {γ = γ} {K = K}) =
+  -- Goal: ⟨ var W ╎ tmenv-to-menv γ ╎ tmcstack-to-mcstack K ⟩ →ᴹ tmcstate-to-mcstate (TM.eval-jump W γ)
+  let
+    a0 = progress ⟨ var W ╎ tmenv-to-menv γ ╎ tmcstack-to-mcstack K ⟩
+  in
+  {!a0!}
+tmstep-to-mstep (pmᶜ→ {W = W} {γ = γ} {M = M} {K = K}) =
+  -- Goal: ⟨ pm W M ╎ tmenv-to-menv γ ╎ tmcstack-to-mcstack K ⟩ →ᴹ ⟨ M ╎ tmenv-to-menv γ M.· mclo-to-mval (TM.eval₁ W γ) γ M.· mclo-to-mval (TM.wk-mclo (wk-wk wk-id) (TM.eval₂ W γ)) (γ TM.· TM.eval₁ W γ) ╎ tmcstack-to-mcstack K ⟩
+  let
+    a0 = progress ⟨ pm W M ╎ tmenv-to-menv γ ╎ tmcstack-to-mcstack K ⟩
+  in
+  {!a0!}
+tmstep-to-mstep (app→ {W₁ = W₁} {W₂ = W₂} {γ = γ} {K = K}) =
+  -- Goal: ⟨ app W₁ W₂ ╎ tmenv-to-menv γ ╎ tmcstack-to-mcstack K ⟩ →ᴹ ⟨ TM.lam-to-comp (TM.eval W₁ γ) ╎ tmenv-to-menv γ M.· mclo-to-mval (TM.eval W₂ γ) γ ╎ tmcstack-to-mcstack K ⟩
+  let
+    a0 = progress ⟨ app W₁ W₂ ╎ tmenv-to-menv γ ╎ tmcstack-to-mcstack K ⟩
+  in
+  {!a0!}
