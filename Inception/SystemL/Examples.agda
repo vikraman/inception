@@ -130,7 +130,7 @@ _ = refl
 
 
 ---
-open import Inception.Sub.Syntax as S hiding (ε; _∙_; here; there; Sub)
+open import Inception.Sub.Syntax as S hiding (ε; _∙_; here; there; Subᵛ)
 
 ex16 : S.ε ⊢ᶜ `𝟙
 ex16 = push (return unit) (return unit)
