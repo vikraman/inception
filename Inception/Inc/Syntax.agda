@@ -11,6 +11,7 @@ data Ty : Set where
   `ℓ `𝓅 : Ty
 
 open import Inception.Ctx Ty public
+open import Inception.Ctx.Sub Ty public
 
 syntax Val Γ X = Γ ⊢ᵛ X
 
@@ -83,19 +84,13 @@ mutual
 wk : Γ ⊢ᵛ X → (Γ ∙ Y) ⊢ᵛ X
 wk = wk-val (wk-wk wk-id)
 
-syntax Sub Γ Δ = Γ ⊢ Δ
+syntax Subᵛ Γ Δ = Γ ⊢ Δ
 
-data Sub (Γ : Ctx) : (Δ : Ctx) → Set where
-  sub-ε : Γ ⊢ ε
-  sub-ex : (θ : Γ ⊢ Δ) → (V : Γ ⊢ᵛ X) → Γ ⊢ (Δ ∙ X)
-
-sub-mem : Γ ⊢ Δ → Δ ∋ X → Γ ⊢ᵛ X
-sub-mem (sub-ex θ V) here = V
-sub-mem (sub-ex θ V) (there i) = sub-mem θ i
+Subᵛ : Ctx → Ctx → Set
+Subᵛ Γ = Sub (Val Γ)
 
 sub-wk : Γ ⊇ Δ → Δ ⊢ Ψ → Γ ⊢ Ψ
-sub-wk π sub-ε = sub-ε
-sub-wk π (sub-ex θ V) = sub-ex (sub-wk π θ) (wk-val π V)
+sub-wk π = sub-map (wk-val π)
 
 sub-id : Γ ⊢ Γ
 sub-id {Γ = ε} = sub-ε
