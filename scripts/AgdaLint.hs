@@ -1135,7 +1135,7 @@ checkBotElim _ f = [finding (tokPos t) "prefer contradiction to ⊥-elim" | l <-
 
 checkRewriteName :: Context -> SourceFile -> [Finding]
 checkRewriteName ctx f =
-  [ finding (tokPos t) {posCol = posCol (tokPos t) + off} (n <> " is a rewrite rule; end its name in one of " <> T.intercalate ", " sfx)
+  [ finding (advancePos (tokPos t) (T.take off body)) (n <> " is a rewrite rule; end its name in one of " <> T.intercalate ", " sfx)
   | l <- blockLines f
   , t@Token {tokKind = Pragma, tokText = body} <- lineTokens l
   , Just rest <- [T.stripPrefix "REWRITE" . T.stripStart =<< T.stripPrefix "{-#" body]
@@ -1157,6 +1157,12 @@ wordOffsets = go 0
           (w, rest') = T.break isSpace rest
           j = i + T.length sp
        in if T.null w then [] else (j, w) : go (j + T.length w) rest'
+
+-- position after the given text, across newlines
+advancePos :: Pos -> Text -> Pos
+advancePos p pre = case T.splitOn "\n" pre of
+  [seg] -> p {posCol = posCol p + T.length seg}
+  segs  -> Pos (posLine p + length segs - 1) (maybe 0 (T.length . snd) (unsnoc segs))
 
 ------------------------------------------------------------------------
 -- running
