@@ -26,10 +26,10 @@ module _ where
   module _ {p} {P : Set p} where
     postulate
       I-rec : (p₀ p₁ : P) (p : p₀ ≡ p₁) → I → P
-      I-rec-i0 : ∀ {p₀} {p₁} {p} → I-rec p₀ p₁ p i₀ ≡ p₀
-      {-# REWRITE I-rec-i0 #-}
-      I-rec-i1 : ∀ {p₀} {p₁} {p} → I-rec p₀ p₁ p i₁ ≡ p₁
-      {-# REWRITE I-rec-i1 #-}
+      I-rec-i0-β : ∀ {p₀} {p₁} {p} → I-rec p₀ p₁ p i₀ ≡ p₀
+      {-# REWRITE I-rec-i0-β #-}
+      I-rec-i1-β : ∀ {p₀} {p₁} {p} → I-rec p₀ p₁ p i₁ ≡ p₁
+      {-# REWRITE I-rec-i1-β #-}
       I-rec-seg : ∀ {p₀} {p₁} {p} → cong (I-rec p₀ p₁ p) seg ≡ p
 
 funext : ∀ {a b} {A : Set a} {B : Set b} {f g : A → B} → ((x : A) → f x ≡ g x) → f ≡ g

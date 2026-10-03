@@ -88,8 +88,7 @@ Red-wk (X `+ Y) π ρ {V = inl V}  rv = Red-wk X π ρ rv
 Red-wk (X `+ Y) π ρ {V = inr W}  rw = Red-wk Y π ρ rw
 Red-wk (X `⇒ Y) π ρ {V = var i}  r = tt
 Red-wk (X `⇒ Y) {Γ} {Δ} π ρ {V = lam M} f =
-  λ π₁ σ {W} {K} rw rk →
-    Eq.subst (λ x → SN (cut Y (letv W x) K)) (sym (wk-tm-trans M (wk-cong π₁) (wk-cong π) σ ρ)) (f (wk-trans π₁ π) (wk-trans σ ρ) rw rk)
+  λ π₁ σ rw rk → f (wk-trans π₁ π) (wk-trans σ ρ) rw rk
 
 CoRed-wk : (X : Ty) {Γ Δ Ψ Ξ : Ctx} (π : Ψ ⊇ Γ) (ρ : Ξ ⊇ Δ) {K : Γ ∣ X ⊢ᵏ Δ}
          → CoRedᵏ X K → CoRedᵏ X (wk-cotm π ρ K)
@@ -100,8 +99,7 @@ CoRed-wk (X `× Y)      π ρ {K = snd K}     r  = CoRed-wk Y π ρ {K = K} r
 CoRed-wk (X `+ Y)      π ρ {K = case K L} (r₁ , r₂) = CoRed-wk X π ρ {K = K} r₁ , CoRed-wk Y π ρ {K = L} r₂
 CoRed-wk (X `⇒ Y)      π ρ {K = app V K}   (rv , rk)  = Red-wk X π ρ rv , CoRed-wk Y π ρ {K = K} rk
 CoRed-wk X {Γ} {Δ} π ρ {K = μ̃ C} f =
-  λ π₁ σ {V} rv →
-    Eq.subst (λ x → SN (sub-cmd (sub-ex sub-id V) cosub-id x)) (sym (wk-cmd-trans C (wk-cong π₁) (wk-cong π) σ ρ)) (f (wk-trans π₁ π) (wk-trans σ ρ) rv)
+  λ π₁ σ rv → f (wk-trans π₁ π) (wk-trans σ ρ) rv
 
 --------------------------------------------------------------------------
 -- orthogonality
@@ -109,7 +107,7 @@ CoRed-wk X {Γ} {Δ} π ρ {K = μ̃ C} f =
 Ortho-μ̃ : {X : Ty} {Γ Δ : Ctx} {V : Γ ⊢ᵛ X ∣ Δ} {C : (Γ ∙ X) ⊢ Δ}
         → Redᵛ X V → CoRedᵏ X (μ̃ C) → SN (cut X (ret V) (μ̃ C))
 Ortho-μ̃ {V = V} {M} rv rk =
-  sn (λ { μ̃-step → Eq.subst SN (cong (sub-cmd (sub-ex sub-id V) cosub-id) (wk-cmd-id M)) (rk wk-id wk-id rv) })
+  sn (λ { μ̃-step → rk wk-id wk-id rv })
 
 Ortho : {X : Ty} {Γ Δ : Ctx} {V : Γ ⊢ᵛ X ∣ Δ} {K : Γ ∣ X ⊢ᵏ Δ}
       → Redᵛ X V → CoRedᵏ X K → SN (cut X (ret V) K)
@@ -131,7 +129,7 @@ Ortho {X `⇒ Y} {V = var i} {K = app W K} rv rk = sn λ ()
 Ortho {X `⇒ Y} {V = var i} {K = μ̃ C} rv rk = Ortho-μ̃ rv rk
 Ortho {X `⇒ Y} {V = lam M} {K = covar i} rv rk = sn λ ()
 Ortho {X `⇒ Y} {V = lam M} {K = app W K} rv (rw , rk) =
-  sn λ { app-step → Eq.subst (λ x → SN (cut Y (letv W x) K)) (wk-tm-id M) (rv wk-id wk-id rw rk) }
+  sn λ { app-step → rv wk-id wk-id rw rk }
 Ortho {X `⇒ Y} {V = lam M} {K = μ̃ C} rv rk = Ortho-μ̃ rv rk
 Ortho {X `+ Y} {V = var i} {K = case K L} rv rk = sn λ ()
 Ortho {X `+ Y} {V = var i} {K = μ̃ C} rv rk = Ortho-μ̃ rv rk
@@ -150,20 +148,20 @@ record RedSub {Γ Δ Ψ : Ctx} (θ : Γ ⊢ Ψ ∣ Δ) : Set where
 open RedSub
 
 record CoRedSub {Γ Δ Ξ : Ctx} (φ : Γ ∣ Ξ ⊢ Δ) : Set where
-  field cored : {X : Ty} (i : Ξ ∋ X) → CoRedᵏ X (cosub-mem φ i)
+  field cored : {X : Ty} (i : Ξ ∋ X) → CoRedᵏ X (sub-mem φ i)
 open CoRedSub
 
 RedSub-wk : {Γ Δ Ψ Ξ Γ₁ : Ctx} (π : Ψ ⊇ Γ) (ρ : Ξ ⊇ Δ) {θ : Γ ⊢ Γ₁ ∣ Δ} → RedSub θ → RedSub (sub-wk π ρ θ)
-RedSub-wk π ρ {θ} rθ .red {X} i = Eq.subst (Redᵛ X) (sym (sub-mem-wk π ρ θ i)) (Red-wk X π ρ (rθ .red i))
+RedSub-wk π ρ {θ} rθ .red {X} i = Red-wk X π ρ (rθ .red i)
 
 CoRedSub-wk : {Γ Δ Ψ Ξ Δ₁ : Ctx} (π : Ψ ⊇ Γ) (ρ : Ξ ⊇ Δ) {φ : Γ ∣ Δ₁ ⊢ Δ} → CoRedSub φ → CoRedSub (cosub-wk π ρ φ)
-CoRedSub-wk π ρ {φ} rφ .cored {X} i = Eq.subst (CoRedᵏ X) (sym (cosub-mem-wk π ρ φ i)) (CoRed-wk X π ρ {K = cosub-mem φ i} (rφ .cored i))
+CoRedSub-wk π ρ {φ} rφ .cored {X} i = CoRed-wk X π ρ {K = sub-mem φ i} (rφ .cored i)
 
 RedSub-ext : {Γ Δ Ψ : Ctx} {X : Ty} {θ : Γ ⊢ Ψ ∣ Δ} {V : Γ ⊢ᵛ X ∣ Δ} → RedSub θ → Redᵛ X V → RedSub (sub-ex θ V)
 RedSub-ext rθ rv .red here = rv
 RedSub-ext rθ rv .red (there i) = rθ .red i
 
-CoRedSub-ext : {Γ Δ Ξ : Ctx} {X : Ty} {φ : Γ ∣ Ξ ⊢ Δ} {K : Γ ∣ X ⊢ᵏ Δ} → CoRedSub φ → CoRedᵏ X K → CoRedSub (cosub-ex φ K)
+CoRedSub-ext : {Γ Δ Ξ : Ctx} {X : Ty} {φ : Γ ∣ Ξ ⊢ Δ} {K : Γ ∣ X ⊢ᵏ Δ} → CoRedSub φ → CoRedᵏ X K → CoRedSub (sub-ex φ K)
 CoRedSub-ext rφ rk .cored here = rk
 CoRedSub-ext rφ rk .cored (there i) = rφ .cored i
 
@@ -180,9 +178,8 @@ Fundamental-cmd θ φ rθ rφ (cut X M K) = Fundamental-tm θ φ rθ rφ M (Fund
 
 Fundamental-val θ φ rθ rφ (var i)    = rθ .red i
 Fundamental-val θ φ rθ rφ (lam M)    =
-  λ π ρ {W} {K} rw rk →
-    Eq.subst (λ x → SN (cut _ x K)) (sym (fund-lam-eq θ φ π ρ W M))
-             (Fundamental-tm (sub-ex (sub-wk π ρ θ) W) (cosub-wk π ρ φ) (RedSub-ext (RedSub-wk π ρ rθ) rw) (CoRedSub-wk π ρ rφ) M rk)
+  λ π ρ {W} rw rk →
+    Fundamental-tm (sub-ex (sub-wk π ρ θ) W) (cosub-wk π ρ φ) (RedSub-ext (RedSub-wk π ρ rθ) rw) (CoRedSub-wk π ρ rφ) M rk
 Fundamental-val θ φ rθ rφ unit       = tt
 Fundamental-val θ φ rθ rφ (pair V W) = Fundamental-val θ φ rθ rφ V , Fundamental-val θ φ rθ rφ W
 Fundamental-val θ φ rθ rφ (inl V)    = Fundamental-val θ φ rθ rφ V
@@ -190,7 +187,7 @@ Fundamental-val θ φ rθ rφ (inr W)    = Fundamental-val θ φ rθ rφ W
 
 Fundamental-tm θ φ rθ rφ (ret V) rk = Ortho (Fundamental-val θ φ rθ rφ V) rk
 Fundamental-tm θ φ rθ rφ (μ C)   {K} rk =
-  sn (λ { μ-step → Eq.subst SN (sym (fund-mu-eq θ φ K C)) (Fundamental-cmd θ (cosub-ex φ K) rθ (CoRedSub-ext rφ rk) C) })
+  sn (λ { μ-step → Fundamental-cmd θ (sub-ex φ K) rθ (CoRedSub-ext rφ rk) C })
 
 Fundamental-cotm θ φ rθ rφ (covar i)   = rφ .cored i
 Fundamental-cotm θ φ rθ rφ (app V K)   = Fundamental-val θ φ rθ rφ V , Fundamental-cotm θ φ rθ rφ K
@@ -199,8 +196,7 @@ Fundamental-cotm θ φ rθ rφ (snd K)     = Fundamental-cotm θ φ rθ rφ K
 Fundamental-cotm θ φ rθ rφ (case K L) = Fundamental-cotm θ φ rθ rφ K , Fundamental-cotm θ φ rθ rφ L
 Fundamental-cotm θ φ rθ rφ (μ̃ C)       =
   λ π ρ {V} rv →
-    Eq.subst SN (sym (fund-mut-wk-eq θ φ π ρ V C))
-             (Fundamental-cmd (sub-ex (sub-wk π ρ θ) V) (cosub-wk π ρ φ) (RedSub-ext (RedSub-wk π ρ rθ) rv) (CoRedSub-wk π ρ rφ) C)
+    Fundamental-cmd (sub-ex (sub-wk π ρ θ) V) (cosub-wk π ρ φ) (RedSub-ext (RedSub-wk π ρ rθ) rv) (CoRedSub-wk π ρ rφ) C
 Fundamental-cotm θ φ rθ rφ tp          = tt
 
 Red-var-triv : (X : Ty) {Γ : Ctx} (Δ : Ctx) (i : Γ ∋ X) → Redᵛ X (var {Δ = Δ} i)
@@ -212,13 +208,13 @@ Red-var-triv (X `+ Y)  Δ i = tt
 Red-var-triv (X `⇒ Y)  Δ i = tt
 
 RedSub-id : {Γ Δ : Ctx} → RedSub (sub-id {Γ} {Δ})
-RedSub-id {Γ} {Δ} .red {X} i = Eq.subst (Redᵛ X) (sym (sub-mem-id i)) (Red-var-triv X Δ i)
+RedSub-id {Γ} {Δ} .red {X} i = Red-var-triv X Δ i
 
 CoRedSub-id : {Γ Δ : Ctx} → CoRedSub (cosub-id {Γ} {Δ})
-CoRedSub-id {Γ} {Δ} .cored {X} i = Eq.subst (CoRedᵏ X) (sym (cosub-mem-id i)) tt
+CoRedSub-id {Γ} {Δ} .cored {X} i = tt
 
 SN-theorem : {Γ Δ : Ctx} (C : Γ ⊢ Δ) → SN C
-SN-theorem {Γ} {Δ} M = Eq.subst SN (sub-cmd-id M) (Fundamental-cmd sub-id cosub-id RedSub-id CoRedSub-id M)
+SN-theorem {Γ} {Δ} M = Fundamental-cmd sub-id cosub-id RedSub-id CoRedSub-id M
 
 --------------------------------------------------------------------------
 -- eval

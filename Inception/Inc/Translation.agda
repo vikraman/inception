@@ -36,7 +36,7 @@ installV {X = X} n = lam (μ (cut X (wk̃ᵗ (wk̃ᵗ n)) (covar (there here))))
 ⟦ I.pair V W ⟧ᵛ = pair ⟦ V ⟧ᵛ ⟦ W ⟧ᵛ
 ⟦ I.unit ⟧ᵛ     = unit
 
-⟦_⟧ˢ : I.Sub IΓ IΔ → L.Sub ⟦ IΓ ⟧ˣ L.Δ ⟦ IΔ ⟧ˣ
+⟦_⟧ˢ : I.Subᵛ IΓ IΔ → L.Subᵛ ⟦ IΓ ⟧ˣ L.Δ ⟦ IΔ ⟧ˣ
 ⟦ I.sub-ε ⟧ˢ      = L.sub-ε
 ⟦ I.sub-ex θ V ⟧ˢ = L.sub-ex ⟦ θ ⟧ˢ ⟦ V ⟧ᵛ
 
