@@ -12,7 +12,7 @@ open Eq.≡-Reasoning
 
 open import Inception.Lam.Syntax
 open import Inception.Prelude
-open Inception.Prelude.RTC
+open import Inception.Rewriting
 
 --------------------------------------------------------------------------
 -- stacks, configurations, transitions
@@ -53,13 +53,8 @@ data _→ᵏ_ {Γ} : {X : Ty} → Cfg Γ X → Cfg Γ X → Set where
 --------------------------------------------------------------------------
 -- accessibility
 
-data SN {Γ X} (σ : Cfg Γ X) : Set where
-  sn : (∀ {σ₁} → σ →ᵏ σ₁ → SN σ₁) → SN σ
-
-infix 5 _↠ᵏ_
-
-_↠ᵏ_ : {Γ : Ctx} {X : Ty} → Cfg Γ X → Cfg Γ X → Set
-_↠ᵏ_ {Γ} {X} = _~>*_ (_→ᵏ_ {Γ = Γ} {X = X})
+open module Rew {Γ : Ctx} {X : Ty} = Reduction (_→ᵏ_ {Γ = Γ} {X = X}) public
+  renaming (_~>*_ to infix 5 _↠ᵏ_)
 
 --------------------------------------------------------------------------
 -- weakening a configuration
@@ -98,44 +93,44 @@ SN-ext∷-C : {X : Ty} {M : Γ ⊢ᶜ Y} {L : Γ ⊢ᵏ Y ⇒ Z} {N : (Γ ∙ Z)
           → (∀ {V} → Redᵛ Z V → SN ⟨ sub-comp (sub-ex sub-id V) N ∥ K ⟩)
           → SN ⟨ M ∥ graft L (N ∷ K) ⟩
 SN-ext∷-C {M = push M N} (sn f) rtn H =
-  sn (λ { push-step → SN-ext∷-C (f push-step) (λ ch → rtn (_ ~>⟨ push-step ⟩ ch)) H })
+  sn (λ { push-step → SN-ext∷-C (f push-step) (λ ch → rtn (push-step ◅ ch)) H })
 SN-ext∷-C {M = app (var i) V} (sn f) rtn H = sn (λ ())
 SN-ext∷-C {M = app (lam N) V} (sn f) rtn H =
-  sn (λ { app-lam-step → SN-ext∷-C (f app-lam-step) (λ ch → rtn (_ ~>⟨ app-lam-step ⟩ ch)) H })
+  sn (λ { app-lam-step → SN-ext∷-C (f app-lam-step) (λ ch → rtn (app-lam-step ◅ ch)) H })
 SN-ext∷-C {M = return V} {L = ε} (sn f) rtn H =
-  sn (λ { return-step → H (rtn (_ ◼)) })
+  sn (λ { return-step → H (rtn ε) })
 SN-ext∷-C {M = return V} {L = N ∷ L} (sn f) rtn H =
-  sn (λ { return-step → SN-ext∷-C (f return-step) (λ ch → rtn (_ ~>⟨ return-step ⟩ ch)) H })
+  sn (λ { return-step → SN-ext∷-C (f return-step) (λ ch → rtn (return-step ◅ ch)) H })
 
 RTN-ext∷-C : {X : Ty} {M : Γ ⊢ᶜ Y} {L : Γ ⊢ᵏ Y ⇒ Z} {N : (Γ ∙ Z) ⊢ᶜ X} {K : Γ ⊢ᵏ X ⇒ U}
            → (∀ {V} → ⟨ M ∥ L ⟩ ↠ᵏ ⟨ return V ∥ ε ⟩ → Redᵛ Z V)
            → (∀ {V} → Redᵛ Z V → ∀ {W} → ⟨ sub-comp (sub-ex sub-id V) N ∥ K ⟩ ↠ᵏ ⟨ return W ∥ ε ⟩ → Redᵛ U W)
            → {W : Γ ⊢ᵛ U} → ⟨ M ∥ graft L (N ∷ K) ⟩ ↠ᵏ ⟨ return W ∥ ε ⟩ → Redᵛ U W
-RTN-ext∷-C {M = push M N} rtn H (_ ~>⟨ push-step ⟩ rest) =
-  RTN-ext∷-C (λ ch → rtn (_ ~>⟨ push-step ⟩ ch)) H rest
-RTN-ext∷-C {M = app (var i) V} rtn H (_ ~>⟨ () ⟩ rest)
-RTN-ext∷-C {M = app (lam N) V} rtn H (_ ~>⟨ app-lam-step ⟩ rest) =
-  RTN-ext∷-C (λ ch → rtn (_ ~>⟨ app-lam-step ⟩ ch)) H rest
-RTN-ext∷-C {M = return V} {L = ε} rtn H (_ ~>⟨ return-step ⟩ rest) = H (rtn (_ ◼)) rest
-RTN-ext∷-C {M = return V} {L = N ∷ L} rtn H (_ ~>⟨ return-step ⟩ rest) =
-  RTN-ext∷-C (λ ch → rtn (_ ~>⟨ return-step ⟩ ch)) H rest
+RTN-ext∷-C {M = push M N} rtn H (push-step ◅ rest) =
+  RTN-ext∷-C (λ ch → rtn (push-step ◅ ch)) H rest
+RTN-ext∷-C {M = app (var i) V} rtn H (() ◅ rest)
+RTN-ext∷-C {M = app (lam N) V} rtn H (app-lam-step ◅ rest) =
+  RTN-ext∷-C (λ ch → rtn (app-lam-step ◅ ch)) H rest
+RTN-ext∷-C {M = return V} {L = ε} rtn H (return-step ◅ rest) = H (rtn ε) rest
+RTN-ext∷-C {M = return V} {L = N ∷ L} rtn H (return-step ◅ rest) =
+  RTN-ext∷-C (λ ch → rtn (return-step ◅ ch)) H rest
 
 exp-push : {M : Γ ⊢ᶜ X} {N : (Γ ∙ X) ⊢ᶜ Y}
          → Redᶜ X M → (∀ {V : Γ ⊢ᵛ X} → Redᵛ X V → Redᶜ Y (sub-comp (sub-ex sub-id V) N))
          → Redᶜ Y (push M N)
 exp-push {X = X} {Y = Y} {M = M} {N} rM H =
   sn (λ { push-step → SN-ext∷-C (Red→SNᶜ X M rM) (Red→RTNᶜ X M rM) (λ {V} rv → Red→SNᶜ Y (sub-comp (sub-ex sub-id V) N) (H rv)) }) ,
-  λ { (_ ~>⟨ push-step ⟩ rest) → RTN-ext∷-C (Red→RTNᶜ X M rM) (λ {V} rv → Red→RTNᶜ Y (sub-comp (sub-ex sub-id V) N) (H rv)) rest }
+  λ { (push-step ◅ rest) → RTN-ext∷-C (Red→RTNᶜ X M rM) (λ {V} rv → Red→RTNᶜ Y (sub-comp (sub-ex sub-id V) N) (H rv)) rest }
 
 exp-app-lam : {N : (Γ ∙ X) ⊢ᶜ Y} {V : Γ ⊢ᵛ X}
             → Redᶜ Y (sub-comp (sub-ex sub-id V) N) → Redᶜ Y (app (lam N) V)
 exp-app-lam {N = N} {V} (snN , rtnN) =
   sn (λ { app-lam-step → snN }) ,
-  λ { (_ ~>⟨ app-lam-step ⟩ rest) → rtnN rest }
+  λ { (app-lam-step ◅ rest) → rtnN rest }
 
 Red-varᵛ : (X : Ty) (i : Γ ∋ X) → Redᵛ X (var i)
 Red-varᵛ `𝟙    i    = tt
-Red-varᵛ (X `⇒ Y) i = λ π {W} rw → sn (λ ()) , λ { (_ ~>⟨ () ⟩ s) }
+Red-varᵛ (X `⇒ Y) i = λ π {W} rw → sn (λ ()) , λ { (() ◅ s) }
 
 --------------------------------------------------------------------------
 -- weakening/substitution preserves reducibility
@@ -197,7 +192,7 @@ Fundamental-val θ rθ (lam M) π {W} rw =
               (Fundamental-comp (sub-ex (sub-wk π θ) W) (RedSub-ext (RedSub-wk π rθ) rw) M))
 
 Fundamental-comp θ rθ (return V) =
-  sn (λ ()) , λ { (_ ◼) → Fundamental-val θ rθ V ; (_ ~>⟨ () ⟩ _) }
+  sn (λ ()) , λ { ε → Fundamental-val θ rθ V ; (() ◅ _) }
 Fundamental-comp θ rθ (app V W) =
   Eq.subst (λ x → Redᶜ _ (app x (sub-val θ W))) (wk-val-id (sub-val θ V))
            (Fundamental-val θ rθ V wk-id (Fundamental-val θ rθ W))
@@ -220,13 +215,6 @@ SN-theorem {Γ} {X} M =
 --------------------------------------------------------------------------
 -- eval
 
-Normal : Cfg Γ X → Set
-Normal σ = ∀ {σ₁} → σ →ᵏ σ₁ → ⊥
-
-data Step? (σ : Cfg Γ X) : Set where
-  done : Normal σ → Step? σ
-  next : {σ₁ : Cfg Γ X} → σ →ᵏ σ₁ → Step? σ
-
 step? : (σ : Cfg Γ X) → Step? σ
 step? ⟨ push M N ∥ K ⟩      = next push-step
 step? ⟨ return V ∥ ε ⟩      = done (λ ())
@@ -234,11 +222,5 @@ step? ⟨ return V ∥ N ∷ K ⟩  = next return-step
 step? ⟨ app (var i) V ∥ K ⟩ = done (λ ())
 step? ⟨ app (lam N) V ∥ K ⟩ = next app-lam-step
 
-eval-acc : {σ : Cfg Γ X} → SN σ → Σ[ σ₁ ∈ Cfg Γ X ] (σ ↠ᵏ σ₁) × Normal σ₁
-eval-acc {σ = σ} (sn f) with step? σ
-... | done normal    = σ , σ ◼ , normal
-... | next {σ₁} step with eval-acc (f step)
-...   | (σ₂ , chain , normal) = σ₂ , σ ~>⟨ step ⟩ chain , normal
-
 eval : (M : Γ ⊢ᶜ X) → Σ[ σ ∈ Cfg Γ X ] (⟨ M ∥ ε ⟩ ↠ᵏ σ) × Normal σ
-eval M = eval-acc (SN-theorem M)
+eval M = eval-acc step? (SN-theorem M)
