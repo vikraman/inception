@@ -2,6 +2,7 @@ module Inception.Rewriting.Reduction {A : Set} (_~>_ : A → A → Set) where
 
 open import Data.Empty using (⊥)
 open import Data.Product using (Σ; Σ-syntax; _×_; _,_)
+open import Function using (_⇔_; mk⇔)
 
 open import Induction.WellFounded using (Acc; acc; acc-inverse; module Subrelation)
 
@@ -11,7 +12,7 @@ open import Relation.Binary.Construct.Closure.Transitive
 import Relation.Binary.PropositionalEquality as Eq
 open Eq using (_≡_; refl)
 import Relation.Binary.Rewriting as Rewriting
-open Rewriting using (det⇒conf)
+open Rewriting using (IsNormalForm; StronglyNormalizing; det⇒conf)
 
 open import Relation.Nullary.Negation using (contradiction)
 
@@ -45,6 +46,15 @@ Normal a = ∀ {b} → a ~> b → ⊥
 data Step? (a : A) : Set where
   done : Normal a → Step? a
   next : {b : A} → a ~> b → Step? a
+
+Normal→IsNormalForm : {a : A} → Normal a → IsNormalForm _~>_ a
+Normal→IsNormalForm n (b , s) = n s
+
+IsNormalForm→Normal : {a : A} → IsNormalForm _~>_ a → Normal a
+IsNormalForm→Normal n s = n (_ , s)
+
+Normal⇔IsNormalForm : {a : A} → Normal a ⇔ IsNormalForm _~>_ a
+Normal⇔IsNormalForm = mk⇔ Normal→IsNormalForm IsNormalForm→Normal
 
 Deterministic : Set
 Deterministic = Rewriting.Deterministic _≡_ _~>_
@@ -83,6 +93,9 @@ Normal→SN n = sn (λ s → contradiction s n)
 
 SN-back : Deterministic → {a b : A} → a ~> b → SN b → SN a
 SN-back det s h = sn (λ s₁ → Eq.subst SN (det s s₁) h)
+
+SN⇔StronglyNormalizing : ((a : A) → SN a) ⇔ StronglyNormalizing _~>_
+SN⇔StronglyNormalizing = mk⇔ (λ h → h) (λ h → h)
 
 SN⁺ : A → Set
 SN⁺ = Acc (_~>⁺_ †)
