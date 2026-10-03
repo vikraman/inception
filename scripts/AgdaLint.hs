@@ -1141,7 +1141,7 @@ checkRewriteName ctx f =
   , Just rest <- [T.stripPrefix "REWRITE" . T.stripStart =<< T.stripPrefix "{-#" body]
   , let base = T.length body - T.length rest
   , (i, n) <- wordOffsets rest
-  , n /= "#-"
+  , n /= "#-}"
   , let off = base + i
   , not (any (`T.isSuffixOf` n) sfx)
   ]
