@@ -11,6 +11,9 @@ fixBannedNames = ["`Unit", "`P", "`L", "`V"]
 # subscript rule exemptions
 subscriptExempt = ["≈"]
 
+# rewrite rule names: β computes, η normalises, coh for semantic coherences
+rewriteSuffixes = ["-β", "-η", "-coh", "-coh̃"]
+
 # letter pairs
 pairs = ["VW", "MN", "KL", "𝐕𝐖", "θφ", "πδ", "XY", "ΓΔ"]
 
@@ -33,6 +36,7 @@ leadingArrow = "off"
 mutualBlock = "off"
 importPublic = "off"
 asciiPrime = "warning"
+rewriteName = "error"
 
 [style]
 sectionWidth = 74

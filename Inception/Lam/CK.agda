@@ -142,41 +142,20 @@ Red-varᵛ (X `⇒ Y) i = λ π {W} rw → sn (λ ()) , λ { (_ ~>⟨ () ⟩ s) 
 
 Red-wk : (X : Ty) {Δ : Ctx} (π : Δ ⊇ Γ) {V : Γ ⊢ᵛ X} → Redᵛ X V → Redᵛ X (wk-val π V)
 Red-wk `𝟙    π r = tt
-Red-wk (X `⇒ Y) π {V} f δ {W} redW =
-  Eq.subst (Redᶜ Y)
-           (begin
-             app (wk-val (wk-trans δ π) V) W
-           ≡˘⟨ cong (λ x → app x W) (wk-val-trans V δ π) ⟩
-             app (wk-val δ (wk-val π V)) W
-           ∎)
-           (f (wk-trans δ π) redW)
+Red-wk (X `⇒ Y) π {V} f δ {W} redW = f (wk-trans δ π) redW
 
 record RedSub (θ : Γ ⊢ Δ) : Set where
   field red : (i : Δ ∋ X) → Redᵛ X (sub-mem θ i)
 open RedSub
 
 RedSub-wk : {Ψ : Ctx} (ρ : Ψ ⊇ Γ) {θ : Γ ⊢ Δ} → RedSub θ → RedSub (sub-wk ρ θ)
-red (RedSub-wk ρ {θ} rθ) {X = X} i =
-  Eq.subst (Redᵛ X)
-           (begin
-             wk-val ρ (sub-mem θ i)
-             ≡˘⟨ sub-mem-wk ρ θ i ⟩
-             sub-mem (sub-wk ρ θ) i
-             ∎)
-           (Red-wk X ρ (rθ .red i))
+red (RedSub-wk ρ {θ} rθ) {X = X} i = Red-wk X ρ (rθ .red i)
 
 RedSub-ext : {θ : Γ ⊢ Δ} {V : Γ ⊢ᵛ X} → RedSub θ → Redᵛ X V → RedSub (sub-ex θ V)
 RedSub-ext rθ rv = record { red = λ { here → rv ; (there i) → rθ .red i } }
 
 RedSub-id : RedSub (sub-id {Γ})
-red (RedSub-id {Γ}) {X = X} i =
-  Eq.subst (Redᵛ X)
-           (begin
-             var i
-           ≡˘⟨ sub-mem-id i ⟩
-             sub-mem sub-id i
-           ∎)
-           (Red-varᵛ X i)
+red (RedSub-id {Γ}) {X = X} i = Red-varᵛ X i
 
 --------------------------------------------------------------------------
 -- fundamental lemma
@@ -187,35 +166,17 @@ Fundamental-comp : (θ : Γ ⊢ Δ) → RedSub θ → (M : Δ ⊢ᶜ X) → Red�
 Fundamental-val θ rθ (var i) = rθ .red i
 Fundamental-val θ rθ unit    = tt
 Fundamental-val θ rθ (lam M) π {W} rw =
-  exp-app-lam
-    (Eq.subst (Redᶜ _)
-              (begin
-                sub-comp (sub-ex (sub-wk π θ) W) M
-              ≡˘⟨ fund-lam-eq θ π W M ⟩
-                sub-comp (sub-ex sub-id W) (wk-comp (wk-cong π) (sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ) (var here)) M))
-              ∎)
-              (Fundamental-comp (sub-ex (sub-wk π θ) W) (RedSub-ext (RedSub-wk π rθ) rw) M))
+  exp-app-lam (Fundamental-comp (sub-ex (sub-wk π θ) W) (RedSub-ext (RedSub-wk π rθ) rw) M)
 
 Fundamental-comp θ rθ (return V) =
   sn (λ ()) , λ { (_ ◼) → Fundamental-val θ rθ V ; (_ ~>⟨ () ⟩ _) }
 Fundamental-comp θ rθ (app V W) =
-  Eq.subst (λ x → Redᶜ _ (app x (sub-val θ W))) (wk-val-id (sub-val θ V))
-           (Fundamental-val θ rθ V wk-id (Fundamental-val θ rθ W))
+  Fundamental-val θ rθ V wk-id (Fundamental-val θ rθ W)
 Fundamental-comp θ rθ (push M N) =
-  exp-push (Fundamental-comp θ rθ M)
-           (λ {V} rv →
-             Eq.subst (Redᶜ _)
-                      (begin
-                        sub-comp (sub-ex θ V) N
-                      ≡˘⟨ fund-push-eq θ V N ⟩
-                        sub-comp (sub-ex sub-id V) (sub-comp (sub-ex (sub-wk (wk-wk wk-id) θ) (var here)) N)
-                      ∎)
-                      (Fundamental-comp (sub-ex θ V) (RedSub-ext rθ rv) N))
+  exp-push (Fundamental-comp θ rθ M) (λ {V} rv → Fundamental-comp (sub-ex θ V) (RedSub-ext rθ rv) N)
 
 SN-theorem : (M : Γ ⊢ᶜ X) → SN ⟨ M ∥ ε ⟩
-SN-theorem {Γ} {X} M =
-  Eq.subst (λ N → SN ⟨ N ∥ ε ⟩) (sub-comp-id M)
-           (Red→SNᶜ X (sub-comp sub-id M) (Fundamental-comp sub-id RedSub-id M))
+SN-theorem {Γ} {X} M = Red→SNᶜ X M (Fundamental-comp sub-id RedSub-id M)
 
 --------------------------------------------------------------------------
 -- eval

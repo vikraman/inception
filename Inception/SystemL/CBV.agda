@@ -62,8 +62,8 @@ mutual
 ⟦ sub-ex θ V ⟧ˢ = < ⟦ θ ⟧ˢ , ⟦ V ⟧ᵛ >
 
 ⟦_⟧ˢ̃ : Γ ∣ Ξ ⊢ Δ → ⟦ Γ ⟧ˣ × R ^ ⟦ Δ ⟧ˣ̃ → R ^ ⟦ Ξ ⟧ˣ̃
-⟦ cosub-ε ⟧ˢ̃ = const λ ()
-⟦ cosub-ex φ K ⟧ˢ̃ env = S.[ ⟦ φ ⟧ˢ̃ env , ⟦ K ⟧ᵏ env ]
+⟦ sub-ε ⟧ˢ̃ = const λ ()
+⟦ sub-ex φ K ⟧ˢ̃ env = S.[ ⟦ φ ⟧ˢ̃ env , ⟦ K ⟧ᵏ env ]
 
 -- coherences
 
@@ -107,9 +107,9 @@ sub-mem-coh (sub-ex θ V) here = refl
 sub-mem-coh (sub-ex θ V) (there i) rewrite sub-mem-coh θ i = refl
 {-# REWRITE sub-mem-coh #-}
 
-cosub-mem-coh : (φ : Γ ∣ Ξ ⊢ Δ) (i : Ξ ∋ X) → ⟦ cosub-mem φ i ⟧ᵏ ≡ (⟦ φ ⟧ˢ̃ ； ([ R ]^ ⟦ i ⟧ᵐ̃))
-cosub-mem-coh (cosub-ex φ K) here = refl
-cosub-mem-coh (cosub-ex φ K) (there i) rewrite cosub-mem-coh φ i = refl
+cosub-mem-coh : (φ : Γ ∣ Ξ ⊢ Δ) (i : Ξ ∋ X) → ⟦ sub-mem φ i ⟧ᵏ ≡ (⟦ φ ⟧ˢ̃ ； ([ R ]^ ⟦ i ⟧ᵐ̃))
+cosub-mem-coh (sub-ex φ K) here = refl
+cosub-mem-coh (sub-ex φ K) (there i) rewrite cosub-mem-coh φ i = refl
 {-# REWRITE cosub-mem-coh #-}
 
 sub-wk-coh : (π : Ψ ⊇ Γ) (ρ : Ξ ⊇ Δ) (θ : Γ ⊢ Γ₁ ∣ Δ) → ⟦ sub-wk π ρ θ ⟧ˢ ≡ (wkenv π ρ ； ⟦ θ ⟧ˢ)
@@ -118,8 +118,8 @@ sub-wk-coh π ρ (sub-ex θ V) rewrite sub-wk-coh π ρ θ | wk-val-coh π ρ V 
 {-# REWRITE sub-wk-coh #-}
 
 cosub-wk-coh : (π : Ψ ⊇ Γ) (ρ : Ξ ⊇ Δ) (φ : Γ ∣ Δ₁ ⊢ Δ) → ⟦ cosub-wk π ρ φ ⟧ˢ̃ ≡ (wkenv π ρ ； ⟦ φ ⟧ˢ̃)
-cosub-wk-coh π ρ cosub-ε = refl
-cosub-wk-coh π ρ (cosub-ex φ K) rewrite cosub-wk-coh π ρ φ | wk-cotm-coh π ρ K = refl
+cosub-wk-coh π ρ sub-ε = refl
+cosub-wk-coh π ρ (sub-ex φ K) rewrite cosub-wk-coh π ρ φ | wk-cotm-coh π ρ K = refl
 {-# REWRITE cosub-wk-coh #-}
 
 sub-id-coh : ⟦ sub-id {Γ} {Δ} ⟧ˢ ≡ proj₁
@@ -152,7 +152,7 @@ mutual
 
   sub-tm-coh : (θ : Γ ⊢ Ψ ∣ Δ) (φ : Γ ∣ Ξ ⊢ Δ) (M : Ψ ⊢ᵗ X ∣ Ξ) → ⟦ sub-tm θ φ M ⟧ᵗ ≡ (subenv θ φ ； ⟦ M ⟧ᵗ)
   sub-tm-coh θ φ (ret V) rewrite sub-val-coh θ φ V = refl
-  sub-tm-coh θ φ (μ C) rewrite sub-cmd-coh (sub-wk wk-id (wk-wk wk-id) θ) (cosub-ex (cosub-wk wk-id (wk-wk wk-id) φ) (covar here)) C = refl
+  sub-tm-coh θ φ (μ C) rewrite sub-cmd-coh (sub-wk wk-id (wk-wk wk-id) θ) (sub-ex (cosub-wk wk-id (wk-wk wk-id) φ) (covar here)) C = refl
 
   sub-cotm-coh : (θ : Γ ⊢ Ψ ∣ Δ) (φ : Γ ∣ Ξ ⊢ Δ) (K : Ψ ∣ X ⊢ᵏ Ξ) → ⟦ sub-cotm θ φ K ⟧ᵏ ≡ (subenv θ φ ； ⟦ K ⟧ᵏ)
   sub-cotm-coh θ φ (covar i) = refl
