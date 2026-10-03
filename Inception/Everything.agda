@@ -2,11 +2,8 @@ module Inception.Everything where
 
 -- rewriting
 import Inception.Rewriting
-import Inception.Rewriting.Acc
-import Inception.Rewriting.Closure
-import Inception.Rewriting.Normal
 import Inception.Rewriting.Reduction
-import Inception.Rewriting.SN
+import Inception.Rewriting.Relation
 import Inception.Rewriting.Simulation
 
 -- continuation monad

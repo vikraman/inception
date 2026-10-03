@@ -1,7 +1,6 @@
 module Inception.Rewriting.Simulation where
 
 open import Data.Product using (Σ; Σ-syntax; _×_; _,_)
-open import Function using (flip)
 
 import Relation.Binary.PropositionalEquality as Eq
 open Eq using (_≡_; refl)
@@ -10,8 +9,8 @@ open import Relation.Binary.Construct.Closure.ReflexiveTransitive using (ε; _�
 open import Relation.Binary.Construct.Closure.Transitive using ([_])
 open import Relation.Binary.Construct.Composition using (_;_)
 
-open import Inception.Rewriting.Acc using (Acc-sim)
 import Inception.Rewriting.Reduction as Reduction
+open import Inception.Rewriting.Relation using (_†; Acc-sim)
 
 --------------------------------------------------------------------------
 -- simulations
@@ -89,13 +88,13 @@ module _ {A B : Set} (_~>_ : A → A → Set) (_⇝_ : B → B → Set) where
   record Bisim (R : A → B → Set) : Set where
     field
       bisim-to   : Sim _~>_ _⇝_ R
-      bisim-from : Sim _⇝_ _~>_ (flip R)
+      bisim-from : Sim _⇝_ _~>_ (R †)
   open Bisim public
 
   record WeakBisim (R : A → B → Set) : Set where
     field
       weak-bisim-to   : WeakSim _~>_ _⇝_ R
-      weak-bisim-from : WeakSim _⇝_ _~>_ (flip R)
+      weak-bisim-from : WeakSim _⇝_ _~>_ (R †)
   open WeakBisim public
 
 module _ {A B : Set} {_~>_ : A → A → Set} {_⇝_ : B → B → Set} {R : A → B → Set} where
@@ -104,11 +103,11 @@ module _ {A B : Set} {_~>_ : A → A → Set} {_⇝_ : B → B → Set} {R : A �
   Bisim→WeakBisim h .weak-bisim-to   = Sim→WeakSim (h .bisim-to)
   Bisim→WeakBisim h .weak-bisim-from = Sim→WeakSim (h .bisim-from)
 
-  bisim-sym : Bisim _~>_ _⇝_ R → Bisim _⇝_ _~>_ (flip R)
+  bisim-sym : Bisim _~>_ _⇝_ R → Bisim _⇝_ _~>_ (R †)
   bisim-sym h .bisim-to   = h .bisim-from
   bisim-sym h .bisim-from = h .bisim-to
 
-  weak-bisim-sym : WeakBisim _~>_ _⇝_ R → WeakBisim _⇝_ _~>_ (flip R)
+  weak-bisim-sym : WeakBisim _~>_ _⇝_ R → WeakBisim _⇝_ _~>_ (R †)
   weak-bisim-sym h .weak-bisim-to   = h .weak-bisim-from
   weak-bisim-sym h .weak-bisim-from = h .weak-bisim-to
 

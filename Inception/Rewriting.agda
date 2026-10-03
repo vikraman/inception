@@ -9,7 +9,7 @@ open import Relation.Binary.Construct.Closure.ReflexiveTransitive.Properties pub
 open import Relation.Binary.Construct.Closure.Transitive public
   using (TransClosure; [_])
 
-open import Inception.Rewriting.Acc public
+open import Inception.Rewriting.Relation public
 open import Inception.Rewriting.Simulation public
 
 import Inception.Rewriting.Reduction
