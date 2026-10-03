@@ -4,8 +4,9 @@
 module Inception.Sub.Semantics (R : Set) where
 
 open import Inception.Prelude
-open Inception.Prelude.RTC
+open import Inception.Rewriting
 open import Inception.Sub.Syntax
+
 
 open import Data.Product using (proj₁; proj₂; _,_; <_,_>; curry; _×_; Σ-syntax; uncurry)
 open import Data.Sum using (_⊎_; inj₁; inj₂)
@@ -393,8 +394,8 @@ module TopLevel {ℛ : Ty} {k₀ : ⟦ ℛ ⟧ → R} where
       ⟦ proj₁ (proj₂ (clo-to-comp (eval V γ))) ⟧ᶜ (⟦ proj₂ (proj₂ (clo-to-comp (eval V γ))) ⟧ᴱ , ⟦ eval W γ ⟧ⱽ) ∎ )
 
   compstate-eq* : {σ σ₁ : CState} → σ →ᶜ* σ₁ → ⟦ σ ⟧ᶜꟴ ≡ ⟦ σ₁ ⟧ᶜꟴ
-  compstate-eq* (σ ◼) = refl
-  compstate-eq* (σ ~>⟨ s ⟩ ss) = trans (compstate-eq s) (compstate-eq* ss)
+  compstate-eq* ε = refl
+  compstate-eq* (s ◅ ss) = trans (compstate-eq s) (compstate-eq* ss)
 
   comp-machine-transitions-correct : (M : ε ⊢ᶜ ℛ) → ⟦ ⟨ M ╎ ⋄ ╎ ◻ ⟩ ⟧ᶜꟴ ≡ ⟦ proj₁ (exec M) ⟧ᶜꟴ
   comp-machine-transitions-correct M = compstate-eq* (proj₁ (proj₂ (proj₂ (proj₂ (exec M)))))
