@@ -128,10 +128,10 @@ wk-reflect π {σ = [ unit ∥ K ]} ()
 wk-reflect π {σ = [ var i ∥ K ]} ()
 
 wk-sim : {Δ : Ctx} (π : Δ ⊇ Γ) → Sim (_→ᵏ_ {Γ = Δ} {X = X}) _→ᵏ_ (λ σ₁ σ → σ₁ ≡ wk-cfg π σ)
-sim (wk-sim π) refl s = wk-reflect π s
+simulate (wk-sim π) refl s = wk-reflect π s
 
 SN-wk : {Δ : Ctx} (π : Δ ⊇ Γ) {σ : Cfg Γ X} → SN σ → SN (wk-cfg π σ)
-SN-wk π = SN-sim _ _ (wk-sim π) refl
+SN-wk π = SN-sim (wk-sim π) refl
 
 --------------------------------------------------------------------------
 -- reducibility candidates
@@ -421,7 +421,7 @@ Red-varᵛ (X `⇒ Y) i = sn (λ ()) , λ π {W} rw → sn (λ ()) , λ { (() �
 
 wk-reflect* : {Δ : Ctx} (π : Δ ⊇ Γ) {σ : Cfg Γ X} {σ₁ : Cfg Δ X}
             → wk-cfg π σ ↠ᵏ σ₁ → Σ[ σ₂ ∈ Cfg Γ X ] (σ ↠ᵏ σ₂) × (σ₁ ≡ wk-cfg π σ₂)
-wk-reflect* π = weak-sim-* _ _ (Sim→WeakSim _ _ (wk-sim π)) refl
+wk-reflect* π = weak-sim-* (Sim→WeakSim (wk-sim π)) refl
 
 pair-cfg-inv : {Δ : Ctx} {X Y : Ty} (π : Δ ⊇ Γ) {σ₁ : Cfg Γ (X `× Y)} {W₁ : Δ ⊢ᵛ X} {W₂ : Δ ⊢ᵛ Y}
              → [ pair W₁ W₂ ∥ ε ] ≡ wk-cfg π σ₁
