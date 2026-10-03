@@ -129,7 +129,7 @@ jobs:
 
       - name: Generate html
         run: |
-          ./index.sh
+          scripts/unliterate.sh
           make html
 
       - name: Save interface files
