@@ -94,15 +94,3 @@ proj₁-d-eq refl = refl
 
 ql : ⊥ → (A : Set) → A
 ql () b
-
--- generic reflexive and transitive closure
-module RTC {A : Set} (_~>_ : A → A → Set) where
-
-  data _~>*_ : A → A → Set where
-
-    _◼ : (a : A) → a ~>* a
-
-    _~>⟨_⟩_ : (a : A) → {b c : A} → a ~> b → b ~>* c → a ~>* c
-
-  infix  25 _◼
-  infixr 20 _~>⟨_⟩_

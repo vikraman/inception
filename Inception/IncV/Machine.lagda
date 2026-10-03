@@ -8,6 +8,7 @@ module Inception.IncV.Machine (ℛ : Ty) where
 
 open import Inception.IncV.Syntax
 open import Inception.Prelude
+open import Inception.Rewriting
 
 open import Data.Empty using (⊥)
 open import Data.Nat
@@ -188,18 +189,9 @@ determinismꟲ rec→ rec→ = refl
 determinismꟲ pmᶜ→ pmᶜ→ = refl
 determinismꟲ app→ app→ = refl
 
-open Inception.Prelude.RTC renaming (_~>⟨_⟩_ to _→ᶜ⟨_⟩_)
+open Reduction _→ᶜ_ public
+  renaming (_~>*_ to _→ᶜ*_)
 
-_→ᶜ*_ : CState → CState → Set
-_→ᶜ*_ = _~>*_ (_→ᶜ_)
-
-_⨾ᶜ_ : {σ₁ σ₂ σ₃ : CState} → (σ₁ →ᶜ* σ₂) → (σ₂ →ᶜ* σ₃) → (σ₁ →ᶜ* σ₃)
-_⨾ᶜ_ (σ ◼) ss = ss
-_⨾ᶜ_ (σ →ᶜ⟨ s ⟩ ss₁) ss₂ = σ →ᶜ⟨ s ⟩ (ss₁ ⨾ᶜ ss₂)
-
-
-data SN (σ : CState) : Set where
-  sn : (∀ {σ₁} → σ →ᶜ σ₁ → SN σ₁) → SN σ
 
 Rᵛ : (X : Ty) → MVal X → Set
 Rᵏ : (X : Ty) → CStack X → Set
@@ -265,22 +257,15 @@ Rᵏ-◻ RW = sn λ {σ} ()
 SN-theorem : (M : ε ⊢ᶜ ℛ) → SN ⟨ M ╎ ⋄ ╎ ◻ ⟩
 SN-theorem M = fundamentalᶜ M Rᴱ-⊘ Rᵏ-◻
 
-Normal : CState → Set
-Normal σ = ∀ {σ₁} → σ →ᶜ σ₁ → ⊥
-
-data Progress (σ : CState) : Set where
-  done : Normal σ → Progress σ
-  step : {σ₁ : CState} → σ →ᶜ σ₁ → Progress σ
-
-progress : (σ : CState) → Progress σ
+progress : (σ : CState) → Step? σ
 progress ⟨ 𝐖 ╎ ◻ ⟩ = done (λ ())
-progress ⟨ 𝐖 ╎ < M ； γ >∷ K ⟩ = step return→
-progress ⟨ return W ╎ γ ╎ K ⟩ = step run→
-progress ⟨ pm W M ╎ γ ╎ K ⟩ = step pmᶜ→
-progress ⟨ push M N ╎ γ ╎ K ⟩ = step push→
-progress ⟨ app V W ╎ γ ╎ K ⟩ = step app→
-progress ⟨ rec V W ╎ γ ╎ K ⟩ = step rec→
-progress ⟨ inc M N ╎ γ ╎ K ⟩ = step inc→
+progress ⟨ 𝐖 ╎ < M ； γ >∷ K ⟩ = next return→
+progress ⟨ return W ╎ γ ╎ K ⟩ = next run→
+progress ⟨ pm W M ╎ γ ╎ K ⟩ = next pmᶜ→
+progress ⟨ push M N ╎ γ ╎ K ⟩ = next push→
+progress ⟨ app V W ╎ γ ╎ K ⟩ = next app→
+progress ⟨ rec V W ╎ γ ╎ K ⟩ = next rec→
+progress ⟨ inc M N ╎ γ ╎ K ⟩ = next inc→
 
 halting-state : (σ : CState) → Normal σ → Σ[ 𝐖 ∈ MVal ℛ ] σ ≡ ⟨ 𝐖 ╎ ◻ ⟩
 halting-state ⟨ 𝐖 ╎ ◻ ⟩ normal = 𝐖 , refl
@@ -293,13 +278,8 @@ halting-state ⟨ rec _ _ ╎ γ ╎ K ⟩ normal = ql (normal rec→) _
 halting-state ⟨ inc _ _ ╎ γ ╎ K ⟩ normal = ql (normal inc→) _
 
 
-eval-acc : {σ : CState} → SN σ → Σ[ σ₁ ∈ CState ] Σ[ 𝐖 ∈ MVal ℛ ] Σ[ NF ∈ Normal σ₁ ] (σ →ᶜ* σ₁) × (𝐖 ≡ proj₁ (halting-state σ₁ NF))
-eval-acc {σ = σ} (sn f) with progress σ
-... | done NF    = σ , proj₁ (halting-state σ NF) , NF , (σ ◼) , refl
-... | step s with eval-acc (f s)
-...   | (σ₁ , 𝐖 , NF , ss , eq) = σ₁ , 𝐖 , NF , (_ →ᶜ⟨ s ⟩ ss) , eq
-
 eval : (M : ε ⊢ᶜ ℛ) → Σ[ σ ∈ CState ] Σ[ 𝐖 ∈ MVal ℛ ] Σ[ NF ∈ Normal σ ] (⟨ M ╎ ⋄ ╎ ◻ ⟩ →ᶜ* σ) × (𝐖 ≡ proj₁ (halting-state σ NF))
-eval M = eval-acc (SN-theorem M)
+eval M with eval-acc progress (SN-theorem M)
+... | (σ , ss , NF) = σ , proj₁ (halting-state σ NF) , NF , ss , refl
 
 \end{code}

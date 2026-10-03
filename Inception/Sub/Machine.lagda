@@ -6,6 +6,7 @@ open import Inception.Sub.Syntax using (Ty)
 module Inception.Sub.Machine (ℛ : Ty) where
 
 open import Inception.Prelude
+open import Inception.Rewriting
 open import Inception.Sub.Syntax
 
 open import Data.Empty using (⊥)
@@ -192,24 +193,9 @@ determinismꟲ var→ var→ = refl
 determinismꟲ pmᶜ→ pmᶜ→ = refl
 determinismꟲ app→ app→ = refl
 
-open Inception.Prelude.RTC renaming (_~>⟨_⟩_ to _→ᶜ⟨_⟩_)
+open Reduction _→ᶜ_ public
+  renaming (_~>*_ to _→ᶜ*_)
 
-_→ᶜ*_ : CState → CState → Set
-_→ᶜ*_ = _~>*_ (_→ᶜ_)
-
-_⨾ᶜ_ : {σ₁ σ₂ σ₃ : CState} → (σ₁ →ᶜ* σ₂) → (σ₂ →ᶜ* σ₃) → (σ₁ →ᶜ* σ₃)
-_⨾ᶜ_ (σ ◼) ss = ss
-_⨾ᶜ_ (σ →ᶜ⟨ s ⟩ ss₁) ss₂ = σ →ᶜ⟨ s ⟩ (ss₁ ⨾ᶜ ss₂)
-
-
-\end{code}
-%<*SubVarSN>
-\begin{code}
-data SN (σ : CState) : Set where
-  sn : (∀ {σ₁} → σ →ᶜ σ₁ → SN σ₁) → SN σ
-\end{code}
-%</SubVarSN>
-\begin{code}
 
 Rᵛ : (X : Ty) → MVal X → Set
 Rᵏ : (X : Ty) → CStack X → Set
@@ -272,29 +258,15 @@ Rᵏ-◻ RW = sn λ {σ} ()
 SN-theorem : (M : ε ⊢ᶜ ℛ) → SN ⟨ M ╎ ⋄ ╎ ◻ ⟩
 SN-theorem M = fundamentalᶜ M Rᴱ-⊘ Rᵏ-◻
 
-\end{code}
-%<*SubVarNormal>
-\begin{code}
--- A CState is Normal, if there are no transitions from it.
-Normal : CState → Set
-Normal σ = ∀ {σ₁} → σ →ᶜ σ₁ → ⊥
-\end{code}
-%</SubVarNormal>
-\begin{code}
-
-data Progress (σ : CState) : Set where
-  done : Normal σ → Progress σ
-  step : {σ₁ : CState} → σ →ᶜ σ₁ → Progress σ
-
-progress : (σ : CState) → Progress σ
+progress : (σ : CState) → Step? σ
 progress ⟨ 𝐖 ╎ ◻ ⟩ = done (λ ())
-progress ⟨ 𝐖 ╎ < M ； γ >∷ K ⟩ = step return→
-progress ⟨ return W ╎ γ ╎ K ⟩ = step eval→
-progress ⟨ pm W M ╎ γ ╎ K ⟩ = step pmᶜ→
-progress ⟨ push M N ╎ γ ╎ K ⟩ = step push→
-progress ⟨ app V W ╎ γ ╎ K ⟩ = step app→
-progress ⟨ var W ╎ γ ╎ K ⟩ = step var→
-progress ⟨ sub M N ╎ γ ╎ K ⟩ = step sub→
+progress ⟨ 𝐖 ╎ < M ； γ >∷ K ⟩ = next return→
+progress ⟨ return W ╎ γ ╎ K ⟩ = next eval→
+progress ⟨ pm W M ╎ γ ╎ K ⟩ = next pmᶜ→
+progress ⟨ push M N ╎ γ ╎ K ⟩ = next push→
+progress ⟨ app V W ╎ γ ╎ K ⟩ = next app→
+progress ⟨ var W ╎ γ ╎ K ⟩ = next var→
+progress ⟨ sub M N ╎ γ ╎ K ⟩ = next sub→
 
 \end{code}
 %<*SubVarHaltingState>
@@ -316,12 +288,6 @@ halting-state ⟨ var _ ╎ γ ╎ K ⟩ normal = ql (normal var→) _
 halting-state ⟨ sub _ _ ╎ γ ╎ K ⟩ normal = ql (normal sub→) _
 
 
-exec-acc : {σ : CState} → SN σ → Σ[ σ₁ ∈ CState ] Σ[ 𝐖 ∈ MVal ℛ ] Σ[ NF ∈ Normal σ₁ ] (σ →ᶜ* σ₁) × (𝐖 ≡ proj₁ (halting-state σ₁ NF))
-exec-acc {σ = σ} (sn f) with progress σ
-... | done NF    = σ , proj₁ (halting-state σ NF) , NF , (σ ◼) , refl
-... | step s with exec-acc (f s)
-...   | (σ₁ , 𝐖 , NF , ss , eq) = σ₁ , 𝐖 , NF , (_ →ᶜ⟨ s ⟩ ss) , eq
-
 \end{code}
 %<*SubVarEval>
 \begin{code}
@@ -334,6 +300,7 @@ exec :    (M : ε ⊢ᶜ ℛ)
 %</SubVarEval>
 \begin{code}
 
-exec M = exec-acc (SN-theorem M)
+exec M with eval-acc progress (SN-theorem M)
+... | (σ , ss , NF) = σ , proj₁ (halting-state σ NF) , NF , ss , refl
 
 \end{code}
