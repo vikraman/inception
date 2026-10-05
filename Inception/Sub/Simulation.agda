@@ -50,6 +50,13 @@ data WkMEnv : {Γ₁ Γ₂ : Ctx} → (π : Wk Γ₁ Γ₂) → (γ₁ : M.MEnv 
 
     wk-menv-wk : {Γ₁ Γ₂ : Ctx} {π : Wk Γ₁ Γ₂} {γ₁ : M.MEnv Γ₁} {γ₂ : M.MEnv Γ₂} → (M : M.MVal X) → WkMEnv π γ₁ γ₂ → WkMEnv (wk-wk π) (γ₁ · M) γ₂
 
+data _≈_ : M.CState → M.CState → Set where
+
+    ≈-refl : {σ : M.CState} → σ ≈ σ
+
+    ≈-sym : {σ₁ σ₂ : M.CState} → σ₁ ≈ σ₂ → σ₂ ≈ σ₁
+
+    ≈-wk : {Γ₁ Γ₂ : Ctx} {π : Wk Γ₁ Γ₂} {M : Comp Γ₂ X} {γ₁ : M.MEnv Γ₁} {γ₂ : M.MEnv Γ₂} {K : M.CStack X} → (WkMEnv π γ₁ γ₂) → ⟨ M ╎ γ₂ ╎ K ⟩ ≈ ⟨ wk-comp π M ╎ γ₁ ╎ K ⟩
 
 tmcstate-to-mcstate : TM.CState → M.CState
 tmcstate-to-mcstate ⟨ 𝐖 ； γ ╎ π ╎ K ⟩ = ⟨ mclo-to-mval 𝐖 γ ╎ tmcstack-to-mcstack K ⟩
