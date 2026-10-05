@@ -41,26 +41,67 @@ mutual
   mclo-to-mval (TM.label (there i)) (γ TM.· 𝐖) = mclo-to-mval (TM.label i) γ
   mclo-to-mval (TM.label (there i)) (γ TM.·﹝ M ╎ π ╎ K ﹞) = mclo-to-mval (TM.label i) γ
 
+-------------------------------------------------------------------------------------
 
-data WkMEnv : {Γ₁ Γ₂ : Ctx} → (π : Wk Γ₁ Γ₂) → (γ₁ : M.MEnv Γ₁) → (γ₂ : M.MEnv Γ₂) → Set where
 
-    wk-menv-ε    : WkMEnv wk-ε M.⋄ M.⋄
+data WkMEnvᴹ : {Γ₁ Γ₂ : Ctx} → (π : Wk Γ₁ Γ₂) → (γ₁ : M.MEnv Γ₁) → (γ₂ : M.MEnv Γ₂) → Set where
 
-    wk-menv-cong : {Γ₁ Γ₂ : Ctx} {π : Wk Γ₁ Γ₂} {γ₁ : M.MEnv Γ₁} {γ₂ : M.MEnv Γ₂} → (M : M.MVal X) → WkMEnv π γ₁ γ₂ → WkMEnv (wk-cong π) (γ₁ · M) (γ₂ · M)
+    wk-menv-ε    : WkMEnvᴹ wk-ε M.⋄ M.⋄
 
-    wk-menv-wk : {Γ₁ Γ₂ : Ctx} {π : Wk Γ₁ Γ₂} {γ₁ : M.MEnv Γ₁} {γ₂ : M.MEnv Γ₂} → (M : M.MVal X) → WkMEnv π γ₁ γ₂ → WkMEnv (wk-wk π) (γ₁ · M) γ₂
+    wk-menv-cong : {Γ₁ Γ₂ : Ctx} {π : Wk Γ₁ Γ₂} {γ₁ : M.MEnv Γ₁} {γ₂ : M.MEnv Γ₂} → (M : M.MVal X) → WkMEnvᴹ π γ₁ γ₂ → WkMEnvᴹ (wk-cong π) (γ₁ · M) (γ₂ · M)
 
-data _≈_ : M.CState → M.CState → Set where
+    wk-menv-wk : {Γ₁ Γ₂ : Ctx} {π : Wk Γ₁ Γ₂} {γ₁ : M.MEnv Γ₁} {γ₂ : M.MEnv Γ₂} → (M : M.MVal X) → WkMEnvᴹ π γ₁ γ₂ → WkMEnvᴹ (wk-wk π) (γ₁ · M) γ₂
 
-    ≈-refl : {σ : M.CState} → σ ≈ σ
+wk-menv-id : {γ : M.MEnv Γ} → WkMEnvᴹ wk-id γ γ
+wk-menv-id {γ = ⋄} = wk-menv-ε
+wk-menv-id {γ = γ · 𝐖} = wk-menv-cong 𝐖 wk-menv-id
 
-    ≈-sym : {σ₁ σ₂ : M.CState} → σ₁ ≈ σ₂ → σ₂ ≈ σ₁
+data _≈ᴹ_ : M.CState → M.CState → Set where
 
-    ≈-wk : {Γ₁ Γ₂ : Ctx} {π : Wk Γ₁ Γ₂} {M : Comp Γ₂ X} {γ₁ : M.MEnv Γ₁} {γ₂ : M.MEnv Γ₂} {K : M.CStack X} → (WkMEnv π γ₁ γ₂) → ⟨ M ╎ γ₂ ╎ K ⟩ ≈ ⟨ wk-comp π M ╎ γ₁ ╎ K ⟩
+    ≈-refl : {σ : M.CState} → σ ≈ᴹ σ
+
+    ≈-sym : {σ₁ σ₂ : M.CState} → σ₁ ≈ᴹ σ₂ → σ₂ ≈ᴹ σ₁
+
+    ≈-wk : {Γ₁ Γ₂ : Ctx} {π : Wk Γ₁ Γ₂} {M : Comp Γ₂ X} {γ₁ : M.MEnv Γ₁} {γ₂ : M.MEnv Γ₂} {K : M.CStack X} → (WkMEnvᴹ π γ₁ γ₂) → ⟨ M ╎ γ₂ ╎ K ⟩ ≈ᴹ ⟨ wk-comp π M ╎ γ₁ ╎ K ⟩
+
+data WkMEnvᵀ : {Γ₁ Γ₂ : Ctx} → (π : Wk Γ₁ Γ₂) → (γ₁ : TM.MEnv Γ₁) → (γ₂ : TM.MEnv Γ₂) → Set where
+
+    wk-tmenv-ε    : WkMEnvᵀ wk-ε TM.⋄ TM.⋄
+
+    wk-tmenv-mclo-cong : {Γ₁ Γ₂ : Ctx} {π : Wk Γ₁ Γ₂} {γ₁ : TM.MEnv Γ₁} {γ₂ : TM.MEnv Γ₂} → (𝐖 : TM.MClo Γ₂ X) → WkMEnvᵀ π γ₁ γ₂ → WkMEnvᵀ (wk-cong π) (γ₁ · TM.wk-mclo π 𝐖) (γ₂ · 𝐖)
+
+    wk-tmenv-jump-cong : {Γ₁ Γ₂ : Ctx} {π : Wk Γ₁ Γ₂} {γ₁ : TM.MEnv Γ₁} {γ₂ : TM.MEnv Γ₂}
+                         → (M : Comp Γ₂ X) → (πᵀ : Wk Γ₂ Δ) → (K : TM.CStack Δ X) → WkMEnvᵀ π γ₁ γ₂
+                         → WkMEnvᵀ (wk-cong π) (γ₁ TM.·﹝ wk-comp π M ╎ wk-trans π πᵀ ╎ K ﹞) (γ₂ TM.·﹝ M ╎ πᵀ ╎ K ﹞)
+
+    wk-tmenv-mclo-wk : {Γ₁ Γ₂ : Ctx} {π : Wk Γ₁ Γ₂} {γ₁ : TM.MEnv Γ₁} {γ₂ : TM.MEnv Γ₂} → (𝐖 : TM.MClo Γ₁ X) → WkMEnvᵀ π γ₁ γ₂ → WkMEnvᵀ (wk-wk π) (γ₁ · 𝐖) γ₂
+
+    wk-tmenv-jump-wk :   {Γ₁ Γ₂ : Ctx} {π : Wk Γ₁ Γ₂} {γ₁ : TM.MEnv Γ₁} {γ₂ : TM.MEnv Γ₂}
+                         → (M : Comp Γ₁ X) → (πᵀ : Wk Γ₁ Δ) → (K : TM.CStack Δ X) → WkMEnvᵀ π γ₁ γ₂
+                         → WkMEnvᵀ (wk-wk π) (γ₁ TM.·﹝ M ╎ πᵀ ╎ K ﹞) γ₂
+
+data WellFormedTMCStack : TM.CStack Γ X → Set where
+
+    ◻ : WellFormedTMCStack {Γ = ε} {X = ℛ} TM.◻
+
+    wf-bottom : (M : (Γ ∙ Y) ⊢ᶜ ℛ) → (γ : TM.MEnv Γ) → (π : Wk Γ ε)
+                → WellFormedTMCStack (TM.< M ； γ ； π >∷ TM.◻)
+
+    wf-next :  {Γ₁ Γ₂ Γ₃ : Ctx} → (M₁ : (Γ₁ ∙ Z) ⊢ᶜ Y) → {γ₁ : TM.MEnv Γ₁} → (M₂ : (Γ₂ ∙ Y) ⊢ᶜ X) → {γ₂ : TM.MEnv Γ₂}
+                → {π₁ : Wk Γ₁ Γ₂} → {π₂ : Wk Γ₂ Γ₃} → WkMEnvᵀ π₁ γ₁ γ₂
+                → {K : TM.CStack Γ₃ X} → WellFormedTMCStack (TM.< M₂ ； γ₂ ； π₂ >∷ K)
+                ------------------------------------
+                → WellFormedTMCStack (TM.< M₁ ； γ₁ ； π₁ >∷ TM.< M₂ ； γ₂ ； π₂ >∷ K)
+
+-------------------------------------------------------------------------------------
 
 tmcstate-to-mcstate : TM.CState → M.CState
 tmcstate-to-mcstate ⟨ 𝐖 ； γ ╎ π ╎ K ⟩ = ⟨ mclo-to-mval 𝐖 γ ╎ tmcstack-to-mcstack K ⟩
 tmcstate-to-mcstate ⟨ M ╎ γ ╎ π ╎ K ⟩ = ⟨ M ╎ tmenv-to-menv γ ╎ tmcstack-to-mcstack K ⟩
+
+next-state : {σ : M.CState} → M.Progress σ → M.CState
+next-state {σ = σ} (M.done _) = σ
+next-state (M.step {σ₁ = σ₁} _) = σ₁
 
 tmstep-to-mstep : {σ σ' : TM.CState} → (σ →ᵀᴹ σ') → ((tmcstate-to-mcstate σ) →ᴹ (tmcstate-to-mcstate σ'))
 tmstep-to-mstep (eval→ {W = W} {γ = γ} {K = K}) =
