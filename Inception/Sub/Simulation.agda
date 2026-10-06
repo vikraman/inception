@@ -85,6 +85,7 @@ data WellFormedTMCStack : TM.CStack Γ X → Set where
     ◻ : WellFormedTMCStack {Γ = ε} {X = ℛ} TM.◻
 
     wf-bottom : (M : (Γ ∙ Y) ⊢ᶜ ℛ) → (γ : TM.MEnv Γ) → (π : Wk Γ ε)
+                ------------------------------------
                 → WellFormedTMCStack (TM.< M ； γ ； π >∷ TM.◻)
 
     wf-next :  {Γ₁ Γ₂ Γ₃ : Ctx} → (M₁ : (Γ₁ ∙ Z) ⊢ᶜ Y) → {γ₁ : TM.MEnv Γ₁} → (M₂ : (Γ₂ ∙ Y) ⊢ᶜ X) → {γ₂ : TM.MEnv Γ₂}
@@ -92,6 +93,34 @@ data WellFormedTMCStack : TM.CStack Γ X → Set where
                 → {K : TM.CStack Γ₃ X} → WellFormedTMCStack (TM.< M₂ ； γ₂ ； π₂ >∷ K)
                 ------------------------------------
                 → WellFormedTMCStack (TM.< M₁ ； γ₁ ； π₁ >∷ TM.< M₂ ； γ₂ ； π₂ >∷ K)
+
+data WellFormedTMCState : TM.CState → Set where
+
+     wf-state-halt : (𝐖 : TM.MClo Γ ℛ) → (γ : TM.MEnv Γ) → (π : Wk Γ ε)
+                ------------------------------------
+                → WellFormedTMCState TM.⟨ 𝐖 ； γ ╎ π ╎ TM.◻ ⟩
+
+     wf-state-result : {Γ₁ Γ₂ Γ₃ : Ctx} {γ₁ : TM.MEnv Γ₁}
+                {γ₂ : TM.MEnv Γ₂} {π₁ : Wk Γ₁ Γ₂} → {π₂ : Wk Γ₂ Γ₃}
+                {M : Comp (Γ₂ ∙ X) Y} {K : TM.CStack Γ₃ Y}
+                → (𝐖 : TM.MClo Γ₁ X)
+                → WkMEnvᵀ π₁ γ₁ γ₂
+                → WellFormedTMCStack (TM.< M ； γ₂ ； π₂ >∷ K)
+                ------------------------------------
+                → WellFormedTMCState TM.⟨ 𝐖 ； γ₁ ╎ π₁ ╎ TM.< M ； γ₂ ； π₂ >∷ K ⟩
+
+     wf-state-bottom : (M : Comp Γ ℛ) → (γ : TM.MEnv Γ) → (π : Wk Γ ε)
+                ------------------------------------
+                → WellFormedTMCState TM.⟨ M ╎ γ ╎ π ╎ TM.◻ ⟩
+
+     wf-state-resume : {Γ₁ Γ₂ Γ₃ : Ctx} {γ₁ : TM.MEnv Γ₁}
+                {γ₂ : TM.MEnv Γ₂} {π₁ : Wk Γ₁ Γ₂} → {π₂ : Wk Γ₂ Γ₃}
+                {M₂ : Comp (Γ₂ ∙ X) Y} {K : TM.CStack Γ₃ Y}
+                → (M₁ : Comp Γ₁ X)
+                → WkMEnvᵀ π₁ γ₁ γ₂
+                → WellFormedTMCStack (TM.< M₂ ； γ₂ ； π₂ >∷ K)
+                ------------------------------------
+                → WellFormedTMCState TM.⟨ M₁ ╎ γ₁ ╎ π₁ ╎ TM.< M₂ ； γ₂ ； π₂ >∷ K ⟩
 
 -------------------------------------------------------------------------------------
 
