@@ -1,0 +1,50 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Symbol definitions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\glsxtrnewsymbol[description={Category of contexts (\textsf{FinSet})}]{CatOfCtx}{\ensuremath{\mathbb{F}}}
+
+\glsxtrnewsymbol[description={Continuation Monad $R^{R^{-}}$ on ${\textsf{Set}}^{\glspt{CatOfCtx}}$ with $R \in {\textsf{Set}}^{\glspt{CatOfCtx}}$}]{ContMonad}{\ensuremath{K_R}}
+
+\glsxtrnewsymbol[description={Variable presheaf $Y(1) \in {\textsf{Set}}^{\glspt{CatOfCtx}}$}]{VarPresheaf}{\ensuremath{L}}
+
+\glsxtrnewsymbol[description={Label type}]{LabelType}{\ensuremath{\ell}}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Custom glossary style
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newlength{\myglosssymbolwidth}\setlength{\myglosssymbolwidth}{0.15\textwidth}
+\newlength{\myglossdescwidth}\setlength{\myglossdescwidth}{0.55\textwidth}
+\newlength{\myglosskeywidth}\setlength{\myglosskeywidth}{0.2\textwidth}
+
+\newglossarystyle{long-symbols}{%
+% put the glossary in a longtable environment:
+\renewenvironment{theglossary}%
+%% To determine width of colums automatically: {\begin{longtable}{lp{\glsdescwidth}p{\glspagelistwidth}}}%
+{\begin{longtable}{p{\myglosssymbolwidth}p{\myglossdescwidth}p{\myglosskeywidth}}}%
+{\end{longtable}}%
+% Set the table's header:
+\renewcommand*{\glossaryheader}{%
+\bfseries Symbol & \bfseries Description & \bfseries Key
+\\\endhead}%
+% No heading between groups:
+\renewcommand*{\glsgroupheading}[1]{}%
+\renewcommand*{\glossentry}[2]{%
+\glstarget{##1}{\glossentryname{##1}}
+& \glossentrydesc{##1}% Description
+& \texttt{##1}%
+\tabularnewline % end of row
+}%
+% Similarly for sub-entries (no sub-entry numbers)
+\renewcommand*{\subglossentry}[3]{%
+% ignoring first argument (sub-level)
+\glstarget{##2}{\glossentryname{##2}}
+& \glossentrydesc{##2}% Description
+& \texttt{##2}%
+\tabularnewline % end of row
+}%
+% Nothing between groups:
+\renewcommand*{\glsgroupskip}{}%
+}

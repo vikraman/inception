@@ -51,7 +51,12 @@
 \usepackage[appendix=strip,bibliography=common]{apxproof}
 }
 
-\input{notation.tex}
+\usepackage{xspace}
+\usepackage{longtable}
+\usepackage[automake,xindy={language=english},symbols,abbreviations,sort=def]{glossaries-extra}
+\input{glossary.tex}
+\makeglossaries
+\overfullrule=5pt
 
 %Editor-only macros:: begin (do not touch as author)%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \EventEditors{John Q. Open and Joan R. Access}
@@ -76,14 +81,13 @@
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent convallis orci arcu, eu mollis dolor. Aliquam eleifend suscipit lacinia. Maecenas quam mi, porta ut lacinia sed, convallis ac dui. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse potenti. 
 \end{abstract}
 
-\section{Macros / Notation / etc}
-Here are some macros that we can use for our notation (defined in \verb+notation.tex+) --- to be extended as needed:
+\section{For the authors: Macros and Notation}
+I have added a glossary in \verb+glossary.tex+.
+This is not supposed to be included in the LICS version, but we could maybe include it in the Arxiv version.
+The provisional glossary below shows all the defined entries and their corresponding keys (just to make things easier for us while writing).
+A symbol with a corresponding key \texttt{somekey} can be printed by \verb+\gls{somekey}+ in the document.
 
-\begin{itemize}
-\item Category of contexts (\verb+\nCatOfCtx+): $\nCatOfCtx$
-\item Continuation monad (\verb+\nContMonad+): $\nContMonad$
-\item Variable presheaf (\verb+\nVarPresheaf+): $\nVarPresheaf$
-\item Label type (\verb+\nLabelType+): $\nLabelType$
-\end{itemize}
+\glsaddall
+\printglossary[type=symbols, title={Glossary}, style={long-symbols}]
 
 \end{document}
