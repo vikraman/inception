@@ -1,7 +1,9 @@
+# graphics in keep-directory (would be removed by distclean otherwise)
+GRAPHICS = cc-by.pdf lipics-logo-bw.pdf orcid.pdf
 # all sources needed to build the paper
-SOURCES = $(wildcard *.tex *.cls *.sty *.bib)
+SOURCES = $(wildcard *.tex *.cls *.sty *.bib) $(GRAPHICS)
 # sources for the arxiv version
-ARXIV_SOURCES = $(filter-out $(wildcard *lics*),$(wildcard *.tex *.cls *.sty *.bib *.bbl) cc-by.pdf lipics-logo-bw.pdf orcid.pdf)
+ARXIV_SOURCES = $(filter-out $(wildcard *lics*),$(wildcard *.tex *.cls *.sty *.bib *.bbl) cc-by.pdf lipics-logo-bw.pdf)
 # sources for the camera-ready version
 TYPESPP_SOURCES = lics27-inc.tex $(filter-out $(wildcard *arxiv*)$(wildcard *lics*),$(wildcard *.tex *.cls *.sty *.bib *.bbl))
 # targets to build: full paper, and the stripped submission
@@ -13,11 +15,11 @@ LATEXMK = latexmk -recorder -use-make $(ENGINE)
 
 all: $(TARGETS)
 
+$(GRAPHICS): %.pdf:
+	cp keep/$@ $@
+
 lics27-inc.pdf: $(SOURCES)
 	$(LATEXMK) lics27-inc.tex
-
-arxiv-inc.tex: lics27-inc.tex
-	cp -f $< $@ || true
 
 arxiv-inc.pdf: $(SOURCES)
 	$(LATEXMK) arxiv-inc.tex
