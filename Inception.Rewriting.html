@@ -1,0 +1,22 @@
+<!DOCTYPE HTML>
+<html><head><meta charset="utf-8"><title>Inception.Rewriting</title><link rel="stylesheet" href="Agda.css"><script type="text/javascript" src="highlight-hover.js"></script></head><body><pre class="Agda"><a id="1" class="Keyword">module</a> <a id="8" href="Inception.Rewriting.html" class="Module">Inception.Rewriting</a> <a id="28" class="Keyword">where</a>
+
+<a id="35" class="Keyword">open</a> <a id="40" class="Keyword">import</a> <a id="47" href="Induction.WellFounded.html" class="Module">Induction.WellFounded</a> <a id="69" class="Keyword">public</a>
+  <a id="78" class="Keyword">using</a> <a id="84" class="Symbol">(</a><a id="85" href="Induction.WellFounded.html#1545" class="Datatype">Acc</a><a id="88" class="Symbol">;</a> <a id="90" href="Induction.WellFounded.html#1607" class="InductiveConstructor">acc</a><a id="93" class="Symbol">)</a>
+<a id="95" class="Keyword">open</a> <a id="100" class="Keyword">import</a> <a id="107" href="Relation.Binary.Construct.Closure.ReflexiveTransitive.html" class="Module">Relation.Binary.Construct.Closure.ReflexiveTransitive</a> <a id="161" class="Keyword">public</a>
+  <a id="170" class="Keyword">using</a> <a id="176" class="Symbol">(</a><a id="177" href="Relation.Binary.Construct.Closure.ReflexiveTransitive.html#625" class="Datatype">Star</a><a id="181" class="Symbol">;</a> <a id="183" href="Relation.Binary.Construct.Closure.ReflexiveTransitive.html#686" class="InductiveConstructor">ε</a><a id="184" class="Symbol">;</a> <a id="186" href="Relation.Binary.Construct.Closure.ReflexiveTransitive.html#713" class="InductiveConstructor Operator">_◅_</a><a id="189" class="Symbol">;</a> <a id="191" href="Relation.Binary.Construct.Closure.ReflexiveTransitive.html#973" class="Function Operator">_◅◅_</a><a id="195" class="Symbol">)</a>
+<a id="197" class="Keyword">open</a> <a id="202" class="Keyword">import</a> <a id="209" href="Relation.Binary.Construct.Closure.ReflexiveTransitive.Properties.html" class="Module">Relation.Binary.Construct.Closure.ReflexiveTransitive.Properties</a> <a id="274" class="Keyword">public</a>
+  <a id="283" class="Keyword">using</a> <a id="289" class="Symbol">(</a><a id="290" class="Keyword">module</a> <a id="297" href="Relation.Binary.Construct.Closure.ReflexiveTransitive.Properties.html#4333" class="Module">StarReasoning</a><a id="310" class="Symbol">)</a>
+<a id="312" class="Keyword">open</a> <a id="317" class="Keyword">import</a> <a id="324" href="Relation.Binary.Construct.Closure.Transitive.html" class="Module">Relation.Binary.Construct.Closure.Transitive</a> <a id="369" class="Keyword">public</a>
+  <a id="378" class="Keyword">using</a> <a id="384" class="Symbol">(</a><a id="385" href="Relation.Binary.Construct.Closure.Transitive.html#873" class="Datatype">TransClosure</a><a id="397" class="Symbol">;</a> <a id="399" href="Relation.Binary.Construct.Closure.Transitive.html#938" class="InductiveConstructor Operator">[_]</a><a id="402" class="Symbol">)</a>
+
+<a id="405" class="Keyword">open</a> <a id="410" class="Keyword">import</a> <a id="417" href="Inception.Rewriting.Relation.html" class="Module">Inception.Rewriting.Relation</a> <a id="446" class="Keyword">public</a>
+<a id="453" class="Keyword">open</a> <a id="458" class="Keyword">import</a> <a id="465" href="Inception.Rewriting.Simulation.html" class="Module">Inception.Rewriting.Simulation</a> <a id="496" class="Keyword">public</a>
+
+<a id="504" class="Keyword">import</a> <a id="511" href="Inception.Rewriting.Reduction.html" class="Module">Inception.Rewriting.Reduction</a>
+
+<a id="542" class="Comment">--------------------------------------------------------------------------</a>
+<a id="617" class="Comment">-- reduction relations</a>
+
+<a id="641" class="Keyword">module</a> <a id="Reduction"></a><a id="648" href="Inception.Rewriting.html#648" class="Module">Reduction</a> <a id="658" class="Symbol">=</a> <a id="660" href="Inception.Rewriting.Reduction.html" class="Module">Inception.Rewriting.Reduction</a>
+</pre></body></html>
