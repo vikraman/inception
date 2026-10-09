@@ -10,8 +10,6 @@ TARGETS = lics27-inc.pdf arxiv-inc.pdf
 DEPS_DIR = .deps
 ENGINE = -pdf
 LATEXMK = latexmk -recorder -use-make $(ENGINE)
-# helper programs
-PDFTK = pdftk
 
 all: $(TARGETS)
 
