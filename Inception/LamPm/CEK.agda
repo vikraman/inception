@@ -6,7 +6,7 @@ open import Data.Unit using (⊤; tt)
 
 open import Inception.LamPm.Syntax
 open import Inception.Prelude
-open Inception.Prelude.RTC
+open import Inception.Rewriting
 
 --------------------------------------------------------------------------
 -- closures and environments
@@ -84,16 +84,11 @@ data _→ᵏ_ : {X : Ty} → Cfg X → Cfg X → Set where
   pm-step     : {Γ : Ctx} {V : Γ ⊢ᵛ (X `× Y)} {M : (Γ ∙ X ∙ Y) ⊢ᶜ Z} {γ : Env Γ} {K : Kont Z U}
               → ⟨ pm V M ∥ γ ∥ K ⟩ →ᵏ split (eval-val V γ) M γ K
 
-infix 5 _↠ᵏ_
-
-_↠ᵏ_ : {X : Ty} → Cfg X → Cfg X → Set
-_↠ᵏ_ {X} = _~>*_ (_→ᵏ_ {X = X})
-
 --------------------------------------------------------------------------
 -- accessibility
 
-data SN {X} (σ : Cfg X) : Set where
-  sn : (∀ {σ₁} → σ →ᵏ σ₁ → SN σ₁) → SN σ
+open module Rew {X : Ty} = Reduction (_→ᵏ_ {X = X}) public
+  renaming (_~>*_ to infix 5 _↠ᵏ_)
 
 --------------------------------------------------------------------------
 -- reducibility candidates
@@ -151,13 +146,6 @@ SN-theorem M = Fundamental-comp M RedEnv-∅ Redᵏ-ε
 --------------------------------------------------------------------------
 -- eval
 
-Normal : Cfg X → Set
-Normal σ = ∀ {σ₁} → σ →ᵏ σ₁ → ⊥
-
-data Step? (σ : Cfg X) : Set where
-  done : Normal σ → Step? σ
-  next : {σ₁ : Cfg X} → σ →ᵏ σ₁ → Step? σ
-
 step? : (σ : Cfg X) → Step? σ
 step? ⟨ push M N ∥ γ ∥ K ⟩ = next push-step
 step? ⟨ return V ∥ γ ∥ K ⟩ = next return-step
@@ -166,18 +154,12 @@ step? ⟨ pm V M ∥ γ ∥ K ⟩   = next pm-step
 step? [ 𝐕 ∥ ε ]            = done (λ ())
 step? [ 𝐕 ∥ N ◂ γ ∷ K ]    = next resume-step
 
-eval-acc : {σ : Cfg X} → SN σ → Σ[ σ₁ ∈ Cfg X ] (σ ↠ᵏ σ₁) × Normal σ₁
-eval-acc {σ = σ} (sn f) with step? σ
-... | done normal    = σ , σ ◼ , normal
-... | next {σ₁} step with eval-acc (f step)
-...   | (σ₂ , chain , normal) = σ₂ , σ ~>⟨ step ⟩ chain , normal
-
 eval : (M : ε ⊢ᶜ X) → Σ[ σ ∈ Cfg X ] (⟨ M ∥ ∅ ∥ ε ⟩ ↠ᵏ σ) × Normal σ
-eval M = eval-acc (SN-theorem M)
+eval M = eval-acc step? (SN-theorem M)
 
 open import Relation.Binary.PropositionalEquality
 
 _ : eval (pm (pair unit unit) (return (lam {X = `𝟙} (return (var here)))))
        ≡ ([ clo (return (var here)) (∅ ∷ unit ∷ unit) ∥ ε ] ,
-          _ ~>⟨ pm-step ⟩ _ ~>⟨ return-step ⟩ _ ◼ , (λ ()))
+          pm-step ◅ return-step ◅ ε , (λ ()))
 _ = refl
