@@ -8,6 +8,7 @@ import Relation.Binary.PropositionalEquality as Eq
 open Eq using (_≡_; refl; cong; cong₂; sym)
 open Eq.≡-Reasoning
 
+open import Inception.Rewriting
 open import Inception.SystemL.Syntax
 
 --------------------------------------------------------------------------
@@ -41,8 +42,17 @@ data _↦_ {Γ Δ : Ctx} : Γ ⊢ Δ → Γ ⊢ Δ → Set where
 --------------------------------------------------------------------------
 -- accessibility
 
-data SN {Γ Δ} (C : Γ ⊢ Δ) : Set where
-  sn : (∀ {C₁} → C ↦ C₁ → SN C₁) → SN C
+open module Rew {Γ Δ : Ctx} = Reduction (_↦_ {Γ = Γ} {Δ = Δ}) public
+  renaming (_~>*_ to infix 5 _↦*_)
+
+↦-det : {Γ Δ : Ctx} → Deterministic {Γ} {Δ}
+↦-det μ-step   μ-step   = refl
+↦-det μ̃-step   μ̃-step   = refl
+↦-det app-step app-step = refl
+↦-det fst-step fst-step = refl
+↦-det snd-step snd-step = refl
+↦-det inl-step inl-step = refl
+↦-det inr-step inr-step = refl
 
 --------------------------------------------------------------------------
 -- reducibility candidates
@@ -130,7 +140,7 @@ Ortho {X `⇒ Y} {V = var i} {K = μ̃ C} rv rk = Ortho-μ̃ rv rk
 Ortho {X `⇒ Y} {V = lam M} {K = covar i} rv rk = sn λ ()
 Ortho {X `⇒ Y} {V = lam M} {K = app W K} rv (rw , rk) =
   sn λ { app-step → rv wk-id wk-id rw rk }
-Ortho {X `⇒ Y} {V = lam M} {K = μ̃ C} rv rk = Ortho-μ̃ rv rk
+Ortho {X `⇒ Y} {V = lam M} {K = μ̃ C} rv rk = Ortho-μ̃ {V = lam M} rv rk
 Ortho {X `+ Y} {V = var i} {K = case K L} rv rk = sn λ ()
 Ortho {X `+ Y} {V = var i} {K = μ̃ C} rv rk = Ortho-μ̃ rv rk
 Ortho {X `+ Y} {V = inl V} {K = covar i} rv rk = sn λ ()
@@ -219,19 +229,6 @@ SN-theorem {Γ} {Δ} M = Fundamental-cmd sub-id cosub-id RedSub-id CoRedSub-id M
 --------------------------------------------------------------------------
 -- eval
 
-open import Inception.Prelude
-open Inception.Prelude.RTC
-
-_↦*_ : {Γ Δ : Ctx} → Γ ⊢ Δ → Γ ⊢ Δ → Set
-_↦*_ {Γ} {Δ} = _~>*_ (_↦_ {Γ = Γ} {Δ = Δ})
-
-Normal : {Γ Δ : Ctx} → Γ ⊢ Δ → Set
-Normal C = ∀ {C₁} → C ↦ C₁ → ⊥
-
-data Step? {Γ Δ : Ctx} (C : Γ ⊢ Δ) : Set where
-  done : Normal C → Step? C
-  next : {C₁ : Γ ⊢ Δ} → C ↦ C₁ → Step? C
-
 step? : {Γ Δ : Ctx} (C : Γ ⊢ Δ) → Step? C
 step? (cut X (μ C) K) = next μ-step
 
@@ -262,11 +259,5 @@ step? (cut (X `⇒ Y) (ret (lam M)) (covar j)) = done (λ ())
 step? (cut (X `⇒ Y) (ret (lam M)) (app V K)) = next app-step
 step? (cut (X `⇒ Y) (ret (lam M)) (μ̃ C))     = next μ̃-step
 
-eval-acc : {Γ Δ : Ctx} {C : Γ ⊢ Δ} → SN C → Σ[ C₁ ∈ Γ ⊢ Δ ] (C ↦* C₁) × Normal C₁
-eval-acc {C = C} (sn f) with step? C
-... | done normal = C , C ◼ , normal
-... | next {C₁} step with eval-acc (f step)
-... | (C₂ , chain , normal) = C₂ , C ~>⟨ step ⟩ chain , normal
-
 eval : {Γ Δ : Ctx} (C : Γ ⊢ Δ) → Σ[ C₁ ∈ Γ ⊢ Δ ] (C ↦* C₁) × Normal C₁
-eval C = eval-acc (SN-theorem C)
+eval C = eval-acc step? (SN-theorem C)
