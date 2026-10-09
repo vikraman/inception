@@ -1,18 +1,21 @@
-AGDA_SRCS = $(shell find -H Inception -type f -name '*.agda')
-AGDA_BINS = $(subst .agda,.agdai,$(AGDA_SRCS))
+AGDA_SRCS = $(shell find -H Inception -type f \( -name '*.agda' -o -name '*.lagda' \) ! -path $(EVERYTHING))
+EVERYTHING = Inception/Everything.agda
 
-all: Inception/Everything.agdai
-reallyall: $(AGDA_BINS)
+STUB = echo 'module Inception.Everything where' > $(EVERYTHING)
 
-%.agdai: %.agda
-	agda $<
+all: everything
+	trap "$(STUB)" EXIT; agda index.agda
 
-html: index.agda $(AGDA_SRCS)
-	agda --html --highlight-occurrences --css=Agda.css index.agda
+everything:
+	{ echo 'module Inception.Everything where'; echo; \
+	  for f in $(sort $(AGDA_SRCS)); do echo "$$f"; done \
+	  | sed -E 's/\.l?agda$$//; s#/#.#g; s/^/import /'; } > $(EVERYTHING)
 
-todos: $(AGDA_SRCS)
-	find -H Inception -type f -name '*.agda' \
-		-exec grep -E -n --colour=auto 'TODO' {} \+
+html: everything
+	trap "$(STUB)" EXIT; agda --html --highlight-occurrences --css=Agda.css index.agda
+
+todos:
+	grep -E -n --colour=auto 'TODO' $(AGDA_SRCS)
 
 LINT = scripts/AgdaLint.hs
 
@@ -26,6 +29,6 @@ cloc:
 	cloc Inception/
 
 clean:
-	rm -f $(AGDA_BINS)
+	rm -rf _build
 
-.PHONY: all clean html lint lint-fix
+.PHONY: all everything html todos lint lint-fix cloc clean
