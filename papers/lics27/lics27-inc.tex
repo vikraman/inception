@@ -1,0 +1,89 @@
+
+\documentclass[a4paper,UKenglish,cleveref,thm-restate]{lipics-v2021}
+
+\bibliographystyle{plainurl}% the mandatory bibstyle
+
+\title{Inception algebras / jumps with data-passing} %TODO
+
+\author%
+{Vikraman Choudhury}%
+{University of Strathclyde, Glasgow, United Kingdom}%
+{vikraman.choudhury@strath.ac.uk}%
+{https://orcid.org/0000-0003-2030-8056}%
+{Supported by ...}%TODO
+
+\author%
+{Marcelo Fiore}%
+{University of Cambridge, Cambridge, United Kingdom}%
+{marcelo.fiore@cst.cam.ac.uk}%
+{...}%TODO
+{Supported by ...}%TODO
+
+\author%
+{Gregor Feierabend}%
+{University of Cambridge, Cambridge, United Kingdom}%
+{gregor.feierabend@cst.cam.ac.uk}%
+{...}%TODO
+{Supported by ...}%TODO
+
+\authorrunning{V. Choudhury, M. Fiore and G. Feierabend} %TODO mandatory. First: Use abbreviated first/middle names. Second (only in severe cases): Use first author plus 'et al.'
+
+\Copyright{Vikraman Choudhury, Marcelo Fiore and Gregor Feierabend} %TODO mandatory, please use full first names. LIPIcs license is "CC-BY";  http://creativecommons.org/licenses/by/3.0/
+
+\ccsdesc[100]{\textcolor{red}{Replace ccsdesc macro with valid one}} %TODO mandatory: Please choose ACM 2012 classifications from https://dl.acm.org/ccs/ccs_flat.cfm 
+
+\keywords{computational effects, continuations} %TODO mandatory; please add comma-separated list of keywords
+
+\acknowledgements{We want to thank \dots}%optional
+
+\RequirePackage{currfile}
+\providecommand{\ifarxiv}[2]{#2}
+\ifcurrfilename{arxiv-inc.tex}{%
+  \renewcommand{\ifarxiv}[2]{#1}%
+}{}
+
+\ifarxiv{%
+\pdfoutput=1
+\hideLIPIcs
+\nolinenumbers
+\usepackage[appendix=inline,bibliography=common]{apxproof}
+}{%
+\usepackage[appendix=strip,bibliography=common]{apxproof}
+}
+
+\input{notation.tex}
+
+%Editor-only macros:: begin (do not touch as author)%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\EventEditors{John Q. Open and Joan R. Access}
+\EventNoEds{2}
+\EventLongTitle{42nd Conference on Very Important Topics (CVIT 2016)}
+\EventShortTitle{CVIT 2016}
+\EventAcronym{CVIT}
+\EventYear{2016}
+\EventDate{December 24--27, 2016}
+\EventLocation{Little Whinging, United Kingdom}
+\EventLogo{}
+\SeriesVolume{42}
+\ArticleNo{23}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\maketitle
+
+%TODO mandatory: add short abstract of the document
+\begin{abstract}
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent convallis orci arcu, eu mollis dolor. Aliquam eleifend suscipit lacinia. Maecenas quam mi, porta ut lacinia sed, convallis ac dui. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse potenti. 
+\end{abstract}
+
+\section{Macros / Notation / etc}
+Here are some macros that we can use for our notation (defined in \verb+notation.tex+) --- to be extended as needed:
+
+\begin{itemize}
+\item Category of contexts (\verb+\nCatOfCtx+): $\nCatOfCtx$
+\item Continuation monad (\verb+\nContMonad+): $\nContMonad$
+\item Variable presheaf (\verb+\nVarPresheaf+): $\nVarPresheaf$
+\item Label type (\verb+\nLabelType+): $\nLabelType$
+\end{itemize}
+
+\end{document}
