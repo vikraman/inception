@@ -183,15 +183,6 @@ determinismꟲ var→ var→ = refl
 determinismꟲ pmᶜ→ pmᶜ→ = refl
 determinismꟲ app→ app→ = refl
 
-open Inception.Prelude.RTC renaming (_~>⟨_⟩_ to _→ᶜ⟨_⟩_)
-
-_→ᶜ*_ : CState → CState → Set
-_→ᶜ*_ = _~>*_ (_→ᶜ_)
-
-_⨾ᶜ_ : {σ₁ σ₂ σ₃ : CState} → (σ₁ →ᶜ* σ₂) → (σ₂ →ᶜ* σ₃) → (σ₁ →ᶜ* σ₃)
-_⨾ᶜ_ (σ ◼) ss = ss
-_⨾ᶜ_ (σ →ᶜ⟨ s ⟩ ss₁) ss₂ = σ →ᶜ⟨ s ⟩ (ss₁ ⨾ᶜ ss₂)
-
 {-
 data SN (σ : CState) : Set where
   sn : (∀ {σ₁} → σ →ᶜ σ₁ → SN σ₁) → SN σ
