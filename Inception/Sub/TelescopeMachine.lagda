@@ -108,9 +108,6 @@ lookup-label (there x) (γ ·﹝ M ╎ π ╎ stack ﹞) = lookup-label x γ
 lam-to-comp :  MClo Γ (X `⇒ Y) → Comp (Γ ∙ X) Y
 lam-to-comp (lam M) = M
 
-jump-to-state : MClo Γ `ℓ → MEnv Γ → CState
-jump-to-state (label x) γ = lookup-label x γ
-
 eval : Val Γ X → MEnv Γ → MClo Γ X
 eval (var i) γ = lookup i γ
 eval (lam M) γ = lam M
@@ -118,7 +115,7 @@ eval (pair V W) γ = pair (eval V γ) (eval W γ)
 eval unit γ = unit
 
 eval-jump : Val Γ `ℓ → MEnv Γ → CState
-eval-jump W γ = jump-to-state (eval W γ) γ
+eval-jump (var i) γ = lookup-label i γ
 
 proj₁-mclo : MClo Γ (X₁ `× X₂) → MClo Γ X₁
 proj₁-mclo (pair 𝐖₁ 𝐖₂) = 𝐖₁
