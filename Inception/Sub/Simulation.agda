@@ -55,7 +55,7 @@ mutual
 
       wk-cloᵛ : {Γ₁ Γ₂ : Ctx} {M₁ : Comp (Γ₁ ∙ X) Y} {M₂ : Comp (Γ₂ ∙ X) Y} {γ₁ : M.MEnv Γ₁} {γ₂ : M.MEnv Γ₂} → (π : Wk Γ₁ Γ₂) → M₁ ≡ wk-comp (wk-cong π) M₂ → (WkMEnvᴹ π γ₁ γ₂) → WkMVal (M.cloᵛ M₁ γ₁) (M.cloᵛ M₂ γ₂)
 
-      wk-jumpᵛ : {Γ₁ Γ₂ : Ctx} {M₁ : Comp Γ₁ X} {M₂ : Comp Γ₂ X} {γ₁ : M.MEnv Γ₁} {γ₂ : M.MEnv Γ₂} → (π : Wk Γ₁ Γ₂) → M₁ ≡ wk-comp π M₂ → (WkMEnvᴹ π γ₁ γ₂) → (K : M.CStack X) → WkMVal (M.jumpᵛ M₁ γ₁ K) (M.jumpᵛ M₂ γ₂ K)
+      wk-jumpᵛ : {Γ₁ Γ₂ : Ctx} {M₁ : Comp Γ₁ X} {M₂ : Comp Γ₂ X} {γ₁ : M.MEnv Γ₁} {γ₂ : M.MEnv Γ₂} {K₁ K₂ : M.CStack X} → (π : Wk Γ₁ Γ₂) → M₁ ≡ wk-comp π M₂ → (WkMEnvᴹ π γ₁ γ₂) → (WkCStackᴹ K₁ K₂) → WkMVal (M.jumpᵛ M₁ γ₁ K₁) (M.jumpᵛ M₂ γ₂ K₂)
 
   data WkMEnvᴹ : {Γ₁ Γ₂ : Ctx} → (π : Wk Γ₁ Γ₂) → (γ₁ : M.MEnv Γ₁) → (γ₂ : M.MEnv Γ₂) → Set where
 
@@ -65,14 +65,13 @@ mutual
 
       wk-menv-wk : {Γ₁ Γ₂ : Ctx} {π : Wk Γ₁ Γ₂} {γ₁ : M.MEnv Γ₁} {γ₂ : M.MEnv Γ₂} → (𝐖 : M.MVal X) → WkMEnvᴹ π γ₁ γ₂ → WkMEnvᴹ (wk-wk π) (γ₁ · 𝐖) γ₂
 
-data WkCStackᴹ : (K₁ : M.CStack X) → (K₂ : M.CStack X) → Set where
+  data WkCStackᴹ : (K₁ : M.CStack X) → (K₂ : M.CStack X) → Set where
 
-  wk-cstack-empty : WkCStackᴹ ◻ ◻
+    wk-cstack-empty : WkCStackᴹ ◻ ◻
 
-  wk-cstack-push : {Γ₁ Γ₂ : Ctx} {M₁ : (Γ₁ ∙ Y) ⊢ᶜ X} {M₂ : (Γ₂ ∙ Y) ⊢ᶜ X} {γ₁ : M.MEnv Γ₁} {γ₂ : M.MEnv Γ₂} {K₁ K₂ : M.CStack X}
-                   → (π : Wk Γ₁ Γ₂) → M₁ ≡ wk-comp (wk-cong π) M₂ → WkMEnvᴹ π γ₁ γ₂ → WkCStackᴹ K₁ K₂
-                   → WkCStackᴹ (< M₁ ； γ₁ >∷ K₁) (< M₂ ； γ₂ >∷ K₂)
-
+    wk-cstack-push : {Γ₁ Γ₂ : Ctx} {M₁ : (Γ₁ ∙ Y) ⊢ᶜ X} {M₂ : (Γ₂ ∙ Y) ⊢ᶜ X} {γ₁ : M.MEnv Γ₁} {γ₂ : M.MEnv Γ₂} {K₁ K₂ : M.CStack X}
+                    → (π : Wk Γ₁ Γ₂) → M₁ ≡ wk-comp (wk-cong π) M₂ → WkMEnvᴹ π γ₁ γ₂ → WkCStackᴹ K₁ K₂
+                    → WkCStackᴹ (< M₁ ； γ₁ >∷ K₁) (< M₂ ； γ₂ >∷ K₂)
 data WkCStateᴹ : (K₁ : M.CState) → (K₂ : M.CState) → Set where
 
   wk-cstate-result : {𝐖₁ 𝐖₂ : M.MVal X} {K₁ K₂ : M.CStack X}
@@ -89,17 +88,15 @@ mutual
   wk-mval-id {𝐖 = M.unitᵛ} = wk-unitᵛ
   wk-mval-id {𝐖 = M.pairᵛ 𝐖 𝐖₁} = wk-pairᵛ wk-mval-id wk-mval-id
   wk-mval-id {𝐖 = M.cloᵛ M γ} = wk-cloᵛ wk-id refl wk-menv-id
-  wk-mval-id {𝐖 = M.jumpᵛ M γ K} = wk-jumpᵛ wk-id refl wk-menv-id K
+  wk-mval-id {𝐖 = M.jumpᵛ M γ K} = wk-jumpᵛ wk-id refl wk-menv-id wk-cstack-id
 
   wk-menv-id : {γ : M.MEnv Γ} → WkMEnvᴹ wk-id γ γ
   wk-menv-id {γ = ⋄} = wk-menv-ε
   wk-menv-id {γ = γ · 𝐖} = wk-menv-cong wk-mval-id wk-menv-id
 
-data _≈ᴹ_ : M.CState → M.CState → Set where
-
-    ≈-sym : {σ₁ σ₂ : M.CState} → σ₁ ≈ᴹ σ₂ → σ₂ ≈ᴹ σ₁
-
-    ≈-wk : {σ₁ σ₂ : M.CState} → WkCStateᴹ σ₁ σ₂ → σ₁ ≈ᴹ σ₂
+  wk-cstack-id : {K : M.CStack X} → WkCStackᴹ K K
+  wk-cstack-id {K = ◻} = wk-cstack-empty
+  wk-cstack-id {K = < x ； γ >∷ K} = wk-cstack-push wk-id refl wk-menv-id wk-cstack-id
 
 {-
 data _≈ᴹ_ : M.CState → M.CState → Set where
@@ -177,6 +174,65 @@ wk-MEnvᵀ-trans (wk-tmenv-jump-wk M πᵀ K ϖ₁) (wk-tmenv-mclo-cong 𝐖 ϖ�
 wk-MEnvᵀ-trans (wk-tmenv-jump-wk M πᵀ K ϖ₁) (wk-tmenv-jump-cong M₁ πᵀ₁ K₁ ϖ₂) = wk-tmenv-jump-wk M πᵀ K (wk-MEnvᵀ-trans ϖ₁ (wk-tmenv-jump-cong M₁ πᵀ₁ K₁ ϖ₂))
 wk-MEnvᵀ-trans (wk-tmenv-jump-wk M πᵀ K ϖ₁) (wk-tmenv-mclo-wk 𝐖 ϖ₂) = wk-tmenv-jump-wk M πᵀ K (wk-MEnvᵀ-trans ϖ₁ (wk-tmenv-mclo-wk 𝐖 ϖ₂))
 wk-MEnvᵀ-trans (wk-tmenv-jump-wk M πᵀ K ϖ₁) (wk-tmenv-jump-wk M₁ πᵀ₁ K₁ ϖ₂) = wk-tmenv-jump-wk M πᵀ K (wk-MEnvᵀ-trans ϖ₁ (wk-tmenv-jump-wk M₁ πᵀ₁ K₁ ϖ₂))
+
+mutual
+
+  wk-MEnvᴹ-trans : {Γ₁ Γ₂ Γ₃ : Ctx} {π₁ : Wk Γ₁ Γ₂} {π₂ : Wk Γ₂ Γ₃} {γ₁ : M.MEnv Γ₁} {γ₂ : M.MEnv Γ₂} {γ₃ : M.MEnv Γ₃} → WkMEnvᴹ π₁ γ₁ γ₂ → WkMEnvᴹ π₂ γ₂ γ₃ → WkMEnvᴹ (wk-trans π₁ π₂) γ₁ γ₃
+  wk-MEnvᴹ-trans wk-menv-ε wk-menv-ε = wk-menv-ε
+  wk-MEnvᴹ-trans (wk-menv-cong x₁ ϖ₁) (wk-menv-cong x₂ ϖ₂) = wk-menv-cong (wk-mval-trans x₁ x₂) (wk-MEnvᴹ-trans ϖ₁ ϖ₂)
+  wk-MEnvᴹ-trans (wk-menv-cong {𝐖₁ = 𝐖₁} x₁ ϖ₁) (wk-menv-wk 𝐖₂ ϖ₂) = wk-menv-wk 𝐖₁ (wk-MEnvᴹ-trans ϖ₁ ϖ₂)
+  wk-MEnvᴹ-trans (wk-menv-wk 𝐖 ϖ) wk-menv-ε = wk-menv-wk 𝐖 ϖ
+  wk-MEnvᴹ-trans (wk-menv-wk 𝐖₁ ϖ₁) (wk-menv-cong x₂ ϖ₂) = wk-menv-wk 𝐖₁ (wk-MEnvᴹ-trans ϖ₁ (wk-menv-cong x₂ ϖ₂))
+  wk-MEnvᴹ-trans (wk-menv-wk 𝐖₁ ϖ₁) (wk-menv-wk 𝐖₂ ϖ₂) = wk-menv-wk 𝐖₁ (wk-MEnvᴹ-trans ϖ₁ (wk-menv-wk 𝐖₂ ϖ₂))
+
+  wk-cstack-trans : {K₁ K₂ K₃ : M.CStack X} → WkCStackᴹ K₁ K₂ → WkCStackᴹ K₂ K₃ → WkCStackᴹ K₁ K₃
+  wk-cstack-trans wk-cstack-empty wk-cstack-empty = wk-cstack-empty
+  wk-cstack-trans (wk-cstack-push {M₁ = M₁₁} {M₂ = M₂₁} π₁ eq₁ ϖ₁ x₁) (wk-cstack-push {M₁ = M₁₂} {M₂ = M₂₂} π₂ eq₂ ϖ₂ x₂) =
+                        wk-cstack-push
+                          (wk-trans π₁ π₂)
+                          (M₁₁ ≡⟨ eq₁ ⟩ wk-comp (wk-cong π₁) M₂₁ ≡⟨ cong (wk-comp (wk-cong π₁)) eq₂ ⟩ wk-comp (wk-cong (wk-trans π₁ π₂)) M₂₂ ∎)
+                          (wk-MEnvᴹ-trans ϖ₁ ϖ₂)
+                          (wk-cstack-trans x₁ x₂)
+
+  wk-mval-trans : {𝐖₁ 𝐖₂ 𝐖₃ : M.MVal X} → WkMVal 𝐖₁ 𝐖₂ → WkMVal 𝐖₂ 𝐖₃ → WkMVal 𝐖₁ 𝐖₃
+  wk-mval-trans wk-unitᵛ wk-unitᵛ = wk-unitᵛ
+  wk-mval-trans (wk-pairᵛ w₁ w₂) (wk-pairᵛ w₃ w₄) = wk-pairᵛ (wk-mval-trans w₁ w₃) (wk-mval-trans w₂ w₄)
+  wk-mval-trans (wk-cloᵛ {M₁ = M₁₁} {M₂ = M₂₁} π₁ eq₁ x₁) (wk-cloᵛ {M₁ = M₁₂} {M₂ = M₂₂} π₂ eq₂ x₂) =
+                        wk-cloᵛ
+                          (wk-trans π₁ π₂)
+                          (M₁₁
+                            ≡⟨ eq₁ ⟩
+                            wk-comp (wk-cong π₁) M₂₁
+                            ≡⟨ cong (wk-comp (wk-cong π₁)) eq₂ ⟩
+                            wk-comp (wk-cong π₁) (wk-comp (wk-cong π₂) M₂₂)
+                            ≡⟨ wk-comp-wk-η M₂₂ (wk-cong π₁) (wk-cong π₂) ⟩
+                            wk-comp (wk-cong (wk-trans π₁ π₂)) M₂₂ ∎)
+                          (wk-MEnvᴹ-trans x₁ x₂)
+  wk-mval-trans (wk-jumpᵛ {M₁ = M₁₁} {M₂ = M₂₁} π₁ eq₁ x₁ y₁) (wk-jumpᵛ {M₁ = M₁₂} {M₂ = M₂₂} π₂ eq₂ x₂ y₂) =
+                        wk-jumpᵛ
+                          (wk-trans π₁ π₂)
+                          (M₁₁ ≡⟨ eq₁ ⟩ wk-comp π₁ M₂₁ ≡⟨ cong (wk-comp π₁) eq₂ ⟩ wk-comp (wk-trans π₁ π₂) M₂₂ ∎)
+                          (wk-MEnvᴹ-trans x₁ x₂)
+                          (wk-cstack-trans y₁ y₂)
+
+wk-cstate-trans : {σ₁ σ₂ σ₃ : M.CState} → WkCStateᴹ σ₁ σ₂ → WkCStateᴹ σ₂ σ₃ → WkCStateᴹ σ₁ σ₃
+wk-cstate-trans (wk-cstate-result ϖ₁ x₁) (wk-cstate-result ϖ₂ x₂) = wk-cstate-result (wk-mval-trans ϖ₁ ϖ₂) (wk-cstack-trans x₁ x₂)
+wk-cstate-trans (wk-cstate-comp {M₁ = M₁₁} {M₂ = M₂₁} π₁ eq₁ ϖ₁ x₁) (wk-cstate-comp {M₁ = M₁₂} {M₂ = M₂₂} π₂ eq₂ ϖ₂ x₂) =
+                        wk-cstate-comp
+                          (wk-trans π₁ π₂)
+                          (M₁₁ ≡⟨ eq₁ ⟩ wk-comp π₁ M₂₁ ≡⟨ cong (wk-comp π₁) eq₂ ⟩ wk-comp (wk-trans π₁ π₂) M₂₂ ∎)
+                          (wk-MEnvᴹ-trans ϖ₁ ϖ₂)
+                          (wk-cstack-trans x₁ x₂)
+
+data _≈ᴹ_ : M.CState → M.CState → Set where
+
+    ≈-sym : {σ₁ σ₂ : M.CState} → σ₁ ≈ᴹ σ₂ → σ₂ ≈ᴹ σ₁
+
+    ≈-wk : {σ₁ σ₂ : M.CState} → WkCStateᴹ σ₁ σ₂ → σ₁ ≈ᴹ σ₂
+
+≈ᴹ-refl : {σ : M.CState} → σ ≈ᴹ σ
+≈ᴹ-refl {σ = ⟨ 𝐖 ╎ K ⟩} = ≈-wk (wk-cstate-result wk-mval-id wk-cstack-id)
+≈ᴹ-refl {σ = ⟨ M ╎ γ ╎ K ⟩} = ≈-wk (wk-cstate-comp wk-id refl wk-menv-id wk-cstack-id)
 
 wk-mclo-id-η : (𝐖 : TM.MClo Γ X) → TM.wk-mclo wk-id 𝐖 ≡ 𝐖
 wk-mclo-id-η TM.unit = refl
@@ -281,7 +337,7 @@ mutual
   wkmval (TM.pair 𝐖 𝐖₁) π γ₁ γ₂ g = wk-pairᵛ (wkmval 𝐖 π γ₁ γ₂ g) (wkmval 𝐖₁ π γ₁ γ₂ g)
   wkmval (TM.lam M) π γ₁ γ₂ g = wk-cloᵛ π refl (wk-MEnvᵀ-to-wk-MEnvᴹ g)
   wkmval (label here) π γ₁ (γ₂ · (label x)) (wk-tmenv-mclo-cong 𝐖 g) = wkmval (label x) _ _ _ g
-  wkmval (label here) π γ₁ γ₂ (wk-tmenv-jump-cong {π = π₁} M πᵀ K g) = wk-jumpᵛ π₁ refl (wk-MEnvᵀ-to-wk-MEnvᴹ g) (tmcstack-to-mcstack K)
+  wkmval (label here) π γ₁ γ₂ (wk-tmenv-jump-cong {π = π₁} M πᵀ K g) = wk-jumpᵛ π₁ refl (wk-MEnvᵀ-to-wk-MEnvᴹ g) wk-cstack-id
   wkmval (label here) π γ₁ γ₂ (wk-tmenv-mclo-wk 𝐖 g) = wkmval (label here) _ _ _ g
   wkmval (label here) π γ₁ γ₂ (wk-tmenv-jump-wk M πᵀ K g) = wkmval (label here) _ _ _ g
   wkmval (label (there x)) π γ₁ γ₂ (wk-tmenv-mclo-cong 𝐖 g) = wkmval (label x) _ _ _ g
@@ -300,7 +356,7 @@ mutual
     a1
   wk-MEnvᵀ-to-wk-MEnvᴹ (wk-tmenv-jump-cong M πᵀ K g) =
     let
-      a0 = wk-jumpᵛ _ refl (wk-MEnvᵀ-to-wk-MEnvᴹ g) (tmcstack-to-mcstack K)
+      a0 = wk-jumpᵛ _ refl (wk-MEnvᵀ-to-wk-MEnvᴹ g) wk-cstack-id
       a1 = wk-menv-cong a0 (wk-MEnvᵀ-to-wk-MEnvᴹ g)
     in
     a1
