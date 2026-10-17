@@ -65,6 +65,24 @@ mutual
 
       wk-menv-wk : {Γ₁ Γ₂ : Ctx} {π : Wk Γ₁ Γ₂} {γ₁ : M.MEnv Γ₁} {γ₂ : M.MEnv Γ₂} → (𝐖 : M.MVal X) → WkMEnvᴹ π γ₁ γ₂ → WkMEnvᴹ (wk-wk π) (γ₁ · 𝐖) γ₂
 
+data WkCStackᴹ : (K₁ : M.CStack X) → (K₂ : M.CStack X) → Set where
+
+  wk-cstack-empty : WkCStackᴹ ◻ ◻
+
+  wk-cstack-push : {Γ₁ Γ₂ : Ctx} {M₁ : (Γ₁ ∙ Y) ⊢ᶜ X} {M₂ : (Γ₂ ∙ Y) ⊢ᶜ X} {γ₁ : M.MEnv Γ₁} {γ₂ : M.MEnv Γ₂} {K₁ K₂ : M.CStack X}
+                   → (π : Wk Γ₁ Γ₂) → M₁ ≡ wk-comp (wk-cong π) M₂ → WkMEnvᴹ π γ₁ γ₂ → WkCStackᴹ K₁ K₂
+                   → WkCStackᴹ (< M₁ ； γ₁ >∷ K₁) (< M₂ ； γ₂ >∷ K₂)
+
+data WkCStateᴹ : (K₁ : M.CState) → (K₂ : M.CState) → Set where
+
+  wk-cstate-result : {𝐖₁ 𝐖₂ : M.MVal X} {K₁ K₂ : M.CStack X}
+                     → WkMVal 𝐖₁ 𝐖₂ → WkCStackᴹ K₁ K₂
+                     → WkCStateᴹ ⟨ 𝐖₁ ╎ K₁ ⟩ ⟨ 𝐖₂ ╎ K₂ ⟩
+
+  wk-cstate-comp : {Γ₁ Γ₂ : Ctx} {M₁ : Γ₁ ⊢ᶜ X} {M₂ : Γ₂ ⊢ᶜ X} {γ₁ : M.MEnv Γ₁} {γ₂ : M.MEnv Γ₂} {K₁ K₂ : M.CStack X}
+                   → (π : Wk Γ₁ Γ₂) → M₁ ≡ wk-comp π M₂ → (WkMEnvᴹ π γ₁ γ₂) → WkCStackᴹ K₁ K₂
+                   → WkCStateᴹ ⟨ M₁ ╎ γ₁ ╎ K₁ ⟩ ⟨ M₂ ╎ γ₂ ╎ K₂ ⟩
+
 mutual
 
   wk-mval-id : {𝐖 : M.MVal X} → WkMVal 𝐖 𝐖
@@ -77,13 +95,34 @@ mutual
   wk-menv-id {γ = ⋄} = wk-menv-ε
   wk-menv-id {γ = γ · 𝐖} = wk-menv-cong wk-mval-id wk-menv-id
 
+
+{-
 data _≈ᴹ_ : M.CState → M.CState → Set where
 
     ≈-refl : {σ : M.CState} → σ ≈ᴹ σ
 
     ≈-sym : {σ₁ σ₂ : M.CState} → σ₁ ≈ᴹ σ₂ → σ₂ ≈ᴹ σ₁
 
-    ≈-wk : {Γ₁ Γ₂ : Ctx} {π : Wk Γ₁ Γ₂} {M : Comp Γ₂ X} {γ₁ : M.MEnv Γ₁} {γ₂ : M.MEnv Γ₂} {K : M.CStack X} → (WkMEnvᴹ π γ₁ γ₂) → ⟨ M ╎ γ₂ ╎ K ⟩ ≈ᴹ ⟨ wk-comp π M ╎ γ₁ ╎ K ⟩
+    ≈-wk : {Γ₁ Γ₂ : Ctx} {π : Wk Γ₁ Γ₂} {γ₁ : M.MEnv Γ₁} {γ₂ : M.MEnv Γ₂} → (M : Comp Γ₂ X) → (WkMEnvᴹ π γ₁ γ₂) → (K : M.CStack X) → ⟨ M ╎ γ₂ ╎ K ⟩ ≈ᴹ ⟨ wk-comp π M ╎ γ₁ ╎ K ⟩
+
+mutual
+
+  ≈ᴹ-trans : {σ₁ σ₂ σ₃ : M.CState} → σ₁ ≈ᴹ σ₂ → σ₂ ≈ᴹ σ₃ → σ₁ ≈ᴹ σ₃
+  ≈ᴹ-trans ≈-refl ≈-refl = ≈-refl
+  ≈ᴹ-trans ≈-refl (≈-sym σ₂≈ᴹσ₃) = ≈-sym σ₂≈ᴹσ₃
+  ≈ᴹ-trans ≈-refl (≈-wk M x K) = ≈-wk M x K
+  ≈ᴹ-trans (≈-sym σ₁≈ᴹσ₂) ≈-refl = ≈-sym σ₁≈ᴹσ₂
+  ≈ᴹ-trans (≈-sym σ₁≈ᴹσ₂) (≈-sym σ₂≈ᴹσ₃) = ≈-sym (≈ᴹ-trans σ₂≈ᴹσ₃ σ₁≈ᴹσ₂)
+  ≈ᴹ-trans (≈-sym σ₁≈ᴹσ₂) (≈-wk M x K) =
+    let
+      a0 = ≈-wk M x K
+      a1 = ≈-wk M x K
+    in
+    {!!}
+  ≈ᴹ-trans (≈-wk M x K) ≈-refl = ≈-wk M x K
+  ≈ᴹ-trans (≈-wk M x K) (≈-sym σ₂≈ᴹσ₃) = {!!}
+  ≈ᴹ-trans (≈-wk M x K) (≈-wk M₁ x₁ K₁) = {!!}
+-}
 
 data WkMEnvᵀ : {Γ₁ Γ₂ : Ctx} → (π : Wk Γ₁ Γ₂) → (γ₁ : TM.MEnv Γ₁) → (γ₂ : TM.MEnv Γ₂) → Set where
 
@@ -369,8 +408,8 @@ tmstep-to-mstep (wf-state-result _ w _ _ _) (return→ {𝐖 = 𝐖} {M₁ = M�
     --next = next-state a0
     next = ⟨ M₁ ╎ tmenv-to-menv γ₁ · mclo-to-mval 𝐖 γ ╎ tmcstack-to-mcstack K ⟩
 
-    eqv : ⟨ M₁ ╎ tmenv-to-menv γ₁ · mclo-to-mval 𝐖 γ ╎ tmcstack-to-mcstack K ⟩ ≈ᴹ ⟨ wk-comp (wk-cong π) M₁ ╎ tmenv-to-menv γ M.· mclo-to-mval 𝐖 γ ╎ tmcstack-to-mcstack K ⟩
-    eqv = ≈-wk (wk-menv-cong wk-mval-id (wk-MEnvᵀ-to-wk-MEnvᴹ w))
+    --eqv : ⟨ M₁ ╎ tmenv-to-menv γ₁ · mclo-to-mval 𝐖 γ ╎ tmcstack-to-mcstack K ⟩ ≈ᴹ ⟨ wk-comp (wk-cong π) M₁ ╎ tmenv-to-menv γ M.· mclo-to-mval 𝐖 γ ╎ tmcstack-to-mcstack K ⟩
+    --eqv = ≈-wk M₁ (wk-menv-cong wk-mval-id (wk-MEnvᵀ-to-wk-MEnvᴹ w)) (tmcstack-to-mcstack K)
   in
   {!!}
 tmstep-to-mstep wf push→ = push→
