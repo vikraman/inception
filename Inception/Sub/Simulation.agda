@@ -226,13 +226,31 @@ wk-cstate-trans (wk-cstate-comp {M₁ = M₁₁} {M₂ = M₂₁} π₁ eq₁ ϖ
 
 data _≈ᴹ_ : M.CState → M.CState → Set where
 
-    ≈-sym : {σ₁ σ₂ : M.CState} → σ₁ ≈ᴹ σ₂ → σ₂ ≈ᴹ σ₁
+    ≈-wk₁ : {σ₁ σ₂ : M.CState} → WkCStateᴹ σ₁ σ₂ → σ₂ ≈ᴹ σ₁
 
-    ≈-wk : {σ₁ σ₂ : M.CState} → WkCStateᴹ σ₁ σ₂ → σ₁ ≈ᴹ σ₂
+    ≈-wk₂ : {σ₁ σ₂ : M.CState} → WkCStateᴹ σ₁ σ₂ → σ₁ ≈ᴹ σ₂
+
+    ≈-trans : {σ₁ σ₂ σ₃ : M.CState} → σ₁ ≈ᴹ σ₂ → σ₂ ≈ᴹ σ₃ → σ₁ ≈ᴹ σ₃
 
 ≈ᴹ-refl : {σ : M.CState} → σ ≈ᴹ σ
-≈ᴹ-refl {σ = ⟨ 𝐖 ╎ K ⟩} = ≈-wk (wk-cstate-result wk-mval-id wk-cstack-id)
-≈ᴹ-refl {σ = ⟨ M ╎ γ ╎ K ⟩} = ≈-wk (wk-cstate-comp wk-id refl wk-menv-id wk-cstack-id)
+≈ᴹ-refl {σ = ⟨ 𝐖 ╎ K ⟩} = ≈-wk₂ (wk-cstate-result wk-mval-id wk-cstack-id)
+≈ᴹ-refl {σ = ⟨ M ╎ γ ╎ K ⟩} = ≈-wk₂ (wk-cstate-comp wk-id refl wk-menv-id wk-cstack-id)
+
+≈ᴹ-sym : {σ₁ σ₂ : M.CState} → σ₁ ≈ᴹ σ₂ → σ₂ ≈ᴹ σ₁
+≈ᴹ-sym (≈-wk₁ x) = ≈-wk₂ x
+≈ᴹ-sym (≈-wk₂ x) = ≈-wk₁ x
+≈ᴹ-sym (≈-trans x y) = ≈-trans (≈ᴹ-sym y) (≈ᴹ-sym x)
+
+≈ᴹ-trans : {σ₁ σ₂ σ₃ : M.CState} → σ₁ ≈ᴹ σ₂ → σ₂ ≈ᴹ σ₃ → σ₁ ≈ᴹ σ₃
+≈ᴹ-trans (≈-wk₁ x₁) (≈-wk₁ x₂) = ≈-wk₁ (wk-cstate-trans x₂ x₁)
+≈ᴹ-trans (≈-wk₁ x) (≈-wk₂ x₁) = ≈-trans (≈-wk₁ x) (≈-wk₂ x₁)
+≈ᴹ-trans (≈-wk₁ x) (≈-trans σ₂≈σ₃ σ₂≈σ₄) = ≈-trans (≈-wk₁ x) (≈-trans σ₂≈σ₃ σ₂≈σ₄)
+≈ᴹ-trans (≈-wk₂ x) (≈-wk₁ x₁) = ≈-trans (≈-wk₂ x) (≈-wk₁ x₁)
+≈ᴹ-trans (≈-wk₂ x₁) (≈-wk₂ x₂) = (≈-wk₂ (wk-cstate-trans x₁ x₂))
+≈ᴹ-trans (≈-wk₂ x) (≈-trans σ₂≈σ₃ σ₂≈σ₄) = ≈-trans (≈ᴹ-trans (≈-wk₂ x) σ₂≈σ₃) σ₂≈σ₄
+≈ᴹ-trans (≈-trans σ₁≈σ₂ σ₁≈σ₃) (≈-wk₁ x) = ≈ᴹ-trans σ₁≈σ₂ (≈ᴹ-trans σ₁≈σ₃ (≈-wk₁ x))
+≈ᴹ-trans (≈-trans σ₁≈σ₂ σ₁≈σ₃) (≈-wk₂ x) = ≈ᴹ-trans σ₁≈σ₂ (≈ᴹ-trans σ₁≈σ₃ (≈-wk₂ x))
+≈ᴹ-trans (≈-trans σ₁≈σ₂ σ₁≈σ₃) (≈-trans σ₂≈σ₃ σ₂≈σ₄) = ≈-trans σ₁≈σ₂ (≈-trans σ₁≈σ₃ (≈-trans σ₂≈σ₃ σ₂≈σ₄))
 
 wk-mclo-id-η : (𝐖 : TM.MClo Γ X) → TM.wk-mclo wk-id 𝐖 ≡ 𝐖
 wk-mclo-id-η TM.unit = refl
