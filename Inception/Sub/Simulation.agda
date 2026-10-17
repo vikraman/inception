@@ -95,6 +95,11 @@ mutual
   wk-menv-id {γ = ⋄} = wk-menv-ε
   wk-menv-id {γ = γ · 𝐖} = wk-menv-cong wk-mval-id wk-menv-id
 
+data _≈ᴹ_ : M.CState → M.CState → Set where
+
+    ≈-sym : {σ₁ σ₂ : M.CState} → σ₁ ≈ᴹ σ₂ → σ₂ ≈ᴹ σ₁
+
+    ≈-wk : {σ₁ σ₂ : M.CState} → WkCStateᴹ σ₁ σ₂ → σ₁ ≈ᴹ σ₂
 
 {-
 data _≈ᴹ_ : M.CState → M.CState → Set where
