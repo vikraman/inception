@@ -557,6 +557,28 @@ eval-wk unit ⋄ = wk-mval-id
 eval-wk unit (γ · x) = wk-mval-id
 eval-wk unit (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) = wk-mval-id
 
+lookup-eq : (x : Γ ∋ `ℓ) → (γ : TM.MEnv Γ) → (M.lookup x (tmenv-to-menv γ)) ≡ (mclo-to-mval (label x) γ)
+lookup-eq here (γ · (label x)) = refl
+lookup-eq here (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) = refl
+lookup-eq (there x) (γ · x₁) = lookup-eq x γ
+lookup-eq (there x) (γ ·﹝ x₁ ╎ x₂ ╎ x₃ ﹞) = lookup-eq x γ
+
+lookup-label-wk : (i : Γ ∋ `ℓ) → (γ : TM.MEnv Γ) → WkCStateᴹ (M.jump-to-state (M.lookup i (tmenv-to-menv γ))) (tmcstate-to-mcstate (TM.lookup-label i γ))
+lookup-label-wk here (γ · (label x)) =
+  let
+    a0 : WkCStateᴹ (M.jump-to-state (M.lookup x (tmenv-to-menv γ))) (tmcstate-to-mcstate (TM.lookup-label x γ))
+    a0 = lookup-label-wk x γ
+    goal : WkCStateᴹ (M.jump-to-state (mclo-to-mval (label x) γ)) (tmcstate-to-mcstate (TM.lookup-label x γ))
+    goal = subst (λ z → WkCStateᴹ (M.jump-to-state z) (tmcstate-to-mcstate (TM.lookup-label x γ))) (lookup-eq x γ) a0
+  in
+  goal
+lookup-label-wk here (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) = wk-cstate-comp wk-id refl wk-menv-id wk-cstack-id
+lookup-label-wk (there i) (γ · 𝐖) = lookup-label-wk i γ
+lookup-label-wk (there i) (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) = lookup-label-wk i γ
+
+eval-jump-wk : (W : Val Γ `ℓ) → (γ : TM.MEnv Γ) → WkCStateᴹ (M.eval-jump W (tmenv-to-menv γ)) (tmcstate-to-mcstate (TM.eval-jump W γ))
+eval-jump-wk (var i) γ = lookup-label-wk i γ
+
 tmstep-to-mstep : {σ σ' : TM.CState} → (WellFormedTMCState σ) → (σ →ᵀᴹ σ') → ((tmcstate-to-mcstate σ) →ᴹ (tmcstate-to-mcstate σ'))
 tmstep-to-mstep wf (eval→ {W = W} {γ = γ} {K = K}) =
   --Goal: ⟨ return W ╎ tmenv-to-menv γ ╎ tmcstack-to-mcstack K ⟩ →ᴹ ⟨ mclo-to-mval (TM.eval W γ) γ ╎ tmcstack-to-mcstack K ⟩
@@ -594,7 +616,7 @@ tmstep-to-mstep wf (var→ {W = W} {γ = γ} {K = K}) =
     next = refl
 
     eqv : M.eval-jump W (tmenv-to-menv γ) ≈ᴹ tmcstate-to-mcstate (TM.eval-jump W γ)
-    eqv = {!!}
+    eqv = ≈-wk₂ (eval-jump-wk W γ)
   in
   {!a0!}
 tmstep-to-mstep wf (pmᶜ→ {W = W} {γ = γ} {M = M} {K = K}) =
