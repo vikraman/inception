@@ -473,45 +473,6 @@ next-state : {σ : M.CState} → M.Step? σ → M.CState
 next-state {σ = σ} (M.done _) = σ
 next-state (M.next {b = σ₁} _) = σ₁
 
-{-
-wk-mclo-wk-comm : {𝐕 : TM.MClo Γ X} → (𝐖 : TM.MClo Γ Y) → (γ : TM.MEnv Γ) → mclo-to-mval 𝐖 γ ≡ mclo-to-mval (TM.wk-mclo (Wk.wk-wk wk-id) 𝐖) (γ · 𝐕)
-wk-mclo-wk-comm unit ⋄ = refl
-wk-mclo-wk-comm unit (γ · x) = refl
-wk-mclo-wk-comm unit (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) = refl
-wk-mclo-wk-comm (pair 𝐖₁ 𝐖₂) ⋄ = cong₂ M.pairᵛ (wk-mclo-wk-comm 𝐖₁ ⋄) (wk-mclo-wk-comm 𝐖₂ ⋄)
-wk-mclo-wk-comm (pair 𝐖₁ 𝐖₂) (γ · x) = cong₂ M.pairᵛ (wk-mclo-wk-comm 𝐖₁ (γ · x)) (wk-mclo-wk-comm 𝐖₂ (γ · x))
-wk-mclo-wk-comm (pair 𝐖₁ 𝐖₂) (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) = cong₂ M.pairᵛ (wk-mclo-wk-comm 𝐖₁ (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞)) (wk-mclo-wk-comm 𝐖₂ (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞))
-wk-mclo-wk-comm (lam M) ⋄ = {!cong₂ M.cloᵛ ? ?!} -- This case actually does not work. We don't have equality - the RHS is weaker than the LHS. TODO: adust the *-comm lemmas.
-wk-mclo-wk-comm (lam M) (γ · x) = {!!}
-wk-mclo-wk-comm (lam M) (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) = {!!}
-wk-mclo-wk-comm (label x) (γ · x₁) = refl
-wk-mclo-wk-comm (label x) (γ ·﹝ x₁ ╎ x₂ ╎ x₃ ﹞) = refl
-
-lookup-comm : (i : Γ ∋ X) → (γ : TM.MEnv Γ) → M.lookup i (tmenv-to-menv γ) ≡ mclo-to-mval (TM.lookup i γ) γ
-lookup-comm here (γ · 𝐖) = mclo-to-mval 𝐖 γ ≡⟨ {!!} ⟩ mclo-to-mval (TM.wk-mclo (Wk.wk-wk wk-id) 𝐖) (γ · 𝐖) ∎
-lookup-comm here (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) = {!!}
-lookup-comm (there i) (γ · x) = {!!}
-lookup-comm (there i) (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) = {!!}
-
-eval-comm : (W : Val Γ X) → (γ : TM.MEnv Γ) → M.eval W (tmenv-to-menv γ) ≡ mclo-to-mval (TM.eval W γ) γ
-eval-comm (var i) (γ · 𝐖) =
-          M.lookup i (tmenv-to-menv γ · mclo-to-mval 𝐖 γ)
-          ≡⟨ {!!} ⟩
-          {!!}
-          ≡⟨ {!!} ⟩
-          mclo-to-mval (TM.lookup i (γ · 𝐖)) (γ · 𝐖) ∎
-eval-comm (var i) (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) = {!!}
-eval-comm (lam x) ⋄ = refl
-eval-comm (lam x) (γ · x₁) = refl
-eval-comm (lam x) (γ ·﹝ x₁ ╎ x₂ ╎ x₃ ﹞) = refl
-eval-comm (pair W₁ W₂) ⋄ = cong₂ M.pairᵛ (eval-comm W₁ ⋄) (eval-comm W₂ ⋄)
-eval-comm (pair W₁ W₂) (γ · x) = cong₂ M.pairᵛ (eval-comm W₁ (γ · x)) (eval-comm W₂ (γ · x))
-eval-comm (pair W₁ W₂) (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) = cong₂ M.pairᵛ (eval-comm W₁ (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞)) (eval-comm W₂ (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞))
-eval-comm unit ⋄ = refl
-eval-comm unit (γ · x) = refl
-eval-comm unit (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) = refl
--}
-
 wk-mclo-wk-comm : {𝐕 : TM.MClo Γ X} → (𝐖 : TM.MClo Γ Y) → (γ : TM.MEnv Γ) → WkMVal (mclo-to-mval (TM.wk-mclo (Wk.wk-wk wk-id) 𝐖) (γ · 𝐕)) (mclo-to-mval 𝐖 γ)
 wk-mclo-wk-comm unit ⋄ = wk-unitᵛ
 wk-mclo-wk-comm unit (γ · x) = wk-unitᵛ
