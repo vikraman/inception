@@ -127,9 +127,10 @@ eval-jump W γ = jump-to-state (eval W γ)
 eval-clo :  Γ ⊢ᵛ (X `⇒ Y) → Γ ⊢ᵛ X → MEnv Γ
             → CStack Y → CState
 eval-clo V W γ K =
-  ⟨ proj₁ (proj₂ c) ╎ proj₂ (proj₂ c) · eval W γ ╎ K  ⟩
-  where
+  let
     c = clo-to-comp (eval V γ)
+  in
+  ⟨ proj₁ (proj₂ c) ╎ proj₂ (proj₂ c) · eval W γ ╎ K  ⟩
 
 eval₁ : Γ ⊢ᵛ (X `× Y) → MEnv Γ → MVal X
 eval₁ W γ = proj₁-val (eval W γ)
