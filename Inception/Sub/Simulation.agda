@@ -928,6 +928,15 @@ clo-to-comp-wk-menv (lam M) wk-menv-ε = wk-menv-ε
 clo-to-comp-wk-menv (lam M) (wk-menv-cong x₁ ϖ) = wk-menv-cong x₁ ϖ
 clo-to-comp-wk-menv (lam M) (wk-menv-wk 𝐖 ϖ) = wk-menv-wk 𝐖 ϖ
 
+mstep-eqv₁ : {σ₁₁ σ₂₁ σ₁₂ : M.CState} → (WkCStateᴹ σ₁₂ σ₁₁) → (σ₁₁ →ᴹ σ₂₁) → Σ[ σ₂₂ ∈ M.CState ] ((σ₁₂ →ᴹ σ₂₂) × σ₂₁ ≈ᴹ σ₂₂)
+mstep-eqv₁ (wk-cstate-result {K₁ = < x₂ ； γ >∷ K₁} x (wk-cstack-push π x₁ x₃ x₄)) return→ = _ , return→ , ≈-wk₁ (wk-cstate-comp (wk-cong π) x₁ (wk-menv-cong x x₃) x₄)
+mstep-eqv₁ (wk-cstate-comp {M₁ = return W} {M₂ = return W₂} π refl x₁ x₂) eval→ = _ , eval→ , ≈-wk₁ (wk-cstate-result (eval-val-wk W₂ x₁) x₂)
+mstep-eqv₁ (wk-cstate-comp {M₁ = push M₁ M₂} π refl x₁ x₂) push→ = _ , push→ , ≈-wk₁ (wk-cstate-comp π refl x₁ (wk-cstack-push π refl x₁ x₂))
+mstep-eqv₁ (wk-cstate-comp {M₁ = sub M₁ M₂} π refl x₁ x₂) sub→ = _ , sub→ , ≈-wk₁ (wk-cstate-comp (Wk.wk-cong π) refl (wk-menv-cong (wk-jumpᵛ π refl x₁ x₂) x₁) x₂)
+mstep-eqv₁ (wk-cstate-comp {M₁ = var (var i₁)} {M₂ = var (var i)} π refl x₁ x₂) var→ = _ , var→ , ≈ᴹ-sym (jump-wk i x₁)
+mstep-eqv₁ (wk-cstate-comp {M₁ = pm x₃ M₁} {M₂ = pm W₂ M₂} π refl x₁ x₂) pmᶜ→ = _ , pmᶜ→ , ≈-wk₁ (wk-cstate-comp (Wk.wk-cong (Wk.wk-cong π)) refl (wk-menv-cong (eval₂-val-wk W₂ x₁) (wk-menv-cong (eval₁-val-wk W₂ x₁) x₁)) x₂)
+mstep-eqv₁ (wk-cstate-comp {M₁ = app x₃ x₄} {M₂ = app x₅ x₆} π refl x₁ x₂) app→ = _ , app→ , ≈-wk₁ (wk-cstate-comp (wk-cong (clo-to-comp-wk-cong x₅ x₁)) (clo-to-comp-wk-eq x₅ x₁) (wk-menv-cong (eval-val-wk x₆ x₁) (clo-to-comp-wk-menv x₅ x₁)) x₂)
+
 mstep-eqv₂ : {σ₁₁ σ₂₁ σ₁₂ : M.CState} → (WkCStateᴹ σ₁₁ σ₁₂) → (σ₁₁ →ᴹ σ₂₁) → Σ[ σ₂₂ ∈ M.CState ] ((σ₁₂ →ᴹ σ₂₂) × σ₂₁ ≈ᴹ σ₂₂)
 mstep-eqv₂ (wk-cstate-result {K₂ = < x₂ ； γ >∷ K₂} x (wk-cstack-push π x₁ x₃ x₄)) return→ = _ , return→ , ≈-wk₂ (wk-cstate-comp (wk-cong π) x₁ (wk-menv-cong x x₃) x₄)
 mstep-eqv₂ (wk-cstate-comp {M₂ = return W} π refl x₁ x₂) eval→ = _ , eval→ , ≈-wk₂ (wk-cstate-result (eval-val-wk W x₁) x₂)
