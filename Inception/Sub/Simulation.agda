@@ -968,28 +968,14 @@ mstep-eqv (≈-trans eqv₁ eqv₂) σ→σ' =
   in
   proj₁ IH₂ , proj₁ (proj₂ IH₂) , ≈ᴹ-trans eqvIH₁ eqvIH₂
 
-open Reduction _→ᴹ_ renaming (_~>*_ to _→ᴹ*_)
-open Reduction _→ᵀᴹ_ renaming (_~>*_ to _→ᵀᴹ*_)
-
--- mstep-eqv* : {σ₁₁ σ₂₁ σ₁₂ : M.CState} → (σ₁₁ ≈ᴹ σ₁₂) → (σ₁₁ →ᴹ* σ₂₁) → Σ[ σ₂₂ ∈ M.CState ] ((σ₁₂ →ᴹ* σ₂₂) × σ₂₁ ≈ᴹ σ₂₂)
-
+open Reduction _→ᴹ_ renaming (_~>*_ to _→ᴹ*_; Normal to Normalᴹ)
+open Reduction _→ᵀᴹ_ renaming (_~>*_ to _→ᵀᴹ*_; Normal to Normalᵀᴹ)
 
 --exec-TM : {M : ε ⊢ᶜ ℛ} {σ : M.CState} → (⟨ M ╎ ⋄ ╎ ◻ ⟩ →ᴹ* σ) → Σ[ σ' ∈ TM.CState ] ((TM.⟨ M ╎ ⋄ ╎ wk-ε ╎ TM.◻ ⟩ →ᵀᴹ* σ') × (σ ≈ᴹ (tmcstate-to-mcstate σ')))
 --⟨ wk-comp wk-ε _ ╎ ⋄ ╎ Wk.wk-ε ╎ TM.◻ ⟩ , ε , ≈-wk₁ (wk-cstate-comp wk-ε refl wk-menv-ε wk-cstack-empty)
 
 init-wf : (M : ε ⊢ᶜ ℛ) → WellFormedTMCState TM.⟨ M ╎ ⋄ ╎ wk-ε ╎ TM.◻ ⟩
 init-wf M = wf-state-bottom M ⋄ wk-ε wf-env-empty
-
-{-
-progress-t : {σ₀ : TM.CState} {σ : M.CState} → ((tmcstate-to-mcstate σ₀) →ᴹ σ) → Σ[ σ' ∈ TM.CState ] (σ₀ →ᵀᴹ σ')
-progress-t {σ₀ = ⟨ 𝐖 ； γ ╎ π ╎ < x ； γ₁ ； π₁ >∷ K ⟩} return→ = ⟨ wk-comp (wk-cong π) x ╎ γ · 𝐖 ╎ wk-wk (wk-trans π π₁) ╎ K ⟩ , return→
-progress-t {σ₀ = ⟨ return W ╎ γ ╎ π ╎ K ⟩} eval→ = (TM.⟨ TM.eval W γ ； γ ╎ π ╎ K ⟩) , eval→
-progress-t {σ₀ = ⟨ M ╎ γ ╎ π ╎ K ⟩} push→ = TM.⟨ _ ╎ γ ╎ wk-id ╎ TM.< _ ； γ ； π >∷ K ⟩ , push→
-progress-t {σ₀ = ⟨ M ╎ γ ╎ π ╎ K ⟩} sub→ = ⟨ _ ╎ γ ·﹝ _ ╎ π ╎ K ﹞ ╎ wk-wk π ╎ K ⟩ , sub→
-progress-t {σ₀ = ⟨ M ╎ γ ╎ π ╎ K ⟩} var→ = _ , var→
-progress-t {σ₀ = ⟨ M ╎ γ ╎ π ╎ K ⟩} pmᶜ→ = ⟨ _ ╎ γ · _ · TM.wk-mclo (wk-wk wk-id) _ ╎ wk-wk (wk-wk π) ╎ K ⟩ , pmᶜ→
-progress-t {σ₀ = ⟨ M ╎ γ ╎ π ╎ K ⟩} app→ = _ , app→
--}
 
 progress-t₁ : {σ₀ : TM.CState} {σ₀ᴹ σᴹ : M.CState} → (WkCStateᴹ (tmcstate-to-mcstate σ₀) σ₀ᴹ) → (σ₀ᴹ →ᴹ σᴹ) → Σ[ σ ∈ TM.CState ] (σ₀ →ᵀᴹ σ)
 progress-t₁ {σ₀ = ⟨ 𝐖 ； γ ╎ π ╎ ◻ ⟩} ((wk-cstate-result x ())) return→
@@ -1001,7 +987,6 @@ progress-t₁ {σ₀ = ⟨ app x x₃ ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp 
 progress-t₁ {σ₀ = ⟨ var x ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp π₁ refl x₁ x₂)) var→ = _ , var→
 progress-t₁ {σ₀ = ⟨ sub M M₁ ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp π₁ refl x₁ x₂)) sub→ = _ , sub→
 
-
 progress-t₂ : {σ₀ : TM.CState} {σ₀ᴹ σᴹ : M.CState} → (WkCStateᴹ σ₀ᴹ (tmcstate-to-mcstate σ₀)) → (σ₀ᴹ →ᴹ σᴹ) → Σ[ σ ∈ TM.CState ] (σ₀ →ᵀᴹ σ)
 progress-t₂ {σ₀ = ⟨ 𝐖 ； γ ╎ π ╎ ◻ ⟩} ((wk-cstate-result x ())) return→
 progress-t₂ {σ₀ = ⟨ 𝐖 ； γ ╎ π ╎ < x₂ ； γ₁ ； π₁ >∷ K ⟩} ((wk-cstate-result x x₁)) return→ = ⟨ wk-comp (wk-cong π) x₂ ╎ γ · 𝐖 ╎ wk-wk (wk-trans π π₁) ╎ K ⟩ , return→
@@ -1011,26 +996,6 @@ progress-t₂ {σ₀ = ⟨ push M M₁ ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp
 progress-t₂ {σ₀ = ⟨ app x₃ x₄ ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp π₁ refl x₁ x₂)) app→ = _ , app→
 progress-t₂ {σ₀ = ⟨ var x₃ ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp π₁ refl x₁ x₂)) var→ = _ , var→
 progress-t₂ {σ₀ = ⟨ sub M M₁ ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp π₁ refl x₁ x₂)) sub→ = _ , sub→
-
-progress-t₃ : {σ₀ : TM.CState} {σ₀ᴹ' σ₀ᴹ σᴹ : M.CState} → (WkCStateᴹ (tmcstate-to-mcstate σ₀) σ₀ᴹ') → (WkCStateᴹ σ₀ᴹ' σ₀ᴹ) → (σ₀ᴹ →ᴹ σᴹ) → Σ[ σ ∈ TM.CState ] (σ₀ →ᵀᴹ σ)
-progress-t₃ {σ₀ = ⟨ 𝐖 ； γ ╎ π ╎ ◻ ⟩} (wk-cstate-result x' wk-cstack-empty) (wk-cstate-result x ()) return→
-progress-t₃ {σ₀ = ⟨ 𝐖 ； γ ╎ π ╎ TM.< x₂ ； γ₁ ； π₁ >∷ K ⟩} ((wk-cstate-result x' x₁')) ((wk-cstate-result x x₁)) return→ = ⟨ wk-comp (wk-cong π) x₂ ╎ γ · 𝐖 ╎ wk-wk (wk-trans π π₁) ╎ K ⟩ , return→
-progress-t₃ {σ₀ = ⟨ return x ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp π₁' refl x₁' x₂')) ((wk-cstate-comp π₁ refl x₁ x₂)) eval→ = _ , eval→
-progress-t₃ {σ₀ = ⟨ pm x M ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp π₁' refl x₁' x₂')) ((wk-cstate-comp π₁ refl x₁ x₂)) pmᶜ→ = _ , pmᶜ→
-progress-t₃ {σ₀ = ⟨ push M M₁ ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp π₁' refl x₁' x₂')) ((wk-cstate-comp π₁ refl x₁ x₂)) push→ = _ , push→
-progress-t₃ {σ₀ = ⟨ app x x₃ ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp π₁' refl x₁' x₂')) ((wk-cstate-comp π₁ refl x₁ x₂)) app→ = _ , app→
-progress-t₃ {σ₀ = ⟨ var x ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp π₁' refl x₁' x₂')) ((wk-cstate-comp π₁ refl x₁ x₂)) var→ = _ , var→
-progress-t₃ {σ₀ = ⟨ sub M M₁ ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp π₁' refl x₁' x₂')) ((wk-cstate-comp π₁ refl x₁ x₂)) sub→ = _ , sub→
-
-progress-t₄ : {σ₀ : TM.CState} {σ₀ᴹ' σ₀ᴹ σᴹ : M.CState} → (WkCStateᴹ σ₀ᴹ σ₀ᴹ') → (WkCStateᴹ σ₀ᴹ' (tmcstate-to-mcstate σ₀)) → (σ₀ᴹ →ᴹ σᴹ) → Σ[ σ ∈ TM.CState ] (σ₀ →ᵀᴹ σ)
-progress-t₄ {σ₀ = ⟨ 𝐖 ； γ ╎ π ╎ ◻ ⟩} (wk-cstate-result x' ()) (wk-cstate-result x wk-cstack-empty) return→
-progress-t₄ {σ₀ = ⟨ 𝐖 ； γ ╎ π ╎ TM.< x₂ ； γ₁ ； π₁ >∷ K ⟩} ((wk-cstate-result x' x₁')) ((wk-cstate-result x x₁)) return→ = ⟨ wk-comp (wk-cong π) x₂ ╎ γ · 𝐖 ╎ wk-wk (wk-trans π π₁) ╎ K ⟩ , return→
-progress-t₄ {σ₀ = ⟨ return x ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp π₁' refl x₁' x₂')) ((wk-cstate-comp π₁ refl x₁ x₂)) eval→ = _ , eval→
-progress-t₄ {σ₀ = ⟨ pm x M ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp π₁' refl x₁' x₂')) ((wk-cstate-comp π₁ refl x₁ x₂)) pmᶜ→ = _ , pmᶜ→
-progress-t₄ {σ₀ = ⟨ push M M₁ ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp π₁' refl x₁' x₂')) ((wk-cstate-comp π₁ refl x₁ x₂)) push→ = _ , push→
-progress-t₄ {σ₀ = ⟨ app x x₃ ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp π₁' refl x₁' x₂')) ((wk-cstate-comp π₁ refl x₁ x₂)) app→ = _ , app→
-progress-t₄ {σ₀ = ⟨ var x ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp π₁' refl x₁' x₂')) ((wk-cstate-comp π₁ refl x₁ x₂)) var→ = _ , var→
-progress-t₄ {σ₀ = ⟨ sub M M₁ ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp π₁' refl x₁' x₂')) ((wk-cstate-comp π₁ refl x₁ x₂)) sub→ = _ , sub→
 
 progress-t : {σ₀ : TM.CState} {σ₀ᴹ σᴹ : M.CState} → (σ₀ᴹ ≈ᴹ (tmcstate-to-mcstate σ₀)) → (σ₀ᴹ →ᴹ σᴹ) → Σ[ σ ∈ TM.CState ] (σ₀ →ᵀᴹ σ)
 progress-t (≈ᴹ-bc (≈-wk₁ w)) s = progress-t₁ w s
@@ -1061,9 +1026,8 @@ exec-TM wf (σ₀→ᴹσ₁ ◅ σ₁→*σ) =
   {!!}
 -}
 
-
-exec-TM : {σ₀ : TM.CState} {σ₀ᴹ σᴹ : M.CState} → (WellFormedTMCState σ₀) → ((tmcstate-to-mcstate σ₀) ≈ᴹ σ₀ᴹ) → (σ₀ᴹ →ᴹ* σᴹ) → Σ[ σ ∈ TM.CState ] ((σ₀ →ᵀᴹ* σ) × ((tmcstate-to-mcstate σ) ≈ᴹ σᴹ))
-exec-TM {σ₀ = σ₀} wf eqv ε = σ₀ , ε , eqv
+exec-TM : {σ₀ : TM.CState} {σ₀ᴹ σᴹ : M.CState} → (WellFormedTMCState σ₀) → ((tmcstate-to-mcstate σ₀) ≈ᴹ σ₀ᴹ) → (σ₀ᴹ →ᴹ* σᴹ) → Σ[ σ ∈ TM.CState ] ((σ₀ →ᵀᴹ* σ) × ((tmcstate-to-mcstate σ) ≈ᴹ σᴹ) × WellFormedTMCState σ)
+exec-TM {σ₀ = σ₀} wf eqv ε = σ₀ , ε , eqv , wf
 exec-TM wf eqv (σ₀ᴹ→σ₁ᴹ ◅ σ₁ᴹ→*σᴹ) =
   let
     σ₀→ᵀᴹσ₁ = proj₂ (progress-t (≈ᴹ-sym eqv) σ₀ᴹ→σ₁ᴹ)
@@ -1072,5 +1036,19 @@ exec-TM wf eqv (σ₀ᴹ→σ₁ᴹ ◅ σ₁ᴹ→*σᴹ) =
     wf' = wf-preservation σ₀→ᵀᴹσ₁ wf
     IH = exec-TM wf' (≈ᴹ-sym (≈ᴹ-trans (proj₂ (proj₂ me)) eqv))  σ₁ᴹ→*σᴹ
   in
-  proj₁ IH , σ₀→ᵀᴹσ₁ ◅ proj₁ (proj₂ IH) , proj₂ (proj₂ IH)
+  proj₁ IH , σ₀→ᵀᴹσ₁ ◅ proj₁ (proj₂ IH) , proj₁ (proj₂ (proj₂ IH)) , proj₂ (proj₂ (proj₂ IH))
 
+normal-t : {σ : TM.CState} {σᴹ : M.CState} → WellFormedTMCState σ → Normalᴹ σᴹ → ((tmcstate-to-mcstate σ) ≈ᴹ σᴹ) → Normalᵀᴹ σ
+normal-t {σ = σ} {σᴹ = σᴹ} wf n eqv s = n (proj₁ (proj₂ (mstep-eqv eqv (proj₁ (proj₂ (tmstep-to-mstep wf s))))))
+
+exec :    (M : ε ⊢ᶜ ℛ)
+        → Σ[ σ ∈ TM.CState ]
+          Σ[ NF ∈ Normalᵀᴹ σ ]
+          TM.⟨ M ╎ ⋄ ╎ wk-ε ╎ TM.◻ ⟩ →ᵀᴹ* σ
+exec M =
+  let
+    wf = init-wf M
+    mexec = M.exec M
+    t = exec-TM wf (≈ᴹ-bc (≈-wk₂ (wk-cstate-comp wk-ε refl wk-menv-ε wk-cstack-empty))) (proj₁ (proj₂ (proj₂ (proj₂ mexec))))
+  in
+  proj₁ t , normal-t (proj₂ (proj₂ (proj₂ t))) (proj₁ (proj₂ (proj₂ mexec))) (proj₁ (proj₂ (proj₂ t))) , proj₁ (proj₂ t)
