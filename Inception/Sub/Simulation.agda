@@ -945,3 +945,16 @@ mstep-eqv₂ (wk-cstate-comp {M₂ = sub M₂ M₃} π refl x₁ x₂) sub→ = 
 mstep-eqv₂ (wk-cstate-comp {M₂ = var (var i)} π refl x₁ x₂) var→ = _ , var→ , jump-wk i x₁
 mstep-eqv₂ (wk-cstate-comp {M₂ = pm W M₂} {γ₁ = γ₁} {γ₂ = γ₂} π refl x₁ x₂) pmᶜ→ = _ , pmᶜ→ , ≈-wk₂ (wk-cstate-comp (Wk.wk-cong (Wk.wk-cong π)) refl (wk-menv-cong (eval₂-val-wk W x₁) (wk-menv-cong (eval₁-val-wk W x₁) x₁)) x₂)
 mstep-eqv₂ (wk-cstate-comp {M₂ = app W₁ W₂} π refl ϖ x) app→ = _ , app→ , ≈-wk₂ (wk-cstate-comp (wk-cong (clo-to-comp-wk-cong W₁ ϖ)) (clo-to-comp-wk-eq W₁ ϖ) (wk-menv-cong (eval-val-wk W₂ ϖ) (clo-to-comp-wk-menv W₁ ϖ)) x)
+
+mstep-eqv : {σ₁₁ σ₂₁ σ₁₂ : M.CState} → (σ₁₁ ≈ᴹ σ₁₂) → (σ₁₁ →ᴹ σ₂₁) → Σ[ σ₂₂ ∈ M.CState ] ((σ₁₂ →ᴹ σ₂₂) × σ₂₁ ≈ᴹ σ₂₂)
+mstep-eqv (≈-wk₁ w) σ→σ' = mstep-eqv₁ w σ→σ'
+mstep-eqv (≈-wk₂ w) σ→σ' = mstep-eqv₂ w σ→σ'
+mstep-eqv (≈-trans eqv₁ eqv₂) σ→σ' =
+  let
+    IH₁ = mstep-eqv eqv₁ σ→σ'
+    eqvIH₁ = proj₂ (proj₂ IH₁)
+    σ→σIH₁ = proj₁ (proj₂ IH₁)
+    IH₂ = mstep-eqv eqv₂ σ→σIH₁
+    eqvIH₂ = proj₂ (proj₂ IH₂)
+  in
+  proj₁ IH₂ , proj₁ (proj₂ IH₂) , ≈ᴹ-trans eqvIH₁ eqvIH₂
