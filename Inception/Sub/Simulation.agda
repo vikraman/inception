@@ -1061,12 +1061,16 @@ exec-TM wf (σ₀→ᴹσ₁ ◅ σ₁→*σ) =
   {!!}
 -}
 
-{-
-exec-TM : {M : ε ⊢ᶜ ℛ} {σ₀ : TM.CState} {σ₀ᴹ σᴹ : M.CState} → (WellFormedTMCState σ₀) → ((tmcstate-to-mcstate σ₀) ≈ᴹ σ₀ᴹ) → (σ₀ᴹ →ᴹ* σᴹ) → Σ[ σ ∈ TM.CState ] ((σ₀ →ᵀᴹ* σ) × ((tmcstate-to-mcstate σ) ≈ᴹ σᴹ))
+
+exec-TM : {σ₀ : TM.CState} {σ₀ᴹ σᴹ : M.CState} → (WellFormedTMCState σ₀) → ((tmcstate-to-mcstate σ₀) ≈ᴹ σ₀ᴹ) → (σ₀ᴹ →ᴹ* σᴹ) → Σ[ σ ∈ TM.CState ] ((σ₀ →ᵀᴹ* σ) × ((tmcstate-to-mcstate σ) ≈ᴹ σᴹ))
 exec-TM {σ₀ = σ₀} wf eqv ε = σ₀ , ε , eqv
 exec-TM wf eqv (σ₀ᴹ→σ₁ᴹ ◅ σ₁ᴹ→*σᴹ) =
   let
-    σ₀→ᵀᴹσ₁ = {!!} --proj₂ (progress-t σ₀ᴹ→σ₁ᴹ)
+    σ₀→ᵀᴹσ₁ = proj₂ (progress-t (≈ᴹ-sym eqv) σ₀ᴹ→σ₁ᴹ)
+    me = mstep-eqv (≈ᴹ-sym eqv) σ₀ᴹ→σ₁ᴹ
+    eqv = tmstep-to-mstep-eqv wf σ₀→ᵀᴹσ₁ (proj₁ (proj₂ me))
+    wf' = wf-preservation σ₀→ᵀᴹσ₁ wf
+    IH = exec-TM wf' (≈ᴹ-sym (≈ᴹ-trans (proj₂ (proj₂ me)) eqv))  σ₁ᴹ→*σᴹ
   in
-  {!!}
--}
+  proj₁ IH , σ₀→ᵀᴹσ₁ ◅ proj₁ (proj₂ IH) , proj₂ (proj₂ IH)
+
