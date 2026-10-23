@@ -194,6 +194,15 @@ determinismꟲ var→ var→ = refl
 determinismꟲ pmᶜ→ pmᶜ→ = refl
 determinismꟲ app→ app→ = refl
 
+determinismꟲ' : {σ σ₁ σ₂ : CState} → (s₁ : σ →ᶜ σ₁) → (s₂ : σ →ᶜ σ₂) → (σ₁ ≡ σ₂)
+determinismꟲ' eval→ eval→ = refl
+determinismꟲ' return→ return→ = refl
+determinismꟲ' push→ push→ = refl
+determinismꟲ' sub→ sub→ = refl
+determinismꟲ' var→ var→ = refl
+determinismꟲ' pmᶜ→ pmᶜ→ = refl
+determinismꟲ' app→ app→ = refl
+
 open Reduction _→ᶜ_ public
   renaming (_~>*_ to _→ᶜ*_)
 
