@@ -202,6 +202,7 @@ Rᵏ X ◻ = ⊤
 Rᵏ X (<_；_>∷_ {Γ = Γ} {Y = Y} M γ K) = ∀ {𝐖 : MClo Γ Y} → {!!} --Rᵛ Y 𝐖 γ → {!!}
 -}
 
+{-
 -- A CState is Normal, if there are no transitions from it.
 Normal : CState → Set
 Normal σ₁ = ∀ {σ₂} → σ₁ →ᶜ σ₂ → ⊥
@@ -219,6 +220,19 @@ progress ⟨ push M M₁ ╎ γ ╎ π ╎ K ⟩ = step push→
 progress ⟨ app x x₁ ╎ γ ╎ π ╎ K ⟩ = step app→
 progress ⟨ var x ╎ γ ╎ π ╎ K ⟩ = step var→
 progress ⟨ sub M M₁ ╎ γ ╎ π ╎ K ⟩ = step sub→
+-}
+
+open import Inception.Rewriting.Reduction _→ᶜ_
+
+progress : (σ : CState) → Step? σ
+progress ⟨ 𝐖 ； γ ╎ π ╎ ◻ ⟩ = done (λ ())
+progress ⟨ 𝐖 ； γ ╎ π ╎ < x ； γ₁ ； π₁ >∷ K ⟩ = next return→
+progress ⟨ return x ╎ γ ╎ π ╎ K ⟩ = next eval→
+progress ⟨ pm x M ╎ γ ╎ π ╎ K ⟩ = next pmᶜ→
+progress ⟨ push M M₁ ╎ γ ╎ π ╎ K ⟩ = next push→
+progress ⟨ app x x₁ ╎ γ ╎ π ╎ K ⟩ = next app→
+progress ⟨ var x ╎ γ ╎ π ╎ K ⟩ = next var→
+progress ⟨ sub M M₁ ╎ γ ╎ π ╎ K ⟩ = next sub→
 
 -- A Normal CState is a halting state and of the form ⟨ 𝐖 ╎ ◻ ⟩.
 halting-state :    (cstate : CState) → Normal cstate
