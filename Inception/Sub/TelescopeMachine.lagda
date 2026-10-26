@@ -185,42 +185,23 @@ data SN (σ : CState) : Set where
   sn : (∀ {σ₁} → σ →ᶜ σ₁ → SN σ₁) → SN σ
 
 Rᵛ : (X : Ty) → MClo Γ X → MEnv Γ → Set
-Rᵏ : (X : Ty) → CStack X → Set
+Rᵏ : (X : Ty) → CStack Γ X → Set
 Rᴱ : MEnv Γ → Set
 
 Rᵛ `𝟙 unit γ = ⊤
 Rᵛ (X `× Y) (pair 𝐕 𝐖) γ = Rᵛ X 𝐕 γ × Rᵛ Y 𝐖 γ
-Rᵛ {Γ = Γ} (X `⇒ Y) (lam M) γ = ∀ {𝐖 : MClo Γ X} → Rᵛ X 𝐖 γ → Rᴱ γ → ∀ {K : CStack Y} → Rᵏ Y K → SN ⟨ M ╎ γ · 𝐖 ╎ K ⟩
+Rᵛ {Γ = Γ} (X `⇒ Y) (lam M) γ = ∀ {𝐖 : MClo Γ X} → Rᵛ X 𝐖 γ → Rᴱ γ → ∀ {Δ : Ctx} {K : CStack Δ Y} {π : Γ ⊇ Δ} → Rᵏ Y K → SN ⟨ M ╎ γ · 𝐖 ╎ wk-wk π ╎ K ⟩
 Rᵛ `ℓ (label x) γ = SN (lookup-label x γ)
 
 Rᴱ {Γ = Γ} ⋄ = ⊤
 Rᴱ {Γ = Γ ∙ X} (γ · 𝐖) = Rᴱ γ × Rᵛ X 𝐖 γ
-Rᴱ {Γ = Γ} (γ ·﹝ M ╎ K ﹞) = SN ⟨ M ╎ γ ╎ K ⟩
+Rᴱ {Γ = Γ} (γ ·﹝ M ╎ π ╎ K ﹞) = SN ⟨ M ╎ γ ╎ π ╎ K ⟩
 
 -- termination check fails here
 Rᵏ X ◻ = ⊤
-Rᵏ X (<_；_>∷_ {Γ = Γ} {Y = Y} M γ K) = ∀ {𝐖 : MClo Γ Y} → {!!} --Rᵛ Y 𝐖 γ → {!!}
+Rᵏ X (<_；_；_>∷_ {Γ = Γ} {Y = Y} M γ π K) = ∀ {𝐖 : MClo Γ Y} → Rᵛ Y 𝐖 γ → {!!}
 -}
 
-{-
--- A CState is Normal, if there are no transitions from it.
-Normal : CState → Set
-Normal σ₁ = ∀ {σ₂} → σ₁ →ᶜ σ₂ → ⊥
-
-data Progress (σ : CState) : Set where
-  done : Normal σ → Progress σ
-  step : {σ' : CState} → σ →ᶜ σ' → Progress σ
-
-progress : (σ : CState) → Progress σ
-progress ⟨ 𝐖 ； γ ╎ π ╎ ◻ ⟩ = done (λ ())
-progress ⟨ 𝐖 ； γ ╎ π ╎ < x ； γ₁ ； π₁ >∷ K ⟩ = step return→
-progress ⟨ return x ╎ γ ╎ π ╎ K ⟩ = step eval→
-progress ⟨ pm x M ╎ γ ╎ π ╎ K ⟩ = step pmᶜ→
-progress ⟨ push M M₁ ╎ γ ╎ π ╎ K ⟩ = step push→
-progress ⟨ app x x₁ ╎ γ ╎ π ╎ K ⟩ = step app→
-progress ⟨ var x ╎ γ ╎ π ╎ K ⟩ = step var→
-progress ⟨ sub M M₁ ╎ γ ╎ π ╎ K ⟩ = step sub→
--}
 
 open import Inception.Rewriting.Reduction _→ᶜ_
 
