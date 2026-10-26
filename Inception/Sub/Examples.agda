@@ -7,7 +7,7 @@ open import Inception.Sub.Syntax
 open import Inception.Sub.Machine `𝟙 renaming (_→ᶜ_ to _→ᴹ_; exec to execᴹ)
 import Inception.Sub.TelescopeMachine `𝟙 as TM
 open TM renaming (_→ᶜ_ to _→ᵀᴹ_)
-open import Inception.Sub.Simulation `𝟙 renaming (exec to execᵀᴹ)
+open import Inception.Sub.Simulation `𝟙
 
 open import Data.Product using (_,_)
 

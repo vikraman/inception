@@ -46,29 +46,29 @@ progress-t (≈ᴹ-bc (≈-wk₁ w)) s = progress-t₁ w s
 progress-t (≈ᴹ-bc (≈-wk₂ w)) s = progress-t₂ w s
 progress-t (≈-trans {σ₂ = σ₂} {σ₃ = σ₃} w eqv) s = progress-t {σ₀ᴹ = σ₂} eqv (proj₁ (proj₂ (mstep-eqv' w s)))
 
-exec-TM : {σ₀ : TM.CState} {σ₀ᴹ σᴹ : M.CState} → (WellFormedTMCState σ₀) → ((tmcstate-to-mcstate σ₀) ≈ᴹ σ₀ᴹ) → (σ₀ᴹ →ᴹ* σᴹ) → Σ[ σ ∈ TM.CState ] ((σ₀ →ᵀᴹ* σ) × ((tmcstate-to-mcstate σ) ≈ᴹ σᴹ) × WellFormedTMCState σ)
-exec-TM {σ₀ = σ₀} wf eqv ε = σ₀ , ε , eqv , wf
-exec-TM wf eqv (σ₀ᴹ→σ₁ᴹ ◅ σ₁ᴹ→*σᴹ) =
+execᵀᴹ-rec : {σ₀ : TM.CState} {σ₀ᴹ σᴹ : M.CState} → (WellFormedTMCState σ₀) → ((tmcstate-to-mcstate σ₀) ≈ᴹ σ₀ᴹ) → (σ₀ᴹ →ᴹ* σᴹ) → Σ[ σ ∈ TM.CState ] ((σ₀ →ᵀᴹ* σ) × ((tmcstate-to-mcstate σ) ≈ᴹ σᴹ) × WellFormedTMCState σ)
+execᵀᴹ-rec {σ₀ = σ₀} wf eqv ε = σ₀ , ε , eqv , wf
+execᵀᴹ-rec wf eqv (σ₀ᴹ→σ₁ᴹ ◅ σ₁ᴹ→*σᴹ) =
   let
     σ₀→ᵀᴹσ₁ = proj₂ (progress-t (≈ᴹ-sym eqv) σ₀ᴹ→σ₁ᴹ)
     me = mstep-eqv (≈ᴹ-sym eqv) σ₀ᴹ→σ₁ᴹ
     eqv = tmstep-to-mstep-eqv wf σ₀→ᵀᴹσ₁ (proj₁ (proj₂ me))
     wf' = wf-preservation σ₀→ᵀᴹσ₁ wf
-    IH = exec-TM wf' (≈ᴹ-sym (≈ᴹ-trans (proj₂ (proj₂ me)) eqv))  σ₁ᴹ→*σᴹ
+    IH = execᵀᴹ-rec wf' (≈ᴹ-sym (≈ᴹ-trans (proj₂ (proj₂ me)) eqv))  σ₁ᴹ→*σᴹ
   in
   proj₁ IH , σ₀→ᵀᴹσ₁ ◅ proj₁ (proj₂ IH) , proj₁ (proj₂ (proj₂ IH)) , proj₂ (proj₂ (proj₂ IH))
 
 normal-t : {σ : TM.CState} {σᴹ : M.CState} → WellFormedTMCState σ → Normalᴹ σᴹ → ((tmcstate-to-mcstate σ) ≈ᴹ σᴹ) → Normalᵀᴹ σ
 normal-t {σ = σ} {σᴹ = σᴹ} wf n eqv s = n (proj₁ (proj₂ (mstep-eqv eqv (proj₁ (proj₂ (tmstep-to-mstep wf s))))))
 
-execs :    (M : ε ⊢ᶜ ℛ)
+execᵀᴹ :    (M : ε ⊢ᶜ ℛ)
         → Σ[ σ ∈ TM.CState ]
           Σ[ NF ∈ Normalᵀᴹ σ ]
           TM.⟨ M ╎ ⋄ ╎ wk-ε ╎ TM.◻ ⟩ →ᵀᴹ* σ
-execs M =
+execᵀᴹ M =
   let
     wf = init-wf M
     mexec = M.exec M
-    t = exec-TM wf (≈ᴹ-bc (≈-wk₂ (wk-cstate-comp wk-ε refl wk-menv-ε wk-cstack-empty))) (proj₁ (proj₂ (proj₂ (proj₂ mexec))))
+    t = execᵀᴹ-rec wf (≈ᴹ-bc (≈-wk₂ (wk-cstate-comp wk-ε refl wk-menv-ε wk-cstack-empty))) (proj₁ (proj₂ (proj₂ (proj₂ mexec))))
   in
   proj₁ t , normal-t (proj₂ (proj₂ (proj₂ t))) (proj₁ (proj₂ (proj₂ mexec))) (proj₁ (proj₂ (proj₂ t))) , proj₁ (proj₂ t)
