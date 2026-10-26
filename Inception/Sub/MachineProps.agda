@@ -22,9 +22,9 @@ mutual
 
       wk-pairᵛ : {𝐖₁₁ 𝐖₁₂ : MVal X₁} {𝐖₂₁ 𝐖₂₂ : MVal X₂} → WkMVal 𝐖₁₁ 𝐖₁₂ → WkMVal 𝐖₂₁ 𝐖₂₂ → WkMVal (pairᵛ 𝐖₁₁ 𝐖₂₁) (pairᵛ 𝐖₁₂ 𝐖₂₂)
 
-      wk-cloᵛ : {Γ₁ Γ₂ : Ctx} {M₁ : Comp (Γ₁ ∙ X) Y} {M₂ : Comp (Γ₂ ∙ X) Y} {γ₁ : MEnv Γ₁} {γ₂ : MEnv Γ₂} → (π : Wk Γ₁ Γ₂) → M₁ ≡ wk-comp (wk-cong π) M₂ → (WkMEnvᴹ π γ₁ γ₂) → WkMVal (cloᵛ M₁ γ₁) (cloᵛ M₂ γ₂)
+      wk-cloᵛ : {Γ₁ Γ₂ : Ctx} {M₁ : (Γ₁ ∙ X) ⊢ᶜ Y} {M₂ : (Γ₂ ∙ X) ⊢ᶜ Y} {γ₁ : MEnv Γ₁} {γ₂ : MEnv Γ₂} → (π : Γ₁ ⊇ Γ₂) → M₁ ≡ wk-comp (wk-cong π) M₂ → (WkMEnvᴹ π γ₁ γ₂) → WkMVal (cloᵛ M₁ γ₁) (cloᵛ M₂ γ₂)
 
-      wk-jumpᵛ : {Γ₁ Γ₂ : Ctx} {M₁ : Comp Γ₁ X} {M₂ : Comp Γ₂ X} {γ₁ : MEnv Γ₁} {γ₂ : MEnv Γ₂} {K₁ K₂ : CStack X} → (π : Wk Γ₁ Γ₂) → M₁ ≡ wk-comp π M₂ → (WkMEnvᴹ π γ₁ γ₂) → (WkCStackᴹ K₁ K₂) → WkMVal (jumpᵛ M₁ γ₁ K₁) (jumpᵛ M₂ γ₂ K₂)
+      wk-jumpᵛ : {Γ₁ Γ₂ : Ctx} {M₁ : Γ₁ ⊢ᶜ X} {M₂ : Γ₂ ⊢ᶜ X} {γ₁ : MEnv Γ₁} {γ₂ : MEnv Γ₂} {K₁ K₂ : CStack X} → (π : Γ₁ ⊇ Γ₂) → M₁ ≡ wk-comp π M₂ → (WkMEnvᴹ π γ₁ γ₂) → (WkCStackᴹ K₁ K₂) → WkMVal (jumpᵛ M₁ γ₁ K₁) (jumpᵛ M₂ γ₂ K₂)
 
   data WkMEnvᴹ : {Γ₁ Γ₂ : Ctx} → (π : Wk Γ₁ Γ₂) → (γ₁ : MEnv Γ₁) → (γ₂ : MEnv Γ₂) → Set where
 
