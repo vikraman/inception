@@ -55,6 +55,6 @@ s = begin      TM.⟨ ex15 ╎ ⋄ ╎ wk-ε ╎ TM.◻ ⟩
     ∎
 --(push→ ◅ app→ ◅ sub→ ◅ var→ ◅ eval→ ◅ return→ ◅ eval→ ◅ return→ ◅ eval→ ◅ ε)
 
---_ : proj₁ (execᵀᴹ ex15) ≡ TM.⟨ unit ； ⋄ · unit · unit · unit ╎ wk-wk (wk-wk (wk-wk wk-ε)) ╎ ◻ ⟩
-_ : proj₂ (proj₂ (execᵀᴹ ex15)) ≡ s
+_ : proj₁ (execᵀᴹ ex15) ≡ TM.⟨ unit ； ⋄ · unit · unit · unit ╎ wk-wk (wk-wk (wk-wk wk-ε)) ╎ ◻ ⟩
+--_ : proj₂ (proj₂ (execᵀᴹ ex15)) ≡ s
 _ = refl
