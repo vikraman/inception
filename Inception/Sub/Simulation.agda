@@ -42,46 +42,16 @@ mutual
   mclo-to-mval (label (there i)) (γ · 𝐖) = mclo-to-mval (label i) γ
   mclo-to-mval (label (there i)) (γ ·﹝ M ╎ π ╎ K ﹞) = mclo-to-mval (label i) γ
 
-mutual
-
-  wkmval : {Γ₁ Γ₂ : Ctx} → (𝐖 : TM.MClo Γ₂ X) → (π : Wk Γ₁ Γ₂) → (γ₁ : TM.MEnv Γ₁) → (γ₂ : TM.MEnv Γ₂) → WkMEnvᵀ π γ₁ γ₂ → WkMVal (mclo-to-mval (TM.wk-mclo π 𝐖) γ₁) (mclo-to-mval 𝐖 γ₂)
-  wkmval TM.unit π γ₁ γ₂ g = wk-unitᵛ
-  wkmval (TM.pair 𝐖 𝐖₁) π γ₁ γ₂ g = wk-pairᵛ (wkmval 𝐖 π γ₁ γ₂ g) (wkmval 𝐖₁ π γ₁ γ₂ g)
-  wkmval (TM.lam M) π γ₁ γ₂ g = wk-cloᵛ π refl (wk-MEnvᵀ-to-wk-MEnvᴹ g)
-  wkmval (label here) π γ₁ (γ₂ · (label x)) (wk-tmenv-mclo-cong 𝐖 g) = wkmval (label x) _ _ _ g
-  wkmval (label here) π γ₁ γ₂ (wk-tmenv-jump-cong {π = π₁} M πᵀ K g) = wk-jumpᵛ π₁ refl (wk-MEnvᵀ-to-wk-MEnvᴹ g) wk-cstack-id
-  wkmval (label here) π γ₁ γ₂ (wk-tmenv-mclo-wk 𝐖 g) = wkmval (label here) _ _ _ g
-  wkmval (label here) π γ₁ γ₂ (wk-tmenv-jump-wk M πᵀ K g) = wkmval (label here) _ _ _ g
-  wkmval (label (there x)) π γ₁ γ₂ (wk-tmenv-mclo-cong 𝐖 g) = wkmval (label x) _ _ _ g
-  wkmval (label (there x)) π γ₁ γ₂ (wk-tmenv-jump-cong M πᵀ K g) = wkmval (label x) _ _ _ g
-  wkmval (label (there x)) π γ₁ γ₂ (wk-tmenv-mclo-wk 𝐖 g) = wkmval (label (there x)) _ _ _ g
-  wkmval (label (there x)) π γ₁ γ₂ (wk-tmenv-jump-wk M πᵀ K g) = wkmval (label (there x)) _ _ _ g
-
-  wk-MEnvᵀ-to-wk-MEnvᴹ : {Γ₁ Γ₂ : Ctx} {π : Wk Γ₁ Γ₂} {γ₁ : TM.MEnv Γ₁} {γ₂ : TM.MEnv Γ₂} → WkMEnvᵀ π γ₁ γ₂ → WkMEnvᴹ π (tmenv-to-menv γ₁) (tmenv-to-menv γ₂)
-  wk-MEnvᵀ-to-wk-MEnvᴹ wk-tmenv-ε = wk-menv-ε
-  wk-MEnvᵀ-to-wk-MEnvᴹ (wk-tmenv-mclo-cong {π = π} {γ₁ = γ₁} {γ₂ = γ₂} 𝐖 g) =
-    let
-      a0 : WkMVal (mclo-to-mval (TM.wk-mclo π 𝐖) γ₁) (mclo-to-mval 𝐖 γ₂)
-      a0 = wkmval 𝐖 π γ₁ γ₂ g
-      a1 = wk-menv-cong a0 (wk-MEnvᵀ-to-wk-MEnvᴹ g)
-    in
-    a1
-  wk-MEnvᵀ-to-wk-MEnvᴹ (wk-tmenv-jump-cong M πᵀ K g) =
-    let
-      a0 = wk-jumpᵛ _ refl (wk-MEnvᵀ-to-wk-MEnvᴹ g) wk-cstack-id
-      a1 = wk-menv-cong a0 (wk-MEnvᵀ-to-wk-MEnvᴹ g)
-    in
-    a1
-  wk-MEnvᵀ-to-wk-MEnvᴹ (wk-tmenv-mclo-wk 𝐖 g) = wk-menv-wk (mclo-to-mval 𝐖 _) (wk-MEnvᵀ-to-wk-MEnvᴹ g)
-  wk-MEnvᵀ-to-wk-MEnvᴹ (wk-tmenv-jump-wk M πᵀ K g) = wk-menv-wk (M.jumpᵛ M (tmenv-to-menv _) (tmcstack-to-mcstack K)) (wk-MEnvᵀ-to-wk-MEnvᴹ g)
-
 tmcstate-to-mcstate : TM.CState → M.CState
 tmcstate-to-mcstate ⟨ 𝐖 ； γ ╎ π ╎ K ⟩ = ⟨ mclo-to-mval 𝐖 γ ╎ tmcstack-to-mcstack K ⟩
 tmcstate-to-mcstate ⟨ M ╎ γ ╎ π ╎ K ⟩ = ⟨ M ╎ tmenv-to-menv γ ╎ tmcstack-to-mcstack K ⟩
 
-next-state : {σ : M.CState} → M.Step? σ → M.CState
-next-state {σ = σ} (M.done _) = σ
-next-state (M.next {b = σ₁} _) = σ₁
+--------------------------------------------------------------------------------
+-- Lemmas for tmstep-to-mstep
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+---- Lemmas for eval→ case
 
 wk-mclo-wk-comm : {𝐕 : TM.MClo Γ X} → (𝐖 : TM.MClo Γ Y) → (γ : TM.MEnv Γ) → WkMVal (mclo-to-mval (TM.wk-mclo (Wk.wk-wk wk-id) 𝐖) (γ · 𝐕)) (mclo-to-mval 𝐖 γ)
 wk-mclo-wk-comm unit ⋄ = wk-unitᵛ
@@ -128,6 +98,70 @@ eval-wk unit ⋄ = wk-mval-id
 eval-wk unit (γ · x) = wk-mval-id
 eval-wk unit (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) = wk-mval-id
 
+---------------------------------------------------------------------------------
+---- Lemmas for return→ case
+
+mutual
+
+  wkmval : {Γ₁ Γ₂ : Ctx} → (𝐖 : TM.MClo Γ₂ X) → (π : Wk Γ₁ Γ₂) → (γ₁ : TM.MEnv Γ₁) → (γ₂ : TM.MEnv Γ₂) → WkMEnvᵀ π γ₁ γ₂ → WkMVal (mclo-to-mval (TM.wk-mclo π 𝐖) γ₁) (mclo-to-mval 𝐖 γ₂)
+  wkmval TM.unit π γ₁ γ₂ g = wk-unitᵛ
+  wkmval (TM.pair 𝐖 𝐖₁) π γ₁ γ₂ g = wk-pairᵛ (wkmval 𝐖 π γ₁ γ₂ g) (wkmval 𝐖₁ π γ₁ γ₂ g)
+  wkmval (TM.lam M) π γ₁ γ₂ g = wk-cloᵛ π refl (wk-MEnvᵀ-to-wk-MEnvᴹ g)
+  wkmval (label here) π γ₁ (γ₂ · (label x)) (wk-tmenv-mclo-cong 𝐖 g) = wkmval (label x) _ _ _ g
+  wkmval (label here) π γ₁ γ₂ (wk-tmenv-jump-cong {π = π₁} M πᵀ K g) = wk-jumpᵛ π₁ refl (wk-MEnvᵀ-to-wk-MEnvᴹ g) wk-cstack-id
+  wkmval (label here) π γ₁ γ₂ (wk-tmenv-mclo-wk 𝐖 g) = wkmval (label here) _ _ _ g
+  wkmval (label here) π γ₁ γ₂ (wk-tmenv-jump-wk M πᵀ K g) = wkmval (label here) _ _ _ g
+  wkmval (label (there x)) π γ₁ γ₂ (wk-tmenv-mclo-cong 𝐖 g) = wkmval (label x) _ _ _ g
+  wkmval (label (there x)) π γ₁ γ₂ (wk-tmenv-jump-cong M πᵀ K g) = wkmval (label x) _ _ _ g
+  wkmval (label (there x)) π γ₁ γ₂ (wk-tmenv-mclo-wk 𝐖 g) = wkmval (label (there x)) _ _ _ g
+  wkmval (label (there x)) π γ₁ γ₂ (wk-tmenv-jump-wk M πᵀ K g) = wkmval (label (there x)) _ _ _ g
+
+  wk-MEnvᵀ-to-wk-MEnvᴹ : {Γ₁ Γ₂ : Ctx} {π : Wk Γ₁ Γ₂} {γ₁ : TM.MEnv Γ₁} {γ₂ : TM.MEnv Γ₂} → WkMEnvᵀ π γ₁ γ₂ → WkMEnvᴹ π (tmenv-to-menv γ₁) (tmenv-to-menv γ₂)
+  wk-MEnvᵀ-to-wk-MEnvᴹ wk-tmenv-ε = wk-menv-ε
+  wk-MEnvᵀ-to-wk-MEnvᴹ (wk-tmenv-mclo-cong {π = π} {γ₁ = γ₁} {γ₂ = γ₂} 𝐖 g) =
+    let
+      a0 : WkMVal (mclo-to-mval (TM.wk-mclo π 𝐖) γ₁) (mclo-to-mval 𝐖 γ₂)
+      a0 = wkmval 𝐖 π γ₁ γ₂ g
+      a1 = wk-menv-cong a0 (wk-MEnvᵀ-to-wk-MEnvᴹ g)
+    in
+    a1
+  wk-MEnvᵀ-to-wk-MEnvᴹ (wk-tmenv-jump-cong M πᵀ K g) =
+    let
+      a0 = wk-jumpᵛ _ refl (wk-MEnvᵀ-to-wk-MEnvᴹ g) wk-cstack-id
+      a1 = wk-menv-cong a0 (wk-MEnvᵀ-to-wk-MEnvᴹ g)
+    in
+    a1
+  wk-MEnvᵀ-to-wk-MEnvᴹ (wk-tmenv-mclo-wk 𝐖 g) = wk-menv-wk (mclo-to-mval 𝐖 _) (wk-MEnvᵀ-to-wk-MEnvᴹ g)
+  wk-MEnvᵀ-to-wk-MEnvᴹ (wk-tmenv-jump-wk M πᵀ K g) = wk-menv-wk (M.jumpᵛ M (tmenv-to-menv _) (tmcstack-to-mcstack K)) (wk-MEnvᵀ-to-wk-MEnvᴹ g)
+
+--------------------------------------------------------------------------------
+---- Lemmas for var→ case
+
+lookup-eq : (x : Γ ∋ `ℓ) → (γ : TM.MEnv Γ) → (M.lookup x (tmenv-to-menv γ)) ≡ (mclo-to-mval (label x) γ)
+lookup-eq here (γ · (label x)) = refl
+lookup-eq here (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) = refl
+lookup-eq (there x) (γ · x₁) = lookup-eq x γ
+lookup-eq (there x) (γ ·﹝ x₁ ╎ x₂ ╎ x₃ ﹞) = lookup-eq x γ
+
+lookup-label-wk : (i : Γ ∋ `ℓ) → (γ : TM.MEnv Γ) → WkCStateᴹ (M.jump-to-state (M.lookup i (tmenv-to-menv γ))) (tmcstate-to-mcstate (TM.lookup-label i γ))
+lookup-label-wk here (γ · (label x)) =
+  let
+    a0 : WkCStateᴹ (M.jump-to-state (M.lookup x (tmenv-to-menv γ))) (tmcstate-to-mcstate (TM.lookup-label x γ))
+    a0 = lookup-label-wk x γ
+    goal : WkCStateᴹ (M.jump-to-state (mclo-to-mval (label x) γ)) (tmcstate-to-mcstate (TM.lookup-label x γ))
+    goal = subst (λ z → WkCStateᴹ (M.jump-to-state z) (tmcstate-to-mcstate (TM.lookup-label x γ))) (lookup-eq x γ) a0
+  in
+  goal
+lookup-label-wk here (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) = wk-cstate-comp wk-id refl wk-menv-id wk-cstack-id
+lookup-label-wk (there i) (γ · 𝐖) = lookup-label-wk i γ
+lookup-label-wk (there i) (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) = lookup-label-wk i γ
+
+eval-jump-wk : (W : Val Γ `ℓ) → (γ : TM.MEnv Γ) → WkCStateᴹ (M.eval-jump W (tmenv-to-menv γ)) (tmcstate-to-mcstate (TM.eval-jump W γ))
+eval-jump-wk (var i) γ = lookup-label-wk i γ
+
+--------------------------------------------------------------------------------
+---- Lemmas for pmᶜ→ case
+
 proj₁-wk-mval-eq : (𝐖 : TM.MClo Γ (X₁ `× X₂)) → (γ : TM.MEnv Γ) → (M.proj₁-val (mclo-to-mval 𝐖 γ)) ≡ (mclo-to-mval (TM.proj₁-mclo 𝐖) γ)
 proj₁-wk-mval-eq (pair 𝐖₁ 𝐖₂) ⋄ = refl
 proj₁-wk-mval-eq (pair 𝐖₁ 𝐖₂) (γ · x) = refl
@@ -162,6 +196,9 @@ eval₂-wk W γ =
     goal = wk-mval-trans (wk-mclo-wk-comm (TM.proj₂-mclo (TM.eval W γ)) γ) goal''
   in
   goal
+
+--------------------------------------------------------------------------------
+---- Lemmas for app→ case
 
 ctx-clo-to-comp-wk : (W : Val Γ (X `⇒ Y)) → (γ : TM.MEnv Γ) → Wk Γ (proj₁ (M.clo-to-comp (M.eval W (tmenv-to-menv γ))))
 ctx-clo-to-comp-wk {Γ = Γ ∙ (X `⇒ Y)} (var here) (γ · lam M) = wk-wk wk-id
@@ -233,27 +270,9 @@ eval-clos W₁ W₂ γ K =
   in
   wk-cstate-comp (wk-cong (ctx-clo-to-comp-wk W₁ γ)) a0 b3 wk-cstack-id
 
-lookup-eq : (x : Γ ∋ `ℓ) → (γ : TM.MEnv Γ) → (M.lookup x (tmenv-to-menv γ)) ≡ (mclo-to-mval (label x) γ)
-lookup-eq here (γ · (label x)) = refl
-lookup-eq here (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) = refl
-lookup-eq (there x) (γ · x₁) = lookup-eq x γ
-lookup-eq (there x) (γ ·﹝ x₁ ╎ x₂ ╎ x₃ ﹞) = lookup-eq x γ
-
-lookup-label-wk : (i : Γ ∋ `ℓ) → (γ : TM.MEnv Γ) → WkCStateᴹ (M.jump-to-state (M.lookup i (tmenv-to-menv γ))) (tmcstate-to-mcstate (TM.lookup-label i γ))
-lookup-label-wk here (γ · (label x)) =
-  let
-    a0 : WkCStateᴹ (M.jump-to-state (M.lookup x (tmenv-to-menv γ))) (tmcstate-to-mcstate (TM.lookup-label x γ))
-    a0 = lookup-label-wk x γ
-    goal : WkCStateᴹ (M.jump-to-state (mclo-to-mval (label x) γ)) (tmcstate-to-mcstate (TM.lookup-label x γ))
-    goal = subst (λ z → WkCStateᴹ (M.jump-to-state z) (tmcstate-to-mcstate (TM.lookup-label x γ))) (lookup-eq x γ) a0
-  in
-  goal
-lookup-label-wk here (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) = wk-cstate-comp wk-id refl wk-menv-id wk-cstack-id
-lookup-label-wk (there i) (γ · 𝐖) = lookup-label-wk i γ
-lookup-label-wk (there i) (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) = lookup-label-wk i γ
-
-eval-jump-wk : (W : Val Γ `ℓ) → (γ : TM.MEnv Γ) → WkCStateᴹ (M.eval-jump W (tmenv-to-menv γ)) (tmcstate-to-mcstate (TM.eval-jump W γ))
-eval-jump-wk (var i) γ = lookup-label-wk i γ
+---------------------------------------------------------------------------------
+-- Translation of Steps
+---------------------------------------------------------------------------------
 
 tmstep-to-mstep : {σ σ' : TM.CState} → (WellFormedTMCState σ) → (σ →ᵀᴹ σ') → Σ[ σᴹ ∈ M.CState ] (((tmcstate-to-mcstate σ) →ᴹ σᴹ) × σᴹ ≈ᴹ (tmcstate-to-mcstate σ'))
 tmstep-to-mstep wf (eval→ {W = W} {γ = γ} {K = K}) =
@@ -295,7 +314,21 @@ tmstep-to-mstep wf (app→ {W₁ = W₁} {W₂ = W₂} {γ = γ} {K = K}) =
   in
   _ , app→ , eqv
 
-----------------------------------------------------------------------------------------
+
+
+tmstep-to-mstep-eqv : {σ σ' : TM.CState} {σᴹ : M.CState} → (WellFormedTMCState σ) → (σ →ᵀᴹ σ') → ((tmcstate-to-mcstate σ) →ᴹ σᴹ) → σᴹ ≈ᴹ (tmcstate-to-mcstate σ')
+tmstep-to-mstep-eqv {σ' = σ'} {σᴹ = σᴹ} wf σ→ᵀᴹσ' mσ→ᴹσᴹ =
+  let
+    t = tmstep-to-mstep wf σ→ᵀᴹσ'
+    t' = proj₂ (proj₂ t)
+    goal : σᴹ ≈ᴹ tmcstate-to-mcstate σ'
+    goal = subst (λ x → x ≈ᴹ tmcstate-to-mcstate σ') (M.determinismꟲ' (proj₁ (proj₂ t)) mσ→ᴹσᴹ) t'
+  in
+  goal
+
+---------------------------------------------------------------------------------
+-- Simulation of the TelescopeMachine by the Machine
+---------------------------------------------------------------------------------
 
 open Reduction _→ᴹ_ renaming (_~>*_ to _→ᴹ*_; Normal to Normalᴹ)
 open Reduction _→ᵀᴹ_ renaming (_~>*_ to _→ᵀᴹ*_; Normal to Normalᵀᴹ)
@@ -324,16 +357,6 @@ progress-t : {σ₀ : TM.CState} {σ₀ᴹ σᴹ : M.CState} → (σ₀ᴹ ≈�
 progress-t (≈ᴹ-bc (≈-wk₁ w)) s = progress-t₁ w s
 progress-t (≈ᴹ-bc (≈-wk₂ w)) s = progress-t₂ w s
 progress-t (≈-trans {σ₂ = σ₂} {σ₃ = σ₃} w eqv) s = progress-t {σ₀ᴹ = σ₂} eqv (proj₁ (proj₂ (mstep-eqv' w s)))
-
-tmstep-to-mstep-eqv : {σ σ' : TM.CState} {σᴹ : M.CState} → (WellFormedTMCState σ) → (σ →ᵀᴹ σ') → ((tmcstate-to-mcstate σ) →ᴹ σᴹ) → σᴹ ≈ᴹ (tmcstate-to-mcstate σ')
-tmstep-to-mstep-eqv {σ' = σ'} {σᴹ = σᴹ} wf σ→ᵀᴹσ' mσ→ᴹσᴹ =
-  let
-    t = tmstep-to-mstep wf σ→ᵀᴹσ'
-    t' = proj₂ (proj₂ t)
-    goal : σᴹ ≈ᴹ tmcstate-to-mcstate σ'
-    goal = subst (λ x → x ≈ᴹ tmcstate-to-mcstate σ') (M.determinismꟲ' (proj₁ (proj₂ t)) mσ→ᴹσᴹ) t'
-  in
-  goal
 
 exec-TM : {σ₀ : TM.CState} {σ₀ᴹ σᴹ : M.CState} → (WellFormedTMCState σ₀) → ((tmcstate-to-mcstate σ₀) ≈ᴹ σ₀ᴹ) → (σ₀ᴹ →ᴹ* σᴹ) → Σ[ σ ∈ TM.CState ] ((σ₀ →ᵀᴹ* σ) × ((tmcstate-to-mcstate σ) ≈ᴹ σᴹ) × WellFormedTMCState σ)
 exec-TM {σ₀ = σ₀} wf eqv ε = σ₀ , ε , eqv , wf
