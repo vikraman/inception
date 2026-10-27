@@ -180,7 +180,6 @@ determinismꟲ var→ var→ = refl
 determinismꟲ pmᶜ→ pmᶜ→ = refl
 determinismꟲ app→ app→ = refl
 
-{-
 data SN (σ : CState) : Set where
   sn : (∀ {σ₁} → σ →ᶜ σ₁ → SN σ₁) → SN σ
 
@@ -190,18 +189,53 @@ Rᴱ : MEnv Γ → Set
 
 Rᵛ `𝟙 unit γ = ⊤
 Rᵛ (X `× Y) (pair 𝐕 𝐖) γ = Rᵛ X 𝐕 γ × Rᵛ Y 𝐖 γ
-Rᵛ {Γ = Γ} (X `⇒ Y) (lam M) γ = ∀ {𝐖 : MClo Γ X} → Rᵛ X 𝐖 γ → Rᴱ γ → ∀ {Δ : Ctx} {K : CStack Δ Y} {π : Γ ⊇ Δ} → Rᵏ Y K → SN ⟨ M ╎ γ · 𝐖 ╎ wk-wk π ╎ K ⟩
+Rᵛ {Γ = Γ} (X `⇒ Y) (lam M) γ =
+            ∀ {Δ : Ctx} (π₁ : Wk Δ Γ)
+              (𝐖 : MClo Δ X) (δ : MEnv Δ)
+              {Ψ : Ctx} (π₂ : Wk Δ Ψ)
+            → Rᵛ X 𝐖 δ → {K : CStack Ψ Y} → Rᵏ Y K
+            → SN ⟨ wk-comp (wk-cong π₁) M ╎ δ · 𝐖 ╎ wk-wk π₂ ╎ K ⟩
 Rᵛ `ℓ (label x) γ = SN (lookup-label x γ)
 
-Rᴱ {Γ = Γ} ⋄ = ⊤
-Rᴱ {Γ = Γ ∙ X} (γ · 𝐖) = Rᴱ γ × Rᵛ X 𝐖 γ
-Rᴱ {Γ = Γ} (γ ·﹝ M ╎ π ╎ K ﹞) = SN ⟨ M ╎ γ ╎ π ╎ K ⟩
+Rᴱ {Γ = Γ} γ = ∀ {X : Ty} → (i : Γ ∋ X) → Rᵛ X (lookup i γ) γ
 
--- termination check fails here
-Rᵏ X ◻ = ⊤
-Rᵏ X (<_；_；_>∷_ {Γ = Γ} {Y = Y} M γ π K) = ∀ {𝐖 : MClo Γ Y} → Rᵛ Y 𝐖 γ → {!!}
+Rᵏ {Γ = Γ} X K = ∀ {Δ : Ctx} {𝐖 : MClo Δ X} {δ : MEnv Δ} {π : Wk Δ Γ} → Rᵛ X 𝐖 δ → SN ⟨ 𝐖 ； δ ╎ π ╎ K ⟩
+
+{-
+Rᵛ-wk : {Δ : Ctx} {π : Wk Δ Γ} {γ : MEnv Γ} {𝐖 : MClo Γ X}
+        → (δ : MEnv Δ) → Rᵛ X 𝐖 γ → Rᵛ X (wk-mclo π 𝐖) δ
+Rᵛ-wk {𝐖 = unit} _ Rv = tt
+Rᵛ-wk {π = π} {𝐖 = pair 𝐖 𝐕} δ (fst , snd) =
+  let
+    RW = Rᵛ-wk {π = π} δ fst
+    RV = Rᵛ-wk {π = π} δ snd
+  in
+  RW , RV
+Rᵛ-wk {𝐖 = lam M} δ Rv = λ π₁ 𝐖 δ₁ π₂ x x₁ → {!!}
+Rᵛ-wk {𝐖 = label x} δ Rv =
+  {!subst () !}
+
+Rᴱ-ext : {γ : MEnv Γ} {𝐖 : MClo Γ X} → Rᴱ γ → Rᵛ X 𝐖 γ → Rᴱ (γ · 𝐖)
+Rᴱ-ext Rγ RW here = {!!}
+Rᴱ-ext Rγ RW (there i) = {!!}
 -}
 
+mutual
+
+  fundamentalᵛ  : (W : Γ ⊢ᵛ X) → {γ : MEnv Γ} → Rᴱ γ → Rᵛ X (eval W γ) γ
+  fundamentalᵛ (var i) Rγ = Rγ i
+  fundamentalᵛ (lam M) Rγ π₁ 𝐖 δ π₂ Rv Rk = fundamentalᶜ (wk-comp (wk-cong π₁) M) {!!} Rk (wk-wk π₂)
+  fundamentalᵛ (pair W V) Rγ = (fundamentalᵛ W Rγ) , (fundamentalᵛ V Rγ)
+  fundamentalᵛ unit Rγ = tt
+
+  fundamentalᶜ : (M : Γ ⊢ᶜ X) → {γ : MEnv Γ} → Rᴱ γ → {Ψ : Ctx}
+                 → {K : CStack Ψ X} → Rᵏ X K → (π : Wk Γ Ψ) → SN ⟨ M ╎ γ ╎ π ╎ K ⟩
+  fundamentalᶜ (return W) Rγ Rk π = sn (λ {eval→ → Rk (fundamentalᵛ W Rγ)})
+  fundamentalᶜ (pm W M) Rγ Rk π = sn (λ { pmᶜ→ → fundamentalᶜ M {!!} Rk (wk-wk (wk-wk π))})
+  fundamentalᶜ (push M N) Rγ Rk π = sn (λ { push→ → {!!}})
+  fundamentalᶜ (app W V) Rγ Rk π = sn (λ { app→ → {!!}})
+  fundamentalᶜ (var W) Rγ Rk π = sn λ { var→ → {!!}}
+  fundamentalᶜ (sub M N) Rγ Rk π = sn λ { sub→ → {!!}}
 
 open import Inception.Rewriting.Reduction _→ᶜ_
 
