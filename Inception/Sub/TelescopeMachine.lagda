@@ -222,20 +222,37 @@ Rᴱ-ext Rγ RW (there i) = {!!}
 
 mutual
 
-  fundamentalᵛ  : (W : Γ ⊢ᵛ X) → {γ : MEnv Γ} → Rᴱ γ → Rᵛ X (eval W γ) γ
-  fundamentalᵛ (var i) Rγ = Rγ i
-  fundamentalᵛ (lam M) Rγ π₁ 𝐖 δ π₂ Rv Rk = fundamentalᶜ (wk-comp (wk-cong π₁) M) {!!} Rk (wk-wk π₂)
-  fundamentalᵛ (pair W V) Rγ = (fundamentalᵛ W Rγ) , (fundamentalᵛ V Rγ)
-  fundamentalᵛ unit Rγ = tt
+  fundamentalᵛ  : (W : Γ ⊢ᵛ X) → {Δ : Ctx} → {δ : MEnv Δ} → Rᴱ δ
+                 → (π : Wk Δ Γ)
+                 → Rᵛ X (eval (wk-val π W) δ) δ
+  fundamentalᵛ (var i) Rδ π = Rδ (wk-mem π i)
+  fundamentalᵛ (lam M) Rδ π π₁ 𝐖 δ₁ π₂ Rv Rk = fundamentalᶜ M {!!} (wk-trans (Wk.wk-cong π₁) (Wk.wk-cong π)) (wk-wk π₂) Rk
+  fundamentalᵛ (pair V W) Rδ π = (fundamentalᵛ V Rδ π) , (fundamentalᵛ W Rδ π)
+  fundamentalᵛ unit Rδ π = tt
 
+  fundamentalᶜ : (M : Γ ⊢ᶜ X) → {Δ : Ctx} → {δ : MEnv Δ} → Rᴱ δ
+                 → (π₁ : Wk Δ Γ)
+                 → {Ψ : Ctx} → (π₂ : Wk Δ Ψ)
+                 → {K : CStack Ψ X} → Rᵏ X K
+                 → SN ⟨ wk-comp π₁ M ╎ δ ╎ π₂ ╎ K ⟩
+  fundamentalᶜ (return W) Rδ π₁ π₂ Rk = sn (λ { eval→ → Rk (fundamentalᵛ W Rδ π₁) })
+  fundamentalᶜ (pm W M) Rδ π₁ π₂ Rk = sn (λ { pmᶜ→ → {!!} })
+  fundamentalᶜ (push M N) Rδ π₁ π₂ Rk = sn (λ { push→ →
+                                                fundamentalᶜ M {!!} π₁ wk-id {!!} })
+  fundamentalᶜ (app V W) Rδ π₁ π₂ Rk = sn (λ { app→ → {!!} })
+  fundamentalᶜ (var W) Rδ π₁ π₂ Rk = sn (λ { var→ → {!!} })
+  fundamentalᶜ (sub M N) Rδ π₁ π₂ Rk = sn (λ { sub→ → {!!} })
+
+{-
   fundamentalᶜ : (M : Γ ⊢ᶜ X) → {γ : MEnv Γ} → Rᴱ γ → {Ψ : Ctx}
                  → {K : CStack Ψ X} → Rᵏ X K → (π : Wk Γ Ψ) → SN ⟨ M ╎ γ ╎ π ╎ K ⟩
   fundamentalᶜ (return W) Rγ Rk π = sn (λ {eval→ → Rk (fundamentalᵛ W Rγ)})
   fundamentalᶜ (pm W M) Rγ Rk π = sn (λ { pmᶜ→ → fundamentalᶜ M {!!} Rk (wk-wk (wk-wk π))})
-  fundamentalᶜ (push M N) Rγ Rk π = sn (λ { push→ → {!!}})
+  fundamentalᶜ (push M N) Rγ Rk π = sn (λ { push→ → fundamentalᶜ {!!} {!!} {!!} {!!}})
   fundamentalᶜ (app W V) Rγ Rk π = sn (λ { app→ → {!!}})
   fundamentalᶜ (var W) Rγ Rk π = sn λ { var→ → {!!}}
   fundamentalᶜ (sub M N) Rγ Rk π = sn λ { sub→ → {!!}}
+-}
 
 open import Inception.Rewriting.Reduction _→ᶜ_
 
