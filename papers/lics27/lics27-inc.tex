@@ -1,4 +1,3 @@
-
 \documentclass[a4paper,UKenglish,cleveref,thm-restate]{lipics-v2021}
 
 \bibliographystyle{plainurl}% the mandatory bibstyle
@@ -58,6 +57,8 @@
 \makeglossaries
 \overfullrule=5pt
 
+\usepackage{mathpartir}
+
 %Editor-only macros:: begin (do not touch as author)%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \EventEditors{John Q. Open and Joan R. Access}
 \EventNoEds{2}
@@ -87,6 +88,82 @@ This is not supposed to be included in the LICS version, but we could maybe incl
 The provisional glossary below shows all the defined entries and their corresponding keys (just to make things easier for us while writing).
 A symbol with a corresponding key \texttt{somekey} can be printed by \verb+\gls{somekey}+ in the document.
 
+\section{definitions}
+
+\begin{figure}[t]
+
+\begin{subfigure}{0.95\linewidth}
+  \begin{align*}
+    \text{Pure terms:} && \glsi{Pure}, \glsii{Pure} &:=\; \glsi{Var} \mid \gls{UnitTerm} \mid \gls{LamOp} ( \glsi{Comp} ) \mid \gls{PairOp} (\glsi{Pure} , \glsii{Pure})
+    \\
+    \text{Effectful terms / computations:} && \glsi{Comp}, \glsii{Comp} &:=\; \gls{ReturnOp} (\glsi{Pure}) \mid \gls{PushOp} ({\glsi{Comp}} , {\glsii{Comp}}) \mid \gls{AppOp} (\glsi{Pure} , \glsii{Pure}) \mid \\
+         &&& \quad\quad \gls{VarOp} (\glsi{Pure}) \mid \gls{SubOp} (\glsi{Comp}, \glsii{Comp}) \mid \gls{PmOp} ( \glsi{Pure} , \glsi{Comp} )
+  \end{align*}
+  \caption{Grammar for terms}
+  \label{fig:terms-a}
+\end{subfigure}
+
+\begin{subfigure}{0.95\linewidth}
+  \begin{mathpar}
+    \inferrule
+      {\glsi{Var} : \glsi{Type} \mathbin{\glsi{Member}} \glsi{Ctx}}
+      {\glsi{Ctx} \mathbin{\glsi{PureJudge}} \glsi{Var} : \glsi{Type}}
+
+    \inferrule
+      {\glsi{Ctx} \mathbin{\glsi{CtxCons}} \glsi{Type} \mathbin{\glsi{CompJudge}} \glsi{Comp} : \glsii{Type}}
+      {\glsi{Ctx} \mathbin{\glsi{PureJudge}} \gls{LamOp} ( \glsi{Comp} ) : \glsi{Type} \mathbin{\glsi{ArrowType}} \glsii{Type}}
+
+%    \inferrule
+%      { }
+%      {\GAMMA \PDASHi \gls{ast} \PDASHii \gls{1}}
+%
+%    \inferrule
+%      {\GAMMA \PDASHi {\gls{W}}_1 \PDASHii {\X}_1 \\ \GAMMA \PDASHi {\gls{W}}_2 \PDASHii {\X}_2}
+%      {\GAMMA \PDASHi \gls{pair} ( {\gls{W}}_1 , {\gls{W}}_2 ) \PDASHii {\X}_1 \glsop{times} {\X}_2}
+%
+%    \inferrule
+%      {\GAMMA \PDASHi {\gls{W}}_1 \PDASHii \X \glsop{times} \Y \\ \GAMMA \glsbin{bullet} \X \glsbin{bullet} \Y \PDASHi {\gls{W}}_2 \PDASHii \Z}
+%      {\GAMMA \PDASHi \gls{pmp} ( {\gls{W}}_1 , {\gls{W}}_2 ) \PDASHii \Z}
+  \end{mathpar}
+  \caption{Typing rules for pure terms}
+  \label{fig:terms-b}
+\end{subfigure}
+
+%\begin{subfigure}{0.95\linewidth}
+%  \begin{mathpar}
+%    \inferrule
+%      {\GAMMA \PDASHi \gls{W} \PDASHii \X}
+%      {\GAMMA \CDASHi \gls{return} (\gls{W}) \CDASHii \X}
+%
+%    \inferrule
+%      {\GAMMA \CDASHi {\gls{M}}_1 \CDASHii \X \\ \GAMMA \glsbin{bullet} \X \CDASHi {\gls{M}}_2 \CDASHii \Y}
+%      {\GAMMA \CDASHi \gls{push} ({\gls{M}}_1 , {\gls{M}}_2) \CDASHii \Y}
+%
+%    \inferrule
+%      {\GAMMA \PDASHi {\gls{W}}_1 \PDASHii \X \glsop{Rightarrow} \Y \\ \GAMMA \PDASHi {\gls{W}}_2 \PDASHii \X}
+%      {\GAMMA \CDASHi \gls{app}({\gls{W}}_1, {\gls{W}}_2) \CDASHii \Y}
+%
+%    \inferrule
+%      {\GAMMA \PDASHi \gls{W} \PDASHii \gls{L}}
+%      {\GAMMA \CDASHi {\gls{var}}_X (\gls{W}) \CDASHii \X}
+%
+%    \inferrule
+%      {\GAMMA \glsbin{bullet} \gls{L} \CDASHi {\gls{M}}_1 \CDASHii \X \\ \GAMMA \CDASHi {\gls{M}}_2 \CDASHii \X}
+%      {\GAMMA \CDASHi {\gls{sub}}_{\X} ({\gls{M}}_1 , {\gls{M}}_2) \CDASHii \X}
+%
+%    \inferrule
+%      {\GAMMA \PDASHi \gls{W} : \X \gls{times} \Y \\ \GAMMA \glsbin{bullet} \X \glsbin{bullet} \Y \CDASHi \gls{M} \CDASHii \Z}
+%      {\GAMMA \CDASHi \gls{pmc}(\gls{W}, \gls{M}) \CDASHii \Z}
+%  \end{mathpar}
+%  \caption{Typing rules for effectful terms / computations}
+%  \label{fig:terms-c}
+%\end{subfigure}
+
+\caption{Terms}
+\label{fig:terms}
+\end{figure}
+
+\clearpage
 \glsaddall
 \printglossary[type=symbols, title={Glossary}, style={long-symbols}]
 
