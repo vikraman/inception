@@ -66,7 +66,7 @@ mutual
                ----------------------------------
                → MEnv (Γ ∙ X)
 
-    _·﹝_╎_╎_﹞ :  MEnv Γ → Comp Γ X → Wk Γ Γ₁ → CStack Γ₁ X
+    _·﹝_╎_╎_﹞ :  MEnv Γ → Γ ⊢ᶜ X → Γ ⊇ Γ₁ → CStack Γ₁ X
                ----------------------------------------------
                → MEnv (Γ ∙ `ℓ)
 
@@ -78,7 +78,7 @@ wk-mclo π (label x) = label (wk-mem π x)
 
 data CState : Set where
 
-  ⟨_；_╎_╎_⟩ :  (𝐖 : MClo Γ X) → (γ : MEnv Γ) → (π : Wk Γ Γ₁) → (K : CStack Γ₁ X)
+  ⟨_；_╎_╎_⟩ :  (𝐖 : MClo Γ X) → (γ : MEnv Γ) → (π : Γ ⊇ Γ₁) → (K : CStack Γ₁ X)
               ---------------------------------------------------
               → CState
 
@@ -196,7 +196,7 @@ progress ⟨ sub M M₁ ╎ γ ╎ π ╎ K ⟩ = next sub→
 halting-state :    (cstate : CState) → Normal cstate
                  → Σ[ Γ ∈ Ctx ] Σ[ π ∈ Wk Γ ε ] Σ[ 𝐖 ∈ MClo Γ ℛ ] Σ[ γ ∈ MEnv Γ ] cstate ≡ ⟨ 𝐖 ； γ ╎ π ╎ ◻ ⟩
 halting-state ⟨ 𝐖 ； γ ╎ π ╎ ◻ ⟩ normal = _ , π , 𝐖 , γ , refl
-halting-state ⟨ 𝐖 ； γ ╎ π ╎ < x ； γ₁ ； π₁ >∷ K ⟩ normal = ql (normal return→) (Σ-syntax Ctx (λ Γ₃ → Σ-syntax (Wk Γ₃ ε) (λ π₂ → Σ-syntax (MClo Γ₃ ℛ) (λ 𝐖₁ → Σ-syntax (MEnv Γ₃) (λ γ₂ → ⟨ 𝐖 ； γ ╎ π ╎ < x ； γ₁ ； π₁ >∷ K ⟩ ≡ ⟨ 𝐖₁ ； γ₂ ╎ π₂ ╎ ◻ ⟩)))))
+halting-state ⟨ 𝐖 ； γ ╎ π ╎ < x ； γ₁ ； π₁ >∷ K ⟩ normal = ql (normal return→) (Σ-syntax Ctx (λ Γ₃ → Σ-syntax (Γ₃ ⊇ ε) (λ π₂ → Σ-syntax (MClo Γ₃ ℛ) (λ 𝐖₁ → Σ-syntax (MEnv Γ₃) (λ γ₂ → ⟨ 𝐖 ； γ ╎ π ╎ < x ； γ₁ ； π₁ >∷ K ⟩ ≡ ⟨ 𝐖₁ ； γ₂ ╎ π₂ ╎ ◻ ⟩)))))
 halting-state ⟨ return W ╎ γ ╎ π ╎ K ⟩ normal = ql (normal eval→) (Σ-syntax Ctx (λ Γ₂ → Σ-syntax (Wk Γ₂ ε) (λ π₁ → Σ-syntax (MClo Γ₂ ℛ) (λ 𝐖 → Σ-syntax (MEnv Γ₂) (λ γ₁ → ⟨ return W ╎ γ ╎ π ╎ K ⟩ ≡ ⟨ 𝐖 ； γ₁ ╎ π₁ ╎ ◻ ⟩)))))
 halting-state ⟨ pm W M ╎ γ ╎ π ╎ K ⟩ normal = ql (normal pmᶜ→) (Σ-syntax Ctx (λ Γ₂ → Σ-syntax (Wk Γ₂ ε) (λ π₁ → Σ-syntax (MClo Γ₂ ℛ) (λ 𝐖 → Σ-syntax (MEnv Γ₂) (λ γ₁ → ⟨ pm W M ╎ γ ╎ π ╎ K ⟩ ≡ ⟨ 𝐖 ； γ₁ ╎ π₁ ╎ ◻ ⟩)))))
 halting-state ⟨ push M₁ M₂ ╎ γ ╎ π ╎ K ⟩ normal = ql (normal push→) (Σ-syntax Ctx (λ Γ₂ → Σ-syntax (Wk Γ₂ ε) (λ π₁ → Σ-syntax (MClo Γ₂ ℛ) (λ 𝐖 → Σ-syntax (MEnv Γ₂) (λ γ₁ → ⟨ push M₁ M₂ ╎ γ ╎ π ╎ K ⟩ ≡ ⟨ 𝐖 ； γ₁ ╎ π₁ ╎ ◻ ⟩)))))
