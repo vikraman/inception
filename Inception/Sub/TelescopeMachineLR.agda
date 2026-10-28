@@ -27,16 +27,16 @@ Rᴱ : MEnv Γ → Set
 Rᵛ `𝟙 unit γ = ⊤
 Rᵛ (X `× Y) (pair 𝐕 𝐖) γ = Rᵛ X 𝐕 γ × Rᵛ Y 𝐖 γ
 Rᵛ {Γ = Γ} (X `⇒ Y) (lam M) γ =
-            ∀ {Δ : Ctx} (π₁ : Wk Δ Γ)
+            ∀ {Δ : Ctx} (π₁ : Δ ⊇ Γ)
               (𝐖 : MClo Δ X) (δ : MEnv Δ)
-              {Ψ : Ctx} (π₂ : Wk Δ Ψ)
+              {Ψ : Ctx} (π₂ : Δ ⊇ Ψ)
             → Rᵛ X 𝐖 δ → {K : CStack Ψ Y} → Rᵏ Y K
             → SN ⟨ wk-comp (wk-cong π₁) M ╎ δ · 𝐖 ╎ wk-wk π₂ ╎ K ⟩
 Rᵛ `ℓ (label x) γ = SN (lookup-label x γ)
 
 Rᴱ {Γ = Γ} γ = ∀ {X : Ty} → (i : Γ ∋ X) → Rᵛ X (lookup i γ) γ
 
-Rᵏ {Γ = Γ} X K = ∀ {Δ : Ctx} {𝐖 : MClo Δ X} {δ : MEnv Δ} {π : Wk Δ Γ} → Rᵛ X 𝐖 δ → SN ⟨ 𝐖 ； δ ╎ π ╎ K ⟩
+Rᵏ {Γ = Γ} X K = ∀ {Δ : Ctx} {𝐖 : MClo Δ X} {δ : MEnv Δ} {π : Δ ⊇ Γ} → Rᵛ X 𝐖 δ → SN ⟨ 𝐖 ； δ ╎ π ╎ K ⟩
 
 {-
 Rᵛ-wk : {Δ : Ctx} {π : Wk Δ Γ} {γ : MEnv Γ} {𝐖 : MClo Γ X}
@@ -57,10 +57,11 @@ Rᴱ-ext Rγ RW here = {!!}
 Rᴱ-ext Rγ RW (there i) = {!!}
 -}
 
+{-
 mutual
 
   fundamentalᵛ  : (W : Γ ⊢ᵛ X) → {Δ : Ctx} → {δ : MEnv Δ} → Rᴱ δ
-                 → (π : Wk Δ Γ)
+                 → (π : Δ ⊇ Γ)
                  → Rᵛ X (eval (wk-val π W) δ) δ
   fundamentalᵛ (var i) Rδ π = Rδ (wk-mem π i)
   fundamentalᵛ (lam M) Rδ π π₁ 𝐖 δ₁ π₂ Rv Rk = fundamentalᶜ M {!!} (wk-trans (Wk.wk-cong π₁) (Wk.wk-cong π)) (wk-wk π₂) Rk
@@ -68,8 +69,8 @@ mutual
   fundamentalᵛ unit Rδ π = tt
 
   fundamentalᶜ : (M : Γ ⊢ᶜ X) → {Δ : Ctx} → {δ : MEnv Δ} → Rᴱ δ
-                 → (π₁ : Wk Δ Γ)
-                 → {Ψ : Ctx} → (π₂ : Wk Δ Ψ)
+                 → (π₁ : Δ ⊇ Γ)
+                 → {Ψ : Ctx} → (π₂ : Δ ⊇ Ψ)
                  → {K : CStack Ψ X} → Rᵏ X K
                  → SN ⟨ wk-comp π₁ M ╎ δ ╎ π₂ ╎ K ⟩
   fundamentalᶜ (return W) Rδ π₁ π₂ Rk = sn (λ { eval→ → Rk (fundamentalᵛ W Rδ π₁) })
@@ -79,3 +80,4 @@ mutual
   fundamentalᶜ (app V W) Rδ π₁ π₂ Rk = sn (λ { app→ → {!!} })
   fundamentalᶜ (var W) Rδ π₁ π₂ Rk = sn (λ { var→ → {!!} })
   fundamentalᶜ (sub M N) Rδ π₁ π₂ Rk = sn (λ { sub→ → {!!} })
+-}

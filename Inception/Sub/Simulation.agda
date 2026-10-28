@@ -44,7 +44,7 @@ progress-t₂ {σ₀ = ⟨ sub M M₁ ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp 
 progress-t : {σ₀ : TM.CState} {σ₀ᴹ σᴹ : M.CState} → (σ₀ᴹ ≈ᴹ (tmcstate-to-mcstate σ₀)) → (σ₀ᴹ →ᴹ σᴹ) → Σ[ σ ∈ TM.CState ] (σ₀ →ᵀᴹ σ)
 progress-t (≈ᴹ-bc (≈-wk₁ w)) s = progress-t₁ w s
 progress-t (≈ᴹ-bc (≈-wk₂ w)) s = progress-t₂ w s
-progress-t (≈-trans {σ₂ = σ₂} {σ₃ = σ₃} w eqv) s = progress-t {σ₀ᴹ = σ₂} eqv (proj₁ (proj₂ (mstep-eqv' w s)))
+progress-t (≈-trans {σ₂ = σ₂} {σ₃ = σ₃} w eqv) s = progress-t {σ₀ᴹ = σ₂} eqv (proj₁ (proj₂ (mstep-eqv′ w s)))
 
 execᵀᴹ-rec : {σ₀ : TM.CState} {σ₀ᴹ σᴹ : M.CState} → (WellFormedTMCState σ₀) → ((tmcstate-to-mcstate σ₀) ≈ᴹ σ₀ᴹ) → (σ₀ᴹ →ᴹ* σᴹ) → Σ[ σ ∈ TM.CState ] ((σ₀ →ᵀᴹ* σ) × ((tmcstate-to-mcstate σ) ≈ᴹ σᴹ) × WellFormedTMCState σ)
 execᵀᴹ-rec {σ₀ = σ₀} wf eqv ε = σ₀ , ε , eqv , wf
@@ -53,8 +53,8 @@ execᵀᴹ-rec wf eqv (σ₀ᴹ→σ₁ᴹ ◅ σ₁ᴹ→*σᴹ) =
     σ₀→ᵀᴹσ₁ = proj₂ (progress-t (≈ᴹ-sym eqv) σ₀ᴹ→σ₁ᴹ)
     me = mstep-eqv (≈ᴹ-sym eqv) σ₀ᴹ→σ₁ᴹ
     eqv = tmstep-to-mstep-eqv wf σ₀→ᵀᴹσ₁ (proj₁ (proj₂ me))
-    wf' = wf-preservation σ₀→ᵀᴹσ₁ wf
-    IH = execᵀᴹ-rec wf' (≈ᴹ-sym (≈ᴹ-trans (proj₂ (proj₂ me)) eqv))  σ₁ᴹ→*σᴹ
+    wf′ = wf-preservation σ₀→ᵀᴹσ₁ wf
+    IH = execᵀᴹ-rec wf′ (≈ᴹ-sym (≈ᴹ-trans (proj₂ (proj₂ me)) eqv))  σ₁ᴹ→*σᴹ
   in
   proj₁ IH , σ₀→ᵀᴹσ₁ ◅ proj₁ (proj₂ IH) , proj₁ (proj₂ (proj₂ IH)) , proj₂ (proj₂ (proj₂ IH))
 

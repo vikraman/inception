@@ -32,7 +32,7 @@ mutual
     ◻ :        CStack ε ℛ
 
     <_；_；_>∷_ :  (Γ ∙ Y) ⊢ᶜ X → (γ : MEnv Γ)
-                → (π : Wk Γ Γ₁)
+                → (π : Γ ⊇ Γ₁)
                 → (K : CStack Γ₁ X)
                 ------------------------------------
                 → CStack Γ Y
@@ -47,7 +47,7 @@ mutual
               -------------------------------------------------
               → MClo Γ (X₁ `× X₂)
 
-    lam :     (M : Comp (Γ ∙ X) Y)
+    lam :     (M : (Γ ∙ X) ⊢ᶜ Y)
               ----------------------------------------------------
               → MClo Γ (X `⇒ Y)
 
@@ -70,7 +70,7 @@ mutual
                ----------------------------------------------
                → MEnv (Γ ∙ `ℓ)
 
-wk-mclo : Wk Γ Δ → MClo Δ X → MClo Γ X
+wk-mclo : Γ ⊇ Δ → MClo Δ X → MClo Γ X
 wk-mclo π unit = unit
 wk-mclo π (pair 𝐖₁ 𝐖₂) = pair (wk-mclo π 𝐖₁) (wk-mclo π 𝐖₂)
 wk-mclo π (lam M) = lam (wk-comp (wk-cong π) M)
@@ -82,7 +82,7 @@ data CState : Set where
               ---------------------------------------------------
               → CState
 
-  ⟨_╎_╎_╎_⟩ :  (M : Comp Γ X) → (γ : MEnv Γ) → (π : Wk Γ Γ₁) → (K : CStack Γ₁ X)
+  ⟨_╎_╎_╎_⟩ :  (M : Γ ⊢ᶜ X) → (γ : MEnv Γ) → (π : Γ ⊇ Γ₁) → (K : CStack Γ₁ X)
              -----------------------------------------------------------------
              → CState
 
@@ -105,16 +105,16 @@ lookup-label here (γ ·﹝ M ╎ π ╎ K ﹞) = ⟨ M ╎ γ ╎ π ╎ K ⟩
 lookup-label (there x) (γ · 𝐖) = lookup-label x γ
 lookup-label (there x) (γ ·﹝ M ╎ π ╎ stack ﹞) = lookup-label x γ
 
-lam-to-comp :  MClo Γ (X `⇒ Y) → Comp (Γ ∙ X) Y
+lam-to-comp :  MClo Γ (X `⇒ Y) → (Γ ∙ X) ⊢ᶜ Y
 lam-to-comp (lam M) = M
 
-eval : Val Γ X → MEnv Γ → MClo Γ X
+eval : Γ ⊢ᵛ X → MEnv Γ → MClo Γ X
 eval (var i) γ = lookup i γ
 eval (lam M) γ = lam M
 eval (pair V W) γ = pair (eval V γ) (eval W γ)
 eval unit γ = unit
 
-eval-jump : Val Γ `ℓ → MEnv Γ → CState
+eval-jump : Γ ⊢ᵛ `ℓ → MEnv Γ → CState
 eval-jump (var i) γ = lookup-label i γ
 
 proj₁-mclo : MClo Γ (X₁ `× X₂) → MClo Γ X₁
@@ -123,14 +123,14 @@ proj₁-mclo (pair 𝐖₁ 𝐖₂) = 𝐖₁
 proj₂-mclo : MClo Γ (X₁ `× X₂) → MClo Γ X₂
 proj₂-mclo (pair 𝐖₁ 𝐖₂) = 𝐖₂
 
-eval₁ : Val Γ (X₁ `× X₂) → MEnv Γ → MClo Γ X₁
+eval₁ : Γ ⊢ᵛ (X₁ `× X₂) → MEnv Γ → MClo Γ X₁
 eval₁ W γ = proj₁-mclo (eval W γ)
 
-eval₂ : Val Γ (X₁ `× X₂) → MEnv Γ → MClo Γ X₂
+eval₂ : Γ ⊢ᵛ (X₁ `× X₂) → MEnv Γ → MClo Γ X₂
 eval₂ W γ = proj₂-mclo (eval W γ)
 
-eval-app : Val Γ (X `⇒ Y) → Val Γ X → MEnv Γ
-           → Wk Γ Γ₁ → CStack Γ₁ Y → CState
+eval-app : Γ ⊢ᵛ (X `⇒ Y) → Γ ⊢ᵛ X → MEnv Γ
+           → Γ ⊇ Γ₁ → CStack Γ₁ Y → CState
 eval-app V W γ π K =
   let
     M  = lam-to-comp (eval V γ)
@@ -140,38 +140,38 @@ eval-app V W γ π K =
 
 data _→ᶜ_ : CState → CState → Set where
 
-  eval→ :    {W : Val Γ X} {γ : MEnv Γ} {π : Wk Γ Γ₁} {K : CStack Γ₁ X}
+  eval→ :    {W : Γ ⊢ᵛ X} {γ : MEnv Γ} {π : Γ ⊇ Γ₁} {K : CStack Γ₁ X}
              -------------------------------------------
              →  ⟨ return W ╎ γ ╎ π ╎ K ⟩ →ᶜ ⟨ eval W γ ； γ ╎ π ╎ K ⟩
 
-  return→ :  {𝐖 : MClo Γ X} {M₁ : Comp (Γ₁ ∙ X) Y} {γ : MEnv Γ} {γ₁ : MEnv Γ₁} {Γ₂ : Ctx} {K : CStack Γ₂ Y}
-             {π : Wk Γ Γ₁} {π₁ : Wk Γ₁ Γ₂} --{M≡wkM₁ : M ≡ wk-comp (wk-cong π) M₁}
+  return→ :  {𝐖 : MClo Γ X} {M₁ : (Γ₁ ∙ X) ⊢ᶜ Y} {γ : MEnv Γ} {γ₁ : MEnv Γ₁} {Γ₂ : Ctx} {K : CStack Γ₂ Y}
+             {π : Γ ⊇ Γ₁} {π₁ : Γ₁ ⊇ Γ₂} --{M≡wkM₁ : M ≡ wk-comp (wk-cong π) M₁}
              --------------------------------------------------------------
              →  ⟨ 𝐖 ； γ ╎ π ╎ < M₁ ； γ₁ ； π₁ >∷ K ⟩ →ᶜ ⟨ wk-comp (wk-cong π) M₁ ╎ γ · 𝐖 ╎ wk-wk (wk-trans π π₁) ╎ K ⟩
 
-  push→ :    {M₁ : Comp Γ X} {M₂ : Comp (Γ ∙ X) Y} {γ : MEnv Γ} {π : Wk Γ Γ₁} {K : CStack Γ₁ Y}
+  push→ :    {M₁ : Γ ⊢ᶜ X} {M₂ : (Γ ∙ X) ⊢ᶜ Y} {γ : MEnv Γ} {π : Γ ⊇ Γ₁} {K : CStack Γ₁ Y}
              ----------------------------------------------------------------
              →  ⟨ push M₁ M₂ ╎ γ ╎ π ╎ K ⟩ →ᶜ ⟨ M₁ ╎ γ ╎ wk-id ╎ < M₂ ； γ ； π >∷ K ⟩
 
-  sub→ :     {M₁ : Comp (Γ ∙ `ℓ) X} {M₂ : Comp Γ X} {γ : MEnv Γ} {π : Wk Γ Γ₁} {K : CStack Γ₁ X}
+  sub→ :     {M₁ : (Γ ∙ `ℓ) ⊢ᶜ X} {M₂ : Γ ⊢ᶜ X} {γ : MEnv Γ} {π : Γ ⊇ Γ₁} {K : CStack Γ₁ X}
              ----------------------------------------------------------------
              →  ⟨ sub M₁ M₂ ╎ γ ╎ π ╎ K ⟩ →ᶜ ⟨ M₁ ╎ γ ·﹝ M₂ ╎ π ╎ K ﹞ ╎ wk-wk π ╎ K ⟩
 
-  var→ :     {W : Val Γ `ℓ} {γ : MEnv Γ} {π : Wk Γ Γ₁} {K : CStack Γ₁ X}
+  var→ :     {W : Γ ⊢ᵛ `ℓ} {γ : MEnv Γ} {π : Γ ⊇ Γ₁} {K : CStack Γ₁ X}
              ------------------------------------------
              →  ⟨ var W ╎ γ ╎ π ╎ K ⟩ →ᶜ eval-jump W γ
 
-  pmᶜ→ :     {W : Val Γ (X `× Y)} {γ : MEnv Γ}
-             {M : Comp (Γ ∙ X ∙ Y) Z} {π : Wk Γ Γ₁} {K : CStack Γ₁ Z}
+  pmᶜ→ :     {W : Γ ⊢ᵛ (X `× Y)} {γ : MEnv Γ}
+             {M : (Γ ∙ X ∙ Y) ⊢ᶜ Z} {π : Γ ⊇ Γ₁} {K : CStack Γ₁ Z}
              -------------------------------------------------------------
              →  ⟨ pm W M ╎ γ ╎ π ╎ K ⟩ →ᶜ ⟨ M ╎ γ · eval₁ W γ · (wk-mclo (wk-wk wk-id) (eval₂ W γ)) ╎ wk-wk (wk-wk π) ╎ K ⟩
 
-  app→ :     {W₁ : Val Γ (X `⇒ Y)} {W₂ : Val Γ X} {γ : MEnv Γ} {π : Wk Γ Γ₁} {K : CStack Γ₁ Y}
+  app→ :     {W₁ : Γ ⊢ᵛ (X `⇒ Y)} {W₂ : Γ ⊢ᵛ X} {γ : MEnv Γ} {π : Γ ⊇ Γ₁} {K : CStack Γ₁ Y}
              ----------------------------------------------------------------
              →  ⟨ app W₁ W₂ ╎ γ ╎ π ╎ K ⟩ →ᶜ eval-app W₁ W₂ γ π K
 
 
-determinismꟲ : {ℛ : Ty} {S S' : CState} (S→S'₁ S→S'₂ : S →ᶜ S') → (S→S'₁ ≡ S→S'₂)
+determinismꟲ : {ℛ : Ty} {S S' : CState} (S→S′₁ S→S′₂ : S →ᶜ S') → (S→S′₁ ≡ S→S′₂)
 determinismꟲ eval→ eval→ = refl
 determinismꟲ return→ return→ = refl
 determinismꟲ push→ push→ = refl
@@ -194,14 +194,14 @@ progress ⟨ sub M M₁ ╎ γ ╎ π ╎ K ⟩ = next sub→
 
 -- A Normal CState is a halting state and of the form ⟨ 𝐖 ╎ ◻ ⟩.
 halting-state :    (cstate : CState) → Normal cstate
-                 → Σ[ Γ ∈ Ctx ] Σ[ π ∈ Wk Γ ε ] Σ[ 𝐖 ∈ MClo Γ ℛ ] Σ[ γ ∈ MEnv Γ ] cstate ≡ ⟨ 𝐖 ； γ ╎ π ╎ ◻ ⟩
+                 → Σ[ Γ ∈ Ctx ] Σ[ π ∈ Γ ⊇ ε ] Σ[ 𝐖 ∈ MClo Γ ℛ ] Σ[ γ ∈ MEnv Γ ] cstate ≡ ⟨ 𝐖 ； γ ╎ π ╎ ◻ ⟩
 halting-state ⟨ 𝐖 ； γ ╎ π ╎ ◻ ⟩ normal = _ , π , 𝐖 , γ , refl
 halting-state ⟨ 𝐖 ； γ ╎ π ╎ < x ； γ₁ ； π₁ >∷ K ⟩ normal = ql (normal return→) (Σ-syntax Ctx (λ Γ₃ → Σ-syntax (Γ₃ ⊇ ε) (λ π₂ → Σ-syntax (MClo Γ₃ ℛ) (λ 𝐖₁ → Σ-syntax (MEnv Γ₃) (λ γ₂ → ⟨ 𝐖 ； γ ╎ π ╎ < x ； γ₁ ； π₁ >∷ K ⟩ ≡ ⟨ 𝐖₁ ； γ₂ ╎ π₂ ╎ ◻ ⟩)))))
-halting-state ⟨ return W ╎ γ ╎ π ╎ K ⟩ normal = ql (normal eval→) (Σ-syntax Ctx (λ Γ₂ → Σ-syntax (Wk Γ₂ ε) (λ π₁ → Σ-syntax (MClo Γ₂ ℛ) (λ 𝐖 → Σ-syntax (MEnv Γ₂) (λ γ₁ → ⟨ return W ╎ γ ╎ π ╎ K ⟩ ≡ ⟨ 𝐖 ； γ₁ ╎ π₁ ╎ ◻ ⟩)))))
-halting-state ⟨ pm W M ╎ γ ╎ π ╎ K ⟩ normal = ql (normal pmᶜ→) (Σ-syntax Ctx (λ Γ₂ → Σ-syntax (Wk Γ₂ ε) (λ π₁ → Σ-syntax (MClo Γ₂ ℛ) (λ 𝐖 → Σ-syntax (MEnv Γ₂) (λ γ₁ → ⟨ pm W M ╎ γ ╎ π ╎ K ⟩ ≡ ⟨ 𝐖 ； γ₁ ╎ π₁ ╎ ◻ ⟩)))))
-halting-state ⟨ push M₁ M₂ ╎ γ ╎ π ╎ K ⟩ normal = ql (normal push→) (Σ-syntax Ctx (λ Γ₂ → Σ-syntax (Wk Γ₂ ε) (λ π₁ → Σ-syntax (MClo Γ₂ ℛ) (λ 𝐖 → Σ-syntax (MEnv Γ₂) (λ γ₁ → ⟨ push M₁ M₂ ╎ γ ╎ π ╎ K ⟩ ≡ ⟨ 𝐖 ； γ₁ ╎ π₁ ╎ ◻ ⟩)))))
-halting-state ⟨ app W₁ W₂ ╎ γ ╎ π ╎ K ⟩ normal = ql (normal app→) (Σ-syntax Ctx (λ Γ₂ → Σ-syntax (Wk Γ₂ ε) (λ π₁ → Σ-syntax (MClo Γ₂ ℛ) (λ 𝐖 → Σ-syntax (MEnv Γ₂) (λ γ₁ → ⟨ app W₁ W₂ ╎ γ ╎ π ╎ K ⟩ ≡ ⟨ 𝐖 ； γ₁ ╎ π₁ ╎ ◻ ⟩)))))
-halting-state ⟨ var W ╎ γ ╎ π ╎ K ⟩ normal = ql (normal var→) (Σ-syntax Ctx (λ Γ₂ → Σ-syntax (Wk Γ₂ ε) (λ π₁ → Σ-syntax (MClo Γ₂ ℛ) (λ 𝐖 → Σ-syntax (MEnv Γ₂) (λ γ₁ → ⟨ var W ╎ γ ╎ π ╎ K ⟩ ≡ ⟨ 𝐖 ； γ₁ ╎ π₁ ╎ ◻ ⟩)))))
-halting-state ⟨ sub M₁ M₂ ╎ γ ╎ π ╎ K ⟩ normal = ql (normal sub→) (Σ-syntax Ctx (λ Γ₂ → Σ-syntax (Wk Γ₂ ε) (λ π₁ → Σ-syntax (MClo Γ₂ ℛ) (λ 𝐖 → Σ-syntax (MEnv Γ₂) (λ γ₁ → ⟨ sub M₁ M₂ ╎ γ ╎ π ╎ K ⟩ ≡ ⟨ 𝐖 ； γ₁ ╎ π₁ ╎ ◻ ⟩)))))
+halting-state ⟨ return W ╎ γ ╎ π ╎ K ⟩ normal = ql (normal eval→) (Σ-syntax Ctx (λ Γ₂ → Σ-syntax (Γ₂ ⊇ ε) (λ π₁ → Σ-syntax (MClo Γ₂ ℛ) (λ 𝐖 → Σ-syntax (MEnv Γ₂) (λ γ₁ → ⟨ return W ╎ γ ╎ π ╎ K ⟩ ≡ ⟨ 𝐖 ； γ₁ ╎ π₁ ╎ ◻ ⟩)))))
+halting-state ⟨ pm W M ╎ γ ╎ π ╎ K ⟩ normal = ql (normal pmᶜ→) (Σ-syntax Ctx (λ Γ₂ → Σ-syntax (Γ₂ ⊇ ε) (λ π₁ → Σ-syntax (MClo Γ₂ ℛ) (λ 𝐖 → Σ-syntax (MEnv Γ₂) (λ γ₁ → ⟨ pm W M ╎ γ ╎ π ╎ K ⟩ ≡ ⟨ 𝐖 ； γ₁ ╎ π₁ ╎ ◻ ⟩)))))
+halting-state ⟨ push M₁ M₂ ╎ γ ╎ π ╎ K ⟩ normal = ql (normal push→) (Σ-syntax Ctx (λ Γ₂ → Σ-syntax (Γ₂ ⊇ ε) (λ π₁ → Σ-syntax (MClo Γ₂ ℛ) (λ 𝐖 → Σ-syntax (MEnv Γ₂) (λ γ₁ → ⟨ push M₁ M₂ ╎ γ ╎ π ╎ K ⟩ ≡ ⟨ 𝐖 ； γ₁ ╎ π₁ ╎ ◻ ⟩)))))
+halting-state ⟨ app W₁ W₂ ╎ γ ╎ π ╎ K ⟩ normal = ql (normal app→) (Σ-syntax Ctx (λ Γ₂ → Σ-syntax (Γ₂ ⊇ ε) (λ π₁ → Σ-syntax (MClo Γ₂ ℛ) (λ 𝐖 → Σ-syntax (MEnv Γ₂) (λ γ₁ → ⟨ app W₁ W₂ ╎ γ ╎ π ╎ K ⟩ ≡ ⟨ 𝐖 ； γ₁ ╎ π₁ ╎ ◻ ⟩)))))
+halting-state ⟨ var W ╎ γ ╎ π ╎ K ⟩ normal = ql (normal var→) (Σ-syntax Ctx (λ Γ₂ → Σ-syntax (Γ₂ ⊇ ε) (λ π₁ → Σ-syntax (MClo Γ₂ ℛ) (λ 𝐖 → Σ-syntax (MEnv Γ₂) (λ γ₁ → ⟨ var W ╎ γ ╎ π ╎ K ⟩ ≡ ⟨ 𝐖 ； γ₁ ╎ π₁ ╎ ◻ ⟩)))))
+halting-state ⟨ sub M₁ M₂ ╎ γ ╎ π ╎ K ⟩ normal = ql (normal sub→) (Σ-syntax Ctx (λ Γ₂ → Σ-syntax (Γ₂ ⊇ ε) (λ π₁ → Σ-syntax (MClo Γ₂ ℛ) (λ 𝐖 → Σ-syntax (MEnv Γ₂) (λ γ₁ → ⟨ sub M₁ M₂ ╎ γ ╎ π ╎ K ⟩ ≡ ⟨ 𝐖 ； γ₁ ╎ π₁ ╎ ◻ ⟩)))))
 
 \end{code}
