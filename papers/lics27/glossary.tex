@@ -10,6 +10,51 @@
 
 \glsxtrnewsymbol[description={Label type}]{LabelType}{\ensuremath{\ell}}
 
+\glsxtrnewsymbol[description={Context},user1={\ensuremath{\Gamma}},user2={\ensuremath{\Delta}},user3={\ensuremath{\Psi}}]{Ctx}{\ensuremath{\Gamma, \Delta, \Psi}}
+
+\glsxtrnewsymbol[description={Pure term},user1={\ensuremath{V}},user2={\ensuremath{W}}]{Pure}{\ensuremath{V, W}}
+
+\glsxtrnewsymbol[description={Effectful term},user1={\ensuremath{M}},user2={\ensuremath{N}}]{Comp}{\ensuremath{M, N}}
+
+\glsxtrnewsymbol[description={Variable},user1={\ensuremath{x}},user2={\ensuremath{y}},user3={\ensuremath{z}}]{Var}{\ensuremath{x, y, z}}
+
+\glsxtrnewsymbol[description={Unit term}]{UnitTerm}{\ensuremath{\ast}}
+
+\glsxtrnewsymbol[description={Lambda abstraction operator}]{LamOp}{\textsf{lam}}
+
+\glsxtrnewsymbol[description={Pair operator}]{PairOp}{\textsf{pair}}
+
+\glsxtrnewsymbol[description={Push operator}]{PushOp}{\textsf{push}}
+
+\glsxtrnewsymbol[description={Return operator}]{ReturnOp}{\textsf{return}}
+
+\glsxtrnewsymbol[description={Application operator}]{AppOp}{\textsf{app}}
+
+\glsxtrnewsymbol[description={Jump operator}]{VarOp}{\textsf{var}}
+
+\glsxtrnewsymbol[description={Branch operator}]{SubOp}{\textsf{sub}}
+
+\glsxtrnewsymbol[description={Pattern match operator}]{PmOp}{\textsf{pm}}
+
+\glsxtrnewsymbol[description={Type},user1={\ensuremath{X}},user2={\ensuremath{Y}},user3={\ensuremath{Z}}]{Type}{\ensuremath{X, Y, Z}}
+
+\glsxtrnewsymbol[description={Membership judgement},user1={\ensuremath{\in}}]{Member}{\ensuremath{x : X \in \Gamma}}
+
+\glsxtrnewsymbol[description={Typing judgement for pure terms},user1={\ensuremath{\vdash^v}}]{PureJudge}{\ensuremath{\Gamma \vdash^v V : X}}
+
+\glsxtrnewsymbol[description={Typing judgement for computations},user1={\ensuremath{\vdash^c}}]{CompJudge}{\ensuremath{\Gamma \vdash^c M : X}}
+
+\glsxtrnewsymbol[description={Appending a type to a context},user1={\ensuremath{\cdot}}]{CtxCons}{\ensuremath{\Gamma \cdot X}}
+
+\glsxtrnewsymbol[description={Function type},user1={\ensuremath{\Rightarrow}}]{ArrowType}{\ensuremath{X \Rightarrow Y}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Macros
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand\glsi[1]{\glshyperlink[\glsentryuseri{#1}]{#1}\glsadd{#1}\xspace}
+\newcommand\glsii[1]{\glshyperlink[\glsentryuserii{#1}]{#1}\glsadd{#1}\xspace}
+\newcommand\glsiii[1]{\glshyperlink[\glsentryuseriii{#1}]{#1}\glsadd{#1}\xspace}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Custom glossary style
