@@ -171,7 +171,7 @@ data _→ᶜ_ : CState → CState → Set where
              →  ⟨ app W₁ W₂ ╎ γ ╎ π ╎ K ⟩ →ᶜ eval-app W₁ W₂ γ π K
 
 
-determinismꟲ : {ℛ : Ty} {S S' : CState} (S→S′₁ S→S′₂ : S →ᶜ S') → (S→S′₁ ≡ S→S′₂)
+determinismꟲ : {ℛ : Ty} {σ σ₁ : CState} (σ→σ₁₁ σ→σ₁₂ : σ →ᶜ σ₁) → (σ→σ₁₁ ≡ σ→σ₁₂)
 determinismꟲ eval→ eval→ = refl
 determinismꟲ return→ return→ = refl
 determinismꟲ push→ push→ = refl
