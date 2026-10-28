@@ -113,51 +113,48 @@ A symbol with a corresponding key \texttt{somekey} can be printed by \verb+\gls{
       {\glsi{Ctx} \mathbin{\glsi{CtxCons}} \glsi{Type} \mathbin{\glsi{CompJudge}} \glsi{Comp} : \glsii{Type}}
       {\glsi{Ctx} \mathbin{\glsi{PureJudge}} \gls{LamOp} ( \glsi{Comp} ) : \glsi{Type} \mathbin{\glsi{ArrowType}} \glsii{Type}}
 
-%    \inferrule
-%      { }
-%      {\GAMMA \PDASHi \gls{ast} \PDASHii \gls{1}}
-%
-%    \inferrule
-%      {\GAMMA \PDASHi {\gls{W}}_1 \PDASHii {\X}_1 \\ \GAMMA \PDASHi {\gls{W}}_2 \PDASHii {\X}_2}
-%      {\GAMMA \PDASHi \gls{pair} ( {\gls{W}}_1 , {\gls{W}}_2 ) \PDASHii {\X}_1 \glsop{times} {\X}_2}
-%
-%    \inferrule
-%      {\GAMMA \PDASHi {\gls{W}}_1 \PDASHii \X \glsop{times} \Y \\ \GAMMA \glsbin{bullet} \X \glsbin{bullet} \Y \PDASHi {\gls{W}}_2 \PDASHii \Z}
-%      {\GAMMA \PDASHi \gls{pmp} ( {\gls{W}}_1 , {\gls{W}}_2 ) \PDASHii \Z}
+    \inferrule
+      { }
+      {\glsi{Ctx} \mathbin{\glsi{PureJudge}} \gls{UnitTerm} : \gls{UnitType}}
+
+    \inferrule
+      {\glsi{Ctx} \mathbin{\glsi{PureJudge}} \glsi{Pure} : \glsi{Type} \\ \glsi{Ctx} \mathbin{\glsi{PureJudge}} \glsii{Pure} : \glsii{Type}}
+      {\glsi{Ctx} \mathbin{\glsi{PureJudge}} \gls{PairOp} ( \glsi{Pure} , \glsii{Pure} ) : \glsi{Type} \mathbin{\glsi{ProdType}} \glsii{Type}}
+
   \end{mathpar}
   \caption{Typing rules for pure terms}
   \label{fig:terms-b}
 \end{subfigure}
 
-%\begin{subfigure}{0.95\linewidth}
-%  \begin{mathpar}
-%    \inferrule
-%      {\GAMMA \PDASHi \gls{W} \PDASHii \X}
-%      {\GAMMA \CDASHi \gls{return} (\gls{W}) \CDASHii \X}
-%
-%    \inferrule
-%      {\GAMMA \CDASHi {\gls{M}}_1 \CDASHii \X \\ \GAMMA \glsbin{bullet} \X \CDASHi {\gls{M}}_2 \CDASHii \Y}
-%      {\GAMMA \CDASHi \gls{push} ({\gls{M}}_1 , {\gls{M}}_2) \CDASHii \Y}
-%
-%    \inferrule
-%      {\GAMMA \PDASHi {\gls{W}}_1 \PDASHii \X \glsop{Rightarrow} \Y \\ \GAMMA \PDASHi {\gls{W}}_2 \PDASHii \X}
-%      {\GAMMA \CDASHi \gls{app}({\gls{W}}_1, {\gls{W}}_2) \CDASHii \Y}
-%
-%    \inferrule
-%      {\GAMMA \PDASHi \gls{W} \PDASHii \gls{L}}
-%      {\GAMMA \CDASHi {\gls{var}}_X (\gls{W}) \CDASHii \X}
-%
-%    \inferrule
-%      {\GAMMA \glsbin{bullet} \gls{L} \CDASHi {\gls{M}}_1 \CDASHii \X \\ \GAMMA \CDASHi {\gls{M}}_2 \CDASHii \X}
-%      {\GAMMA \CDASHi {\gls{sub}}_{\X} ({\gls{M}}_1 , {\gls{M}}_2) \CDASHii \X}
-%
-%    \inferrule
-%      {\GAMMA \PDASHi \gls{W} : \X \gls{times} \Y \\ \GAMMA \glsbin{bullet} \X \glsbin{bullet} \Y \CDASHi \gls{M} \CDASHii \Z}
-%      {\GAMMA \CDASHi \gls{pmc}(\gls{W}, \gls{M}) \CDASHii \Z}
-%  \end{mathpar}
-%  \caption{Typing rules for effectful terms / computations}
-%  \label{fig:terms-c}
-%\end{subfigure}
+\begin{subfigure}{0.95\linewidth}
+  \begin{mathpar}
+    \inferrule
+      {\glsi{Ctx} \mathbin{\glsi{PureJudge}} \glsi{Pure} : \glsi{Type}}
+      {\glsi{Ctx} \mathbin{\glsi{CompJudge}} \gls{ReturnOp} (\glsi{Pure}) : \glsi{Type}}
+
+    \inferrule
+      {\glsi{Ctx} \mathbin{\glsi{CompJudge}} \glsi{Comp} : \glsi{Type} \\ \glsi{Ctx} \mathbin{\glsi{CtxCons}} \glsi{Type} \mathbin{\glsi{CompJudge}} \glsii{Comp} : \glsii{Type}}
+      {\glsi{Ctx} \mathbin{\glsi{CompJudge}} \gls{PushOp} (\glsi{Comp} , \glsii{Comp}) : \glsii{Type}}
+
+    \inferrule
+      {\glsi{Ctx} \mathbin{\glsi{PureJudge}} \glsi{Pure} : \glsi{Type} \mathbin{\glsi{ArrowType}} \glsii{Type} \\ \glsi{Ctx} \mathbin{\glsi{PureJudge}} \glsii{Pure} : \glsi{Type}}
+      {\glsi{Ctx} \mathbin{\glsi{CompJudge}} \gls{AppOp}(\glsi{Pure}, \glsii{Pure}) : \glsii{Type}}
+
+    \inferrule
+      {\glsi{Ctx} \mathbin{\glsi{PureJudge}} \glsi{Comp} : \gls{LabelType}}
+      {\glsi{Ctx} \mathbin{\glsi{CompJudge}} {\gls{VarOp}}_{\glsi{Type}} (\glsi{Comp}) : \glsi{Type}}
+
+    \inferrule
+      {\glsi{Ctx} \mathbin{\glsi{CtxCons}} \gls{LabelType} \mathbin{\glsi{CompJudge}} \glsi{Comp} : \glsi{Type} \\ \glsi{Ctx} \mathbin{\glsi{CompJudge}} \glsii{Comp} : \glsi{Type}}
+      {\glsi{Ctx} \mathbin{\glsi{CompJudge}} {\gls{SubOp}}_{\glsi{Type}} (\glsi{Comp} , \glsii{Comp}) : \glsi{Type}}
+
+    \inferrule
+      {\glsi{Ctx} \mathbin{\glsi{PureJudge}} \glsi{Pure} : \glsi{Type} \mathop{\glsi{ProdType}} \glsii{Type} \\ \glsi{Ctx} \mathbin{\glsi{CtxCons}} \glsi{Type} \mathbin{\glsi{CtxCons}} \glsii{Type} \mathbin{\glsi{CompJudge}} \glsi{Comp} : \glsiii{Type}}
+      {\glsi{Ctx} \mathbin{\glsi{CompJudge}} \gls{PmOp}(\glsi{Pure}, \glsi{Comp}) : \glsiii{Type}}
+  \end{mathpar}
+  \caption{Typing rules for effectful terms / computations}
+  \label{fig:terms-c}
+\end{subfigure}
 
 \caption{Terms}
 \label{fig:terms}
