@@ -221,7 +221,7 @@ wf-eval₂ W g = wf-proj₂ (wf-eval W g)
 wf-jump : {γ : MEnv Γ} → (i : Γ ∋ `ℓ) → (g : WellFormedTMEnv γ) → WellFormedTMCState (eval-jump (var i) γ)
 wf-jump i g = wf-lookup-label i g
 
-wf-preservation : {σ σ' : CState} → (σ →ᶜ σ') → WellFormedTMCState σ → WellFormedTMCState σ'
+wf-preservation : {σ σ₁ : CState} → (σ →ᶜ σ₁) → WellFormedTMCState σ → WellFormedTMCState σ₁
 wf-preservation eval→ (wf-state-bottom (return W) γ π g) = wf-state-halt _ γ π g (wf-eval W g)
 wf-preservation eval→ (wf-state-resume (return W) x x₁ g) = wf-state-result _ x x₁ g (wf-eval W g)
 wf-preservation (return→ {K = ◻}) (wf-state-result 𝐖 x (wf-bottom M γ π x₁) g w) = wf-state-bottom _ (_ · 𝐖) _ (wf-env-mclo g w)
