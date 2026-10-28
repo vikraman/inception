@@ -93,11 +93,11 @@ lookup (there x) (γ · 𝐖) = wk-mclo (wk-wk wk-id) (lookup x γ)
 lookup (there x) (γ ·﹝ 𝐖 ╎ π ╎ K ﹞) = wk-mclo (wk-wk wk-id) (lookup x γ)
 
 -- currently not used; would have to figure out eval for pairs when doing this
-lookup' : Γ ∋ X → MEnv Γ → Σ[ Γ' ∈ Ctx ] (MEnv Γ' × MClo Γ' X)
-lookup' here (γ · 𝐖) = _ , γ , 𝐖
-lookup' here (γ ·﹝ 𝐖 ╎ π ╎ K ﹞) = _ , γ ·﹝ 𝐖 ╎ π ╎ K ﹞ , label here
-lookup' (there x) (γ · 𝐖) = lookup' x γ
-lookup' (there x) (γ ·﹝ 𝐖 ╎ π ╎ K ﹞) = lookup' x γ
+lookup₁ : Γ ∋ X → MEnv Γ → Σ[ Γ₁ ∈ Ctx ] (MEnv Γ₁ × MClo Γ₁ X)
+lookup₁ here (γ · 𝐖) = _ , γ , 𝐖
+lookup₁ here (γ ·﹝ 𝐖 ╎ π ╎ K ﹞) = _ , γ ·﹝ 𝐖 ╎ π ╎ K ﹞ , label here
+lookup₁ (there x) (γ · 𝐖) = lookup₁ x γ
+lookup₁ (there x) (γ ·﹝ 𝐖 ╎ π ╎ K ﹞) = lookup₁ x γ
 
 lookup-label : Γ ∋ `ℓ → MEnv Γ → CState
 lookup-label here (γ · label x) = lookup-label x γ
