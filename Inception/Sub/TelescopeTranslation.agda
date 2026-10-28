@@ -219,14 +219,11 @@ clo-to-comp-eq {Γ = Γ ∙ Z} (var (there i)) (γ · 𝐖) with (TM.lookup i γ
     a₁ : TM.lam-to-comp (TM.lookup i γ) ≡ wk-comp (wk-cong (ctx-clo-to-comp-wk (var i) γ)) (proj₁ (proj₂ (M.clo-to-comp (M.eval (var i) (tmenv-to-menv γ)))))
     a₁ = clo-to-comp-eq (var i) γ
 
-    a₁' : M ≡ wk-comp (wk-cong (ctx-clo-to-comp-wk (var i) γ)) (proj₁ (proj₂ (M.clo-to-comp (M.eval (var i) (tmenv-to-menv γ)))))
-    a₁' = subst (λ x → TM.lam-to-comp x ≡ wk-comp (wk-cong (ctx-clo-to-comp-wk (var i) γ)) (proj₁ (proj₂ (M.clo-to-comp (M.eval (var i) (tmenv-to-menv γ)))))) a₀ a₁
-
-    a₂ : wk-comp (wk-cong ((wk-wk {X = Z}) wk-id)) (TM.lam-to-comp (TM.lookup i γ)) ≡ (wk-comp (wk-cong (wk-wk (ctx-clo-to-comp-wk (var i) γ))) (proj₁ (proj₂ (M.clo-to-comp (M.eval (var i) (tmenv-to-menv γ))))))
-    a₂ = cong (wk-comp (wk-cong (wk-wk wk-id))) a₁
+    a₂ : M ≡ wk-comp (wk-cong (ctx-clo-to-comp-wk (var i) γ)) (proj₁ (proj₂ (M.clo-to-comp (M.eval (var i) (tmenv-to-menv γ)))))
+    a₂ = subst (λ x → TM.lam-to-comp x ≡ wk-comp (wk-cong (ctx-clo-to-comp-wk (var i) γ)) (proj₁ (proj₂ (M.clo-to-comp (M.eval (var i) (tmenv-to-menv γ)))))) a₀ a₁
 
     goal : wk-comp (Wk.wk-cong (Wk.wk-wk wk-id)) M ≡ wk-comp (Wk.wk-cong (Wk.wk-wk (ctx-clo-to-comp-wk (var i) γ))) (proj₁ (proj₂ (M.clo-to-comp (M.lookup i (tmenv-to-menv γ)))))
-    goal = cong (wk-comp (Wk.wk-cong (Wk.wk-wk wk-id))) a₁'
+    goal = cong (wk-comp (Wk.wk-cong (Wk.wk-wk wk-id))) a₂
   in
   goal
 clo-to-comp-eq (var (there i)) (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞)  with (TM.lookup i γ) in eq
@@ -238,14 +235,11 @@ clo-to-comp-eq (var (there i)) (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞)  with (TM.look
     a₁ : TM.lam-to-comp (TM.lookup i γ) ≡ wk-comp (wk-cong (ctx-clo-to-comp-wk (var i) γ)) (proj₁ (proj₂ (M.clo-to-comp (M.eval (var i) (tmenv-to-menv γ)))))
     a₁ = clo-to-comp-eq (var i) γ
 
-    a₁' : M ≡ wk-comp (wk-cong (ctx-clo-to-comp-wk (var i) γ)) (proj₁ (proj₂ (M.clo-to-comp (M.eval (var i) (tmenv-to-menv γ)))))
-    a₁' = subst (λ x → TM.lam-to-comp x ≡ wk-comp (wk-cong (ctx-clo-to-comp-wk (var i) γ)) (proj₁ (proj₂ (M.clo-to-comp (M.eval (var i) (tmenv-to-menv γ)))))) a₀ a₁
-
-    a₂ : wk-comp (wk-cong ((wk-wk {X = Z}) wk-id)) (TM.lam-to-comp (TM.lookup i γ)) ≡ (wk-comp (wk-cong (wk-wk (ctx-clo-to-comp-wk (var i) γ))) (proj₁ (proj₂ (M.clo-to-comp (M.eval (var i) (tmenv-to-menv γ))))))
-    a₂ = cong (wk-comp (wk-cong (wk-wk wk-id))) a₁
+    a₂ : M ≡ wk-comp (wk-cong (ctx-clo-to-comp-wk (var i) γ)) (proj₁ (proj₂ (M.clo-to-comp (M.eval (var i) (tmenv-to-menv γ)))))
+    a₂ = subst (λ x → TM.lam-to-comp x ≡ wk-comp (wk-cong (ctx-clo-to-comp-wk (var i) γ)) (proj₁ (proj₂ (M.clo-to-comp (M.eval (var i) (tmenv-to-menv γ)))))) a₀ a₁
 
     goal : wk-comp (Wk.wk-cong (Wk.wk-wk wk-id)) M ≡ wk-comp (Wk.wk-cong (Wk.wk-wk (ctx-clo-to-comp-wk (var i) γ))) (proj₁ (proj₂ (M.clo-to-comp (M.lookup i (tmenv-to-menv γ)))))
-    goal = cong (wk-comp (Wk.wk-cong (Wk.wk-wk wk-id))) a₁'
+    goal = cong (wk-comp (Wk.wk-cong (Wk.wk-wk wk-id))) a₂
   in
   goal
 clo-to-comp-eq (lam M) ⋄ = refl
@@ -274,7 +268,7 @@ eval-clos W₁ W₂ γ K =
 -- Translation of Steps
 ---------------------------------------------------------------------------------
 
-tmstep-to-mstep : {σ σ' : TM.CState} → (WellFormedTMCState σ) → (σ →ᵀᴹ σ') → Σ[ σᴹ ∈ M.CState ] (((tmcstate-to-mcstate σ) →ᴹ σᴹ) × σᴹ ≈ᴹ (tmcstate-to-mcstate σ'))
+tmstep-to-mstep : {σ σ₁ : TM.CState} → (WellFormedTMCState σ) → (σ →ᵀᴹ σ₁) → Σ[ σᴹ ∈ M.CState ] (((tmcstate-to-mcstate σ) →ᴹ σᴹ) × σᴹ ≈ᴹ (tmcstate-to-mcstate σ₁))
 tmstep-to-mstep wf (eval→ {W = W} {γ = γ} {K = K}) =
   let
     eqv : ⟨ M.eval W (tmenv-to-menv γ) ╎ tmcstack-to-mcstack K ⟩ ≈ᴹ ⟨ mclo-to-mval (TM.eval W γ) γ ╎ tmcstack-to-mcstack K ⟩
@@ -316,12 +310,12 @@ tmstep-to-mstep wf (app→ {W₁ = W₁} {W₂ = W₂} {γ = γ} {K = K}) =
 
 
 
-tmstep-to-mstep-eqv : {σ σ' : TM.CState} {σᴹ : M.CState} → (WellFormedTMCState σ) → (σ →ᵀᴹ σ') → ((tmcstate-to-mcstate σ) →ᴹ σᴹ) → σᴹ ≈ᴹ (tmcstate-to-mcstate σ')
-tmstep-to-mstep-eqv {σ' = σ'} {σᴹ = σᴹ} wf σ→ᵀᴹσ′ mσ→ᴹσᴹ =
+tmstep-to-mstep-eqv : {σ σ₁ : TM.CState} {σᴹ : M.CState} → (WellFormedTMCState σ) → (σ →ᵀᴹ σ₁) → ((tmcstate-to-mcstate σ) →ᴹ σᴹ) → σᴹ ≈ᴹ (tmcstate-to-mcstate σ₁)
+tmstep-to-mstep-eqv {σ₁ = σ₁} {σᴹ = σᴹ} wf σ→ᵀᴹσ₁ mσ→ᴹσᴹ =
   let
-    t = tmstep-to-mstep wf σ→ᵀᴹσ′
-    t' = proj₂ (proj₂ t)
-    goal : σᴹ ≈ᴹ tmcstate-to-mcstate σ'
-    goal = subst (λ x → x ≈ᴹ tmcstate-to-mcstate σ') (M.determinismꟲ′ (proj₁ (proj₂ t)) mσ→ᴹσᴹ) t'
+    t = tmstep-to-mstep wf σ→ᵀᴹσ₁
+    t₁ = proj₂ (proj₂ t)
+    goal : σᴹ ≈ᴹ tmcstate-to-mcstate σ₁
+    goal = subst (λ x → x ≈ᴹ tmcstate-to-mcstate σ₁) (M.determinismꟲ′ (proj₁ (proj₂ t)) mσ→ᴹσᴹ) t₁
   in
   goal
