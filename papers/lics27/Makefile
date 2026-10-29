@@ -40,7 +40,6 @@ clean:
 
 distclean: clean
 	latexmk -C
-	rm -rf *.axp *.xcp *.bbl *.blg *.aux *.xml *.cut *.pdf
 
 cache-clean:
 	rm -rf `biber --cache`
