@@ -19,7 +19,7 @@ open import Inception.Sub.MachineProps ℛ
 open import Inception.Sub.TelescopeMachineProps ℛ
 
 --------------------------------------------------------------------------
--- Translation of Telescope Environments into List Environments
+-- translation of telescope environments into list environments
 --------------------------------------------------------------------------
 
 mutual
@@ -47,11 +47,11 @@ tmcstate-to-mcstate ⟨ 𝐖 ； γ ╎ π ╎ K ⟩ = ⟨ mclo-to-mval 𝐖 γ 
 tmcstate-to-mcstate ⟨ M ╎ γ ╎ π ╎ K ⟩ = ⟨ M ╎ tmenv-to-menv γ ╎ tmcstack-to-mcstack K ⟩
 
 --------------------------------------------------------------------------
--- Lemmas for tmstep-to-mstep
+-- lemmas for tmstep-to-mstep
 --------------------------------------------------------------------------
 
 --------------------------------------------------------------------------
----- Lemmas for eval→ case
+---- lemmas for eval→ case
 
 wk-mclo-wk-comm : {𝐕 : TM.MClo Γ X} → (𝐖 : TM.MClo Γ Y) → (γ : TM.MEnv Γ) → WkMVal (mclo-to-mval (TM.wk-mclo (Wk.wk-wk wk-id) 𝐖) (γ · 𝐕)) (mclo-to-mval 𝐖 γ)
 wk-mclo-wk-comm unit ⋄ = wk-unitᵛ
@@ -99,7 +99,7 @@ eval-wk unit (γ · x) = wk-mval-id
 eval-wk unit (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) = wk-mval-id
 
 --------------------------------------------------------------------------
----- Lemmas for return→ case
+---- lemmas for return→ case
 
 mutual
 
@@ -135,7 +135,7 @@ mutual
   wk-MEnvᵀ-to-wk-MEnvᴹ (wk-tmenv-jump-wk M πᵀ K g) = wk-menv-wk (M.jumpᵛ M (tmenv-to-menv _) (tmcstack-to-mcstack K)) (wk-MEnvᵀ-to-wk-MEnvᴹ g)
 
 --------------------------------------------------------------------------
----- Lemmas for var→ case
+---- lemmas for var→ case
 
 lookup-eq : (i : Γ ∋ `ℓ) → (γ : TM.MEnv Γ) → (M.lookup i (tmenv-to-menv γ)) ≡ (mclo-to-mval (label i) γ)
 lookup-eq here (γ · (label x)) = refl
@@ -160,7 +160,7 @@ eval-jump-wk : (W : Γ ⊢ᵛ `ℓ) → (γ : TM.MEnv Γ) → WkCStateᴹ (M.eva
 eval-jump-wk (var i) γ = lookup-label-wk i γ
 
 --------------------------------------------------------------------------
----- Lemmas for pmᶜ→ case
+---- lemmas for pmᶜ→ case
 
 proj₁-wk-mval-eq : (𝐖 : TM.MClo Γ (X `× Y)) → (γ : TM.MEnv Γ) → (M.proj₁-val (mclo-to-mval 𝐖 γ)) ≡ (mclo-to-mval (TM.proj₁-mclo 𝐖) γ)
 proj₁-wk-mval-eq (pair 𝐕 𝐖) ⋄ = refl
@@ -198,7 +198,7 @@ eval₂-wk W γ =
   goal
 
 --------------------------------------------------------------------------
----- Lemmas for app→ case
+---- lemmas for app→ case
 
 ctx-clo-to-comp-wk : (W : Γ ⊢ᵛ (X `⇒ Y)) → (γ : TM.MEnv Γ) → Γ ⊇ (proj₁ (M.clo-to-comp (M.eval W (tmenv-to-menv γ))))
 ctx-clo-to-comp-wk {Γ = Γ ∙ (X `⇒ Y)} (var here) (γ · lam M) = wk-wk wk-id
@@ -265,7 +265,7 @@ eval-clos V W γ K =
   wk-cstate-comp (wk-cong (ctx-clo-to-comp-wk V γ)) a b wk-cstack-id
 
 --------------------------------------------------------------------------
--- Translation of Steps
+-- translation of steps
 --------------------------------------------------------------------------
 
 tmstep-to-mstep : {σ σ₁ : TM.CState} → (WellFormedTMCState σ) → (σ →ᵀᴹ σ₁) → Σ[ σᴹ ∈ M.CState ] (((tmcstate-to-mcstate σ) →ᴹ σᴹ) × σᴹ ≈ᴹ (tmcstate-to-mcstate σ₁))

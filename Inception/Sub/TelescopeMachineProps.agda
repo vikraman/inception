@@ -10,10 +10,10 @@ open import Inception.Sub.TelescopeMachine ℛ
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; subst; cong; cong₂)
 
 --------------------------------------------------------------------------
--- Properties of Inception.Sub.TelescopeMachine
+-- properties of telescope machine
 --------------------------------------------------------------------------
 
--- Weakening of Telescopes
+-- weakening of telescopes
 data WkMEnvᵀ : {Γ Δ : Ctx} → (π : Wk Γ Δ) → (γ : MEnv Γ) → (δ : MEnv Δ) → Set where
 
     wk-tmenv-ε    : WkMEnvᵀ wk-ε ⋄ ⋄
@@ -30,7 +30,7 @@ data WkMEnvᵀ : {Γ Δ : Ctx} → (π : Wk Γ Δ) → (γ : MEnv Γ) → (δ : 
                          → (M : Γ ⊢ᶜ X) → (ρ : Γ ⊇ Ψ) → (K : CStack Ψ X) → WkMEnvᵀ π γ δ
                          → WkMEnvᵀ (wk-wk π) (γ ·﹝ M ╎ ρ ╎ K ﹞) δ
 
--- Well-formedness of states
+-- well-formedness of states
 mutual
 
   data WellFormedTMCStack : CStack Γ X → Set where
