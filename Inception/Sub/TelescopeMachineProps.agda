@@ -34,19 +34,19 @@ data WkCStack : (π : Γ ⊇ Δ) → (K₁ : CStack Γ X) → (K₂ : CStack Δ 
 
     wk-cstack-empty : WkCStack wk-ε ◻ ◻
 
-    wk-cstack-push : {Γ Δ Ψ₁ Ψ₂ : Ctx} {M₁ : (Γ ∙ Y) ⊢ᶜ X} {M₂ : (Δ ∙ Y) ⊢ᶜ X} {γ : MEnv Γ} {δ : MEnv Δ} {K₁ : CStack Ψ₁ X} {K₂ : CStack Ψ₂ X} {π₁ : Γ ⊇ Δ} {π₂ : Ψ₁ ⊇ Ψ₂}
-                    → M₁ ≡ wk-comp (wk-cong π₁) M₂ → WkMEnv π₁ γ δ → (ρ₁ : Γ ⊇ Ψ₁) → (ρ₂ : Δ ⊇ Ψ₂) → WkCStack π₂ K₁ K₂
-                    → WkCStack π₁ (< M₁ ； γ ； ρ₁ >∷ K₁) (< M₂ ； δ ； ρ₂ >∷ K₂)
+    wk-cstack-push : {Γ Δ Ψ₁ Ψ₂ : Ctx} {M : (Γ ∙ Y) ⊢ᶜ X} {N : (Δ ∙ Y) ⊢ᶜ X} {γ : MEnv Γ} {δ : MEnv Δ} {K : CStack Ψ₁ X} {L : CStack Ψ₂ X} {π₁ : Γ ⊇ Δ} {π₂ : Ψ₁ ⊇ Ψ₂}
+                    → M ≡ wk-comp (wk-cong π₁) N → WkMEnv π₁ γ δ → (ρ₁ : Γ ⊇ Ψ₁) → (ρ₂ : Δ ⊇ Ψ₂) → WkCStack π₂ K L
+                    → WkCStack π₁ (< M ； γ ； ρ₁ >∷ K) (< N ； δ ； ρ₂ >∷ L)
 
 data WkCState : CState → CState → Set where
 
-  wk-cstate-result : {Γ Δ Ψ₁ Ψ₂ : Ctx} {𝐖₁ : OMVal Γ X} {𝐖₂ : OMVal Δ X} {γ : MEnv Γ} {δ : MEnv Δ} {K₁ : CStack Ψ₁ X} {K₂ : CStack Ψ₂ X} {π₁ : Γ ⊇ Δ} {π₂ : Ψ₁ ⊇ Ψ₂}
-                     → 𝐖₁ ≡ wk-omval π₁ 𝐖₂ → WkMEnv π₁ γ δ → (ρ₁ : Γ ⊇ Ψ₁) → (ρ₂ : Δ ⊇ Ψ₂) → WkCStack π₂ K₁ K₂
-                     → WkCState ⟨ 𝐖₁ ； γ ╎ ρ₁ ╎ K₁ ⟩ ⟨ 𝐖₂ ； δ ╎ ρ₂ ╎ K₂ ⟩
+  wk-cstate-result : {Γ Δ Ψ₁ Ψ₂ : Ctx} {𝐕 : OMVal Γ X} {𝐖 : OMVal Δ X} {γ : MEnv Γ} {δ : MEnv Δ} {K : CStack Ψ₁ X} {L : CStack Ψ₂ X} {π₁ : Γ ⊇ Δ} {π₂ : Ψ₁ ⊇ Ψ₂}
+                     → 𝐕 ≡ wk-omval π₁ 𝐖 → WkMEnv π₁ γ δ → (ρ₁ : Γ ⊇ Ψ₁) → (ρ₂ : Δ ⊇ Ψ₂) → WkCStack π₂ K L
+                     → WkCState ⟨ 𝐕 ； γ ╎ ρ₁ ╎ K ⟩ ⟨ 𝐖 ； δ ╎ ρ₂ ╎ L ⟩
 
-  wk-cstate-comp :    {Γ Δ Ψ₁ Ψ₂ : Ctx} {M₁ : Γ ⊢ᶜ X} {M₂ : Δ ⊢ᶜ X} {γ : MEnv Γ} {δ : MEnv Δ} {K₁ : CStack Ψ₁ X} {K₂ : CStack Ψ₂ X} {π₁ : Γ ⊇ Δ} {π₂ : Ψ₁ ⊇ Ψ₂}
-                     → M₁ ≡ wk-comp π₁ M₂ → WkMEnv π₁ γ δ → (ρ₁ : Γ ⊇ Ψ₁) → (ρ₂ : Δ ⊇ Ψ₂) → WkCStack π₂ K₁ K₂
-                     → WkCState ⟨ M₁ ╎ γ ╎ ρ₁ ╎ K₁ ⟩ ⟨ M₂ ╎ δ ╎ ρ₂ ╎ K₂ ⟩
+  wk-cstate-comp :    {Γ Δ Ψ₁ Ψ₂ : Ctx} {M : Γ ⊢ᶜ X} {N : Δ ⊢ᶜ X} {γ : MEnv Γ} {δ : MEnv Δ} {K : CStack Ψ₁ X} {L : CStack Ψ₂ X} {π₁ : Γ ⊇ Δ} {π₂ : Ψ₁ ⊇ Ψ₂}
+                     → M ≡ wk-comp π₁ N → WkMEnv π₁ γ δ → (ρ₁ : Γ ⊇ Ψ₁) → (ρ₂ : Δ ⊇ Ψ₂) → WkCStack π₂ K L
+                     → WkCState ⟨ M ╎ γ ╎ ρ₁ ╎ K ⟩ ⟨ N ╎ δ ╎ ρ₂ ╎ L ⟩
 
 
 -- well-formedness of states
