@@ -23,23 +23,23 @@ open Reduction _→ᵀᴹ_ renaming (_~>*_ to _→ᵀᴹ*_; Normal to Normalᵀ�
 
 progress-t₁ : {σ₀ : TM.CState} {σ₀ᴹ σᴹ : M.CState} → (WkCStateᴹ (tmcstate-to-mcstate σ₀) σ₀ᴹ) → (σ₀ᴹ →ᴹ σᴹ) → Σ[ σ ∈ TM.CState ] (σ₀ →ᵀᴹ σ)
 progress-t₁ {σ₀ = ⟨ 𝐖 ； γ ╎ π ╎ ◻ ⟩} ((wk-cstate-result x ())) return→
-progress-t₁ {σ₀ = ⟨ 𝐖 ； γ ╎ π ╎ TM.< x₂ ； γ₁ ； π₁ >∷ K ⟩} ((wk-cstate-result x x₁)) return→ = ⟨ wk-comp (wk-cong π) x₂ ╎ γ · 𝐖 ╎ wk-wk (wk-trans π π₁) ╎ K ⟩ , return→
+progress-t₁ {σ₀ = ⟨ 𝐖 ； γ ╎ π ╎ TM.< x₂ ； δ ； π₁ >∷ K ⟩} ((wk-cstate-result x x₁)) return→ = ⟨ wk-comp (wk-cong π) x₂ ╎ γ · 𝐖 ╎ wk-wk (wk-trans π π₁) ╎ K ⟩ , return→
 progress-t₁ {σ₀ = ⟨ return x ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp π₁ refl x₁ x₂)) eval→ = _ , eval→
 progress-t₁ {σ₀ = ⟨ pm x M ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp π₁ refl x₁ x₂)) pmᶜ→ = _ , pmᶜ→
-progress-t₁ {σ₀ = ⟨ push M M₁ ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp π₁ refl x₁ x₂)) push→ = _ , push→
+progress-t₁ {σ₀ = ⟨ push M N ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp π₁ refl x₁ x₂)) push→ = _ , push→
 progress-t₁ {σ₀ = ⟨ app x x₃ ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp π₁ refl x₁ x₂)) app→ = _ , app→
 progress-t₁ {σ₀ = ⟨ var x ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp π₁ refl x₁ x₂)) var→ = _ , var→
-progress-t₁ {σ₀ = ⟨ sub M M₁ ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp π₁ refl x₁ x₂)) sub→ = _ , sub→
+progress-t₁ {σ₀ = ⟨ sub M N ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp π₁ refl x₁ x₂)) sub→ = _ , sub→
 
 progress-t₂ : {σ₀ : TM.CState} {σ₀ᴹ σᴹ : M.CState} → (WkCStateᴹ σ₀ᴹ (tmcstate-to-mcstate σ₀)) → (σ₀ᴹ →ᴹ σᴹ) → Σ[ σ ∈ TM.CState ] (σ₀ →ᵀᴹ σ)
 progress-t₂ {σ₀ = ⟨ 𝐖 ； γ ╎ π ╎ ◻ ⟩} ((wk-cstate-result x ())) return→
-progress-t₂ {σ₀ = ⟨ 𝐖 ； γ ╎ π ╎ < x₂ ； γ₁ ； π₁ >∷ K ⟩} ((wk-cstate-result x x₁)) return→ = ⟨ wk-comp (wk-cong π) x₂ ╎ γ · 𝐖 ╎ wk-wk (wk-trans π π₁) ╎ K ⟩ , return→
+progress-t₂ {σ₀ = ⟨ 𝐖 ； γ ╎ π ╎ < x₂ ； δ ； π₁ >∷ K ⟩} ((wk-cstate-result x x₁)) return→ = ⟨ wk-comp (wk-cong π) x₂ ╎ γ · 𝐖 ╎ wk-wk (wk-trans π π₁) ╎ K ⟩ , return→
 progress-t₂ {σ₀ = ⟨ return x₃ ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp π₁ refl x₁ x₂)) eval→ = _ , eval→
 progress-t₂ {σ₀ = ⟨ pm x₃ M ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp π₁ refl x₁ x₂)) pmᶜ→ = _ , pmᶜ→
-progress-t₂ {σ₀ = ⟨ push M M₁ ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp π₁ refl x₁ x₂)) push→ = _ , push→
+progress-t₂ {σ₀ = ⟨ push M N ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp π₁ refl x₁ x₂)) push→ = _ , push→
 progress-t₂ {σ₀ = ⟨ app x₃ x₄ ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp π₁ refl x₁ x₂)) app→ = _ , app→
 progress-t₂ {σ₀ = ⟨ var x₃ ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp π₁ refl x₁ x₂)) var→ = _ , var→
-progress-t₂ {σ₀ = ⟨ sub M M₁ ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp π₁ refl x₁ x₂)) sub→ = _ , sub→
+progress-t₂ {σ₀ = ⟨ sub M N ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp π₁ refl x₁ x₂)) sub→ = _ , sub→
 
 progress-t : {σ₀ : TM.CState} {σ₀ᴹ σᴹ : M.CState} → (σ₀ᴹ ≈ᴹ (tmcstate-to-mcstate σ₀)) → (σ₀ᴹ →ᴹ σᴹ) → Σ[ σ ∈ TM.CState ] (σ₀ →ᵀᴹ σ)
 progress-t (≈ᴹ-bc (≈-wk₁ w)) s = progress-t₁ w s
