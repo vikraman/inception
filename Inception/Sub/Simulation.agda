@@ -13,15 +13,15 @@ open import Relation.Binary.PropositionalEquality using (_≡_; refl; subst; con
 open import Inception.Sub.Machine ℛ as M renaming (_→ᶜ_ to _→ᴹ_)
 open import Inception.Sub.TelescopeMachine ℛ as TM renaming (_→ᶜ_ to _→ᵀᴹ_)
 
-open import Inception.Sub.MachineProps ℛ
-open import Inception.Sub.TelescopeMachineProps ℛ
+open import Inception.Sub.MachineProps ℛ as MProps
+open import Inception.Sub.TelescopeMachineProps ℛ as TMProps
 
 open import Inception.Sub.TelescopeTranslation ℛ
 
 open Reduction _→ᴹ_ renaming (_~>*_ to _→ᴹ*_; Normal to Normalᴹ)
 open Reduction _→ᵀᴹ_ renaming (_~>*_ to _→ᵀᴹ*_; Normal to Normalᵀᴹ)
 
-progress-t₁ : {σ₀ : TM.CState} {σ₀ᴹ σᴹ : M.CState} → (WkCState (tmcstate-to-mcstate σ₀) σ₀ᴹ) → (σ₀ᴹ →ᴹ σᴹ) → Σ[ σ ∈ TM.CState ] (σ₀ →ᵀᴹ σ)
+progress-t₁ : {σ₀ : TM.CState} {σ₀ᴹ σᴹ : M.CState} → (MProps.WkCState (tmcstate-to-mcstate σ₀) σ₀ᴹ) → (σ₀ᴹ →ᴹ σᴹ) → Σ[ σ ∈ TM.CState ] (σ₀ →ᵀᴹ σ)
 progress-t₁ {σ₀ = ⟨ 𝐖 ； γ ╎ π ╎ ◻ ⟩} ((wk-cstate-result x ())) return→
 progress-t₁ {σ₀ = ⟨ 𝐖 ； γ ╎ π ╎ TM.< x₂ ； δ ； ρ >∷ K ⟩} ((wk-cstate-result x x₁)) return→ = ⟨ wk-comp (wk-cong π) x₂ ╎ γ · 𝐖 ╎ wk-wk (wk-trans π ρ) ╎ K ⟩ , return→
 progress-t₁ {σ₀ = ⟨ return x ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp ρ refl x₁ x₂)) eval→ = _ , eval→
@@ -31,7 +31,7 @@ progress-t₁ {σ₀ = ⟨ app x x₃ ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp 
 progress-t₁ {σ₀ = ⟨ var x ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp ρ refl x₁ x₂)) var→ = _ , var→
 progress-t₁ {σ₀ = ⟨ sub M N ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp ρ refl x₁ x₂)) sub→ = _ , sub→
 
-progress-t₂ : {σ₀ : TM.CState} {σ₀ᴹ σᴹ : M.CState} → (WkCState σ₀ᴹ (tmcstate-to-mcstate σ₀)) → (σ₀ᴹ →ᴹ σᴹ) → Σ[ σ ∈ TM.CState ] (σ₀ →ᵀᴹ σ)
+progress-t₂ : {σ₀ : TM.CState} {σ₀ᴹ σᴹ : M.CState} → (MProps.WkCState σ₀ᴹ (tmcstate-to-mcstate σ₀)) → (σ₀ᴹ →ᴹ σᴹ) → Σ[ σ ∈ TM.CState ] (σ₀ →ᵀᴹ σ)
 progress-t₂ {σ₀ = ⟨ 𝐖 ； γ ╎ π ╎ ◻ ⟩} ((wk-cstate-result x ())) return→
 progress-t₂ {σ₀ = ⟨ 𝐖 ； γ ╎ π ╎ < x₂ ； δ ； ρ >∷ K ⟩} ((wk-cstate-result x x₁)) return→ = ⟨ wk-comp (wk-cong π) x₂ ╎ γ · 𝐖 ╎ wk-wk (wk-trans π ρ) ╎ K ⟩ , return→
 progress-t₂ {σ₀ = ⟨ return x₃ ╎ γ ╎ π ╎ K ⟩} ((wk-cstate-comp ρ refl x₁ x₂)) eval→ = _ , eval→

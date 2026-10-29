@@ -143,20 +143,20 @@ lookup-eq here (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) = refl
 lookup-eq (there x) (γ · x₁) = lookup-eq x γ
 lookup-eq (there x) (γ ·﹝ x₁ ╎ x₂ ╎ x₃ ﹞) = lookup-eq x γ
 
-lookup-label-wk : (i : Γ ∋ `ℓ) → (γ : TM.MEnv Γ) → WkCState (M.jump-to-state (M.lookup i (tmenv-to-menv γ))) (tmcstate-to-mcstate (TM.lookup-label i γ))
+lookup-label-wk : (i : Γ ∋ `ℓ) → (γ : TM.MEnv Γ) → MProps.WkCState (M.jump-to-state (M.lookup i (tmenv-to-menv γ))) (tmcstate-to-mcstate (TM.lookup-label i γ))
 lookup-label-wk here (γ · (label x)) =
   let
-    a : WkCState (M.jump-to-state (M.lookup x (tmenv-to-menv γ))) (tmcstate-to-mcstate (TM.lookup-label x γ))
+    a : MProps.WkCState (M.jump-to-state (M.lookup x (tmenv-to-menv γ))) (tmcstate-to-mcstate (TM.lookup-label x γ))
     a = lookup-label-wk x γ
-    goal : WkCState (M.jump-to-state (mclo-to-mval (label x) γ)) (tmcstate-to-mcstate (TM.lookup-label x γ))
-    goal = subst (λ z → WkCState (M.jump-to-state z) (tmcstate-to-mcstate (TM.lookup-label x γ))) (lookup-eq x γ) a
+    goal : MProps.WkCState (M.jump-to-state (mclo-to-mval (label x) γ)) (tmcstate-to-mcstate (TM.lookup-label x γ))
+    goal = subst (λ z → MProps.WkCState (M.jump-to-state z) (tmcstate-to-mcstate (TM.lookup-label x γ))) (lookup-eq x γ) a
   in
   goal
 lookup-label-wk here (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) = wk-cstate-comp wk-id refl MProps.wk-menv-id wk-cstack-id
 lookup-label-wk (there i) (γ · 𝐖) = lookup-label-wk i γ
 lookup-label-wk (there i) (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) = lookup-label-wk i γ
 
-eval-jump-wk : (W : Γ ⊢ᵛ `ℓ) → (γ : TM.MEnv Γ) → WkCState (M.eval-jump W (tmenv-to-menv γ)) (tmcstate-to-mcstate (TM.eval-jump W γ))
+eval-jump-wk : (W : Γ ⊢ᵛ `ℓ) → (γ : TM.MEnv Γ) → MProps.WkCState (M.eval-jump W (tmenv-to-menv γ)) (tmcstate-to-mcstate (TM.eval-jump W γ))
 eval-jump-wk (var i) γ = lookup-label-wk i γ
 
 --------------------------------------------------------------------------
@@ -254,7 +254,7 @@ clo-wk-menv (lam M) ⋄ = wk-menv-ε
 clo-wk-menv (lam M) (γ · _) = MProps.wk-menv-id
 clo-wk-menv (lam M) (γ ·﹝ _ ╎ _ ╎ _ ﹞) = MProps.wk-menv-id
 
-eval-clos : (V : Γ ⊢ᵛ (X `⇒ Y)) → (W : Γ ⊢ᵛ X) → (γ : TM.MEnv Γ) → (K : M.CStack Y) → WkCState ⟨ TM.lam-to-comp (TM.eval V γ) ╎ tmenv-to-menv γ · mclo-to-mval (TM.eval W γ) γ ╎ K ⟩ (M.eval-clo V W (tmenv-to-menv γ) K)
+eval-clos : (V : Γ ⊢ᵛ (X `⇒ Y)) → (W : Γ ⊢ᵛ X) → (γ : TM.MEnv Γ) → (K : M.CStack Y) → MProps.WkCState ⟨ TM.lam-to-comp (TM.eval V γ) ╎ tmenv-to-menv γ · mclo-to-mval (TM.eval W γ) γ ╎ K ⟩ (M.eval-clo V W (tmenv-to-menv γ) K)
 eval-clos V W γ K =
   let
     a = clo-to-comp-eq V γ
@@ -300,7 +300,7 @@ tmstep-to-mstep wf (pmᶜ→ {W = W} {γ = γ} {M = M} {K = K}) =
   _ , pmᶜ→ , eqv
 tmstep-to-mstep wf (app→ {V = V} {W = W} {γ = γ} {K = K}) =
   let
-    wk₁ : WkCState ⟨ TM.lam-to-comp (TM.eval V γ) ╎ tmenv-to-menv γ · mclo-to-mval (TM.eval W γ) γ ╎ tmcstack-to-mcstack K ⟩ (M.eval-clo V W (tmenv-to-menv γ) (tmcstack-to-mcstack K))
+    wk₁ : MProps.WkCState ⟨ TM.lam-to-comp (TM.eval V γ) ╎ tmenv-to-menv γ · mclo-to-mval (TM.eval W γ) γ ╎ tmcstack-to-mcstack K ⟩ (M.eval-clo V W (tmenv-to-menv γ) (tmcstack-to-mcstack K))
     wk₁ = eval-clos V W γ (tmcstack-to-mcstack K)
 
     eqv : M.eval-clo V W (tmenv-to-menv γ) (tmcstack-to-mcstack K) ≈ᴹ ⟨ TM.lam-to-comp (TM.eval V γ) ╎ tmenv-to-menv γ M.· mclo-to-mval (TM.eval W γ) γ ╎ tmcstack-to-mcstack K ⟩
