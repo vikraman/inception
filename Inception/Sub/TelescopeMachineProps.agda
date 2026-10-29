@@ -18,13 +18,13 @@ data WkMEnvᵀ : {Γ Δ : Ctx} → (π : Wk Γ Δ) → (γ : MEnv Γ) → (δ : 
 
     wk-tmenv-ε    : WkMEnvᵀ wk-ε ⋄ ⋄
 
-    wk-tmenv-mclo-cong : {Γ Δ : Ctx} {π : Γ ⊇ Δ} {γ : MEnv Γ} {δ : MEnv Δ} → (𝐖 : MClo Δ X) → WkMEnvᵀ π γ δ → WkMEnvᵀ (wk-cong π) (γ · wk-mclo π 𝐖) (δ · 𝐖)
+    wk-tmenv-mclo-cong : {Γ Δ : Ctx} {π : Γ ⊇ Δ} {γ : MEnv Γ} {δ : MEnv Δ} → (𝐖 : OMVal Δ X) → WkMEnvᵀ π γ δ → WkMEnvᵀ (wk-cong π) (γ · wk-mclo π 𝐖) (δ · 𝐖)
 
     wk-tmenv-jump-cong : {Γ Δ : Ctx} {π : Γ ⊇ Δ} {γ : MEnv Γ} {δ : MEnv Δ}
                          → (M : Δ ⊢ᶜ X) → (ρ : Δ ⊇ Ψ) → (K : CStack Ψ X) → WkMEnvᵀ π γ δ
                          → WkMEnvᵀ (wk-cong π) (γ ·﹝ wk-comp π M ╎ wk-trans π ρ ╎ K ﹞) (δ ·﹝ M ╎ ρ ╎ K ﹞)
 
-    wk-tmenv-mclo-wk : {Γ Δ : Ctx} {π : Γ ⊇ Δ} {γ : MEnv Γ} {δ : MEnv Δ} → (𝐖 : MClo Γ X) → WkMEnvᵀ π γ δ → WkMEnvᵀ (wk-wk π) (γ · 𝐖) δ
+    wk-tmenv-mclo-wk : {Γ Δ : Ctx} {π : Γ ⊇ Δ} {γ : MEnv Γ} {δ : MEnv Δ} → (𝐖 : OMVal Γ X) → WkMEnvᵀ π γ δ → WkMEnvᵀ (wk-wk π) (γ · 𝐖) δ
 
     wk-tmenv-jump-wk :   {Γ Δ : Ctx} {π : Γ ⊇ Δ} {γ : MEnv Γ} {δ : MEnv Δ}
                          → (M : Γ ⊢ᶜ X) → (ρ : Γ ⊇ Ψ) → (K : CStack Ψ X) → WkMEnvᵀ π γ δ
@@ -49,25 +49,25 @@ mutual
                   ------------------------------------
                   → WellFormedTMCStack (< M ； γ₁ ； π₁ >∷ < N ； γ₂ ； π₂ >∷ K)
 
-  data WellFormedTMClo : MEnv Γ → MClo Γ X → Set where
+  data WellFormedTOMVal : MEnv Γ → OMVal Γ X → Set where
 
-      wf-mclo-unit : {γ : MEnv Γ} → WellFormedTMClo γ unit
+      wf-mclo-unit : {γ : MEnv Γ} → WellFormedTOMVal γ unit
 
-      wf-mclo-lam : {γ : MEnv Γ} {M : (Γ ∙ X) ⊢ᶜ Y} → WellFormedTMClo γ (lam M)
+      wf-mclo-lam : {γ : MEnv Γ} {M : (Γ ∙ X) ⊢ᶜ Y} → WellFormedTOMVal γ (lam M)
 
-      wf-mclo-pair : {γ : MEnv Γ} {𝐕 : MClo Γ X} {𝐖 : MClo Γ Y} → WellFormedTMClo γ 𝐕 → WellFormedTMClo γ 𝐖 → WellFormedTMClo γ (pair 𝐕 𝐖)
+      wf-mclo-pair : {γ : MEnv Γ} {𝐕 : OMVal Γ X} {𝐖 : OMVal Γ Y} → WellFormedTOMVal γ 𝐕 → WellFormedTOMVal γ 𝐖 → WellFormedTOMVal γ (pair 𝐕 𝐖)
 
-      wf-mclo-label-h : {γ : MEnv Γ} {M : Γ ⊢ᶜ X} {π : Γ ⊇ Γ₁} {K : CStack Γ₁ X} → WellFormedTMClo (γ ·﹝ M ╎ π ╎ K ﹞) (label here)
+      wf-mclo-label-h : {γ : MEnv Γ} {M : Γ ⊢ᶜ X} {π : Γ ⊇ Γ₁} {K : CStack Γ₁ X} → WellFormedTOMVal (γ ·﹝ M ╎ π ╎ K ﹞) (label here)
 
-      wf-mclo-label-t-mclo : {γ : MEnv Γ} {i : Γ ∋ `ℓ} {𝐖 : MClo Γ X} → WellFormedTMClo γ (label i) → WellFormedTMClo (γ · 𝐖) (label (there i))
+      wf-mclo-label-t-mclo : {γ : MEnv Γ} {i : Γ ∋ `ℓ} {𝐖 : OMVal Γ X} → WellFormedTOMVal γ (label i) → WellFormedTOMVal (γ · 𝐖) (label (there i))
 
-      wf-mclo-label-t-jump : {γ : MEnv Γ} {i : Γ ∋ `ℓ} {M : Γ ⊢ᶜ X} {π : Γ ⊇ Γ₁} {K : CStack Γ₁ X} → WellFormedTMClo γ (label i) → WellFormedTMClo (γ ·﹝ M ╎ π ╎ K ﹞) (label (there i))
+      wf-mclo-label-t-jump : {γ : MEnv Γ} {i : Γ ∋ `ℓ} {M : Γ ⊢ᶜ X} {π : Γ ⊇ Γ₁} {K : CStack Γ₁ X} → WellFormedTOMVal γ (label i) → WellFormedTOMVal (γ ·﹝ M ╎ π ╎ K ﹞) (label (there i))
 
   data WellFormedTMEnv : MEnv Γ → Set where
 
       wf-env-empty : WellFormedTMEnv ⋄
 
-      wf-env-mclo : {γ : MEnv Γ} {𝐖 : MClo Γ X} → WellFormedTMEnv γ → WellFormedTMClo γ 𝐖 → WellFormedTMEnv (γ · 𝐖)
+      wf-env-mclo : {γ : MEnv Γ} {𝐖 : OMVal Γ X} → WellFormedTMEnv γ → WellFormedTOMVal γ 𝐖 → WellFormedTMEnv (γ · 𝐖)
 
       wf-env-jump : {γ : MEnv Γ} {M : Γ ⊢ᶜ X} {π : Γ ⊇ Γ₁} {K : CStack Γ₁ X}
                     → WellFormedTMCState ⟨ M ╎ γ ╎ π ╎ K ⟩
@@ -75,20 +75,20 @@ mutual
 
   data WellFormedTMCState : CState → Set where
 
-      wf-state-halt : (𝐖 : MClo Γ ℛ) → (γ : MEnv Γ) → (π : Γ ⊇ ε)
+      wf-state-halt : (𝐖 : OMVal Γ ℛ) → (γ : MEnv Γ) → (π : Γ ⊇ ε)
                   → WellFormedTMEnv γ
-                  → WellFormedTMClo γ 𝐖
+                  → WellFormedTOMVal γ 𝐖
                   ------------------------------------
                   → WellFormedTMCState ⟨ 𝐖 ； γ ╎ π ╎ ◻ ⟩
 
       wf-state-result : {Γ₁ Γ₂ Γ₃ : Ctx} {γ₁ : MEnv Γ₁}
                   {γ₂ : MEnv Γ₂} {π₁ : Γ₁ ⊇ Γ₂} → {π₂ : Γ₂ ⊇ Γ₃}
                   {M : (Γ₂ ∙ X) ⊢ᶜ Y} {K : CStack Γ₃ Y}
-                  → (𝐖 : MClo Γ₁ X)
+                  → (𝐖 : OMVal Γ₁ X)
                   → WkMEnvᵀ π₁ γ₁ γ₂
                   → WellFormedTMCStack (< M ； γ₂ ； π₂ >∷ K)
                   → WellFormedTMEnv γ₁
-                  → WellFormedTMClo γ₁ 𝐖
+                  → WellFormedTOMVal γ₁ 𝐖
                   ------------------------------------
                   → WellFormedTMCState ⟨ 𝐖 ； γ₁ ╎ π₁ ╎ < M ； γ₂ ； π₂ >∷ K ⟩
 
@@ -107,7 +107,7 @@ mutual
                   ------------------------------------
                   → WellFormedTMCState ⟨ M ╎ γ₁ ╎ π₁ ╎ < N ； γ₂ ； π₂ >∷ K ⟩
 
-wk-mclo-wk-η : {Γ : Ctx} {X : Ty} → (𝐖 : MClo Γ X) → (π : Ψ ⊇ Δ) → (δ : Δ ⊇ Γ) → wk-mclo π (wk-mclo δ 𝐖) ≡ wk-mclo (wk-trans π δ) 𝐖
+wk-mclo-wk-η : {Γ : Ctx} {X : Ty} → (𝐖 : OMVal Γ X) → (π : Ψ ⊇ Δ) → (δ : Δ ⊇ Γ) → wk-mclo π (wk-mclo δ 𝐖) ≡ wk-mclo (wk-trans π δ) 𝐖
 wk-mclo-wk-η unit π δ = refl
 wk-mclo-wk-η (pair 𝐕 𝐖) π δ = cong₂ pair (wk-mclo-wk-η 𝐕 π δ) (wk-mclo-wk-η 𝐖 π δ)
 wk-mclo-wk-η (lam M) π δ = cong lam (wk-comp-id-β (wk-comp (wk-trans (Wk.wk-cong π) (Wk.wk-cong δ)) M))
@@ -140,7 +140,7 @@ wk-MEnvᵀ-trans (wk-tmenv-jump-wk M ρ K ϖ₁) (wk-tmenv-jump-cong N ρ₁ K�
 wk-MEnvᵀ-trans (wk-tmenv-jump-wk M ρ K ϖ₁) (wk-tmenv-mclo-wk 𝐖 ϖ₂) = wk-tmenv-jump-wk M ρ K (wk-MEnvᵀ-trans ϖ₁ (wk-tmenv-mclo-wk 𝐖 ϖ₂))
 wk-MEnvᵀ-trans (wk-tmenv-jump-wk M ρ K ϖ₁) (wk-tmenv-jump-wk N ρ₁ K₁ ϖ₂) = wk-tmenv-jump-wk M ρ K (wk-MEnvᵀ-trans ϖ₁ (wk-tmenv-jump-wk N ρ₁ K₁ ϖ₂))
 
-wk-mclo-id-η : (𝐖 : MClo Γ X) → wk-mclo wk-id 𝐖 ≡ 𝐖
+wk-mclo-id-η : (𝐖 : OMVal Γ X) → wk-mclo wk-id 𝐖 ≡ 𝐖
 wk-mclo-id-η unit = refl
 wk-mclo-id-η (pair 𝐕 𝐖) = cong₂ pair (wk-mclo-id-η 𝐕) (wk-mclo-id-η 𝐖)
 wk-mclo-id-η (lam M) = refl
@@ -158,7 +158,7 @@ wk-MEnvᵀ-id (γ · lam M) = wk-tmenv-mclo-cong (lam M) (wk-MEnvᵀ-id γ)
 wk-MEnvᵀ-id (γ · label x) = wk-tmenv-mclo-cong (label x) (wk-MEnvᵀ-id γ)
 wk-MEnvᵀ-id (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) = wk-tmenv-jump-cong x x₁ x₂ (wk-MEnvᵀ-id γ)
 
-wf-mclo-wk-mclo : {γ : MEnv Γ} {𝐖 : MClo Γ X} {𝐖₁ : MClo Γ Y} → WellFormedTMClo γ 𝐖 → WellFormedTMClo γ 𝐖₁ → WellFormedTMClo (γ · 𝐖₁) (wk-mclo (wk-wk wk-id) 𝐖)
+wf-mclo-wk-mclo : {γ : MEnv Γ} {𝐖 : OMVal Γ X} {𝐖₁ : OMVal Γ Y} → WellFormedTOMVal γ 𝐖 → WellFormedTOMVal γ 𝐖₁ → WellFormedTOMVal (γ · 𝐖₁) (wk-mclo (wk-wk wk-id) 𝐖)
 wf-mclo-wk-mclo wf-mclo-unit _ = wf-mclo-unit
 wf-mclo-wk-mclo wf-mclo-lam _ = wf-mclo-lam
 wf-mclo-wk-mclo (wf-mclo-pair g g₂) g₁ = wf-mclo-pair (wf-mclo-wk-mclo g g₁) (wf-mclo-wk-mclo g₂ g₁)
@@ -166,7 +166,7 @@ wf-mclo-wk-mclo wf-mclo-label-h _ = wf-mclo-label-t-mclo wf-mclo-label-h
 wf-mclo-wk-mclo (wf-mclo-label-t-mclo g) g₁ = wf-mclo-label-t-mclo (wf-mclo-label-t-mclo g)
 wf-mclo-wk-mclo (wf-mclo-label-t-jump g) g₁ = wf-mclo-label-t-mclo (wf-mclo-label-t-jump g)
 
-wf-mclo-wk-jump : {γ : MEnv Γ} {𝐖 : MClo Γ X} {M : Γ ⊢ᶜ Y} {π : Γ ⊇ Γ₁} {K : CStack Γ₁ Y} → WellFormedTMClo γ 𝐖 → WellFormedTMClo (γ ·﹝ M ╎ π ╎ K ﹞) (wk-mclo (wk-wk wk-id) 𝐖)
+wf-mclo-wk-jump : {γ : MEnv Γ} {𝐖 : OMVal Γ X} {M : Γ ⊢ᶜ Y} {π : Γ ⊇ Γ₁} {K : CStack Γ₁ Y} → WellFormedTOMVal γ 𝐖 → WellFormedTOMVal (γ ·﹝ M ╎ π ╎ K ﹞) (wk-mclo (wk-wk wk-id) 𝐖)
 wf-mclo-wk-jump wf-mclo-unit = wf-mclo-unit
 wf-mclo-wk-jump wf-mclo-lam = wf-mclo-lam
 wf-mclo-wk-jump (wf-mclo-pair g g₁) = wf-mclo-pair (wf-mclo-wk-jump g) (wf-mclo-wk-jump g₁)
@@ -174,7 +174,7 @@ wf-mclo-wk-jump wf-mclo-label-h = wf-mclo-label-t-jump wf-mclo-label-h
 wf-mclo-wk-jump (wf-mclo-label-t-mclo g) = wf-mclo-label-t-jump (wf-mclo-label-t-mclo g)
 wf-mclo-wk-jump (wf-mclo-label-t-jump g) = wf-mclo-label-t-jump (wf-mclo-label-t-jump g)
 
-wf-lookup : {γ : MEnv Γ} → (i : Γ ∋ X) → (g : WellFormedTMEnv γ) → WellFormedTMClo γ (lookup i γ)
+wf-lookup : {γ : MEnv Γ} → (i : Γ ∋ X) → (g : WellFormedTMEnv γ) → WellFormedTOMVal γ (lookup i γ)
 wf-lookup here (wf-env-mclo g wf-mclo-unit) = wf-mclo-unit
 wf-lookup here (wf-env-mclo g wf-mclo-lam) = wf-mclo-lam
 wf-lookup here (wf-env-mclo g (wf-mclo-pair x₁ x₂)) = wf-mclo-pair (wf-mclo-wk-mclo x₁ (wf-mclo-pair x₁ x₂)) (wf-mclo-wk-mclo x₂ (wf-mclo-pair x₁ x₂))
@@ -193,7 +193,7 @@ wf-lookup-label (there i) (wf-env-mclo g x) = wf-lookup-label i g
 wf-lookup-label (there i) (wf-env-jump (wf-state-bottom M γ π x)) = wf-lookup-label i x
 wf-lookup-label (there i) (wf-env-jump (wf-state-resume _ x x₁ x₂)) = wf-lookup-label i x₂
 
-wf-eval : {γ : MEnv Γ} → (W : Γ ⊢ᵛ X) → (g : WellFormedTMEnv γ) → WellFormedTMClo γ (eval W γ)
+wf-eval : {γ : MEnv Γ} → (W : Γ ⊢ᵛ X) → (g : WellFormedTMEnv γ) → WellFormedTOMVal γ (eval W γ)
 wf-eval (var i) (wf-env-mclo g x) = wf-lookup i (wf-env-mclo g x)
 wf-eval (var i) (wf-env-jump x) = wf-lookup i (wf-env-jump x)
 wf-eval (lam x) wf-env-empty = wf-mclo-lam
@@ -206,16 +206,16 @@ wf-eval unit wf-env-empty = wf-mclo-unit
 wf-eval unit (wf-env-mclo g x) = wf-mclo-unit
 wf-eval unit (wf-env-jump x) = wf-mclo-unit
 
-wf-proj₁ : {γ : MEnv Γ} {𝐖 : MClo Γ (X `× Y)} → WellFormedTMClo γ 𝐖 → WellFormedTMClo γ (proj₁-mclo 𝐖)
+wf-proj₁ : {γ : MEnv Γ} {𝐖 : OMVal Γ (X `× Y)} → WellFormedTOMVal γ 𝐖 → WellFormedTOMVal γ (proj₁-mclo 𝐖)
 wf-proj₁ (wf-mclo-pair w₁ w₂) = w₁
 
-wf-proj₂ : {γ : MEnv Γ} {𝐖 : MClo Γ (X `× Y)} → WellFormedTMClo γ 𝐖 → WellFormedTMClo γ (proj₂-mclo 𝐖)
+wf-proj₂ : {γ : MEnv Γ} {𝐖 : OMVal Γ (X `× Y)} → WellFormedTOMVal γ 𝐖 → WellFormedTOMVal γ (proj₂-mclo 𝐖)
 wf-proj₂ (wf-mclo-pair w₁ w₂) = w₂
 
-wf-eval₁ : {γ : MEnv Γ} → (W : Γ ⊢ᵛ (X `× Y)) → (g : WellFormedTMEnv γ) → WellFormedTMClo γ (eval₁ W γ)
+wf-eval₁ : {γ : MEnv Γ} → (W : Γ ⊢ᵛ (X `× Y)) → (g : WellFormedTMEnv γ) → WellFormedTOMVal γ (eval₁ W γ)
 wf-eval₁ W g = wf-proj₁ (wf-eval W g)
 
-wf-eval₂ : {γ : MEnv Γ} → (W : Γ ⊢ᵛ (X `× Y)) → (g : WellFormedTMEnv γ) → WellFormedTMClo γ (eval₂ W γ)
+wf-eval₂ : {γ : MEnv Γ} → (W : Γ ⊢ᵛ (X `× Y)) → (g : WellFormedTMEnv γ) → WellFormedTOMVal γ (eval₂ W γ)
 wf-eval₂ W g = wf-proj₂ (wf-eval W g)
 
 wf-jump : {γ : MEnv Γ} → (i : Γ ∋ `ℓ) → (g : WellFormedTMEnv γ) → WellFormedTMCState (eval-jump (var i) γ)

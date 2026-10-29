@@ -33,7 +33,7 @@ mutual
   tmenv-to-menv (γ · 𝐖) = tmenv-to-menv γ · mclo-to-mval 𝐖 γ
   tmenv-to-menv (γ ·﹝ M ╎ π ╎ K ﹞) = tmenv-to-menv γ · jumpᵛ M (tmenv-to-menv γ) (tmcstack-to-mcstack K)
 
-  mclo-to-mval : TM.MClo Γ X → TM.MEnv Γ → M.MVal X
+  mclo-to-mval : TM.OMVal Γ X → TM.MEnv Γ → M.MVal X
   mclo-to-mval unit γ = unitᵛ
   mclo-to-mval (pair 𝐕 𝐖) γ = pairᵛ (mclo-to-mval 𝐕 γ) (mclo-to-mval 𝐖 γ)
   mclo-to-mval (lam M) γ = cloᵛ M (tmenv-to-menv γ)
@@ -53,7 +53,7 @@ tmcstate-to-mcstate ⟨ M ╎ γ ╎ π ╎ K ⟩ = ⟨ M ╎ tmenv-to-menv γ �
 --------------------------------------------------------------------------
 ---- lemmas for eval→ case
 
-wk-mclo-wk-comm : {𝐕 : TM.MClo Γ X} → (𝐖 : TM.MClo Γ Y) → (γ : TM.MEnv Γ) → WkMVal (mclo-to-mval (TM.wk-mclo (Wk.wk-wk wk-id) 𝐖) (γ · 𝐕)) (mclo-to-mval 𝐖 γ)
+wk-mclo-wk-comm : {𝐕 : TM.OMVal Γ X} → (𝐖 : TM.OMVal Γ Y) → (γ : TM.MEnv Γ) → WkMVal (mclo-to-mval (TM.wk-mclo (Wk.wk-wk wk-id) 𝐖) (γ · 𝐕)) (mclo-to-mval 𝐖 γ)
 wk-mclo-wk-comm unit ⋄ = wk-unitᵛ
 wk-mclo-wk-comm unit (γ · x) = wk-unitᵛ
 wk-mclo-wk-comm unit (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) = wk-unitᵛ
@@ -66,7 +66,7 @@ wk-mclo-wk-comm (lam M) (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) = wk-cloᵛ (wk-wk wk
 wk-mclo-wk-comm (label x) (γ · x₁) = wk-mval-id
 wk-mclo-wk-comm (label x) (γ ·﹝ x₁ ╎ x₂ ╎ x₃ ﹞) = wk-mval-id
 
-wk-mclo-wk-jump-comm : {M : Γ ⊢ᶜ X} {π : Γ ⊇ Δ} {K : TM.CStack Δ X} → (𝐖 : TM.MClo Γ Y) → (γ : TM.MEnv Γ) → WkMVal (mclo-to-mval (TM.wk-mclo (Wk.wk-wk wk-id) 𝐖) (γ ·﹝ M ╎ π ╎ K ﹞)) (mclo-to-mval 𝐖 γ)
+wk-mclo-wk-jump-comm : {M : Γ ⊢ᶜ X} {π : Γ ⊇ Δ} {K : TM.CStack Δ X} → (𝐖 : TM.OMVal Γ Y) → (γ : TM.MEnv Γ) → WkMVal (mclo-to-mval (TM.wk-mclo (Wk.wk-wk wk-id) 𝐖) (γ ·﹝ M ╎ π ╎ K ﹞)) (mclo-to-mval 𝐖 γ)
 wk-mclo-wk-jump-comm unit ⋄ = wk-unitᵛ
 wk-mclo-wk-jump-comm unit (γ · x) = wk-unitᵛ
 wk-mclo-wk-jump-comm unit (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) = wk-unitᵛ
@@ -103,7 +103,7 @@ eval-wk unit (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) = wk-mval-id
 
 mutual
 
-  wkmval : {Γ Δ : Ctx} → (𝐖 : TM.MClo Δ X) → (π : Γ ⊇ Δ) → (γ : TM.MEnv Γ) → (δ : TM.MEnv Δ) → WkMEnvᵀ π γ δ → WkMVal (mclo-to-mval (TM.wk-mclo π 𝐖) γ) (mclo-to-mval 𝐖 δ)
+  wkmval : {Γ Δ : Ctx} → (𝐖 : TM.OMVal Δ X) → (π : Γ ⊇ Δ) → (γ : TM.MEnv Γ) → (δ : TM.MEnv Δ) → WkMEnvᵀ π γ δ → WkMVal (mclo-to-mval (TM.wk-mclo π 𝐖) γ) (mclo-to-mval 𝐖 δ)
   wkmval TM.unit π γ δ g = wk-unitᵛ
   wkmval (TM.pair 𝐖 𝐕) π γ δ g = wk-pairᵛ (wkmval 𝐖 π γ δ g) (wkmval 𝐕 π γ δ g)
   wkmval (TM.lam M) π γ δ g = wk-cloᵛ π refl (wk-MEnvᵀ-to-wk-MEnvᴹ g)
@@ -162,12 +162,12 @@ eval-jump-wk (var i) γ = lookup-label-wk i γ
 --------------------------------------------------------------------------
 ---- lemmas for pmᶜ→ case
 
-proj₁-wk-mval-eq : (𝐖 : TM.MClo Γ (X `× Y)) → (γ : TM.MEnv Γ) → (M.proj₁-val (mclo-to-mval 𝐖 γ)) ≡ (mclo-to-mval (TM.proj₁-mclo 𝐖) γ)
+proj₁-wk-mval-eq : (𝐖 : TM.OMVal Γ (X `× Y)) → (γ : TM.MEnv Γ) → (M.proj₁-val (mclo-to-mval 𝐖 γ)) ≡ (mclo-to-mval (TM.proj₁-mclo 𝐖) γ)
 proj₁-wk-mval-eq (pair 𝐕 𝐖) ⋄ = refl
 proj₁-wk-mval-eq (pair 𝐕 𝐖) (γ · x) = refl
 proj₁-wk-mval-eq (pair 𝐕 𝐖) (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) = refl
 
-proj₂-wk-mval-eq : (𝐖 : TM.MClo Γ (X `× Y)) → (γ : TM.MEnv Γ) → (M.proj₂-val (mclo-to-mval 𝐖 γ)) ≡ (mclo-to-mval (TM.proj₂-mclo 𝐖) γ)
+proj₂-wk-mval-eq : (𝐖 : TM.OMVal Γ (X `× Y)) → (γ : TM.MEnv Γ) → (M.proj₂-val (mclo-to-mval 𝐖 γ)) ≡ (mclo-to-mval (TM.proj₂-mclo 𝐖) γ)
 proj₂-wk-mval-eq (pair 𝐕 𝐖) ⋄ = refl
 proj₂-wk-mval-eq (pair 𝐕 𝐖) (γ · x) = refl
 proj₂-wk-mval-eq (pair 𝐕 𝐖) (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) = refl

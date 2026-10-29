@@ -20,7 +20,7 @@ open import Inception.Rewriting.Reduction _→ᶜ_
 --data SN (σ : CState) : Set where
 --  sn : (∀ {σ₁} → σ →ᶜ σ₁ → SN σ₁) → SN σ
 
-Rᵛ : (X : Ty) → MClo Γ X → MEnv Γ → Set
+Rᵛ : (X : Ty) → OMVal Γ X → MEnv Γ → Set
 Rᵏ : (X : Ty) → CStack Γ X → Set
 Rᴱ : MEnv Γ → Set
 
@@ -28,7 +28,7 @@ Rᵛ `𝟙 unit γ = ⊤
 Rᵛ (X `× Y) (pair 𝐕 𝐖) γ = Rᵛ X 𝐕 γ × Rᵛ Y 𝐖 γ
 Rᵛ {Γ = Γ} (X `⇒ Y) (lam M) γ =
             ∀ {Δ : Ctx} (π₁ : Δ ⊇ Γ)
-              (𝐖 : MClo Δ X) (δ : MEnv Δ)
+              (𝐖 : OMVal Δ X) (δ : MEnv Δ)
               {Ψ : Ctx} (π₂ : Δ ⊇ Ψ)
             → Rᵛ X 𝐖 δ → {K : CStack Ψ Y} → Rᵏ Y K
             → SN ⟨ wk-comp (wk-cong π₁) M ╎ δ · 𝐖 ╎ wk-wk π₂ ╎ K ⟩
@@ -36,10 +36,10 @@ Rᵛ `ℓ (label x) γ = SN (lookup-label x γ)
 
 Rᴱ {Γ = Γ} γ = ∀ {X : Ty} → (i : Γ ∋ X) → Rᵛ X (lookup i γ) γ
 
-Rᵏ {Γ = Γ} X K = ∀ {Δ : Ctx} {𝐖 : MClo Δ X} {δ : MEnv Δ} {π : Δ ⊇ Γ} → Rᵛ X 𝐖 δ → SN ⟨ 𝐖 ； δ ╎ π ╎ K ⟩
+Rᵏ {Γ = Γ} X K = ∀ {Δ : Ctx} {𝐖 : OMVal Δ X} {δ : MEnv Δ} {π : Δ ⊇ Γ} → Rᵛ X 𝐖 δ → SN ⟨ 𝐖 ； δ ╎ π ╎ K ⟩
 
 {-
-Rᵛ-wk : {Δ : Ctx} {π : Wk Δ Γ} {γ : MEnv Γ} {𝐖 : MClo Γ X}
+Rᵛ-wk : {Δ : Ctx} {π : Wk Δ Γ} {γ : MEnv Γ} {𝐖 : OMVal Γ X}
         → (δ : MEnv Δ) → Rᵛ X 𝐖 γ → Rᵛ X (wk-mclo π 𝐖) δ
 Rᵛ-wk {𝐖 = unit} _ Rv = tt
 Rᵛ-wk {π = π} {𝐖 = pair 𝐖 𝐕} δ (fst , snd) =
@@ -52,7 +52,7 @@ Rᵛ-wk {𝐖 = lam M} δ Rv = λ π₁ 𝐖 δ₁ π₂ x x₁ → {!!}
 Rᵛ-wk {𝐖 = label x} δ Rv =
   {!subst () !}
 
-Rᴱ-ext : {γ : MEnv Γ} {𝐖 : MClo Γ X} → Rᴱ γ → Rᵛ X 𝐖 γ → Rᴱ (γ · 𝐖)
+Rᴱ-ext : {γ : MEnv Γ} {𝐖 : OMVal Γ X} → Rᴱ γ → Rᵛ X 𝐖 γ → Rᴱ (γ · 𝐖)
 Rᴱ-ext Rγ RW here = {!!}
 Rᴱ-ext Rγ RW (there i) = {!!}
 -}
