@@ -18,9 +18,9 @@ open import Inception.Sub.TelescopeMachine ℛ as TM renaming (_→ᶜ_ to _→�
 open import Inception.Sub.MachineProps ℛ
 open import Inception.Sub.TelescopeMachineProps ℛ
 
----------------------------------------------------------------------------------
+--------------------------------------------------------------------------
 -- Translation of Telescope Environments into List Environments
----------------------------------------------------------------------------------
+--------------------------------------------------------------------------
 
 mutual
 
@@ -98,7 +98,7 @@ eval-wk unit ⋄ = wk-mval-id
 eval-wk unit (γ · x) = wk-mval-id
 eval-wk unit (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) = wk-mval-id
 
----------------------------------------------------------------------------------
+--------------------------------------------------------------------------
 ---- Lemmas for return→ case
 
 mutual
@@ -116,12 +116,12 @@ mutual
   wkmval (label (there x)) π γ₁ γ₂ (wk-tmenv-mclo-wk 𝐖 g) = wkmval (label (there x)) _ _ _ g
   wkmval (label (there x)) π γ₁ γ₂ (wk-tmenv-jump-wk M πᵀ K g) = wkmval (label (there x)) _ _ _ g
 
-  wk-MEnvᵀ-to-wk-MEnvᴹ : {Γ₁ Γ₂ : Ctx} {π : Γ₁ ⊇ Γ₂} {γ₁ : TM.MEnv Γ₁} {γ₂ : TM.MEnv Γ₂} → WkMEnvᵀ π γ₁ γ₂ → WkMEnvᴹ π (tmenv-to-menv γ₁) (tmenv-to-menv γ₂)
+  wk-MEnvᵀ-to-wk-MEnvᴹ : {Γ Δ : Ctx} {π : Γ ⊇ Δ} {γ : TM.MEnv Γ} {δ : TM.MEnv Δ} → WkMEnvᵀ π γ δ → WkMEnvᴹ π (tmenv-to-menv γ) (tmenv-to-menv δ)
   wk-MEnvᵀ-to-wk-MEnvᴹ wk-tmenv-ε = wk-menv-ε
-  wk-MEnvᵀ-to-wk-MEnvᴹ (wk-tmenv-mclo-cong {π = π} {γ₁ = γ₁} {γ₂ = γ₂} 𝐖 g) =
+  wk-MEnvᵀ-to-wk-MEnvᴹ (wk-tmenv-mclo-cong {π = π} {γ = γ} {δ = δ} 𝐖 g) =
     let
-      a₀ : WkMVal (mclo-to-mval (TM.wk-mclo π 𝐖) γ₁) (mclo-to-mval 𝐖 γ₂)
-      a₀ = wkmval 𝐖 π γ₁ γ₂ g
+      a₀ : WkMVal (mclo-to-mval (TM.wk-mclo π 𝐖) γ) (mclo-to-mval 𝐖 δ)
+      a₀ = wkmval 𝐖 π γ δ g
       a₁ = wk-menv-cong a₀ (wk-MEnvᵀ-to-wk-MEnvᴹ g)
     in
     a₁
@@ -264,9 +264,9 @@ eval-clos W₁ W₂ γ K =
   in
   wk-cstate-comp (wk-cong (ctx-clo-to-comp-wk W₁ γ)) a₀ b₃ wk-cstack-id
 
----------------------------------------------------------------------------------
+--------------------------------------------------------------------------
 -- Translation of Steps
----------------------------------------------------------------------------------
+--------------------------------------------------------------------------
 
 tmstep-to-mstep : {σ σ₁ : TM.CState} → (WellFormedTMCState σ) → (σ →ᵀᴹ σ₁) → Σ[ σᴹ ∈ M.CState ] (((tmcstate-to-mcstate σ) →ᴹ σᴹ) × σᴹ ≈ᴹ (tmcstate-to-mcstate σ₁))
 tmstep-to-mstep wf (eval→ {W = W} {γ = γ} {K = K}) =
