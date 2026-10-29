@@ -72,11 +72,11 @@ mutual
                ----------------------------------------------
                → MEnv (Γ ∙ `ℓ)
 
-wk-mclo : Γ ⊇ Δ → OMVal Δ X → OMVal Γ X
-wk-mclo π unit = unit
-wk-mclo π (pair 𝐕 𝐖) = pair (wk-mclo π 𝐕) (wk-mclo π 𝐖)
-wk-mclo π (lam M) = lam (wk-comp (wk-cong π) M)
-wk-mclo π (label x) = label (wk-mem π x)
+wk-omval : Γ ⊇ Δ → OMVal Δ X → OMVal Γ X
+wk-omval π unit = unit
+wk-omval π (pair 𝐕 𝐖) = pair (wk-omval π 𝐕) (wk-omval π 𝐖)
+wk-omval π (lam M) = lam (wk-comp (wk-cong π) M)
+wk-omval π (label x) = label (wk-mem π x)
 
 data CState : Set where
 
@@ -89,10 +89,10 @@ data CState : Set where
              → CState
 
 lookup : Γ ∋ X → MEnv Γ → OMVal Γ X
-lookup here (γ · 𝐖) = wk-mclo (wk-wk wk-id) 𝐖
+lookup here (γ · 𝐖) = wk-omval (wk-wk wk-id) 𝐖
 lookup here (γ ·﹝ 𝐖 ╎ π ╎ K ﹞) = label here
-lookup (there x) (γ · 𝐖) = wk-mclo (wk-wk wk-id) (lookup x γ)
-lookup (there x) (γ ·﹝ 𝐖 ╎ π ╎ K ﹞) = wk-mclo (wk-wk wk-id) (lookup x γ)
+lookup (there x) (γ · 𝐖) = wk-omval (wk-wk wk-id) (lookup x γ)
+lookup (there x) (γ ·﹝ 𝐖 ╎ π ╎ K ﹞) = wk-omval (wk-wk wk-id) (lookup x γ)
 
 -- currently not used; would have to figure out eval for pairs when doing this
 lookup₁ : Γ ∋ X → MEnv Γ → Σ[ Δ ∈ Ctx ] (MEnv Δ × OMVal Δ X)
@@ -119,17 +119,17 @@ eval unit γ = unit
 eval-jump : Γ ⊢ᵛ `ℓ → MEnv Γ → CState
 eval-jump (var i) γ = lookup-label i γ
 
-proj₁-mclo : OMVal Γ (X `× Y) → OMVal Γ X
-proj₁-mclo (pair 𝐕 𝐖) = 𝐕
+proj₁-omval : OMVal Γ (X `× Y) → OMVal Γ X
+proj₁-omval (pair 𝐕 𝐖) = 𝐕
 
-proj₂-mclo : OMVal Γ (X `× Y) → OMVal Γ Y
-proj₂-mclo (pair 𝐕 𝐖) = 𝐖
+proj₂-omval : OMVal Γ (X `× Y) → OMVal Γ Y
+proj₂-omval (pair 𝐕 𝐖) = 𝐖
 
 eval₁ : Γ ⊢ᵛ (X `× Y) → MEnv Γ → OMVal Γ X
-eval₁ W γ = proj₁-mclo (eval W γ)
+eval₁ W γ = proj₁-omval (eval W γ)
 
 eval₂ : Γ ⊢ᵛ (X `× Y) → MEnv Γ → OMVal Γ Y
-eval₂ W γ = proj₂-mclo (eval W γ)
+eval₂ W γ = proj₂-omval (eval W γ)
 
 eval-app : Γ ⊢ᵛ (X `⇒ Y) → Γ ⊢ᵛ X → MEnv Γ
            → Γ ⊇ Δ → CStack Δ Y → CState
@@ -166,7 +166,7 @@ data _→ᶜ_ : CState → CState → Set where
   pmᶜ→ :     {W : Γ ⊢ᵛ (X `× Y)} {γ : MEnv Γ}
              {M : (Γ ∙ X ∙ Y) ⊢ᶜ Z} {π : Γ ⊇ Δ} {K : CStack Δ Z}
              -------------------------------------------------------------
-             →  ⟨ pm W M ╎ γ ╎ π ╎ K ⟩ →ᶜ ⟨ M ╎ γ · eval₁ W γ · (wk-mclo (wk-wk wk-id) (eval₂ W γ)) ╎ wk-wk (wk-wk π) ╎ K ⟩
+             →  ⟨ pm W M ╎ γ ╎ π ╎ K ⟩ →ᶜ ⟨ M ╎ γ · eval₁ W γ · (wk-omval (wk-wk wk-id) (eval₂ W γ)) ╎ wk-wk (wk-wk π) ╎ K ⟩
 
   app→ :     {V : Γ ⊢ᵛ (X `⇒ Y)} {W : Γ ⊢ᵛ X} {γ : MEnv Γ} {π : Γ ⊇ Δ} {K : CStack Δ Y}
              ----------------------------------------------------------------
