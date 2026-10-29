@@ -17,6 +17,7 @@ open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; subst
 
 --------------------------------------------------------------------------
 
+infixl 27 <_；_>∷_
 infixl 27 _·_
 
 --------------------------------------------------------------------------
@@ -127,9 +128,10 @@ eval-jump W γ = jump-to-state (eval W γ)
 eval-clo :  Γ ⊢ᵛ (X `⇒ Y) → Γ ⊢ᵛ X → MEnv Γ
             → CStack Y → CState
 eval-clo V W γ K =
-  ⟨ proj₁ (proj₂ c) ╎ proj₂ (proj₂ c) · eval W γ ╎ K  ⟩
-  where
+  let
     c = clo-to-comp (eval V γ)
+  in
+  ⟨ proj₁ (proj₂ c) ╎ proj₂ (proj₂ c) · eval W γ ╎ K  ⟩
 
 eval₁ : Γ ⊢ᵛ (X `× Y) → MEnv Γ → MVal X
 eval₁ W γ = proj₁-val (eval W γ)
@@ -192,6 +194,15 @@ determinismꟲ sub→ sub→ = refl
 determinismꟲ var→ var→ = refl
 determinismꟲ pmᶜ→ pmᶜ→ = refl
 determinismꟲ app→ app→ = refl
+
+determinismꟲ′ : {σ σ₁ σ₂ : CState} → (s₁ : σ →ᶜ σ₁) → (s₂ : σ →ᶜ σ₂) → (σ₁ ≡ σ₂)
+determinismꟲ′ eval→ eval→ = refl
+determinismꟲ′ return→ return→ = refl
+determinismꟲ′ push→ push→ = refl
+determinismꟲ′ sub→ sub→ = refl
+determinismꟲ′ var→ var→ = refl
+determinismꟲ′ pmᶜ→ pmᶜ→ = refl
+determinismꟲ′ app→ app→ = refl
 
 open Reduction _→ᶜ_ public
   renaming (_~>*_ to _→ᶜ*_)
