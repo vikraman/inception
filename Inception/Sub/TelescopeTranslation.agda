@@ -275,12 +275,12 @@ tmstep-to-mstep wf (eval→ {W = W} {γ = γ} {K = K}) =
     eqv = ≈ᴹ-bc (≈-wk₁ (wk-cstate-result (eval-wk W γ) wk-cstack-id))
   in
   ⟨ M.eval W (tmenv-to-menv γ) ╎ tmcstack-to-mcstack K ⟩ , eval→ , eqv
-tmstep-to-mstep (wf-state-result {π₁ = π₁} {π₂ = π₂} _ w _ _ _) (return→ {𝐖 = 𝐖} {M₁ = M₁} {γ = γ} {γ₁ = γ₁} {K = K} {π = π}) =
+tmstep-to-mstep (wf-state-result {π₁ = π₁} {π₂ = π₂} _ w _ _ _) (return→ {𝐖 = 𝐖} {M = M} {γ = γ} {δ = δ} {K = K} {π = π}) =
   let
-    eqv : ⟨ M₁ ╎ tmenv-to-menv γ₁ · mclo-to-mval 𝐖 γ ╎ tmcstack-to-mcstack K ⟩ ≈ᴹ ⟨ wk-comp (wk-cong π) M₁ ╎ tmenv-to-menv γ M.· mclo-to-mval 𝐖 γ ╎ tmcstack-to-mcstack K ⟩
+    eqv : ⟨ M₁ ╎ tmenv-to-menv δ · mclo-to-mval 𝐖 γ ╎ tmcstack-to-mcstack K ⟩ ≈ᴹ ⟨ wk-comp (wk-cong π) M₁ ╎ tmenv-to-menv γ M.· mclo-to-mval 𝐖 γ ╎ tmcstack-to-mcstack K ⟩
     eqv = ≈ᴹ-bc (≈-wk₁ (wk-cstate-comp (Wk.wk-cong π₁) refl (wk-menv-cong wk-mval-id (wk-MEnvᵀ-to-wk-MEnvᴹ w)) wk-cstack-id))
   in
-  ⟨ M₁ ╎ tmenv-to-menv γ₁ · mclo-to-mval 𝐖 γ ╎ tmcstack-to-mcstack K ⟩ , return→ , eqv
+  ⟨ M ╎ tmenv-to-menv δ · mclo-to-mval 𝐖 γ ╎ tmcstack-to-mcstack K ⟩ , return→ , eqv
 tmstep-to-mstep wf push→ = _ , push→ , ≈ᴹ-refl
 tmstep-to-mstep wf sub→ = _ , sub→ , ≈ᴹ-refl
 tmstep-to-mstep wf (var→ {W = W} {γ = γ} {K = K}) =
@@ -298,12 +298,12 @@ tmstep-to-mstep wf (pmᶜ→ {W = W} {γ = γ} {M = M} {K = K}) =
     eqv = ≈ᴹ-bc (≈-wk₁ (wk-cstate-comp wk-id refl wk₁ wk-cstack-id))
   in
   _ , pmᶜ→ , eqv
-tmstep-to-mstep wf (app→ {W₁ = W₁} {W₂ = W₂} {γ = γ} {K = K}) =
+tmstep-to-mstep wf (app→ {V = V} {W = W} {γ = γ} {K = K}) =
   let
-    wk₁ : WkCStateᴹ ⟨ TM.lam-to-comp (TM.eval W₁ γ) ╎ tmenv-to-menv γ · mclo-to-mval (TM.eval W₂ γ) γ ╎ tmcstack-to-mcstack K ⟩ (M.eval-clo W₁ W₂ (tmenv-to-menv γ) (tmcstack-to-mcstack K))
-    wk₁ = eval-clos W₁ W₂ γ (tmcstack-to-mcstack K)
+    wk₁ : WkCStateᴹ ⟨ TM.lam-to-comp (TM.eval V γ) ╎ tmenv-to-menv γ · mclo-to-mval (TM.eval W γ) γ ╎ tmcstack-to-mcstack K ⟩ (M.eval-clo V W (tmenv-to-menv γ) (tmcstack-to-mcstack K))
+    wk₁ = eval-clos V W γ (tmcstack-to-mcstack K)
 
-    eqv : M.eval-clo W₁ W₂ (tmenv-to-menv γ) (tmcstack-to-mcstack K) ≈ᴹ ⟨ TM.lam-to-comp (TM.eval W₁ γ) ╎ tmenv-to-menv γ M.· mclo-to-mval (TM.eval W₂ γ) γ ╎ tmcstack-to-mcstack K ⟩
+    eqv : M.eval-clo V W (tmenv-to-menv γ) (tmcstack-to-mcstack K) ≈ᴹ ⟨ TM.lam-to-comp (TM.eval V γ) ╎ tmenv-to-menv γ M.· mclo-to-mval (TM.eval W γ) γ ╎ tmcstack-to-mcstack K ⟩
     eqv = ≈ᴹ-bc (≈-wk₁ wk₁)
   in
   _ , app→ , eqv
