@@ -40,7 +40,7 @@ Rᵏ {Γ = Γ} X K = ∀ {Δ : Ctx} {𝐖 : OMVal Δ X} {δ : MEnv Δ} {π : Δ 
 
 {-
 Rᵛ-wk : {Δ : Ctx} {π : Wk Δ Γ} {γ : MEnv Γ} {𝐖 : OMVal Γ X}
-        → (δ : MEnv Δ) → Rᵛ X 𝐖 γ → Rᵛ X (wk-mclo π 𝐖) δ
+        → (δ : MEnv Δ) → Rᵛ X 𝐖 γ → Rᵛ X (wk-omval π 𝐖) δ
 Rᵛ-wk {𝐖 = unit} _ Rv = tt
 Rᵛ-wk {π = π} {𝐖 = pair 𝐖 𝐕} δ (fst , snd) =
   let
