@@ -30,6 +30,25 @@ data WkMEnv : {Γ Δ : Ctx} → (π : Wk Γ Δ) → (γ : MEnv Γ) → (δ : MEn
                          → (M : Γ ⊢ᶜ X) → (ρ : Γ ⊇ Ψ) → (K : CStack Ψ X) → WkMEnv π γ δ
                          → WkMEnv (wk-wk π) (γ ·﹝ M ╎ ρ ╎ K ﹞) δ
 
+data WkCStack : (π : Γ ⊇ Δ) → (K₁ : CStack Γ X) → (K₂ : CStack Δ X) → Set where
+
+    wk-cstack-empty : WkCStack wk-ε ◻ ◻
+
+    wk-cstack-push : {Γ Δ Ψ₁ Ψ₂ : Ctx} {M₁ : (Γ ∙ Y) ⊢ᶜ X} {M₂ : (Δ ∙ Y) ⊢ᶜ X} {γ : MEnv Γ} {δ : MEnv Δ} {K₁ : CStack Ψ₁ X} {K₂ : CStack Ψ₂ X} {π₁ : Γ ⊇ Δ} {π₂ : Ψ₁ ⊇ Ψ₂}
+                    → M₁ ≡ wk-comp (wk-cong π₁) M₂ → WkMEnv π₁ γ δ → (ρ₁ : Γ ⊇ Ψ₁) → (ρ₂ : Δ ⊇ Ψ₂) → WkCStack π₂ K₁ K₂
+                    → WkCStack π₁ (< M₁ ； γ ； ρ₁ >∷ K₁) (< M₂ ； δ ； ρ₂ >∷ K₂)
+
+data WkCState : CState → CState → Set where
+
+  wk-cstate-result : {Γ Δ Ψ₁ Ψ₂ : Ctx} {𝐖₁ : OMVal Γ X} {𝐖₂ : OMVal Δ X} {γ : MEnv Γ} {δ : MEnv Δ} {K₁ : CStack Ψ₁ X} {K₂ : CStack Ψ₂ X} {π₁ : Γ ⊇ Δ} {π₂ : Ψ₁ ⊇ Ψ₂}
+                     → 𝐖₁ ≡ wk-omval π₁ 𝐖₂ → WkMEnv π₁ γ δ → (ρ₁ : Γ ⊇ Ψ₁) → (ρ₂ : Δ ⊇ Ψ₂) → WkCStack π₂ K₁ K₂
+                     → WkCState ⟨ 𝐖₁ ； γ ╎ ρ₁ ╎ K₁ ⟩ ⟨ 𝐖₂ ； δ ╎ ρ₂ ╎ K₂ ⟩
+
+  wk-cstate-comp :    {Γ Δ Ψ₁ Ψ₂ : Ctx} {M₁ : Γ ⊢ᶜ X} {M₂ : Δ ⊢ᶜ X} {γ : MEnv Γ} {δ : MEnv Δ} {K₁ : CStack Ψ₁ X} {K₂ : CStack Ψ₂ X} {π₁ : Γ ⊇ Δ} {π₂ : Ψ₁ ⊇ Ψ₂}
+                     → M₁ ≡ wk-comp π₁ M₂ → WkMEnv π₁ γ δ → (ρ₁ : Γ ⊇ Ψ₁) → (ρ₂ : Δ ⊇ Ψ₂) → WkCStack π₂ K₁ K₂
+                     → WkCState ⟨ M₁ ╎ γ ╎ ρ₁ ╎ K₁ ⟩ ⟨ M₂ ╎ δ ╎ ρ₂ ╎ K₂ ⟩
+
+
 -- well-formedness of states
 mutual
 
