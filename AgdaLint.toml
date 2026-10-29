@@ -15,7 +15,7 @@ subscriptExempt = ["≈"]
 rewriteSuffixes = ["-β", "-η", "-coh", "-coh̃"]
 
 # letter pairs
-pairs = ["VW", "MN", "KL", "𝐕𝐖", "θφ", "πδ", "XY", "ΓΔ"]
+pairs = ["VW", "MN", "KL", "𝐕𝐖", "θφ", "πδ", "XY", "ΓΔ", "γδ"]
 
 # rule levels
 [rules]
@@ -72,7 +72,7 @@ letters = "𝐕𝐖"
 
 [[sorts]]
 heads = ["MEnv", "Env"]
-letters = "γ"
+letters = "γδψ"
 
 [[sorts]]
 heads = ["Cfg", "CState", "PState"]
