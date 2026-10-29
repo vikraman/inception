@@ -20,27 +20,27 @@ mutual
 
       wk-unitᵛ : WkMVal unitᵛ unitᵛ
 
-      wk-pairᵛ : {𝐖₁₁ 𝐖₁₂ : MVal X₁} {𝐖₂₁ 𝐖₂₂ : MVal X₂} → WkMVal 𝐖₁₁ 𝐖₁₂ → WkMVal 𝐖₂₁ 𝐖₂₂ → WkMVal (pairᵛ 𝐖₁₁ 𝐖₂₁) (pairᵛ 𝐖₁₂ 𝐖₂₂)
+      wk-pairᵛ : {𝐖₁₁ 𝐖₁₂ : MVal X} {𝐖₂₁ 𝐖₂₂ : MVal Y} → WkMVal 𝐖₁₁ 𝐖₁₂ → WkMVal 𝐖₂₁ 𝐖₂₂ → WkMVal (pairᵛ 𝐖₁₁ 𝐖₂₁) (pairᵛ 𝐖₁₂ 𝐖₂₂)
 
-      wk-cloᵛ : {Γ₁ Γ₂ : Ctx} {M₁ : (Γ₁ ∙ X) ⊢ᶜ Y} {M₂ : (Γ₂ ∙ X) ⊢ᶜ Y} {γ₁ : MEnv Γ₁} {γ₂ : MEnv Γ₂} → (π : Γ₁ ⊇ Γ₂) → M₁ ≡ wk-comp (wk-cong π) M₂ → (WkMEnvᴹ π γ₁ γ₂) → WkMVal (cloᵛ M₁ γ₁) (cloᵛ M₂ γ₂)
+      wk-cloᵛ : {Γ Δ : Ctx} {M₁ : (Γ ∙ X) ⊢ᶜ Y} {M₂ : (Δ ∙ X) ⊢ᶜ Y} {γ : MEnv Γ} {δ : MEnv Δ} → (π : Γ ⊇ Δ) → M₁ ≡ wk-comp (wk-cong π) M₂ → (WkMEnvᴹ π γ δ) → WkMVal (cloᵛ M₁ γ) (cloᵛ M₂ δ)
 
-      wk-jumpᵛ : {Γ₁ Γ₂ : Ctx} {M₁ : Γ₁ ⊢ᶜ X} {M₂ : Γ₂ ⊢ᶜ X} {γ₁ : MEnv Γ₁} {γ₂ : MEnv Γ₂} {K₁ K₂ : CStack X} → (π : Γ₁ ⊇ Γ₂) → M₁ ≡ wk-comp π M₂ → (WkMEnvᴹ π γ₁ γ₂) → (WkCStackᴹ K₁ K₂) → WkMVal (jumpᵛ M₁ γ₁ K₁) (jumpᵛ M₂ γ₂ K₂)
+      wk-jumpᵛ : {Γ Δ : Ctx} {M₁ : Γ ⊢ᶜ X} {M₂ : Δ ⊢ᶜ X} {γ : MEnv Γ} {δ : MEnv Δ} {K₁ K₂ : CStack X} → (π : Γ ⊇ Δ) → M₁ ≡ wk-comp π M₂ → (WkMEnvᴹ π γ δ) → (WkCStackᴹ K₁ K₂) → WkMVal (jumpᵛ M₁ γ K₁) (jumpᵛ M₂ δ K₂)
 
-  data WkMEnvᴹ : {Γ₁ Γ₂ : Ctx} → (π : Wk Γ₁ Γ₂) → (γ₁ : MEnv Γ₁) → (γ₂ : MEnv Γ₂) → Set where
+  data WkMEnvᴹ : {Γ Δ : Ctx} → (π : Wk Γ Δ) → (γ : MEnv Γ) → (δ : MEnv Δ) → Set where
 
       wk-menv-ε    : WkMEnvᴹ wk-ε ⋄ ⋄
 
-      wk-menv-cong : {Γ₁ Γ₂ : Ctx} {π : Γ₁ ⊇ Γ₂} {γ₁ : MEnv Γ₁} {γ₂ : MEnv Γ₂} {𝐖₁ : MVal X} {𝐖₂ : MVal X} → WkMVal 𝐖₁ 𝐖₂ → WkMEnvᴹ π γ₁ γ₂ → WkMEnvᴹ (wk-cong π) (γ₁ · 𝐖₁) (γ₂ · 𝐖₂)
+      wk-menv-cong : {Γ Δ : Ctx} {π : Γ ⊇ Δ} {γ : MEnv Γ} {δ : MEnv Δ} {𝐖₁ : MVal X} {𝐖₂ : MVal X} → WkMVal 𝐖₁ 𝐖₂ → WkMEnvᴹ π γ δ → WkMEnvᴹ (wk-cong π) (γ · 𝐖₁) (δ · 𝐖₂)
 
-      wk-menv-wk : {Γ₁ Γ₂ : Ctx} {π : Γ₁ ⊇ Γ₂} {γ₁ : MEnv Γ₁} {γ₂ : MEnv Γ₂} → (𝐖 : MVal X) → WkMEnvᴹ π γ₁ γ₂ → WkMEnvᴹ (wk-wk π) (γ₁ · 𝐖) γ₂
+      wk-menv-wk : {Γ Δ : Ctx} {π : Γ ⊇ Δ} {γ : MEnv Γ} {δ : MEnv Δ} → (𝐖 : MVal X) → WkMEnvᴹ π γ δ → WkMEnvᴹ (wk-wk π) (γ · 𝐖) δ
 
   data WkCStackᴹ : (K₁ : CStack X) → (K₂ : CStack X) → Set where
 
     wk-cstack-empty : WkCStackᴹ ◻ ◻
 
-    wk-cstack-push : {Γ₁ Γ₂ : Ctx} {M₁ : (Γ₁ ∙ Y) ⊢ᶜ X} {M₂ : (Γ₂ ∙ Y) ⊢ᶜ X} {γ₁ : MEnv Γ₁} {γ₂ : MEnv Γ₂} {K₁ K₂ : CStack X}
-                    → (π : Γ₁ ⊇ Γ₂) → M₁ ≡ wk-comp (wk-cong π) M₂ → WkMEnvᴹ π γ₁ γ₂ → WkCStackᴹ K₁ K₂
-                    → WkCStackᴹ (< M₁ ； γ₁ >∷ K₁) (< M₂ ； γ₂ >∷ K₂)
+    wk-cstack-push : {Γ Δ : Ctx} {M₁ : (Γ ∙ Y) ⊢ᶜ X} {M₂ : (Δ ∙ Y) ⊢ᶜ X} {γ : MEnv Γ} {δ : MEnv Δ} {K₁ K₂ : CStack X}
+                    → (π : Γ ⊇ Δ) → M₁ ≡ wk-comp (wk-cong π) M₂ → WkMEnvᴹ π γ δ → WkCStackᴹ K₁ K₂
+                    → WkCStackᴹ (< M₁ ； γ >∷ K₁) (< M₂ ； δ >∷ K₂)
 
 -- Weakening of Machine States
 data WkCStateᴹ : CState → CState → Set where
@@ -49,9 +49,9 @@ data WkCStateᴹ : CState → CState → Set where
                      → WkMVal 𝐖₁ 𝐖₂ → WkCStackᴹ K₁ K₂
                      → WkCStateᴹ ⟨ 𝐖₁ ╎ K₁ ⟩ ⟨ 𝐖₂ ╎ K₂ ⟩
 
-  wk-cstate-comp : {Γ₁ Γ₂ : Ctx} {M₁ : Γ₁ ⊢ᶜ X} {M₂ : Γ₂ ⊢ᶜ X} {γ₁ : MEnv Γ₁} {γ₂ : MEnv Γ₂} {K₁ K₂ : CStack X}
-                   → (π : Γ₁ ⊇ Γ₂) → M₁ ≡ wk-comp π M₂ → (WkMEnvᴹ π γ₁ γ₂) → WkCStackᴹ K₁ K₂
-                   → WkCStateᴹ ⟨ M₁ ╎ γ₁ ╎ K₁ ⟩ ⟨ M₂ ╎ γ₂ ╎ K₂ ⟩
+  wk-cstate-comp : {Γ Δ : Ctx} {M₁ : Γ ⊢ᶜ X} {M₂ : Δ ⊢ᶜ X} {γ : MEnv Γ} {δ : MEnv Δ} {K₁ K₂ : CStack X}
+                   → (π : Γ ⊇ Δ) → M₁ ≡ wk-comp π M₂ → (WkMEnvᴹ π γ δ) → WkCStackᴹ K₁ K₂
+                   → WkCStateᴹ ⟨ M₁ ╎ γ ╎ K₁ ⟩ ⟨ M₂ ╎ δ ╎ K₂ ⟩
 
 data _≈₀ᴹ_ : CState → CState → Set where
 
@@ -84,12 +84,12 @@ mutual
 
 mutual
 
-  wk-MEnvᴹ-trans : {Γ₁ Γ₂ Γ₃ : Ctx} {π₁ : Γ₁ ⊇ Γ₂} {π₂ : Γ₂ ⊇ Γ₃} {γ₁ : MEnv Γ₁} {γ₂ : MEnv Γ₂} {γ₃ : MEnv Γ₃} → WkMEnvᴹ π₁ γ₁ γ₂ → WkMEnvᴹ π₂ γ₂ γ₃ → WkMEnvᴹ (wk-trans π₁ π₂) γ₁ γ₃
+  wk-MEnvᴹ-trans : {Γ Δ Γ₃ : Ctx} {π₁ : Γ ⊇ Δ} {π₂ : Δ ⊇ Γ₃} {γ : MEnv Γ} {δ : MEnv Δ} {γ₃ : MEnv Γ₃} → WkMEnvᴹ π₁ γ δ → WkMEnvᴹ π₂ δ γ₃ → WkMEnvᴹ (wk-trans π₁ π₂) γ γ₃
   wk-MEnvᴹ-trans wk-menv-ε wk-menv-ε = wk-menv-ε
   wk-MEnvᴹ-trans (wk-menv-cong x₁ ϖ₁) (wk-menv-cong x₂ ϖ₂) = wk-menv-cong (wk-mval-trans x₁ x₂) (wk-MEnvᴹ-trans ϖ₁ ϖ₂)
-  wk-MEnvᴹ-trans (wk-menv-cong {𝐖₁ = 𝐖₁} x₁ ϖ₁) (wk-menv-wk 𝐖₂ ϖ₂) = wk-menv-wk 𝐖₁ (wk-MEnvᴹ-trans ϖ₁ ϖ₂)
+  wk-MEnvᴹ-trans (wk-menv-cong {𝐖₁ = 𝐖₁} _ ϖ₁) (wk-menv-wk 𝐖₂ ϖ₂) = wk-menv-wk 𝐖₁ (wk-MEnvᴹ-trans ϖ₁ ϖ₂)
   wk-MEnvᴹ-trans (wk-menv-wk 𝐖 ϖ) wk-menv-ε = wk-menv-wk 𝐖 ϖ
-  wk-MEnvᴹ-trans (wk-menv-wk 𝐖₁ ϖ₁) (wk-menv-cong x₂ ϖ₂) = wk-menv-wk 𝐖₁ (wk-MEnvᴹ-trans ϖ₁ (wk-menv-cong x₂ ϖ₂))
+  wk-MEnvᴹ-trans (wk-menv-wk 𝐖₁ ϖ₁) (wk-menv-cong x ϖ₂) = wk-menv-wk 𝐖₁ (wk-MEnvᴹ-trans ϖ₁ (wk-menv-cong x ϖ₂))
   wk-MEnvᴹ-trans (wk-menv-wk 𝐖₁ ϖ₁) (wk-menv-wk 𝐖₂ ϖ₂) = wk-menv-wk 𝐖₁ (wk-MEnvᴹ-trans ϖ₁ (wk-menv-wk 𝐖₂ ϖ₂))
 
   wk-cstack-trans : {K₁ K₂ K₃ : CStack X} → WkCStackᴹ K₁ K₂ → WkCStackᴹ K₂ K₃ → WkCStackᴹ K₁ K₃
@@ -147,88 +147,88 @@ mutual
 
   ≈ᴹ-trans : {σ₁ σ₂ σ₃ : CState} → σ₁ ≈ᴹ σ₂ → σ₂ ≈ᴹ σ₃ → σ₁ ≈ᴹ σ₃
   ≈ᴹ-trans (≈ᴹ-bc x) (≈ᴹ-bc x₁) = ≈-trans x (≈ᴹ-bc x₁)
-  ≈ᴹ-trans (≈ᴹ-bc x) (≈-trans x₁ s₂) = ≈-trans x (≈-trans x₁ s₂)
-  ≈ᴹ-trans (≈-trans x s₁) (≈ᴹ-bc x₁) = ≈-trans x (≈ᴹ-trans s₁ (≈ᴹ-bc x₁))
+  ≈ᴹ-trans (≈ᴹ-bc x) (≈-trans x₁ s) = ≈-trans x (≈-trans x₁ s)
+  ≈ᴹ-trans (≈-trans x s) (≈ᴹ-bc x₁) = ≈-trans x (≈ᴹ-trans s (≈ᴹ-bc x₁))
   ≈ᴹ-trans (≈-trans x s₁) (≈-trans x₁ s₂) = ≈-trans x (≈ᴹ-trans s₁ (≈-trans x₁ s₂))
 
-proj₁-wk-mval : {𝐖 𝐕 : MVal (X₁ `× X₂)} → WkMVal 𝐖 𝐕 → WkMVal (proj₁-val 𝐖) (proj₁-val 𝐕)
+proj₁-wk-mval : {𝐖 𝐕 : MVal (X `× Y)} → WkMVal 𝐖 𝐕 → WkMVal (proj₁-val 𝐖) (proj₁-val 𝐕)
 proj₁-wk-mval (wk-pairᵛ wm₁ wm₂) = wm₁
 
-proj₂-wk-mval : {𝐖 𝐕 : MVal (X₁ `× X₂)} → WkMVal 𝐖 𝐕 → WkMVal (proj₂-val 𝐖) (proj₂-val 𝐕)
+proj₂-wk-mval : {𝐖 𝐕 : MVal (X `× Y)} → WkMVal 𝐖 𝐕 → WkMVal (proj₂-val 𝐖) (proj₂-val 𝐕)
 proj₂-wk-mval (wk-pairᵛ wm₁ wm₂) = wm₂
 
-jump-wk : {Γ₁ Γ₂ : Ctx} {γ₁ : MEnv Γ₁} {γ₂ : MEnv Γ₂} {π : Γ₁ ⊇ Γ₂} → (i : Γ₂ ∋ `ℓ) → (WkMEnvᴹ π γ₁ γ₂) → eval-jump (var (wk-mem π i)) γ₁ ≈ᴹ eval-jump (var i) γ₂
+jump-wk : {Γ Δ : Ctx} {γ : MEnv Γ} {δ : MEnv Δ} {π : Γ ⊇ Δ} → (i : Δ ∋ `ℓ) → (WkMEnvᴹ π γ δ) → eval-jump (var (wk-mem π i)) γ ≈ᴹ eval-jump (var i) δ
 jump-wk here (wk-menv-cong (wk-jumpᵛ π x x₁ x₂) ϖ) = ≈ᴹ-bc (≈-wk₂ (wk-cstate-comp π x x₁ x₂))
 jump-wk here (wk-menv-wk 𝐖 ϖ) = jump-wk here ϖ
 jump-wk (there i) (wk-menv-cong x ϖ) = jump-wk i ϖ
 jump-wk (there i) (wk-menv-wk 𝐖 ϖ) = jump-wk (there i) ϖ
 
-eval-mem-wk : {Γ₁ Γ₂ : Ctx} {γ₁ : MEnv Γ₁} {γ₂ : MEnv Γ₂} {π : Γ₁ ⊇ Γ₂} → (i : Γ₂ ∋ X) → (WkMEnvᴹ π γ₁ γ₂) → WkMVal (eval (var (wk-mem π i)) γ₁) (eval (var i) γ₂)
+eval-mem-wk : {Γ Δ : Ctx} {γ : MEnv Γ} {δ : MEnv Δ} {π : Γ ⊇ Δ} → (i : Δ ∋ X) → (WkMEnvᴹ π γ δ) → WkMVal (eval (var (wk-mem π i)) γ) (eval (var i) δ)
 eval-mem-wk here (wk-menv-cong x ϖ) = x
 eval-mem-wk here (wk-menv-wk 𝐖 ϖ) = eval-mem-wk here ϖ
 eval-mem-wk (there i) (wk-menv-cong x ϖ) = eval-mem-wk i ϖ
 eval-mem-wk (there i) (wk-menv-wk 𝐖 ϖ) = eval-mem-wk (there i) ϖ
 
-eval-val-wk : {Γ₁ Γ₂ : Ctx} {γ₁ : MEnv Γ₁} {γ₂ : MEnv Γ₂} {π : Γ₁ ⊇ Γ₂} → (W : Γ₂ ⊢ᵛ X) → (WkMEnvᴹ π γ₁ γ₂) → WkMVal (eval (wk-val π W) γ₁) (eval W γ₂)
+eval-val-wk : {Γ Δ : Ctx} {γ : MEnv Γ} {δ : MEnv Δ} {π : Γ ⊇ Δ} → (W : Δ ⊢ᵛ X) → (WkMEnvᴹ π γ δ) → WkMVal (eval (wk-val π W) γ) (eval W δ)
 eval-val-wk (var i) (wk-menv-cong x ϖ) = eval-mem-wk i (wk-menv-cong x ϖ)
 eval-val-wk (var i) (wk-menv-wk 𝐖 ϖ) = eval-mem-wk i ϖ
 eval-val-wk (lam M) wk-menv-ε = wk-cloᵛ wk-ε refl wk-menv-ε
-eval-val-wk (lam M) (wk-menv-cong x₁ ϖ) = wk-cloᵛ (wk-cong _) refl (wk-menv-cong x₁ ϖ)
+eval-val-wk (lam M) (wk-menv-cong x ϖ) = wk-cloᵛ (wk-cong _) refl (wk-menv-cong x ϖ)
 eval-val-wk (lam M) (wk-menv-wk 𝐖 ϖ) = wk-cloᵛ (wk-wk _) refl (wk-menv-wk 𝐖 ϖ)
-eval-val-wk (pair W₁ W₂) wk-menv-ε = wk-pairᵛ (eval-val-wk W₁ wk-menv-ε) (eval-val-wk W₂ wk-menv-ε)
-eval-val-wk (pair W₁ W₂) (wk-menv-cong x ϖ) = wk-pairᵛ (eval-val-wk W₁ (wk-menv-cong x ϖ)) (eval-val-wk W₂ (wk-menv-cong x ϖ))
-eval-val-wk (pair W₁ W₂) (wk-menv-wk 𝐖 ϖ) = wk-pairᵛ (eval-val-wk W₁ (wk-menv-wk 𝐖 ϖ)) (eval-val-wk W₂ (wk-menv-wk 𝐖 ϖ))
+eval-val-wk (pair V W) wk-menv-ε = wk-pairᵛ (eval-val-wk V wk-menv-ε) (eval-val-wk W wk-menv-ε)
+eval-val-wk (pair V W) (wk-menv-cong x ϖ) = wk-pairᵛ (eval-val-wk V (wk-menv-cong x ϖ)) (eval-val-wk W (wk-menv-cong x ϖ))
+eval-val-wk (pair V W) (wk-menv-wk 𝐖 ϖ) = wk-pairᵛ (eval-val-wk V (wk-menv-wk 𝐖 ϖ)) (eval-val-wk W (wk-menv-wk 𝐖 ϖ))
 eval-val-wk unit wk-menv-ε = wk-unitᵛ
 eval-val-wk unit (wk-menv-cong x ϖ) = wk-unitᵛ
 eval-val-wk unit (wk-menv-wk 𝐖 ϖ) = wk-unitᵛ
 
-eval₁-mem-wk : {Γ₁ Γ₂ : Ctx} {γ₁ : MEnv Γ₁} {γ₂ : MEnv Γ₂} {π : Γ₁ ⊇ Γ₂} → (i : Γ₂ ∋ (X₁ `× X₂)) → (WkMEnvᴹ π γ₁ γ₂) → WkMVal (eval₁ (var (wk-mem π i)) γ₁) (eval₁ (var i) γ₂)
+eval₁-mem-wk : {Γ Δ : Ctx} {γ : MEnv Γ} {δ : MEnv Δ} {π : Γ ⊇ Δ} → (i : Δ ∋ (X `× Y)) → (WkMEnvᴹ π γ δ) → WkMVal (eval₁ (var (wk-mem π i)) γ) (eval₁ (var i) δ)
 eval₁-mem-wk here (wk-menv-cong x ϖ) = proj₁-wk-mval x
 eval₁-mem-wk here (wk-menv-wk 𝐖 ϖ) = eval₁-mem-wk here ϖ
 eval₁-mem-wk (there i) (wk-menv-cong x ϖ) = eval₁-mem-wk i ϖ
 eval₁-mem-wk (there i) (wk-menv-wk 𝐖 ϖ) = eval₁-mem-wk (there i) ϖ
 
-eval₁-val-wk : {Γ₁ Γ₂ : Ctx} {γ₁ : MEnv Γ₁} {γ₂ : MEnv Γ₂} {π : Γ₁ ⊇ Γ₂} → (W : Γ₂ ⊢ᵛ (X₁ `× X₂)) → (WkMEnvᴹ π γ₁ γ₂) → WkMVal (eval₁ (wk-val π W) γ₁) (eval₁ W γ₂)
+eval₁-val-wk : {Γ Δ : Ctx} {γ : MEnv Γ} {δ : MEnv Δ} {π : Γ ⊇ Δ} → (W : Δ ⊢ᵛ (X `× Y)) → (WkMEnvᴹ π γ δ) → WkMVal (eval₁ (wk-val π W) γ) (eval₁ W δ)
 eval₁-val-wk (var i) (wk-menv-cong x ϖ) = eval₁-mem-wk i (wk-menv-cong x ϖ)
 eval₁-val-wk (var i) (wk-menv-wk 𝐖 ϖ) = eval₁-mem-wk i ϖ
-eval₁-val-wk (pair W₁ W₂) wk-menv-ε = wk-mval-id
-eval₁-val-wk {γ₁ = γ₁ · 𝐖₁} {γ₂ = γ₂ · 𝐖₂} {π = wk-cong π} (pair W₁ W₂) (wk-menv-cong x ϖ) =
+eval₁-val-wk (pair V W) wk-menv-ε = wk-mval-id
+eval₁-val-wk {γ = γ · 𝐖₁} {δ = δ · 𝐖₂} {π = wk-cong π} (pair V W) (wk-menv-cong x ϖ) =
   let
-    goal : WkMVal (eval (wk-val (Wk.wk-cong π) W₁) (γ₁ · 𝐖₁)) (eval W₁ (γ₂ · 𝐖₂))
-    goal = eval-val-wk W₁ (wk-menv-cong x ϖ)
+    goal : WkMVal (eval (wk-val (Wk.wk-cong π) V) (γ · 𝐖₁)) (eval V (δ · 𝐖₂))
+    goal = eval-val-wk V (wk-menv-cong x ϖ)
   in
   goal
-eval₁-val-wk (pair W₁ W₂) (wk-menv-wk 𝐖 ϖ) = eval-val-wk W₁ (wk-menv-wk 𝐖 ϖ)
+eval₁-val-wk (pair V W) (wk-menv-wk 𝐖 ϖ) = eval-val-wk V (wk-menv-wk 𝐖 ϖ)
 
-eval₂-mem-wk : {Γ₁ Γ₂ : Ctx} {γ₁ : MEnv Γ₁} {γ₂ : MEnv Γ₂} {π : Γ₁ ⊇ Γ₂} → (i : Γ₂ ∋ (X₁ `× X₂)) → (WkMEnvᴹ π γ₁ γ₂) → WkMVal (eval₂ (var (wk-mem π i)) γ₁) (eval₂ (var i) γ₂)
+eval₂-mem-wk : {Γ Δ : Ctx} {γ : MEnv Γ} {δ : MEnv Δ} {π : Γ ⊇ Δ} → (i : Δ ∋ (X `× Y)) → (WkMEnvᴹ π γ δ) → WkMVal (eval₂ (var (wk-mem π i)) γ) (eval₂ (var i) δ)
 eval₂-mem-wk here (wk-menv-cong x ϖ) = proj₂-wk-mval x
 eval₂-mem-wk here (wk-menv-wk 𝐖 ϖ) = eval₂-mem-wk here ϖ
 eval₂-mem-wk (there i) (wk-menv-cong x ϖ) = eval₂-mem-wk i ϖ
 eval₂-mem-wk (there i) (wk-menv-wk 𝐖 ϖ) = eval₂-mem-wk (there i) ϖ
 
-eval₂-val-wk : {Γ₁ Γ₂ : Ctx} {γ₁ : MEnv Γ₁} {γ₂ : MEnv Γ₂} {π : Γ₁ ⊇ Γ₂} → (W : Γ₂ ⊢ᵛ (X₁ `× X₂)) → (WkMEnvᴹ π γ₁ γ₂) → WkMVal (eval₂ (wk-val π W) γ₁) (eval₂ W γ₂)
+eval₂-val-wk : {Γ Δ : Ctx} {γ : MEnv Γ} {δ : MEnv Δ} {π : Γ ⊇ Δ} → (W : Δ ⊢ᵛ (X `× Y)) → (WkMEnvᴹ π γ δ) → WkMVal (eval₂ (wk-val π W) γ) (eval₂ W δ)
 eval₂-val-wk (var i) (wk-menv-cong x ϖ) = eval₂-mem-wk i (wk-menv-cong x ϖ)
 eval₂-val-wk (var i) (wk-menv-wk 𝐖 ϖ) = eval₂-mem-wk i ϖ
-eval₂-val-wk (pair W₁ W₂) wk-menv-ε = wk-mval-id
-eval₂-val-wk (pair W₁ W₂) (wk-menv-cong x ϖ) = eval-val-wk W₂ (wk-menv-cong x ϖ)
-eval₂-val-wk (pair W₁ W₂) (wk-menv-wk 𝐖 ϖ) = eval-val-wk W₂ (wk-menv-wk 𝐖 ϖ)
+eval₂-val-wk (pair V W) wk-menv-ε = wk-mval-id
+eval₂-val-wk (pair V W) (wk-menv-cong x ϖ) = eval-val-wk W (wk-menv-cong x ϖ)
+eval₂-val-wk (pair V W) (wk-menv-wk 𝐖 ϖ) = eval-val-wk W (wk-menv-wk 𝐖 ϖ)
 
 clo-to-comp-wk-proj₁ : {𝐖₁ 𝐖₂ : MVal (X `⇒ Y)} → WkMVal 𝐖₁ 𝐖₂ → (proj₁ (clo-to-comp 𝐖₁)) ⊇ (proj₁ (clo-to-comp 𝐖₂))
 clo-to-comp-wk-proj₁ (wk-cloᵛ π x x₁) = π
 
-clo-to-comp-wk-mem-cong : {Γ₁ Γ₂ : Ctx} {π : Γ₁ ⊇ Γ₂} {γ₁ : MEnv Γ₁} {γ₂ : MEnv Γ₂} → (i : Γ₂ ∋ (X `⇒ Y)) → (ϖ : WkMEnvᴹ π γ₁ γ₂) → (proj₁ (clo-to-comp (eval (var (wk-mem π i)) γ₁))) ⊇ (proj₁ (clo-to-comp (eval (var i) γ₂)))
-clo-to-comp-wk-mem-cong {π = wk-ε} {γ₁ = ⋄} {γ₂ = ⋄} () ϖ
-clo-to-comp-wk-mem-cong {π = wk-cong π} {γ₁ = γ₁ · 𝐖₁} {γ₂ = γ₂ · 𝐖₂} here (wk-menv-cong x₂ ϖ) = clo-to-comp-wk-proj₁ x₂
-clo-to-comp-wk-mem-cong {π = wk-cong π} {γ₁ = γ₁ · x} {γ₂ = γ₂ · x₁} (there i) (wk-menv-cong x₂ ϖ) = clo-to-comp-wk-mem-cong i ϖ
-clo-to-comp-wk-mem-cong {π = wk-wk π} {γ₁ = γ₁ · x} {γ₂ = ⋄} () ϖ
-clo-to-comp-wk-mem-cong {π = wk-wk π} {γ₁ = γ₁ · x} {γ₂ = γ₂ · x₁} here (wk-menv-wk 𝐖 ϖ) = clo-to-comp-wk-mem-cong here ϖ
-clo-to-comp-wk-mem-cong {π = wk-wk π} {γ₁ = γ₁ · x} {γ₂ = γ₂ · x₁} (there i) (wk-menv-wk 𝐖 ϖ) = clo-to-comp-wk-mem-cong (there i) ϖ
+clo-to-comp-wk-mem-cong : {Γ Δ : Ctx} {π : Γ ⊇ Δ} {γ : MEnv Γ} {δ : MEnv Δ} → (i : Δ ∋ (X `⇒ Y)) → (ϖ : WkMEnvᴹ π γ δ) → (proj₁ (clo-to-comp (eval (var (wk-mem π i)) γ))) ⊇ (proj₁ (clo-to-comp (eval (var i) δ)))
+clo-to-comp-wk-mem-cong {π = wk-ε} {γ = ⋄} {δ = ⋄} () ϖ
+clo-to-comp-wk-mem-cong {π = wk-cong π} {γ = γ · 𝐖₁} {δ = δ · 𝐖₂} here (wk-menv-cong x ϖ) = clo-to-comp-wk-proj₁ x
+clo-to-comp-wk-mem-cong {π = wk-cong π} {γ = γ · x} {δ = δ · x₁} (there i) (wk-menv-cong x₂ ϖ) = clo-to-comp-wk-mem-cong i ϖ
+clo-to-comp-wk-mem-cong {π = wk-wk π} {γ = γ · x} {δ = ⋄} () ϖ
+clo-to-comp-wk-mem-cong {π = wk-wk π} {γ = γ · x} {δ = δ · x₁} here (wk-menv-wk 𝐖 ϖ) = clo-to-comp-wk-mem-cong here ϖ
+clo-to-comp-wk-mem-cong {π = wk-wk π} {γ = γ · x} {δ = δ · x₁} (there i) (wk-menv-wk 𝐖 ϖ) = clo-to-comp-wk-mem-cong (there i) ϖ
 
-clo-to-comp-wk-cong : {Γ₁ Γ₂ : Ctx} {π : Γ₁ ⊇ Γ₂} {γ₁ : MEnv Γ₁} {γ₂ : MEnv Γ₂} → (W : Γ₂ ⊢ᵛ (X `⇒ Y)) → (ϖ : WkMEnvᴹ π γ₁ γ₂) → (proj₁ (clo-to-comp (eval (wk-val π W) γ₁))) ⊇ (proj₁ (clo-to-comp (eval W γ₂)))
+clo-to-comp-wk-cong : {Γ Δ : Ctx} {π : Γ ⊇ Δ} {γ : MEnv Γ} {δ : MEnv Δ} → (W : Δ ⊢ᵛ (X `⇒ Y)) → (ϖ : WkMEnvᴹ π γ δ) → (proj₁ (clo-to-comp (eval (wk-val π W) γ))) ⊇ (proj₁ (clo-to-comp (eval W δ)))
 clo-to-comp-wk-cong {π = wk-cong π} (var i) (wk-menv-cong x ϖ) = clo-to-comp-wk-mem-cong i (wk-menv-cong x ϖ)
 clo-to-comp-wk-cong {π = wk-wk π} (var i) (wk-menv-wk 𝐖 ϖ) = clo-to-comp-wk-mem-cong i ϖ
 clo-to-comp-wk-cong {π = wk-ε} (lam M) wk-menv-ε = Wk.wk-ε
-clo-to-comp-wk-cong {π = wk-cong π} (lam M) (wk-menv-cong x₁ ϖ) = Wk.wk-cong π
+clo-to-comp-wk-cong {π = wk-cong π} (lam M) (wk-menv-cong _ ϖ) = Wk.wk-cong π
 clo-to-comp-wk-cong {π = wk-wk π} (lam M) (wk-menv-wk 𝐖 ϖ) = Wk.wk-wk π
 
 clo-to-comp-wk-proj₁-proj₂ : {𝐖₁ 𝐖₂ : MVal (X `⇒ Y)} → (w : WkMVal 𝐖₁ 𝐖₂) → proj₁ (proj₂ (clo-to-comp 𝐖₁)) ≡ wk-comp (Wk.wk-cong (clo-to-comp-wk-proj₁ w)) (proj₁ (proj₂ (clo-to-comp 𝐖₂)))
@@ -237,110 +237,110 @@ clo-to-comp-wk-proj₁-proj₂ (wk-cloᵛ π x x₁) = x
 clo-to-comp-wk-proj₂-proj₂ : {𝐖₁ 𝐖₂ : MVal (X `⇒ Y)} → (w : WkMVal 𝐖₁ 𝐖₂) → WkMEnvᴹ (clo-to-comp-wk-proj₁ w) (proj₂ (proj₂ (clo-to-comp 𝐖₁))) (proj₂ (proj₂ (clo-to-comp 𝐖₂)))
 clo-to-comp-wk-proj₂-proj₂ (wk-cloᵛ π x x₁) = x₁
 
-cc-wk-eq : {Γ₁ Γ₂ : Ctx} {π : Γ₁ ⊇ Γ₂} {γ₁ : MEnv Γ₁} {γ₂ : MEnv Γ₂} {𝐖 : MVal Z} → (i : Γ₂ ∋ (X `⇒ Y)) → (ϖ : WkMEnvᴹ π γ₁ γ₂) → clo-to-comp-wk-mem-cong i ϖ ≡ clo-to-comp-wk-mem-cong i (wk-menv-wk 𝐖 ϖ)
-cc-wk-eq {π = wk-ε} {γ₁ = ⋄} {γ₂ = ⋄} () ϖ
-cc-wk-eq {π = wk-cong π} {γ₁ = γ₁ · x} {γ₂ = γ₂ · x₁} here (wk-menv-cong x₂ ϖ) = refl
-cc-wk-eq {π = wk-cong π} {γ₁ = γ₁ · x} {γ₂ = γ₂ · x₁} (there i) (wk-menv-cong x₂ ϖ) = refl
-cc-wk-eq {π = wk-wk π} {γ₁ = γ₁ · x} {γ₂ = ⋄} () ϖ
-cc-wk-eq {π = wk-wk π} {γ₁ = γ₁ · x} {γ₂ = γ₂ · x₁} here (wk-menv-wk 𝐖 ϖ) = refl
-cc-wk-eq {π = wk-wk π} {γ₁ = γ₁ · x} {γ₂ = γ₂ · x₁} (there i) (wk-menv-wk 𝐖 ϖ) = refl
+cc-wk-eq : {Γ Δ : Ctx} {π : Γ ⊇ Δ} {γ : MEnv Γ} {δ : MEnv Δ} {𝐖 : MVal Z} → (i : Δ ∋ (X `⇒ Y)) → (ϖ : WkMEnvᴹ π γ δ) → clo-to-comp-wk-mem-cong i ϖ ≡ clo-to-comp-wk-mem-cong i (wk-menv-wk 𝐖 ϖ)
+cc-wk-eq {π = wk-ε} {γ = ⋄} {δ = ⋄} () ϖ
+cc-wk-eq {π = wk-cong π} {γ = γ · x} {δ = δ · x₁} here (wk-menv-cong x₂ ϖ) = refl
+cc-wk-eq {π = wk-cong π} {γ = γ · x} {δ = δ · x₁} (there i) (wk-menv-cong x₂ ϖ) = refl
+cc-wk-eq {π = wk-wk π} {γ = γ · x} {δ = ⋄} () ϖ
+cc-wk-eq {π = wk-wk π} {γ = γ · x} {δ = δ · x₁} here (wk-menv-wk 𝐖 ϖ) = refl
+cc-wk-eq {π = wk-wk π} {γ = γ · x} {δ = δ · x₁} (there i) (wk-menv-wk 𝐖 ϖ) = refl
 
-cc-eq-eq : {Γ₁ Γ₂ : Ctx} {π : Γ₁ ⊇ Γ₂} {γ₁ : MEnv Γ₁} {γ₂ : MEnv Γ₂} → (i : Γ₂ ∋ (X `⇒ Y)) → (ϖ : WkMEnvᴹ π γ₁ γ₂) → clo-to-comp-wk-cong (var i) ϖ ≡ clo-to-comp-wk-mem-cong i ϖ
+cc-eq-eq : {Γ Δ : Ctx} {π : Γ ⊇ Δ} {γ : MEnv Γ} {δ : MEnv Δ} → (i : Δ ∋ (X `⇒ Y)) → (ϖ : WkMEnvᴹ π γ δ) → clo-to-comp-wk-cong (var i) ϖ ≡ clo-to-comp-wk-mem-cong i ϖ
 cc-eq-eq here (wk-menv-cong x ϖ) = refl
 cc-eq-eq here (wk-menv-wk 𝐖 ϖ) = cc-wk-eq {𝐖 = 𝐖} here ϖ
 cc-eq-eq (there i) (wk-menv-cong x ϖ) = refl
 cc-eq-eq (there i) (wk-menv-wk 𝐖 ϖ) = cc-wk-eq {𝐖 = 𝐖} (there i) ϖ
 
-clo-to-comp-wk-mem-eq : {Γ₁ Γ₂ : Ctx} {π : Γ₁ ⊇ Γ₂} {γ₁ : MEnv Γ₁} {γ₂ : MEnv Γ₂} → (i : Γ₂ ∋ (X `⇒ Y)) → (ϖ : WkMEnvᴹ π γ₁ γ₂) → proj₁ (proj₂ (clo-to-comp (eval (var (wk-mem π i)) γ₁))) ≡ wk-comp (wk-cong (clo-to-comp-wk-cong (var i) ϖ)) (proj₁ (proj₂ (clo-to-comp (eval (var i) γ₂))))
-clo-to-comp-wk-mem-eq {π = wk-ε} {γ₁ = ⋄} {γ₂ = ⋄} () ϖ
-clo-to-comp-wk-mem-eq {π = wk-cong π} {γ₁ = γ₁ · 𝐖₁} {γ₂ = γ₂ · 𝐖₂} here (wk-menv-cong w ϖ) = clo-to-comp-wk-proj₁-proj₂ w
-clo-to-comp-wk-mem-eq {π = wk-cong π} {γ₁ = γ₁ · x} {γ₂ = γ₂ · x₁} (there i) (wk-menv-cong x₂ ϖ) =
+clo-to-comp-wk-mem-eq : {Γ Δ : Ctx} {π : Γ ⊇ Δ} {γ : MEnv Γ} {δ : MEnv Δ} → (i : Δ ∋ (X `⇒ Y)) → (ϖ : WkMEnvᴹ π γ δ) → proj₁ (proj₂ (clo-to-comp (eval (var (wk-mem π i)) γ))) ≡ wk-comp (wk-cong (clo-to-comp-wk-cong (var i) ϖ)) (proj₁ (proj₂ (clo-to-comp (eval (var i) δ))))
+clo-to-comp-wk-mem-eq {π = wk-ε} {γ = ⋄} {δ = ⋄} () ϖ
+clo-to-comp-wk-mem-eq {π = wk-cong π} {γ = γ · 𝐖₁} {δ = δ · 𝐖₂} here (wk-menv-cong w ϖ) = clo-to-comp-wk-proj₁-proj₂ w
+clo-to-comp-wk-mem-eq {π = wk-cong π} {γ = γ · x} {δ = δ · _} (there i) (wk-menv-cong _ ϖ) =
   let
-    a₀ : proj₁ (proj₂ (clo-to-comp (lookup (wk-mem π i) γ₁))) ≡ wk-comp (wk-cong (clo-to-comp-wk-cong (var i) ϖ)) (proj₁ (proj₂ (clo-to-comp (lookup i γ₂))))
-    a₀ = clo-to-comp-wk-mem-eq i ϖ
+    a : proj₁ (proj₂ (clo-to-comp (lookup (wk-mem π i) γ))) ≡ wk-comp (wk-cong (clo-to-comp-wk-cong (var i) ϖ)) (proj₁ (proj₂ (clo-to-comp (lookup i δ))))
+    a = clo-to-comp-wk-mem-eq i ϖ
 
-    goal : proj₁ (proj₂ (clo-to-comp (lookup (wk-mem π i) γ₁))) ≡ wk-comp (wk-cong (clo-to-comp-wk-mem-cong i ϖ)) (proj₁ (proj₂ (clo-to-comp (lookup i γ₂))))
-    goal = subst (λ z → proj₁ (proj₂ (clo-to-comp (lookup (wk-mem π i) γ₁))) ≡ wk-comp (wk-cong z) (proj₁ (proj₂ (clo-to-comp (lookup i γ₂))))) (cc-eq-eq i ϖ) a₀
+    goal : proj₁ (proj₂ (clo-to-comp (lookup (wk-mem π i) γ))) ≡ wk-comp (wk-cong (clo-to-comp-wk-mem-cong i ϖ)) (proj₁ (proj₂ (clo-to-comp (lookup i δ))))
+    goal = subst (λ z → proj₁ (proj₂ (clo-to-comp (lookup (wk-mem π i) γ))) ≡ wk-comp (wk-cong z) (proj₁ (proj₂ (clo-to-comp (lookup i δ))))) (cc-eq-eq i ϖ) a
   in
   goal
-clo-to-comp-wk-mem-eq {π = wk-wk π} {γ₁ = γ₁ · x} {γ₂ = ⋄} () ϖ
-clo-to-comp-wk-mem-eq {π = wk-wk π} {γ₁ = γ₁ · x} {γ₂ = γ₂ · x₁} here (wk-menv-wk 𝐖 ϖ) =
+clo-to-comp-wk-mem-eq {π = wk-wk π} {γ = γ · x} {δ = ⋄} () ϖ
+clo-to-comp-wk-mem-eq {π = wk-wk π} {γ = γ · x} {δ = δ · x₁} here (wk-menv-wk 𝐖 ϖ) =
   let
-    a₀ : proj₁ (proj₂ (clo-to-comp (lookup (wk-mem π here) γ₁))) ≡ wk-comp (wk-cong (clo-to-comp-wk-cong (var here) ϖ)) (proj₁ (proj₂ (clo-to-comp x₁)))
-    a₀ = clo-to-comp-wk-mem-eq here ϖ
+    a : proj₁ (proj₂ (clo-to-comp (lookup (wk-mem π here) γ))) ≡ wk-comp (wk-cong (clo-to-comp-wk-cong (var here) ϖ)) (proj₁ (proj₂ (clo-to-comp x₁)))
+    a = clo-to-comp-wk-mem-eq here ϖ
 
-    goal : proj₁ (proj₂ (clo-to-comp (lookup (wk-mem π here) γ₁))) ≡ wk-comp (wk-cong (clo-to-comp-wk-mem-cong here ϖ)) (proj₁ (proj₂ (clo-to-comp x₁)))
-    goal = subst (λ z → proj₁ (proj₂ (clo-to-comp (lookup (wk-mem π here) γ₁))) ≡ wk-comp (wk-cong z) (proj₁ (proj₂ (clo-to-comp x₁)))) (cc-eq-eq here ϖ) a₀
+    goal : proj₁ (proj₂ (clo-to-comp (lookup (wk-mem π here) γ))) ≡ wk-comp (wk-cong (clo-to-comp-wk-mem-cong here ϖ)) (proj₁ (proj₂ (clo-to-comp x₁)))
+    goal = subst (λ z → proj₁ (proj₂ (clo-to-comp (lookup (wk-mem π here) γ))) ≡ wk-comp (wk-cong z) (proj₁ (proj₂ (clo-to-comp x₁)))) (cc-eq-eq here ϖ) a
   in
   goal
-clo-to-comp-wk-mem-eq {π = wk-wk π} {γ₁ = γ₁ · x} {γ₂ = γ₂ · x₁} (there i) (wk-menv-wk 𝐖 ϖ) =
+clo-to-comp-wk-mem-eq {π = wk-wk π} {γ = γ · x} {δ = δ · x₁} (there i) (wk-menv-wk 𝐖 ϖ) =
   let
-    a₀ : proj₁ (proj₂ (clo-to-comp (eval (var (wk-mem π (there i))) γ₁))) ≡ wk-comp (wk-cong (clo-to-comp-wk-cong (var (there i)) ϖ)) (proj₁ (proj₂ (clo-to-comp (lookup i γ₂))))
-    a₀ = clo-to-comp-wk-mem-eq (there i) ϖ
+    a : proj₁ (proj₂ (clo-to-comp (eval (var (wk-mem π (there i))) γ))) ≡ wk-comp (wk-cong (clo-to-comp-wk-cong (var (there i)) ϖ)) (proj₁ (proj₂ (clo-to-comp (lookup i δ))))
+    a = clo-to-comp-wk-mem-eq (there i) ϖ
 
-    goal : proj₁ (proj₂ (clo-to-comp (lookup (wk-mem π (_∋_.there i)) γ₁))) ≡ wk-comp (Wk.wk-cong (clo-to-comp-wk-mem-cong (_∋_.there i) ϖ)) (proj₁ (proj₂ (clo-to-comp (lookup i γ₂))))
-    goal = subst (λ z → proj₁ (proj₂ (clo-to-comp (lookup (wk-mem π (_∋_.there i)) γ₁))) ≡ wk-comp (Wk.wk-cong z) (proj₁ (proj₂ (clo-to-comp (lookup i γ₂))))) (cc-eq-eq (there i) ϖ) a₀
+    goal : proj₁ (proj₂ (clo-to-comp (lookup (wk-mem π (_∋_.there i)) γ))) ≡ wk-comp (Wk.wk-cong (clo-to-comp-wk-mem-cong (_∋_.there i) ϖ)) (proj₁ (proj₂ (clo-to-comp (lookup i δ))))
+    goal = subst (λ z → proj₁ (proj₂ (clo-to-comp (lookup (wk-mem π (_∋_.there i)) γ))) ≡ wk-comp (Wk.wk-cong z) (proj₁ (proj₂ (clo-to-comp (lookup i δ))))) (cc-eq-eq (there i) ϖ) a
   in
   goal
 
-clo-to-comp-wk-eq : {Γ₁ Γ₂ : Ctx} {π : Γ₁ ⊇ Γ₂} {γ₁ : MEnv Γ₁} {γ₂ : MEnv Γ₂} → (W : Γ₂ ⊢ᵛ (X `⇒ Y)) → (ϖ : WkMEnvᴹ π γ₁ γ₂) → proj₁ (proj₂ (clo-to-comp (eval (wk-val π W) γ₁))) ≡ wk-comp (wk-cong (clo-to-comp-wk-cong W ϖ)) (proj₁ (proj₂ (clo-to-comp (eval W γ₂))))
+clo-to-comp-wk-eq : {Γ Δ : Ctx} {π : Γ ⊇ Δ} {γ : MEnv Γ} {δ : MEnv Δ} → (W : Δ ⊢ᵛ (X `⇒ Y)) → (ϖ : WkMEnvᴹ π γ δ) → proj₁ (proj₂ (clo-to-comp (eval (wk-val π W) γ))) ≡ wk-comp (wk-cong (clo-to-comp-wk-cong W ϖ)) (proj₁ (proj₂ (clo-to-comp (eval W δ))))
 clo-to-comp-wk-eq {π = wk-cong π} (var i) (wk-menv-cong x ϖ) = clo-to-comp-wk-mem-eq i (wk-menv-cong x ϖ)
 clo-to-comp-wk-eq {π = wk-wk π} (var i) (wk-menv-wk 𝐖 ϖ) = clo-to-comp-wk-mem-eq i (wk-menv-wk 𝐖 ϖ)
 clo-to-comp-wk-eq {π = wk-ε} (lam M) wk-menv-ε = refl
-clo-to-comp-wk-eq {π = wk-cong π} (lam M) (wk-menv-cong x₁ ϖ) = refl
+clo-to-comp-wk-eq {π = wk-cong π} (lam M) (wk-menv-cong _ ϖ) = refl
 clo-to-comp-wk-eq {π = wk-wk π} (lam M) (wk-menv-wk 𝐖 ϖ) = refl
 
-clo-to-comp-mem-wk-menv : {Γ₁ Γ₂ : Ctx} {π : Γ₁ ⊇ Γ₂} {γ₁ : MEnv Γ₁} {γ₂ : MEnv Γ₂} → (i : Γ₂ ∋ (X `⇒ Y)) → (ϖ : WkMEnvᴹ π γ₁ γ₂) → WkMEnvᴹ (clo-to-comp-wk-cong (var i) ϖ) (proj₂ (proj₂ (clo-to-comp (eval (var (wk-mem π i)) γ₁)))) (proj₂ (proj₂ (clo-to-comp (eval (var i) γ₂))))
-clo-to-comp-mem-wk-menv {π = wk-ε} {γ₁ = ⋄} {γ₂ = ⋄} () ϖ
-clo-to-comp-mem-wk-menv {π = wk-cong π} {γ₁ = γ₁ · 𝐖₁} {γ₂ = γ₂ · 𝐖₂} here (wk-menv-cong w ϖ) =
+clo-to-comp-mem-wk-menv : {Γ Δ : Ctx} {π : Γ ⊇ Δ} {γ : MEnv Γ} {δ : MEnv Δ} → (i : Δ ∋ (X `⇒ Y)) → (ϖ : WkMEnvᴹ π γ δ) → WkMEnvᴹ (clo-to-comp-wk-cong (var i) ϖ) (proj₂ (proj₂ (clo-to-comp (eval (var (wk-mem π i)) γ)))) (proj₂ (proj₂ (clo-to-comp (eval (var i) δ))))
+clo-to-comp-mem-wk-menv {π = wk-ε} {γ = ⋄} {δ = ⋄} () ϖ
+clo-to-comp-mem-wk-menv {π = wk-cong π} {γ = γ · 𝐖₁} {δ = δ · 𝐖₂} here (wk-menv-cong w ϖ) =
   let
     goal : WkMEnvᴹ (clo-to-comp-wk-proj₁ w) (proj₂ (proj₂ (clo-to-comp 𝐖₁))) (proj₂ (proj₂ (clo-to-comp 𝐖₂)))
     goal = clo-to-comp-wk-proj₂-proj₂ w
   in
   goal
-clo-to-comp-mem-wk-menv {π = wk-cong π} {γ₁ = γ₁ · 𝐖₁} {γ₂ = γ₂ · 𝐖₂} (there i) (wk-menv-cong x₂ ϖ) =
+clo-to-comp-mem-wk-menv {π = wk-cong π} {γ = γ · 𝐖₁} {δ = δ · 𝐖₂} (there i) (wk-menv-cong _ ϖ) =
   let
-    a₀ : WkMEnvᴹ (clo-to-comp-wk-cong (var i) ϖ) (proj₂ (proj₂ (clo-to-comp (lookup (wk-mem π i) γ₁)))) (proj₂ (proj₂ (clo-to-comp (lookup i γ₂))))
-    a₀ = clo-to-comp-mem-wk-menv i ϖ
+    a : WkMEnvᴹ (clo-to-comp-wk-cong (var i) ϖ) (proj₂ (proj₂ (clo-to-comp (lookup (wk-mem π i) γ)))) (proj₂ (proj₂ (clo-to-comp (lookup i δ))))
+    a = clo-to-comp-mem-wk-menv i ϖ
 
-    goal : WkMEnvᴹ (clo-to-comp-wk-mem-cong i ϖ) (proj₂ (proj₂ (clo-to-comp (lookup (wk-mem π i) γ₁)))) (proj₂ (proj₂ (clo-to-comp (lookup i γ₂))))
-    goal = subst (λ z → WkMEnvᴹ z (proj₂ (proj₂ (clo-to-comp (lookup (wk-mem π i) γ₁)))) (proj₂ (proj₂ (clo-to-comp (lookup i γ₂))))) (cc-eq-eq i ϖ) a₀
+    goal : WkMEnvᴹ (clo-to-comp-wk-mem-cong i ϖ) (proj₂ (proj₂ (clo-to-comp (lookup (wk-mem π i) γ)))) (proj₂ (proj₂ (clo-to-comp (lookup i δ))))
+    goal = subst (λ z → WkMEnvᴹ z (proj₂ (proj₂ (clo-to-comp (lookup (wk-mem π i) γ)))) (proj₂ (proj₂ (clo-to-comp (lookup i δ))))) (cc-eq-eq i ϖ) a
   in
   goal
-clo-to-comp-mem-wk-menv {π = wk-wk π} {γ₁ = γ₁ · x} {γ₂ = ⋄} () ϖ
-clo-to-comp-mem-wk-menv {π = wk-wk π} {γ₁ = γ₁ · x} {γ₂ = γ₂ · x₁} here (wk-menv-wk 𝐖 ϖ) =
+clo-to-comp-mem-wk-menv {π = wk-wk π} {γ = γ · x} {δ = ⋄} () ϖ
+clo-to-comp-mem-wk-menv {π = wk-wk π} {γ = γ · x} {δ = δ · x₁} here (wk-menv-wk 𝐖 ϖ) =
   let
-    a₀ : WkMEnvᴹ (clo-to-comp-wk-cong (var here) ϖ) (proj₂ (proj₂ (clo-to-comp (eval (var (wk-mem π here)) γ₁)))) (proj₂ (proj₂ (clo-to-comp (eval (var here) (γ₂ · x₁)))))
-    a₀ = clo-to-comp-mem-wk-menv here ϖ
+    a : WkMEnvᴹ (clo-to-comp-wk-cong (var here) ϖ) (proj₂ (proj₂ (clo-to-comp (eval (var (wk-mem π here)) γ)))) (proj₂ (proj₂ (clo-to-comp (eval (var here) (δ · x₁)))))
+    a = clo-to-comp-mem-wk-menv here ϖ
 
-    goal : WkMEnvᴹ (clo-to-comp-wk-mem-cong _∋_.here ϖ) (proj₂ (proj₂ (clo-to-comp (lookup (wk-mem π _∋_.here) γ₁)))) (proj₂ (proj₂ (clo-to-comp x₁)))
-    goal = subst (λ z → WkMEnvᴹ z (proj₂ (proj₂ (clo-to-comp (eval (var (wk-mem π here)) γ₁)))) (proj₂ (proj₂ (clo-to-comp (eval (var here) (γ₂ · x₁)))))) (cc-eq-eq _∋_.here ϖ) a₀
+    goal : WkMEnvᴹ (clo-to-comp-wk-mem-cong _∋_.here ϖ) (proj₂ (proj₂ (clo-to-comp (lookup (wk-mem π _∋_.here) γ)))) (proj₂ (proj₂ (clo-to-comp x₁)))
+    goal = subst (λ z → WkMEnvᴹ z (proj₂ (proj₂ (clo-to-comp (eval (var (wk-mem π here)) γ)))) (proj₂ (proj₂ (clo-to-comp (eval (var here) (δ · x₁)))))) (cc-eq-eq _∋_.here ϖ) a
   in
   goal
-clo-to-comp-mem-wk-menv {π = wk-wk π} {γ₁ = γ₁ · x} {γ₂ = γ₂ · x₁} (there i) (wk-menv-wk 𝐖 ϖ) =
+clo-to-comp-mem-wk-menv {π = wk-wk π} {γ = γ · x} {δ = δ · x₁} (there i) (wk-menv-wk 𝐖 ϖ) =
   let
-    a₀ : WkMEnvᴹ (clo-to-comp-wk-cong (var (there i)) ϖ) (proj₂ (proj₂ (clo-to-comp (eval (var (wk-mem π (there i))) γ₁)))) (proj₂ (proj₂ (clo-to-comp (eval (var (there i)) (γ₂ · x₁)))))
-    a₀ = clo-to-comp-mem-wk-menv (there i) ϖ
+    a : WkMEnvᴹ (clo-to-comp-wk-cong (var (there i)) ϖ) (proj₂ (proj₂ (clo-to-comp (eval (var (wk-mem π (there i))) γ)))) (proj₂ (proj₂ (clo-to-comp (eval (var (there i)) (δ · x₁)))))
+    a = clo-to-comp-mem-wk-menv (there i) ϖ
 
-    goal : WkMEnvᴹ (clo-to-comp-wk-mem-cong (_∋_.there i) ϖ) (proj₂ (proj₂ (clo-to-comp (lookup (wk-mem π (_∋_.there i)) γ₁)))) (proj₂ (proj₂ (clo-to-comp (lookup i γ₂))))
-    goal = subst (λ z → WkMEnvᴹ z (proj₂ (proj₂ (clo-to-comp (eval (var (wk-mem π (there i))) γ₁)))) (proj₂ (proj₂ (clo-to-comp (eval (var (there i)) (γ₂ · x₁)))))) (cc-eq-eq (there i) ϖ) a₀
+    goal : WkMEnvᴹ (clo-to-comp-wk-mem-cong (_∋_.there i) ϖ) (proj₂ (proj₂ (clo-to-comp (lookup (wk-mem π (_∋_.there i)) γ)))) (proj₂ (proj₂ (clo-to-comp (lookup i δ))))
+    goal = subst (λ z → WkMEnvᴹ z (proj₂ (proj₂ (clo-to-comp (eval (var (wk-mem π (there i))) γ)))) (proj₂ (proj₂ (clo-to-comp (eval (var (there i)) (δ · x₁)))))) (cc-eq-eq (there i) ϖ) a
   in
   goal
 
-clo-to-comp-wk-menv : {Γ₁ Γ₂ : Ctx} {π : Γ₁ ⊇ Γ₂} {γ₁ : MEnv Γ₁} {γ₂ : MEnv Γ₂} → (W : Γ₂ ⊢ᵛ (X `⇒ Y)) → (ϖ : WkMEnvᴹ π γ₁ γ₂) → WkMEnvᴹ (clo-to-comp-wk-cong W ϖ) (proj₂ (proj₂ (clo-to-comp (eval (wk-val π W) γ₁)))) (proj₂ (proj₂ (clo-to-comp (eval W γ₂))))
+clo-to-comp-wk-menv : {Γ Δ : Ctx} {π : Γ ⊇ Δ} {γ : MEnv Γ} {δ : MEnv Δ} → (W : Δ ⊢ᵛ (X `⇒ Y)) → (ϖ : WkMEnvᴹ π γ δ) → WkMEnvᴹ (clo-to-comp-wk-cong W ϖ) (proj₂ (proj₂ (clo-to-comp (eval (wk-val π W) γ)))) (proj₂ (proj₂ (clo-to-comp (eval W δ))))
 clo-to-comp-wk-menv (var i) (wk-menv-cong x ϖ) = clo-to-comp-mem-wk-menv i (wk-menv-cong x ϖ)
 clo-to-comp-wk-menv (var i) (wk-menv-wk 𝐖 ϖ) = clo-to-comp-mem-wk-menv i (wk-menv-wk 𝐖 ϖ)
 clo-to-comp-wk-menv (lam M) wk-menv-ε = wk-menv-ε
-clo-to-comp-wk-menv (lam M) (wk-menv-cong x₁ ϖ) = wk-menv-cong x₁ ϖ
+clo-to-comp-wk-menv (lam M) (wk-menv-cong x ϖ) = wk-menv-cong x ϖ
 clo-to-comp-wk-menv (lam M) (wk-menv-wk 𝐖 ϖ) = wk-menv-wk 𝐖 ϖ
 
 mstep-eqv₁ : {σ₁₁ σ₂₁ σ₁₂ : CState} → (WkCStateᴹ σ₁₂ σ₁₁) → (σ₁₁ →ᶜ σ₂₁) → Σ[ σ₂₂ ∈ CState ] ((σ₁₂ →ᶜ σ₂₂) × σ₂₁ ≈ᴹ σ₂₂)
 mstep-eqv₁ (wk-cstate-result {K₁ = < x₂ ； γ >∷ K₁} x (wk-cstack-push π x₁ x₃ x₄)) return→ = _ , return→ , ≈ᴹ-bc (≈-wk₁ (wk-cstate-comp (wk-cong π) x₁ (wk-menv-cong x x₃) x₄))
-mstep-eqv₁ (wk-cstate-comp {M₁ = return W} {M₂ = return W₂} π refl x₁ x₂) eval→ = _ , eval→ , ≈ᴹ-bc (≈-wk₁ (wk-cstate-result (eval-val-wk W₂ x₁) x₂))
+mstep-eqv₁ (wk-cstate-comp {M₁ = return V} {M₂ = return W} π refl x₁ x₂) eval→ = _ , eval→ , ≈ᴹ-bc (≈-wk₁ (wk-cstate-result (eval-val-wk W x₁) x₂))
 mstep-eqv₁ (wk-cstate-comp {M₁ = push M₁ M₂} π refl x₁ x₂) push→ = _ , push→ , ≈ᴹ-bc (≈-wk₁ (wk-cstate-comp π refl x₁ (wk-cstack-push π refl x₁ x₂)))
 mstep-eqv₁ (wk-cstate-comp {M₁ = sub M₁ M₂} π refl x₁ x₂) sub→ = _ , sub→ , ≈ᴹ-bc (≈-wk₁ (wk-cstate-comp (Wk.wk-cong π) refl (wk-menv-cong (wk-jumpᵛ π refl x₁ x₂) x₁) x₂))
 mstep-eqv₁ (wk-cstate-comp {M₁ = var (var i₁)} {M₂ = var (var i)} π refl x₁ x₂) var→ = _ , var→ , ≈ᴹ-sym (jump-wk i x₁)
-mstep-eqv₁ (wk-cstate-comp {M₁ = pm x₃ M₁} {M₂ = pm W₂ M₂} π refl x₁ x₂) pmᶜ→ = _ , pmᶜ→ , ≈ᴹ-bc (≈-wk₁ (wk-cstate-comp (Wk.wk-cong (Wk.wk-cong π)) refl (wk-menv-cong (eval₂-val-wk W₂ x₁) (wk-menv-cong (eval₁-val-wk W₂ x₁) x₁)) x₂))
+mstep-eqv₁ (wk-cstate-comp {M₁ = pm x₃ M₁} {M₂ = pm W M₂} π refl x₁ x₂) pmᶜ→ = _ , pmᶜ→ , ≈ᴹ-bc (≈-wk₁ (wk-cstate-comp (Wk.wk-cong (Wk.wk-cong π)) refl (wk-menv-cong (eval₂-val-wk W x₁) (wk-menv-cong (eval₁-val-wk W x₁) x₁)) x₂))
 mstep-eqv₁ (wk-cstate-comp {M₁ = app x₃ x₄} {M₂ = app x₅ x₆} π refl x₁ x₂) app→ = _ , app→ , ≈ᴹ-bc (≈-wk₁ (wk-cstate-comp (wk-cong (clo-to-comp-wk-cong x₅ x₁)) (clo-to-comp-wk-eq x₅ x₁) (wk-menv-cong (eval-val-wk x₆ x₁) (clo-to-comp-wk-menv x₅ x₁)) x₂))
 
 mstep-eqv₂ : {σ₁₁ σ₂₁ σ₁₂ : CState} → (WkCStateᴹ σ₁₁ σ₁₂) → (σ₁₁ →ᶜ σ₂₁) → Σ[ σ₂₂ ∈ CState ] ((σ₁₂ →ᶜ σ₂₂) × σ₂₁ ≈ᴹ σ₂₂)
@@ -349,8 +349,8 @@ mstep-eqv₂ (wk-cstate-comp {M₂ = return W} π refl x₁ x₂) eval→ = _ , 
 mstep-eqv₂ (wk-cstate-comp {M₂ = push M₂ M₃} π refl x₁ x₂) push→ = _ , push→ , ≈ᴹ-bc (≈-wk₂ (wk-cstate-comp π refl x₁ (wk-cstack-push π refl x₁ x₂)))
 mstep-eqv₂ (wk-cstate-comp {M₂ = sub M₂ M₃} π refl x₁ x₂) sub→ = _ , sub→ , ≈ᴹ-bc (≈-wk₂ (wk-cstate-comp (wk-cong π) refl (wk-menv-cong (wk-jumpᵛ π refl x₁ x₂) x₁) x₂))
 mstep-eqv₂ (wk-cstate-comp {M₂ = var (var i)} π refl x₁ x₂) var→ = _ , var→ , jump-wk i x₁
-mstep-eqv₂ (wk-cstate-comp {M₂ = pm W M₂} {γ₁ = γ₁} {γ₂ = γ₂} π refl x₁ x₂) pmᶜ→ = _ , pmᶜ→ , ≈ᴹ-bc (≈-wk₂ (wk-cstate-comp (Wk.wk-cong (Wk.wk-cong π)) refl (wk-menv-cong (eval₂-val-wk W x₁) (wk-menv-cong (eval₁-val-wk W x₁) x₁)) x₂))
-mstep-eqv₂ (wk-cstate-comp {M₂ = app W₁ W₂} π refl ϖ x) app→ = _ , app→ , ≈ᴹ-bc (≈-wk₂ (wk-cstate-comp (wk-cong (clo-to-comp-wk-cong W₁ ϖ)) (clo-to-comp-wk-eq W₁ ϖ) (wk-menv-cong (eval-val-wk W₂ ϖ) (clo-to-comp-wk-menv W₁ ϖ)) x))
+mstep-eqv₂ (wk-cstate-comp {M₂ = pm W M₂} {γ = γ} {δ = δ} π refl x₁ x₂) pmᶜ→ = _ , pmᶜ→ , ≈ᴹ-bc (≈-wk₂ (wk-cstate-comp (Wk.wk-cong (Wk.wk-cong π)) refl (wk-menv-cong (eval₂-val-wk W x₁) (wk-menv-cong (eval₁-val-wk W x₁) x₁)) x₂))
+mstep-eqv₂ (wk-cstate-comp {M₂ = app V W} π refl ϖ x) app→ = _ , app→ , ≈ᴹ-bc (≈-wk₂ (wk-cstate-comp (wk-cong (clo-to-comp-wk-cong V ϖ)) (clo-to-comp-wk-eq V ϖ) (wk-menv-cong (eval-val-wk W ϖ) (clo-to-comp-wk-menv V ϖ)) x))
 
 mstep-eqv′ : {σ₁₁ σ₂₁ σ₁₂ : CState} → (σ₁₁ ≈₀ᴹ σ₁₂) → (σ₁₁ →ᶜ σ₂₁) → Σ[ σ₂₂ ∈ CState ] ((σ₁₂ →ᶜ σ₂₂) × σ₂₁ ≈ᴹ σ₂₂)
 mstep-eqv′ (≈-wk₁ w) σ→σ′ = mstep-eqv₁ w σ→σ′
