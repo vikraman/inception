@@ -94,40 +94,40 @@ mutual
 
   wk-cstack-trans : {K₁ K₂ K₃ : CStack X} → WkCStackᴹ K₁ K₂ → WkCStackᴹ K₂ K₃ → WkCStackᴹ K₁ K₃
   wk-cstack-trans wk-cstack-empty wk-cstack-empty = wk-cstack-empty
-  wk-cstack-trans (wk-cstack-push {M₁ = M₁₁} {M₂ = M₂₁} π₁ eq₁ ϖ₁ x₁) (wk-cstack-push {M₁ = M₁₂} {M₂ = M₂₂} π₂ eq₂ ϖ₂ x₂) =
+  wk-cstack-trans (wk-cstack-push {M₁ = M₁₁} {M₂ = M₂₁} π eq₁ ϖ₁ x₁) (wk-cstack-push {M₁ = M₁₂} {M₂ = M₂₂} ρ eq₂ ϖ₂ x₂) =
                         wk-cstack-push
-                          (wk-trans π₁ π₂)
-                          (M₁₁ ≡⟨ eq₁ ⟩ wk-comp (wk-cong π₁) M₂₁ ≡⟨ cong (wk-comp (wk-cong π₁)) eq₂ ⟩ wk-comp (wk-cong (wk-trans π₁ π₂)) M₂₂ ∎)
+                          (wk-trans π ρ)
+                          (M₁₁ ≡⟨ eq₁ ⟩ wk-comp (wk-cong π) M₂₁ ≡⟨ cong (wk-comp (wk-cong π)) eq₂ ⟩ wk-comp (wk-cong (wk-trans π ρ)) M₂₂ ∎)
                           (wk-MEnvᴹ-trans ϖ₁ ϖ₂)
                           (wk-cstack-trans x₁ x₂)
 
   wk-mval-trans : {𝐖₁ 𝐖₂ 𝐖₃ : MVal X} → WkMVal 𝐖₁ 𝐖₂ → WkMVal 𝐖₂ 𝐖₃ → WkMVal 𝐖₁ 𝐖₃
   wk-mval-trans wk-unitᵛ wk-unitᵛ = wk-unitᵛ
   wk-mval-trans (wk-pairᵛ w₁ w₂) (wk-pairᵛ w₃ w₄) = wk-pairᵛ (wk-mval-trans w₁ w₃) (wk-mval-trans w₂ w₄)
-  wk-mval-trans (wk-cloᵛ {M₁ = M₁₁} {M₂ = M₂₁} π₁ eq₁ x₁) (wk-cloᵛ {M₁ = M₁₂} {M₂ = M₂₂} π₂ eq₂ x₂) =
+  wk-mval-trans (wk-cloᵛ {M₁ = M₁₁} {M₂ = M₂₁} π eq₁ x₁) (wk-cloᵛ {M₁ = M₁₂} {M₂ = M₂₂} ρ eq₂ x₂) =
                         wk-cloᵛ
-                          (wk-trans π₁ π₂)
+                          (wk-trans π ρ)
                           (M₁₁
                             ≡⟨ eq₁ ⟩
-                            wk-comp (wk-cong π₁) M₂₁
-                            ≡⟨ cong (wk-comp (wk-cong π₁)) eq₂ ⟩
-                            wk-comp (wk-cong π₁) (wk-comp (wk-cong π₂) M₂₂)
-                            ≡⟨ wk-comp-wk-η M₂₂ (wk-cong π₁) (wk-cong π₂) ⟩
-                            wk-comp (wk-cong (wk-trans π₁ π₂)) M₂₂ ∎)
+                            wk-comp (wk-cong π) M₂₁
+                            ≡⟨ cong (wk-comp (wk-cong π)) eq₂ ⟩
+                            wk-comp (wk-cong π) (wk-comp (wk-cong ρ) M₂₂)
+                            ≡⟨ wk-comp-wk-η M₂₂ (wk-cong π) (wk-cong ρ) ⟩
+                            wk-comp (wk-cong (wk-trans π ρ)) M₂₂ ∎)
                           (wk-MEnvᴹ-trans x₁ x₂)
-  wk-mval-trans (wk-jumpᵛ {M₁ = M₁₁} {M₂ = M₂₁} π₁ eq₁ x₁ y₁) (wk-jumpᵛ {M₁ = M₁₂} {M₂ = M₂₂} π₂ eq₂ x₂ y₂) =
+  wk-mval-trans (wk-jumpᵛ {M₁ = M₁₁} {M₂ = M₂₁} π eq₁ x₁ y₁) (wk-jumpᵛ {M₁ = M₁₂} {M₂ = M₂₂} ρ eq₂ x₂ y₂) =
                         wk-jumpᵛ
-                          (wk-trans π₁ π₂)
-                          (M₁₁ ≡⟨ eq₁ ⟩ wk-comp π₁ M₂₁ ≡⟨ cong (wk-comp π₁) eq₂ ⟩ wk-comp (wk-trans π₁ π₂) M₂₂ ∎)
+                          (wk-trans π ρ)
+                          (M₁₁ ≡⟨ eq₁ ⟩ wk-comp π M₂₁ ≡⟨ cong (wk-comp π) eq₂ ⟩ wk-comp (wk-trans π ρ) M₂₂ ∎)
                           (wk-MEnvᴹ-trans x₁ x₂)
                           (wk-cstack-trans y₁ y₂)
 
 wk-cstate-trans : {σ₁ σ₂ σ₃ : CState} → WkCStateᴹ σ₁ σ₂ → WkCStateᴹ σ₂ σ₃ → WkCStateᴹ σ₁ σ₃
 wk-cstate-trans (wk-cstate-result ϖ₁ x₁) (wk-cstate-result ϖ₂ x₂) = wk-cstate-result (wk-mval-trans ϖ₁ ϖ₂) (wk-cstack-trans x₁ x₂)
-wk-cstate-trans (wk-cstate-comp {M₁ = M₁₁} {M₂ = M₂₁} π₁ eq₁ ϖ₁ x₁) (wk-cstate-comp {M₁ = M₁₂} {M₂ = M₂₂} π₂ eq₂ ϖ₂ x₂) =
+wk-cstate-trans (wk-cstate-comp {M₁ = M₁₁} {M₂ = M₂₁} π eq₁ ϖ₁ x₁) (wk-cstate-comp {M₁ = M₁₂} {M₂ = M₂₂} ρ eq₂ ϖ₂ x₂) =
                         wk-cstate-comp
-                          (wk-trans π₁ π₂)
-                          (M₁₁ ≡⟨ eq₁ ⟩ wk-comp π₁ M₂₁ ≡⟨ cong (wk-comp π₁) eq₂ ⟩ wk-comp (wk-trans π₁ π₂) M₂₂ ∎)
+                          (wk-trans π ρ)
+                          (M₁₁ ≡⟨ eq₁ ⟩ wk-comp π M₂₁ ≡⟨ cong (wk-comp π) eq₂ ⟩ wk-comp (wk-trans π ρ) M₂₂ ∎)
                           (wk-MEnvᴹ-trans ϖ₁ ϖ₂)
                           (wk-cstack-trans x₁ x₂)
 
