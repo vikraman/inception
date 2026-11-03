@@ -110,8 +110,8 @@ A symbol with a corresponding key \texttt{somekey} can be printed by \verb+\gls{
       {\glsi{Ctx} \mathbin{\glsi{PureJudge}} \glsi{Var} : \glsi{Type}}
 
     \inferrule
-      {\glsi{Ctx} \mathbin{\glsi{CtxCons}} \glsi{Type} \mathbin{\glsi{CompJudge}} \glsi{Comp} : \glsii{Type}}
-      {\glsi{Ctx} \mathbin{\glsi{PureJudge}} \gls{LamOp} ( \glsi{Comp} ) : \glsi{Type} \mathbin{\glsi{ArrowType}} \glsii{Type}}
+      {\glsi{Ctx} \mathbin{\glsi{CtxCons}} \glsi{Var} : \glsi{Type} \mathbin{\glsi{CompJudge}} \glsi{Comp} : \glsii{Type}}
+      {\glsi{Ctx} \mathbin{\glsi{PureJudge}} \gls{LamOp} ( \glsi{Var}.\glsi{Comp} ) : \glsi{Type} \mathbin{\glsi{ArrowType}} \glsii{Type}}
 
     \inferrule
       { }
@@ -133,8 +133,8 @@ A symbol with a corresponding key \texttt{somekey} can be printed by \verb+\gls{
       {\glsi{Ctx} \mathbin{\glsi{CompJudge}} \gls{ReturnOp} (\glsi{Pure}) : \glsi{Type}}
 
     \inferrule
-      {\glsi{Ctx} \mathbin{\glsi{CompJudge}} \glsi{Comp} : \glsi{Type} \\ \glsi{Ctx} \mathbin{\glsi{CtxCons}} \glsi{Type} \mathbin{\glsi{CompJudge}} \glsii{Comp} : \glsii{Type}}
-      {\glsi{Ctx} \mathbin{\glsi{CompJudge}} \gls{PushOp} (\glsi{Comp} , \glsii{Comp}) : \glsii{Type}}
+      {\glsi{Ctx} \mathbin{\glsi{CompJudge}} \glsi{Comp} : \glsi{Type} \\ \glsi{Ctx} \mathbin{\glsi{CtxCons}} \glsi{Var} : \glsi{Type} \mathbin{\glsi{CompJudge}} \glsii{Comp} : \glsii{Type}}
+      {\glsi{Ctx} \mathbin{\glsi{CompJudge}} \gls{PushOp} (\glsi{Comp} , \glsi{Var}.\glsii{Comp}) : \glsii{Type}}
 
     \inferrule
       {\glsi{Ctx} \mathbin{\glsi{PureJudge}} \glsi{Pure} : \glsi{Type} \mathbin{\glsi{ArrowType}} \glsii{Type} \\ \glsi{Ctx} \mathbin{\glsi{PureJudge}} \glsii{Pure} : \glsi{Type}}
@@ -145,12 +145,12 @@ A symbol with a corresponding key \texttt{somekey} can be printed by \verb+\gls{
       {\glsi{Ctx} \mathbin{\glsi{CompJudge}} {\gls{VarOp}}_{\glsi{Type}} (\glsi{Comp}) : \glsi{Type}}
 
     \inferrule
-      {\glsi{Ctx} \mathbin{\glsi{CtxCons}} \gls{LabelType} \mathbin{\glsi{CompJudge}} \glsi{Comp} : \glsi{Type} \\ \glsi{Ctx} \mathbin{\glsi{CompJudge}} \glsii{Comp} : \glsi{Type}}
-      {\glsi{Ctx} \mathbin{\glsi{CompJudge}} {\gls{SubOp}}_{\glsi{Type}} (\glsi{Comp} , \glsii{Comp}) : \glsi{Type}}
+      {\glsi{Ctx} \mathbin{\glsi{CtxCons}} \glsiii{Var} : \gls{LabelType} \mathbin{\glsi{CompJudge}} \glsi{Comp} : \glsi{Type} \\ \glsi{Ctx} \mathbin{\glsi{CompJudge}} \glsii{Comp} : \glsi{Type}}
+      {\glsi{Ctx} \mathbin{\glsi{CompJudge}} {\gls{SubOp}}_{\glsi{Type}} (\glsiii{Var}.\glsi{Comp} , \glsii{Comp}) : \glsi{Type}}
 
     \inferrule
-      {\glsi{Ctx} \mathbin{\glsi{PureJudge}} \glsi{Pure} : \glsi{Type} \mathop{\glsi{ProdType}} \glsii{Type} \\ \glsi{Ctx} \mathbin{\glsi{CtxCons}} \glsi{Type} \mathbin{\glsi{CtxCons}} \glsii{Type} \mathbin{\glsi{CompJudge}} \glsi{Comp} : \glsiii{Type}}
-      {\glsi{Ctx} \mathbin{\glsi{CompJudge}} \gls{PmOp}(\glsi{Pure}, \glsi{Comp}) : \glsiii{Type}}
+      {\glsi{Ctx} \mathbin{\glsi{PureJudge}} \glsi{Pure} : \glsi{Type} \mathop{\glsi{ProdType}} \glsii{Type} \\ \glsi{Ctx} \mathbin{\glsi{CtxCons}} \glsi{Var} : \glsi{Type} \mathbin{\glsi{CtxCons}} \glsii{Var} : \glsii{Type} \mathbin{\glsi{CompJudge}} \glsi{Comp} : \glsiii{Type}}
+      {\glsi{Ctx} \mathbin{\glsi{CompJudge}} \gls{PmOp}(\glsi{Pure}, \glsii{Var}.\glsi{Var}.\glsi{Comp}) : \glsiii{Type}}
   \end{mathpar}
   \caption{Typing rules for effectful terms / computations}
   \label{fig:terms-c}
