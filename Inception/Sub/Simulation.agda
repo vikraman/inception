@@ -52,7 +52,7 @@ normal-t {σ = σ} {σᴹ = σᴹ} wf n eqv s = n (proj₁ (proj₂ (mstep-eqv e
 mutual
   execᵀᴹ-step : {σ₀ : TM.CState} → Step?ᵀᴹ σ₀ → {σ₀ᴹ σᴹ : M.CState} → (σ₀ᴹ →ᴹ* σᴹ) → Σ[ σ ∈ TM.CState ] (σ₀ →ᵀᴹ* σ)
   execᵀᴹ-step {σ₀ = σ₀} (done _) _ = σ₀ , ε
-  execᵀᴹ-step (next {b = σ₁} t) ss = let u = execᵀᴹ-quick-rec σ₁ ss in proj₁ u , t ◅ proj₂ u
+  execᵀᴹ-step (next {b = σ} t) ss = let u = execᵀᴹ-quick-rec σ ss in proj₁ u , t ◅ proj₂ u
 
   execᵀᴹ-quick-rec : (σ₀ : TM.CState) → {σ₀ᴹ σᴹ : M.CState} → (σ₀ᴹ →ᴹ* σᴹ) → Σ[ σ ∈ TM.CState ] (σ₀ →ᵀᴹ* σ)
   execᵀᴹ-quick-rec σ ε = σ , ε
@@ -61,7 +61,6 @@ mutual
 execᵀᴹ-quick : (M : ε ⊢ᶜ ℛ) → Σ[ σ ∈ TM.CState ] TM.⟨ M ╎ ⋄ ╎ wk-ε ╎ TM.◻ ⟩ →ᵀᴹ* σ
 execᵀᴹ-quick M = execᵀᴹ-quick-rec TM.⟨ M ╎ ⋄ ╎ wk-ε ╎ TM.◻ ⟩ (proj₁ (proj₂ (proj₂ (proj₂ (M.exec M)))))
 
---------------------------------------------------------
 
 e-lem : {σ₀ σ₁ : TM.CState} → (σ₀ →ᵀᴹ σ₁) → {σ₀ᴹ σ₁ᴹ σᴹ : M.CState} → (sᴹ : σ₀ᴹ →ᴹ σ₁ᴹ) → (ssᴹ : σ₁ᴹ →ᴹ* σᴹ) → proj₁ (execᵀᴹ-quick-rec σ₀ (sᴹ ◅ ssᴹ)) ≡ proj₁ (execᵀᴹ-quick-rec σ₁ ssᴹ)
 e-lem eval→ sᴹ ssᴹ = refl
