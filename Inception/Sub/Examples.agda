@@ -16,6 +16,7 @@ open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 ex15 : ε ⊢ᶜ (`𝟙)
 ex15 = push (push (app (lam {X = `𝟙} (sub (var (var here)) (return unit))) unit) (return unit)) (return unit)
 
+{-
 module Mexamples where
 
   open StarReasoning _→ᴹ_
@@ -34,28 +35,26 @@ module Mexamples where
       ⟶⟨ eval→ ⟩ ⟨ unitᵛ ╎ ◻ ⟩ ∎)
       , _)
   _ = refl
+-}
 
 module TMexamples where
 
   open StarReasoning _→ᵀᴹ_
   open Reduction _→ᵀᴹ_ renaming (_~>*_ to _→ᵀᴹ*_)
 
-  -- _ : execᵀᴹ ex15 ≡ ( _ , _ , push→ ◅ push→ ◅ app→ ◅ sub→ ◅ var→ ◅ eval→ ◅ return→ ◅ eval→ ◅ return→ ◅ eval→ ◅ ε)
+  _ : (execᵀᴹ ex15) ≡ (_ , _ , (push→ ◅ push→ ◅ app→ ◅ sub→ ◅ var→ ◅ eval→ ◅ return→ ◅ eval→ ◅ return→ ◅ eval→ ◅ ε))
+  _ = refl
 
-  s :  ⟨ ex15 ╎ ⋄ ╎ wk-ε ╎ ◻ ⟩ →ᵀᴹ* _
-  s = begin      TM.⟨ ex15 ╎ ⋄ ╎ wk-ε ╎ TM.◻ ⟩
+  _ : (execᵀᴹ ex15) ≡ (TM.⟨ unit ； ⋄ · unit · unit · unit ╎ wk-wk (wk-wk (wk-wk wk-ε)) ╎ ◻ ⟩ , _ , (begin
+                 TM.⟨ ex15 ╎ ⋄ ╎ wk-ε ╎ TM.◻ ⟩
       ⟶⟨ push→ ⟩ TM.⟨ push (app (lam (sub (var (var here)) (return unit))) unit) (return unit) ╎ ⋄ ╎ wk-id ╎ TM.< return unit ； ⋄ ； wk-ε >∷ ◻ ⟩
       ⟶⟨ push→ ⟩ TM.⟨ app (lam (sub (var (var here)) (return unit))) unit ╎ ⋄ ╎ wk-id ╎ TM.< return unit ； ⋄ ； wk-id >∷ (TM.< return unit ； ⋄ ； wk-ε >∷ ◻) ⟩
       ⟶⟨ app→ ⟩ TM.⟨ sub (var (var here)) (return unit) ╎ ⋄ · TM.eval unit ⋄ ╎ wk-wk wk-id ╎ TM.< return unit ； ⋄ ； wk-id >∷ (TM.< return unit ； ⋄ ； wk-ε >∷ ◻) ⟩
-      ⟶⟨ sub→ ⟩  TM.⟨ var (var here) ╎ (⋄ · TM.eval unit ⋄) ·﹝ return unit ╎ wk-wk wk-id ╎ TM.< return unit ； ⋄ ； wk-id >∷ (TM.< return unit ； ⋄ ； wk-ε >∷ ◻) ﹞ ╎ wk-wk (wk-wk wk-id) ╎ TM.< return unit ； ⋄ ； wk-id >∷ (TM.< return unit ； ⋄ ； wk-ε >∷ ◻) ⟩
+      ⟶⟨ sub→ ⟩ TM.⟨ var (var here) ╎ ⋄ · TM.eval unit ⋄ ·﹝ return unit ╎ wk-wk wk-id ╎ TM.< return unit ； ⋄ ； wk-id >∷ (TM.< return unit ； ⋄ ； wk-ε >∷ ◻) ﹞ ╎ wk-wk (wk-wk wk-id) ╎ TM.< return unit ； ⋄ ； wk-id >∷ (TM.< return unit ； ⋄ ； wk-ε >∷ ◻) ⟩
       ⟶⟨ var→ ⟩ TM.⟨ return unit ╎ ⋄ · TM.eval unit ⋄ ╎ wk-wk wk-id ╎ TM.< return unit ； ⋄ ； wk-id >∷ (TM.< return unit ； ⋄ ； wk-ε >∷ ◻) ⟩
       ⟶⟨ eval→ ⟩ TM.⟨ TM.eval unit (⋄ · TM.eval unit ⋄) ； ⋄ · TM.eval unit ⋄ ╎ wk-wk wk-id ╎ TM.< return unit ； ⋄ ； wk-id >∷ (TM.< return unit ； ⋄ ； wk-ε >∷ ◻) ⟩
       ⟶⟨ return→ ⟩ TM.⟨ return (wk-val (wk-cong (wk-wk wk-id)) unit) ╎ ⋄ · TM.eval unit ⋄ · TM.eval unit (⋄ · TM.eval unit ⋄) ╎ wk-wk (wk-trans (wk-wk wk-id) wk-id) ╎ TM.< return unit ； ⋄ ； wk-ε >∷ ◻ ⟩
       ⟶⟨ eval→ ⟩ TM.⟨ TM.eval (wk-val (wk-cong (wk-wk wk-id)) unit) (⋄ · TM.eval unit ⋄ · TM.eval unit (⋄ · TM.eval unit ⋄)) ； ⋄ · TM.eval unit ⋄ · TM.eval unit (⋄ · TM.eval unit ⋄) ╎ wk-wk (wk-trans (wk-wk wk-id) wk-id) ╎ TM.< return unit ； ⋄ ； wk-ε >∷ ◻ ⟩
-      ⟶⟨ return→ ⟩ TM.⟨ return (wk-val (wk-cong (wk-wk (wk-trans (wk-wk wk-id) wk-id))) unit) ╎ ⋄ · TM.eval unit ⋄ · TM.eval unit (⋄ · TM.eval unit ⋄) · TM.eval (wk-val (wk-cong (wk-wk wk-id)) unit) (⋄ · TM.eval unit ⋄ · TM.eval unit (⋄ · TM.eval unit ⋄)) ╎ wk-wk (wk-trans (wk-wk (wk-trans (wk-wk wk-id) wk-id)) wk-ε) ╎ ◻ ⟩
-      ⟶⟨ eval→ ⟩ TM.⟨ TM.eval (wk-val (wk-cong (wk-wk (wk-trans (wk-wk wk-id) wk-id))) unit) (⋄ · TM.eval unit ⋄ · TM.eval unit (⋄ · TM.eval unit ⋄) · TM.eval (wk-val (wk-cong (wk-wk wk-id)) unit) (⋄ · TM.eval unit ⋄ · TM.eval unit (⋄ · TM.eval unit ⋄))) ； ⋄ · TM.eval unit ⋄ · TM.eval unit (⋄ · TM.eval unit ⋄) · TM.eval (wk-val (wk-cong (wk-wk wk-id)) unit) (⋄ · TM.eval unit ⋄ · TM.eval unit (⋄ · TM.eval unit ⋄)) ╎ wk-wk (wk-trans (wk-wk (wk-trans (wk-wk wk-id) wk-id)) wk-ε) ╎ ◻ ⟩
-      ∎
-
-  _ : proj₁ (execᵀᴹ ex15) ≡ TM.⟨ unit ； ⋄ · unit · unit · unit ╎ wk-wk (wk-wk (wk-wk wk-ε)) ╎ ◻ ⟩
-  -- _ : proj₂ (proj₂ (execᵀᴹ ex15)) ≡ s
+      ⟶⟨ return→ ⟩ ⟨ return (wk-val (wk-cong (wk-wk (wk-trans (wk-wk wk-id) wk-id))) unit) ╎ ⋄ · TM.eval unit ⋄ · TM.eval unit (⋄ · TM.eval unit ⋄) · TM.eval (wk-val (wk-cong (wk-wk wk-id)) unit) (⋄ · TM.eval unit ⋄ · TM.eval unit (⋄ · TM.eval unit ⋄)) ╎ wk-wk (wk-trans (wk-wk (wk-trans (wk-wk wk-id) wk-id)) wk-ε) ╎ ◻ ⟩
+      ⟶⟨ eval→ ⟩ TM.⟨ TM.eval (wk-val (wk-cong (wk-wk (wk-trans (wk-wk wk-id) wk-id))) unit) (⋄ · TM.eval unit ⋄ · TM.eval unit (⋄ · TM.eval unit ⋄) · TM.eval (wk-val (wk-cong (wk-wk wk-id)) unit) (⋄ · TM.eval unit ⋄ · TM.eval unit (⋄ · TM.eval unit ⋄))) ； ⋄ · TM.eval unit ⋄ · TM.eval unit (⋄ · TM.eval unit ⋄) · TM.eval (wk-val (wk-cong (wk-wk wk-id)) unit) (⋄ · TM.eval unit ⋄ · TM.eval unit (⋄ · TM.eval unit ⋄)) ╎ wk-wk (wk-trans (wk-wk (wk-trans (wk-wk wk-id) wk-id)) wk-ε) ╎ ◻ ⟩ ∎ ))
   _ = refl
