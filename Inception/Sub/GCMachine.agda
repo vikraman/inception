@@ -28,6 +28,10 @@ data WkExt : Γ ⊇ Δ → Set where
 
   wkext-wk : {π : Γ ⊇ Δ} → WkExt π → WkExt (wk-wk {X = X} π)
 
+wkext-emp : (π : Γ ⊇ ε) → WkExt π
+wkext-emp wk-ε = wkext-id
+wkext-emp (wk-wk π) = wkext-wk (wkext-emp π)
+
 mutual
 
   data CStack : (Γ : Ctx) → (X : Ty) → Set where
@@ -146,7 +150,7 @@ lookup-gc ⋄ wkext-id ()
 lookup-gc (γ · 𝐖) {π = π} wkext-id here = _ , wk-id , wkext-id , π , wkext-id , γ · 𝐖 , (wk-omval (wk-wk wk-id) 𝐖)
 lookup-gc (γ · 𝐖) {π = wk-cong π} wkext-id (there i) = _ , wk-cong π , wkext-id , wk-cong π , wkext-id , γ · 𝐖 , (lookup (there i) (γ · 𝐖))
 lookup-gc (γ · 𝐖) {π = wk-wk π} wkext-id (there i) = ql (wk-absurd (wk-wk π) π) _
-lookup-gc (γ · unit) {π = wk-wk π} (wkext-wk wx) here = _ , wk-wk wk-id , wkext-wk wkext-id , π , wx , γ , unit
+lookup-gc {Δ = Δ} (γ · unit) {π = wk-wk π} (wkext-wk wx) here = Δ , wk-wk π , wkext-wk wx , wk-id , wkext-id , gc γ wx , unit
 lookup-gc (γ · pair 𝐕 𝐖) {π = wk-wk π} (wkext-wk wx) here = _ , wk-wk wk-id , wkext-wk wkext-id , π , wx , γ , pair 𝐕 𝐖
 lookup-gc (γ · lam M) {π = wk-wk π} (wkext-wk wx) here = _ , wk-wk wk-id , wkext-wk wkext-id , π , wx , γ , lam M
 lookup-gc (γ · var i) {π = wk-wk π} (wkext-wk wx) here =
