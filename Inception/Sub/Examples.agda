@@ -7,6 +7,8 @@ open import Inception.Sub.Syntax
 open import Inception.Sub.Machine `𝟙 renaming (_→ᶜ_ to _→ᴹ_; exec to execᴹ)
 import Inception.Sub.TelescopeMachine `𝟙 as TM
 open TM renaming (_→ᶜ_ to _→ᵀᴹ_)
+import Inception.Sub.GCMachine `𝟙 as GCM
+open GCM renaming (_→ᶜ_ to _→ᴳ_)
 open import Inception.Sub.Simulation `𝟙
 
 open import Data.Product using (_,_)
@@ -58,3 +60,23 @@ module TMexamples where
       ⟶⟨ return→ ⟩ ⟨ return (wk-val (wk-cong (wk-wk (wk-trans (wk-wk wk-id) wk-id))) unit) ╎ ⋄ · TM.eval unit ⋄ · TM.eval unit (⋄ · TM.eval unit ⋄) · TM.eval (wk-val (wk-cong (wk-wk wk-id)) unit) (⋄ · TM.eval unit ⋄ · TM.eval unit (⋄ · TM.eval unit ⋄)) ╎ wk-wk (wk-trans (wk-wk (wk-trans (wk-wk wk-id) wk-id)) wk-ε) ╎ ◻ ⟩
       ⟶⟨ eval→ ⟩ TM.⟨ TM.eval (wk-val (wk-cong (wk-wk (wk-trans (wk-wk wk-id) wk-id))) unit) (⋄ · TM.eval unit ⋄ · TM.eval unit (⋄ · TM.eval unit ⋄) · TM.eval (wk-val (wk-cong (wk-wk wk-id)) unit) (⋄ · TM.eval unit ⋄ · TM.eval unit (⋄ · TM.eval unit ⋄))) ； ⋄ · TM.eval unit ⋄ · TM.eval unit (⋄ · TM.eval unit ⋄) · TM.eval (wk-val (wk-cong (wk-wk wk-id)) unit) (⋄ · TM.eval unit ⋄ · TM.eval unit (⋄ · TM.eval unit ⋄)) ╎ wk-wk (wk-trans (wk-wk (wk-trans (wk-wk wk-id) wk-id)) wk-ε) ╎ ◻ ⟩ ∎ ))
   _ = refl
+
+module GCMexamples where
+
+  open StarReasoning _→ᴳ_
+  open Reduction _→ᴳ_ renaming (_~>*_ to _→ᴳ*_)
+
+  _ = begin             ⟨ ⋄ ╎ ex15 ╎ wkext-ε ╎ ◻ ⟩
+      ⟶⟨ push→ ⟩        ⟨ ⋄ ╎ push (app (lam (sub (var (var here)) (return unit))) unit) (return unit) ╎ wkext-id-π ╎ < return unit ； wkext-ε >∷ ◻ ⟩
+      ⟶⟨ push→ ⟩        ⟨ ⋄ ╎ app (lam (sub (var (var here)) (return unit))) unit ╎ wkext-id-π ╎ < return unit ； wkext-id-π >∷ (< return unit ； wkext-ε >∷ ◻) ⟩
+      ⟶⟨ app→ ⟩         ⟨ ⋄ · unit ╎ sub (var (var here)) (return unit) ╎ wkext-wk wkext-id ╎ < return unit ； wkext-id-π >∷ (< return unit ； wkext-ε >∷ ◻) ⟩
+      ⟶⟨ sub→ ⟩         ⟨ ⋄ · unit ·﹝ return unit ╎ wkext-wk wkext-id ╎ < return unit ； wkext-id-π >∷ (< return unit ； wkext-ε >∷ ◻) ﹞ ╎ var (var here) ╎ wkext-wk (wkext-wk wkext-id) ╎ < return unit ； wkext-id-π >∷ (< return unit ； wkext-ε >∷ ◻) ⟩
+      ⟶⟨ var→ ⟩         ⟨ ⋄ · unit ╎ return unit ╎ wkext-wk wkext-id ╎ < return unit ； wkext-id-π >∷ (< return unit ； wkext-ε >∷ ◻) ⟩
+      ⟶⟨ eval→ ⟩    GCM.⟨ ⋄ ； unit ╎ wkext-id ╎ < return unit ； wkext-id >∷ (< return unit ； wkext-id >∷ ◻) ⟩
+      ⟶⟨ return→ ⟩      ⟨ ⋄ · unit ╎ return (wk-val (wk-cong wk-ε) unit) ╎ wkext-wk wkext-id ╎ < return unit ； wkext-id >∷ ◻ ⟩
+      ⟶⟨ eval→ ⟩    GCM.⟨ ⋄ ； unit ╎ wkext-id ╎ < return unit ； wkext-id >∷ ◻ ⟩
+      ⟶⟨ return→ ⟩      ⟨ ⋄ · unit ╎ return (wk-val (wk-cong wk-ε) unit) ╎ wkext-wk wkext-id ╎ ◻ ⟩
+      ⟶⟨ eval→ ⟩    GCM.⟨ ⋄ ； unit ╎ wkext-id ╎ ◻ ⟩ ∎
+
+  -- _ : (execᴳ-quick ex15) ≡ (GCM.⟨ ⋄ ； unit ╎ wkext-ε ╎ ◻ ⟩ , (push→ ◅ push→ ◅ app→ ◅ sub→ ◅ var→ ◅ eval→ ◅ return→ ◅ eval→ ◅ return→ ◅ eval→ ◅ ε))
+  -- _ = refl
