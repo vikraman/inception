@@ -18,7 +18,6 @@ open import Relation.Binary.PropositionalEquality using (_≡_; refl)
 ex15 : ε ⊢ᶜ (`𝟙)
 ex15 = push (push (app (lam {X = `𝟙} (sub (var (var here)) (return unit))) unit) (return unit)) (return unit)
 
-{-
 module Mexamples where
 
   open StarReasoning _→ᴹ_
@@ -37,7 +36,6 @@ module Mexamples where
       ⟶⟨ eval→ ⟩ ⟨ unitᵛ ╎ ◻ ⟩ ∎)
       , _)
   _ = refl
--}
 
 module TMexamples where
 
