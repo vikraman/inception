@@ -12,6 +12,7 @@ open import Relation.Binary.PropositionalEquality using (_≡_; refl; subst; con
 
 open import Inception.Sub.Machine ℛ as M renaming (_→ᶜ_ to _→ᴹ_)
 open import Inception.Sub.TelescopeMachine ℛ as TM renaming (_→ᶜ_ to _→ᵀᴹ_)
+open import Inception.Sub.GCMachine ℛ as GCM renaming (_→ᶜ_ to _→ᴳ_)
 
 open import Inception.Sub.MachineProps ℛ as MProps
 open import Inception.Sub.TelescopeMachineProps ℛ as TMProps
@@ -20,6 +21,7 @@ open import Inception.Sub.TelescopeTranslation ℛ
 
 open Reduction _→ᴹ_ renaming (_~>*_ to _→ᴹ*_; Normal to Normalᴹ; Step? to Step?ᴹ)
 open Reduction _→ᵀᴹ_ renaming (_~>*_ to _→ᵀᴹ*_; Normal to Normalᵀᴹ; Step? to Step?ᵀᴹ)
+open Reduction _→ᴳ_ renaming (_~>*_ to _→ᴳ*_; Normal to Normalᴳ; Step? to Step?ᴳ)
 
 progress-t₁ : {σ₀ : TM.CState} {σ₀ᴹ σᴹ : M.CState} → (MProps.WkCState (tmcstate-to-mcstate σ₀) σ₀ᴹ) → (σ₀ᴹ →ᴹ σᴹ) → Σ[ σ ∈ TM.CState ] (σ₀ →ᵀᴹ σ)
 progress-t₁ {σ₀ = ⟨ 𝐖 ； γ ╎ π ╎ ◻ ⟩} ((wk-cstate-result x ())) return→
@@ -112,3 +114,20 @@ execᵀᴹ M =
     eq = proj₁ (proj₂ (proj₂ exec₂))
   in
   proj₁ exec₁ , subst (λ x → Normalᵀᴹ x) eq n , proj₂ exec₁
+
+--------------------------------------------------------------------------
+
+mutual
+  execᴳ-step : {σ₀ : GCM.CState} → Step?ᴳ σ₀ → {σ₀ᴹ σᴹ : M.CState} → (σ₀ᴹ →ᴹ* σᴹ) → Σ[ σ ∈ GCM.CState ] (σ₀ →ᴳ* σ)
+  execᴳ-step {σ₀ = σ₀} (done _) _ = σ₀ , ε
+  execᴳ-step (next {b = σ} t) ss = let u = execᴳ-quick-rec σ ss in proj₁ u , t ◅ proj₂ u
+
+  execᴳ-quick-rec : (σ₀ : GCM.CState) → {σ₀ᴹ σᴹ : M.CState} → (σ₀ᴹ →ᴹ* σᴹ) → Σ[ σ ∈ GCM.CState ] (σ₀ →ᴳ* σ)
+  execᴳ-quick-rec σ ε = σ , ε
+  execᴳ-quick-rec σ (s ◅ ss) = execᴳ-step (GCM.progress σ) ss
+
+wkext-ε : WkExt wk-ε
+wkext-ε = wkext-id
+
+execᴳ-quick : (M : ε ⊢ᶜ ℛ) → Σ[ σ ∈ GCM.CState ] GCM.⟨ ⋄ ╎ M ╎ wkext-ε ╎ GCM.◻ ⟩ →ᴳ* σ
+execᴳ-quick M = execᴳ-quick-rec GCM.⟨ ⋄ ╎ M ╎ wkext-ε ╎ GCM.◻ ⟩ (proj₁ (proj₂ (proj₂ (proj₂ (M.exec M)))))
