@@ -86,7 +86,7 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent convallis orci
 \dots
 \begin{itemize}
   \item motivation (correctness-by-construction approach: starting with target semantics and designing the language accordingly)
-  \item previous work
+  \item previous work (\cite{choudhuryDualityLAbstraction2025,fioreSubstitutionJumpsAlgebraic2014})
 \end{itemize}
 \dots
 
@@ -94,7 +94,7 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent convallis orci
 \dots
 \begin{itemize}
   \item intended semantics of the language in the Kleisli category of $S$ (substitution as jumps)
-  \item computational interpretation (CPS-translation) follows from universal properties of monad morphism from $S$ to $K_V$
+  \item computational interpretation (CPS-translation) follows from universal properties of monad morphism from $S$ to $K_V$ \cite{kockStrongFunctorsMonoidal1972}
 \end{itemize}
 \dots
 
@@ -110,14 +110,17 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent convallis orci
 
 \dots
 \begin{itemize}
-  \item $\lambda\widetile{\lambda}-calculus
-  \item $\bar{\lambda}\mu\widetilde{\mu}$-calculus
-  \item SECD machine
-  \item CEK machine
+  \item $\lambda\widetilde{\lambda}$-calculus \cite{choudhuryDualityLAbstraction2025}
+  \item $\bar{\lambda}\mu\widetilde{\mu}$-calculus \cite{curienDualityComputation2000}
+  \item SECD machine\cite{landinMechanicalEvaluationExpressions1964a}, CEK machine \cite{felleisenControlOperatorsSECDmachine1986}
 \end{itemize}
 \dots
 
+\bibliography{references}
+
 \clearpage
+\appendix
+
 \section{Definitions (maybe for appendix)}
 I have added a glossary in \verb+glossary.tex+.
 This is not supposed to be included in the LICS version, but we could maybe include it in the Arxiv version.
@@ -193,6 +196,7 @@ A symbol with a corresponding key \texttt{somekey} can be printed by \verb+\gls{
 \caption{Terms}
 \label{fig:terms}
 \end{figure}
+
 
 \clearpage
 \glsaddall
