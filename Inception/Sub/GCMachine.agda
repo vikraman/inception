@@ -112,20 +112,20 @@ wkext-trans (wkext-wk p) (wkext-wk r) = wkext-wk (wkext-trans p (wkext-wk r))
 
 max : {π₁ : Γ ⊇ Ψ₁} → WkExt π₁ → {ρ₁ : Ψ₁ ⊇ Δ} → WkExt ρ₁ → {π₂ : Γ ⊇ Ψ₂} → WkExt π₂ → {ρ₂ : Ψ₂ ⊇ Δ} → WkExt ρ₂ → Σ[ Ψ ∈ Ctx ] Σ[ π ∈ Γ ⊇ Ψ ] ((WkExt π) × (Ψ ⊇ Ψ₁) × (Ψ ⊇ Ψ₂) × (Σ[ ρ ∈ Ψ ⊇ Δ ] (WkExt ρ)))
 max {Γ = Γ} {Δ = Γ} wkext-id wkext-id wkext-id wkext-id = Γ , wk-id , wkext-id , wk-id , wk-id , wk-id , wkext-id
-max {Γ = Γ} {Δ = Γ} wkext-id wkext-id wkext-id (wkext-wk r₂) = Γ , wk-id , wkext-id , wk-id , wk-id , wk-id , wkext-id
-max {Γ = Γ} {Δ = Γ} wkext-id wkext-id (wkext-wk p₂) wkext-id = Γ , wk-id , wkext-id , wk-id , wk-id , wk-id , wkext-id
-max {Γ = Γ ∙ X} {Δ = Γ ∙ X} {π₁ = π₁} wkext-id {ρ₁ = ρ₁} wkext-id {π₂ = wk-wk π₂} (wkext-wk p₂) {ρ₂ = wk-wk ρ₂} (wkext-wk r₂) = ql (wk-absurd (Wk.wk-wk π₂) ρ₂) _
-max {Γ = Γ} wkext-id (wkext-wk r₁) wkext-id wkext-id = Γ , wk-id , wkext-id , wk-id , wk-id , wk-id , wkext-id
+max {Γ = Γ} {Δ = Γ} wkext-id wkext-id wkext-id (wkext-wk _) = Γ , wk-id , wkext-id , wk-id , wk-id , wk-id , wkext-id
+max {Γ = Γ} {Δ = Γ} wkext-id wkext-id (wkext-wk _) wkext-id = Γ , wk-id , wkext-id , wk-id , wk-id , wk-id , wkext-id
+max {Γ = Γ ∙ X} {Δ = Γ ∙ X} {π₁ = π₁} wkext-id {ρ₁ = ρ₁} wkext-id {π₂ = wk-wk π₂} (wkext-wk _) {ρ₂ = wk-wk ρ₂} (wkext-wk _) = ql (wk-absurd (Wk.wk-wk π₂) ρ₂) _
+max {Γ = Γ} wkext-id (wkext-wk _) wkext-id wkext-id = Γ , wk-id , wkext-id , wk-id , wk-id , wk-id , wkext-id
 max {Γ = Γ} wkext-id (wkext-wk r₁) wkext-id {ρ₂ = ρ₂} (wkext-wk r₂) = Γ , wk-id , wkext-id , wk-id , wk-id , Wk.wk-wk _ , wkext-wk r₁
-max {Γ = Γ} {π₁ = π₁} wkext-id {ρ₁ = wk-wk ρ₁} (wkext-wk r₁) {π₂ = wk-wk π₂} (wkext-wk p₂) {ρ₂ = ρ₂} wkext-id = Γ , wk-id , wkext-id , wk-id , wk-wk π₂ , _ , wkext-wk r₁
-max {Γ = Γ} wkext-id (wkext-wk r₁) {π₂ = wk-wk π₂} (wkext-wk p₂) (wkext-wk r₂) = Γ , wk-id , wkext-id , wk-id , wk-wk π₂ , _ , wkext-wk r₁
-max {Γ = Γ} (wkext-wk p₁) wkext-id wkext-id wkext-id = Γ , wk-id , wkext-id , wk-id , wk-id , wk-id , wkext-id
-max {Γ = Γ} {π₁ = wk-wk π₁} (wkext-wk p₁) wkext-id wkext-id (wkext-wk r₂) = Γ , wk-id , wkext-id , wk-wk π₁ , wk-id , wk-wk π₁ , wkext-wk p₁
-max {Γ = Γ} {π₁ = wk-wk π₁} (wkext-wk p₁) (wkext-wk r₁) wkext-id wkext-id = Γ , wk-id , wkext-id , wk-wk π₁ , wk-id , wk-id , wkext-id
-max {Γ = Γ} {π₁ = wk-wk π₁} (wkext-wk p₁) (wkext-wk r₁) wkext-id {ρ₂ = wk-wk ρ₂} (wkext-wk r₂) = Γ , wk-id , wkext-id , wk-wk π₁ , wk-id , wk-wk ρ₂ , wkext-wk r₂
+max {Γ = Γ} {π₁ = π₁} wkext-id {ρ₁ = wk-wk ρ₁} (wkext-wk r₁) {π₂ = wk-wk π₂} (wkext-wk _) {ρ₂ = ρ₂} wkext-id = Γ , wk-id , wkext-id , wk-id , wk-wk π₂ , _ , wkext-wk r₁
+max {Γ = Γ} wkext-id (wkext-wk r₁) {π₂ = wk-wk π₂} (wkext-wk _) (wkext-wk r₂) = Γ , wk-id , wkext-id , wk-id , wk-wk π₂ , _ , wkext-wk r₁
+max {Γ = Γ} (wkext-wk _) wkext-id wkext-id wkext-id = Γ , wk-id , wkext-id , wk-id , wk-id , wk-id , wkext-id
+max {Γ = Γ} {π₁ = wk-wk π₁} (wkext-wk p₁) wkext-id wkext-id (wkext-wk _) = Γ , wk-id , wkext-id , wk-wk π₁ , wk-id , wk-wk π₁ , wkext-wk p₁
+max {Γ = Γ} {π₁ = wk-wk π₁} (wkext-wk _) (wkext-wk _) wkext-id wkext-id = Γ , wk-id , wkext-id , wk-wk π₁ , wk-id , wk-id , wkext-id
+max {Γ = Γ} {π₁ = wk-wk π₁} (wkext-wk _) (wkext-wk r₁) wkext-id {ρ₂ = wk-wk ρ₂} (wkext-wk r₂) = Γ , wk-id , wkext-id , wk-wk π₁ , wk-id , wk-wk ρ₂ , wkext-wk r₂
 max {Γ = Γ ∙ X} {Δ = Δ} {π₁ = wk-wk π₁} (wkext-wk p₁) wkext-id {π₂ = wk-wk π₂} (wkext-wk p₂) wkext-id = Γ , wk-wk wk-id , wkext-wk wkext-id , π₁ , π₂ , π₁ , p₁
-max {Γ = Γ ∙ X} {π₁ = wk-wk π₁} (wkext-wk p₁) wkext-id {π₂ = wk-wk π₂} (wkext-wk p₂) (wkext-wk r₂) = Γ , wk-wk wk-id , wkext-wk wkext-id , π₁ , π₂ , π₁ , p₁
-max {Γ = Γ ∙ X} {π₁ = wk-wk π₁} (wkext-wk p₁) (wkext-wk r₁) {π₂ = wk-wk π₂} (wkext-wk p₂) wkext-id = Γ , wk-wk wk-id , wkext-wk wkext-id , π₁ , π₂ , π₂ , p₂
+max {Γ = Γ ∙ X} {π₁ = wk-wk π₁} (wkext-wk p₁) wkext-id {π₂ = wk-wk π₂} (wkext-wk p₂) (wkext-wk _) = Γ , wk-wk wk-id , wkext-wk wkext-id , π₁ , π₂ , π₁ , p₁
+max {Γ = Γ ∙ X} {π₁ = wk-wk π₁} (wkext-wk p₁) (wkext-wk _) {π₂ = wk-wk π₂} (wkext-wk p₂) wkext-id = Γ , wk-wk wk-id , wkext-wk wkext-id , π₁ , π₂ , π₂ , p₂
 max {Γ = Γ ∙ X} {π₁ = wk-wk π₁} (wkext-wk p₁) {ρ₁ = wk-wk ρ₁} (wkext-wk r₁) {π₂ = wk-wk π₂} (wkext-wk p₂) {ρ₂ = wk-wk ρ₂} (wkext-wk r₂) = Γ , wk-wk wk-id , wkext-wk wkext-id , π₁ , π₂ , wk-trans π₁ (wk-wk ρ₁) , wkext-trans p₁ (wkext-wk r₁)
 
 gc : MEnv Γ → {π : Γ ⊇ Δ} → WkExt π → MEnv Δ
@@ -201,7 +201,7 @@ eval-gc {Δ = Δ} (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) (wkext-wk wx) unit =
   in
   proj₁ IH , wk-wk (proj₁ (proj₂ IH)) , wkext-wk (proj₁ (proj₂ (proj₂ IH))) , proj₂ (proj₂ (proj₂ IH))
 
-----------------------------------------------------------------------------------
+--------------------------------------------------------------------------
 
 lookup-label : Γ ∋ `ℓ → MEnv Γ → CState
 lookup-label here (γ · var i) = lookup-label i γ
@@ -212,7 +212,7 @@ lookup-label (there i) (γ ·﹝ M ╎ p ╎ K ﹞) = lookup-label i γ
 eval-jump : Γ ⊢ᵛ `ℓ → MEnv Γ → CState
 eval-jump (var i) γ = lookup-label i γ
 
-----------------------------------------------------------------------------------
+--------------------------------------------------------------------------
 
 wk-omval-term : (π : Γ ⊇ Δ) → {𝐖 : OMVal Δ X} → (OMValTerm 𝐖) → (OMValTerm (wk-omval π 𝐖))
 wk-omval-term wk-ε is-unit = is-unit
@@ -286,7 +286,7 @@ eval-app γ V W p K =
   in
   ⟨ δ · 𝐖 ╎ wk-comp (wk-cong (proj₁ ((proj₂ (proj₂ (proj₂ mx)))))) M ╎ wkext-wk (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ mx)))))) ╎ K ⟩
 
-----------------------------------------------------------------------------------
+--------------------------------------------------------------------------
 
 eval→-helper : (W : Γ ⊢ᵛ X) → (γ : MEnv Γ) → {π : Γ ⊇ Δ} → (p : WkExt π) → (K : CStack Δ X) → CState
 eval→-helper W γ p K =
@@ -361,9 +361,9 @@ halting-state :    (σ : CState) → Normal σ
                  → Σ[ Γ ∈ Ctx ] Σ[ π ∈ Γ ⊇ ε ] Σ[ p ∈ WkExt π ] Σ[ 𝐖 ∈ OMVal Γ ℛ ] Σ[ γ ∈ MEnv Γ ] σ ≡ ⟨ γ ； 𝐖 ╎ p ╎ ◻ ⟩
 halting-state ⟨ γ ； 𝐖 ╎ p ╎ ◻ ⟩ normal = _ , _ , p , 𝐖 , γ , refl
 halting-state ⟨ γ ； 𝐖 ╎ p ╎ < _ ； _ >∷ K ⟩ normal = ql (normal return→) _
-halting-state ⟨ γ ╎ return x ╎ p ╎ K ⟩ normal = ql (normal eval→) _
-halting-state ⟨ γ ╎ pm x M ╎ p ╎ K ⟩ normal = ql (normal pmᶜ→) _
-halting-state ⟨ γ ╎ push M M₁ ╎ p ╎ K ⟩ normal = ql (normal push→) _
-halting-state ⟨ γ ╎ app x x₁ ╎ p ╎ K ⟩ normal = ql (normal app→) _
-halting-state ⟨ γ ╎ var x ╎ p ╎ K ⟩ normal = ql (normal var→) _
-halting-state ⟨ γ ╎ sub M M₁ ╎ p ╎ K ⟩ normal = ql (normal sub→) _
+halting-state ⟨ γ ╎ return _ ╎ p ╎ K ⟩ normal = ql (normal eval→) _
+halting-state ⟨ γ ╎ pm _ _ ╎ p ╎ K ⟩ normal = ql (normal pmᶜ→) _
+halting-state ⟨ γ ╎ push _ _ ╎ p ╎ K ⟩ normal = ql (normal push→) _
+halting-state ⟨ γ ╎ app _ _ ╎ p ╎ K ⟩ normal = ql (normal app→) _
+halting-state ⟨ γ ╎ var _ ╎ p ╎ K ⟩ normal = ql (normal var→) _
+halting-state ⟨ γ ╎ sub _ _ ╎ p ╎ K ⟩ normal = ql (normal sub→) _

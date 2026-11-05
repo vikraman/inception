@@ -10,9 +10,9 @@ open import Inception.Sub.Syntax
 
 open import Relation.Binary.PropositionalEquality using (_≡_; refl; subst; cong; trans; sym)
 
+open import Inception.Sub.GCMachine ℛ as GCM renaming (_→ᶜ_ to _→ᴳ_)
 open import Inception.Sub.Machine ℛ as M renaming (_→ᶜ_ to _→ᴹ_)
 open import Inception.Sub.TelescopeMachine ℛ as TM renaming (_→ᶜ_ to _→ᵀᴹ_)
-open import Inception.Sub.GCMachine ℛ as GCM renaming (_→ᶜ_ to _→ᴳ_)
 
 open import Inception.Sub.MachineProps ℛ as MProps
 open import Inception.Sub.TelescopeMachineProps ℛ as TMProps
