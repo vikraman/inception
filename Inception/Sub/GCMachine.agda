@@ -20,7 +20,7 @@ infixl 27 <_；_>∷_
 infixl 27 _·_
 
 --------------------------------------------------------------------------
--- environments
+-- context extensions
 
 data WkExt : Γ ⊇ Δ → Set where
 
@@ -31,6 +31,57 @@ data WkExt : Γ ⊇ Δ → Set where
 wkext-emp : (π : Γ ⊇ ε) → WkExt π
 wkext-emp wk-ε = wkext-id
 wkext-emp (wk-wk π) = wkext-wk (wkext-emp π)
+
+wkext-trans : {π : Γ ⊇ Δ} → WkExt π → {ρ : Δ ⊇ Ψ} → WkExt ρ → WkExt (wk-trans π ρ)
+wkext-trans wkext-id wkext-id = wkext-id
+wkext-trans wkext-id (wkext-wk r) = wkext-wk r
+wkext-trans (wkext-wk p) wkext-id = wkext-wk p
+wkext-trans (wkext-wk p) (wkext-wk r) = wkext-wk (wkext-trans p (wkext-wk r))
+
+{-
+wk-ext-uniq : (π₁ : Γ ⊇ Ψ) → (π₂ : Ψ ⊇ Δ) → {π₃ : Γ ⊇ Δ} → (p₃ : WkExt π₃) → wk-trans π₁ π₂ ≡ π₃
+wk-ext-uniq wk-ε wk-ε {π₃ = wk-ε} wkext-id = refl
+wk-ext-uniq (wk-cong π₁) (wk-cong π₂) {π₃ = wk-cong π₃} wkext-id = {!!} -- need lemma
+wk-ext-uniq (wk-cong π₁) (wk-cong π₂) {π₃ = wk-wk π₃} wkext-id = ql (wk-absurd wk-id π₃) _
+wk-ext-uniq (wk-cong π₁) (wk-cong π₂) {π₃ = wk-wk π₃} (wkext-wk p₃) = {!!}
+wk-ext-uniq (wk-cong π₁) (wk-wk π₂) {π₃ = wk-cong π₃} wkext-id = {!!}
+wk-ext-uniq (wk-cong π₁) (wk-wk π₂) {π₃ = wk-wk π₃} wkext-id = {!!}
+wk-ext-uniq (wk-cong π₁) (wk-wk π₂) {π₃ = wk-wk π₃} (wkext-wk p₃) = {!!}
+wk-ext-uniq (wk-wk π₁) wk-ε {π₃ = wk-wk π₃} (wkext-wk p₃) = {!!}
+wk-ext-uniq (wk-wk π₁) (wk-cong π₂) {π₃ = wk-cong π₃} wkext-id = {!!}
+wk-ext-uniq (wk-wk π₁) (wk-cong π₂) {π₃ = wk-wk π₃} wkext-id = {!!}
+wk-ext-uniq (wk-wk π₁) (wk-cong π₂) {π₃ = wk-wk π₃} (wkext-wk p₃) = {!!}
+wk-ext-uniq (wk-wk π₁) (wk-wk π₂) {π₃ = wk-cong π₃} wkext-id = {!!}
+wk-ext-uniq (wk-wk π₁) (wk-wk π₂) {π₃ = wk-wk π₃} wkext-id = {!!}
+wk-ext-uniq (wk-wk π₁) (wk-wk π₂) {π₃ = wk-wk π₃} (wkext-wk p₃) = {!!}
+
+wk-ext-uniq₁ : (π₁ : Γ ⊇ Ψ) → (π₂ : Ψ ⊇ Δ) → {π₃ : Γ ⊇ Δ} → (p₃ : WkExt π₃) → WkExt π₁ × WkExt π₂
+wk-ext-uniq₁ wk-ε wk-ε wkext-id = wkext-id , wkext-id
+wk-ext-uniq₁ (wk-cong π₁) (wk-cong π₂) wkext-id = {!!} -- need lemma
+wk-ext-uniq₁ (wk-cong π₁) (wk-cong π₂) {π₃ = wk-wk π₃} (wkext-wk p₃) =
+  let
+    IH = wk-ext-uniq₁ π₁ π₂ (wkext-trans p₃ (wkext-wk {π = wk-id} wkext-id))
+  in
+  {!!}
+wk-ext-uniq₁ (wk-cong π₁) (wk-wk π₂) wkext-id = ql (wk-absurd wk-id (wk-trans π₁ π₂)) _
+wk-ext-uniq₁ (wk-cong π₁) (wk-wk π₂) {π₃ = wk-wk π₃} (wkext-wk p₃) =
+-- wk-ext-uniq₁ (wk-cong π₁) (wk-wk π₂) {π₃ = wk-wk wk-ε} (wkext-wk p₃) = {!!}
+-- wk-ext-uniq₁ (wk-cong π₁) (wk-wk π₂) {π₃ = wk-wk (wk-cong π₃)} (wkext-wk p₃) = {!!}
+-- wk-ext-uniq₁ (wk-cong π₁) (wk-wk π₂) {π₃ = wk-wk (wk-wk π₃)} (wkext-wk p₃) =
+   let
+     IH = wk-ext-uniq₁ π₁ π₂ p₃
+   in
+   {!wkext-wk ?!} , (wkext-wk (proj₂ IH))
+wk-ext-uniq₁ (wk-wk π₁) wk-ε (wkext-wk p₃) = wkext-wk (proj₁ (wk-ext-uniq₁ π₁ Wk.wk-ε p₃)) , wkext-id
+wk-ext-uniq₁ (wk-wk π₁) (wk-cong π₂) wkext-id = {!!} -- need lemma
+wk-ext-uniq₁ (wk-wk π₁) (wk-cong π₂) (wkext-wk p₃) = wkext-wk (proj₁ (wk-ext-uniq₁ π₁ (Wk.wk-cong π₂) p₃)) , proj₂ (wk-ext-uniq₁ π₁ (Wk.wk-cong π₂) p₃)
+wk-ext-uniq₁ (wk-wk π₁) (wk-wk π₂) wkext-id = ql (wk-absurd wk-id (wk-trans π₁ (wk-wk π₂))) _
+wk-ext-uniq₁ (wk-wk π₁) (wk-wk π₂) (wkext-wk p₃) = wkext-wk (proj₁ (wk-ext-uniq₁ π₁ (Wk.wk-wk π₂) p₃)) , proj₂ (wk-ext-uniq₁ π₁ (Wk.wk-wk π₂) p₃)
+-}
+
+
+--------------------------------------------------------------------------
+-- environments
 
 mutual
 
@@ -108,11 +159,34 @@ wk-omval π (pair 𝐕 𝐖) = pair (wk-omval π 𝐕) (wk-omval π 𝐖)
 wk-omval π (lam M) = lam (wk-comp (wk-cong π) M)
 wk-omval π (var i) = var (wk-mem π i)
 
-wkext-trans : {π : Γ ⊇ Δ} → WkExt π → {ρ : Δ ⊇ Ψ} → WkExt ρ → WkExt (wk-trans π ρ)
-wkext-trans wkext-id wkext-id = wkext-id
-wkext-trans wkext-id (wkext-wk r) = wkext-wk r
-wkext-trans (wkext-wk p) wkext-id = wkext-wk p
-wkext-trans (wkext-wk p) (wkext-wk r) = wkext-wk (wkext-trans p (wkext-wk r))
+data MEnvExt : (π : Γ ⊇ Δ) → (γ : MEnv Γ) → (δ : MEnv Δ) → Set where
+
+  menv-id : (π : Γ ⊇ Γ) → (γ : MEnv Γ) → MEnvExt π γ γ
+
+  menv-wk-omval : {π : Γ ⊇ Δ} → {γ : MEnv Γ} → {δ : MEnv Δ} → MEnvExt π γ δ → (𝐖 : OMVal Γ X)
+                  → MEnvExt (wk-wk π) (γ · 𝐖) δ
+
+  menv-wk-jump : {π : Γ ⊇ Δ} → {γ : MEnv Γ} → {δ : MEnv Δ} → MEnvExt π γ δ
+                  → (M : Γ ⊢ᶜ X) → {ρ : Γ ⊇ Ψ} → (r : WkExt ρ) → (K : CStack Ψ X)
+                  → MEnvExt (wk-wk π) (γ ·﹝ M ╎ r ╎ K ﹞) δ
+
+record WkExtSplit (Γ Ψ Δ : Ctx) : Set where
+  field
+    π-part₁ : Ψ ⊇ Δ
+    π-part₂ : Γ ⊇ Ψ
+    p-part₁ : WkExt π-part₁
+    p-part₂ : WkExt π-part₂
+
+open WkExtSplit
+
+record DiamondSplit (Γ Ψ₁ Ψ₂ Δ : Ctx) : Set where
+  field
+    Ψ-merge : Ctx
+    lhs-split : WkExtSplit Ψ-merge Ψ₁ Δ
+    mid-split : WkExtSplit Γ Ψ-merge Δ
+    rhs-split : WkExtSplit Ψ-merge Ψ₂ Δ
+
+open DiamondSplit
 
 max : {π₁ : Γ ⊇ Ψ₁} → WkExt π₁ → {ρ₁ : Ψ₁ ⊇ Δ} → WkExt ρ₁ → {π₂ : Γ ⊇ Ψ₂} → WkExt π₂ → {ρ₂ : Ψ₂ ⊇ Δ} → WkExt ρ₂ → Σ[ Ψ ∈ Ctx ] Σ[ π ∈ Γ ⊇ Ψ ] ((WkExt π) × (Ψ ⊇ Ψ₁) × (Ψ ⊇ Ψ₂) × (Σ[ ρ ∈ Ψ ⊇ Δ ] (WkExt ρ)))
 max {Γ = Γ} {Δ = Γ} wkext-id wkext-id wkext-id wkext-id = Γ , wk-id , wkext-id , wk-id , wk-id , wk-id , wkext-id
@@ -120,7 +194,7 @@ max {Γ = Γ} {Δ = Γ} wkext-id wkext-id wkext-id (wkext-wk _) = Γ , wk-id , w
 max {Γ = Γ} {Δ = Γ} wkext-id wkext-id (wkext-wk _) wkext-id = Γ , wk-id , wkext-id , wk-id , wk-id , wk-id , wkext-id
 max {Γ = Γ ∙ X} {Δ = Γ ∙ X} {π₁ = π₁} wkext-id {ρ₁ = ρ₁} wkext-id {π₂ = wk-wk π₂} (wkext-wk _) {ρ₂ = wk-wk ρ₂} (wkext-wk _) = ql (wk-absurd (Wk.wk-wk π₂) ρ₂) _
 max {Γ = Γ} wkext-id (wkext-wk _) wkext-id wkext-id = Γ , wk-id , wkext-id , wk-id , wk-id , wk-id , wkext-id
-max {Γ = Γ} wkext-id (wkext-wk r₁) wkext-id {ρ₂ = ρ₂} (wkext-wk r₂) = Γ , wk-id , wkext-id , wk-id , wk-id , Wk.wk-wk _ , wkext-wk r₁
+max {Γ = Γ} wkext-id (wkext-wk r₁) wkext-id {ρ₂ = ρ₂} (wkext-wk r₂) = Γ , wk-id , wkext-id , wk-id , wk-id , Wk.wk-wk _ , wkext-wk r₁ -- <<---
 max {Γ = Γ} {π₁ = π₁} wkext-id {ρ₁ = wk-wk ρ₁} (wkext-wk r₁) {π₂ = wk-wk π₂} (wkext-wk _) {ρ₂ = ρ₂} wkext-id = Γ , wk-id , wkext-id , wk-id , wk-wk π₂ , _ , wkext-wk r₁
 max {Γ = Γ} wkext-id (wkext-wk r₁) {π₂ = wk-wk π₂} (wkext-wk _) (wkext-wk r₂) = Γ , wk-id , wkext-id , wk-id , wk-wk π₂ , _ , wkext-wk r₁
 max {Γ = Γ} (wkext-wk _) wkext-id wkext-id wkext-id = Γ , wk-id , wkext-id , wk-id , wk-id , wk-id , wkext-id
@@ -131,6 +205,76 @@ max {Γ = Γ ∙ X} {Δ = Δ} {π₁ = wk-wk π₁} (wkext-wk p₁) wkext-id {π
 max {Γ = Γ ∙ X} {π₁ = wk-wk π₁} (wkext-wk p₁) wkext-id {π₂ = wk-wk π₂} (wkext-wk p₂) (wkext-wk _) = Γ , wk-wk wk-id , wkext-wk wkext-id , π₁ , π₂ , π₁ , p₁
 max {Γ = Γ ∙ X} {π₁ = wk-wk π₁} (wkext-wk p₁) (wkext-wk _) {π₂ = wk-wk π₂} (wkext-wk p₂) wkext-id = Γ , wk-wk wk-id , wkext-wk wkext-id , π₁ , π₂ , π₂ , p₂
 max {Γ = Γ ∙ X} {π₁ = wk-wk π₁} (wkext-wk p₁) {ρ₁ = wk-wk ρ₁} (wkext-wk r₁) {π₂ = wk-wk π₂} (wkext-wk p₂) {ρ₂ = wk-wk ρ₂} (wkext-wk r₂) = Γ , wk-wk wk-id , wkext-wk wkext-id , π₁ , π₂ , wk-trans π₁ (wk-wk ρ₁) , wkext-trans p₁ (wkext-wk r₁)
+
+wkext-split-id : WkExtSplit Γ Γ Γ
+wkext-split-id {Γ = Γ} = record { π-part₁ = wk-id ; π-part₂ = wk-id ; p-part₁ = wkext-id ; p-part₂ = wkext-id }
+
+diamond-split-id : DiamondSplit Γ Γ Γ Γ
+diamond-split-id {Γ = Γ} = record { Ψ-merge = Γ ; lhs-split = wkext-split-id ; mid-split = wkext-split-id ; rhs-split = wkext-split-id }
+
+squash : {Γ Ψ₁ Ψ₂ Δ : Ctx} → WkExtSplit Γ Ψ₁ Δ → WkExtSplit Γ Ψ₂ Δ → DiamondSplit Γ Ψ₁ Ψ₂ Δ
+squash record { p-part₁ = wkext-id ; p-part₂ = wkext-id } record { p-part₁ = wkext-id ; p-part₂ = wkext-id } = diamond-split-id
+squash record { p-part₁ = wkext-id ; p-part₂ = wkext-id } record { p-part₁ = wkext-id ; p-part₂ = (wkext-wk p-part₄) } = diamond-split-id
+squash record { p-part₁ = wkext-id ; p-part₂ = wkext-id } record { p-part₁ = (wkext-wk p-part₃) ; p-part₂ = wkext-id } = diamond-split-id
+squash record { p-part₁ = wkext-id ; p-part₂ = wkext-id } record { π-part₁ = wk-wk π₃ ; p-part₁ = (wkext-wk p-part₃) ; π-part₂ = wk-wk π₄ ; p-part₂ = (wkext-wk p-part₄) } = ql (wk-absurd wk-id (wk-trans π₃ (wk-wk π₄))) _
+squash record { p-part₁ = wkext-id ; p-part₂ = (wkext-wk p-part₂) } record { p-part₁ = wkext-id ; p-part₂ = wkext-id } = diamond-split-id
+squash {Γ = Γ} {Ψ₁ = Ψ₁} record { p-part₁ = wkext-id ; p-part₂ = (wkext-wk p-part₂) } record { p-part₁ = wkext-id ; p-part₂ = (wkext-wk p-part₄) } =
+   record { Ψ-merge = Ψ₁ ;
+            lhs-split = wkext-split-id ;
+            mid-split = record { π-part₁ = wk-id ; p-part₁ = wkext-id ; p-part₂ = wkext-wk p-part₂ } ;
+            rhs-split = wkext-split-id }
+squash {Γ = Γ ∙ X} {Ψ₁ = Ψ₁} record { p-part₁ = wkext-id ; p-part₂ = (wkext-wk p-part₂) } record { p-part₁ = (wkext-wk p-part₃) ; p-part₂ = wkext-id } =
+  record { Ψ-merge = Γ ∙ X ;
+           lhs-split = record { π-part₁ = wk-id ; p-part₁ = wkext-id ; p-part₂ = wkext-wk p-part₂ } ;
+           mid-split = record { π-part₂ = wk-id ; p-part₁ = wkext-wk p-part₂ ; p-part₂ = wkext-id } ;
+           rhs-split = record { π-part₂ = wk-id ; p-part₁ = wkext-wk p-part₂ ; p-part₂ = wkext-id } }
+squash {Ψ₂ = Ψ₂ ∙ X} record { p-part₁ = wkext-id ; p-part₂ = (wkext-wk p-part₂) } record { p-part₁ = (wkext-wk p-part₃) ; p-part₂ = (wkext-wk p-part₄) } =
+  record { Ψ-merge = Ψ₂ ∙ X ;
+           lhs-split = record { π-part₁ = wk-id ; p-part₁ = wkext-id ; p-part₂ = wkext-wk p-part₃ } ;
+           mid-split = record { p-part₁ = wkext-wk p-part₃ ; p-part₂ = wkext-wk p-part₄ } ;
+           rhs-split = record { π-part₂ = wk-id ; p-part₁ = wkext-wk p-part₃ ; p-part₂ = wkext-id } }
+squash record { p-part₁ = (wkext-wk p-part₁) ; p-part₂ = wkext-id } record { p-part₁ = wkext-id ; p-part₂ = wkext-id } = diamond-split-id
+squash {Γ = Γ ∙ X} record { p-part₁ = (wkext-wk p-part₁) ; p-part₂ = wkext-id } record { p-part₁ = wkext-id ; p-part₂ = (wkext-wk p-part₄) } =
+  record { Ψ-merge = Γ ∙ X ;
+           lhs-split = record { π-part₂ = wk-id ; p-part₁ = wkext-wk p-part₁ ; p-part₂ = wkext-id } ;
+           mid-split = record { π-part₂ = wk-id ; p-part₁ = wkext-wk p-part₁ ; p-part₂ = wkext-id } ;
+           rhs-split = record { π-part₁ = wk-id ; p-part₁ = wkext-id ; p-part₂ = wkext-wk p-part₁ } }
+squash {Γ = Γ ∙ X} record { p-part₁ = (wkext-wk p-part₁) ; p-part₂ = wkext-id } record { p-part₁ = (wkext-wk p-part₃) ; p-part₂ = wkext-id } =
+  record { Ψ-merge = Γ ∙ X ;
+           lhs-split = record { π-part₂ = wk-id ; p-part₁ = wkext-wk p-part₁ ; p-part₂ = wkext-id } ;
+           mid-split = record { π-part₂ = wk-id ; p-part₁ = wkext-wk p-part₁ ; p-part₂ = wkext-id } ;
+           rhs-split = record { π-part₂ = wk-id ; p-part₁ = wkext-wk p-part₁ ; p-part₂ = wkext-id } }
+squash {Γ = Γ ∙ X} record { p-part₁ = (wkext-wk p-part₁) ; p-part₂ = wkext-id } record { p-part₁ = (wkext-wk p-part₃) ; p-part₂ = (wkext-wk p-part₄) } =
+  record { Ψ-merge = Γ ∙ X ;
+           lhs-split = record { π-part₂ = wk-id ; p-part₁ = wkext-wk p-part₁ ; p-part₂ = wkext-id } ;
+           mid-split = record { π-part₂ = wk-id ; p-part₁ = wkext-wk p-part₁ ; p-part₂ = wkext-id } ;
+           rhs-split = record { p-part₁ = wkext-wk p-part₃ ; p-part₂ = wkext-wk p-part₄ } }
+squash {Γ = Γ ∙ X} record { p-part₁ = (wkext-wk p-part₁) ; p-part₂ = (wkext-wk p-part₂) } record { p-part₁ = wkext-id ; p-part₂ = wkext-id } =
+  record { Ψ-merge = Γ ∙ X ;
+           lhs-split = record { p-part₁ = wkext-wk p-part₁ ; p-part₂ = wkext-wk p-part₂ } ;
+           mid-split = record { π-part₁ = wk-id ; π-part₂ = wk-id ; p-part₁ = wkext-id ; p-part₂ = wkext-id } ;
+           rhs-split = record { π-part₁ = wk-id ; π-part₂ = wk-id ; p-part₁ = wkext-id ; p-part₂ = wkext-id } }
+squash {Ψ₁ = Ψ₁ ∙ X} record { p-part₁ = (wkext-wk p-part₁) ; p-part₂ = (wkext-wk p-part₂) } record { p-part₁ = wkext-id ; p-part₂ = (wkext-wk p-part₄) } =
+  record { Ψ-merge = Ψ₁ ∙ X ;
+           lhs-split = record { π-part₂ = wk-id ; p-part₁ = wkext-wk p-part₁ ; p-part₂ = wkext-id } ;
+           mid-split = record { p-part₁ = wkext-wk p-part₁ ; p-part₂ = wkext-wk p-part₂ } ;
+           rhs-split = record { π-part₁ = wk-id ; p-part₁ = wkext-id ; p-part₂ = wkext-wk p-part₁ } }
+squash {Γ = Γ ∙ X} record { p-part₁ = (wkext-wk p-part₁) ; p-part₂ = (wkext-wk p-part₂) } record { p-part₁ = (wkext-wk p-part₃) ; p-part₂ = wkext-id } =
+  record { Ψ-merge = Γ ∙ X ;
+           lhs-split = record { p-part₁ = wkext-wk p-part₁ ; p-part₂ = wkext-wk p-part₂ } ;
+           mid-split = record { π-part₂ = wk-id ; p-part₁ = wkext-wk p-part₃ ; p-part₂ = wkext-id } ;
+           rhs-split = record { π-part₂ = wk-id ; p-part₁ = wkext-wk p-part₃ ; p-part₂ = wkext-id } }
+squash record { p-part₁ = (wkext-wk p-part₁) ; p-part₂ = (wkext-wk p-part₂) } record { p-part₁ = (wkext-wk p-part₃) ; p-part₂ = (wkext-wk p-part₄) } =
+  let
+    IH = squash record { p-part₁ = (wkext-wk p-part₁) ; p-part₂ = p-part₂ } record { p-part₁ = (wkext-wk p-part₃) ; p-part₂ = p-part₄ }
+  in
+  record
+   { lhs-split = lhs-split IH ;
+     mid-split = record { π-part₁ = π-part₁ (mid-split IH) ;
+                          π-part₂ = wk-wk (π-part₂ (mid-split IH)) ;
+                          p-part₁ = WkExtSplit.p-part₁ (mid-split IH) ;
+                          p-part₂ = wkext-wk (WkExtSplit.p-part₂ (mid-split IH))} ;
+     rhs-split = rhs-split IH }
 
 gc : MEnv Γ → {π : Γ ⊇ Δ} → WkExt π → MEnv Δ
 gc ⋄ wkext-id = ⋄
@@ -145,37 +289,157 @@ lookup here (γ ·﹝ 𝐖 ╎ π ╎ K ﹞) = var here
 lookup (there x) (γ · 𝐖) = wk-omval (wk-wk wk-id) (lookup x γ)
 lookup (there x) (γ ·﹝ 𝐖 ╎ π ╎ K ﹞) = wk-omval (wk-wk wk-id) (lookup x γ)
 
-lookup-gc : MEnv Γ → {π : Γ ⊇ Δ} → (WkExt π) → Γ ∋ X → Σ[ Ψ ∈ Ctx ] Σ[ π₁ ∈ Γ ⊇ Ψ ] (WkExt π₁ × Σ[ ρ ∈ Ψ ⊇ Δ ] (WkExt ρ × MEnv Ψ × OMVal Ψ X))
+gc-menvext : (γ : MEnv Γ) → {π : Γ ⊇ Δ} → (p : WkExt π) → MEnvExt π γ (gc γ p)
+gc-menvext ⋄ {π = wk-ε} wkext-id = menv-id Wk.wk-ε ⋄
+gc-menvext (γ · x) {π = wk-cong π} wkext-id = menv-id (Wk.wk-cong π) (γ · x)
+gc-menvext (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) {π = wk-cong π} wkext-id = menv-id (Wk.wk-cong π) (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞)
+gc-menvext (γ · x) {π = wk-wk π} wkext-id = menv-id (Wk.wk-wk π) (γ · x)
+gc-menvext (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) {π = wk-wk π} wkext-id = menv-id (Wk.wk-wk π) (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞)
+gc-menvext (γ · x) {π = wk-wk π} (wkext-wk p) = menv-wk-omval (gc-menvext γ p) x
+gc-menvext (γ ·﹝ M ╎ r ╎ K ﹞) {π = wk-wk π} (wkext-wk p) = menv-wk-jump (gc-menvext γ p) M r K
+
+record EvalGC {Γ Δ : Ctx} (γ : MEnv Γ) {π : Γ ⊇ Δ} (p : WkExt π) (X : Ty) : Set where
+  field
+    Ψ-gc : Ctx
+    ψ-gc : MEnv Ψ-gc
+    split : WkExtSplit Γ Ψ-gc Δ
+    menvext : MEnvExt (π-part₂ split) γ ψ-gc
+    result : OMVal Ψ-gc X
+
+open EvalGC
+
+lookup-gc : (γ : MEnv Γ) → {π : Γ ⊇ Δ} → (p : WkExt π) → Γ ∋ X → EvalGC γ p X
 lookup-gc ⋄ wkext-id ()
-lookup-gc (γ · 𝐖) {π = π} wkext-id here = _ , wk-id , wkext-id , π , wkext-id , γ · 𝐖 , (wk-omval (wk-wk wk-id) 𝐖)
-lookup-gc (γ · 𝐖) {π = wk-cong π} wkext-id (there i) = _ , wk-cong π , wkext-id , wk-cong π , wkext-id , γ · 𝐖 , (lookup (there i) (γ · 𝐖))
+lookup-gc (γ · 𝐖) {π = π} wkext-id here =
+  record { ψ-gc = γ · 𝐖 ;
+           split = record { π-part₁ = π ;
+                            π-part₂ = wk-id ;
+                            p-part₁ = wkext-id ;
+                            p-part₂ = wkext-id } ;
+           menvext = menv-id wk-id (γ · 𝐖) ;
+           result = wk-omval (wk-wk wk-id) 𝐖 }
+lookup-gc (γ · 𝐖) {π = wk-cong π} wkext-id (there i) =
+  record { ψ-gc = γ · 𝐖 ;
+           split = record { π-part₁ = Wk.wk-cong π ;
+                            π-part₂ = Wk.wk-cong π ;
+                            p-part₁ = wkext-id ;
+                            p-part₂ = wkext-id} ;
+           menvext = menv-id (wk-cong π) (γ · 𝐖) ;
+           result = lookup (there i) (γ · 𝐖) }
 lookup-gc (γ · 𝐖) {π = wk-wk π} wkext-id (there i) = ql (wk-absurd (wk-wk π) π) _
-lookup-gc {Δ = Δ} (γ · unit) {π = wk-wk π} (wkext-wk wx) here = Δ , wk-wk π , wkext-wk wx , wk-id , wkext-id , gc γ wx , unit
-lookup-gc (γ · pair 𝐕 𝐖) {π = wk-wk π} (wkext-wk wx) here = _ , wk-wk wk-id , wkext-wk wkext-id , π , wx , γ , pair 𝐕 𝐖
-lookup-gc (γ · lam M) {π = wk-wk π} (wkext-wk wx) here = _ , wk-wk wk-id , wkext-wk wkext-id , π , wx , γ , lam M
+lookup-gc {Δ = Δ} (γ · unit) {π = wk-wk π} (wkext-wk wx) here =
+  record { ψ-gc = gc γ wx ;
+           split = record { π-part₁ = wk-id ;
+                            π-part₂ = wk-wk π ;
+                            p-part₁ = wkext-id ;
+                            p-part₂ = wkext-wk wx } ;
+           menvext = menv-wk-omval (gc-menvext γ wx) unit ;
+           result = unit }
+lookup-gc (γ · pair 𝐕 𝐖) {π = wk-wk π} (wkext-wk wx) here =
+  record { ψ-gc = γ ;
+           split = record { π-part₁ = π ;
+                            π-part₂ = wk-wk wk-id ;
+                            p-part₁ = wx ;
+                            p-part₂ = wkext-wk wkext-id } ;
+           menvext = menv-wk-omval (menv-id wk-id γ) (pair 𝐕 𝐖) ;
+           result = pair 𝐕 𝐖 }
+lookup-gc (γ · lam M) {π = wk-wk π} (wkext-wk wx) here =
+  record { ψ-gc = γ ;
+           split = record { π-part₁ = π ;
+                            π-part₂ = wk-wk wk-id ;
+                            p-part₁ = wx ;
+                            p-part₂ = wkext-wk wkext-id } ;
+           menvext = menv-wk-omval (menv-id wk-id γ) (lam M) ;
+           result = lam M }
 lookup-gc (γ · var i) {π = wk-wk π} (wkext-wk wx) here =
-  let IH = lookup-gc γ wx i in
-  proj₁ IH , wk-wk (proj₁ (proj₂ IH)) , wkext-wk (proj₁ (proj₂ (proj₂ IH))) , proj₂ (proj₂ (proj₂ IH))
-
+  let
+    IH = lookup-gc γ wx i
+  in
+  record { ψ-gc = ψ-gc IH ;
+           split = record { π-part₁ = π-part₁ (split IH) ;
+                            π-part₂ = wk-wk (π-part₂ (split IH)) ;
+                            p-part₁ = p-part₁ (split IH) ;
+                            p-part₂ = wkext-wk (p-part₂ (split IH))} ;
+           menvext = menv-wk-omval (menvext IH) (var i) ;
+           result = result IH }
 lookup-gc (γ · unit) {π = wk-wk π} (wkext-wk wx) (there i) =
-  let IH = lookup-gc γ wx i in
-  proj₁ IH , wk-wk (proj₁ (proj₂ IH)) , wkext-wk (proj₁ (proj₂ (proj₂ IH))) , proj₂ (proj₂ (proj₂ IH))
-lookup-gc (γ · pair 𝐖 𝐖₁) {π = wk-wk π} (wkext-wk wx) (there i) =
-  let IH = lookup-gc γ wx i in
-  proj₁ IH , wk-wk (proj₁ (proj₂ IH)) , wkext-wk (proj₁ (proj₂ (proj₂ IH))) , proj₂ (proj₂ (proj₂ IH))
+  let
+    IH = lookup-gc γ wx i
+  in
+  record { ψ-gc = ψ-gc IH ;
+           split = record { π-part₁ = π-part₁ (split IH) ;
+                            π-part₂ = wk-wk (π-part₂ (split IH)) ;
+                            p-part₁ = p-part₁ (split IH) ;
+                            p-part₂ = wkext-wk (p-part₂ (split IH))} ;
+           menvext = menv-wk-omval (menvext IH) unit ;
+           result = result IH }
+lookup-gc (γ · pair 𝐕 𝐖) {π = wk-wk π} (wkext-wk wx) (there i) =
+  let
+    IH = lookup-gc γ wx i
+  in
+  record { ψ-gc = ψ-gc IH ;
+           split = record { π-part₁ = π-part₁ (split IH) ;
+                            π-part₂ = wk-wk (π-part₂ (split IH)) ;
+                            p-part₁ = p-part₁ (split IH) ;
+                            p-part₂ = wkext-wk (p-part₂ (split IH))} ;
+           menvext = menv-wk-omval (menvext IH) (pair 𝐕 𝐖) ;
+           result = result IH }
 lookup-gc (γ · lam M) {π = wk-wk π} (wkext-wk wx) (there i) =
-  let IH = lookup-gc γ wx i in
-  proj₁ IH , wk-wk (proj₁ (proj₂ IH)) , wkext-wk (proj₁ (proj₂ (proj₂ IH))) , proj₂ (proj₂ (proj₂ IH))
+  let
+    IH = lookup-gc γ wx i
+  in
+  record { ψ-gc = ψ-gc IH ;
+           split = record { π-part₁ = π-part₁ (split IH) ;
+                            π-part₂ = wk-wk (π-part₂ (split IH)) ;
+                            p-part₁ = p-part₁ (split IH) ;
+                            p-part₂ = wkext-wk (p-part₂ (split IH)) } ;
+           menvext = menv-wk-omval (menvext IH) (lam M) ;
+           result = result IH }
 lookup-gc (γ · var i₂) {π = wk-wk π} (wkext-wk wx) (there i) =
-  let IH = lookup-gc γ wx i in
-  proj₁ IH , wk-wk (proj₁ (proj₂ IH)) , wkext-wk (proj₁ (proj₂ (proj₂ IH))) , proj₂ (proj₂ (proj₂ IH))
-
-lookup-gc (γ ·﹝ M ╎ wx ╎ K ﹞) wkext-id here = _ , wk-id , wkext-id , wk-id , wkext-id , γ ·﹝ M ╎ wx ╎ K ﹞ , var here
-lookup-gc (γ ·﹝ M ╎ wx ╎ K ﹞) wkext-id (there i) = _ , wk-id , wkext-id , wk-id , wkext-id , γ ·﹝ M ╎ wx ╎ K ﹞ , lookup (there i) (γ ·﹝ M ╎ wx ╎ K ﹞)
-lookup-gc (γ ·﹝ M ╎ wx ╎ K ﹞) {π = π} (wkext-wk wx₁) here = _ , wk-id , wkext-id , π , wkext-wk wx₁ , γ ·﹝ M ╎ wx ╎ K ﹞ , var here
+  let
+    IH = lookup-gc γ wx i
+  in
+  record { ψ-gc = ψ-gc IH ;
+           split = record { π-part₁ = π-part₁ (split IH) ;
+                            π-part₂ = wk-wk (π-part₂ (split IH)) ;
+                            p-part₁ = p-part₁ (split IH) ;
+                            p-part₂ = wkext-wk (p-part₂ (split IH)) } ;
+           menvext = menv-wk-omval (menvext IH) (var i₂) ;
+           result = result IH }
+lookup-gc (γ ·﹝ M ╎ wx ╎ K ﹞) wkext-id here =
+  record { ψ-gc = γ ·﹝ M ╎ wx ╎ K ﹞ ;
+           split = record { π-part₁ = wk-id ;
+                            π-part₂ = wk-cong wk-id ;
+                            p-part₁ = wkext-id ;
+                            p-part₂ = wkext-id } ;
+           menvext = menv-id wk-id (γ ·﹝ M ╎ wx ╎ K ﹞) ;
+           result = var here }
+lookup-gc (γ ·﹝ M ╎ wx ╎ K ﹞) wkext-id (there i) =
+  record { ψ-gc = γ ·﹝ M ╎ wx ╎ K ﹞ ;
+           split = record { π-part₁ = wk-id ;
+                            π-part₂ = wk-cong wk-id ;
+                            p-part₁ = wkext-id ;
+                            p-part₂ = wkext-id } ;
+           menvext = menv-id wk-id (γ ·﹝ M ╎ wx ╎ K ﹞) ;
+           result = lookup (there i) (γ ·﹝ M ╎ wx ╎ K ﹞) }
+lookup-gc (γ ·﹝ M ╎ wx ╎ K ﹞) {π = π} (wkext-wk wx₁) here =
+  record { ψ-gc = γ ·﹝ M ╎ wx ╎ K ﹞ ;
+           split = record { π-part₂ = wk-id ;
+                            p-part₁ = wkext-wk wx₁ ;
+                            p-part₂ = wkext-id } ;
+           menvext = menv-id wk-id (γ ·﹝ M ╎ wx ╎ K ﹞) ;
+           result = var here }
 lookup-gc (γ ·﹝ M ╎ wx ╎ K ﹞) (wkext-wk wx₁) (there i) =
-  let IH = lookup-gc γ wx₁ i in
-  proj₁ IH , wk-wk (proj₁ (proj₂ IH)) , wkext-wk (proj₁ (proj₂ (proj₂ IH))) , proj₂ (proj₂ (proj₂ IH))
+  let
+    IH = lookup-gc γ wx₁ i
+  in
+  record { ψ-gc = ψ-gc IH ;
+           split = record { π-part₁ = π-part₁ (split IH) ;
+                            π-part₂ = wk-wk (π-part₂ (split IH)) ;
+                            p-part₁ = p-part₁ (split IH) ;
+                            p-part₂ = wkext-wk (p-part₂ (split IH))} ;
+           menvext = menv-wk-jump (menvext IH) M wx K ;
+           result = result IH }
 
 eval : MEnv Γ → Γ ⊢ᵛ X → OMVal Γ X
 eval γ (var i) = lookup i γ
@@ -183,27 +447,56 @@ eval γ (lam M) = lam M
 eval γ (pair V W) = pair (eval γ V) (eval γ W)
 eval γ unit = unit
 
-eval-gc : MEnv Γ → {π : Γ ⊇ Δ} → (WkExt π) → Γ ⊢ᵛ X → Σ[ Ψ ∈ Ctx ] Σ[ π₁ ∈ Γ ⊇ Ψ ] (WkExt π₁ × Σ[ ρ ∈ Ψ ⊇ Δ ] (WkExt ρ × (MEnv Ψ × OMVal Ψ X)))
+eval-gc : (γ : MEnv Γ) → {π : Γ ⊇ Δ} → (p : WkExt π) → Γ ⊢ᵛ X → EvalGC γ p X
 eval-gc γ wx (var i) = lookup-gc γ wx i
-eval-gc γ {π = π} wx (lam M) = _ , wk-id , wkext-id , π , wx , γ , lam M
+eval-gc γ {π = π} wx (lam M) =
+  record { ψ-gc = γ ;
+           split = record { π-part₁ = π ;
+                            π-part₂ = wk-id ;
+                            p-part₁ = wx ;
+                            p-part₂ = wkext-id } ;
+           menvext = menv-id wk-id γ ;
+           result = lam M }
 eval-gc γ wx (pair V W) =
   let
     IH₁ = eval-gc γ wx V
     IH₂ = eval-gc γ wx W
-    m = max (proj₁ (proj₂ (proj₂ IH₁))) (proj₁ (proj₂ (proj₂ (proj₂ (proj₂ IH₁))))) (proj₁ (proj₂ (proj₂ IH₂))) (proj₁ (proj₂ (proj₂ (proj₂ (proj₂ IH₂)))))
+    m = squash (split IH₁) (split IH₂)
   in
-  proj₁ m , proj₁ (proj₂ m) , proj₁ (proj₂ (proj₂ m)) , proj₁ (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ m))))) , proj₂ (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ m))))) , gc γ (proj₁ (proj₂ (proj₂ m))) , pair (wk-omval (proj₁ (proj₂ (proj₂ (proj₂ m)))) (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ IH₁))))))) (wk-omval (proj₁ (proj₂ (proj₂ (proj₂ (proj₂ m))))) (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ IH₂)))))))
-eval-gc {Δ = Δ} γ wkext-id unit = _ , wk-id , wkext-id , wk-id , wkext-id , γ , unit
-eval-gc {Δ = Δ} (γ · x) (wkext-wk wx) unit =
+  record { ψ-gc = gc γ (p-part₂ (mid-split m)) ;
+           split = mid-split m;
+           menvext = gc-menvext γ (p-part₂ (mid-split m)) ;
+           result = pair (wk-omval (π-part₂ (lhs-split m)) (result IH₁)) (wk-omval (π-part₂ (rhs-split m)) (result IH₂)) }
+eval-gc {Δ = Δ} γ wkext-id unit =
+  record { ψ-gc = γ ;
+           split = record { π-part₁ = wk-id ;
+                            π-part₂ = wk-id ;
+                            p-part₁ = wkext-id ;
+                            p-part₂ = wkext-id } ;
+           menvext = menv-id wk-id γ ;
+           result = unit }
+eval-gc {Δ = Δ} (γ · 𝐖) (wkext-wk wx) unit =
   let
     IH = eval-gc γ wx unit
   in
-  proj₁ IH , wk-wk (proj₁ (proj₂ IH)) , wkext-wk (proj₁ (proj₂ (proj₂ IH))) , proj₂ (proj₂ (proj₂ IH))
-eval-gc {Δ = Δ} (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) (wkext-wk wx) unit =
+  record { ψ-gc = ψ-gc IH ;
+           split = record { π-part₁ = π-part₁ (split IH) ;
+                            π-part₂ = wk-wk (π-part₂ (split IH)) ;
+                            p-part₁ = p-part₁ (split IH) ;
+                            p-part₂ = wkext-wk (p-part₂ (split IH)) } ;
+           menvext = menv-wk-omval (menvext IH) 𝐖 ;
+           result = unit }
+eval-gc {Δ = Δ} (γ ·﹝ M ╎ p ╎ K ﹞) (wkext-wk wx) unit =
   let
     IH = eval-gc γ wx unit
   in
-  proj₁ IH , wk-wk (proj₁ (proj₂ IH)) , wkext-wk (proj₁ (proj₂ (proj₂ IH))) , proj₂ (proj₂ (proj₂ IH))
+  record { ψ-gc = ψ-gc IH ;
+           split = record { π-part₁ = π-part₁ (split IH) ;
+                            π-part₂ = wk-wk (π-part₂ (split IH)) ;
+                            p-part₁ = p-part₁ (split IH) ;
+                            p-part₂ = wkext-wk (p-part₂ (split IH))} ;
+           menvext = menv-wk-jump (menvext IH) M p K ;
+           result = unit }
 
 --------------------------------------------------------------------------
 
@@ -283,12 +576,12 @@ eval-app γ V W p K =
   let
     v = eval-gc γ p V
     w = eval-gc γ p W
-    M = lam-to-comp (proj₁ (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ v)))))) (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ v))))))
-    mx = max (proj₁ (proj₂ (proj₂ v))) (proj₁ (proj₂ (proj₂ (proj₂ (proj₂ v))))) (proj₁ (proj₂ (proj₂ w))) (proj₁ (proj₂ (proj₂ (proj₂ (proj₂ w)))))
-    δ = gc γ (proj₁ (proj₂ (proj₂ mx)))
-    𝐖 = wk-omval ((proj₁ (proj₂ (proj₂ (proj₂ (proj₂ mx)))))) (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ w))))))
+    M = lam-to-comp (ψ-gc v) (result v)
+    m = squash (split v) (split w)
+    δ = gc γ (p-part₂ (mid-split m))
+    𝐖 = wk-omval (π-part₂ (rhs-split m)) (result w)
   in
-  ⟨ δ · 𝐖 ╎ wk-comp (wk-cong (proj₁ ((proj₂ (proj₂ (proj₂ mx)))))) M ╎ wkext-wk (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ mx)))))) ╎ K ⟩
+  ⟨ δ · 𝐖 ╎ wk-comp (wk-cong (π-part₂ (lhs-split m))) M ╎ wkext-wk (p-part₁ (mid-split m)) ╎ K ⟩
 
 --------------------------------------------------------------------------
 
@@ -296,14 +589,25 @@ eval→-helper : (W : Γ ⊢ᵛ X) → (γ : MEnv Γ) → {π : Γ ⊇ Δ} → (
 eval→-helper W γ p K =
   let
     a = eval-gc γ p W
-    𝐖 = proj₂ (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ a)))))
-    δ = proj₁ (proj₂ (proj₂ (proj₂ (proj₂ (proj₂ a)))))
-    r = proj₁ (proj₂ (proj₂ (proj₂ (proj₂ a))))
+    𝐖 = result a
+    δ = ψ-gc a
+    r = p-part₁ (split a)
   in
   ⟨ δ ； 𝐖 ╎ r ╎ K ⟩
 
 wkext-id-π : WkExt {Γ = Γ} wk-id
 wkext-id-π = wkext-id
+
+wkext-trans-idl-β : {π : Γ ⊇ Δ} → (p : WkExt π) → {ρ : Γ ⊇ Γ} → wkext-trans {π = ρ} wkext-id p ≡ p
+wkext-trans-idl-β wkext-id = refl
+wkext-trans-idl-β (wkext-wk p) = refl
+{-# REWRITE wkext-trans-idl-β #-}
+
+wkext-trans-idr-β : {π : Γ ⊇ Δ} → (p : WkExt π) → {ρ : Δ ⊇ Δ} → wkext-trans p {ρ = ρ} wkext-id ≡ p
+wkext-trans-idr-β wkext-id = refl
+wkext-trans-idr-β (wkext-wk p) = refl
+{-# REWRITE wkext-trans-idr-β #-}
+
 
 data _→ᶜ_ : CState → CState → Set where
 
