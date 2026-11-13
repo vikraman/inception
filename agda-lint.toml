@@ -1,4 +1,6 @@
-# agdalint config
+# agda-lint config
+
+preset = "all"
 
 sources = ["Inception/**/*.agda", "Inception/**/*.lagda", "scratch/*.lagda"]
 
@@ -94,3 +96,10 @@ letters = "ΓΔΨΞ"
 exact = ["Ty"]
 letters = "XYZUSTℛ"
 reserved = true
+
+# ignored findings
+[allow]
+importOrder = ["Inception/Everything.agda"]
+sortLetter = ["scratch/PMachine.lagda"]
+letBinding = ["Inception/Inc/CPS.agda", "Inception/Sub/*.agda", "Inception/Sub/*.lagda"]
+unusedVariable = ["Inception/Ctx/Base.agda"]
