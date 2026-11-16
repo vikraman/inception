@@ -126,12 +126,6 @@ mutual
                   ------------------------------------
                   → WellFormedCState ⟨ M ╎ γ₁ ╎ π₁ ╎ < N ； γ₂ ； π₂ >∷ K ⟩
 
-wk-omval-wk-η : {Γ : Ctx} {X : Ty} → (𝐖 : OMVal Γ X) → (π : Ψ ⊇ Δ) → (δ : Δ ⊇ Γ) → wk-omval π (wk-omval δ 𝐖) ≡ wk-omval (wk-trans π δ) 𝐖
-wk-omval-wk-η unit π δ = refl
-wk-omval-wk-η (pair 𝐕 𝐖) π δ = cong₂ pair (wk-omval-wk-η 𝐕 π δ) (wk-omval-wk-η 𝐖 π δ)
-wk-omval-wk-η (lam M) π δ = cong lam (wk-comp-id-β (wk-comp (wk-trans (Wk.wk-cong π) (Wk.wk-cong δ)) M))
-wk-omval-wk-η (label x) π δ = refl
-
 wk-menv-trans : {Γ₁ Γ₂ Γ₃ : Ctx} {π₁ : Γ₁ ⊇ Γ₂} {π₂ : Γ₂ ⊇ Γ₃} {γ₁ : MEnv Γ₁} {γ₂ : MEnv Γ₂} {γ₃ : MEnv Γ₃} → WkMEnv π₁ γ₁ γ₂ → WkMEnv π₂ γ₂ γ₃ → WkMEnv (wk-trans π₁ π₂) γ₁ γ₃
 wk-menv-trans wk-tmenv-ε wk-tmenv-ε = wk-tmenv-ε
 wk-menv-trans {π₁ = wk-cong π₁} {π₂ = wk-cong π₂} {γ₁ = γ₁ · _} {γ₂ = γ₂ · _} {γ₃ = γ₃ · _} (wk-tmenv-omval-cong 𝐖 ϖ₁) (wk-tmenv-omval-cong 𝐖₁ ϖ₂) =
@@ -158,12 +152,6 @@ wk-menv-trans (wk-tmenv-jump-wk M ρ K ϖ₁) (wk-tmenv-omval-cong 𝐖 ϖ₂) =
 wk-menv-trans (wk-tmenv-jump-wk M ρ K ϖ₁) (wk-tmenv-jump-cong N ρ₁ K₁ ϖ₂) = wk-tmenv-jump-wk M ρ K (wk-menv-trans ϖ₁ (wk-tmenv-jump-cong N ρ₁ K₁ ϖ₂))
 wk-menv-trans (wk-tmenv-jump-wk M ρ K ϖ₁) (wk-tmenv-omval-wk 𝐖 ϖ₂) = wk-tmenv-jump-wk M ρ K (wk-menv-trans ϖ₁ (wk-tmenv-omval-wk 𝐖 ϖ₂))
 wk-menv-trans (wk-tmenv-jump-wk M ρ K ϖ₁) (wk-tmenv-jump-wk N ρ₁ K₁ ϖ₂) = wk-tmenv-jump-wk M ρ K (wk-menv-trans ϖ₁ (wk-tmenv-jump-wk N ρ₁ K₁ ϖ₂))
-
-wk-omval-id-η : (𝐖 : OMVal Γ X) → wk-omval wk-id 𝐖 ≡ 𝐖
-wk-omval-id-η unit = refl
-wk-omval-id-η (pair 𝐕 𝐖) = cong₂ pair (wk-omval-id-η 𝐕) (wk-omval-id-η 𝐖)
-wk-omval-id-η (lam M) = refl
-wk-omval-id-η (label x) = refl
 
 wk-menv-id : (γ : MEnv Γ) → WkMEnv (wk-id) γ γ
 wk-menv-id ⋄ = wk-tmenv-ε
@@ -251,8 +239,8 @@ wf-preservation sub→ (wf-state-bottom M γ π g) = wf-state-bottom _ (γ ·﹝
 wf-preservation sub→ (wf-state-resume _ x x₁ g) = wf-state-resume _ (wk-tmenv-jump-wk _ _ _ x) x₁ (wf-env-jump (wf-state-resume _ x x₁ g))
 wf-preservation (var→ {W = var i}) (wf-state-bottom M γ π g) = wf-jump i g
 wf-preservation (var→ {W = var i}) (wf-state-resume _ x x₁ g) = wf-jump i g
-wf-preservation (pmᶜ→ {W = W}) (wf-state-bottom M γ π g) = wf-state-bottom _ (γ · _ · wk-omval (wk-wk wk-id) _) (Wk.wk-wk (Wk.wk-wk π)) (wf-env-omval (wf-env-omval g (wf-eval₁ W g)) (wf-omval-wk-omval (wf-eval₂ W g) (wf-eval₁ W g)))
-wf-preservation (pmᶜ→ {W = W}) (wf-state-resume _ x x₁ g) = wf-state-resume _ (wk-tmenv-omval-wk (wk-omval (wk-wk wk-id) _) (wk-tmenv-omval-wk _ x)) x₁ (wf-env-omval (wf-env-omval g (wf-eval₁ W g)) (wf-omval-wk-omval (wf-eval₂ W g) (wf-eval₁ W g)))
+wf-preservation (pmᶜ→ {W = W}) (wf-state-bottom M γ π g) = wf-state-bottom _ (γ · _ · wk-omval (wk-wk wk-id) (eval₂ W γ)) (Wk.wk-wk (Wk.wk-wk π)) (wf-env-omval (wf-env-omval g (wf-eval₁ W g)) (wf-omval-wk-omval (wf-eval₂ W g) (wf-eval₁ W g)))
+wf-preservation (pmᶜ→ {W = W} {γ = γ}) (wf-state-resume _ x x₁ g) = wf-state-resume _ (wk-tmenv-omval-wk (wk-omval (wk-wk wk-id) (eval₂ W γ)) (wk-tmenv-omval-wk _ x)) x₁ (wf-env-omval (wf-env-omval g (wf-eval₁ W g)) (wf-omval-wk-omval (wf-eval₂ W g) (wf-eval₁ W g)))
 wf-preservation app→ (wf-state-bottom (app V W) γ π g) = wf-state-bottom _ (γ · _) (Wk.wk-wk π) (wf-env-omval g (wf-eval W g))
 wf-preservation app→ (wf-state-resume (app V W) x x₁ g) = wf-state-resume _ (wk-tmenv-omval-wk _ x) x₁ (wf-env-omval g (wf-eval W g))
 
