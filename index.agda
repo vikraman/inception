@@ -40,8 +40,11 @@ import Inception.IncV.Machine
 import Inception.LamLamBar.Syntax
 
 -- translations
+-- Translation.Src.Tgt goes Src to Tgt
 import Inception.Translation.Sub.SystemL
 import Inception.Translation.Inc.SystemL
+import Inception.Translation.Sub.LamLamBar
+import Inception.Translation.Inc.LamLamBar
 
 -- all modules
 import Inception.Everything
