@@ -38,5 +38,8 @@ import Inception.Inc.Translation
 import Inception.IncV.Syntax
 import Inception.IncV.Machine
 
+-- lambda-lambda-bar calculus
+import Inception.LamLamBar.Syntax
+
 -- all modules
 import Inception.Everything
