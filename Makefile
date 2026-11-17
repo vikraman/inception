@@ -17,7 +17,7 @@ html: everything
 todos:
 	grep -E -n --colour=auto 'TODO' $(AGDA_SRCS)
 
-LINT = scripts/AgdaLint.hs
+LINT = agda-lint
 
 lint:
 	$(LINT)

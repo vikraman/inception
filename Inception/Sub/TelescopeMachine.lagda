@@ -12,7 +12,7 @@ open import Data.Empty using (⊥)
 open import Data.Product using (proj₁; proj₂; _,_; _×_; Σ-syntax)
 open import Data.Unit using (⊤; tt)
 
-open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; subst)
+open import Relation.Binary.PropositionalEquality using (_≡_; refl; sym; trans; subst; cong; cong₂)
 
 --------------------------------------------------------------------------
 
@@ -77,6 +77,20 @@ wk-omval π unit = unit
 wk-omval π (pair 𝐕 𝐖) = pair (wk-omval π 𝐕) (wk-omval π 𝐖)
 wk-omval π (lam M) = lam (wk-comp (wk-cong π) M)
 wk-omval π (label x) = label (wk-mem π x)
+
+wk-omval-wk-η : (𝐖 : OMVal Γ X) → (π : Ψ ⊇ Δ) → (δ : Δ ⊇ Γ) → wk-omval π (wk-omval δ 𝐖) ≡ wk-omval (wk-trans π δ) 𝐖
+wk-omval-wk-η unit π δ = refl
+wk-omval-wk-η (pair 𝐕 𝐖) π δ = cong₂ pair (wk-omval-wk-η 𝐕 π δ) (wk-omval-wk-η 𝐖 π δ)
+wk-omval-wk-η (lam M) π δ = refl
+wk-omval-wk-η (label x) π δ = refl
+
+wk-omval-id-η : (𝐖 : OMVal Γ X) → wk-omval wk-id 𝐖 ≡ 𝐖
+wk-omval-id-η unit = refl
+wk-omval-id-η (pair 𝐕 𝐖) = cong₂ pair (wk-omval-id-η 𝐕) (wk-omval-id-η 𝐖)
+wk-omval-id-η (lam M) = refl
+wk-omval-id-η (label x) = refl
+
+{-# REWRITE wk-omval-wk-η wk-omval-id-η #-}
 
 data CState : Set where
 
@@ -205,5 +219,4 @@ halting-state ⟨ push M N ╎ γ ╎ π ╎ K ⟩ normal = ql (normal push→) 
 halting-state ⟨ app V W ╎ γ ╎ π ╎ K ⟩ normal = ql (normal app→) (Σ-syntax Ctx (λ Δ → Σ-syntax (Δ ⊇ ε) (λ π₁ → Σ-syntax (OMVal Δ ℛ) (λ 𝐖 → Σ-syntax (MEnv Δ) (λ δ → ⟨ app V W ╎ γ ╎ π ╎ K ⟩ ≡ ⟨ 𝐖 ； δ ╎ π₁ ╎ ◻ ⟩)))))
 halting-state ⟨ var W ╎ γ ╎ π ╎ K ⟩ normal = ql (normal var→) (Σ-syntax Ctx (λ Δ → Σ-syntax (Δ ⊇ ε) (λ π₁ → Σ-syntax (OMVal Δ ℛ) (λ 𝐖 → Σ-syntax (MEnv Δ) (λ δ → ⟨ var W ╎ γ ╎ π ╎ K ⟩ ≡ ⟨ 𝐖 ； δ ╎ π₁ ╎ ◻ ⟩)))))
 halting-state ⟨ sub M N ╎ γ ╎ π ╎ K ⟩ normal = ql (normal sub→) (Σ-syntax Ctx (λ Δ → Σ-syntax (Δ ⊇ ε) (λ π₁ → Σ-syntax (OMVal Δ ℛ) (λ 𝐖 → Σ-syntax (MEnv Δ) (λ δ → ⟨ sub M N ╎ γ ╎ π ╎ K ⟩ ≡ ⟨ 𝐖 ； δ ╎ π₁ ╎ ◻ ⟩)))))
-
 \end{code}
