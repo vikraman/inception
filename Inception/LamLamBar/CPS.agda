@@ -117,6 +117,11 @@ mutual
 --------------------------------------------------------------------------
 -- soundness
 
+coapp-eta-sem : (V : Γ ⊢ᵛ X ̃) (γ : ⟦ Γ ⟧ˣ) (k : R ^ ⟦ Y ⟧) (s : ⟦ X ⟧ ⊎ ⟦ Y ⟧)
+              → [ ⟦ V ⟧ᵛ γ , k ]′ s ≡ ⟦ vcase (var here) (wk-comp (wk-cong (wk-wk wk-id)) (throw (wk V) (var here))) (wk-comp (wk-cong (wk-wk wk-id)) (return (var here))) ⟧ᶜ (γ , s) k
+coapp-eta-sem V γ k (inj₁ a) = refl
+coapp-eta-sem V γ k (inj₂ b) = refl
+
 mutual
   eqVal : Γ ⊢ᵛ V ≈ W ∶ X → ⟦ V ⟧ᵛ ≡ ⟦ W ⟧ᵛ
   eqVal ≈-refl = refl
@@ -155,3 +160,5 @@ mutual
   eqComp (colam-inr-pass M N) = refl
   eqComp (colam-inl-jump M N) = refl
   eqComp (case-colam-beta V M N) = refl
+  eqComp (case-colam-push M N P) = refl
+  eqComp (coapp-eta M V) = funext λ γ → funext λ k → cong (⟦ M ⟧ᶜ γ) (funext (coapp-eta-sem V γ k))

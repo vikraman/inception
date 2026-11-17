@@ -354,3 +354,11 @@ data EqComp Γ where
   case-colam-beta : (V : (Γ ∙ X ̃) ⊢ᵛ Y) → (M : (Γ ∙ X) ⊢ᶜ Z) → (N : (Γ ∙ Y) ⊢ᶜ Z)
                   --------------------------------------------------------------------
                   → Γ ⊢ᶜ ccase (colam (return V)) M N ≈ ccase (colam (sub-comp (sub-ex (sub-wk (wk-wk wk-id) sub-id) V) N)) M (return (var here)) ∶ Z
+
+  case-colam-push : (M : (Γ ∙ X ̃) ⊢ᶜ Y) → (N : (Γ ∙ X) ⊢ᶜ Z) → (P : (Γ ∙ Y) ⊢ᶜ Z)
+                  --------------------------------------------------------------------
+                  → Γ ⊢ᶜ ccase (colam M) N P ≈ ccase (colam (push M (wk-comp (wk-cong (wk-wk wk-id)) P))) N (return (var here)) ∶ Z
+
+  coapp-eta : (M : Γ ⊢ᶜ X `+ Y) → (V : Γ ⊢ᵛ X ̃)
+            ------------------------------------------------------------------------
+            → Γ ⊢ᶜ coapp M V ≈ ccase M (throw (wk V) (var here)) (return (var here)) ∶ Y
