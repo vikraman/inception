@@ -26,13 +26,11 @@ import Inception.SystemL.Examples
 import Inception.Sub.Syntax
 import Inception.Sub.Machine
 import Inception.Sub.Semantics
-import Inception.Sub.Translation
 import Inception.Sub.Examples
 
 -- inception calculus
 import Inception.Inc.Syntax
 import Inception.Inc.CPS
-import Inception.Inc.Translation
 
 -- inception calculus with values
 import Inception.IncV.Syntax
@@ -40,6 +38,10 @@ import Inception.IncV.Machine
 
 -- lambda-lambda-bar calculus
 import Inception.LamLamBar.Syntax
+
+-- translations
+import Inception.Translation.Sub.SystemL
+import Inception.Translation.Inc.SystemL
 
 -- all modules
 import Inception.Everything

@@ -1,0 +1,38 @@
+open import Inception.SystemL.Syntax
+
+module Inception.Translation.Sub.SystemL where
+
+import Inception.Sub.Syntax as I
+
+--------------------------------------------------------------------------
+-- types and contexts
+
+⟦_⟧ : I.Ty → Ty
+⟦ I.`𝟙 ⟧     = `𝟙
+⟦ X I.`× Y ⟧ = ⟦ X ⟧ `× ⟦ Y ⟧
+⟦ X I.`⇒ Y ⟧ = ⟦ X ⟧ `⇒ ⟦ Y ⟧
+⟦ I.`ℓ ⟧     = ¬ `𝟙
+
+open import Inception.Ctx.Map ⟦_⟧ public
+
+--------------------------------------------------------------------------
+-- values and computations
+
+mutual
+  ⟦_⟧ᵛ : I.Γ I.⊢ᵛ I.X → ⟦ I.Γ ⟧ˣ ⊢ᵛ ⟦ I.X ⟧ ∣ Δ
+  ⟦ I.var i ⟧ᵛ    = var ⟦ i ⟧ⁱ
+  ⟦ I.lam M ⟧ᵛ    = lam ⟦ M ⟧ᶜ
+  ⟦ I.pair V W ⟧ᵛ = pair ⟦ V ⟧ᵛ ⟦ W ⟧ᵛ
+  ⟦ I.unit ⟧ᵛ     = unit
+
+  ⟦_⟧ᶜ : I.Γ I.⊢ᶜ I.X → ⟦ I.Γ ⟧ˣ ⊢ᵗ ⟦ I.X ⟧ ∣ Δ
+  ⟦ I.return V ⟧ᶜ = ret ⟦ V ⟧ᵛ
+  ⟦ I.pm V M ⟧ᶜ   = letpv ⟦ V ⟧ᵛ ⟦ M ⟧ᶜ
+  ⟦ I.push M N ⟧ᶜ = lett ⟦ M ⟧ᶜ ⟦ N ⟧ᶜ
+  ⟦ I.app V W ⟧ᶜ  = applyL ⟦ V ⟧ᵛ ⟦ W ⟧ᵛ
+  ⟦ I.var V ⟧ᶜ    = throw ⟦ V ⟧ᵛ unit
+  ⟦ I.sub M N ⟧ᶜ  = catch ⟦ M ⟧ᶜ (wkᵗ ⟦ N ⟧ᶜ)
+
+⟦_⟧ˢ : I.Γ I.⊢ I.Δ → ⟦ I.Γ ⟧ˣ ⊢ ⟦ I.Δ ⟧ˣ ∣ Δ
+⟦ I.sub-ε ⟧ˢ      = sub-ε
+⟦ I.sub-ex θ V ⟧ˢ = sub-ex ⟦ θ ⟧ˢ ⟦ V ⟧ᵛ

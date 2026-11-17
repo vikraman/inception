@@ -88,8 +88,8 @@ open import Inception.SystemL.Syntax
 open import Inception.Prelude
 open import Inception.Rewriting
 open import Inception.Sub.Examples using (ex15)
-open import Inception.Sub.Translation using (⟦_⟧ᶜ)
 open import Inception.SystemL.SN
+open import Inception.Translation.Sub.SystemL using (⟦_⟧ᶜ)
 open import Relation.Binary.PropositionalEquality
 
 open StarReasoning (_↦_ {Γ = ε} {Δ = ε ∙ `𝟙})
