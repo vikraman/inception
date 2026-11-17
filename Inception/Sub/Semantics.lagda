@@ -43,7 +43,7 @@ open Monad (K[_]-Monad {x = 0ℓ} R) using (η; _*)
 ⟦ `𝟙 ⟧ = ⊤
 ⟦ X `× Y ⟧ = ⟦ X ⟧ × ⟦ Y ⟧
 ⟦ X `⇒ Y ⟧ = ⟦ X ⟧ → K ⟦ Y ⟧
-⟦ `ℓ ⟧ = R
+⟦ `ℓ ⟧ = R ^ ⊤
 
 \end{code}
 %</SemTy>
@@ -61,11 +61,11 @@ open Sem ⟦_⟧
 \end{code}
 %<*SemTerms>
 \begin{code}
-varK : {X : Set} → R → K X
-varK v k = v
+varK : {X : Set} → R ^ ⊤ → K X
+varK v k = v tt
 
-subK : {X : Set} → (R → K X) × K X → K X
-subK (m₁ , m₂) k = m₁ (m₂ k) k
+subK : {X : Set} → (R ^ ⊤ → K X) × K X → K X
+subK (m₁ , m₂) k = m₁ (λ _ → m₂ k) k
 
 mutual
 
@@ -132,10 +132,10 @@ mutual
         (w₁ w₂) k
   evalComp (var W) (γ , k) =
     let w = evalVal W γ in
-      w
+      w tt
   evalComp (sub M N) (γ , k) =
     let m = evalComp N (γ , k) in
-      evalComp M ((γ , m) , k)
+      evalComp M ((γ , λ _ → m) , k)
 
 ⟦_⟧ˢ : Γ ⊢ Δ → ⟦ Γ ⟧ˣ → ⟦ Δ ⟧ˣ
 ⟦ sub-ε ⟧ˢ = const tt
@@ -272,7 +272,7 @@ module TopLevel {ℛ : Ty} {k₀ : ⟦ ℛ ⟧ → R} where
     ⟦ unitᵛ ⟧ⱽ = tt
     ⟦ pairᵛ 𝐕 𝐖 ⟧ⱽ = ⟦ 𝐕 ⟧ⱽ , ⟦ 𝐖 ⟧ⱽ
     ⟦ cloᵛ M γ ⟧ⱽ = (curry ⟦ M ⟧ᶜ) ⟦ γ ⟧ᴱ
-    ⟦ jumpᵛ M γ K ⟧ⱽ = ⟦ M ⟧ᶜ ⟦ γ ⟧ᴱ ⟦ K ⟧ᴷ
+    ⟦ jumpᵛ M γ K ⟧ⱽ = λ _ → ⟦ M ⟧ᶜ ⟦ γ ⟧ᴱ ⟦ K ⟧ᴷ
 
     ⟦_⟧ᶜˢ : CStack X → K ⟦ X ⟧ → K ⟦ ℛ ⟧
     ⟦ ◻ ⟧ᶜˢ = idf
@@ -324,10 +324,10 @@ module TopLevel {ℛ : Ty} {k₀ : ⟦ ℛ ⟧ → R} where
                                       push-eq-fun : (λ z → ⟦ M ⟧ᶜ (⟦ γ ⟧ᴱ , z) (λ y → ⟦ K ⟧ᶜˢ (λ k → k y) k₀)) ≡ (λ z → ⟦ K ⟧ᶜˢ (λ k → ⟦ M ⟧ᶜ (⟦ γ ⟧ᴱ , z) k) k₀)
                                       push-eq-fun = funext push-eq-at
 
-  jump-eq : (𝐖 : MVal `ℓ) → ⟦ 𝐖 ⟧ⱽ ≡ ⟦ jump-to-state 𝐖 ⟧ᶜꟴ
+  jump-eq : (𝐖 : MVal `ℓ) → ⟦ 𝐖 ⟧ⱽ tt ≡ ⟦ jump-to-state 𝐖 ⟧ᶜꟴ
   jump-eq (jumpᵛ _ _ _) = refl
 
-  eval-jump-eq : (W : Γ ⊢ᵛ `ℓ) → (γ : MEnv Γ) → ⟦ eval W γ ⟧ⱽ ≡ ⟦ jump-to-state (eval W γ) ⟧ᶜꟴ
+  eval-jump-eq : (W : Γ ⊢ᵛ `ℓ) → (γ : MEnv Γ) → ⟦ eval W γ ⟧ⱽ tt ≡ ⟦ jump-to-state (eval W γ) ⟧ᶜꟴ
   eval-jump-eq W γ = jump-eq (eval W γ)
 
   clo-eq : (𝐖 : MVal (X `⇒ Y)) → (w : ⟦ X ⟧) → (γ : ⟦ proj₁ (clo-to-comp 𝐖) ⟧ˣ) → (eq : γ ≡ ⟦ proj₂ (proj₂ (clo-to-comp 𝐖)) ⟧ᴱ) → ⟦ 𝐖 ⟧ⱽ w ≡ ⟦ proj₁ (proj₂ (clo-to-comp 𝐖)) ⟧ᶜ (γ , w)
@@ -370,7 +370,7 @@ module TopLevel {ℛ : Ty} {k₀ : ⟦ ℛ ⟧ → R} where
      ⟦ M ⟧ᶜ ⟦ γ ⟧ᴱ ⟦ < N ； γ >∷ K ⟧ᴷ ∎
   compstate-eq sub→ = refl
   compstate-eq (var→ {W = W} {γ = γ} {K = K}) =
-    (⟦ W ⟧ᵛ ； varK) ⟦ γ ⟧ᴱ ⟦ K ⟧ᴷ ≡⟨ refl ⟩ ⟦ W ⟧ᵛ ⟦ γ ⟧ᴱ ≡⟨ eq ⟩ ⟦ eval W γ ⟧ⱽ ≡⟨ eval-jump-eq W γ ⟩ ⟦ jump-to-state (eval W γ) ⟧ᶜꟴ ∎
+    (⟦ W ⟧ᵛ ； varK) ⟦ γ ⟧ᴱ ⟦ K ⟧ᴷ ≡⟨ refl ⟩ ⟦ W ⟧ᵛ ⟦ γ ⟧ᴱ tt ≡⟨ cong (λ f → f tt) eq ⟩ ⟦ eval W γ ⟧ⱽ tt ≡⟨ eval-jump-eq W γ ⟩ ⟦ jump-to-state (eval W γ) ⟧ᶜꟴ ∎
     where
       eq = eval-correct W γ
   compstate-eq (pmᶜ→ {W = W} {γ = γ} {M = M} {K = K}) =
