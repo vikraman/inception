@@ -225,6 +225,15 @@ letpv V M = lett (projFst V) (lett (projSnd (wkᵛ V)) M)
 efq : Γ ⊢ᵗ `⊥ ∣ Δ → Γ ⊢ᵗ X ∣ Δ
 efq u = μ (cut `⊥ (wk̃ᵗ u) tp)
 
+throw : Γ ⊢ᵛ ¬ X ∣ Δ → Γ ⊢ᵛ X ∣ Δ → Γ ⊢ᵗ Y ∣ Δ
+throw V W = efq (applyL V W)
+
+handler : (Γ ∙ X) ⊢ᵗ Y ∣ Δ → Γ ⊢ᵛ ¬ X ∣ (Δ ∙ Y)
+handler {Y = Y} M = lam (μ (cut Y (wk̃ᵗ (wk̃ᵗ M)) (covar (there here))))
+
+catch : (Γ ∙ ¬ X) ⊢ᵗ Y ∣ Δ → (Γ ∙ X) ⊢ᵗ Y ∣ Δ → Γ ⊢ᵗ Y ∣ Δ
+catch {Y = Y} M N = μ (cut Y (letv (handler N) (wk̃ᵗ M)) (covar here))
+
 variable
   V V₁ V₂ V₃ W₁ W₂ : Γ ⊢ᵛ X ∣ Δ
   M M₁ M₂ M₃ : Γ ⊢ᵗ X ∣ Δ
