@@ -38,6 +38,7 @@ import Inception.IncV.Machine
 
 -- lambda-lambda-bar calculus
 import Inception.LamLamBar.Syntax
+import Inception.LamLamBar.CPS
 
 -- translations
 -- Translation.Src.Tgt goes Src to Tgt
