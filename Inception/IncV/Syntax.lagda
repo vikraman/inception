@@ -2,18 +2,26 @@
 
 {-# OPTIONS --no-postfix-projections #-}
 
-module Inception.IncV.Syntax where
+open import Inception.IncV.Data
+
+module Inception.IncV.Syntax (𝒜 : Alg) where
 
 open import Inception.Prelude
 
 open import Data.Empty using (⊥)
 open import Data.Product using (proj₁; proj₂; _,_; _×_; Σ-syntax)
 
-open import Data.Nat
+open import Data.List
+open import Data.Vec
 
 import Relation.Binary.PropositionalEquality as Eq
 open Eq using (_≡_; refl; cong; trans; cong₂)
 open Eq.≡-Reasoning
+
+𝒟 = Alg.𝒟 𝒜
+𝒪 = Alg.𝒪 𝒜
+∣_∣ = Alg.∣_∣ 𝒜
+apply = Alg.apply 𝒜
 
 --------------------------------------------------------------------------
 
@@ -58,7 +66,11 @@ data Val where
           Γ ⊢ᵛ `𝟙
 
 
-  dat :   (N : ℕ)
+  dat :   (D : 𝒟)
+          -----------
+          → Γ ⊢ᵛ `𝓅
+
+  op :    (o : 𝒪) → (args : Vec 𝒟 ∣ o ∣)
           -----------
           → Γ ⊢ᵛ `𝓅
 
@@ -107,6 +119,7 @@ mutual
   wk-val π (pair V W) = pair (wk-val π V) (wk-val π W)
   wk-val π unit       = unit
   wk-val π (dat N)    = dat N
+  wk-val π (op o a)    = op o a
 
   wk-comp : Γ ⊇ Δ → Δ ⊢ᶜ X → Γ ⊢ᶜ X
   wk-comp π (return W) = return (wk-val π W)
