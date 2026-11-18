@@ -6,7 +6,7 @@ open import Inception.IncV.Data
 
 import Inception.IncV.Syntax as Syntax using (Ty)
 
-module Inception.IncV.Machine (𝒜 : Alg) (ℛ : Syntax.Ty 𝒜) where
+module Inception.IncV.Machine (𝒜 : Alg) (ℝ : Syntax.Ty 𝒜) where
 
 open import Inception.IncV.Syntax 𝒜
 open import Inception.Prelude
@@ -35,7 +35,7 @@ mutual
 
   data CStack : (X : Ty) → Set where
 
-    ◻ :        CStack ℛ
+    ◻ :        CStack ℝ
 
     <_；_>∷_ :  (Γ ∙ Y) ⊢ᶜ X → (γ : MEnv Γ)
                 → (K : CStack X)
@@ -256,10 +256,10 @@ mutual
 Rᴱ-⊘ : Rᴱ ⋄
 Rᴱ-⊘ = λ ()
 
-Rᵏ-◻ : Rᵏ ℛ ◻
+Rᵏ-◻ : Rᵏ ℝ ◻
 Rᵏ-◻ RW = sn λ {σ} ()
 
-SN-theorem : (M : ε ⊢ᶜ ℛ) → SN ⟨ M ╎ ⋄ ╎ ◻ ⟩
+SN-theorem : (M : ε ⊢ᶜ ℝ) → SN ⟨ M ╎ ⋄ ╎ ◻ ⟩
 SN-theorem M = fundamentalᶜ M Rᴱ-⊘ Rᵏ-◻
 
 progress : (σ : CState) → Step? σ
@@ -272,7 +272,7 @@ progress ⟨ app V W ╎ γ ╎ K ⟩ = next app→
 progress ⟨ rec V W ╎ γ ╎ K ⟩ = next rec→
 progress ⟨ inc M N ╎ γ ╎ K ⟩ = next inc→
 
-halting-state : (σ : CState) → Normal σ → Σ[ 𝐖 ∈ MVal ℛ ] σ ≡ ⟨ 𝐖 ╎ ◻ ⟩
+halting-state : (σ : CState) → Normal σ → Σ[ 𝐖 ∈ MVal ℝ ] σ ≡ ⟨ 𝐖 ╎ ◻ ⟩
 halting-state ⟨ 𝐖 ╎ ◻ ⟩ normal = 𝐖 , refl
 halting-state ⟨ 𝐖 ╎ < M ； γ >∷ K ⟩ normal = ql (normal return→) _
 halting-state ⟨ return _ ╎ γ ╎ K ⟩ normal = ql (normal eval→) _
@@ -283,7 +283,7 @@ halting-state ⟨ rec _ _ ╎ γ ╎ K ⟩ normal = ql (normal rec→) _
 halting-state ⟨ inc _ _ ╎ γ ╎ K ⟩ normal = ql (normal inc→) _
 
 
-exec : (M : ε ⊢ᶜ ℛ) → Σ[ σ ∈ CState ] Σ[ 𝐖 ∈ MVal ℛ ] Σ[ NF ∈ Normal σ ] (⟨ M ╎ ⋄ ╎ ◻ ⟩ →ᶜ* σ) × (𝐖 ≡ proj₁ (halting-state σ NF))
+exec : (M : ε ⊢ᶜ ℝ) → Σ[ σ ∈ CState ] Σ[ 𝐖 ∈ MVal ℝ ] Σ[ NF ∈ Normal σ ] (⟨ M ╎ ⋄ ╎ ◻ ⟩ →ᶜ* σ) × (𝐖 ≡ proj₁ (halting-state σ NF))
 exec M with eval-acc progress (SN-theorem M)
 ... | (σ , ss , NF) = σ , proj₁ (halting-state σ NF) , NF , ss , refl
 

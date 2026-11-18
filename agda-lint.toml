@@ -99,7 +99,7 @@ reserved = true
 
 [[sorts]]
 exact = ["Syntax.Ty 𝒜"]
-letters = "ℛ"
+letters = "ℝ"
 reserved = true
 
 # ignored findings
