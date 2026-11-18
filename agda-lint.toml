@@ -93,13 +93,8 @@ exact = ["Ctx"]
 letters = "ΓΔΨΞ"
 
 [[sorts]]
-exact = ["Ty"]
+heads = ["Ty", "Syntax.Ty"]
 letters = "XYZUSTℛ"
-reserved = true
-
-[[sorts]]
-exact = ["Syntax.Ty 𝒜"]
-letters = "ℝ"
 reserved = true
 
 # ignored findings
