@@ -93,7 +93,7 @@ exact = ["Ctx"]
 letters = "ΓΔΨΞ"
 
 [[sorts]]
-exact = ["Ty"]
+exact = ["Ty", "Syntax.Ty 𝒜"]
 letters = "XYZUSTℛ"
 reserved = true
 
