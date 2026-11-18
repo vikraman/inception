@@ -6,8 +6,8 @@ open import Inception.IncV.Data
 module Inception.IncV.Semantics (𝒜 : Alg) (R : Set) where
 
 open import Inception.Prelude
-open import Inception.Rewriting
 open import Inception.IncV.Syntax 𝒜
+open import Inception.Rewriting
 
 
 open import Data.Product using (proj₁; proj₂; _,_; <_,_>; curry; _×_; Σ-syntax; uncurry)
