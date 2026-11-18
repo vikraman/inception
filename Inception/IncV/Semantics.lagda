@@ -5,8 +5,8 @@ open import Inception.IncV.Data
 
 module Inception.IncV.Semantics (𝒜 : Alg) (R : Set) where
 
-open import Inception.Prelude
 open import Inception.IncV.Syntax 𝒜
+open import Inception.Prelude
 open import Inception.Rewriting
 
 
