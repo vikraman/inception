@@ -93,7 +93,7 @@ exact = ["Ctx"]
 letters = "ΓΔΨΞ"
 
 [[sorts]]
-exact = ["Ty"]
+heads = ["Ty", "Syntax.Ty"]
 letters = "XYZUSTℛ"
 reserved = true
 
@@ -101,5 +101,5 @@ reserved = true
 [allow]
 importOrder = ["Inception/Everything.agda"]
 sortLetter = ["scratch/PMachine.lagda"]
-letBinding = ["Inception/Inc/CPS.agda", "Inception/Sub/*.agda", "Inception/Sub/*.lagda"]
+letBinding = ["Inception/Inc/CPS.agda", "Inception/Sub/*.agda", "Inception/Sub/*.lagda", "Inception/IncV/*.agda", "Inception/IncV/*.lagda"]
 unusedVariable = ["Inception/Ctx/Base.agda"]
