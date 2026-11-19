@@ -48,6 +48,8 @@ import Inception.Translation.Inc.SystemL
 import Inception.Translation.Sub.LamLamBar
 import Inception.Translation.Inc.LamLamBar
 import Inception.Translation.LamLamBar.SystemL
+import Inception.Translation.Sub.Triangle
+import Inception.Translation.Inc.Triangle
 
 -- all modules
 import Inception.Everything
