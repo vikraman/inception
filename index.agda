@@ -38,6 +38,7 @@ import Inception.IncV.Machine
 
 -- lambda-lambda-bar calculus
 import Inception.LamLamBar.Syntax
+import Inception.LamLamBar.Equations
 import Inception.LamLamBar.CPS
 
 -- translations

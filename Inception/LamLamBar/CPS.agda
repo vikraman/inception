@@ -29,12 +29,12 @@ mutual
   ⟦ unit ⟧ᵛ = const tt
   ⟦ inl V ⟧ᵛ = ⟦ V ⟧ᵛ ； inj₁
   ⟦ inr V ⟧ᵛ = ⟦ V ⟧ᵛ ； inj₂
-  ⟦ case V W₁ W₂ ⟧ᵛ = λ γ → [ curry ⟦ W₁ ⟧ᵛ γ , curry ⟦ W₂ ⟧ᵛ γ ]′ (⟦ V ⟧ᵛ γ)
 
   ⟦_⟧ᶜ : Γ ⊢ᶜ X → ⟦ Γ ⟧ˣ → K ⟦ X ⟧
   ⟦ return V ⟧ᶜ = ⟦ V ⟧ᵛ ； η
   ⟦ pm V M ⟧ᶜ = < idf , ⟦ V ⟧ᵛ > ； assocl ； ⟦ M ⟧ᶜ
   ⟦ push M N ⟧ᶜ = < idf , ⟦ M ⟧ᶜ > ； τ ； ⟦ N ⟧ᶜ *
+  ⟦ case V M N ⟧ᶜ = < idf , ⟦ V ⟧ᵛ > ； distl ； [ ⟦ M ⟧ᶜ , ⟦ N ⟧ᶜ ]′
   ⟦ app V W ⟧ᶜ = < ⟦ V ⟧ᵛ , ⟦ W ⟧ᵛ > ； ev
   ⟦ colam M ⟧ᶜ = cocurry ⟦ M ⟧ᶜ
   ⟦ coapp M V ⟧ᶜ = < ⟦ M ⟧ᶜ , ⟦ V ⟧ᵛ > ； councurry idf
@@ -42,10 +42,6 @@ mutual
 ⟦_⟧ˢ : Γ ⊢ Δ → ⟦ Γ ⟧ˣ → ⟦ Δ ⟧ˣ
 ⟦ sub-ε ⟧ˢ = const tt
 ⟦ sub-ex θ V ⟧ˢ = < ⟦ θ ⟧ˢ , ⟦ V ⟧ᵛ >
-
-[,]-η : {A B C : Set} (f : A ⊎ B → C) (s : A ⊎ B) → f s ≡ [ f ∘ inj₁ , f ∘ inj₂ ]′ s
-[,]-η f (inj₁ a) = refl
-[,]-η f (inj₂ b) = refl
 
 
 --------------------------------------------------------------------------
@@ -59,12 +55,13 @@ mutual
   wk-val-coh π unit = refl
   wk-val-coh π (inl V) rewrite wk-val-coh π V = refl
   wk-val-coh π (inr V) rewrite wk-val-coh π V = refl
-  wk-val-coh π (case V W₁ W₂) rewrite wk-val-coh π V | wk-val-coh (wk-cong π) W₁ | wk-val-coh (wk-cong π) W₂ = refl
 
   wk-comp-coh : (π : Γ ⊇ Δ) (M : Δ ⊢ᶜ X) → ⟦ wk-comp π M ⟧ᶜ ≡ (⟦ π ⟧ʷ ； ⟦ M ⟧ᶜ)
   wk-comp-coh π (return V) rewrite wk-val-coh π V = refl
   wk-comp-coh π (pm V M) rewrite wk-val-coh π V | wk-comp-coh (wk-cong (wk-cong π)) M = refl
   wk-comp-coh π (push M N) rewrite wk-comp-coh π M | wk-comp-coh (wk-cong π) N = refl
+  wk-comp-coh π (case V M N) rewrite wk-val-coh π V | wk-comp-coh (wk-cong π) M | wk-comp-coh (wk-cong π) N =
+    funext λ γ → sym (distl-nat ⟦ π ⟧ʷ ⟦ M ⟧ᶜ ⟦ N ⟧ᶜ γ (⟦ V ⟧ᵛ (⟦ π ⟧ʷ γ)))
   wk-comp-coh π (app V W) rewrite wk-val-coh π V | wk-val-coh π W = refl
   wk-comp-coh π (colam M) rewrite wk-comp-coh (wk-cong π) M = refl
   wk-comp-coh π (coapp M V) rewrite wk-comp-coh π M | wk-val-coh π V = refl
@@ -95,12 +92,13 @@ mutual
   sub-val-coh θ unit = refl
   sub-val-coh θ (inl V) rewrite sub-val-coh θ V = refl
   sub-val-coh θ (inr V) rewrite sub-val-coh θ V = refl
-  sub-val-coh θ (case V W₁ W₂) rewrite sub-val-coh θ V | sub-val-coh (sub-ex (sub-wk (wk-wk wk-id) θ) (var here)) W₁ | sub-val-coh (sub-ex (sub-wk (wk-wk wk-id) θ) (var here)) W₂ = refl
 
   sub-comp-coh : (θ : Γ ⊢ Δ) (M : Δ ⊢ᶜ X) → ⟦ sub-comp θ M ⟧ᶜ ≡ (⟦ θ ⟧ˢ ； ⟦ M ⟧ᶜ)
   sub-comp-coh θ (return V) rewrite sub-val-coh θ V = refl
   sub-comp-coh θ (pm V M) rewrite sub-val-coh θ V | sub-comp-coh (sub-ex (sub-ex (sub-wk (wk-wk (wk-wk wk-id)) θ) (var (there here))) (var here)) M = refl
   sub-comp-coh θ (push M N) rewrite sub-comp-coh θ M | sub-comp-coh (sub-ex (sub-wk (wk-wk wk-id) θ) (var here)) N = refl
+  sub-comp-coh θ (case V M N) rewrite sub-val-coh θ V | sub-comp-coh (sub-ex (sub-wk (wk-wk wk-id) θ) (var here)) M | sub-comp-coh (sub-ex (sub-wk (wk-wk wk-id) θ) (var here)) N =
+    funext λ γ → sym (distl-nat ⟦ θ ⟧ˢ ⟦ M ⟧ᶜ ⟦ N ⟧ᶜ γ (⟦ V ⟧ᵛ (⟦ θ ⟧ˢ γ)))
   sub-comp-coh θ (app V W) rewrite sub-val-coh θ V | sub-val-coh θ W = refl
   sub-comp-coh θ (colam M) rewrite sub-comp-coh (sub-ex (sub-wk (wk-wk wk-id) θ) (var here)) M = refl
   sub-comp-coh θ (coapp M V) rewrite sub-comp-coh θ M | sub-val-coh θ V = refl
@@ -112,7 +110,7 @@ mutual
 -- soundness
 
 coapp-eta-sem : (V : Γ ⊢ᵛ X ̃) (γ : ⟦ Γ ⟧ˣ) (k : R ^ ⟦ Y ⟧) (s : ⟦ X ⟧ ⊎ ⟦ Y ⟧)
-              → [ ⟦ V ⟧ᵛ γ , k ]′ s ≡ ⟦ vcase (var here) (wk-comp (wk-cong (wk-wk wk-id)) (throw (wk V) (var here))) (wk-comp (wk-cong (wk-wk wk-id)) (return (var here))) ⟧ᶜ (γ , s) k
+              → [ ⟦ V ⟧ᵛ γ , k ]′ s ≡ ⟦ case (var here) (wk-comp (wk-cong (wk-wk wk-id)) (throw (wk V) (var here))) (wk-comp (wk-cong (wk-wk wk-id)) (return (var here))) ⟧ᶜ (γ , s) k
 coapp-eta-sem V γ k (inj₁ a) = refl
 coapp-eta-sem V γ k (inj₂ b) = refl
 
@@ -125,11 +123,7 @@ mutual
   eqVal (pair-cong p q) = cong₂ <_,_> (eqVal p) (eqVal q)
   eqVal (inl-cong p) rewrite eqVal p = refl
   eqVal (inr-cong p) rewrite eqVal p = refl
-  eqVal (case-cong p q r) rewrite eqVal p | eqVal q | eqVal r = refl
   eqVal (unit-eta _) = refl
-  eqVal (case-inl-beta V W₁ W₂) = refl
-  eqVal (case-inr-beta V W₁ W₂) = refl
-  eqVal (case-eta V W) = funext λ γ → [,]-η (curry ⟦ W ⟧ᵛ γ) (⟦ V ⟧ᵛ γ)
   eqVal (lam-eta _) = refl
 
   eqComp : Γ ⊢ᶜ M ≈ N ∶ X → ⟦ M ⟧ᶜ ≡ ⟦ N ⟧ᶜ
@@ -138,6 +132,7 @@ mutual
   eqComp (≈-trans p q) = trans (eqComp p) (eqComp q)
   eqComp (return-cong p) rewrite eqVal p = refl
   eqComp (pm-cong p q) rewrite eqVal p | eqComp q = refl
+  eqComp (case-cong p q r) rewrite eqVal p | eqComp q | eqComp r = refl
   eqComp (push-cong p q) rewrite eqComp p | eqComp q = refl
   eqComp (app-cong p q) rewrite eqVal p | eqVal q = refl
   eqComp (colam-cong p) rewrite eqComp p = refl
@@ -148,11 +143,11 @@ mutual
   eqComp (return-eta _) = refl
   eqComp (push-eta M N P) = refl
   eqComp (lam-beta M V) = refl
+  eqComp (case-inl-beta V M N) = refl
+  eqComp (case-inr-beta V M N) = refl
+  eqComp (case-eta V M) = funext λ γ → distl-η ⟦ M ⟧ᶜ γ (⟦ V ⟧ᵛ γ)
   eqComp (colam-beta M V) = refl
-  eqComp (colam-eta M) = funext λ γ → funext λ k → cong (⟦ M ⟧ᶜ γ) (funext ([,]-η k))
-  eqComp (colam-const M) = refl
-  eqComp (colam-inr-pass M N) = refl
-  eqComp (colam-inl-jump M N) = refl
-  eqComp (case-colam-beta V M N) = refl
+  eqComp (colam-eta M) = funext λ γ → funext λ k → cong (⟦ M ⟧ᶜ γ) (funext ([-,-]-η k))
+  eqComp (coapp-inl-push W V N) = refl
   eqComp (case-colam-push M N P) = refl
   eqComp (coapp-eta M V) = funext λ γ → funext λ k → cong (⟦ M ⟧ᶜ γ) (funext (coapp-eta-sem V γ k))

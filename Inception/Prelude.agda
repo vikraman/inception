@@ -22,6 +22,12 @@ open ≡-Reasoning
 {-# BUILTIN REWRITE _≡_ #-}
 
 --------------------------------------------------------------------------
+-- equality
+
+cong₃ : {A B C D : Set} (f : A → B → C → D) {a₁ a₂ : A} {b₁ b₂ : B} {c₁ c₂ : C} → a₁ ≡ a₂ → b₁ ≡ b₂ → c₁ ≡ c₂ → f a₁ b₁ c₁ ≡ f a₂ b₂ c₂
+cong₃ f refl refl refl = refl
+
+--------------------------------------------------------------------------
 -- interval and function extensionality
 
 module _ where
@@ -68,6 +74,32 @@ assocl (a , (b , c)) = (a , b) , c
 
 shuffle : ∀ {ℓ} {A B C : Set ℓ} → (A × B) × C → (A × C) × B
 shuffle ((a , b) , c) = (a , c) , b
+
+distl : ∀ {ℓ} {A B C : Set ℓ} → A × (B ⊎ C) → (A × B) ⊎ (A × C)
+distl (a , inj₁ b) = inj₁ (a , b)
+distl (a , inj₂ c) = inj₂ (a , c)
+
+--------------------------------------------------------------------------
+-- sums
+
+[-,-]-η : {A B C : Set} (f : A ⊎ B → C) (s : A ⊎ B) → f s ≡ [ f ∘ inj₁ , f ∘ inj₂ ]′ s
+[-,-]-η f (inj₁ a) = refl
+[-,-]-η f (inj₂ b) = refl
+
+distl-nat : {A B C D E : Set} (f : A → B) (g : B × C → E) (h : B × D → E) (a : A) (s : C ⊎ D)
+          → [ g , h ]′ (distl (f a , s)) ≡ [ map₁ f ； g , map₁ f ； h ]′ (distl (a , s))
+distl-nat f g h a (inj₁ c) = refl
+distl-nat f g h a (inj₂ d) = refl
+
+distl-η : {A B C D : Set} (f : A × (B ⊎ C) → D) (a : A) (s : B ⊎ C)
+        → f (a , s) ≡ [ map₂ inj₁ ； f , map₂ inj₂ ； f ]′ (distl (a , s))
+distl-η f a (inj₁ b) = refl
+distl-η f a (inj₂ c) = refl
+
+distl-[_,_] : {A B C D E : Set} (g : A × B → E → D) (h : A × C → E → D) (a : A) (s : B ⊎ C) (e : E)
+            → [ (λ b → g (a , b) e) , (λ c → h (a , c) e) ]′ s ≡ [ g , h ]′ (distl (a , s)) e
+distl-[ g , h ] a (inj₁ b) e = refl
+distl-[ g , h ] a (inj₂ c) e = refl
 
 --------------------------------------------------------------------------
 -- exponentials
