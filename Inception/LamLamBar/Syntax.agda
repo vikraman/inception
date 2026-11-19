@@ -1,6 +1,7 @@
 module Inception.LamLamBar.Syntax where
 
 open import Inception.Prelude
+open import Inception.Reasoning using (module Equational)
 
 --------------------------------------------------------------------------
 -- types and contexts
@@ -364,3 +365,9 @@ data EqComp Γ where
   coapp-eta : (M : Γ ⊢ᶜ X `+ Y) → (V : Γ ⊢ᵛ X ̃)
             ------------------------------------------------------------------------
             → Γ ⊢ᶜ coapp M V ≈ ccase M (throw (wk V) (var here)) (return (var here)) ∶ Y
+
+--------------------------------------------------------------------------
+-- equational reasoning
+
+module ≈ᵛ-Reasoning {Γ X} = Equational (EqVal Γ X) ≈-refl ≈-sym ≈-trans
+module ≈ᶜ-Reasoning {Γ X} = Equational (EqComp Γ X) ≈-refl ≈-sym ≈-trans

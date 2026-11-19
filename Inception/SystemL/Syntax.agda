@@ -2,6 +2,7 @@ module Inception.SystemL.Syntax where
 
 open import Inception.Prelude
 open ≡-Reasoning
+open import Inception.Reasoning using (module Equational)
 
 infixr 25 _`⇒_
 
@@ -432,6 +433,14 @@ data EqCmd Γ Δ where
   inr-beta : (W : Γ ⊢ᵛ Y ∣ Δ) → (K : Γ ∣ X ⊢ᵏ Δ) → (L : Γ ∣ Y ⊢ᵏ Δ)
            -----------------------------------------------------------------------
            → Γ ⊢ cut (X `+ Y) (ret (inr W)) (case K L) ≈ cut Y (ret W) L ⊣ Δ
+
+--------------------------------------------------------------------------
+-- equational reasoning
+
+module ≈ᵛ-Reasoning {Γ Δ X} = Equational (EqVal Γ Δ X) ≈-refl ≈-sym ≈-trans
+module ≈ᵗ-Reasoning {Γ Δ X} = Equational (EqTm Γ Δ X) ≈-refl ≈-sym ≈-trans
+module ≈ᵏ-Reasoning {Γ Δ X} = Equational (EqCoTm Γ Δ X) ≈-refl ≈-sym ≈-trans
+module ≈ᶜ-Reasoning {Γ Δ} = Equational (EqCmd Γ Δ) ≈-refl ≈-sym ≈-trans
 
 --------------------------------------------------------------------------
 -- weakening lemmas
