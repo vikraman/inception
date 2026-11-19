@@ -47,6 +47,7 @@ import Inception.Translation.Sub.SystemL
 import Inception.Translation.Inc.SystemL
 import Inception.Translation.Sub.LamLamBar
 import Inception.Translation.Inc.LamLamBar
+import Inception.Translation.LamLamBar.SystemL
 
 -- all modules
 import Inception.Everything
