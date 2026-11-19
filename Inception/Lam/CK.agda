@@ -29,8 +29,6 @@ data Stk (Γ : Ctx) : Ty → Ty → Set where
          ------------------------------------------
          → Γ ⊢ᵏ X ⇒ Z
 
-infix 5 ⟨_∥_⟩
-
 data Cfg (Γ : Ctx) (X : Ty) : Set where
 
   ⟨_∥_⟩ : (M : Γ ⊢ᶜ Y) → (K : Γ ⊢ᵏ Y ⇒ X)

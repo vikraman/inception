@@ -36,9 +36,6 @@ data Stk (Γ : Ctx) : Ty → Ty → Set where
   _pmᵛ∷_ : (W : (Γ ∙ X ∙ Y) ⊢ᵛ Z) → (K : Γ ⊢ᵏ Z ⇒ U)
          → Γ ⊢ᵏ (X `× Y) ⇒ U
 
-infix 5 ⟨_∥_⟩
-infix 5 [_∥_]
-
 data Cfg (Γ : Ctx) (X : Ty) : Set where
 
   ⟨_∥_⟩ : (M : Γ ⊢ᶜ Y) → (K : Γ ⊢ᵏ Y ⇒ X)

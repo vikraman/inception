@@ -52,9 +52,6 @@ data Kont : Ty → Ty → Set where
 --------------------------------------------------------------------------
 -- configurations, transitions
 
-infix 5 ⟨_∥_∥_⟩
-infix 5 [_∥_]
-
 data Cfg : Ty → Set where
   ⟨_∥_∥_⟩ : {Γ : Ctx} → Γ ⊢ᶜ X → Env Γ → Kont X Y → Cfg Y
   [_∥_]   : MVal X → Kont X Y → Cfg Y
