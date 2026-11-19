@@ -4,19 +4,9 @@
 module Inception.Sub.Semantics (R : Set) where
 
 open import Inception.Prelude
+open ≡-Reasoning
 open import Inception.Rewriting
 open import Inception.Sub.Syntax
-
-
-open import Data.Product using (proj₁; proj₂; _,_; <_,_>; curry; _×_; Σ-syntax; uncurry)
-open import Data.Sum using (_⊎_; inj₁; inj₂)
-open import Data.Unit using (⊤; tt)
-
-open import Function.Base using (const; _∘_; id)
-
-import Relation.Binary.PropositionalEquality as Eq
-open Eq using (_≡_; refl; cong; cong₂; sym; trans; subst)
-open Eq.≡-Reasoning using (step-≡-⟩; step-≡-∣; step-≡-⟨; _∎; step-≡)
 
 --------------------------------------------------------------------------
 
@@ -25,7 +15,6 @@ open Eq.≡-Reasoning using (step-≡-⟩; step-≡-∣; step-≡-⟨; _∎; ste
 \begin{code}
 open import Inception.Cont.Base
 open import Inception.Monad.Base using (Monad)
-open import Level using (0ℓ)
 
 K : Set → Set
 K = K[ R ]
@@ -197,7 +186,7 @@ mutual
   eqVal : Γ ⊢ᵛ V₁ ≈ V₂ ∶ X → ⟦ V₁ ⟧ᵛ ≡ ⟦ V₂ ⟧ᵛ
   eqVal ≈-refl = refl
   eqVal (≈-sym p) = sym (eqVal p)
-  eqVal (≈-trans p q) = Eq.trans (eqVal p) (eqVal q)
+  eqVal (≈-trans p q) = trans (eqVal p) (eqVal q)
   eqVal (lam-cong p) = cong curry (eqComp p)
   eqVal (pair-cong p q) = cong₂ <_,_> (eqVal p) (eqVal q)
   eqVal (unit-eta _) = refl
@@ -206,7 +195,7 @@ mutual
   eqComp : Γ ⊢ᶜ M₁ ≈ M₂ ∶ X → ⟦ M₁ ⟧ᶜ ≡ ⟦ M₂ ⟧ᶜ
   eqComp ≈-refl = refl
   eqComp (≈-sym p) = sym (eqComp p)
-  eqComp (≈-trans p q) = Eq.trans (eqComp p) (eqComp q)
+  eqComp (≈-trans p q) = trans (eqComp p) (eqComp q)
   eqComp (return-cong p) rewrite eqVal p = refl
   eqComp (pm-cong p q) rewrite eqVal p | eqComp q = refl
   eqComp (push-cong p q) rewrite eqComp p | eqComp q = refl

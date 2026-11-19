@@ -2,8 +2,6 @@ open import Inception.LamLamBar.Syntax
 
 module Inception.Translation.Inc.LamLamBar.Sem (𝒫 : Ty) (R : Set) where
 
-open import Relation.Binary.PropositionalEquality
-
 import Inception.Inc.CPS
 import Inception.Inc.Syntax as I
 import Inception.LamLamBar.CPS

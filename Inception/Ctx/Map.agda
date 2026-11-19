@@ -1,9 +1,7 @@
 module Inception.Ctx.Map {Ty₁ Ty₂ : Set} (⟦_⟧ : Ty₁ → Ty₂) where
 
-import Relation.Binary.PropositionalEquality as Eq
-open Eq using (_≡_; refl; cong)
-
 import Inception.Ctx
+open import Inception.Prelude
 
 private
   module Src = Inception.Ctx Ty₁

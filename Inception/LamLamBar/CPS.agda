@@ -2,16 +2,10 @@ module Inception.LamLamBar.CPS (R : Set) where
 
 open import Inception.LamLamBar.Syntax
 
-open import Data.Product as P
-open import Data.Sum as S
-open import Data.Unit
-open import Function as F hiding (_∋_)
 open import Inception.Prelude
-open import Relation.Binary.PropositionalEquality
 
 open import Inception.Cont.Base
 open import Inception.Monad.Base using (Monad)
-open import Level using (0ℓ)
 
 K : Set → Set
 K = K[ R ]

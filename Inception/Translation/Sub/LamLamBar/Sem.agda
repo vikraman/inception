@@ -2,9 +2,6 @@ open import Inception.LamLamBar.Syntax
 
 module Inception.Translation.Sub.LamLamBar.Sem (R : Set) where
 
-open import Data.Unit using (tt)
-open import Relation.Binary.PropositionalEquality
-
 import Inception.LamLamBar.CPS
 open import Inception.Prelude
 import Inception.Sub.Semantics

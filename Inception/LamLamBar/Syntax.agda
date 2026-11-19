@@ -1,5 +1,7 @@
 module Inception.LamLamBar.Syntax where
 
+open import Inception.Prelude
+
 --------------------------------------------------------------------------
 -- types and contexts
 

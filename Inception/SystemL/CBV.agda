@@ -2,20 +2,13 @@ module Inception.SystemL.CBV (P R : Set) where
 
 open import Inception.SystemL.Syntax hiding (K; T)
 
-open import Data.Empty
-open import Data.Product as P
-open import Data.Sum as S
-open import Data.Unit
-open import Function as F hiding (_∋_)
 open import Inception.Prelude
-open import Level
-open import Relation.Binary.PropositionalEquality
 
 open import Inception.Cont.Base
 
 K : Set → Set
 K = K[ R ]
-T = K[_]-Monad {x = zero} R
+T = K[_]-Monad {x = 0ℓ} R
 
 open import Inception.Monad.Base using (Monad)
 open Monad T public
@@ -52,8 +45,8 @@ mutual
   ⟦ covar i ⟧ᵏ = proj₂ ； ([ R ]^ ⟦ i ⟧ᵐ̃)
   ⟦ app V K ⟧ᵏ = < ⟦ K ⟧ᵏ , ⟦ V ⟧ᵛ > ； η ； [ R ]^ cbv
   ⟦ fst K ⟧ᵏ = ⟦ K ⟧ᵏ ； curry′ (assocl ； proj₁ ； ev)
-  ⟦ snd K ⟧ᵏ = ⟦ K ⟧ᵏ ； curry′ (assocl ； P.map proj₁ id ； ev)
-  ⟦ case K L ⟧ᵏ = < ⟦ K ⟧ᵏ , ⟦ L ⟧ᵏ > ； uncurry′ S.[_,_]
+  ⟦ snd K ⟧ᵏ = ⟦ K ⟧ᵏ ； curry′ (assocl ； map₁ proj₁ ； ev)
+  ⟦ case K L ⟧ᵏ = < ⟦ K ⟧ᵏ , ⟦ L ⟧ᵏ > ； uncurry′ [_,_]
   ⟦ μ̃ C ⟧ᵏ = curry′ (shuffle ； ⟦ C ⟧ᶜ)
   ⟦ tp ⟧ᵏ = const idf
 
@@ -63,12 +56,12 @@ mutual
 
 ⟦_⟧ˢ̃ : Γ ∣ Ξ ⊢ Δ → ⟦ Γ ⟧ˣ × R ^ ⟦ Δ ⟧ˣ̃ → R ^ ⟦ Ξ ⟧ˣ̃
 ⟦ sub-ε ⟧ˢ̃ = const λ ()
-⟦ sub-ex φ K ⟧ˢ̃ env = S.[ ⟦ φ ⟧ˢ̃ env , ⟦ K ⟧ᵏ env ]
+⟦ sub-ex φ K ⟧ˢ̃ env = [ ⟦ φ ⟧ˢ̃ env , ⟦ K ⟧ᵏ env ]
 
 -- coherences
 
 wkenv : Γ ⊇ Ψ → Δ ⊇ Ξ → ⟦ Γ ⟧ˣ × R ^ ⟦ Δ ⟧ˣ̃ → ⟦ Ψ ⟧ˣ × R ^ ⟦ Ξ ⟧ˣ̃
-wkenv π ρ = P.map ⟦ π ⟧ʷ ([ R ]^ ⟦ ρ ⟧ʷ̃)
+wkenv π ρ = map₁ ⟦ π ⟧ʷ ； map₂ ([ R ]^ ⟦ ρ ⟧ʷ̃)
 
 mutual
   wk-cmd-coh : (π : Γ ⊇ Ψ) (ρ : Δ ⊇ Ξ) (C : Ψ ⊢ Ξ) → ⟦ wk-cmd π ρ C ⟧ᶜ ≡ (wkenv π ρ ； ⟦ C ⟧ᶜ)
@@ -131,7 +124,7 @@ sub-id-coh {Γ = Γ ∙ X} {Δ} = funext λ
 cosub-id-coh : ⟦ cosub-id {Γ} {Δ} ⟧ˢ̃ ≡ proj₂
 cosub-id-coh {Γ} {Δ = ε} = funext λ { (γ , k) → funext λ () }
 cosub-id-coh {Γ} {Δ = Δ ∙ X} = funext λ
-  { (γ , k) → trans (cong (λ x → S.[ x , k ∘ inj₂ ]) (happly (cosub-id-coh {Γ} {Δ = Δ}) (γ , k ∘ inj₁)))
+  { (γ , k) → trans (cong (λ x → [ x , k ∘ inj₂ ]) (happly (cosub-id-coh {Γ} {Δ = Δ}) (γ , k ∘ inj₁)))
                     (funext λ { (inj₁ x) → refl ; (inj₂ y) → refl }) }
 {-# REWRITE cosub-id-coh #-}
 
@@ -197,8 +190,8 @@ mutual
   eqCoTm (≈-trans p q) = trans (eqCoTm p) (eqCoTm q)
   eqCoTm (app-cong p q) = cong (_； η ； [ R ]^ cbv) (cong₂ <_,_> (eqCoTm q) (eqVal p))
   eqCoTm (fst-cong p) = cong (_； curry′ (assocl ； proj₁ ； ev)) (eqCoTm p)
-  eqCoTm (snd-cong p) = cong (_； curry′ (assocl ； P.map proj₁ id ； ev)) (eqCoTm p)
-  eqCoTm (case-cong p q) = cong (_； uncurry′ S.[_,_]) (cong₂ <_,_> (eqCoTm p) (eqCoTm q))
+  eqCoTm (snd-cong p) = cong (_； curry′ (assocl ； map₁ proj₁ ； ev)) (eqCoTm p)
+  eqCoTm (case-cong p q) = cong (_； uncurry′ [_,_]) (cong₂ <_,_> (eqCoTm p) (eqCoTm q))
   eqCoTm (μ̃-cong p) = cong (λ f → curry′ (shuffle ； f)) (eqCmd p)
   eqCoTm (μ̃-eta K) = refl
   eqCoTm (case-eta K) = funext λ env → funext λ { (inj₁ x) → refl ; (inj₂ y) → refl }

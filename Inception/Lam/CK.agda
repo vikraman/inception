@@ -2,16 +2,9 @@
 
 module Inception.Lam.CK where
 
-open import Data.Empty using (⊥)
-open import Data.Product using (Σ; Σ-syntax; _×_; _,_; proj₁; proj₂)
-open import Data.Unit using (⊤; tt)
-
-import Relation.Binary.PropositionalEquality as Eq
-open Eq using (_≡_; refl; cong; cong₂)
-open Eq.≡-Reasoning
-
 open import Inception.Lam.Syntax
 open import Inception.Prelude
+open ≡-Reasoning
 open import Inception.Rewriting
 
 --------------------------------------------------------------------------

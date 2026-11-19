@@ -1,9 +1,5 @@
 module Inception.Lam.CEK where
 
-open import Data.Empty using (⊥)
-open import Data.Product using (Σ; Σ-syntax; _×_; _,_)
-open import Data.Unit using (⊤; tt)
-
 open import Inception.Lam.Syntax
 open import Inception.Prelude
 open import Inception.Rewriting

@@ -1,9 +1,7 @@
 module Inception.SystemL.Syntax where
 
-open import Data.Nat
-import Relation.Binary.PropositionalEquality as Eq
-open Eq using (_≡_; refl; cong; cong₂; sym)
-open Eq.≡-Reasoning
+open import Inception.Prelude
+open ≡-Reasoning
 
 infixr 25 _`⇒_
 

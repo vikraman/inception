@@ -1,6 +1,6 @@
 module Inception.Inc.Syntax where
 
-open import Data.Nat
+open import Inception.Prelude
 
 infixr 40 _`×_
 infixr 25 _`⇒_

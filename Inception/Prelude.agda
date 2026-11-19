@@ -1,21 +1,28 @@
 module Inception.Prelude where
 
-open import Function
-open import Level
+open import Data.Empty public
+  using (⊥)
+open import Data.Nat public
+  using (ℕ; zero; suc; _+_)
+open import Data.Product public
+  using (_×_; _,_; <_,_>; ∃; ∃-syntax; Σ; Σ-syntax; curry; curry′; map₁; map₂; proj₁; proj₂; uncurry; uncurry′)
+open import Data.Sum public
+  using (_⊎_; inj₁; inj₂; [_,_]; [_,_]′)
+open import Data.Unit public
+  using (⊤; tt)
+open import Function public
+  using (_$_; _∘_; const; flip; id)
+open import Level public
+  using (0ℓ; Level; _⊔_)
+open import Relation.Binary.PropositionalEquality public
+  using (_≡_; _≢_; refl; cong; cong₂; cong-app; dcong₂; sym; trans; subst; subst₂; cong-∘; module ≡-Reasoning)
 
-open import Agda.Primitive using (Level)
-
-open import Data.Empty using (⊥)
-open import Data.Product using (proj₁; proj₂; _,_; <_,_>; curry; _×_; Σ; ∃; Σ-syntax; ∃-syntax) public
-
-import Relation.Binary.PropositionalEquality as Eq
-open Eq using (_≡_; refl; cong; cong₂; cong-app; dcong₂; sym; trans; subst; subst₂; cong-∘)
-open Eq.≡-Reasoning
-
---postulate
---  TODO : ∀ {a} {A : Set a} → A
+open ≡-Reasoning
 
 {-# BUILTIN REWRITE _≡_ #-}
+
+--------------------------------------------------------------------------
+-- interval and function extensionality
 
 module _ where
   postulate
@@ -45,7 +52,9 @@ happly-funext {f = f} {g = g} H x =
   cong ((_$ x) ∘ (flip λ a → I-rec (f a) (g a) (H a))) seg    ≡⟨ I-rec-seg ⟩
   H x ∎
 
+--------------------------------------------------------------------------
 -- categorical combinators
+
 infixr 4 _；_
 
 _；_ : ∀ {ℓ} {A B C : Set ℓ} → (A → B) → (B → C) → (A → C)
@@ -60,7 +69,9 @@ assocl (a , (b , c)) = (a , b) , c
 shuffle : ∀ {ℓ} {A B C : Set ℓ} → (A × B) × C → (A × C) × B
 shuffle ((a , b) , c) = (a , c) , b
 
--- functions
+--------------------------------------------------------------------------
+-- exponentials
+
 infixr 20 _^_
 
 _^_ : ∀ {r a} (R : Set r) (A : Set a) → Set (r ⊔ a)
@@ -72,25 +83,8 @@ R ^ A = A → R
 ev : ∀ {r a} {R : Set r} {A : Set a} → R ^ A × A → R
 ev (f , a) = f a
 
-dcong₂-irr : {a b c : Level} → ∀ {A : Set a} {B : A → Set b} {C : Set c}
-            (f : (x : A) → .(B x) → C) {x₁ x₂} .{y₁ y₂}
-          → (p : x₁ ≡ x₂)
-          → f x₁ y₁ ≡ f x₂ y₂
-dcong₂-irr f refl = refl
-
-pair-eq : {A B : Set} {a₁ a₂ : A} {b₁ b₂ : B} → a₁ ≡ a₂ → b₁ ≡ b₂ → (a₁ , b₁) ≡ (a₂ , b₂)
-pair-eq a₁≡a₂ b₁≡b₂ = cong₂ (λ x y → x , y) a₁≡a₂ b₁≡b₂
-
-proj₁-eq : {A B : Set} {a₁ a₂ : A} {b₁ b₂ : B} → (a₁ , b₁) ≡ (a₂ , b₂) → a₁ ≡ a₂
-proj₁-eq refl = refl
-
-proj₂-eq : {A B : Set} {a₁ a₂ : A} {b₁ b₂ : B} → (a₁ , b₁) ≡ (a₂ , b₂) → b₁ ≡ b₂
-proj₂-eq refl = refl
-
-proj₁-d-eq : {a b : Level} {A : Set a} {x : A} {b : A → Set b} {p₁ p₂ : Σ[ x ∈ A ] b x}
-             → p₁ ≡ p₂
-             → proj₁ p₁ ≡ proj₁ p₂
-proj₁-d-eq refl = refl
+--------------------------------------------------------------------------
+-- empty
 
 ql : ⊥ → (A : Set) → A
 ql () b
