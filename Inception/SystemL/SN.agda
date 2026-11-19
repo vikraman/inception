@@ -33,6 +33,9 @@ data _↦_ {Γ Δ : Ctx} : Γ ⊢ Δ → Γ ⊢ Δ → Set where
   inr-step : {X Y : Ty} {W : Γ ⊢ᵛ Y ∣ Δ} {K : Γ ∣ X ⊢ᵏ Δ} {L : Γ ∣ Y ⊢ᵏ Δ}
            → cut (X `+ Y) (ret (inr W)) (case K L) ↦ cut Y (ret W) L
 
+  pass-step : {X : Ty} {K : Γ ∣ X ⊢ᵏ Δ} {V : Γ ⊢ᵛ X ∣ Δ}
+            → cut (¬ X) (ret (cont K)) (pass V) ↦ cut X (ret V) K
+
 --------------------------------------------------------------------------
 -- accessibility
 
@@ -47,6 +50,7 @@ open module Rew {Γ Δ : Ctx} = Reduction (_↦_ {Γ = Γ} {Δ = Δ}) public
 ↦-det snd-step snd-step = refl
 ↦-det inl-step inl-step = refl
 ↦-det inr-step inr-step = refl
+↦-det pass-step pass-step = refl
 
 --------------------------------------------------------------------------
 -- reducibility candidates
@@ -57,6 +61,8 @@ CoRedᵏ : (X : Ty) {Γ Δ : Ctx} → Γ ∣ X ⊢ᵏ Δ → Set
 Redᵛ `⊥        V = ⊤
 Redᵛ `𝟙     V    = ⊤
 Redᵛ `𝓅       V              = ⊤
+Redᵛ (¬ X)     (var i)    = ⊤
+Redᵛ (¬ X)     (cont K)   = CoRedᵏ X K
 Redᵛ (X `× Y)  (var i)    = ⊤
 Redᵛ (X `× Y)  (pair V W) = Redᵛ X V × Redᵛ Y W
 Redᵛ (X `+ Y)  (var i)    = ⊤
@@ -76,15 +82,21 @@ CoRedᵏ (X `× Y)  (fst K)    = CoRedᵏ X K
 CoRedᵏ (X `× Y)  (snd K)    = CoRedᵏ Y K
 CoRedᵏ (X `+ Y)  (case K L) = CoRedᵏ X K × CoRedᵏ Y L
 CoRedᵏ (X `⇒ Y)  (app V K)  = Redᵛ X V × CoRedᵏ Y K
+CoRedᵏ (¬ X)     (pass V)   = Redᵛ X V
 
 --------------------------------------------------------------------------
 -- weakening preserves reducibility
 
 Red-wk : (X : Ty) {Γ Δ Ψ Ξ : Ctx} (π : Ψ ⊇ Γ) (ρ : Ξ ⊇ Δ) {V : Γ ⊢ᵛ X ∣ Δ}
        → Redᵛ X V → Redᵛ X (wk-val π ρ V)
+CoRed-wk : (X : Ty) {Γ Δ Ψ Ξ : Ctx} (π : Ψ ⊇ Γ) (ρ : Ξ ⊇ Δ) {K : Γ ∣ X ⊢ᵏ Δ}
+         → CoRedᵏ X K → CoRedᵏ X (wk-cotm π ρ K)
+
 Red-wk `⊥        π ρ r = tt
 Red-wk `𝟙     π ρ r    = tt
 Red-wk `𝓅       π ρ r = tt
+Red-wk (¬ X) π ρ {V = var i}  r  = tt
+Red-wk (¬ X) π ρ {V = cont K} rk = CoRed-wk X π ρ {K = K} rk
 Red-wk (X `× Y) π ρ {V = var i}    r        = tt
 Red-wk (X `× Y) π ρ {V = pair V W} (rv , rw) = Red-wk X π ρ rv , Red-wk Y π ρ rw
 Red-wk (X `+ Y) π ρ {V = var i}  r  = tt
@@ -94,14 +106,13 @@ Red-wk (X `⇒ Y) π ρ {V = var i}  r = tt
 Red-wk (X `⇒ Y) {Γ} {Δ} π ρ {V = lam M} f =
   λ π₁ σ rw rk → f (wk-trans π₁ π) (wk-trans σ ρ) rw rk
 
-CoRed-wk : (X : Ty) {Γ Δ Ψ Ξ : Ctx} (π : Ψ ⊇ Γ) (ρ : Ξ ⊇ Δ) {K : Γ ∣ X ⊢ᵏ Δ}
-         → CoRedᵏ X K → CoRedᵏ X (wk-cotm π ρ K)
 CoRed-wk X             π ρ {K = covar i}   r  = tt
 CoRed-wk `⊥            π ρ {K = tp}        r  = tt
 CoRed-wk (X `× Y)      π ρ {K = fst K}     r  = CoRed-wk X π ρ {K = K} r
 CoRed-wk (X `× Y)      π ρ {K = snd K}     r  = CoRed-wk Y π ρ {K = K} r
 CoRed-wk (X `+ Y)      π ρ {K = case K L} (r₁ , r₂) = CoRed-wk X π ρ {K = K} r₁ , CoRed-wk Y π ρ {K = L} r₂
 CoRed-wk (X `⇒ Y)      π ρ {K = app V K}   (rv , rk)  = Red-wk X π ρ rv , CoRed-wk Y π ρ {K = K} rk
+CoRed-wk (¬ X)         π ρ {K = pass V}    rv  = Red-wk X π ρ rv
 CoRed-wk X {Γ} {Δ} π ρ {K = μ̃ C} f =
   λ π₁ σ rv → f (wk-trans π₁ π) (wk-trans σ ρ) rv
 
@@ -122,6 +133,11 @@ Ortho {`𝟙} {V = var i} {K = μ̃ C} rv rk = Ortho-μ̃ rv rk
 Ortho {`𝟙} {V = unit} {K = covar i} rv rk = sn λ ()
 Ortho {`𝟙} {V = unit} {K = μ̃ C} rv rk = Ortho-μ̃ rv rk
 Ortho {`𝓅} {V = var i} {K = μ̃ C} rv rk = Ortho-μ̃ rv rk
+Ortho {¬ X} {V = var i} {K = pass W} rv rk = sn λ ()
+Ortho {¬ X} {V = var i} {K = μ̃ C} rv rk = Ortho-μ̃ rv rk
+Ortho {¬ X} {V = cont K} {K = covar i} rv rk = sn λ ()
+Ortho {¬ X} {V = cont K} {K = pass W} rk rw = sn λ { pass-step → Ortho rw rk }
+Ortho {¬ X} {V = cont K} {K = μ̃ C} rv rk = Ortho-μ̃ rv rk
 Ortho {X `× Y} {V = var i} {K = fst K} rv rk = sn λ ()
 Ortho {X `× Y} {V = var i} {K = snd K} rv rk = sn λ ()
 Ortho {X `× Y} {V = var i} {K = μ̃ C} rv rk = Ortho-μ̃ rv rk
@@ -188,6 +204,7 @@ Fundamental-val θ φ rθ rφ unit       = tt
 Fundamental-val θ φ rθ rφ (pair V W) = Fundamental-val θ φ rθ rφ V , Fundamental-val θ φ rθ rφ W
 Fundamental-val θ φ rθ rφ (inl V)    = Fundamental-val θ φ rθ rφ V
 Fundamental-val θ φ rθ rφ (inr W)    = Fundamental-val θ φ rθ rφ W
+Fundamental-val θ φ rθ rφ (cont K)   = Fundamental-cotm θ φ rθ rφ K
 
 Fundamental-tm θ φ rθ rφ (ret V) rk = Ortho (Fundamental-val θ φ rθ rφ V) rk
 Fundamental-tm θ φ rθ rφ (μ C)   {K} rk =
@@ -202,11 +219,13 @@ Fundamental-cotm θ φ rθ rφ (μ̃ C)       =
   λ π ρ {V} rv →
     Fundamental-cmd (sub-ex (sub-wk π ρ θ) V) (cosub-wk π ρ φ) (RedSub-ext (RedSub-wk π ρ rθ) rv) (CoRedSub-wk π ρ rφ) C
 Fundamental-cotm θ φ rθ rφ tp          = tt
+Fundamental-cotm θ φ rθ rφ (pass V)    = Fundamental-val θ φ rθ rφ V
 
 Red-var-triv : (X : Ty) {Γ : Ctx} (Δ : Ctx) (i : Γ ∋ X) → Redᵛ X (var {Δ = Δ} i)
 Red-var-triv `⊥        Δ i = tt
 Red-var-triv `𝟙     Δ i    = tt
 Red-var-triv `𝓅       Δ i = tt
+Red-var-triv (¬ X)     Δ i = tt
 Red-var-triv (X `× Y)  Δ i = tt
 Red-var-triv (X `+ Y)  Δ i = tt
 Red-var-triv (X `⇒ Y)  Δ i = tt
@@ -233,6 +252,7 @@ step? (cut (X `× Y) (ret (var i)) (fst K)) = done (λ ())
 step? (cut (X `× Y) (ret (var i)) (snd K)) = done (λ ())
 step? (cut (X `+ Y) (ret (var i)) (case K L)) = done (λ ())
 step? (cut (X `⇒ Y) (ret (var i)) (app V K))  = done (λ ())
+step? (cut (¬ X) (ret (var i)) (pass V))      = done (λ ())
 
 step? (cut `𝟙 (ret unit) (covar j)) = done (λ ())
 step? (cut `𝟙 (ret unit) (μ̃ C))     = next μ̃-step
@@ -252,6 +272,10 @@ step? (cut (X `+ Y) (ret (inr W)) (μ̃ C))          = next μ̃-step
 step? (cut (X `⇒ Y) (ret (lam M)) (covar j)) = done (λ ())
 step? (cut (X `⇒ Y) (ret (lam M)) (app V K)) = next app-step
 step? (cut (X `⇒ Y) (ret (lam M)) (μ̃ C))     = next μ̃-step
+
+step? (cut (¬ X) (ret (cont K)) (covar j)) = done (λ ())
+step? (cut (¬ X) (ret (cont K)) (pass V))  = next pass-step
+step? (cut (¬ X) (ret (cont K)) (μ̃ C))     = next μ̃-step
 
 eval : {Γ Δ : Ctx} (C : Γ ⊢ Δ) → Σ[ C₁ ∈ Γ ⊢ Δ ] (C ↦* C₁) × Normal C₁
 eval C = eval-acc step? (SN-theorem C)

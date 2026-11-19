@@ -17,6 +17,7 @@ open Monad T public
 ⟦ `⊥ ⟧ = R
 ⟦ `𝟙 ⟧ = ⊤
 ⟦ `𝓅 ⟧ = P
+⟦ ¬ X ⟧ = R ^ ⟦ X ⟧
 ⟦ X `× Y ⟧ = ⟦ X ⟧ × ⟦ Y ⟧
 ⟦ X `⇒ Y ⟧ = ⟦ X ⟧ → K ⟦ Y ⟧
 ⟦ X `+ Y ⟧ = ⟦ X ⟧ ⊎ ⟦ Y ⟧
@@ -36,6 +37,7 @@ mutual
   ⟦ pair V W ⟧ᵛ = < ⟦ V ⟧ᵛ , ⟦ W ⟧ᵛ >
   ⟦ inl V ⟧ᵛ = ⟦ V ⟧ᵛ ； inj₁
   ⟦ inr W ⟧ᵛ = ⟦ W ⟧ᵛ ； inj₂
+  ⟦ cont K ⟧ᵛ = ⟦ K ⟧ᵏ
 
   ⟦_⟧ᵗ : Γ ⊢ᵗ X ∣ Δ → ⟦ Γ ⟧ˣ × R ^ ⟦ Δ ⟧ˣ̃ → K ⟦ X ⟧
   ⟦ ret V ⟧ᵗ = ⟦ V ⟧ᵛ ； η
@@ -49,6 +51,7 @@ mutual
   ⟦ case K L ⟧ᵏ = < ⟦ K ⟧ᵏ , ⟦ L ⟧ᵏ > ； uncurry′ [_,_]
   ⟦ μ̃ C ⟧ᵏ = curry′ (shuffle ； ⟦ C ⟧ᶜ)
   ⟦ tp ⟧ᵏ = const idf
+  ⟦ pass V ⟧ᵏ = ⟦ V ⟧ᵛ ； η
 
 ⟦_⟧ˢ : Γ ⊢ Ψ ∣ Δ → ⟦ Γ ⟧ˣ × R ^ ⟦ Δ ⟧ˣ̃ → ⟦ Ψ ⟧ˣ
 ⟦ sub-ε ⟧ˢ = const tt
@@ -74,12 +77,13 @@ mutual
   wk-val-coh π ρ (pair V W) rewrite wk-val-coh π ρ V | wk-val-coh π ρ W = refl
   wk-val-coh π ρ (inl V) rewrite wk-val-coh π ρ V = refl
   wk-val-coh π ρ (inr W) rewrite wk-val-coh π ρ W = refl
+  wk-val-coh π ρ (cont K) rewrite wk-cotm-coh π ρ K = refl
 
   wk-tm-coh : (π : Γ ⊇ Ψ) (ρ : Δ ⊇ Ξ) (M : Ψ ⊢ᵗ X ∣ Ξ) → ⟦ wk-tm π ρ M ⟧ᵗ ≡ (wkenv π ρ ； ⟦ M ⟧ᵗ)
   wk-tm-coh π ρ (ret V) rewrite wk-val-coh π ρ V = refl
   wk-tm-coh π ρ (μ C) rewrite wk-cmd-coh π (wk-cong ρ) C =
-    funext λ { (γ , k) → funext λ k₂ →
-      cong (λ x → ⟦ C ⟧ᶜ (⟦ π ⟧ʷ γ , x)) (funext λ { (inj₁ x) → refl ; (inj₂ y) → refl }) }
+    funext λ { (γ , _) → funext λ _ →
+      cong (λ x → ⟦ C ⟧ᶜ (⟦ π ⟧ʷ γ , x)) (funext λ { (inj₁ _) → refl ; (inj₂ _) → refl }) }
 
   wk-cotm-coh : (π : Γ ⊇ Ψ) (ρ : Δ ⊇ Ξ) (K : Ψ ∣ X ⊢ᵏ Ξ) → ⟦ wk-cotm π ρ K ⟧ᵏ ≡ (wkenv π ρ ； ⟦ K ⟧ᵏ)
   wk-cotm-coh π ρ (covar i) = refl
@@ -89,6 +93,7 @@ mutual
   wk-cotm-coh π ρ (case K L) rewrite wk-cotm-coh π ρ K | wk-cotm-coh π ρ L = refl
   wk-cotm-coh π ρ (μ̃ C) rewrite wk-cmd-coh (wk-cong π) ρ C = refl
   wk-cotm-coh π ρ tp = refl
+  wk-cotm-coh π ρ (pass V) rewrite wk-val-coh π ρ V = refl
 
 {-# REWRITE wk-val-coh #-}
 {-# REWRITE wk-tm-coh #-}
@@ -122,10 +127,10 @@ sub-id-coh {Γ = Γ ∙ X} {Δ} = funext λ
 {-# REWRITE sub-id-coh #-}
 
 cosub-id-coh : ⟦ cosub-id {Γ} {Δ} ⟧ˢ̃ ≡ proj₂
-cosub-id-coh {Γ} {Δ = ε} = funext λ { (γ , k) → funext λ () }
+cosub-id-coh {Γ} {Δ = ε} = funext λ _ → funext λ ()
 cosub-id-coh {Γ} {Δ = Δ ∙ X} = funext λ
   { (γ , k) → trans (cong (λ x → [ x , k ∘ inj₂ ]) (happly (cosub-id-coh {Γ} {Δ = Δ}) (γ , k ∘ inj₁)))
-                    (funext λ { (inj₁ x) → refl ; (inj₂ y) → refl }) }
+                    (funext λ { (inj₁ _) → refl ; (inj₂ _) → refl }) }
 {-# REWRITE cosub-id-coh #-}
 
 subenv : Γ ⊢ Ψ ∣ Δ → Γ ∣ Ξ ⊢ Δ → ⟦ Γ ⟧ˣ × R ^ ⟦ Δ ⟧ˣ̃ → ⟦ Ψ ⟧ˣ × R ^ ⟦ Ξ ⟧ˣ̃
@@ -142,6 +147,7 @@ mutual
   sub-val-coh θ φ (pair V W) rewrite sub-val-coh θ φ V | sub-val-coh θ φ W = refl
   sub-val-coh θ φ (inl V) rewrite sub-val-coh θ φ V = refl
   sub-val-coh θ φ (inr W) rewrite sub-val-coh θ φ W = refl
+  sub-val-coh θ φ (cont K) rewrite sub-cotm-coh θ φ K = refl
 
   sub-tm-coh : (θ : Γ ⊢ Ψ ∣ Δ) (φ : Γ ∣ Ξ ⊢ Δ) (M : Ψ ⊢ᵗ X ∣ Ξ) → ⟦ sub-tm θ φ M ⟧ᵗ ≡ (subenv θ φ ； ⟦ M ⟧ᵗ)
   sub-tm-coh θ φ (ret V) rewrite sub-val-coh θ φ V = refl
@@ -155,6 +161,7 @@ mutual
   sub-cotm-coh θ φ (case K L) rewrite sub-cotm-coh θ φ K | sub-cotm-coh θ φ L = refl
   sub-cotm-coh θ φ (μ̃ C) rewrite sub-cmd-coh (sub-ex (sub-wk (wk-wk wk-id) wk-id θ) (var here)) (cosub-wk (wk-wk wk-id) wk-id φ) C = refl
   sub-cotm-coh θ φ tp = refl
+  sub-cotm-coh θ φ (pass V) rewrite sub-val-coh θ φ V = refl
 
 {-# REWRITE sub-val-coh #-}
 {-# REWRITE sub-tm-coh #-}
@@ -172,8 +179,10 @@ mutual
   eqVal (pair-cong p q) = cong₂ <_,_> (eqVal p) (eqVal q)
   eqVal (inl-cong p) = cong (_； inj₁) (eqVal p)
   eqVal (inr-cong p) = cong (_； inj₂) (eqVal p)
+  eqVal (cont-cong p) = eqCoTm p
   eqVal (unit-eta V) = refl
   eqVal (lam-eta V) = refl
+  eqVal (cont-eta V) = refl
 
   eqTm : Γ ⊢ᵗ M₁ ≈ M₂ ∶ X ∣ Δ → ⟦ M₁ ⟧ᵗ ≡ ⟦ M₂ ⟧ᵗ
   eqTm ≈-refl = refl
@@ -193,8 +202,9 @@ mutual
   eqCoTm (snd-cong p) = cong (_； curry′ (assocl ； map₁ proj₁ ； ev)) (eqCoTm p)
   eqCoTm (case-cong p q) = cong (_； uncurry′ [_,_]) (cong₂ <_,_> (eqCoTm p) (eqCoTm q))
   eqCoTm (μ̃-cong p) = cong (λ f → curry′ (shuffle ； f)) (eqCmd p)
+  eqCoTm (pass-cong p) = cong (_； η) (eqVal p)
   eqCoTm (μ̃-eta K) = refl
-  eqCoTm (case-eta K) = funext λ env → funext λ { (inj₁ x) → refl ; (inj₂ y) → refl }
+  eqCoTm (case-eta K) = funext λ _ → funext λ { (inj₁ _) → refl ; (inj₂ _) → refl }
 
   eqCmd : Γ ⊢ C₁ ≈ C₂ ⊣ Δ → ⟦ C₁ ⟧ᶜ ≡ ⟦ C₂ ⟧ᶜ
   eqCmd ≈-refl = refl
@@ -208,3 +218,4 @@ mutual
   eqCmd (snd-beta V W K) = refl
   eqCmd (inl-beta V K L) = refl
   eqCmd (inr-beta W K L) = refl
+  eqCmd (pass-beta K V) = refl

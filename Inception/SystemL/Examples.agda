@@ -9,17 +9,14 @@ open import Inception.SystemL.Syntax
 `dne {X = X} =
   ret (lam (μ (cut (¬ (¬ X))
                    (ret (var here))
-                   (app (lam (μ (cut X
-                                     (ret (var here))
-                                     (covar (there here)))))
-                        tp))))
+                   (pass (cont (covar here))))))
 
 `lem : ε ⊢ᵗ (X `+ ¬ X) ∣ ε
 `lem {X = X} =
   μ (cut (X `+ ¬ X)
-         (ret (inr (lam (μ (cut (X `+ ¬ X)
-                                (ret (inl (var here)))
-                                (covar (there here)))))))
+         (ret (inr (cont (μ̃ (cut (X `+ ¬ X)
+                                 (ret (inl (var here)))
+                                 (covar here))))))
          (covar here))
 
 `peirce : ε ⊢ᵗ ((X `⇒ Y) `⇒ X) `⇒ X ∣ ε
@@ -35,9 +32,7 @@ open import Inception.SystemL.Syntax
 `callcc {X = X} =
   ret (lam (μ (cut (¬ X `⇒ X)
                    (ret (var here))
-                   (app (lam (μ (cut X
-                                     (ret (var here))
-                                     (covar (there here)))))
+                   (app (cont (covar here))
                         (covar here)))))
 
 `letcc : (Γ ∙ ¬ X) ⊢ᵗ X ∣ Δ → Γ ⊢ᵗ X ∣ Δ
@@ -52,7 +47,7 @@ open import Inception.SystemL.Syntax
 `throw {X = X} {Y = Y} =
   μ (cut (¬ X)
          (ret (var here))
-         (app (var (there here)) tp))
+         (pass (var (there here))))
 
 `abort : Γ ⊢ᵗ ¬ X ∣ Δ → Γ ⊢ᵗ X ∣ Δ → Γ ⊢ᵗ Y ∣ Δ
 `abort {X = X} {Y = Y} M N =
@@ -60,7 +55,7 @@ open import Inception.SystemL.Syntax
        (lett (wkᵗ N)
              (μ (cut (¬ X)
                      (ret (var (there here)))
-                     (app (var here) tp))))
+                     (pass (var here)))))
 
 `var : ε ⊢ᵗ `⊥ `⇒ X ∣ ε
 `var = ret (lam (μ `efq))
@@ -103,24 +98,38 @@ ex15-trace : ex15-cmd ↦* cut `𝟙 (ret unit) (covar here)
 ex15-trace = eval ex15-cmd .proj₂ .proj₁
 
 _ : ex15-trace ≡ (begin
-    cut `𝟙 (μ (cut `𝟙 (μ (cut `𝟙 (μ (cut (`𝟙 `⇒ `𝟙) (ret (lam (μ (cut `𝟙 (μ (cut `⊥ (μ (cut (`𝟙 `⇒ `⊥) (ret (lam (μ (cut `𝟙 (ret unit) (covar (there (there (there here)))))))) (app unit (covar here)))) tp)) (covar here))))) (app unit (covar here)))) (μ̃ (cut `𝟙 (ret unit) (covar here))))) (μ̃ (cut `𝟙 (ret unit) (covar here))))) (covar here)
+    cut `𝟙 (μ (cut `𝟙 (μ (cut `𝟙 (μ (cut (`𝟙 `⇒ `𝟙) (ret (lam (μ (cut (`𝟙 `+ `𝟙) (μ (cut (¬ `𝟙) (ret (cont (μ̃ (cut (`𝟙 `+ `𝟙) (ret (inl (var here))) (covar here))))) (μ̃ (cut `𝟙 (μ (cut (`𝟙 `+ `𝟙) (ret (inl unit)) (case (μ̃ (cut (¬ `𝟙) (ret (var (there here))) (pass (var here)))) (covar here)))) (μ̃ (cut (`𝟙 `+ `𝟙) (ret (inr (var here))) (covar here))))))) (μ̃ (cut `𝟙 (μ (cut (`𝟙 `+ `𝟙) (ret (var here)) (case (μ̃ (cut `𝟙 (ret unit) (covar here))) (μ̃ (cut `𝟙 (ret (var here)) (covar here)))))) (covar here))))))) (app unit (covar here)))) (μ̃ (cut `𝟙 (ret unit) (covar here))))) (μ̃ (cut `𝟙 (ret unit) (covar here))))) (covar here)
   ⟶⟨ μ-step ⟩
-    cut `𝟙 (μ (cut `𝟙 (μ (cut (`𝟙 `⇒ `𝟙) (ret (lam (μ (cut `𝟙 (μ (cut `⊥ (μ (cut (`𝟙 `⇒ `⊥) (ret (lam (μ (cut `𝟙 (ret unit) (covar (there (there (there here)))))))) (app unit (covar here)))) tp)) (covar here))))) (app unit (covar here)))) (μ̃ (cut `𝟙 (ret unit) (covar here))))) (μ̃ (cut `𝟙 (ret unit) (covar here)))
+    cut `𝟙 (μ (cut `𝟙 (μ (cut (`𝟙 `⇒ `𝟙) (ret (lam (μ (cut (`𝟙 `+ `𝟙) (μ (cut (¬ `𝟙) (ret (cont (μ̃ (cut (`𝟙 `+ `𝟙) (ret (inl (var here))) (covar here))))) (μ̃ (cut `𝟙 (μ (cut (`𝟙 `+ `𝟙) (ret (inl unit)) (case (μ̃ (cut (¬ `𝟙) (ret (var (there here))) (pass (var here)))) (covar here)))) (μ̃ (cut (`𝟙 `+ `𝟙) (ret (inr (var here))) (covar here))))))) (μ̃ (cut `𝟙 (μ (cut (`𝟙 `+ `𝟙) (ret (var here)) (case (μ̃ (cut `𝟙 (ret unit) (covar here))) (μ̃ (cut `𝟙 (ret (var here)) (covar here)))))) (covar here))))))) (app unit (covar here)))) (μ̃ (cut `𝟙 (ret unit) (covar here))))) (μ̃ (cut `𝟙 (ret unit) (covar here)))
   ⟶⟨ μ-step ⟩
-    cut `𝟙 (μ (cut (`𝟙 `⇒ `𝟙) (ret (lam (μ (cut `𝟙 (μ (cut `⊥ (μ (cut (`𝟙 `⇒ `⊥) (ret (lam (μ (cut `𝟙 (ret unit) (covar (there (there (there here)))))))) (app unit (covar here)))) tp)) (covar here))))) (app unit (covar here)))) (μ̃ (cut `𝟙 (ret unit) (μ̃ (cut `𝟙 (ret unit) (covar here)))))
+    cut `𝟙 (μ (cut (`𝟙 `⇒ `𝟙) (ret (lam (μ (cut (`𝟙 `+ `𝟙) (μ (cut (¬ `𝟙) (ret (cont (μ̃ (cut (`𝟙 `+ `𝟙) (ret (inl (var here))) (covar here))))) (μ̃ (cut `𝟙 (μ (cut (`𝟙 `+ `𝟙) (ret (inl unit)) (case (μ̃ (cut (¬ `𝟙) (ret (var (there here))) (pass (var here)))) (covar here)))) (μ̃ (cut (`𝟙 `+ `𝟙) (ret (inr (var here))) (covar here))))))) (μ̃ (cut `𝟙 (μ (cut (`𝟙 `+ `𝟙) (ret (var here)) (case (μ̃ (cut `𝟙 (ret unit) (covar here))) (μ̃ (cut `𝟙 (ret (var here)) (covar here)))))) (covar here))))))) (app unit (covar here)))) (μ̃ (cut `𝟙 (ret unit) (μ̃ (cut `𝟙 (ret unit) (covar here)))))
   ⟶⟨ μ-step ⟩
-    cut (`𝟙 `⇒ `𝟙) (ret (lam (μ (cut `𝟙 (μ (cut `⊥ (μ (cut (`𝟙 `⇒ `⊥) (ret (lam (μ (cut `𝟙 (ret unit) (covar (there (there (there here)))))))) (app unit (covar here)))) tp)) (covar here))))) (app unit (μ̃ (cut `𝟙 (ret unit) (μ̃ (cut `𝟙 (ret unit) (covar here))))))
+    cut (`𝟙 `⇒ `𝟙) (ret (lam (μ (cut (`𝟙 `+ `𝟙) (μ (cut (¬ `𝟙) (ret (cont (μ̃ (cut (`𝟙 `+ `𝟙) (ret (inl (var here))) (covar here))))) (μ̃ (cut `𝟙 (μ (cut (`𝟙 `+ `𝟙) (ret (inl unit)) (case (μ̃ (cut (¬ `𝟙) (ret (var (there here))) (pass (var here)))) (covar here)))) (μ̃ (cut (`𝟙 `+ `𝟙) (ret (inr (var here))) (covar here))))))) (μ̃ (cut `𝟙 (μ (cut (`𝟙 `+ `𝟙) (ret (var here)) (case (μ̃ (cut `𝟙 (ret unit) (covar here))) (μ̃ (cut `𝟙 (ret (var here)) (covar here)))))) (covar here))))))) (app unit (μ̃ (cut `𝟙 (ret unit) (μ̃ (cut `𝟙 (ret unit) (covar here))))))
   ⟶⟨ app-step ⟩
-    cut `𝟙 (μ (cut `𝟙 (μ (cut `⊥ (μ (cut (`𝟙 `⇒ `⊥) (ret (lam (μ (cut `𝟙 (ret unit) (covar (there (there (there here)))))))) (app unit (covar here)))) tp)) (covar here))) (μ̃ (cut `𝟙 (ret unit) (μ̃ (cut `𝟙 (ret unit) (covar here)))))
+    cut `𝟙 (μ (cut (`𝟙 `+ `𝟙) (μ (cut (¬ `𝟙) (ret (cont (μ̃ (cut (`𝟙 `+ `𝟙) (ret (inl (var here))) (covar here))))) (μ̃ (cut `𝟙 (μ (cut (`𝟙 `+ `𝟙) (ret (inl unit)) (case (μ̃ (cut (¬ `𝟙) (ret (var (there here))) (pass (var here)))) (covar here)))) (μ̃ (cut (`𝟙 `+ `𝟙) (ret (inr (var here))) (covar here))))))) (μ̃ (cut `𝟙 (μ (cut (`𝟙 `+ `𝟙) (ret (var here)) (case (μ̃ (cut `𝟙 (ret unit) (covar here))) (μ̃ (cut `𝟙 (ret (var here)) (covar here)))))) (covar here))))) (μ̃ (cut `𝟙 (ret unit) (μ̃ (cut `𝟙 (ret unit) (covar here)))))
   ⟶⟨ μ-step ⟩
-    cut `𝟙 (μ (cut `⊥ (μ (cut (`𝟙 `⇒ `⊥) (ret (lam (μ (cut `𝟙 (ret unit) (μ̃ (cut `𝟙 (ret unit) (μ̃ (cut `𝟙 (ret unit) (covar (there (there (there here)))))))))))) (app unit (covar here)))) tp)) (μ̃ (cut `𝟙 (ret unit) (μ̃ (cut `𝟙 (ret unit) (covar here)))))
+    cut (`𝟙 `+ `𝟙) (μ (cut (¬ `𝟙) (ret (cont (μ̃ (cut (`𝟙 `+ `𝟙) (ret (inl (var here))) (covar here))))) (μ̃ (cut `𝟙 (μ (cut (`𝟙 `+ `𝟙) (ret (inl unit)) (case (μ̃ (cut (¬ `𝟙) (ret (var (there here))) (pass (var here)))) (covar here)))) (μ̃ (cut (`𝟙 `+ `𝟙) (ret (inr (var here))) (covar here))))))) (μ̃ (cut `𝟙 (μ (cut (`𝟙 `+ `𝟙) (ret (var here)) (case (μ̃ (cut `𝟙 (ret unit) (covar here))) (μ̃ (cut `𝟙 (ret (var here)) (covar here)))))) (μ̃ (cut `𝟙 (ret unit) (μ̃ (cut `𝟙 (ret unit) (covar here)))))))
   ⟶⟨ μ-step ⟩
-    cut `⊥ (μ (cut (`𝟙 `⇒ `⊥) (ret (lam (μ (cut `𝟙 (ret unit) (μ̃ (cut `𝟙 (ret unit) (μ̃ (cut `𝟙 (ret unit) (covar (there (there here))))))))))) (app unit (covar here)))) tp
+    cut (¬ `𝟙) (ret (cont (μ̃ (cut (`𝟙 `+ `𝟙) (ret (inl (var here))) (μ̃ (cut `𝟙 (μ (cut (`𝟙 `+ `𝟙) (ret (var here)) (case (μ̃ (cut `𝟙 (ret unit) (covar here))) (μ̃ (cut `𝟙 (ret (var here)) (covar here)))))) (μ̃ (cut `𝟙 (ret unit) (μ̃ (cut `𝟙 (ret unit) (covar here))))))))))) (μ̃ (cut `𝟙 (μ (cut (`𝟙 `+ `𝟙) (ret (inl unit)) (case (μ̃ (cut (¬ `𝟙) (ret (var (there here))) (pass (var here)))) (covar here)))) (μ̃ (cut (`𝟙 `+ `𝟙) (ret (inr (var here))) (μ̃ (cut `𝟙 (μ (cut (`𝟙 `+ `𝟙) (ret (var here)) (case (μ̃ (cut `𝟙 (ret unit) (covar here))) (μ̃ (cut `𝟙 (ret (var here)) (covar here)))))) (μ̃ (cut `𝟙 (ret unit) (μ̃ (cut `𝟙 (ret unit) (covar here)))))))))))
+  ⟶⟨ μ̃-step ⟩
+    cut `𝟙 (μ (cut (`𝟙 `+ `𝟙) (ret (inl unit)) (case (μ̃ (cut (¬ `𝟙) (ret (cont (μ̃ (cut (`𝟙 `+ `𝟙) (ret (inl (var here))) (μ̃ (cut `𝟙 (μ (cut (`𝟙 `+ `𝟙) (ret (var here)) (case (μ̃ (cut `𝟙 (ret unit) (covar here))) (μ̃ (cut `𝟙 (ret (var here)) (covar here)))))) (μ̃ (cut `𝟙 (ret unit) (μ̃ (cut `𝟙 (ret unit) (covar (there here)))))))))))) (pass (var here)))) (covar here)))) (μ̃ (cut (`𝟙 `+ `𝟙) (ret (inr (var here))) (μ̃ (cut `𝟙 (μ (cut (`𝟙 `+ `𝟙) (ret (var here)) (case (μ̃ (cut `𝟙 (ret unit) (covar here))) (μ̃ (cut `𝟙 (ret (var here)) (covar here)))))) (μ̃ (cut `𝟙 (ret unit) (μ̃ (cut `𝟙 (ret unit) (covar here)))))))))
   ⟶⟨ μ-step ⟩
-    cut (`𝟙 `⇒ `⊥) (ret (lam (μ (cut `𝟙 (ret unit) (μ̃ (cut `𝟙 (ret unit) (μ̃ (cut `𝟙 (ret unit) (covar (there here)))))))))) (app unit tp)
-  ⟶⟨ app-step ⟩
-    cut `⊥ (μ (cut `𝟙 (ret unit) (μ̃ (cut `𝟙 (ret unit) (μ̃ (cut `𝟙 (ret unit) (covar (there here)))))))) tp
+    cut (`𝟙 `+ `𝟙) (ret (inl unit)) (case (μ̃ (cut (¬ `𝟙) (ret (cont (μ̃ (cut (`𝟙 `+ `𝟙) (ret (inl (var here))) (μ̃ (cut `𝟙 (μ (cut (`𝟙 `+ `𝟙) (ret (var here)) (case (μ̃ (cut `𝟙 (ret unit) (covar here))) (μ̃ (cut `𝟙 (ret (var here)) (covar here)))))) (μ̃ (cut `𝟙 (ret unit) (μ̃ (cut `𝟙 (ret unit) (covar here))))))))))) (pass (var here)))) (μ̃ (cut (`𝟙 `+ `𝟙) (ret (inr (var here))) (μ̃ (cut `𝟙 (μ (cut (`𝟙 `+ `𝟙) (ret (var here)) (case (μ̃ (cut `𝟙 (ret unit) (covar here))) (μ̃ (cut `𝟙 (ret (var here)) (covar here)))))) (μ̃ (cut `𝟙 (ret unit) (μ̃ (cut `𝟙 (ret unit) (covar here))))))))))
+  ⟶⟨ inl-step ⟩
+    cut `𝟙 (ret unit) (μ̃ (cut (¬ `𝟙) (ret (cont (μ̃ (cut (`𝟙 `+ `𝟙) (ret (inl (var here))) (μ̃ (cut `𝟙 (μ (cut (`𝟙 `+ `𝟙) (ret (var here)) (case (μ̃ (cut `𝟙 (ret unit) (covar here))) (μ̃ (cut `𝟙 (ret (var here)) (covar here)))))) (μ̃ (cut `𝟙 (ret unit) (μ̃ (cut `𝟙 (ret unit) (covar here))))))))))) (pass (var here))))
+  ⟶⟨ μ̃-step ⟩
+    cut (¬ `𝟙) (ret (cont (μ̃ (cut (`𝟙 `+ `𝟙) (ret (inl (var here))) (μ̃ (cut `𝟙 (μ (cut (`𝟙 `+ `𝟙) (ret (var here)) (case (μ̃ (cut `𝟙 (ret unit) (covar here))) (μ̃ (cut `𝟙 (ret (var here)) (covar here)))))) (μ̃ (cut `𝟙 (ret unit) (μ̃ (cut `𝟙 (ret unit) (covar here))))))))))) (pass unit)
+  ⟶⟨ pass-step ⟩
+    cut `𝟙 (ret unit) (μ̃ (cut (`𝟙 `+ `𝟙) (ret (inl (var here))) (μ̃ (cut `𝟙 (μ (cut (`𝟙 `+ `𝟙) (ret (var here)) (case (μ̃ (cut `𝟙 (ret unit) (covar here))) (μ̃ (cut `𝟙 (ret (var here)) (covar here)))))) (μ̃ (cut `𝟙 (ret unit) (μ̃ (cut `𝟙 (ret unit) (covar here)))))))))
+  ⟶⟨ μ̃-step ⟩
+    cut (`𝟙 `+ `𝟙) (ret (inl unit)) (μ̃ (cut `𝟙 (μ (cut (`𝟙 `+ `𝟙) (ret (var here)) (case (μ̃ (cut `𝟙 (ret unit) (covar here))) (μ̃ (cut `𝟙 (ret (var here)) (covar here)))))) (μ̃ (cut `𝟙 (ret unit) (μ̃ (cut `𝟙 (ret unit) (covar here)))))))
+  ⟶⟨ μ̃-step ⟩
+    cut `𝟙 (μ (cut (`𝟙 `+ `𝟙) (ret (inl unit)) (case (μ̃ (cut `𝟙 (ret unit) (covar here))) (μ̃ (cut `𝟙 (ret (var here)) (covar here)))))) (μ̃ (cut `𝟙 (ret unit) (μ̃ (cut `𝟙 (ret unit) (covar here)))))
   ⟶⟨ μ-step ⟩
+    cut (`𝟙 `+ `𝟙) (ret (inl unit)) (case (μ̃ (cut `𝟙 (ret unit) (μ̃ (cut `𝟙 (ret unit) (μ̃ (cut `𝟙 (ret unit) (covar here))))))) (μ̃ (cut `𝟙 (ret (var here)) (μ̃ (cut `𝟙 (ret unit) (μ̃ (cut `𝟙 (ret unit) (covar here))))))))
+  ⟶⟨ inl-step ⟩
+    cut `𝟙 (ret unit) (μ̃ (cut `𝟙 (ret unit) (μ̃ (cut `𝟙 (ret unit) (μ̃ (cut `𝟙 (ret unit) (covar here)))))))
+  ⟶⟨ μ̃-step ⟩
     cut `𝟙 (ret unit) (μ̃ (cut `𝟙 (ret unit) (μ̃ (cut `𝟙 (ret unit) (covar here)))))
   ⟶⟨ μ̃-step ⟩
     cut `𝟙 (ret unit) (μ̃ (cut `𝟙 (ret unit) (covar here)))
