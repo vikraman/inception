@@ -231,8 +231,8 @@ exp-push : {M : Γ ⊢ᶜ X} {N : (Γ ∙ X) ⊢ᶜ Y}
          → Redᶜ X M → (∀ {V} → Redᵛ X V → Redᶜ Y (sub-comp (sub-ex sub-id V) N))
          → Redᶜ Y (push M N)
 exp-push {M = M} {N} rM H =
-  sn (λ { push-step → SN-ext∷-C (Red→SNᶜ _ _ rM) (Red→RTNᶜ _ _ rM) (λ {V} rv → Red→SNᶜ _ _ (H rv)) }) ,
-  λ { (push-step ◅ rest) → RTN-ext∷-C (Red→RTNᶜ _ _ rM) (λ {V} rv → Red→RTNᶜ _ _ (H rv)) rest }
+  sn (λ { push-step → SN-ext∷-C (Red→SNᶜ _ _ rM) (Red→RTNᶜ _ _ rM) (λ {_} rv → Red→SNᶜ _ _ (H rv)) }) ,
+  λ { (push-step ◅ rest) → RTN-ext∷-C (Red→RTNᶜ _ _ rM) (λ {_} rv → Red→RTNᶜ _ _ (H rv)) rest }
 
 mutual
   SN-ext-pm∷-C : {X Y Z : Ty} {M : Γ ⊢ᶜ U} {L : Γ ⊢ᵏ U ⇒ (X `× Y)} {N : (Γ ∙ X ∙ Y) ⊢ᶜ Z} {K : Γ ⊢ᵏ Z ⇒ S}
