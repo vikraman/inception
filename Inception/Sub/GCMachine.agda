@@ -194,7 +194,7 @@ max {Γ = Γ} {Δ = Γ} wkext-id wkext-id wkext-id (wkext-wk _) = Γ , wk-id , w
 max {Γ = Γ} {Δ = Γ} wkext-id wkext-id (wkext-wk _) wkext-id = Γ , wk-id , wkext-id , wk-id , wk-id , wk-id , wkext-id
 max {Γ = Γ ∙ X} {Δ = Γ ∙ X} {π₁ = π₁} wkext-id {ρ₁ = ρ₁} wkext-id {π₂ = wk-wk π₂} (wkext-wk _) {ρ₂ = wk-wk ρ₂} (wkext-wk _) = ql (wk-absurd (Wk.wk-wk π₂) ρ₂) _
 max {Γ = Γ} wkext-id (wkext-wk _) wkext-id wkext-id = Γ , wk-id , wkext-id , wk-id , wk-id , wk-id , wkext-id
-max {Γ = Γ} wkext-id (wkext-wk r₁) wkext-id {ρ₂ = ρ₂} (wkext-wk r₂) = Γ , wk-id , wkext-id , wk-id , wk-id , Wk.wk-wk _ , wkext-wk r₁ -- <<---
+max {Γ = Γ} wkext-id (wkext-wk r₁) wkext-id {ρ₂ = ρ₂} (wkext-wk r₂) = Γ , wk-id , wkext-id , wk-id , wk-id , Wk.wk-wk _ , wkext-wk r₁
 max {Γ = Γ} {π₁ = π₁} wkext-id {ρ₁ = wk-wk ρ₁} (wkext-wk r₁) {π₂ = wk-wk π₂} (wkext-wk _) {ρ₂ = ρ₂} wkext-id = Γ , wk-id , wkext-id , wk-id , wk-wk π₂ , _ , wkext-wk r₁
 max {Γ = Γ} wkext-id (wkext-wk r₁) {π₂ = wk-wk π₂} (wkext-wk _) (wkext-wk r₂) = Γ , wk-id , wkext-id , wk-id , wk-wk π₂ , _ , wkext-wk r₁
 max {Γ = Γ} (wkext-wk _) wkext-id wkext-id wkext-id = Γ , wk-id , wkext-id , wk-id , wk-id , wk-id , wkext-id
