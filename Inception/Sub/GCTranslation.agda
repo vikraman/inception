@@ -397,7 +397,8 @@ gcmcstack-wk-eq γ N p K p₁ (< N₂ ； wkext-wk p₂ >∷ K₁) = cong (< N�
 
 --------------------------------------------------------------------------
 
-
+-- halting work on this in favour of work on IncV version of the GC machine
+{-
 gcmstep-to-mstep : {σ σ₁ : GCM.CState} → (σ →ᴳ σ₁) → Σ[ σᴹ ∈ M.CState ] (((gcmcstate-to-mcstate σ) →ᴹ σᴹ) × σᴹ ≈ᴹ (gcmcstate-to-mcstate σ₁))
 gcmstep-to-mstep (eval→ {W = W} {γ = γ} {π = π} {p = p} {K = K}) =
   _ , eval→ , ≈ᴹ-bc (≈-wk₁ (wk-cstate-result (eval-wk γ W p) {!!}))
@@ -423,6 +424,7 @@ gcmstep-to-mstep (sub→ {M = M} {N = N} {γ = γ} {π = π} {p = p} {K = K}) =
 gcmstep-to-mstep var→ = _ , var→ , {!!}
 gcmstep-to-mstep pmᶜ→ = _ , pmᶜ→ , {!!}
 gcmstep-to-mstep app→ = _ , app→ , {!!}
+-}
 
 --------------------------------------------------------------------------
 --------------------------------------------------------------------------
