@@ -38,47 +38,6 @@ wkext-trans wkext-id (wkext-wk r) = wkext-wk r
 wkext-trans (wkext-wk p) wkext-id = wkext-wk p
 wkext-trans (wkext-wk p) (wkext-wk r) = wkext-wk (wkext-trans p (wkext-wk r))
 
-{-
-wk-ext-uniq : (π₁ : Γ ⊇ Ψ) → (π₂ : Ψ ⊇ Δ) → {π₃ : Γ ⊇ Δ} → (p₃ : WkExt π₃) → wk-trans π₁ π₂ ≡ π₃
-wk-ext-uniq wk-ε wk-ε {π₃ = wk-ε} wkext-id = refl
-wk-ext-uniq (wk-cong π₁) (wk-cong π₂) {π₃ = wk-cong π₃} wkext-id = {!!} -- need lemma
-wk-ext-uniq (wk-cong π₁) (wk-cong π₂) {π₃ = wk-wk π₃} wkext-id = ql (wk-absurd wk-id π₃) _
-wk-ext-uniq (wk-cong π₁) (wk-cong π₂) {π₃ = wk-wk π₃} (wkext-wk p₃) = {!!}
-wk-ext-uniq (wk-cong π₁) (wk-wk π₂) {π₃ = wk-cong π₃} wkext-id = {!!}
-wk-ext-uniq (wk-cong π₁) (wk-wk π₂) {π₃ = wk-wk π₃} wkext-id = {!!}
-wk-ext-uniq (wk-cong π₁) (wk-wk π₂) {π₃ = wk-wk π₃} (wkext-wk p₃) = {!!}
-wk-ext-uniq (wk-wk π₁) wk-ε {π₃ = wk-wk π₃} (wkext-wk p₃) = {!!}
-wk-ext-uniq (wk-wk π₁) (wk-cong π₂) {π₃ = wk-cong π₃} wkext-id = {!!}
-wk-ext-uniq (wk-wk π₁) (wk-cong π₂) {π₃ = wk-wk π₃} wkext-id = {!!}
-wk-ext-uniq (wk-wk π₁) (wk-cong π₂) {π₃ = wk-wk π₃} (wkext-wk p₃) = {!!}
-wk-ext-uniq (wk-wk π₁) (wk-wk π₂) {π₃ = wk-cong π₃} wkext-id = {!!}
-wk-ext-uniq (wk-wk π₁) (wk-wk π₂) {π₃ = wk-wk π₃} wkext-id = {!!}
-wk-ext-uniq (wk-wk π₁) (wk-wk π₂) {π₃ = wk-wk π₃} (wkext-wk p₃) = {!!}
-
-wk-ext-uniq₁ : (π₁ : Γ ⊇ Ψ) → (π₂ : Ψ ⊇ Δ) → {π₃ : Γ ⊇ Δ} → (p₃ : WkExt π₃) → WkExt π₁ × WkExt π₂
-wk-ext-uniq₁ wk-ε wk-ε wkext-id = wkext-id , wkext-id
-wk-ext-uniq₁ (wk-cong π₁) (wk-cong π₂) wkext-id = {!!} -- need lemma
-wk-ext-uniq₁ (wk-cong π₁) (wk-cong π₂) {π₃ = wk-wk π₃} (wkext-wk p₃) =
-  let
-    IH = wk-ext-uniq₁ π₁ π₂ (wkext-trans p₃ (wkext-wk {π = wk-id} wkext-id))
-  in
-  {!!}
-wk-ext-uniq₁ (wk-cong π₁) (wk-wk π₂) wkext-id = ql (wk-absurd wk-id (wk-trans π₁ π₂)) _
-wk-ext-uniq₁ (wk-cong π₁) (wk-wk π₂) {π₃ = wk-wk π₃} (wkext-wk p₃) =
--- wk-ext-uniq₁ (wk-cong π₁) (wk-wk π₂) {π₃ = wk-wk wk-ε} (wkext-wk p₃) = {!!}
--- wk-ext-uniq₁ (wk-cong π₁) (wk-wk π₂) {π₃ = wk-wk (wk-cong π₃)} (wkext-wk p₃) = {!!}
--- wk-ext-uniq₁ (wk-cong π₁) (wk-wk π₂) {π₃ = wk-wk (wk-wk π₃)} (wkext-wk p₃) =
-   let
-     IH = wk-ext-uniq₁ π₁ π₂ p₃
-   in
-   {!wkext-wk ?!} , (wkext-wk (proj₂ IH))
-wk-ext-uniq₁ (wk-wk π₁) wk-ε (wkext-wk p₃) = wkext-wk (proj₁ (wk-ext-uniq₁ π₁ Wk.wk-ε p₃)) , wkext-id
-wk-ext-uniq₁ (wk-wk π₁) (wk-cong π₂) wkext-id = {!!} -- need lemma
-wk-ext-uniq₁ (wk-wk π₁) (wk-cong π₂) (wkext-wk p₃) = wkext-wk (proj₁ (wk-ext-uniq₁ π₁ (Wk.wk-cong π₂) p₃)) , proj₂ (wk-ext-uniq₁ π₁ (Wk.wk-cong π₂) p₃)
-wk-ext-uniq₁ (wk-wk π₁) (wk-wk π₂) wkext-id = ql (wk-absurd wk-id (wk-trans π₁ (wk-wk π₂))) _
-wk-ext-uniq₁ (wk-wk π₁) (wk-wk π₂) (wkext-wk p₃) = wkext-wk (proj₁ (wk-ext-uniq₁ π₁ (Wk.wk-wk π₂) p₃)) , proj₂ (wk-ext-uniq₁ π₁ (Wk.wk-wk π₂) p₃)
--}
-
 
 --------------------------------------------------------------------------
 -- environments
