@@ -94,7 +94,7 @@ letters = "ΓΔΨΞ"
 
 [[sorts]]
 heads = ["Ty", "Syntax.Ty"]
-letters = "XYZUSTℛ"
+letters = "XYZUSTℛ𝒫"
 reserved = true
 
 # ignored findings

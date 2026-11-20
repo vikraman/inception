@@ -1,19 +1,17 @@
 module Inception.SystemL.Syntax where
 
-open import Data.Nat
-import Relation.Binary.PropositionalEquality as Eq
-open Eq using (_≡_; refl; cong; cong₂; sym)
-open Eq.≡-Reasoning
+open import Inception.Prelude
+open ≡-Reasoning
+open import Inception.Reasoning using (module Equational)
 
 infixr 25 _`⇒_
 
+infixr 30 ¬_
+
 data Ty : Set where
   `⊥ `𝟙 `𝓅 : Ty
+  ¬_ : (X : Ty) → Ty
   _`×_ _`⇒_ _`+_ : (X : Ty) → (Y : Ty) → Ty
-
-infixr 30 ¬_
-¬_ : Ty → Ty
-¬ X = X `⇒ `⊥
 
 open import Inception.Ctx Ty public
 
@@ -65,6 +63,10 @@ data Val where
       -----------------
       → Γ ⊢ᵛ X `+ Y ∣ Δ
 
+  cont : (K : Γ ∣ X ⊢ᵏ Δ)
+       -------------------
+       → Γ ⊢ᵛ ¬ X ∣ Δ
+
 data Tm where
 
   ret : (V : Γ ⊢ᵛ X ∣ Δ)
@@ -104,6 +106,10 @@ data CoTm where
   tp : -------------
        Γ ∣ `⊥ ⊢ᵏ Δ
 
+  pass : (V : Γ ⊢ᵛ X ∣ Δ)
+       -------------------
+       → Γ ∣ ¬ X ⊢ᵏ Δ
+
 mutual
   wk-cmd : Γ ⊇ Ψ → Δ ⊇ Ξ → Ψ ⊢ Ξ → Γ ⊢ Δ
   wk-cmd π ρ (cut X M K) = cut X (wk-tm π ρ M) (wk-cotm π ρ K)
@@ -115,6 +121,7 @@ mutual
   wk-val π ρ (pair V W) = pair (wk-val π ρ V) (wk-val π ρ W)
   wk-val π ρ (inl V)    = inl (wk-val π ρ V)
   wk-val π ρ (inr W)    = inr (wk-val π ρ W)
+  wk-val π ρ (cont K)   = cont (wk-cotm π ρ K)
 
   wk-tm : Γ ⊇ Ψ → Δ ⊇ Ξ → Ψ ⊢ᵗ X ∣ Ξ → Γ ⊢ᵗ X ∣ Δ
   wk-tm π ρ (ret V) = ret (wk-val π ρ V)
@@ -128,6 +135,7 @@ mutual
   wk-cotm π ρ (case K L) = case (wk-cotm π ρ K) (wk-cotm π ρ L)
   wk-cotm π ρ (μ̃ C)     = μ̃ (wk-cmd (wk-cong π) ρ C)
   wk-cotm π ρ tp        = tp
+  wk-cotm π ρ (pass V)  = pass (wk-val π ρ V)
 
 wkᵛ : Γ ⊢ᵛ X ∣ Δ → (Γ ∙ Y) ⊢ᵛ X ∣ Δ
 wkᵛ = wk-val (wk-wk wk-id) wk-id
@@ -182,6 +190,7 @@ mutual
   sub-val θ φ (pair V W) = pair (sub-val θ φ V) (sub-val θ φ W)
   sub-val θ φ (inl V)    = inl (sub-val θ φ V)
   sub-val θ φ (inr W)    = inr (sub-val θ φ W)
+  sub-val θ φ (cont K)   = cont (sub-cotm θ φ K)
 
   sub-tm : Γ ⊢ Ψ ∣ Δ → Γ ∣ Ξ ⊢ Δ → Ψ ⊢ᵗ X ∣ Ξ → Γ ⊢ᵗ X ∣ Δ
   sub-tm θ φ (ret V) = ret (sub-val θ φ V)
@@ -195,6 +204,7 @@ mutual
   sub-cotm θ φ (case K L) = case (sub-cotm θ φ K) (sub-cotm θ φ L)
   sub-cotm θ φ (μ̃ C)     = μ̃ (sub-cmd (sub-ex (sub-wk (wk-wk wk-id) wk-id θ) (var here)) (cosub-wk (wk-wk wk-id) wk-id φ) C)
   sub-cotm θ φ tp        = tp
+  sub-cotm θ φ (pass V)  = pass (sub-val θ φ V)
 
 -- syntactic sugar
 
@@ -222,8 +232,27 @@ projSnd p = μ (cut _ (ret (wk̃ᵛ p)) (snd (covar here)))
 letpv : Γ ⊢ᵛ X `× Z ∣ Δ → (Γ ∙ X ∙ Z) ⊢ᵗ Y ∣ Δ → Γ ⊢ᵗ Y ∣ Δ
 letpv V M = lett (projFst V) (lett (projSnd (wkᵛ V)) M)
 
-efq : Γ ⊢ᵗ `⊥ ∣ Δ → Γ ⊢ᵗ X ∣ Δ
-efq u = μ (cut `⊥ (wk̃ᵗ u) tp)
+casev : Γ ⊢ᵛ X `+ Y ∣ Δ → (Γ ∙ X) ⊢ᵗ Z ∣ Δ → (Γ ∙ Y) ⊢ᵗ Z ∣ Δ → Γ ⊢ᵗ Z ∣ Δ
+casev {X = X} {Y = Y} {Z = Z} V M N =
+  μ (cut (X `+ Y) (ret (wk̃ᵛ V)) (case (μ̃ (cut Z (wk̃ᵗ M) (covar here))) (μ̃ (cut Z (wk̃ᵗ N) (covar here)))))
+
+colam : (Γ ∙ ¬ X) ⊢ᵗ Y ∣ Δ → Γ ⊢ᵗ X `+ Y ∣ Δ
+colam {X = X} {Y = Y} M =
+  μ (cut (¬ X) (ret (cont (μ̃ (cut (X `+ Y) (ret (inl (var here))) (covar here)))))
+               (μ̃ (cut Y (wk̃ᵗ M) (μ̃ (cut (X `+ Y) (ret (inr (var here))) (covar here))))))
+
+coapp : Γ ⊢ᵗ X `+ Y ∣ Δ → Γ ⊢ᵛ ¬ X ∣ Δ → Γ ⊢ᵗ Y ∣ Δ
+coapp {X = X} {Y = Y} M V =
+  μ (cut (X `+ Y) (wk̃ᵗ M) (case (μ̃ (cut (¬ X) (ret (wkᵛ (wk̃ᵛ V))) (pass (var here)))) (covar here)))
+
+ccase : Γ ⊢ᵗ X `+ Y ∣ Δ → (Γ ∙ X) ⊢ᵗ Z ∣ Δ → (Γ ∙ Y) ⊢ᵗ Z ∣ Δ → Γ ⊢ᵗ Z ∣ Δ
+ccase M N P = lett M (casev (var here) (wk-tm (wk-cong (wk-wk wk-id)) wk-id N) (wk-tm (wk-cong (wk-wk wk-id)) wk-id P))
+
+throw : Γ ⊢ᵛ ¬ X ∣ Δ → Γ ⊢ᵛ X ∣ Δ → Γ ⊢ᵗ Y ∣ Δ
+throw V W = coapp (ret (inl W)) V
+
+catch : (Γ ∙ ¬ X) ⊢ᵗ Y ∣ Δ → (Γ ∙ X) ⊢ᵗ Y ∣ Δ → Γ ⊢ᵗ Y ∣ Δ
+catch M N = ccase (colam M) N (ret (var here))
 
 variable
   V V₁ V₂ V₃ W₁ W₂ : Γ ⊢ᵛ X ∣ Δ
@@ -279,6 +308,10 @@ data EqVal Γ Δ where
            -----------------------------------
            → Γ ⊢ᵛ inr W₁ ≈ inr W₂ ∶ X `+ Y ∣ Δ
 
+  cont-cong : Γ ∣ K₁ ≈ K₂ ∶ X ⊢ᵏ Δ
+            -----------------------------------
+            → Γ ⊢ᵛ cont K₁ ≈ cont K₂ ∶ ¬ X ∣ Δ
+
   -- eta rules
 
   unit-eta : (V : Γ ⊢ᵛ `𝟙 ∣ Δ)
@@ -288,6 +321,10 @@ data EqVal Γ Δ where
   lam-eta : (V : Γ ⊢ᵛ X `⇒ Y ∣ Δ)
           -----------------------------------------------------------------------------------
           → Γ ⊢ᵛ V ≈ lam (μ (cut (X `⇒ Y) (ret (wk̃ᵛ (wkᵛ V))) (app (var here) (covar here)))) ∶ X `⇒ Y ∣ Δ
+
+  cont-eta : (V : Γ ⊢ᵛ ¬ X ∣ Δ)
+           ---------------------------------------------------------------------
+           → Γ ⊢ᵛ V ≈ cont (μ̃ (cut (¬ X) (ret (wkᵛ V)) (pass (var here)))) ∶ ¬ X ∣ Δ
 
 data EqTm Γ Δ where
 
@@ -365,6 +402,10 @@ data EqCoTm Γ Δ where
          ---------------------------
          → Γ ∣ μ̃ C₁ ≈ μ̃ C₂ ∶ X ⊢ᵏ Δ
 
+  pass-cong : Γ ⊢ᵛ V₁ ≈ V₂ ∶ X ∣ Δ
+            -----------------------------------
+            → Γ ∣ pass V₁ ≈ pass V₂ ∶ ¬ X ⊢ᵏ Δ
+
   -- structural (eta) rule
 
   μ̃-eta : (K : Γ ∣ X ⊢ᵏ Δ)
@@ -426,6 +467,18 @@ data EqCmd Γ Δ where
            -----------------------------------------------------------------------
            → Γ ⊢ cut (X `+ Y) (ret (inr W)) (case K L) ≈ cut Y (ret W) L ⊣ Δ
 
+  pass-beta : (K : Γ ∣ X ⊢ᵏ Δ) → (V : Γ ⊢ᵛ X ∣ Δ)
+            -----------------------------------------------------------
+            → Γ ⊢ cut (¬ X) (ret (cont K)) (pass V) ≈ cut X (ret V) K ⊣ Δ
+
+--------------------------------------------------------------------------
+-- equational reasoning
+
+module ≈ᵛ-Reasoning {Γ Δ X} = Equational (EqVal Γ Δ X) ≈-refl ≈-sym ≈-trans
+module ≈ᵗ-Reasoning {Γ Δ X} = Equational (EqTm Γ Δ X) ≈-refl ≈-sym ≈-trans
+module ≈ᵏ-Reasoning {Γ Δ X} = Equational (EqCoTm Γ Δ X) ≈-refl ≈-sym ≈-trans
+module ≈ᶜ-Reasoning {Γ Δ} = Equational (EqCmd Γ Δ) ≈-refl ≈-sym ≈-trans
+
 --------------------------------------------------------------------------
 -- weakening lemmas
 
@@ -440,6 +493,7 @@ mutual
   wk-val-id-β (pair V W) = cong₂ pair (wk-val-id-β V) (wk-val-id-β W)
   wk-val-id-β (inl V)    = cong inl (wk-val-id-β V)
   wk-val-id-β (inr W)    = cong inr (wk-val-id-β W)
+  wk-val-id-β (cont K)   = cong cont (wk-cotm-id-β K)
 
   wk-tm-id-β : (M : Γ ⊢ᵗ X ∣ Δ) → wk-tm wk-id wk-id M ≡ M
   wk-tm-id-β (ret V) = cong ret (wk-val-id-β V)
@@ -453,6 +507,7 @@ mutual
   wk-cotm-id-β (case K L) = cong₂ case (wk-cotm-id-β K) (wk-cotm-id-β L)
   wk-cotm-id-β (μ̃ C)      = cong μ̃ (wk-cmd-id-β C)
   wk-cotm-id-β tp         = refl
+  wk-cotm-id-β (pass V)  = cong pass (wk-val-id-β V)
 
 {-# REWRITE wk-cmd-id-β wk-val-id-β wk-tm-id-β wk-cotm-id-β #-}
 
@@ -483,6 +538,7 @@ mutual
   wk-val-wk-η (pair V W) π δ ρ σ = cong₂ pair (wk-val-wk-η V π δ ρ σ) (wk-val-wk-η W π δ ρ σ)
   wk-val-wk-η (inl V) π δ ρ σ    = cong inl (wk-val-wk-η V π δ ρ σ)
   wk-val-wk-η (inr W) π δ ρ σ    = cong inr (wk-val-wk-η W π δ ρ σ)
+  wk-val-wk-η (cont K) π δ ρ σ   = cong cont (wk-cotm-wk-η K π δ ρ σ)
 
   wk-tm-wk-η : (M : Γ ⊢ᵗ X ∣ Δ) (π : Ψ ⊇ Γ₁) (δ : Γ₁ ⊇ Γ) (ρ : Ψ₁ ⊇ Ξ) (σ : Ξ ⊇ Δ)
               → wk-tm π ρ (wk-tm δ σ M) ≡ wk-tm (wk-trans π δ) (wk-trans ρ σ) M
@@ -498,6 +554,7 @@ mutual
   wk-cotm-wk-η (case K L) π δ ρ σ = cong₂ case (wk-cotm-wk-η K π δ ρ σ) (wk-cotm-wk-η L π δ ρ σ)
   wk-cotm-wk-η (μ̃ C) π δ ρ σ      = cong μ̃ (wk-cmd-wk-η C (wk-cong π) (wk-cong δ) ρ σ)
   wk-cotm-wk-η tp π δ ρ σ         = refl
+  wk-cotm-wk-η (pass V) π δ ρ σ   = cong pass (wk-val-wk-η V π δ ρ σ)
 
 {-# REWRITE wk-cmd-wk-η wk-val-wk-η wk-tm-wk-η wk-cotm-wk-η #-}
 
@@ -536,6 +593,7 @@ mutual
   wk-val-sub-η π ρ θ φ (pair V W) = cong₂ pair (wk-val-sub-η π ρ θ φ V) (wk-val-sub-η π ρ θ φ W)
   wk-val-sub-η π ρ θ φ (inl V)    = cong inl (wk-val-sub-η π ρ θ φ V)
   wk-val-sub-η π ρ θ φ (inr W)    = cong inr (wk-val-sub-η π ρ θ φ W)
+  wk-val-sub-η π ρ θ φ (cont K)   = cong cont (wk-cotm-sub-η π ρ θ φ K)
 
   wk-tm-sub-η : (π : Γ₁ ⊇ Γ) (ρ : Ξ ⊇ Δ) (θ : Γ ⊢ Ψ ∣ Δ) (φ : Γ ∣ Ψ₁ ⊢ Δ) (M : Ψ ⊢ᵗ X ∣ Ψ₁)
             → wk-tm π ρ (sub-tm θ φ M) ≡ sub-tm (sub-wk π ρ θ) (cosub-wk π ρ φ) M
@@ -553,6 +611,7 @@ mutual
   wk-cotm-sub-η π ρ θ φ (μ̃ C)      =
     cong μ̃ (wk-cmd-sub-η (wk-cong π) ρ (sub-ex (sub-wk (wk-wk wk-id) wk-id θ) (var here)) (cosub-wk (wk-wk wk-id) wk-id φ) C)
   wk-cotm-sub-η π ρ θ φ tp         = refl
+  wk-cotm-sub-η π ρ θ φ (pass V)  = cong pass (wk-val-sub-η π ρ θ φ V)
 
 {-# REWRITE wk-cmd-sub-η wk-val-sub-η wk-tm-sub-η wk-cotm-sub-η #-}
 
@@ -581,6 +640,7 @@ mutual
   sub-val-wk-η θ φ π ρ (pair V W) = cong₂ pair (sub-val-wk-η θ φ π ρ V) (sub-val-wk-η θ φ π ρ W)
   sub-val-wk-η θ φ π ρ (inl V)    = cong inl (sub-val-wk-η θ φ π ρ V)
   sub-val-wk-η θ φ π ρ (inr W)    = cong inr (sub-val-wk-η θ φ π ρ W)
+  sub-val-wk-η θ φ π ρ (cont K)   = cong cont (sub-cotm-wk-η θ φ π ρ K)
 
   sub-tm-wk-η : (θ : Ψ ⊢ Γ ∣ Γ₁) (φ : Ψ ∣ Δ ⊢ Γ₁) (π : Γ ⊇ Ψ₁) (ρ : Δ ⊇ Ξ) (M : Ψ₁ ⊢ᵗ X ∣ Ξ)
                 → sub-tm θ φ (wk-tm π ρ M) ≡ sub-tm (sub-pre θ π) (sub-pre φ ρ) M
@@ -598,6 +658,7 @@ mutual
   sub-cotm-wk-η θ φ π ρ (μ̃ C)      =
     cong μ̃ (sub-cmd-wk-η (sub-ex (sub-wk (wk-wk wk-id) wk-id θ) (var here)) (cosub-wk (wk-wk wk-id) wk-id φ) (wk-cong π) ρ C)
   sub-cotm-wk-η θ φ π ρ tp         = refl
+  sub-cotm-wk-η θ φ π ρ (pass V)  = cong pass (sub-val-wk-η θ φ π ρ V)
 
   sub-cmd-wk-η : (θ : Ψ ⊢ Γ ∣ Γ₁) (φ : Ψ ∣ Δ ⊢ Γ₁) (π : Γ ⊇ Ψ₁) (ρ : Δ ⊇ Ξ) (C : Ψ₁ ⊢ Ξ)
                  → sub-cmd θ φ (wk-cmd π ρ C) ≡ sub-cmd (sub-pre θ π) (sub-pre φ ρ) C
@@ -629,6 +690,7 @@ mutual
   sub-val-sub-η θ₁ φ₁ θ₂ φ₂ (pair V W) = cong₂ pair (sub-val-sub-η θ₁ φ₁ θ₂ φ₂ V) (sub-val-sub-η θ₁ φ₁ θ₂ φ₂ W)
   sub-val-sub-η θ₁ φ₁ θ₂ φ₂ (inl V)    = cong inl (sub-val-sub-η θ₁ φ₁ θ₂ φ₂ V)
   sub-val-sub-η θ₁ φ₁ θ₂ φ₂ (inr W)    = cong inr (sub-val-sub-η θ₁ φ₁ θ₂ φ₂ W)
+  sub-val-sub-η θ₁ φ₁ θ₂ φ₂ (cont K)   = cong cont (sub-cotm-sub-η θ₁ φ₁ θ₂ φ₂ K)
 
   sub-tm-sub-η : (θ₁ : Γ ⊢ Γ₁ ∣ Δ) (φ₁ : Γ ∣ Ξ ⊢ Δ) (θ₂ : Γ₁ ⊢ Ψ ∣ Ξ) (φ₂ : Γ₁ ∣ Ψ₁ ⊢ Ξ) (M : Ψ ⊢ᵗ X ∣ Ψ₁)
              → sub-tm θ₁ φ₁ (sub-tm θ₂ φ₂ M) ≡ sub-tm (sub-∘ θ₁ φ₁ θ₂) (cosub-∘ θ₁ φ₁ φ₂) M
@@ -648,6 +710,7 @@ mutual
     cong μ̃ (sub-cmd-sub-η (sub-ex (sub-wk (wk-wk wk-id) wk-id θ₁) (var here)) (cosub-wk (wk-wk wk-id) wk-id φ₁)
                         (sub-ex (sub-wk (wk-wk wk-id) wk-id θ₂) (var here)) (cosub-wk (wk-wk wk-id) wk-id φ₂) C)
   sub-cotm-sub-η θ₁ φ₁ θ₂ φ₂ tp         = refl
+  sub-cotm-sub-η θ₁ φ₁ θ₂ φ₂ (pass V)  = cong pass (sub-val-sub-η θ₁ φ₁ θ₂ φ₂ V)
 
 {-# REWRITE sub-cmd-sub-η sub-val-sub-η sub-tm-sub-η sub-cotm-sub-η #-}
 
@@ -677,6 +740,7 @@ mutual
   sub-val-ren-β π {ρ₁} {π₁} ρ (pair V W) = cong₂ pair (sub-val-ren-β π {ρ₁} {π₁} ρ V) (sub-val-ren-β π {ρ₁} {π₁} ρ W)
   sub-val-ren-β π {ρ₁} {π₁} ρ (inl V)    = cong inl (sub-val-ren-β π {ρ₁} {π₁} ρ V)
   sub-val-ren-β π {ρ₁} {π₁} ρ (inr W)    = cong inr (sub-val-ren-β π {ρ₁} {π₁} ρ W)
+  sub-val-ren-β π {ρ₁} {π₁} ρ (cont K)   = cong cont (sub-cotm-ren-β π {ρ₁} {π₁} ρ K)
 
   sub-tm-ren-β : (π : Γ ⊇ Ψ) {ρ₁ : Δ ⊇ Δ₁} {π₁ : Γ ⊇ Γ₁} (ρ : Δ ⊇ Ξ) (M : Ψ ⊢ᵗ X ∣ Ξ)
              → sub-tm (sub-wk π ρ₁ sub-id) (cosub-wk π₁ ρ cosub-id) M ≡ wk-tm π ρ M
@@ -692,6 +756,7 @@ mutual
   sub-cotm-ren-β π {ρ₁} {π₁} ρ (case K L) = cong₂ case (sub-cotm-ren-β π {ρ₁} {π₁} ρ K) (sub-cotm-ren-β π {ρ₁} {π₁} ρ L)
   sub-cotm-ren-β π {ρ₁} {π₁} ρ (μ̃ C)     = cong μ̃ (sub-cmd-ren-β (wk-cong π) {ρ₁} {wk-wk π₁} ρ C)
   sub-cotm-ren-β π {ρ₁} {π₁} ρ tp         = refl
+  sub-cotm-ren-β π {ρ₁} {π₁} ρ (pass V)  = cong pass (sub-val-ren-β π {ρ₁} {π₁} ρ V)
 
 {-# REWRITE sub-cmd-ren-β sub-val-ren-β sub-tm-ren-β sub-cotm-ren-β #-}
 

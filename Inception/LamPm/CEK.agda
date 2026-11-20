@@ -1,9 +1,5 @@
 module Inception.LamPm.CEK where
 
-open import Data.Empty using (⊥)
-open import Data.Product using (Σ; Σ-syntax; _×_; _,_; proj₁; proj₂)
-open import Data.Unit using (⊤; tt)
-
 open import Inception.LamPm.Syntax
 open import Inception.Prelude
 open import Inception.Rewriting
@@ -51,9 +47,6 @@ data Kont : Ty → Ty → Set where
 
 --------------------------------------------------------------------------
 -- configurations, transitions
-
-infix 5 ⟨_∥_∥_⟩
-infix 5 [_∥_]
 
 data Cfg : Ty → Set where
   ⟨_∥_∥_⟩ : {Γ : Ctx} → Γ ⊢ᶜ X → Env Γ → Kont X Y → Cfg Y
@@ -157,7 +150,6 @@ step? [ 𝐕 ∥ N ◂ γ ∷ K ]    = next resume-step
 eval : (M : ε ⊢ᶜ X) → Σ[ σ ∈ Cfg X ] (⟨ M ∥ ∅ ∥ ε ⟩ ↠ᵏ σ) × Normal σ
 eval M = eval-acc step? (SN-theorem M)
 
-open import Relation.Binary.PropositionalEquality
 
 _ : eval (pm (pair unit unit) (return (lam {X = `𝟙} (return (var here)))))
        ≡ ([ clo (return (var here)) (∅ ∷ unit ∷ unit) ∥ ε ] ,

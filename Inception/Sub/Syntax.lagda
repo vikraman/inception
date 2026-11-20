@@ -4,13 +4,7 @@
 module Inception.Sub.Syntax where
 
 open import Inception.Prelude
-
-open import Data.Empty using (⊥)
-open import Data.Product using (proj₁; proj₂; _,_; _×_; Σ-syntax)
-
-import Relation.Binary.PropositionalEquality as Eq
-open Eq using (_≡_; refl; cong; trans; cong₂)
-open Eq.≡-Reasoning
+open ≡-Reasoning
 
 --------------------------------------------------------------------------
 

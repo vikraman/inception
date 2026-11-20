@@ -115,7 +115,7 @@ sub-wk-coh π (sub-ex θ V) rewrite sub-wk-coh π θ | wk-val-coh π V = refl
 
 sub-id-coh : ⟦ sub-id {Γ} ⟧ˢ ≡ id
 sub-id-coh {ε} = refl
-sub-id-coh {Γ ∙ X} = funext λ { (γ , a) → cong₂ _,_ (happly sub-id-coh γ) refl }
+sub-id-coh {Γ ∙ X} = funext λ { (γ , a) → cong₂ _,_ (happly (sub-id-coh {Γ}) γ) refl }
 {-# REWRITE sub-id-coh #-}
 
 mutual
