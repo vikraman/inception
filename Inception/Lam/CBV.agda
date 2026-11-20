@@ -4,16 +4,11 @@ module Inception.Lam.CBV (R : Set) where
 
 open import Inception.Lam.Syntax
 
-open import Data.Product as P
-open import Data.Unit
-open import Function as F hiding (_∋_)
-open import Relation.Binary.PropositionalEquality
-open Relation.Binary.PropositionalEquality.≡-Reasoning
 open import Inception.Prelude
+open ≡-Reasoning
 
 open import Inception.Cont.Base
 open import Inception.Monad.Base using (Monad)
-open import Level using (0ℓ)
 
 K : Set → Set
 K = K[ R ]
@@ -69,7 +64,7 @@ sub-wk-coh π (sub-ex θ V) rewrite sub-wk-coh π θ | wk-val-coh π V = refl
 
 sub-id-coh : ⟦ sub-id {Γ} ⟧ˢ ≡ id
 sub-id-coh {ε}     = refl
-sub-id-coh {Γ ∙ X} = funext λ { (γ , a) → cong₂ _,_ (happly sub-id-coh γ) refl }
+sub-id-coh {Γ ∙ X} = funext λ { (γ , a) → cong₂ _,_ (happly (sub-id-coh {Γ}) γ) refl }
 {-# REWRITE sub-id-coh #-}
 
 mutual

@@ -26,17 +26,30 @@ import Inception.SystemL.Examples
 import Inception.Sub.Syntax
 import Inception.Sub.Machine
 import Inception.Sub.Semantics
-import Inception.Sub.Translation
 import Inception.Sub.Examples
 
 -- inception calculus
 import Inception.Inc.Syntax
 import Inception.Inc.CPS
-import Inception.Inc.Translation
 
 -- inception calculus with values
 import Inception.IncV.Syntax
 import Inception.IncV.Machine
+
+-- lambda-lambda-bar calculus
+import Inception.LamLamBar.Syntax
+import Inception.LamLamBar.Equations
+import Inception.LamLamBar.CPS
+
+-- translations
+-- Translation.Src.Tgt goes Src to Tgt
+import Inception.Translation.Sub.SystemL
+import Inception.Translation.Inc.SystemL
+import Inception.Translation.Sub.LamLamBar
+import Inception.Translation.Inc.LamLamBar
+import Inception.Translation.LamLamBar.SystemL
+import Inception.Translation.Sub.Triangle
+import Inception.Translation.Inc.Triangle
 
 -- all modules
 import Inception.Everything

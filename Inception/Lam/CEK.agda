@@ -1,9 +1,5 @@
 module Inception.Lam.CEK where
 
-open import Data.Empty using (⊥)
-open import Data.Product using (Σ; Σ-syntax; _×_; _,_)
-open import Data.Unit using (⊤; tt)
-
 open import Inception.Lam.Syntax
 open import Inception.Prelude
 open import Inception.Rewriting
@@ -40,9 +36,6 @@ data Kont : Ty → Ty → Set where
 
 --------------------------------------------------------------------------
 -- states, configurations, transitions
-
-infix 5 ⟨_∥_∥_⟩
-infix 5 ⟨_∥_⟩
 
 data Cfg : Ty → Set where
   ⟨_∥_∥_⟩ : {Γ : Ctx} → Γ ⊢ᶜ X → Env Γ → Kont X Y → Cfg Y

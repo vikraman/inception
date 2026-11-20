@@ -1,6 +1,7 @@
 module Inception.Inc.Syntax where
 
-open import Data.Nat
+open import Inception.Prelude
+open import Inception.Reasoning using (module Equational)
 
 infixr 40 _`×_
 infixr 25 _`⇒_
@@ -264,3 +265,9 @@ data EqComp Γ where
   inc-push : (M : (Γ ∙ `ℓ) ⊢ᶜ X) → (N : (Γ ∙ `𝓅) ⊢ᶜ X) → (P : (Γ ∙ X) ⊢ᶜ Y)
            -------------------------------------------------------------------------------------------------------------------------------
            → Γ ⊢ᶜ push (inc M N) P ≈ inc (push M (wk-comp (wk-cong (wk-wk wk-id)) P)) (push N (wk-comp (wk-cong (wk-wk wk-id)) P)) ∶ Y
+
+--------------------------------------------------------------------------
+-- equational reasoning
+
+module ≈ᵛ-Reasoning {Γ X} = Equational (EqVal Γ X) ≈-refl ≈-sym ≈-trans
+module ≈ᶜ-Reasoning {Γ X} = Equational (EqComp Γ X) ≈-refl ≈-sym ≈-trans

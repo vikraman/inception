@@ -2,16 +2,9 @@
 
 module Inception.LamPm.CK where
 
-open import Data.Empty using (⊥)
-open import Data.Product using (Σ; Σ-syntax; _×_; _,_; proj₁; proj₂)
-open import Data.Unit using (⊤; tt)
-
-import Relation.Binary.PropositionalEquality as Eq
-open Eq using (_≡_; refl; cong; cong₂; sym)
-open Eq.≡-Reasoning
-
 open import Inception.LamPm.Syntax
 open import Inception.Prelude
+open ≡-Reasoning
 open import Inception.Rewriting
 
 --------------------------------------------------------------------------
@@ -35,9 +28,6 @@ data Stk (Γ : Ctx) : Ty → Ty → Set where
 
   _pmᵛ∷_ : (W : (Γ ∙ X ∙ Y) ⊢ᵛ Z) → (K : Γ ⊢ᵏ Z ⇒ U)
          → Γ ⊢ᵏ (X `× Y) ⇒ U
-
-infix 5 ⟨_∥_⟩
-infix 5 [_∥_]
 
 data Cfg (Γ : Ctx) (X : Ty) : Set where
 
@@ -241,8 +231,8 @@ exp-push : {M : Γ ⊢ᶜ X} {N : (Γ ∙ X) ⊢ᶜ Y}
          → Redᶜ X M → (∀ {V} → Redᵛ X V → Redᶜ Y (sub-comp (sub-ex sub-id V) N))
          → Redᶜ Y (push M N)
 exp-push {M = M} {N} rM H =
-  sn (λ { push-step → SN-ext∷-C (Red→SNᶜ _ _ rM) (Red→RTNᶜ _ _ rM) (λ {V} rv → Red→SNᶜ _ _ (H rv)) }) ,
-  λ { (push-step ◅ rest) → RTN-ext∷-C (Red→RTNᶜ _ _ rM) (λ {V} rv → Red→RTNᶜ _ _ (H rv)) rest }
+  sn (λ { push-step → SN-ext∷-C (Red→SNᶜ _ _ rM) (Red→RTNᶜ _ _ rM) (λ {_} rv → Red→SNᶜ _ _ (H rv)) }) ,
+  λ { (push-step ◅ rest) → RTN-ext∷-C (Red→RTNᶜ _ _ rM) (λ {_} rv → Red→RTNᶜ _ _ (H rv)) rest }
 
 mutual
   SN-ext-pm∷-C : {X Y Z : Ty} {M : Γ ⊢ᶜ U} {L : Γ ⊢ᵏ U ⇒ (X `× Y)} {N : (Γ ∙ X ∙ Y) ⊢ᶜ Z} {K : Γ ⊢ᵏ Z ⇒ S}
@@ -443,8 +433,8 @@ Red-wk (X `× Y) π {V} (snV , f) = SN-wk π snV , g
   g : ∀ {W₁ W₂} → [ wk-val π V ∥ ε ] ↠ᵏ [ pair W₁ W₂ ∥ ε ] → Redᵛ X W₁ × Redᵛ Y W₂
   g p with wk-reflect* π p
   ... | (σ₁ , σ-steps , eq) with pair-cfg-inv π eq
-  ... | (V₁ , V₂ , σ₁-eq , eqV₁ , eqV₂) with f (Eq.subst (λ x → [ V ∥ ε ] ↠ᵏ x) σ₁-eq σ-steps)
-  ... | (redV₁ , redV₂) = Eq.subst (Redᵛ X) eqV₁ (Red-wk X π redV₁) , Eq.subst (Redᵛ Y) eqV₂ (Red-wk Y π redV₂)
+  ... | (V₁ , V₂ , σ₁-eq , eqV₁ , eqV₂) with f (subst (λ x → [ V ∥ ε ] ↠ᵏ x) σ₁-eq σ-steps)
+  ... | (redV₁ , redV₂) = subst (Redᵛ X) eqV₁ (Red-wk X π redV₁) , subst (Redᵛ Y) eqV₂ (Red-wk Y π redV₂)
 Red-wk (X `⇒ Y) π {V} (snV , f) = SN-wk π snV , harrow
   where
   harrow : ∀ {Γ} (δ : Γ ⊇ _) {W : Γ ⊢ᵛ X} → Redᵛ X W → Redᶜ Y (app (wk-val δ (wk-val π V)) W)
