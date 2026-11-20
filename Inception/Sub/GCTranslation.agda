@@ -36,7 +36,7 @@ mutual
 
   omval-to-mval : GCM.MEnv Γ → GCM.OMVal Γ X → M.MVal X
   omval-to-mval γ unit = unitᵛ
-  omval-to-mval γ (pair 𝐖₁ 𝐖₂) = pairᵛ (omval-to-mval γ 𝐖₁) (omval-to-mval γ 𝐖₂)
+  omval-to-mval γ (pair 𝐕 𝐖) = pairᵛ (omval-to-mval γ 𝐕) (omval-to-mval γ 𝐖)
   omval-to-mval γ (lam M) = cloᵛ M (gcmenv-to-menv γ {π = wk-id} wkext-id)
   omval-to-mval ⋄ (var ())
   omval-to-mval (γ · 𝐖) (var here) = omval-to-mval γ 𝐖
