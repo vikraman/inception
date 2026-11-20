@@ -14,7 +14,3 @@ record Alg : Set₁ where
     𝒪 : Set
     ∣_∣ : ((o : 𝒪) → ℕ)
     apply : (o : 𝒪) → (args : Vec 𝒟 ∣ o ∣) → 𝒟
-
---Arities : Set → Set
---Arities 𝒪 = ((o : 𝒪) → ℕ)
-
