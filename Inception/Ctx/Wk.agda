@@ -183,3 +183,17 @@ wkext-trans-idr-β : {π : Γ ⊇ Δ} → (p : WkExt π) → {ρ : Δ ⊇ Δ} �
 wkext-trans-idr-β wkext-id = refl
 wkext-trans-idr-β (wkext-wk p) = refl
 {-# REWRITE wkext-trans-idr-β #-}
+
+{-
+wkext-uniq : (π : Γ ⊇ Δ) → (p : WkExt π) → (ρ : Γ ⊇ Δ) → (r : WkExt ρ) → π ≡ ρ
+wkext-uniq wk-ε wkext-id wk-ε wkext-id = refl
+wkext-uniq (wk-cong π) wkext-id (wk-cong ρ) wkext-id = wk-trans-idl-η (wk-cong π) (wk-cong ρ)
+wkext-uniq (wk-cong π) wkext-id (wk-wk ρ) wkext-id = ql (wk-absurd wk-id ρ) _
+wkext-uniq (wk-cong π) wkext-id (wk-wk ρ) (wkext-wk r) = ql (wk-absurd ρ π) _
+wkext-uniq (wk-wk π) wkext-id (wk-cong ρ) wkext-id = ql (wk-absurd π ρ) _
+wkext-uniq (wk-wk π) wkext-id (wk-wk ρ) wkext-id = ql (wk-absurd wk-id ρ) _
+wkext-uniq (wk-wk π) wkext-id (wk-wk ρ) (wkext-wk r) = ql (wk-absurd wk-id π) _
+wkext-uniq (wk-wk π) (wkext-wk p) (wk-cong ρ) wkext-id = ql (wk-absurd π ρ) _
+wkext-uniq (wk-wk π) (wkext-wk p) (wk-wk ρ) wkext-id = ql (wk-absurd wk-id ρ) _
+wkext-uniq (wk-wk π) (wkext-wk p) (wk-wk ρ) (wkext-wk r) = cong wk-wk (wkext-uniq π p ρ r)
+-}
