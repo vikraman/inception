@@ -637,19 +637,6 @@ eval→-helper W γ p K =
   in
   ⟨ δ ； 𝐖 ╎ r ╎ K ⟩
 
-wkext-id-π : WkExt {Γ = Γ} wk-id
-wkext-id-π = wkext-id
-
-wkext-trans-idl-β : {π : Γ ⊇ Δ} → (p : WkExt π) → {ρ : Γ ⊇ Γ} → wkext-trans {π = ρ} wkext-id p ≡ p
-wkext-trans-idl-β wkext-id = refl
-wkext-trans-idl-β (wkext-wk p) = refl
-{-# REWRITE wkext-trans-idl-β #-}
-
-wkext-trans-idr-β : {π : Γ ⊇ Δ} → (p : WkExt π) → {ρ : Δ ⊇ Δ} → wkext-trans p {ρ = ρ} wkext-id ≡ p
-wkext-trans-idr-β wkext-id = refl
-wkext-trans-idr-β (wkext-wk p) = refl
-{-# REWRITE wkext-trans-idr-β #-}
-
 data _→ᶜ_ : CState → CState → Set where
 
   eval→ :    {W : Γ ⊢ᵛ X} {γ : MEnv Γ} {π : Γ ⊇ Δ} {p : WkExt π} {K : CStack Δ X}

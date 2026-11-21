@@ -383,7 +383,7 @@ wkmenv-id-eq (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) {π = wk-wk π} (wkext-wk p) {ρ
 gcmcstack-wk-eq₁ : (γ : GCM.MEnv Γ) → (𝐖 : GCM.OMVal Γ Y) → {π : Γ ⊇ Δ} → (p : WkExt π) → (K : GCM.CStack Δ X)
                   → gcmcstack-to-mcstack γ p K ≡ gcmcstack-to-mcstack (γ · 𝐖) (wkext-wk p) K
 gcmcstack-wk-eq₁ γ 𝐖 p ◻ = refl
-gcmcstack-wk-eq₁ γ 𝐖 p (< N ； wkext-id >∷ K) = cong (< N ； gcmenv-to-menv γ p >∷_) (gcmcstack-wk-eq₁ γ 𝐖 (wkext-trans p {ρ = wk-id} wkext-id) K)
+gcmcstack-wk-eq₁ γ 𝐖 {π = π} p (< N ； wkext-id >∷ K) = cong (< N ； gcmenv-to-menv γ p >∷_) (gcmcstack-wk-eq₁ γ 𝐖 (wkext-trans p {ρ = wk-id} wkext-id) K)
 gcmcstack-wk-eq₁ γ 𝐖 p (< N ； wkext-wk p₁ >∷ K) = cong (< N ； gcmenv-to-menv γ p >∷_) (gcmcstack-wk-eq₁ γ 𝐖 (wkext-trans p (wkext-wk p₁)) K)
 
 ---- lemmas for sub→ case
