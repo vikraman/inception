@@ -151,3 +151,22 @@ wk-trans-trans-cong-cong-β π δ ρ = sym (wk-trans-assoc-η {π₁ = π} {π�
 wk-trans-trans-cong-wk-β : (π : Ξ ⊇ (Δ ∙ X)) (δ : Δ ⊇ Ψ) (ρ : Ψ ⊇ Γ) → wk-trans (wk-trans π (wk-cong δ)) (wk-wk ρ) ≡ wk-trans π (wk-wk (wk-trans δ ρ))
 wk-trans-trans-cong-wk-β π δ ρ = sym (wk-trans-assoc-η {π₁ = π} {π₂ = wk-cong δ} {π₃ = wk-wk ρ})
 {-# REWRITE wk-trans-trans-cong-wk-β #-}
+
+--------------------------------------------------------------------------
+-- context extensions
+
+data WkExt : Γ ⊇ Δ → Set where
+
+  wkext-id : {π : Γ ⊇ Γ} → WkExt π
+
+  wkext-wk : {π : Γ ⊇ Δ} → WkExt π → WkExt (wk-wk {X = X} π)
+
+wkext-emp : (π : Γ ⊇ ε) → WkExt π
+wkext-emp wk-ε = wkext-id
+wkext-emp (wk-wk π) = wkext-wk (wkext-emp π)
+
+wkext-trans : {π : Γ ⊇ Δ} → WkExt π → {ρ : Δ ⊇ Ψ} → WkExt ρ → WkExt (wk-trans π ρ)
+wkext-trans wkext-id wkext-id = wkext-id
+wkext-trans wkext-id (wkext-wk r) = wkext-wk r
+wkext-trans (wkext-wk p) wkext-id = wkext-wk p
+wkext-trans (wkext-wk p) (wkext-wk r) = wkext-wk (wkext-trans p (wkext-wk r))

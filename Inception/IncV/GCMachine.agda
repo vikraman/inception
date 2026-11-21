@@ -20,26 +20,6 @@ infixl 27 <_；_>∷_
 infixl 27 _·_
 
 --------------------------------------------------------------------------
--- context extensions
-
-data WkExt : Γ ⊇ Δ → Set where
-
-  wkext-id : {π : Γ ⊇ Γ} → WkExt π
-
-  wkext-wk : {π : Γ ⊇ Δ} → WkExt π → WkExt (wk-wk {X = X} π)
-
-wkext-emp : (π : Γ ⊇ ε) → WkExt π
-wkext-emp wk-ε = wkext-id
-wkext-emp (wk-wk π) = wkext-wk (wkext-emp π)
-
-wkext-trans : {π : Γ ⊇ Δ} → WkExt π → {ρ : Δ ⊇ Ψ} → WkExt ρ → WkExt (wk-trans π ρ)
-wkext-trans wkext-id wkext-id = wkext-id
-wkext-trans wkext-id (wkext-wk r) = wkext-wk r
-wkext-trans (wkext-wk p) wkext-id = wkext-wk p
-wkext-trans (wkext-wk p) (wkext-wk r) = wkext-wk (wkext-trans p (wkext-wk r))
-
-
---------------------------------------------------------------------------
 -- environments
 
 mutual
