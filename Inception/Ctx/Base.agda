@@ -15,7 +15,7 @@ data Ctx : Set where
 
 variable
   X X₀ X₁ X₂ X₃ Y Y₀ Y₁ Y₂ Y₃ Z Z₀ Z₁ Z₂ Z₃ U U₀ U₁ U₂ U₃ S S₀ S₁ S₂ S₃ T T₀ T₁ T₂ T₃ : Ty
-  Γ Δ Ψ Ξ Γ₁ Δ₁ Ψ₁ : Ctx
+  Γ Δ Ψ Ξ Γ₁ Γ₂ Δ₁ Δ₂ Ψ₁ Ψ₂ : Ctx
 
 data _∋_ : Ctx → Ty → Set where
   here  : Γ ∙ X ∋ X
