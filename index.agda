@@ -18,6 +18,7 @@ import Inception.LamPm.CEK
 
 -- system L
 import Inception.SystemL.Syntax
+import Inception.SystemL.Equations
 import Inception.SystemL.CBV
 import Inception.SystemL.SN
 import Inception.SystemL.Examples
