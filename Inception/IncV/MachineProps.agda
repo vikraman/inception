@@ -126,6 +126,10 @@ mutual
                           (wk-MEnvᴹ-trans x₁ x₂)
                           (wk-cstack-trans y₁ y₂)
 
+wk-cstate-id : {σ : CState} → WkCState σ σ
+wk-cstate-id {σ = ⟨ 𝐖 ╎ K ⟩} = wk-cstate-result wk-mval-id wk-cstack-id
+wk-cstate-id {σ = ⟨ M ╎ γ ╎ K ⟩} = wk-cstate-comp wk-id (wk-comp-id-β M) wk-menv-id wk-cstack-id
+
 wk-cstate-trans : {σ₁ σ₂ σ₃ : CState} → WkCState σ₁ σ₂ → WkCState σ₂ σ₃ → WkCState σ₁ σ₃
 wk-cstate-trans (wk-cstate-result ϖ₁ x₁) (wk-cstate-result ϖ₂ x₂) = wk-cstate-result (wk-mval-trans ϖ₁ ϖ₂) (wk-cstack-trans x₁ x₂)
 wk-cstate-trans (wk-cstate-comp {M₁ = M₁₁} {M₂ = M₂₁} π eq₁ ϖ₁ x₁) (wk-cstate-comp {M₁ = M₁₂} {M₂ = M₂₂} ρ eq₂ ϖ₂ x₂) =
