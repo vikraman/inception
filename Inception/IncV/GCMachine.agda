@@ -583,7 +583,8 @@ proj₁-omval-term ((var i) , ())
 proj₁-omval : MEnv Γ → OMVal Γ (X `× Y) → OMVal Γ X
 proj₁-omval _ (pair 𝐕 𝐖) = 𝐕
 proj₁-omval ⋄ (var ())
-proj₁-omval (γ · 𝐖) (var here) = proj₁-omval-term (lookup-term (γ · 𝐖) here is-pair-type)
+--proj₁-omval (γ · 𝐖) (var here) = proj₁-omval-term (lookup-term (γ · 𝐖) here is-pair-type)
+proj₁-omval (γ · 𝐖) (var here) = wk-omval (wk-wk wk-id) (proj₁-omval γ 𝐖)--proj₁-omval-term (lookup-term (γ · 𝐖) here is-pair-type)
 proj₁-omval (γ · _) (var (there i)) = wk-omval (wk-wk wk-id) (proj₁-omval γ (var i))
 proj₁-omval (γ ·﹝ _ ╎ _ ╎ _ ﹞) (var (there i)) = wk-omval (wk-wk wk-id) (proj₁-omval γ (var i))
 
@@ -594,7 +595,8 @@ proj₂-omval-term ((var i) , ())
 proj₂-omval : MEnv Γ → OMVal Γ (X `× Y) → OMVal Γ Y
 proj₂-omval _ (pair 𝐕 𝐖) = 𝐖
 proj₂-omval ⋄ (var ())
-proj₂-omval (γ · 𝐖) (var here) = proj₂-omval-term (lookup-term (γ · 𝐖) here is-pair-type)
+--proj₂-omval (γ · 𝐖) (var here) = proj₂-omval-term (lookup-term (γ · 𝐖) here is-pair-type)
+proj₂-omval (γ · 𝐖) (var here) = wk-omval (wk-wk wk-id) (proj₂-omval γ 𝐖)
 proj₂-omval (γ · _) (var (there i)) = wk-omval (wk-wk wk-id) (proj₂-omval γ (var i))
 proj₂-omval (γ ·﹝ _ ╎ _ ╎ _ ﹞) (var (there i)) = wk-omval (wk-wk wk-id) (proj₂-omval γ (var i))
 

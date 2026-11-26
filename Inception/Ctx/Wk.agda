@@ -185,7 +185,7 @@ wkext-trans-idr-β (wkext-wk p) = refl
 {-# REWRITE wkext-trans-idr-β #-}
 
 {-
-wkext-uniq : (π : Γ ⊇ Δ) → (p : WkExt π) → (ρ : Γ ⊇ Δ) → (r : WkExt ρ) → π ≡ ρ
+  wkext-uniq : (π : Γ ⊇ Δ) → (p : WkExt π) → (ρ : Γ ⊇ Δ) → (r : WkExt ρ) → π ≡ ρ
 wkext-uniq wk-ε wkext-id wk-ε wkext-id = refl
 wkext-uniq (wk-cong π) wkext-id (wk-cong ρ) wkext-id = wk-trans-idl-η (wk-cong π) (wk-cong ρ)
 wkext-uniq (wk-cong π) wkext-id (wk-wk ρ) wkext-id = ql (wk-absurd wk-id ρ) _
