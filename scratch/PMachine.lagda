@@ -68,7 +68,8 @@ data IsEmpty : Set where
                  -------
                  IsEmpty
 
-private variable
+private
+  variable
     ∅? : IsEmpty
 
 data BotEq : IsEmpty → Ty → Ty → Set where
@@ -103,9 +104,13 @@ data PState : Ty → Set where
 %</PStates>
 \begin{code}
 
+infixr 18 _⧺_
+
 _⧺_ : PStack ∅? Z → PStack non-empty X → PStack non-empty X
 ⊠ ⧺ K = K
 (W ∷ K) ⧺ L = (W ∷ (K ⧺ L)) {𝐛 = ○}
+
+infixl 18 _⧻_
 
 _⧻_ : (σ : PState Z) → PStack non-empty X → PState X
 ⟨ σ ⟩ ⧻ K = ⟨ σ ⧺ K ⟩
