@@ -279,3 +279,67 @@ step? (cut (¬ X) (ret (cont K)) (μ̃ C))     = next μ̃-step
 
 eval : {Γ Δ : Ctx} (C : Γ ⊢ Δ) → Σ[ C₁ ∈ Γ ⊢ Δ ] (C ↦* C₁) × Normal C₁
 eval C = eval-acc step? (SN-theorem C)
+
+--------------------------------------------------------------------------
+-- derived reductions
+
+-- ⟨ (let x = N in M)[θ,φ] ∣ K ⟩ ↦* ⟨ N[θ,φ] ∣ μ̃x. ⟨ M[θ↑,φ] ∣ K ⟩ ⟩
+lett-red : (θ : Γ ⊢ Ψ ∣ Δ) (φ : Γ ∣ Ξ ⊢ Δ) (N : Ψ ⊢ᵗ X ∣ Ξ) (M : (Ψ ∙ X) ⊢ᵗ Y ∣ Ξ) (K : Γ ∣ Y ⊢ᵏ Δ)
+         → cut Y (sub-tm θ φ (lett N M)) K
+           ↦* cut X (sub-tm θ φ N) (μ̃ (cut Y (sub-tm (sub-lift θ) (cosub-wk (wk-wk wk-id) wk-id φ) M) (wkᵏ K)))
+lett-red θ φ N M K = μ-step ◅ ε
+
+-- ⟨ (V W)[θ,φ] ∣ K ⟩ ↦* ⟨ V[θ,φ] ∣ W[θ,φ] · K ⟩
+applyL-red : (θ : Γ ⊢ Ψ ∣ Δ) (φ : Γ ∣ Ξ ⊢ Δ) (V : Ψ ⊢ᵛ (X `⇒ Y) ∣ Ξ) (W : Ψ ⊢ᵛ X ∣ Ξ) (K : Γ ∣ Y ⊢ᵏ Δ)
+           → cut Y (sub-tm θ φ (applyL V W)) K ↦* cut (X `⇒ Y) (ret (sub-val θ φ V)) (app (sub-val θ φ W) K)
+applyL-red θ φ V W K = μ-step ◅ ε
+
+-- ⟨ (fst V)[θ,φ] ∣ K ⟩ ↦* ⟨ V[θ,φ] ∣ fst K ⟩
+projFst-red : (θ : Γ ⊢ Ψ ∣ Δ) (φ : Γ ∣ Ξ ⊢ Δ) (V : Ψ ⊢ᵛ (X `× Y) ∣ Ξ) (K : Γ ∣ X ⊢ᵏ Δ)
+            → cut X (sub-tm θ φ (projFst V)) K ↦* cut (X `× Y) (ret (sub-val θ φ V)) (fst K)
+projFst-red θ φ V K = μ-step ◅ ε
+
+-- ⟨ (snd V)[θ,φ] ∣ K ⟩ ↦* ⟨ V[θ,φ] ∣ snd K ⟩
+projSnd-red : (θ : Γ ⊢ Ψ ∣ Δ) (φ : Γ ∣ Ξ ⊢ Δ) (V : Ψ ⊢ᵛ (X `× Y) ∣ Ξ) (K : Γ ∣ Y ⊢ᵏ Δ)
+            → cut Y (sub-tm θ φ (projSnd V)) K ↦* cut (X `× Y) (ret (sub-val θ φ V)) (snd K)
+projSnd-red θ φ V K = μ-step ◅ ε
+
+-- ⟨ V ∣ μ̃x. ⟨ M[θ↑,φ] ∣ K ⟩ ⟩ ↦* ⟨ M[(θ,V),φ] ∣ K ⟩
+frame-red : (θ : Γ ⊢ Ψ ∣ Δ) (φ : Γ ∣ Ξ ⊢ Δ) (V : Γ ⊢ᵛ X ∣ Δ) (M : (Ψ ∙ X) ⊢ᵗ Y ∣ Ξ) (K : Γ ∣ Y ⊢ᵏ Δ)
+          → cut X (ret V) (μ̃ (cut Y (sub-tm (sub-lift θ) (cosub-wk (wk-wk wk-id) wk-id φ) M) (wkᵏ K)))
+            ↦* cut Y (sub-tm (sub-ex θ V) φ M) K
+frame-red θ φ V M K = μ̃-step ◅ ε
+
+-- ⟨ λx. M[θ↑,φ] ∣ V · K ⟩ ↦* ⟨ M[(θ,V),φ] ∣ K ⟩
+lam-red : (θ : Γ ⊢ Ψ ∣ Δ) (φ : Γ ∣ Ξ ⊢ Δ) (M : (Ψ ∙ X) ⊢ᵗ Y ∣ Ξ) (V : Γ ⊢ᵛ X ∣ Δ) (K : Γ ∣ Y ⊢ᵏ Δ)
+        → cut (X `⇒ Y) (ret (lam (sub-tm (sub-lift θ) (cosub-wk (wk-wk wk-id) wk-id φ) M))) (app V K)
+          ↦* cut Y (sub-tm (sub-ex θ V) φ M) K
+lam-red θ φ M V K = app-step ◅ ε
+
+-- ⟨ (catch M N)[θ,φ] ∣ K ⟩ ↦* ⟨ M[(θ,cont (μ̃x. ⟨ N[θ↑,φ] ∣ K ⟩)),φ] ∣ K ⟩
+catch-red : (θ : Γ ⊢ Ψ ∣ Δ) (φ : Γ ∣ Ξ ⊢ Δ) (M : (Ψ ∙ ¬ X) ⊢ᵗ Y ∣ Ξ) (N : (Ψ ∙ X) ⊢ᵗ Y ∣ Ξ) (K : Γ ∣ Y ⊢ᵏ Δ)
+          → cut Y (sub-tm θ φ (catch M N)) K
+            ↦* cut Y (sub-tm (sub-ex θ (cont (μ̃ (cut Y (sub-tm (sub-lift θ) (cosub-wk (wk-wk wk-id) wk-id φ) N) (wkᵏ K))))) φ M) K
+catch-red θ φ M N K = μ-step ◅ μ̃-step ◅ ε
+
+-- ⟨ (throw V W)[θ,φ] ∣ K ⟩ ↦* ⟨ V[θ,φ] ∣ pass W[θ,φ] ⟩
+throw-red : (θ : Γ ⊢ Ψ ∣ Δ) (φ : Γ ∣ Ξ ⊢ Δ) (V : Ψ ⊢ᵛ ¬ X ∣ Ξ) (W : Ψ ⊢ᵛ X ∣ Ξ) (K : Γ ∣ Y ⊢ᵏ Δ)
+          → cut Y (sub-tm θ φ (throw V W)) K ↦* cut (¬ X) (ret (sub-val θ φ V)) (pass (sub-val θ φ W))
+throw-red θ φ V W K = μ-step ◅ ε
+
+--------------------------------------------------------------------------
+-- soundness of reduction
+
+↦→≈ : {Γ Δ : Ctx} {C₁ C₂ : Γ ⊢ Δ} → C₁ ↦ C₂ → Γ ⊢ C₁ ≈ C₂ ⊣ Δ
+↦→≈ μ-step    = μ-beta _ _
+↦→≈ μ̃-step    = μ̃-beta _ _
+↦→≈ app-step  = app-beta _ _ _
+↦→≈ fst-step  = fst-beta _ _ _
+↦→≈ snd-step  = snd-beta _ _ _
+↦→≈ inl-step  = inl-beta _ _ _
+↦→≈ inr-step  = inr-beta _ _ _
+↦→≈ pass-step = pass-beta _ _
+
+↦*→≈ : {Γ Δ : Ctx} {C₁ C₂ : Γ ⊢ Δ} → C₁ ↦* C₂ → Γ ⊢ C₁ ≈ C₂ ⊣ Δ
+↦*→≈ ε        = ≈-refl
+↦*→≈ (s ◅ ss) = ≈-trans (↦→≈ s) (↦*→≈ ss)

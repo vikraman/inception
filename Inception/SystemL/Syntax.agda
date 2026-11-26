@@ -175,6 +175,9 @@ sub-id : Γ ⊢ Γ ∣ Δ
 sub-id {Γ = ε} = sub-ε
 sub-id {Γ = Γ ∙ X} = sub-ex (sub-wk (wk-wk wk-id) wk-id sub-id) (var here)
 
+sub-lift : Γ ⊢ Ψ ∣ Δ → (Γ ∙ X) ⊢ (Ψ ∙ X) ∣ Δ
+sub-lift θ = sub-ex (sub-wk (wk-wk wk-id) wk-id θ) (var here)
+
 cosub-id : Γ ∣ Δ ⊢ Δ
 cosub-id {Δ = ε} = sub-ε
 cosub-id {Δ = Δ ∙ X} = sub-ex (cosub-wk wk-id (wk-wk wk-id) cosub-id) (covar here)
@@ -248,11 +251,14 @@ coapp {X = X} {Y = Y} M V =
 ccase : Γ ⊢ᵗ X `+ Y ∣ Δ → (Γ ∙ X) ⊢ᵗ Z ∣ Δ → (Γ ∙ Y) ⊢ᵗ Z ∣ Δ → Γ ⊢ᵗ Z ∣ Δ
 ccase M N P = lett M (casev (var here) (wk-tm (wk-cong (wk-wk wk-id)) wk-id N) (wk-tm (wk-cong (wk-wk wk-id)) wk-id P))
 
+-- μα. ⟨ V ∣ pass W ⟩
 throw : Γ ⊢ᵛ ¬ X ∣ Δ → Γ ⊢ᵛ X ∣ Δ → Γ ⊢ᵗ Y ∣ Δ
-throw V W = coapp (ret (inl W)) V
+throw {X = X} V W = μ (cut (¬ X) (ret (wk̃ᵛ V)) (pass (wk̃ᵛ W)))
 
 catch : (Γ ∙ ¬ X) ⊢ᵗ Y ∣ Δ → (Γ ∙ X) ⊢ᵗ Y ∣ Δ → Γ ⊢ᵗ Y ∣ Δ
-catch M N = ccase (colam M) N (ret (var here))
+catch {X = X} {Y = Y} M N =
+  -- μα. ⟨ cont (μ̃x. ⟨ N ∣ α ⟩) ∣ μ̃k. ⟨ M ∣ α ⟩ ⟩
+  μ (cut (¬ X) (ret (cont (μ̃ (cut Y (wk̃ᵗ N) (covar here))))) (μ̃ (cut Y (wk̃ᵗ M) (covar here))))
 
 variable
   V V₁ V₂ V₃ W₁ W₂ : Γ ⊢ᵛ X ∣ Δ

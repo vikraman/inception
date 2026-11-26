@@ -7,6 +7,8 @@ open import Inception.Rewriting
 --------------------------------------------------------------------------
 -- closures and environments
 
+infixl 20 _∷_
+
 mutual
   data MVal : Ty → Set where
     unit : MVal `𝟙

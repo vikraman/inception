@@ -18,6 +18,7 @@ import Inception.LamPm.CEK
 
 -- system L
 import Inception.SystemL.Syntax
+import Inception.SystemL.Equations
 import Inception.SystemL.CBV
 import Inception.SystemL.SN
 import Inception.SystemL.Examples
@@ -50,6 +51,11 @@ import Inception.Translation.Inc.LamLamBar
 import Inception.Translation.LamLamBar.SystemL
 import Inception.Translation.Sub.Triangle
 import Inception.Translation.Inc.Triangle
+
+-- bisimulations
+-- Bisim.Src.Tgt relates Src's machine to Tgt's
+import Inception.Bisim.Sub.SystemL
+import Inception.Bisim.Sub.Triangle
 
 -- all modules
 import Inception.Everything
