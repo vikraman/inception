@@ -12,22 +12,22 @@
 {Supported by ...}%TODO
 
 \author%
-{Marcelo Fiore}%
-{University of Cambridge, Cambridge, United Kingdom}%
-{marcelo.fiore@cst.cam.ac.uk}%
-{...}%TODO
-{Supported by ...}%TODO
-
-\author%
 {Gregor Feierabend}%
 {University of Cambridge, Cambridge, United Kingdom}%
 {gregor.feierabend@cst.cam.ac.uk}%
 {...}%TODO
 {Supported by ...}%TODO
 
-\authorrunning{V. Choudhury, M. Fiore and G. Feierabend} %TODO mandatory. First: Use abbreviated first/middle names. Second (only in severe cases): Use first author plus 'et al.'
+\author%
+{Marcelo Fiore}%
+{University of Cambridge, Cambridge, United Kingdom}%
+{marcelo.fiore@cst.cam.ac.uk}%
+{...}%TODO
+{Supported by ...}%TODO
 
-\Copyright{Vikraman Choudhury, Marcelo Fiore and Gregor Feierabend} %TODO mandatory, please use full first names. LIPIcs license is "CC-BY";  http://creativecommons.org/licenses/by/3.0/
+\authorrunning{V. Choudhury, G. Feierabend, M. Fiore} %TODO mandatory. First: Use abbreviated first/middle names. Second (only in severe cases): Use first author plus 'et al.'
+
+\Copyright{Vikraman Choudhury, Gregor Feierabend, Marcelo Fiore} %TODO mandatory, please use full first names. LIPIcs license is "CC-BY";  http://creativecommons.org/licenses/by/3.0/
 
 \ccsdesc[100]{\textcolor{red}{Replace ccsdesc macro with valid one}} %TODO mandatory: Please choose ACM 2012 classifications from https://dl.acm.org/ccs/ccs_flat.cfm 
 
@@ -59,6 +59,9 @@
 
 \usepackage{mathpartir}
 
+\usepackage{xypic}
+\usepackage{mfmacros}
+
 %Editor-only macros:: begin (do not touch as author)%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \EventEditors{John Q. Open and Joan R. Access}
 \EventNoEds{2}
@@ -79,25 +82,8 @@
 
 %TODO mandatory: add short abstract of the document
 \begin{abstract}
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent convallis orci arcu, eu mollis dolor. Aliquam eleifend suscipit lacinia. Maecenas quam mi, porta ut lacinia sed, convallis ac dui. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse potenti. 
+  \dots
 \end{abstract}
-
-\begin{verbatim}
-Planned outline:
-  1. Introduction
-  2. Inception Calculus (GF)
-  2.1. Syntax (GF)
-  2.2. Semantics (MF)
-  3. CPS (MF)
-  3.1. Categorical (MF)
-  3.2. Syntactic (GF)
-  4. Abstract Machine (VC)
-  4.1. Extraction (GF)
-  4.2. Termination (GF,VC)
-  5. Optimisations (GF)
-  6. Related calculi (VC)
-  7. Conclusion
-\end{verbatim}
 
 \section{Introduction}
 \dots
@@ -107,13 +93,22 @@ Planned outline:
 \end{itemize}
 \dots
 
-\section{Semantics}
-\dots
-\begin{itemize}
-  \item intended semantics of the language in the Kleisli category of $S$ (substitution as jumps)
-  \item computational interpretation (CPS-translation) follows from universal properties of monad morphism from $S$ to $K_V$ \cite{kockStrongFunctorsMonoidal1972}
-\end{itemize}
-\dots
+\section{Inception calculus}
+
+\subsection{Syntax}
+
+\subsection{Semantics}
+
+\input{Semantics}
+
+
+\section{Continuation-Passing Style (CPS)}
+
+\subsection{Categorical CPS}
+
+\input{CategoricalCPS}
+
+\subsection{CPS translation}
 
 \section{Abstract machine}
 \dots
@@ -123,7 +118,9 @@ Planned outline:
 \end{itemize}
 \dots
 
-\section{Comparision to other calculi / abstract machines}
+\section{Optimisations}
+
+\section{Related calculi}
 
 \dots
 \begin{itemize}
@@ -132,6 +129,8 @@ Planned outline:
   \item SECD machine\cite{landinMechanicalEvaluationExpressions1964a}, CEK machine \cite{felleisenControlOperatorsSECDmachine1986}
 \end{itemize}
 \dots
+
+\section{Conclusion}
 
 \bibliography{references}
 
