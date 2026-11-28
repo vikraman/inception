@@ -1,0 +1,120 @@
+The standard denotational semantics of the fine-grained calculus~\cite{Levy}
+relies on categorical structure provided by a cartesian closed category
+equipped with a strong monad~\cite{Moggi}.  While the cartesian closed
+structure gives interpretation to type structure, the strong monad
+encapsulates and provides interpretation for effectful computations.  The
+theory of algebraic effects~\cite{PlotkinPower} further advocates the
+consideration of computational monads that arise from algebraic theories.  In
+this context, the operators of a theory turn into computational constructs
+whose behavioural laws are specified by the equational presentation of the
+theory.  The inception calculus was designed from first principles from this
+viewpoint from the theory of inception algebras~\cite{FioreIHP2014}
+
+\begin{definition}
+For exponentiable objects $L$ and $P$ in a cartesian category, an
+$(L,P)$-inception algebra is a structure
+\[
+\mathrm{rec} : L\times P \to A \leftarrow A^L\times A^P : \mathrm{inc}
+\]
+satisfying the following laws (expressed both in the internal language and
+diagrammatically):\\[2mm]
+%
+$\begin{array}{ll}
+\mathrm{(substitution)}
+\\
+\qquad
+p:P , h:A^P
+\vdash
+\mathrm{inc}
+ \big(\,
+   \lambda\,{\ell\!:\!L}.\ \mathrm{rec}(\ell,p) 
+   \,,\, 
+   h 
+ \,\big)
+ =
+ h(p)
+& \qquad 
+\begin{array}{c}\xymatrix{
+  P\times A^P \ar[d]_-{\lambda_1(\mathrm{rec})\times\mathrm{id}} 
+  \ar[dr]^-{\mathrm{ev}} \\
+  A^L \times A^P \ar[r]_-{\mathrm{inc}} & A
+}\end{array}
+\end{array}$
+%
+\\
+%
+$\begin{array}{ll}
+\mathrm{(extensionality)}
+\\ \qquad
+f: A^L, \ell: L\vdash 
+\mathrm{inc}\big(\, f \,,\, \lambda\,{p\!:\!P}.\ \mathrm{rec}(\ell,p) \,\big) 
+= 
+f(\ell)
+& \qquad
+\begin{array}{c}\xymatrix{
+  A^L\times L \ar[d]_-{\mathrm{id}\times\lambda_2(\mathrm{rec})} 
+  \ar[dr]^-{\mathrm{ev}} \\
+  A^L \times A^P \ar[r]_-{\mathrm{inc}} & A
+}\end{array}
+\end{array}$
+%
+\\
+%
+$\begin{array}{ll} 
+\mathrm{(weakening)}
+\\
+\qquad
+a:A, h: A^P \vdash \mathrm{inc}(\, \lambda\,{\ell\!:\!L}.\ a \,,\, h \,) =  a
+& \qquad\qquad\qquad
+\begin{array}{c}\xymatrix{
+  A\times A^P \ar[d]_-{\lambda_2(\pi_1)\times\mathrm{id}} \ar[dr]^-{\pi_1} \\
+  A^L \times A^P \ar[r]_-{\mathrm{inc}} & A
+}\end{array}
+\end{array}$
+%
+\\
+%
+$\begin{array}{l} 
+\mathrm{(associativity)}
+\\[1mm]
+\
+f: (A^L\times A^P)^{\color{blue}L} , h: A^{\color{blue}P}
+\\[1mm]
+\enspace \vdash 
+{\color{blue}\mathrm{inc}}
+  \big(\, 
+    \lambda\,{\ell\!:\!{\color{blue}L}}.\,\mathrm{inc} (f\,\ell) 
+    \,,\, 
+    h
+  \,\big)
+  \! = 
+  \mathrm{inc}\big(\,
+    \lambda\,{k\!:\!L}.\,
+      {\color{blue}\mathrm{inc}}\big(\,
+        \lambda\,{\ell\!:\!{\color{blue}L}}.\,\pi_1(f\ell)k
+        \,,\,
+        h
+      \,\big)
+    \,,\,
+      \lambda\,{p\!:\!P}.\,
+        {\color{blue}\mathrm{inc}}\big(\, \pi_2(f\ell)p ,\, h \,\big)
+  \,\big)
+\end{array}$
+%
+\[\xymatrix@C45pt{
+  (A^L \times A^P)^{\color{blue}L} \times A^{\color{blue}P} 
+  \ar[d]_-{\mathrm{inc}^{\color{blue}L}\times\mathrm{id}} \ar[r]
+  & (A^{\color{blue}L}\times A^{\color{blue}P})^L \times 
+  (A^{\color{blue}L}\times A^{\color{blue}P})^P
+  \ar[r]^-{{\color{blue}\mathrm{inc}}^L\times{\color{blue}\mathrm{inc}}^P} & 
+  A^L\times A^P \ar[d]^-{\mathrm{inc}}
+  \\
+  A^{\color{blue}L} \times A^{\color{blue}P} 
+  \ar[rr]_-{{\color{blue}\mathrm{inc}}} & & A
+}\]
+\end{definition}
+
+\begin{proposition}
+A $(V,1)$-inception algebra in $\Set^\F$ is equivalently a substitution
+algebra~\cite[Definition~???]{FiorePlotkinTuri}.
+\end{proposition}
