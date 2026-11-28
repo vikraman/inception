@@ -10,6 +10,22 @@
 
 \glsxtrnewsymbol[description={Label type}]{LabelType}{\ensuremath{\ell}}
 
+\glsxtrnewsymbol[description={Element of data}]{data}{\ensuremath{D}}
+
+\glsxtrnewsymbol[description={Set of data}]{Data}{\ensuremath{\mathscr{D}}}
+
+\glsxtrnewsymbol[description={Operator}]{op}{\ensuremath{o}}
+
+\glsxtrnewsymbol[description={Arity of an operator $o$},user1={\ensuremath{|}},user2={\ensuremath{|\_|}}]{arity}{\ensuremath{|o|}}
+\newcommand{\ARITY}[1]{\glsi{arity}#1\glsi{arity}}
+
+\glsxtrnewsymbol[description={Interpretation of an operator $o$},user1={\ensuremath{\llbracket}},user2={\rrbracket},user3={\ensuremath{\llbracket\_\rrbracket}}]{opsem}{\ensuremath{\llbracket o \rrbracket}}
+\newcommand{\OPSEM}[1]{\glsi{opsem}#1\glsii{opsem}}
+
+\glsxtrnewsymbol[description={Set of operators}]{Ops}{\ensuremath{\mathscr{O}}}
+
+\glsxtrnewsymbol[description={Type of parameter carrying data}]{ParamType}{\ensuremath{\wp}}
+
 \glsxtrnewsymbol[description={Context},user1={\ensuremath{\Gamma}},user2={\ensuremath{\Delta}},user3={\ensuremath{\Psi}}]{Ctx}{\ensuremath{\Gamma, \Delta, \Psi}}
 
 \glsxtrnewsymbol[description={Pure term},user1={\ensuremath{V}},user2={\ensuremath{W}}]{Pure}{\ensuremath{V, W}}
@@ -32,9 +48,17 @@
 
 \glsxtrnewsymbol[description={Jump operator}]{VarOp}{\textsf{var}}
 
+\glsxtrnewsymbol[description={Recall operator}]{RecOp}{\textsf{rec}}
+
 \glsxtrnewsymbol[description={Branch operator}]{SubOp}{\textsf{sub}}
 
+\glsxtrnewsymbol[description={Inception operator}]{IncOp}{\textsf{inc}}
+
 \glsxtrnewsymbol[description={Pattern match operator}]{PmOp}{\textsf{pm}}
+
+\glsxtrnewsymbol[description={Constructor for data}]{DatOp}{\textsf{dat}}
+
+\glsxtrnewsymbol[description={Constructor for operation on data}]{OpOp}{\textsf{op}}
 
 \glsxtrnewsymbol[description={Type},user1={\ensuremath{X}},user2={\ensuremath{Y}},user3={\ensuremath{Z}}]{Type}{\ensuremath{X, Y, Z}}
 
