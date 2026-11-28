@@ -16,11 +16,13 @@ $(L,P)$-inception algebra is a structure
 \[
 \mathrm{rec} : L\times P \to A \leftarrow A^L\times A^P : \mathrm{inc}
 \]
-satisfying\\
+satisfying the following laws (expressed both in the internal language and
+diagrammatically):\\[2mm]
 %
-$\begin{array}{rll}
+$\begin{array}{ll}
 \mathrm{(substitution)}
-&
+\\
+\qquad
 p:P , h:A^P
 \vdash
 \mathrm{inc}
@@ -31,37 +33,42 @@ p:P , h:A^P
  \,\big)
  =
  h(p)
-& \quad
+& \qquad 
 \begin{array}{c}\xymatrix{
-  P\times A^P \ar[d] \ar[dr] \\
-  A^L \times A^P \ar[r] & A
+  P\times A^P \ar[d]_-{\lambda_1(\mathrm{rec})\times\mathrm{id}} 
+  \ar[dr]^-{\mathrm{ev}} \\
+  A^L \times A^P \ar[r]_-{\mathrm{inc}} & A
 }\end{array}
 \end{array}$
 %
 \\
 %
-$\begin{array}{rll}
+$\begin{array}{ll}
 \mathrm{(extensionality)}
-& f: A^L, \ell: L\vdash 
+\\ \qquad
+f: A^L, \ell: L\vdash 
 \mathrm{inc}\big(\, f \,,\, \lambda\,{p\!:\!P}.\ \mathrm{rec}(\ell,p) \,\big) 
 = 
 f(\ell)
-& \enspace
+& \qquad
 \begin{array}{c}\xymatrix{
-  A^L\times L \ar[d] \ar[dr] \\
-  A^L \times A^P \ar[r] & A
+  A^L\times L \ar[d]_-{\mathrm{id}\times\lambda_2(\mathrm{rec})} 
+  \ar[dr]^-{\mathrm{ev}} \\
+  A^L \times A^P \ar[r]_-{\mathrm{inc}} & A
 }\end{array}
 \end{array}$
 %
 \\
 %
-$\begin{array}{rll} 
+$\begin{array}{ll} 
 \mathrm{(weakening)}
-& a:A, h: A^P \vdash \mathrm{inc}(\, \lambda\,{\ell\!:\!L}.\ a \,,\, h \,) =  a
-& \qquad
+\\
+\qquad
+a:A, h: A^P \vdash \mathrm{inc}(\, \lambda\,{\ell\!:\!L}.\ a \,,\, h \,) =  a
+& \qquad\qquad\qquad
 \begin{array}{c}\xymatrix{
-  A\times A^P \ar[d] \ar[dr] \\
-  A^L \times A^P \ar[r] & A
+  A\times A^P \ar[d]_-{\lambda_2(\pi_1)\times\mathrm{id}} \ar[dr]^-{\pi_1} \\
+  A^L \times A^P \ar[r]_-{\mathrm{inc}} & A
 }\end{array}
 \end{array}$
 %
@@ -70,35 +77,40 @@ $\begin{array}{rll}
 $\begin{array}{l} 
 \mathrm{(associativity)}
 \\[1mm]
-f: (A^L\times A^P)^L , h: A^P
+\
+f: (A^L\times A^P)^{\color{blue}L} , h: A^{\color{blue}P}
 \\[1mm]
-\ \vdash 
-\mathrm{inc}
+\enspace \vdash 
+{\color{blue}\mathrm{inc}}
   \big(\, 
-    \lambda\,{\ell\!:\!L}.\,\mathrm{inc} (f\,\ell) 
+    \lambda\,{\ell\!:\!{\color{blue}L}}.\,\mathrm{inc} (f\,\ell) 
     \,,\, 
     h
   \,\big)
-  = 
+  \! = 
   \mathrm{inc}\big(\,
     \lambda\,{k\!:\!L}.\,
-      \mathrm{inc}\big(\,
-        \lambda\,{\ell\!:\!L}.\,\pi_1(f\ell)k
+      {\color{blue}\mathrm{inc}}\big(\,
+        \lambda\,{\ell\!:\!{\color{blue}L}}.\,\pi_1(f\ell)k
         \,,\,
         h
       \,\big)
     \,,\,
       \lambda\,{p\!:\!P}.\,
-        \mathrm{inc}\big(\, \pi_2(f\ell)p ,\, h \,\big)
+        {\color{blue}\mathrm{inc}}\big(\, \pi_2(f\ell)p ,\, h \,\big)
   \,\big)
 \end{array}$
 %
-\[\xymatrix{
-  (A^L \times A^P)^L \times A^P \ar[d] \ar[r]
-  & (A^L\times A^P)^L \times (A^L\times A^P)^P
-  \ar[r] & A^L\times A^P \ar[d]
+\[\xymatrix@C45pt{
+  (A^L \times A^P)^{\color{blue}L} \times A^{\color{blue}P} 
+  \ar[d]_-{\mathrm{inc}^{\color{blue}L}\times\mathrm{id}} \ar[r]
+  & (A^{\color{blue}L}\times A^{\color{blue}P})^L \times 
+  (A^{\color{blue}L}\times A^{\color{blue}P})^P
+  \ar[r]^-{{\color{blue}\mathrm{inc}}^L\times{\color{blue}\mathrm{inc}}^P} & 
+  A^L\times A^P \ar[d]^-{\mathrm{inc}}
   \\
-  A^L \times A^P \ar[rr] & & A
+  A^{\color{blue}L} \times A^{\color{blue}P} 
+  \ar[rr]_-{{\color{blue}\mathrm{inc}}} & & A
 }\]
 \end{definition}
 
