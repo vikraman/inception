@@ -147,6 +147,8 @@ I have added a glossary in \verb+glossary.tex+.
 This is not supposed to be included in the LICS version, but we could maybe include it in the Arxiv version.
 The provisional glossary below shows all the defined entries and their corresponding keys (just to make things easier for us while writing).
 A symbol with a corresponding key \texttt{somekey} can be printed by \verb+\gls{somekey}+ in the document.
+Some glossary entries (e.g.\ variables) appear in variants; these can be accessed by \verb+\glsi+, \verb+\glsii+ and \verb+\glsiii+, respectively.
+E.g.\ \verb+\glsi{Var}+ renders as \glsi{Var} and \verb+\glsii{Var}+ renders as \glsii{Var}.
 
 \glsaddall
 \printglossary[type=symbols, title={Glossary}, style={long-symbols}]
