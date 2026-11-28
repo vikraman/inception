@@ -857,83 +857,91 @@ eval₂-wk γ W =
 --------------------------------------------------------------------------
 ---- lemmas for app→ case
 
-{-
-ctx-clo-to-comp-wk : (W : Γ ⊢ᵛ (X `⇒ Y)) → (γ : TM.MEnv Γ) → Γ ⊇ (proj₁ (M.clo-to-comp (M.eval W (tmenv-to-menv γ))))
-ctx-clo-to-comp-wk {Γ = Γ ∙ (X `⇒ Y)} (var here) (γ · lam M) = wk-wk wk-id
-ctx-clo-to-comp-wk (var (there i)) (γ · 𝐖) = wk-wk (ctx-clo-to-comp-wk (var i) γ)
-ctx-clo-to-comp-wk (var (there i)) (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) = wk-wk (ctx-clo-to-comp-wk (var i) γ)
-ctx-clo-to-comp-wk (lam M) ⋄ = wk-id
-ctx-clo-to-comp-wk (lam M) (γ · 𝐖) = wk-id
-ctx-clo-to-comp-wk (lam M) (γ ·﹝ x₁ ╎ x₂ ╎ x₃ ﹞) = wk-id
+ctx-clo-to-comp-wk : (γ : GCM.MEnv Γ) → (𝐖 : GCM.OMVal Γ (X `⇒ Y)) → Γ ⊇ proj₁ (clo-to-comp (omval-to-mval γ 𝐖))
+ctx-clo-to-comp-wk ⋄ (lam M) = Wk.wk-ε
+ctx-clo-to-comp-wk (γ · _) (lam M) = wk-id
+ctx-clo-to-comp-wk (γ · 𝐖) (var here) = wk-wk (ctx-clo-to-comp-wk γ 𝐖)
+ctx-clo-to-comp-wk (γ · _) (var (there i)) = wk-wk (ctx-clo-to-comp-wk γ (var i))
+ctx-clo-to-comp-wk (γ ·﹝ _ ╎ _ ╎ _ ﹞) (lam M) = wk-id
+ctx-clo-to-comp-wk (γ ·﹝ _ ╎ _ ╎ _ ﹞) (var (there i)) = wk-wk (ctx-clo-to-comp-wk γ (var i))
 
-clo-to-comp-eq : (W : Γ ⊢ᵛ (X `⇒ Y)) → (γ : TM.MEnv Γ) → TM.lam-to-comp (TM.eval W γ) ≡ wk-comp (wk-cong (ctx-clo-to-comp-wk W γ)) (proj₁ (proj₂ (M.clo-to-comp (M.eval W (tmenv-to-menv γ)))))
-clo-to-comp-eq (var here) (γ · lam M) = refl
-clo-to-comp-eq {Γ = Γ ∙ Z} (var (there i)) (γ · 𝐖) with (TM.lookup i γ) in eq
-... | lam M =
+eval-gc-wkextid-eq : (γ : GCM.MEnv Γ) → (V : Γ ⊢ᵛ (X `⇒ Y)) → EvalGC.Ψ-gc (eval-gc γ {π = wk-id} wkext-id V) ≡ Γ
+eval-gc-wkextid-eq ⋄ (Syntax.lam x) = refl
+eval-gc-wkextid-eq (γ · x) (Syntax.var here) = refl
+eval-gc-wkextid-eq (γ · x) (Syntax.var (there i)) = refl
+eval-gc-wkextid-eq (γ · x) (Syntax.lam x₁) = refl
+eval-gc-wkextid-eq (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) (Syntax.var (there i)) = refl
+eval-gc-wkextid-eq (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) (Syntax.lam x₃) = refl
+
+lookup-gc-id-next : (γ : GCM.MEnv Γ)→ (𝐖 : GCM.OMVal Γ X)  → (i : Γ ∋ Y) → (π : Γ ⊇ Γ) → (EvalGC.Ψ-gc (lookup-gc (γ · 𝐖) {π = wk-cong π} wkext-id (there i))) ⊇ (EvalGC.Ψ-gc (lookup-gc γ {π = π} wkext-id i))
+lookup-gc-id-next γ 𝐖 i (wk-wk π) = ql (wk-absurd wk-id π) _
+lookup-gc-id-next {Γ = Γ ∙ X} {X = Y} (γ · x) 𝐖 here (wk-cong π) = wk-wk wk-id
+lookup-gc-id-next (γ · x) 𝐖 (there i) (wk-cong π) = wk-wk wk-id
+lookup-gc-id-next (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) 𝐖 here (wk-cong π) = wk-wk wk-id
+lookup-gc-id-next (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) 𝐖 (there i) (wk-cong π) = wk-wk wk-id
+
+lookup-gc-l-next : (γ : GCM.MEnv Γ) → (M : (Γ ∙ `𝓅) ⊢ᶜ X) → {ρ : Γ ⊇ Δ} → (r : WkExt ρ) → (K : GCM.CStack Δ X) → (i : Γ ∋ Y) → (π : Γ ⊇ Γ) → (EvalGC.Ψ-gc (lookup-gc (γ ·﹝ M ╎ r ╎ K ﹞) {π = wk-cong π} wkext-id (there i))) ⊇ (EvalGC.Ψ-gc (lookup-gc γ {π = π} wkext-id i))
+lookup-gc-l-next γ M r K i (wk-wk π) = ql (wk-absurd wk-id π) _
+lookup-gc-l-next (γ · x) M r K here (wk-cong π) = wk-wk wk-id
+lookup-gc-l-next (γ · x) M r K (there i) (wk-cong π) = wk-wk wk-id
+lookup-gc-l-next (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) M r K here (wk-cong π) = wk-wk wk-id
+lookup-gc-l-next (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) M r K (there i) (wk-cong π) = wk-wk wk-id
+
+clo-gc-lookup-gc : (γ : GCM.MEnv Γ) → (i : Γ ∋ (X `⇒ Y)) → {π : Γ ⊇ Δ} → (p : WkExt π) → (EvalGC.Ψ-gc (lookup-gc γ p i)) ⊇ (proj₁ (clo-to-comp (omval-to-mval γ (var i))))
+clo-gc-lookup-gc ⋄ () {π = π} wkext-id
+clo-gc-lookup-gc (γ · 𝐖) (there i) {π = wk-wk π} wkext-id = ql (wk-absurd wk-id π) _
+clo-gc-lookup-gc (γ · 𝐖) (there i) {π = wk-cong π} wkext-id = wk-trans (lookup-gc-id-next γ 𝐖 i wk-id) (clo-gc-lookup-gc γ i {π = wk-id} wkext-id)
+clo-gc-lookup-gc (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) (there i) {π = wk-wk π} wkext-id = ql (wk-absurd wk-id π) _
+clo-gc-lookup-gc (γ ·﹝ M ╎ r ╎ K ﹞) (there i) {π = wk-cong π} wkext-id = wk-trans (lookup-gc-l-next γ M r K i wk-id) (clo-gc-lookup-gc γ i {π = wk-id} wkext-id)
+clo-gc-lookup-gc (γ · lam M) here {π = π} wkext-id = wk-wk wk-id
+clo-gc-lookup-gc (γ · var i) here {π = wk-wk π} wkext-id = ql (wk-absurd wk-id π) _
+clo-gc-lookup-gc (γ · var i) here {π = wk-cong π} wkext-id = wk-trans (lookup-gc-id-next γ (var i) i wk-id) (clo-gc-lookup-gc γ i {π = wk-id} wkext-id)
+clo-gc-lookup-gc (γ · unit) (there i) (wkext-wk p) = clo-gc-lookup-gc γ i p
+clo-gc-lookup-gc (γ · pair 𝐖 𝐖₁) (there i) (wkext-wk p) = clo-gc-lookup-gc γ i p
+clo-gc-lookup-gc (γ · lam M) (there i) (wkext-wk p) = clo-gc-lookup-gc γ i p
+clo-gc-lookup-gc (γ · var i₂) (there i) (wkext-wk p) = clo-gc-lookup-gc γ i p
+clo-gc-lookup-gc (γ · dat N) (there i) (wkext-wk p) = clo-gc-lookup-gc γ i p
+clo-gc-lookup-gc (γ · lam M) here (wkext-wk p) = wk-id
+clo-gc-lookup-gc (γ · var i) here (wkext-wk p) = clo-gc-lookup-gc γ i p
+clo-gc-lookup-gc (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) (there i) (wkext-wk p) = clo-gc-lookup-gc γ i p
+
+ctx-wk-clo : (γ : GCM.MEnv Γ) → (i : Γ ∋ (X `⇒ Y)) → (π : Γ ⊇ Γ) → Γ ⊇ (proj₁ (clo-to-comp (M.lookup i (gcmenv-to-menv γ {π = π} wkext-id))))
+ctx-wk-clo γ i (wk-wk π) = ql (wk-absurd wk-id π) _
+ctx-wk-clo {Γ = Γ ∙ X} (γ · 𝐖) (there i) (wk-cong π) = wk-wk (ctx-wk-clo γ i π)
+ctx-wk-clo (γ · lam M) here (wk-cong π) = wk-wk π
+ctx-wk-clo {Γ = Γ ∙ (X `⇒ Y)} (γ · var i) here (wk-cong π) = wk-wk (ctx-clo-to-comp-wk γ (var i))
+ctx-wk-clo (γ ·﹝ M ╎ p ╎ K ﹞) (there i) (wk-cong π) = wk-wk (ctx-wk-clo γ i π)
+
+clo-gc-ctx-lookup : (γ : GCM.MEnv Γ) → (i : Γ ∋ (X `⇒ Y)) → {π : Γ ⊇ Δ} → (p : WkExt π) → (EvalGC.Ψ-gc (lookup-gc γ p i)) ⊇ (proj₁ (clo-to-comp (M.lookup i (gcmenv-to-menv γ {π = wk-id} wkext-id))))
+clo-gc-ctx-lookup (γ · x) (there i) {π = wk-wk π} wkext-id = ql (wk-absurd (Wk.wk-wk π) π) _
+clo-gc-ctx-lookup (γ · x) (there i) {π = wk-cong π} wkext-id rewrite sym (wk-id-η π) = wk-wk (ctx-wk-clo γ i π)
+clo-gc-ctx-lookup (γ · unit) (there i) (wkext-wk p) = clo-gc-ctx-lookup γ i p
+clo-gc-ctx-lookup (γ · pair 𝐖 𝐖₁) (there i) (wkext-wk p) = clo-gc-ctx-lookup γ i p
+clo-gc-ctx-lookup (γ · lam M) (there i) (wkext-wk p) = clo-gc-ctx-lookup γ i p
+clo-gc-ctx-lookup (γ · var i₂) (there i) (wkext-wk p) = clo-gc-ctx-lookup γ i p
+clo-gc-ctx-lookup (γ · dat N) (there i) (wkext-wk p) = clo-gc-ctx-lookup γ i p
+clo-gc-ctx-lookup (γ · lam M) here wkext-id = wk-wk wk-id
+clo-gc-ctx-lookup (γ · lam M) here (wkext-wk p) = wk-id
+clo-gc-ctx-lookup (γ · var i) here wkext-id = wk-wk (ctx-clo-to-comp-wk γ (var i))
+clo-gc-ctx-lookup (γ · var i) here (wkext-wk p) =
   let
-    a₀ : TM.lookup i γ ≡ lam M
-    a₀ = eq
-
-    a₁ : TM.lam-to-comp (TM.lookup i γ) ≡ wk-comp (wk-cong (ctx-clo-to-comp-wk (var i) γ)) (proj₁ (proj₂ (M.clo-to-comp (M.eval (var i) (tmenv-to-menv γ)))))
-    a₁ = clo-to-comp-eq (var i) γ
-
-    a₂ : M ≡ wk-comp (wk-cong (ctx-clo-to-comp-wk (var i) γ)) (proj₁ (proj₂ (M.clo-to-comp (M.eval (var i) (tmenv-to-menv γ)))))
-    a₂ = subst (λ x → TM.lam-to-comp x ≡ wk-comp (wk-cong (ctx-clo-to-comp-wk (var i) γ)) (proj₁ (proj₂ (M.clo-to-comp (M.eval (var i) (tmenv-to-menv γ)))))) a₀ a₁
-
-    goal : wk-comp (Wk.wk-cong (Wk.wk-wk wk-id)) M ≡ wk-comp (Wk.wk-cong (Wk.wk-wk (ctx-clo-to-comp-wk (var i) γ))) (proj₁ (proj₂ (M.clo-to-comp (M.lookup i (tmenv-to-menv γ)))))
-    goal = cong (wk-comp (Wk.wk-cong (Wk.wk-wk wk-id))) a₂
+    goal : Wk (EvalGC.Ψ-gc (lookup-gc γ p i)) (proj₁ (clo-to-comp (omval-to-mval γ (var i))))
+    goal = clo-gc-lookup-gc γ i p
   in
   goal
-clo-to-comp-eq (var (there i)) (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞)  with (TM.lookup i γ) in eq
-... | lam M =
+clo-gc-ctx-lookup {Γ = Γ ∙ `ℓ} (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) (there i) wkext-id =
   let
-    a₀ : TM.lookup i γ ≡ lam M
-    a₀ = eq
-
-    a₁ : TM.lam-to-comp (TM.lookup i γ) ≡ wk-comp (wk-cong (ctx-clo-to-comp-wk (var i) γ)) (proj₁ (proj₂ (M.clo-to-comp (M.eval (var i) (tmenv-to-menv γ)))))
-    a₁ = clo-to-comp-eq (var i) γ
-
-    a₂ : M ≡ wk-comp (wk-cong (ctx-clo-to-comp-wk (var i) γ)) (proj₁ (proj₂ (M.clo-to-comp (M.eval (var i) (tmenv-to-menv γ)))))
-    a₂ = subst (λ x → TM.lam-to-comp x ≡ wk-comp (wk-cong (ctx-clo-to-comp-wk (var i) γ)) (proj₁ (proj₂ (M.clo-to-comp (M.eval (var i) (tmenv-to-menv γ)))))) a₀ a₁
-
-    goal : wk-comp (Wk.wk-cong (Wk.wk-wk wk-id)) M ≡ wk-comp (Wk.wk-cong (Wk.wk-wk (ctx-clo-to-comp-wk (var i) γ))) (proj₁ (proj₂ (M.clo-to-comp (M.lookup i (tmenv-to-menv γ)))))
-    goal = cong (wk-comp (Wk.wk-cong (Wk.wk-wk wk-id))) a₂
+    a : Wk Γ (proj₁ (clo-to-comp (M.lookup i (gcmenv-to-menv γ WkExt.wkext-id))))
+    a = ctx-wk-clo γ i wk-id
   in
-  goal
-clo-to-comp-eq (lam M) ⋄ = refl
-clo-to-comp-eq (lam M) (γ · _) = refl
-clo-to-comp-eq (lam M) (γ ·﹝ _ ╎ _ ╎ _ ﹞) = refl
+  wk-wk a
+clo-gc-ctx-lookup (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) (there i) (wkext-wk p) = clo-gc-ctx-lookup γ i p
 
-clo-wk-menv : (W : Γ ⊢ᵛ (X `⇒ Y)) → (γ : TM.MEnv Γ) → MProps.WkMEnv (ctx-clo-to-comp-wk W γ) (tmenv-to-menv γ) (proj₂ (proj₂ (M.clo-to-comp (M.eval W (tmenv-to-menv γ)))))
-clo-wk-menv (var here) (γ · lam M) = wk-menv-wk (mclo-to-mval (lam M) γ) MProps.wk-menv-id
-clo-wk-menv (var (there i)) (γ · 𝐖) = wk-menv-wk (mclo-to-mval 𝐖 γ) (clo-wk-menv (var i) γ)
-clo-wk-menv (var (there i)) (γ ·﹝ x ╎ x₁ ╎ x₂ ﹞) = wk-menv-wk (M.jumpᵛ x (tmenv-to-menv γ) (tmcstack-to-mcstack x₂)) (clo-wk-menv (var i) γ)
-clo-wk-menv (lam M) ⋄ = wk-menv-ε
-clo-wk-menv (lam M) (γ · _) = MProps.wk-menv-id
-clo-wk-menv (lam M) (γ ·﹝ _ ╎ _ ╎ _ ﹞) = MProps.wk-menv-id
+clo-gc-ctx : (γ : GCM.MEnv Γ) → (V : Γ ⊢ᵛ (X `⇒ Y)) → {π : Γ ⊇ Δ} → (p : WkExt π) → EvalGC.Ψ-gc (eval-gc γ p V) ⊇ proj₁ (clo-to-comp (M.eval V (gcmenv-to-menv γ {π = wk-id} wkext-id)))
+clo-gc-ctx γ (lam M) p = wk-id
+clo-gc-ctx (γ · 𝐖) (var i) p = clo-gc-ctx-lookup (γ · 𝐖) i p
+clo-gc-ctx (γ ·﹝ M ╎ p₁ ╎ K ﹞) (var i) p = clo-gc-ctx-lookup (γ ·﹝ M ╎ p₁ ╎ K ﹞) i p
 
-eval-clos : (V : Γ ⊢ᵛ (X `⇒ Y)) → (W : Γ ⊢ᵛ X) → (γ : TM.MEnv Γ) → (K : M.CStack Y) → MProps.WkCState ⟨ TM.lam-to-comp (TM.eval V γ) ╎ tmenv-to-menv γ · mclo-to-mval (TM.eval W γ) γ ╎ K ⟩ (M.eval-clo V W (tmenv-to-menv γ) K)
-eval-clos V W γ K =
-  let
-    a = clo-to-comp-eq V γ
-
-    b : MProps.WkMEnv (wk-cong (ctx-clo-to-comp-wk V γ)) (tmenv-to-menv γ · mclo-to-mval (TM.eval W γ) γ) (proj₂ (proj₂ (M.clo-to-comp (M.eval V (tmenv-to-menv γ)))) · M.eval W (tmenv-to-menv γ))
-    b = wk-menv-cong (eval-gc-wk W γ) (clo-wk-menv V γ)
-  in
-  wk-cstate-comp (wk-cong (ctx-clo-to-comp-wk V γ)) a b wk-cstack-id
--}
-
-{-
-eval-clos : (V : Γ ⊢ᵛ (X `⇒ Y)) → (W : Γ ⊢ᵛ X) → (γ : GCM.MEnv Γ) → (K : M.CStack Y) → MProps.WkCState ⟨ GCM.lam-to-comp (GCM.eval V γ) ╎ gcmenv-to-menv γ · omval-to-mval (GCM.eval W γ) γ ╎ K ⟩ (M.eval-clo V W (gcmenv-to-menv γ) K)
-eval-clos V W γ K = ?
-  let
-    a = clo-to-comp-eq V γ
-
-    b : MProps.WkMEnv (wk-cong (ctx-clo-to-comp-wk V γ)) (gcmenv-to-menv γ · omval-to-mval (GCM.eval W γ) γ) (proj₂ (proj₂ (M.clo-to-comp (M.eval V (gcmenv-to-menv γ)))) · M.eval W (gcmenv-to-menv γ))
-    b = wk-menv-cong (eval-gc-wk W γ) (clo-wk-menv V γ)
-  in
-  wk-cstate-comp (wk-cong (ctx-clo-to-comp-wk V γ)) a b wk-cstack-id
-  -}
 
 --------------------------------------------------------------------------
 
@@ -979,8 +987,32 @@ gcmstep-to-mstep (pmᶜ→ {W = W} {γ = γ} {M = M} {π = π} {p = p} {K = K}) 
   _ , pmᶜ→ , eqv
 gcmstep-to-mstep (app→ {V = V} {W = W} {γ = γ} {π = π} {p = p} {K = K}) =
   let
-    wk₁ : WkCState ⟨ wk-comp (Wk.wk-cong (WkExtSplit.π-part₂ (DiamondSplit.lhs-split (squash (EvalGC.split (eval-gc γ p V)) (EvalGC.split (eval-gc γ p W)))))) (lam-to-comp (EvalGC.ψ-gc (eval-gc γ p V)) (EvalGC.result (eval-gc γ p V))) ╎ gcmenv-to-menv (gc γ (WkExtSplit.p-part₂ (DiamondSplit.mid-split (squash (EvalGC.split (eval-gc γ p V)) (EvalGC.split (eval-gc γ p W)))))) WkExt.wkext-id · omval-to-mval (gc γ (WkExtSplit.p-part₂ (DiamondSplit.mid-split (squash (EvalGC.split (eval-gc γ p V)) (EvalGC.split (eval-gc γ p W)))))) (wk-omval (WkExtSplit.π-part₂ (DiamondSplit.rhs-split (squash (EvalGC.split (eval-gc γ p V)) (EvalGC.split (eval-gc γ p W))))) (EvalGC.result (eval-gc γ p W))) ╎ gcmcstack-to-mcstack (gc γ (WkExtSplit.p-part₂ (DiamondSplit.mid-split (squash (EvalGC.split (eval-gc γ p V)) (EvalGC.split (eval-gc γ p W))))) · wk-omval (WkExtSplit.π-part₂ (DiamondSplit.rhs-split (squash (EvalGC.split (eval-gc γ p V)) (EvalGC.split (eval-gc γ p W))))) (EvalGC.result (eval-gc γ p W))) (WkExt.wkext-wk (WkExtSplit.p-part₁ (DiamondSplit.mid-split (squash (EvalGC.split (eval-gc γ p V)) (EvalGC.split (eval-gc γ p W)))))) K ⟩ ⟨ proj₁ (proj₂ (clo-to-comp (M.eval V (gcmenv-to-menv γ WkExt.wkext-id)))) ╎ proj₂ (proj₂ (clo-to-comp (M.eval V (gcmenv-to-menv γ WkExt.wkext-id)))) · M.eval W (gcmenv-to-menv γ WkExt.wkext-id) ╎ gcmcstack-to-mcstack γ p K ⟩
-    wk₁ = {!!}
+    π₁  = WkExtSplit.π-part₂ (DiamondSplit.lhs-split (squash (EvalGC.split (eval-gc γ p V)) (EvalGC.split (eval-gc γ p W))))
+    π₂  = WkExtSplit.p-part₂ (DiamondSplit.mid-split (squash (EvalGC.split (eval-gc γ p V)) (EvalGC.split (eval-gc γ p W))))
+    π₃  = WkExtSplit.π-part₂ (DiamondSplit.rhs-split (squash (EvalGC.split (eval-gc γ p V)) (EvalGC.split (eval-gc γ p W))))
+    gc₁ = gc γ π₂
+    mv₁ = wk-omval π₃ (EvalGC.result (eval-gc γ p W))
+
+    M₁ = wk-comp (Wk.wk-cong π₁) (lam-to-comp (EvalGC.ψ-gc (eval-gc γ p V)) (EvalGC.result (eval-gc γ p V)))
+    M₂ = (proj₁ (proj₂ (clo-to-comp (M.eval V (gcmenv-to-menv γ WkExt.wkext-id)))))
+    γ₁ = gcmenv-to-menv gc₁ WkExt.wkext-id                                        · omval-to-mval gc₁ mv₁
+    γ₂ = proj₂ (proj₂ (clo-to-comp (M.eval V (gcmenv-to-menv γ WkExt.wkext-id)))) · M.eval W (gcmenv-to-menv γ WkExt.wkext-id)
+
+    p₁ = ((WkExtSplit.p-part₁ (DiamondSplit.mid-split (squash (EvalGC.split (eval-gc γ p V)) (EvalGC.split (eval-gc γ p W))))))
+    K₀ = gcmcstack-to-mcstack gc₁ p₁ K
+    K₁ = gcmcstack-to-mcstack (gc₁ · mv₁) (WkExt.wkext-wk p₁) K
+    K₂ = gcmcstack-to-mcstack γ p K
+
+    ρ : Wk (DiamondSplit.Ψ-merge (squash (EvalGC.split (eval-gc γ p V)) (EvalGC.split (eval-gc γ p W))) ∙ X) (proj₁ (clo-to-comp (M.eval V (gcmenv-to-menv γ {π = wk-id} wkext-id))) ∙ X)
+    ρ = wk-cong {!!}
+
+    cseq₁ : K₁ ≡ K₀
+    cseq₁ = gcstackeq (menv-wk-omval (menv-id wk-id gc₁) mv₁) (wkext-wk p₁) p₁ K
+    cseq₂ : K₂ ≡ K₀
+    cseq₂ = gcstackeq {!!} p p₁ K
+
+    wk₁ : WkCState ⟨ M₁ ╎ γ₁ ╎ K₁ ⟩ ⟨ M₂ ╎ γ₂ ╎ K₂ ⟩
+    wk₁ = wk-cstate-comp ρ {!!} {!!} (subst (λ x → WkCStack x K₂) (trans cseq₂ (sym cseq₁)) wk-cstack-id)
 
     eqv = ≈ᴹ-bc (≈-wk₁ wk₁)
   in
