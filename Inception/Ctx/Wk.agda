@@ -151,3 +151,49 @@ wk-trans-trans-cong-cong-β π δ ρ = sym (wk-trans-assoc-η {π₁ = π} {π�
 wk-trans-trans-cong-wk-β : (π : Ξ ⊇ (Δ ∙ X)) (δ : Δ ⊇ Ψ) (ρ : Ψ ⊇ Γ) → wk-trans (wk-trans π (wk-cong δ)) (wk-wk ρ) ≡ wk-trans π (wk-wk (wk-trans δ ρ))
 wk-trans-trans-cong-wk-β π δ ρ = sym (wk-trans-assoc-η {π₁ = π} {π₂ = wk-cong δ} {π₃ = wk-wk ρ})
 {-# REWRITE wk-trans-trans-cong-wk-β #-}
+
+--------------------------------------------------------------------------
+-- context extensions
+
+data WkExt : Γ ⊇ Δ → Set where
+
+  wkext-id : {π : Γ ⊇ Γ} → WkExt π
+
+  wkext-wk : {π : Γ ⊇ Δ} → WkExt π → WkExt (wk-wk {X = X} π)
+
+wkext-emp : (π : Γ ⊇ ε) → WkExt π
+wkext-emp wk-ε = wkext-id
+wkext-emp (wk-wk π) = wkext-wk (wkext-emp π)
+
+wkext-trans : {π : Γ ⊇ Δ} → WkExt π → {ρ : Δ ⊇ Ψ} → WkExt ρ → WkExt (wk-trans π ρ)
+wkext-trans wkext-id wkext-id = wkext-id
+wkext-trans wkext-id (wkext-wk r) = wkext-wk r
+wkext-trans (wkext-wk p) wkext-id = wkext-wk p
+wkext-trans (wkext-wk p) (wkext-wk r) = wkext-wk (wkext-trans p (wkext-wk r))
+
+wkext-id-π : WkExt {Γ = Γ} wk-id
+wkext-id-π = wkext-id
+
+wkext-trans-idl-β : {π : Γ ⊇ Δ} → (p : WkExt π) → {ρ : Γ ⊇ Γ} → wkext-trans {π = ρ} wkext-id p ≡ p
+wkext-trans-idl-β wkext-id = refl
+wkext-trans-idl-β (wkext-wk p) = refl
+{-# REWRITE wkext-trans-idl-β #-}
+
+wkext-trans-idr-β : {π : Γ ⊇ Δ} → (p : WkExt π) → {ρ : Δ ⊇ Δ} → wkext-trans p {ρ = ρ} wkext-id ≡ p
+wkext-trans-idr-β wkext-id = refl
+wkext-trans-idr-β (wkext-wk p) = refl
+{-# REWRITE wkext-trans-idr-β #-}
+
+{-
+  wkext-uniq : (π : Γ ⊇ Δ) → (p : WkExt π) → (ρ : Γ ⊇ Δ) → (r : WkExt ρ) → π ≡ ρ
+wkext-uniq wk-ε wkext-id wk-ε wkext-id = refl
+wkext-uniq (wk-cong π) wkext-id (wk-cong ρ) wkext-id = wk-trans-idl-η (wk-cong π) (wk-cong ρ)
+wkext-uniq (wk-cong π) wkext-id (wk-wk ρ) wkext-id = ql (wk-absurd wk-id ρ) _
+wkext-uniq (wk-cong π) wkext-id (wk-wk ρ) (wkext-wk r) = ql (wk-absurd ρ π) _
+wkext-uniq (wk-wk π) wkext-id (wk-cong ρ) wkext-id = ql (wk-absurd π ρ) _
+wkext-uniq (wk-wk π) wkext-id (wk-wk ρ) wkext-id = ql (wk-absurd wk-id ρ) _
+wkext-uniq (wk-wk π) wkext-id (wk-wk ρ) (wkext-wk r) = ql (wk-absurd wk-id π) _
+wkext-uniq (wk-wk π) (wkext-wk p) (wk-cong ρ) wkext-id = ql (wk-absurd π ρ) _
+wkext-uniq (wk-wk π) (wkext-wk p) (wk-wk ρ) wkext-id = ql (wk-absurd wk-id ρ) _
+wkext-uniq (wk-wk π) (wkext-wk p) (wk-wk ρ) (wkext-wk r) = cong wk-wk (wkext-uniq π p ρ r)
+-}
