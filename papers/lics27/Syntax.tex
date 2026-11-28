@@ -1,0 +1,80 @@
+The syntax is parametrised by a set \gls{Data}, a signature (i.e.\ a set of operators \gls{Ops} and an arity function $\glsii{arity} : \gls{Ops} \to \mathbb{N}$) and for each $\gls{op} \in \gls{Ops}$, an interpretation $\OPSEM{\gls{op}} : {\gls{Data}}^{\ARITY{\gls{op}}} \to \gls{Data}$.
+
+\begin{figure}[!ht]
+
+\begin{subfigure}{0.95\linewidth}
+  \begin{align*}
+    \text{Types:} && \glsi{Type}, \glsii{Type}, \glsiii{Type} &:=\; \gls{UnitType} \mid \gls{ArrowType} \mid \gls{ProdType} \mid \gls{LabelType} \mid \gls{ParamType}\\
+    \text{Pure terms:} && \glsi{Pure}, \glsii{Pure} &:=\; \glsi{Var} \mid \gls{UnitTerm} \mid \gls{LamOp} \glsi{Var}.\glsi{Comp} \mid \gls{PairOp} (\glsi{Pure} , \glsii{Pure})
+    \\
+    \text{Effectful terms:} && \glsi{Comp}, \glsii{Comp} &:=\; \gls{ReturnOp} (\glsi{Pure}) \mid \gls{PushOp} ({\glsi{Comp}} , \glsi{Var}.{\glsii{Comp}}) \mid \gls{AppOp} (\glsi{Pure} , \glsii{Pure}) \mid \\
+         &&& \quad\quad \gls{RecOp} (\glsi{Pure}, \glsii{Pure}) \mid \gls{IncOp} (\glsi{Var}.\glsi{Comp}, \glsii{Var}.\glsii{Comp}) \mid \gls{PmOp} ( \glsi{Pure} , \glsii{Var}.\glsi{Var}.\glsi{Comp} )
+  \end{align*}
+  \caption{Grammar for terms}
+  \label{fig:terms-a}
+\end{subfigure}
+
+\begin{subfigure}{0.95\linewidth}
+  \begin{mathpar}
+    \inferrule
+      {\glsi{Var} : \glsi{Type} \mathbin{\glsi{Member}} \glsi{Ctx}}
+      {\glsi{Ctx} \mathbin{\glsi{PureJudge}} \glsi{Var} : \glsi{Type}}
+
+    \inferrule
+      {\glsi{Ctx} \mathbin{\glsi{CtxCons}} \glsi{Var} : \glsi{Type} \mathbin{\glsi{CompJudge}} \glsi{Comp} : \glsii{Type}}
+      {\glsi{Ctx} \mathbin{\glsi{PureJudge}} \gls{LamOp} \glsi{Var}.\glsi{Comp} : \glsi{Type} \mathbin{\glsi{ArrowType}} \glsii{Type}}
+
+    \inferrule
+      { }
+      {\glsi{Ctx} \mathbin{\glsi{PureJudge}} \gls{UnitTerm} : \gls{UnitType}}
+
+    \inferrule
+      {\glsi{Ctx} \mathbin{\glsi{PureJudge}} \glsi{Pure} : \glsi{Type} \\ \glsi{Ctx} \mathbin{\glsi{PureJudge}} \glsii{Pure} : \glsii{Type}}
+      {\glsi{Ctx} \mathbin{\glsi{PureJudge}} \gls{PairOp} ( \glsi{Pure} , \glsii{Pure} ) : \glsi{Type} \mathbin{\glsi{ProdType}} \glsii{Type}}
+
+    \inferrule
+      {\gls{data} \in \gls{Data}}
+      {\glsi{Ctx} \mathbin{\glsi{PureJudge}} \gls{DatOp} (\gls{data}) : \gls{ParamType}}
+
+    \inferrule
+      {\gls{op} : \gls{Ops} \\ ({\gls{data}}_1 , \dots , {\gls{data}}_{\ARITY{\gls{op}}}) \in {\gls{Data}}^{\ARITY{\gls{op}}}}
+      {\glsi{Ctx} \mathbin{\glsi{PureJudge}} \gls{OpOp} (\gls{op}, ({\gls{data}}_1 , \dots , {\gls{data}}_{\ARITY{\gls{op}}})) : \gls{ParamType}}
+
+  \end{mathpar}
+  \caption{Typing rules for pure terms}
+  \label{fig:terms-b}
+\end{subfigure}
+
+\begin{subfigure}{0.95\linewidth}
+  \begin{mathpar}
+    \inferrule
+      {\glsi{Ctx} \mathbin{\glsi{PureJudge}} \glsi{Pure} : \glsi{Type}}
+      {\glsi{Ctx} \mathbin{\glsi{CompJudge}} \gls{ReturnOp} (\glsi{Pure}) : \glsi{Type}}
+
+    \inferrule
+      {\glsi{Ctx} \mathbin{\glsi{CompJudge}} \glsi{Comp} : \glsi{Type} \\ \glsi{Ctx} \mathbin{\glsi{CtxCons}} \glsi{Var} : \glsi{Type} \mathbin{\glsi{CompJudge}} \glsii{Comp} : \glsii{Type}}
+      {\glsi{Ctx} \mathbin{\glsi{CompJudge}} \gls{PushOp} (\glsi{Comp} , \glsi{Var}.\glsii{Comp}) : \glsii{Type}}
+
+    \inferrule
+      {\glsi{Ctx} \mathbin{\glsi{PureJudge}} \glsi{Pure} : \glsi{Type} \mathbin{\glsi{ArrowType}} \glsii{Type} \\ \glsi{Ctx} \mathbin{\glsi{PureJudge}} \glsii{Pure} : \glsi{Type}}
+      {\glsi{Ctx} \mathbin{\glsi{CompJudge}} \gls{AppOp}(\glsi{Pure}, \glsii{Pure}) : \glsii{Type}}
+
+    \inferrule
+      {\glsi{Ctx} \mathbin{\glsi{PureJudge}} \glsi{Pure} : \gls{LabelType} \\ \glsi{Ctx} \mathbin{\glsi{PureJudge}} \glsii{Pure} : \gls{ParamType}}
+      {\glsi{Ctx} \mathbin{\glsi{CompJudge}} {\gls{RecOp}}_{\glsi{Type}} (\glsi{Pure}, \glsii{Pure}) : \glsi{Type}}
+
+    \inferrule
+      {\glsi{Ctx} \mathbin{\glsi{CtxCons}} \glsi{Var} : \gls{LabelType} \mathbin{\glsi{CompJudge}} \glsi{Comp} : \glsiii{Type} \\ \glsi{Ctx} \mathbin{\glsi{CtxCons}} \glsii{Var} : \glsii{Type} \mathbin{\glsi{CompJudge}} \glsii{Comp} : \glsiii{Type}}
+      {\glsi{Ctx} \mathbin{\glsi{CompJudge}} {\gls{IncOp}}_{\glsi{Type}} (\glsi{Var}.\glsi{Comp} , \glsii{Var}.\glsii{Comp}) : \glsiii{Type}}
+
+    \inferrule
+      {\glsi{Ctx} \mathbin{\glsi{PureJudge}} \glsi{Pure} : \glsi{Type} \mathop{\glsi{ProdType}} \glsii{Type} \\ \glsi{Ctx} \mathbin{\glsi{CtxCons}} \glsi{Var} : \glsi{Type} \mathbin{\glsi{CtxCons}} \glsii{Var} : \glsii{Type} \mathbin{\glsi{CompJudge}} \glsi{Comp} : \glsiii{Type}}
+      {\glsi{Ctx} \mathbin{\glsi{CompJudge}} \gls{PmOp}(\glsi{Pure}, \glsii{Var}.\glsi{Var}.\glsi{Comp}) : \glsiii{Type}}
+  \end{mathpar}
+  \caption{Typing rules for effectful terms}
+  \label{fig:terms-c}
+\end{subfigure}
+
+\caption{Terms}
+\label{fig:terms}
+\end{figure}
